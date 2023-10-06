@@ -89,6 +89,10 @@ pipeline {
                     rollout restart deployment/fintics \
                     -o yaml
                 '''.stripIndent()
+                sh '''
+                    kubectl \
+                    rollout status deployment/fintics
+                '''.stripIndent()
             }
         }
     }
