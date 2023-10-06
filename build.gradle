@@ -11,6 +11,29 @@ plugins {
 
 group = project.projectGroup
 version = project.projectVersion
+sourceCompatibility = "11"
+targetCompatibility = "11"
+compileJava.options.encoding = "UTF-8"
+tasks.withType(JavaCompile){
+    options.encoding = 'UTF-8'
+}
+sourceSets.main.java {
+    exclude "**/*.xml"
+}
+sourceSets.main.resources {
+    srcDirs += ["src/main/java"]
+    exclude "**/*.java"
+}
+sourceSets.test.java {
+    exclude "**/*.xml"
+}
+sourceSets.test.resources {
+    srcDirs += ["src/test/java"]
+    exclude "**/*.java"
+}
+java {
+    withSourcesJar()
+}
 
 configurations.all {
     resolutionStrategy {
@@ -67,6 +90,16 @@ springBoot {
 }
 
 publishing {
+    repositories {
+        maven {
+            allowInsecureProtocol = true
+            url project.publishingMavenUrl
+            credentials {
+                username project.publishingMavenUsername
+                password project.publishingMavenPassword
+            }
+        }
+    }
     publications {
         mavenJava(MavenPublication) {
             from components.java
