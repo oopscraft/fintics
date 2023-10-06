@@ -1,0 +1,18 @@
+# web
+web:
+  brand: <img class="icon" src="/static/image/logo-fintics.png"/>
+  index: trade
+  security-policy: ~
+  locales:
+    - en_US
+    - ko_KR
+
+# fintics
+fintics:
+  client:
+    kis:
+      production: false
+      api-url: https://openapivts.koreainvestment.com:29443
+      app-key: PSxH2bEQzlbPZSOG0EBu2JkQR24LkX8w7rdh
+      app-secret: 3YxieOOGqvPFwomXiX99UVjNezweG79sXgmp/2GKzGAPHjG53SCqYKrNiKBfyEDFjJIaPsGQT70CdCxDqYKaqXPN16BjkRqZOhYtNJJC1xNJlUBvL3mj7OZdAq0zp+wezm8xGIsjBim0P0Ej+rGZM2nQWNSFWwPde2n3zgv4M7J3nr/kNDI=
+      account-no: 50096055-01
