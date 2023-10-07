@@ -16,6 +16,8 @@ public class BalanceAsset {
 
     private BigDecimal quantity;
 
-    private BigDecimal buyPrice;
+    private BigDecimal costBasis;
+
+    private BigDecimal MarketValue;
 
 }

@@ -18,7 +18,6 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.math.BigDecimal;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -103,14 +102,13 @@ public class KisClient implements Client {
                             .symbol(row.getString("pdno"))
                             .name(row.getString("prdt_name"))
                             .quantity(row.getNumber("hldg_qty"))
-                            .buyPrice(row.getNumber("pchs_avg_pric"))
                             .build();
                 })
                 .collect(Collectors.toList());
 
         return Balance.builder()
                 .cash(output2.get(0).getNumber("dnca_tot_amt"))
-                .assets(assets)
+                .balanceAssets(assets)
                 .build();
     }
 
@@ -173,7 +171,7 @@ public class KisClient implements Client {
 
 
     @Override
-    public void buyBasketAsset(BasketAsset basketAsset, int quantity, BigDecimal price) {
+    public void buyAsset(Asset asset, int quantity, BigDecimal price) {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .build();
         String url = properties.getApiUrl() + "/uapi/domestic-stock/v1/trading/order-cash";
@@ -183,7 +181,7 @@ public class KisClient implements Client {
         ValueMap payloadMap = new ValueMap(){{
             put("CANO", properties.getAccountNo().split("-")[0]);
             put("ACNT_PRDT_CD", properties.getAccountNo().split("-")[1]);
-            put("PDNO", basketAsset.getSymbol());
+            put("PDNO", asset.getSymbol());
             put("ORD_DVSN", "00");
             put("ORD_QTY", quantity);
             put("ORD_UNPR", price);
@@ -204,7 +202,7 @@ public class KisClient implements Client {
     }
 
     @Override
-    public void sellBalanceAsset(BalanceAsset balanceAsset, int quantity, BigDecimal price) {
+    public void sellAsset(BalanceAsset balanceAsset, int quantity, BigDecimal price) {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .build();
         String url = properties.getApiUrl() + "/uapi/domestic-stock/v1/trading/order-cash";

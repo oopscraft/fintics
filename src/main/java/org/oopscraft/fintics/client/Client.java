@@ -6,12 +6,12 @@ import java.math.BigDecimal;
 
 public interface Client {
 
-    Balance getBalance();
-
     AssetIndicator getAssetIndicator(Asset asset);
 
-    void buyBasketAsset(BasketAsset basketAsset, int quantity, BigDecimal price);
+    Balance getBalance();
 
-    void sellBalanceAsset(BalanceAsset balanceAsset, int quantity, BigDecimal price);
+    void buyAsset(Asset asset, int quantity, BigDecimal price);
+
+    void sellAsset(BalanceAsset balanceAsset, int quantity, BigDecimal price);
 
 }

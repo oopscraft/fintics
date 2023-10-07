@@ -12,9 +12,11 @@ import java.util.List;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Balance {
 
+    private BigDecimal total;
+
     private BigDecimal cash;
 
     @Builder.Default
-    private List<BalanceAsset> assets = new ArrayList<>();
+    private List<BalanceAsset> balanceAssets = new ArrayList<>();
 
 }

@@ -1,6 +1,7 @@
 package org.oopscraft.fintics.dao;
 
 import lombok.*;
+import org.oopscraft.fintics.model.AssetType;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -17,13 +18,31 @@ import java.math.BigDecimal;
 public class AssetEntity {
 
     @Id
-    @Column(name = "asset_id")
-    private String assetId;
+    @Column(name = "symbol")
+    private String symbol;
 
     @Column(name = "name")
     private String name;
 
-    @Column(name = "price")
-    private BigDecimal price;
+    @Column(name = "type")
+    private AssetType type;
+
+    @Column(name = "country")
+    private String country;
+
+    @Column(name = "currency")
+    private String currency;
+
+    @Column(name = "eps")
+    private BigDecimal eps;
+
+    @Column(name = "roe")
+    private BigDecimal roe;
+
+    @Column(name = "roa")
+    private BigDecimal roa;
+
+    @Column(name = "dividendYield")
+    private BigDecimal dividendYield;
 
 }
