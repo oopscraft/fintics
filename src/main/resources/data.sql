@@ -13,7 +13,7 @@ delete from `core_menu`;
 insert into `fintics_trade`
     (`trade_id`,`name`,`enabled`,`interval`,`client_type`,`client_properties`) values
     ('06c228451ce0400fa57bb36f0568d7cb','한국투자증권 모의투자 #1','Y','60',
-     'org.oopscraft.fintics.client.kis.KisClient','production: false
+     'org.oopscraft.fintics.client.kis.KisClient','production=false
 apiUrl=https://openapivts.koreainvestment.com:29443
 appKey=PSxH2bEQzlbPZSOG0EBu2JkQR24LkX8w7rdh
 appSecret=3YxieOOGqvPFwomXiX99UVjNezweG79sXgmp/2GKzGAPHjG53SCqYKrNiKBfyEDFjJIaPsGQT70CdCxDqYKaqXPN16BjkRqZOhYtNJJC1xNJlUBvL3mj7OZdAq0zp+wezm8xGIsjBim0P0Ej+rGZM2nQWNSFWwPde2n3zgv4M7J3nr/kNDI=

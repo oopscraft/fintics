@@ -22,7 +22,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-public class KisClient implements Client {
+public class KisClient extends Client {
 
     private final boolean production;
 
@@ -36,13 +36,13 @@ public class KisClient implements Client {
 
     private final ObjectMapper objectMapper;
 
-    protected KisClient(Properties properties, ObjectMapper objectMapper) {
+    public KisClient(Properties properties) {
+        super(properties);
         this.production = Boolean.parseBoolean(properties.getProperty("production"));
         this.apiUrl = properties.getProperty("apiUrl");
         this.appKey = properties.getProperty("appKey");
         this.appSecret = properties.getProperty("appSecret");
         this.accountNo = properties.getProperty("accountNo");
-
         this.objectMapper = new ObjectMapper();
     }
 

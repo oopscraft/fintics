@@ -1,17 +1,26 @@
 package org.oopscraft.fintics.client;
 
+import lombok.Getter;
 import org.oopscraft.fintics.model.*;
 
 import java.math.BigDecimal;
+import java.util.Properties;
 
-public interface Client {
+public abstract class Client {
 
-    AssetIndicator getAssetIndicator(String symbol, AssetType type);
+    @Getter
+    private final Properties properties;
 
-    Balance getBalance();
+    public Client(Properties properties) {
+        this.properties = properties;
+    }
 
-    void buyAsset(TradeAsset tradeAsset, int quantity, BigDecimal price);
+    public abstract AssetIndicator getAssetIndicator(String symbol, AssetType type);
 
-    void sellAsset(BalanceAsset balanceAsset, int quantity, BigDecimal price);
+    public abstract Balance getBalance();
+
+    public abstract void buyAsset(TradeAsset tradeAsset, int quantity, BigDecimal price);
+
+    public abstract void sellAsset(BalanceAsset balanceAsset, int quantity, BigDecimal price);
 
 }
