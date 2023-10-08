@@ -4,6 +4,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.arch4j.core.code.dao.CodeItemEntity_;
 import org.oopscraft.arch4j.core.data.SystemFieldEntity;
+import org.oopscraft.arch4j.core.data.converter.BooleanToYNConverter;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -19,17 +20,21 @@ import java.util.List;
 public class TradeEntity extends SystemFieldEntity {
 
     @Id
-    @Column(name = "trade_id")
+    @Column(name = "trade_id", length = 32)
     private String tradeId;
 
     @Column(name = "name")
     private String name;
 
-    @Column(name = "enabled")
+    @Column(name = "enabled", length = 1)
+    @Convert(converter = BooleanToYNConverter.class)
     private boolean enabled;
 
     @Column(name = "interval")
     private Integer interval;
+
+    @Column(name = "clientType")
+    private String clientType;
 
     @Column(name = "client_properties")
     @Lob
@@ -46,6 +51,7 @@ public class TradeEntity extends SystemFieldEntity {
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "trade_id", updatable = false)
     @Builder.Default
+    @Setter(AccessLevel.NONE)
     private List<TradeAssetEntity> tradeAssetEntities = new ArrayList<>();
 
 }

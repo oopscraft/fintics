@@ -6,11 +6,11 @@ import java.math.BigDecimal;
 
 public interface Client {
 
-    AssetIndicator getAssetIndicator(Asset asset);
+    AssetIndicator getAssetIndicator(String symbol, AssetType type);
 
     Balance getBalance();
 
-    void buyAsset(Asset asset, int quantity, BigDecimal price);
+    void buyAsset(TradeAsset tradeAsset, int quantity, BigDecimal price);
 
     void sellAsset(BalanceAsset balanceAsset, int quantity, BigDecimal price);
 

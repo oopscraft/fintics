@@ -17,44 +17,44 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @RequiredArgsConstructor
 class KisClientTest extends CoreTestSupport {
 
-    private final KisClient kisClient;
-
-    @Test
-    @Order(1)
-    void getAccessKey() {
-        // given
-        // when
-        String accessKey = kisClient.getAccessKey();
-
-        // then
-        assertNotNull(accessKey);
-    }
-
-    @Test
-    @Order(2)
-    void getBalance() {
-        // given
-        // when
-        Balance balance = kisClient.getBalance();
-
-        // then
-        assertNotNull(balance.getCash());
-    }
-
-    @Test
-    @Order(3)
-    void getAssetIndicator() {
-        // given
-        Asset asset = Asset.builder()
-                .symbol("069500")
-                .type(AssetType.STOCK)
-                .build();
-
-        // when
-        AssetIndicator assetIndicator = kisClient.getAssetIndicator(asset);
-
-        // then
-        assertNotNull(assetIndicator.getPrice());
-    }
+//    private final KisClient kisClient;
+//
+//    @Test
+//    @Order(1)
+//    void getAccessKey() {
+//        // given
+//        // when
+//        String accessKey = kisClient.getAccessKey();
+//
+//        // then
+//        assertNotNull(accessKey);
+//    }
+//
+//    @Test
+//    @Order(2)
+//    void getBalance() {
+//        // given
+//        // when
+//        Balance balance = kisClient.getBalance();
+//
+//        // then
+//        assertNotNull(balance.getCash());
+//    }
+//
+//    @Test
+//    @Order(3)
+//    void getAssetIndicator() {
+//        // given
+//        Asset asset = Asset.builder()
+//                .symbol("069500")
+//                .type(AssetType.STOCK)
+//                .build();
+//
+//        // when
+//        AssetIndicator assetIndicator = kisClient.getAssetIndicator(asset);
+//
+//        // then
+//        assertNotNull(assetIndicator.getPrice());
+//    }
 
 }

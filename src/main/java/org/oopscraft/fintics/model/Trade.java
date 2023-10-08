@@ -1,7 +1,6 @@
 package org.oopscraft.fintics.model;
 
 import lombok.*;
-import org.oopscraft.fintics.dao.AssetEntity;
 import org.oopscraft.fintics.dao.TradeEntity;
 
 import java.util.ArrayList;
@@ -22,6 +21,8 @@ public class Trade {
 
     private Integer interval;
 
+    private String clientType;
+
     private String clientProperties;
 
     private String buyRule;
@@ -37,23 +38,13 @@ public class Trade {
                 .name(tradeEntity.getName())
                 .enabled(tradeEntity.isEnabled())
                 .interval(tradeEntity.getInterval())
+                .clientType(tradeEntity.getClientType())
                 .clientProperties(tradeEntity.getClientProperties())
                 .buyRule(tradeEntity.getBuyRule())
                 .sellRule(tradeEntity.getSellRule())
                 .build();
         List<TradeAsset> tradeAssets = tradeEntity.getTradeAssetEntities().stream()
-                .map(tradeAssetEntity -> {
-                    TradeAsset tradeAsset = TradeAsset.builder()
-                            .symbol(tradeAssetEntity.getSymbol())
-                            .enabled(tradeAssetEntity.isEnabled())
-                            .build();
-                    AssetEntity assetEntity = tradeAssetEntity.getAssetEntity();
-                    if(assetEntity != null) {
-                        tradeAsset.setName(assetEntity.getName());
-                        tradeAsset.setType(assetEntity.getType());
-                    }
-                    return tradeAsset;
-                })
+                .map(TradeAsset::from)
                 .collect(Collectors.toList());
         trade.setTradeAssets(tradeAssets);
         return trade;

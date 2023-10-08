@@ -3,10 +3,12 @@ package org.oopscraft.fintics.dao;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.arch4j.core.data.SystemFieldEntity;
-import org.oopscraft.arch4j.core.role.dao.RoleEntity;
+import org.oopscraft.arch4j.core.data.converter.BooleanToYNConverter;
+import org.oopscraft.fintics.model.AssetType;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "fintics_trade_asset")
@@ -24,24 +26,27 @@ public class TradeAssetEntity extends SystemFieldEntity {
     }
 
     @Id
-    @Column(name = "trade_id")
+    @Column(name = "trade_id", length = 32)
     private String tradeId;
 
     @Id
-    @Column(name = "symbol")
+    @Column(name = "symbol", length = 32)
     private String symbol;
 
-    @Column(name = "enabled")
+    @Column(name = "name")
+    private String name;
+
+    @Column(name = "type", length = 16)
+    AssetType type;
+
+    @Column(name = "enabled", length = 1)
+    @Convert(converter = BooleanToYNConverter.class)
     private boolean enabled;
 
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
-    @JoinColumn(
-            name = "symbol",
-            referencedColumnName = "symbol",
-            insertable = false,
-            updatable = false,
-            foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)
-    )
-    private AssetEntity assetEntity;
+    @Column(name = "trade_ratio")
+    private BigDecimal tradeRatio;
+
+    @Column(name = "limit_ratio")
+    private BigDecimal limitRatio;
 
 }

@@ -16,9 +16,10 @@
             balanceAssets: []
         });
         duice.ObjectProxy.setReadonlyAll(balance, true);
+        const clientDefinitions = new duice.ArrayProxy([[${clientDefinitions}]]);
 
         function getTrades() {
-            let url = new URL(/*[[@{/trade/get-trades}]]*/'', document.location.origin);
+            let url = new URL(`${_apiUrl}/v1/trade`, document.location.origin);
             _fetch(url)
                 .then(response => response.json())
                 .then(data => {
@@ -30,8 +31,7 @@
         }
 
         function getTrade(tradeId) {
-            let url = new URL(/*[[@{/trade/get-trade}]]*/'', document.location.origin);
-            url.searchParams.append('tradeId', tradeId);
+            let url = new URL(`${_apiUrl}/v1/trade/${tradeId}`, document.location.origin);
             _fetch(url)
                 .then(response => response.json())
                 .then(data => {
@@ -39,11 +39,49 @@
                 });
         }
 
+        function createTrade() {
+            duice.ObjectProxy.clear(trade);
+            duice.ObjectProxy.assign(trade, {
+                _new: true
+            });
+            duice.ObjectProxy.focus(trade, 'name');
+        }
+
+        function saveTrade() {
+            _confirm(/*[[#{web.global.saveItemConfirm(#{fintics.Trade})}]]*/'').then(result => {
+                if (result) {
+                    let url;
+                    let method;
+                    if(trade._new) {
+                        url = `${_apiUrl}/v1/trade`;
+                        method = 'POST';
+                    }else{
+                        url = `${_apiUrl}/v1/trade/${trade.tradeId}`;
+                        method = 'PUT';
+                    }
+                    _fetch(new URL(url, document.location.origin), {
+                        method: method,
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(trade)
+                    }).then(response => response.json())
+                        .then(data => {
+                            _alert(/*[[#{web.global.saveItemComplete(#{fintics.Trade})}]]*/'').then(() => {
+                                duice.ObjectProxy.assign(trade, data);
+                            });
+                    });
+                }
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
              getTrades();
         });
 
     </script>
+    <style th:inline="css">
+    </style>
 
     <!-- ====================================== -->
     <!-- start: title                           -->
@@ -59,13 +97,13 @@
     <!-- ====================================== -->
     <!-- start: trade list                      -->
     <!-- ====================================== -->
-    <div class="tradeList">
+    <div class="padding-1px">
         <span data-duice-bind="trades"
-              data-duice-loop="trade,status"
-              data-duice-selected-item-class="selected">
-            <span class="link"
+              data-duice-loop="trade,status">
+            |
+            <span class="link font-weight-bold"
                   data-duice-bind="trade"
-                  data-duice-property="tradeName"
+                  data-duice-property="name"
                   data-duice-execute="this.dataset.tradeId = trade.tradeId;"
                   onclick="getTrade(this.dataset.tradeId);"></span>
         </span>
@@ -79,7 +117,6 @@
     <!-- end: trade list                        -->
     <!-- ====================================== -->
 
-
     <!-- ====================================== -->
     <!-- start: trade                           -->
     <!-- ====================================== -->
@@ -92,25 +129,38 @@
             <div class="grid-column-6 s-grid-column-12">
                 <label>
                     <span data-th-text="#{fintics.Trade.name}" class="font-weight-bold"></span>
-                    <input type="text" data-duice-bind="trade" data-duice-property="name" class="width-100"/>
+                    <input type="text" data-duice-bind="trade" data-duice-property="name" class="width-100 font-weight-bold"/>
                 </label>
-            </div>
-            <div class="grid-column-6 s-grid-column-12">
+                <br/>
                 <label>
+                    <span data-th-text="#{fintics.Trade.enabled}" class="font-weight-bold"></span><br/>
                     <input type="checkbox" data-duice-bind="trade" data-duice-property="enabled"/>
-                    <span data-th-text="#{fintics.Trade.enabled}" class="font-weight-bold"></span>
                 </label>
-            </div>
-            <div class="grid-column-6 s-grid-column-12">
+                <br/>
                 <label>
-                    <span data-th-text="#{fintics.Trade.interval}"></span>
+                    <span data-th-text="#{fintics.Trade.interval}" class="font-weight-bold"></span>
                     <input type="number" data-duice-bind="trade" data-duice-property="interval" class="width-100"/>
                 </label>
             </div>
             <div class="grid-column-6 s-grid-column-12">
                 <label>
-                 <span data-th-text="#{fintics.Trade.clientProperties}"
-                       class="font-weight-bold width-100"></span>
+                    <span data-th-text="#{fintics.Trade.clientType}" class="font-weight-bold width-100"></span>
+                    <select data-duice-bind="trade"
+                            data-duice-property="clientType"
+                            data-duice-option="clientDefinitions"
+                            data-duice-option-value-property="type"
+                            data-duice-option-text-property="name"
+                            data-duice-execute="
+                                    this.addEventListener('change',() => {
+                                        trade.clientProperties = clientDefinitions.find(item => item.type === this.value)?.propertiesTemplate;
+                                    });
+                                    "
+                            class="width-100">
+                        <option data-th-text="'- '+#{web.global.select}+' -'"></option>
+                    </select>
+                </label>
+                <label>
+                    <span data-th-text="#{fintics.Trade.clientProperties}" class="font-weight-bold width-100"></span>
                     <textarea data-duice-bind="trade" data-duice-property="clientProperties" rows="3" class="border-1 width-100"></textarea>
                 </label>
             </div>
@@ -133,7 +183,9 @@
                         <col/>
                         <col/>
                         <col/>
-                        <col/>
+                        <col style="width:10em;"/>
+                        <col style="width:10em;"/>
+                        <col style="width:10em;"/>
                     </colgroup>
                     <thead>
                     <tr>
@@ -142,6 +194,8 @@
                         <th data-th-text="#{fintics.Asset.name}"></th>
                         <th data-th-text="#{fintics.Asset.type}"></th>
                         <th data-th-text="#{fintics.TradeAsset.enabled}" class="text-align-center"></th>
+                        <th data-th-text="#{fintics.TradeAsset.tradeRatio}" class="text-align-center"></th>
+                        <th data-th-text="#{fintics.TradeAsset.limitRatio}" class="text-align-center"></th>
                         <th class="text-align-right">
                             <button class="small">
                                 <img class="icon" th:src="@{/static/image/icon-add.svg}" alt="add"/>
@@ -168,6 +222,18 @@
                             <label>
                                 <input type="checkbox" data-duice-bind="tradeAsset" data-duice-property="enabled"/>
                             </label>
+                        </td>
+                        <td class="text-align-center">
+                            <label>
+                                <input type="number" data-duice-bind="tradeAsset" data-duice-property="tradeRatio" class="width-50"/>
+                                %
+                            </label>
+                        </td>
+                        <td class="text-align-center">
+                           <label>
+                               <input type="number" data-duice-bind="tradeAsset" data-duice-property="limitRatio" class="width-50"/>
+                               %
+                           </label>
                         </td>
                         <td class="text-align-right">
                             <button class="small">

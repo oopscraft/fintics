@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
 import org.oopscraft.arch4j.core.support.ValueMap;
 import org.oopscraft.fintics.client.Client;
@@ -13,7 +12,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -21,26 +19,43 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
-@Component
-@RequiredArgsConstructor
 public class KisClient implements Client {
 
-    private final KisClientProperties properties;
+    private final boolean production;
+
+    private final String apiUrl;
+
+    private final String appKey;
+
+    private final String appSecret;
+
+    private final String accountNo;
 
     private final ObjectMapper objectMapper;
+
+    protected KisClient(Properties properties, ObjectMapper objectMapper) {
+        this.production = Boolean.parseBoolean(properties.getProperty("production"));
+        this.apiUrl = properties.getProperty("apiUrl");
+        this.appKey = properties.getProperty("appKey");
+        this.appSecret = properties.getProperty("appSecret");
+        this.accountNo = properties.getProperty("accountNo");
+
+        this.objectMapper = new ObjectMapper();
+    }
 
     String getAccessKey() {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .build();
         ValueMap payloadMap = new ValueMap(){{
             put("grant_type","client_credentials");
-            put("appkey", properties.getAppKey());
-            put("appsecret", properties.getAppSecret());
+            put("appkey", appKey);
+            put("appsecret", appSecret);
         }};
         RequestEntity<Map<String,Object>> requestEntity = RequestEntity
-                .post(properties.getApiUrl() + "/oauth2/tokenP")
+                .post(apiUrl + "/oauth2/tokenP")
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(payloadMap);
         ResponseEntity<ValueMap> responseEntity = restTemplate.exchange(requestEntity, ValueMap.class);
@@ -52,22 +67,78 @@ public class KisClient implements Client {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         httpHeaders.add("authorization", "Bearer " + getAccessKey());
-        httpHeaders.add("appkey", properties.getAppKey());
-        httpHeaders.add("appsecret", properties.getAppSecret());
+        httpHeaders.add("appkey", appKey);
+        httpHeaders.add("appsecret", appSecret);
         return httpHeaders;
+    }
+
+    @Override
+    public AssetIndicator getAssetIndicator(String symbol, AssetType type) {
+        RestTemplate restTemplate = RestTemplateBuilder.create()
+                .build();
+        String url = apiUrl + "/uapi/domestic-stock/v1/quotations/inquire-price";
+        HttpHeaders headers = createHeaders();
+        headers.add("tr_id", "FHKST01010100");
+        String fidCondMrktDivCode;
+        String fidInputIscd;
+        switch(type) {
+            case STOCK:
+                fidCondMrktDivCode = "J";
+                fidInputIscd = symbol;
+                break;
+            case ETF:
+                fidCondMrktDivCode = "ETF";
+                fidInputIscd = symbol;
+                break;
+            case ETN:
+                fidCondMrktDivCode = "ETN";
+                fidInputIscd = "Q" + symbol;
+                break;
+            default:
+                throw new RuntimeException("invalid asset type - " + type);
+        }
+        url = UriComponentsBuilder.fromUriString(url)
+                .queryParam("FID_COND_MRKT_DIV_CODE", fidCondMrktDivCode)
+                .queryParam("FID_INPUT_ISCD", fidInputIscd)
+                .build()
+                .toUriString();
+        RequestEntity<Void> requestEntity = RequestEntity
+                .get(url)
+                .headers(headers)
+                .build();
+        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+        JsonNode rootNode;
+        try {
+            rootNode = objectMapper.readTree(responseEntity.getBody());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+        String rtCd = objectMapper.convertValue(rootNode.path("rt_cd"), String.class);
+        String msg = objectMapper.convertValue(rootNode.path("msg1"), String.class);
+        if(!"0".equals(rtCd)) {
+            throw new RuntimeException(msg);
+        }
+
+        ValueMap output = objectMapper.convertValue(rootNode.path("output"), ValueMap.class);
+
+        return AssetIndicator.builder()
+                .symbol(symbol)
+                .price(output.getNumber("stck_prpr"))
+                .build();
     }
 
     @Override
     public Balance getBalance() {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .build();
-        String url = properties.getApiUrl() + "/uapi/domestic-stock/v1/trading/inquire-balance";
+        String url = apiUrl + "/uapi/domestic-stock/v1/trading/inquire-balance";
         HttpHeaders headers = createHeaders();
-        String trId = properties.isProduction() ? "TTTC8424R" : "VTTC8434R";
+        String trId = production ? "TTTC8424R" : "VTTC8434R";
         headers.add("tr_id", trId);
         url = UriComponentsBuilder.fromUriString(url)
-                .queryParam("CANO", properties.getAccountNo().split("-")[0])
-                .queryParam("ACNT_PRDT_CD", properties.getAccountNo().split("-")[1])
+                .queryParam("CANO", accountNo.split("-")[0])
+                .queryParam("ACNT_PRDT_CD", accountNo.split("-")[1])
                 .queryParam("AFHR_FLPR_YN", "N")
                 .queryParam("OFL_YN", "")
                 .queryParam("INQR_DVSN", "02")
@@ -112,76 +183,19 @@ public class KisClient implements Client {
                 .build();
     }
 
-    @Override
-    public AssetIndicator getAssetIndicator(Asset asset) {
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .build();
-        String url = properties.getApiUrl() + "/uapi/domestic-stock/v1/quotations/inquire-price";
-        HttpHeaders headers = createHeaders();
-        headers.add("tr_id", "FHKST01010100");
-        String fidCondMrktDivCode;
-        String fidInputIscd;
-        switch(asset.getType()) {
-            case STOCK:
-                fidCondMrktDivCode = "J";
-                fidInputIscd = asset.getSymbol();
-                break;
-            case ETF:
-                fidCondMrktDivCode = "ETF";
-                fidInputIscd = asset.getSymbol();
-                break;
-            case ETN:
-                fidCondMrktDivCode = "ETN";
-                fidInputIscd = "Q" + asset.getSymbol();
-                break;
-            default:
-                throw new RuntimeException("invalid asset type - " + asset.getType());
-        }
-        url = UriComponentsBuilder.fromUriString(url)
-                .queryParam("FID_COND_MRKT_DIV_CODE", fidCondMrktDivCode)
-                .queryParam("FID_INPUT_ISCD", fidInputIscd)
-                .build()
-                .toUriString();
-        RequestEntity<Void> requestEntity = RequestEntity
-                .get(url)
-                .headers(headers)
-                .build();
-        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
-        JsonNode rootNode;
-        try {
-            rootNode = objectMapper.readTree(responseEntity.getBody());
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-
-        String rtCd = objectMapper.convertValue(rootNode.path("rt_cd"), String.class);
-        String msg = objectMapper.convertValue(rootNode.path("msg1"), String.class);
-        if(!"0".equals(rtCd)) {
-            throw new RuntimeException(msg);
-        }
-
-        ValueMap output = objectMapper.convertValue(rootNode.path("output"), ValueMap.class);
-
-        return AssetIndicator.builder()
-                .symbol(asset.getSymbol())
-                .name(asset.getName())
-                .price(output.getNumber("stck_prpr"))
-                .build();
-    }
-
 
     @Override
-    public void buyAsset(Asset asset, int quantity, BigDecimal price) {
+    public void buyAsset(TradeAsset tradeAsset, int quantity, BigDecimal price) {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .build();
-        String url = properties.getApiUrl() + "/uapi/domestic-stock/v1/trading/order-cash";
+        String url = apiUrl + "/uapi/domestic-stock/v1/trading/order-cash";
         HttpHeaders headers = createHeaders();
-        String trId = properties.isProduction() ? "TTTC0802U" : "VTTC9802U";
+        String trId = production ? "TTTC0802U" : "VTTC9802U";
         headers.add("tr_id", trId);
         ValueMap payloadMap = new ValueMap(){{
-            put("CANO", properties.getAccountNo().split("-")[0]);
-            put("ACNT_PRDT_CD", properties.getAccountNo().split("-")[1]);
-            put("PDNO", asset.getSymbol());
+            put("CANO", accountNo.split("-")[0]);
+            put("ACNT_PRDT_CD", accountNo.split("-")[1]);
+            put("PDNO", tradeAsset.getSymbol());
             put("ORD_DVSN", "00");
             put("ORD_QTY", quantity);
             put("ORD_UNPR", price);
@@ -205,13 +219,13 @@ public class KisClient implements Client {
     public void sellAsset(BalanceAsset balanceAsset, int quantity, BigDecimal price) {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .build();
-        String url = properties.getApiUrl() + "/uapi/domestic-stock/v1/trading/order-cash";
+        String url = apiUrl + "/uapi/domestic-stock/v1/trading/order-cash";
         HttpHeaders headers = createHeaders();
-        String trId = properties.isProduction() ? "TTTC0801U" : "VTTC0801U";
+        String trId = production ? "TTTC0801U" : "VTTC0801U";
         headers.add("tr_id", trId);
         ValueMap payloadMap = new ValueMap(){{
-            put("CANO", properties.getAccountNo().split("-")[0]);
-            put("ACNT_PRDT_CD", properties.getAccountNo().split("-")[1]);
+            put("CANO", accountNo.split("-")[0]);
+            put("ACNT_PRDT_CD", accountNo.split("-")[1]);
             put("PDNO", balanceAsset.getSymbol());
             put("ORD_DVSN", "00");
             put("ORD_QTY", quantity);
