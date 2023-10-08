@@ -1,6 +1,6 @@
 package org.oopscraft.fintics;
 
-import org.oopscraft.arch4j.core.install.SpringBootInstaller;
+import org.oopscraft.arch4j.core.support.SpringApplicationInstaller;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.FullyQualifiedAnnotationBeanNameGenerator;
@@ -17,7 +17,7 @@ public class FinticsApplication {
 
         // install
         if(Arrays.asList(args).contains("install")) {
-            SpringBootInstaller.install(FinticsApplication.class, args);
+            SpringApplicationInstaller.install(FinticsApplication.class, args);
             System.exit(0);
         }
 
