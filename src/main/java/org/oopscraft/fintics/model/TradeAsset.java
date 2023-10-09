@@ -17,9 +17,7 @@ public class TradeAsset extends Asset {
 
     private boolean enabled;
 
-    private BigDecimal tradeRatio;
-
-    private BigDecimal limitRatio;
+    private BigDecimal holdRatio;
 
     public static TradeAsset from(TradeAssetEntity tradeAssetEntity) {
         return TradeAsset.builder()
@@ -28,8 +26,7 @@ public class TradeAsset extends Asset {
                 .name(tradeAssetEntity.getName())
                 .type(tradeAssetEntity.getType())
                 .enabled(tradeAssetEntity.isEnabled())
-                .tradeRatio(tradeAssetEntity.getTradeRatio())
-                .limitRatio(tradeAssetEntity.getLimitRatio())
+                .holdRatio(tradeAssetEntity.getHoldRatio())
                 .build();
     }
 

@@ -21,8 +21,6 @@ public class TradeAssetRequest {
 
     private boolean enabled;
 
-    private BigDecimal tradeRatio;
-
-    private BigDecimal limitRatio;
+    private BigDecimal holdRatio;
 
 }

@@ -2,7 +2,6 @@ package org.oopscraft.fintics.dao;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.oopscraft.arch4j.core.code.dao.CodeItemEntity_;
 import org.oopscraft.arch4j.core.data.SystemFieldEntity;
 import org.oopscraft.arch4j.core.data.converter.BooleanToYNConverter;
 
@@ -40,13 +39,9 @@ public class TradeEntity extends SystemFieldEntity {
     @Lob
     private String clientProperties;
 
-    @Column(name = "buy_rule")
+    @Column(name = "hold_condition")
     @Lob
-    private String buyRule;
-
-    @Column(name = "sell_rule")
-    @Lob
-    private String sellRule;
+    private String holdCondition;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "trade_id", updatable = false)

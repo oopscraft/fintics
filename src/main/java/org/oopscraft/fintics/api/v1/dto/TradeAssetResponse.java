@@ -22,9 +22,7 @@ public class TradeAssetResponse {
 
     private boolean enabled;
 
-    private BigDecimal tradeRatio;
-
-    private BigDecimal limitRatio;
+    private BigDecimal holdRatio;
 
     public static TradeAssetResponse from(TradeAsset tradeAsset) {
         return TradeAssetResponse.builder()
@@ -33,8 +31,7 @@ public class TradeAssetResponse {
                 .name(tradeAsset.getName())
                 .type(tradeAsset.getType())
                 .enabled(tradeAsset.isEnabled())
-                .tradeRatio(tradeAsset.getTradeRatio())
-                .limitRatio(tradeAsset.getLimitRatio())
+                .holdRatio(tradeAsset.getHoldRatio())
                 .build();
     }
 

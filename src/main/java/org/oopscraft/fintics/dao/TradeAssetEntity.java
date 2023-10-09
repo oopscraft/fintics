@@ -43,10 +43,7 @@ public class TradeAssetEntity extends SystemFieldEntity {
     @Convert(converter = BooleanToYNConverter.class)
     private boolean enabled;
 
-    @Column(name = "trade_ratio")
-    private BigDecimal tradeRatio;
-
-    @Column(name = "limit_ratio")
-    private BigDecimal limitRatio;
+    @Column(name = "hold_ratio")
+    private BigDecimal holdRatio;
 
 }

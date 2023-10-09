@@ -1,6 +1,7 @@
 package org.oopscraft.fintics.client;
 
 import org.oopscraft.arch4j.core.data.pbe.PbePropertiesUtil;
+import org.oopscraft.fintics.model.Trade;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -8,6 +9,10 @@ import java.lang.reflect.Constructor;
 import java.util.Properties;
 
 public class ClientFactory {
+
+    public static Client getClient(Trade trade) {
+        return getClient(trade.getClientType(), trade.getClientProperties());
+    }
 
     public static Client getClient(String clientType, String clientProperties) {
         try {

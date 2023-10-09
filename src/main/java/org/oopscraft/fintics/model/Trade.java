@@ -1,5 +1,7 @@
 package org.oopscraft.fintics.model;
 
+import groovy.lang.Binding;
+import groovy.lang.GroovyShell;
 import lombok.*;
 import org.oopscraft.fintics.dao.TradeEntity;
 
@@ -25,9 +27,7 @@ public class Trade {
 
     private String clientProperties;
 
-    private String buyRule;
-
-    private String sellRule;
+    private String holdCondition;
 
     @Builder.Default
     private List<TradeAsset> tradeAssets = new ArrayList<>();
@@ -40,8 +40,7 @@ public class Trade {
                 .interval(tradeEntity.getInterval())
                 .clientType(tradeEntity.getClientType())
                 .clientProperties(tradeEntity.getClientProperties())
-                .buyRule(tradeEntity.getBuyRule())
-                .sellRule(tradeEntity.getSellRule())
+                .holdCondition(tradeEntity.getHoldCondition())
                 .build();
         List<TradeAsset> tradeAssets = tradeEntity.getTradeAssetEntities().stream()
                 .map(TradeAsset::from)

@@ -3,11 +3,12 @@ package org.oopscraft.fintics.service;
 import lombok.RequiredArgsConstructor;
 import org.oopscraft.arch4j.core.data.IdGenerator;
 import org.oopscraft.fintics.client.Client;
+import org.oopscraft.fintics.client.ClientFactory;
 import org.oopscraft.fintics.dao.TradeAssetEntity;
 import org.oopscraft.fintics.dao.TradeEntity;
 import org.oopscraft.fintics.dao.TradeRepository;
+import org.oopscraft.fintics.model.Balance;
 import org.oopscraft.fintics.model.Trade;
-import org.oopscraft.fintics.model.TradeAsset;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,8 +49,7 @@ public class TradeService {
         tradeEntity.setInterval(trade.getInterval());
         tradeEntity.setClientType(trade.getClientType());
         tradeEntity.setClientProperties(trade.getClientProperties());
-        tradeEntity.setBuyRule(trade.getBuyRule());
-        tradeEntity.setSellRule(trade.getSellRule());
+        tradeEntity.setHoldCondition(trade.getHoldCondition());
 
         // trade asset
         tradeEntity.getTradeAssetEntities().clear();
@@ -61,14 +61,19 @@ public class TradeService {
                                 .name(tradeAsset.getName())
                                 .type(tradeAsset.getType())
                                 .enabled(tradeAsset.isEnabled())
-                                .tradeRatio(tradeAsset.getTradeRatio())
-                                .limitRatio(tradeAsset.getLimitRatio())
+                                .holdRatio(tradeAsset.getHoldRatio())
                                 .build())
                 .collect(Collectors.toList());
         tradeEntity.getTradeAssetEntities().addAll(tradeAssetEntities);
 
         tradeEntity = tradeRepository.saveAndFlush(tradeEntity);
         return Trade.from(tradeEntity);
+    }
+
+    public Optional<Balance> getTradeBalance(String tradeId) {
+        TradeEntity tradeEntity = tradeRepository.findById(tradeId).orElseThrow();
+        Client client = ClientFactory.getClient(tradeEntity.getClientType(), tradeEntity.getClientProperties());
+        return Optional.ofNullable(client.getBalance());
     }
 
 }

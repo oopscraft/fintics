@@ -25,9 +25,7 @@ public class TradeResponse {
 
     private String clientProperties;
 
-    private String buyRule;
-
-    private String sellRule;
+    private String holdCondition;
 
     @Builder.Default
     private List<TradeAssetResponse> tradeAssets = new ArrayList<>();
@@ -40,8 +38,7 @@ public class TradeResponse {
                 .interval(trade.getInterval())
                 .clientType(trade.getClientType())
                 .clientProperties(trade.getClientProperties())
-                .buyRule(trade.getBuyRule())
-                .sellRule(trade.getSellRule())
+                .holdCondition(trade.getHoldCondition())
                 .build();
         List<TradeAssetResponse> tradeAssetResponses = trade.getTradeAssets().stream()
                 .map(TradeAssetResponse::from)

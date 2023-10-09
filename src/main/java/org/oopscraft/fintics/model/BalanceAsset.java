@@ -12,6 +12,8 @@ import java.math.BigDecimal;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class BalanceAsset extends Asset {
 
+    private String accountNo;
+
     private String symbol;
 
     private String name;
@@ -20,6 +22,6 @@ public class BalanceAsset extends Asset {
 
     private BigDecimal costBasis;
 
-    private BigDecimal MarketValue;
+    private BigDecimal marketValue;
 
 }

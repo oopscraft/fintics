@@ -1,6 +1,7 @@
 package org.oopscraft.fintics.api.v1;
 
 import lombok.RequiredArgsConstructor;
+import org.oopscraft.fintics.api.v1.dto.BalanceResponse;
 import org.oopscraft.fintics.api.v1.dto.TradeRequest;
 import org.oopscraft.fintics.api.v1.dto.TradeResponse;
 import org.oopscraft.fintics.model.Trade;
@@ -37,6 +38,14 @@ public class TradeRestController {
         return ResponseEntity.ok(tradeResponse);
     }
 
+    @GetMapping("{tradeId}/balance")
+    public ResponseEntity<BalanceResponse> getTradeBalance(@PathVariable("tradeId") String tradeId) {
+        BalanceResponse balanceResponse = tradeService.getTradeBalance(tradeId)
+                .map(BalanceResponse::from)
+                .orElseThrow();
+        return ResponseEntity.ok(balanceResponse);
+    }
+
     @PostMapping
     @Transactional
     public ResponseEntity<TradeResponse> createTrade(@RequestBody TradeRequest tradeRequest) {
@@ -47,8 +56,7 @@ public class TradeRestController {
                 .interval(tradeRequest.getInterval())
                 .clientType(tradeRequest.getClientType())
                 .clientProperties(tradeRequest.getClientProperties())
-                .buyRule(tradeRequest.getBuyRule())
-                .sellRule(tradeRequest.getSellRule())
+                .holdCondition(tradeRequest.getHoldCondition())
                 .build();
 
         List<TradeAsset> tradeAssets = tradeRequest.getTradeAssets().stream()
@@ -58,8 +66,7 @@ public class TradeRestController {
                                 .symbol(tradeAssetRequest.getSymbol())
                                 .name(tradeAssetRequest.getName())
                                 .enabled(tradeAssetRequest.isEnabled())
-                                .tradeRatio(tradeAssetRequest.getTradeRatio())
-                                .limitRatio(tradeAssetRequest.getLimitRatio())
+                                .holdRatio(tradeAssetRequest.getHoldRatio())
                                 .build())
                 .collect(Collectors.toList());
         trade.setTradeAssets(tradeAssets);
@@ -82,8 +89,7 @@ public class TradeRestController {
         trade.setInterval(tradeRequest.getInterval());
         trade.setClientType(tradeRequest.getClientType());
         trade.setClientProperties(tradeRequest.getClientProperties());
-        trade.setBuyRule(tradeRequest.getBuyRule());
-        trade.setSellRule(tradeRequest.getSellRule());
+        trade.setHoldCondition(tradeRequest.getHoldCondition());
 
         List<TradeAsset> tradeAssets = tradeRequest.getTradeAssets().stream()
                 .map(tradeAssetRequest ->
@@ -92,8 +98,7 @@ public class TradeRestController {
                                 .symbol(tradeAssetRequest.getSymbol())
                                 .name(tradeAssetRequest.getName())
                                 .enabled(tradeAssetRequest.isEnabled())
-                                .tradeRatio(tradeAssetRequest.getTradeRatio())
-                                .limitRatio(tradeAssetRequest.getLimitRatio())
+                                .holdRatio(tradeAssetRequest.getHoldRatio())
                                 .build())
                 .collect(Collectors.toList());
         trade.setTradeAssets(tradeAssets);

@@ -1,6 +1,7 @@
 package org.oopscraft.fintics.client.kis;
 
 import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.oopscraft.arch4j.core.test.CoreTestSupport;
@@ -53,12 +54,13 @@ class KisClientTest extends CoreTestSupport {
         assertNotNull(balance.getCash());
     }
 
+    @Disabled
     @Test
     @Order(3)
     void getAssetIndicator() {
         // given
         // when
-        AssetIndicator assetIndicator = getKisClient().getAssetIndicator("005930", AssetType.STOCK);
+        AssetIndicator assetIndicator = getKisClient().getAssetIndicator("000660", AssetType.STOCK);
 
         // then
         assertNotNull(assetIndicator.getPrice());

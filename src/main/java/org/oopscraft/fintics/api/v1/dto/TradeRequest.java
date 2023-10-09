@@ -23,9 +23,7 @@ public class TradeRequest {
 
     private String clientProperties;
 
-    private String buyRule;
-
-    private String sellRule;
+    private String holdCondition;
 
     @Builder.Default
     private List<TradeAssetRequest> tradeAssets = new ArrayList<>();
