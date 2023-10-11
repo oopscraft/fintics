@@ -62,7 +62,11 @@ public class TradeThread extends Thread {
                             BigDecimal buyAmount = balance.getTotalAmount().divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP)
                                             .multiply(tradeAsset.getHoldRatio());
                             BigDecimal quantity = buyAmount.divide(assetIndicator.getPrice(), 0, RoundingMode.FLOOR);
-                            client.buyAsset(tradeAsset, quantity.intValue());
+                            try {
+                                client.buyAsset(tradeAsset, quantity.intValue());
+                            }catch(Throwable e) {
+                                log.warn(e.getMessage());
+                            }
                         }
                     }
 
@@ -71,7 +75,11 @@ public class TradeThread extends Thread {
                         if(balance.hasBalanceAsset(tradeAsset.getSymbol())) {
                             BalanceAsset balanceAsset = balance.getBalanceAsset(tradeAsset.getSymbol());
                             BigDecimal quantity = balanceAsset.getQuantity();
-                            client.sellAsset(balanceAsset, quantity.intValue());
+                            try {
+                                client.sellAsset(balanceAsset, quantity.intValue());
+                            }catch(Throwable e) {
+                                log.warn(e.getMessage());
+                            }
                         }
                     }
                 }
