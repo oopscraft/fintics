@@ -1,9 +1,11 @@
 package org.oopscraft.fintics.api.v1;
 
 import lombok.RequiredArgsConstructor;
+import org.oopscraft.fintics.api.v1.dto.AssetIndicatorResponse;
 import org.oopscraft.fintics.api.v1.dto.BalanceResponse;
 import org.oopscraft.fintics.api.v1.dto.TradeRequest;
 import org.oopscraft.fintics.api.v1.dto.TradeResponse;
+import org.oopscraft.fintics.model.AssetIndicator;
 import org.oopscraft.fintics.model.Trade;
 import org.oopscraft.fintics.model.TradeAsset;
 import org.oopscraft.fintics.service.TradeService;
@@ -38,14 +40,6 @@ public class TradeRestController {
         return ResponseEntity.ok(tradeResponse);
     }
 
-    @GetMapping("{tradeId}/balance")
-    public ResponseEntity<BalanceResponse> getTradeBalance(@PathVariable("tradeId") String tradeId) {
-        BalanceResponse balanceResponse = tradeService.getTradeBalance(tradeId)
-                .map(BalanceResponse::from)
-                .orElseThrow();
-        return ResponseEntity.ok(balanceResponse);
-    }
-
     @PostMapping
     @Transactional
     public ResponseEntity<TradeResponse> createTrade(@RequestBody TradeRequest tradeRequest) {
@@ -65,6 +59,7 @@ public class TradeRestController {
                                 .tradeId(tradeAssetRequest.getTradeId())
                                 .symbol(tradeAssetRequest.getSymbol())
                                 .name(tradeAssetRequest.getName())
+                                .type(tradeAssetRequest.getType())
                                 .enabled(tradeAssetRequest.isEnabled())
                                 .holdRatio(tradeAssetRequest.getHoldRatio())
                                 .build())
@@ -97,6 +92,7 @@ public class TradeRestController {
                                 .tradeId(tradeAssetRequest.getTradeId())
                                 .symbol(tradeAssetRequest.getSymbol())
                                 .name(tradeAssetRequest.getName())
+                                .type(tradeAssetRequest.getType())
                                 .enabled(tradeAssetRequest.isEnabled())
                                 .holdRatio(tradeAssetRequest.getHoldRatio())
                                 .build())
@@ -109,5 +105,20 @@ public class TradeRestController {
         return ResponseEntity.ok(tradeResponse);
     }
 
+    @GetMapping("{tradeId}/balance")
+    public ResponseEntity<BalanceResponse> getTradeBalance(@PathVariable("tradeId") String tradeId) {
+        BalanceResponse balanceResponse = tradeService.getTradeBalance(tradeId)
+                .map(BalanceResponse::from)
+                .orElseThrow();
+        return ResponseEntity.ok(balanceResponse);
+    }
+
+    @GetMapping("{tradeId}/asset-indicator")
+    public ResponseEntity<List<AssetIndicatorResponse>> getTradeAssetIndicator(@PathVariable("tradeId") String tradeId) {
+        List<AssetIndicatorResponse> assetIndicatorResponses = tradeService.getTradeAssetIndicator(tradeId).stream()
+                .map(AssetIndicatorResponse::from)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(assetIndicatorResponses);
+    }
 
 }

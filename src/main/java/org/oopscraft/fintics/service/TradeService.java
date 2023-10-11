@@ -7,8 +7,11 @@ import org.oopscraft.fintics.client.ClientFactory;
 import org.oopscraft.fintics.dao.TradeAssetEntity;
 import org.oopscraft.fintics.dao.TradeEntity;
 import org.oopscraft.fintics.dao.TradeRepository;
+import org.oopscraft.fintics.model.AssetIndicator;
 import org.oopscraft.fintics.model.Balance;
 import org.oopscraft.fintics.model.Trade;
+import org.oopscraft.fintics.model.TradeAsset;
+import org.oopscraft.fintics.thread.TradeThreadManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +24,8 @@ import java.util.stream.Collectors;
 public class TradeService {
 
     private final TradeRepository tradeRepository;
+
+    private final TradeThreadManager tradeThreadManager;
 
     public List<Trade> getTrades() {
         return tradeRepository.findAll().stream()
@@ -74,6 +79,10 @@ public class TradeService {
         TradeEntity tradeEntity = tradeRepository.findById(tradeId).orElseThrow();
         Client client = ClientFactory.getClient(tradeEntity.getClientType(), tradeEntity.getClientProperties());
         return Optional.ofNullable(client.getBalance());
+    }
+
+    public List<AssetIndicator> getTradeAssetIndicator(String tradeId) {
+        return tradeThreadManager.getTradeAssetIndicators(tradeId);
     }
 
 }

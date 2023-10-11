@@ -17,6 +17,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
@@ -75,53 +76,46 @@ public class KisClient extends Client {
     }
 
     @Override
-    public AssetIndicator getAssetIndicator(String symbol, AssetType type) {
+    public AssetIndicator getAssetIndicator(Asset asset) {
         AssetIndicator assetIndicator = AssetIndicator.builder()
-                .symbol(symbol)
-                .type(type)
+                .symbol(asset.getSymbol())
+                .type(asset.getType())
                 .build();
 
-        List<AssetTransaction> dailyAssetTransactions = getDailyAssetTransactions(symbol, type);
+        List<AssetTransaction> dailyAssetTransactions = getDailyAssetTransactions(asset);
         assetIndicator.setDailyAssetTransactions(dailyAssetTransactions);
 
-        List<AssetTransaction> hourlyAssetTransactions = getHourlyAssetTransactions(symbol, type);
-        assetIndicator.setHourlyAssetTransactions(hourlyAssetTransactions);
-
-        List<AssetTransaction> minuteAssetTransactions = getMinuteAssetTransactions(symbol, type);
+        List<AssetTransaction> minuteAssetTransactions = getMinuteAssetTransactions(asset);
         assetIndicator.setMinuteAssetTransaction(minuteAssetTransactions);
 
         return assetIndicator;
     }
 
-    private List<AssetTransaction> getDailyAssetTransactions(String symbol, AssetType type) {
+    private List<AssetTransaction> getDailyAssetTransactions(Asset asset) {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .build();
         String url = apiUrl + "/uapi/domestic-stock/v1/quotations/inquire-daily-price";
         HttpHeaders headers = createHeaders();
         headers.add("tr_id", "FHKST01010400");
-        String fidCondMrktDivCode;
+        String fidCondMrktDivCode = "J";
         String fidInputIscd;
-        switch(type) {
+        switch(asset.getType()) {
             case STOCK:
-                fidCondMrktDivCode = "J";
-                fidInputIscd = symbol;
-                break;
             case ETF:
-                fidCondMrktDivCode = "ETF";
-                fidInputIscd = symbol;
+                fidInputIscd = asset.getSymbol();
                 break;
             case ETN:
-                fidCondMrktDivCode = "ETN";
-                fidInputIscd = "Q" + symbol;
+                fidCondMrktDivCode = "J";
+                fidInputIscd = "Q" + asset.getSymbol();
                 break;
             default:
-                throw new RuntimeException("invalid asset type - " + type);
+                throw new RuntimeException("invalid asset type - " + asset.getType());
         }
         url = UriComponentsBuilder.fromUriString(url)
                 .queryParam("FID_COND_MRKT_DIV_CODE", fidCondMrktDivCode)
                 .queryParam("FID_INPUT_ISCD", fidInputIscd)
                 .queryParam("FID_PERIOD_DIV_CODE", "D") // 일봉
-                .queryParam("FID_ROG_ADJ_PRC", "0")     // 수정주가
+                .queryParam("FID_ORG_ADJ_PRC", "0")     // 수정주가
                 .build()
                 .toUriString();
         RequestEntity<Void> requestEntity = RequestEntity
@@ -146,7 +140,7 @@ public class KisClient extends Client {
 
         return output.stream()
                 .map(row -> {
-                    LocalDateTime dateTime = LocalDateTime.parse(row.getString("stck_bsop_date"), DateTimeFormatter.BASIC_ISO_DATE);
+                    LocalDateTime dateTime = LocalDateTime.parse(row.getString("stck_bsop_date")+"000000", DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
                     return AssetTransaction.builder()
                             .dateTime(dateTime)
                             .price(row.getNumber("stck_clpr"))
@@ -155,99 +149,41 @@ public class KisClient extends Client {
                 .collect(Collectors.toList());
     }
 
-    private List<AssetTransaction> getHourlyAssetTransactions(String symbol, AssetType type) {
+    private List<AssetTransaction> getMinuteAssetTransactions(Asset asset) {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .build();
-        String url = apiUrl + "/uapi/domestic-stock/v1/quotations/inquire-time-itemconclusion";
-        HttpHeaders headers = createHeaders();
-        headers.add("tr_id", "FHPST01060000");
-        String fidCondMrktDivCode;
-        String fidInputIscd;
-        switch(type) {
-            case STOCK:
-                fidCondMrktDivCode = "J";
-                fidInputIscd = symbol;
-                break;
-            case ETF:
-                fidCondMrktDivCode = "ETF";
-                fidInputIscd = symbol;
-                break;
-            case ETN:
-                fidCondMrktDivCode = "ETN";
-                fidInputIscd = "Q" + symbol;
-                break;
-            default:
-                throw new RuntimeException("invalid asset type - " + type);
-        }
-        String fidInputHour1 = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HHmmss"));
-        url = UriComponentsBuilder.fromUriString(url)
-                .queryParam("FID_COND_MRKT_DIV_CODE", fidCondMrktDivCode)
-                .queryParam("FID_INPUT_ISCD", fidInputIscd)
-                .queryParam("FID_INPUT_HOUR_1", fidInputHour1)
-                .build()
-                .toUriString();
-        RequestEntity<Void> requestEntity = RequestEntity
-                .get(url)
-                .headers(headers)
-                .build();
-        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
-        JsonNode rootNode;
-        try {
-            rootNode = objectMapper.readTree(responseEntity.getBody());
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-
-        String rtCd = objectMapper.convertValue(rootNode.path("rt_cd"), String.class);
-        String msg1 = objectMapper.convertValue(rootNode.path("msg1"), String.class);
-        if(!"0".equals(rtCd)) {
-            throw new RuntimeException(msg1);
-        }
-
-        List<ValueMap> output2 = objectMapper.convertValue(rootNode.path("output2"), new TypeReference<>(){});
-
-        return output2.stream()
-                .map(row -> {
-                    LocalDateTime dateTime = LocalDateTime.parse(row.getString("stck_cntg_hour"), DateTimeFormatter.ofPattern("HHmmss"));
-                    return AssetTransaction.builder()
-                            .dateTime(dateTime)
-                            .price(row.getNumber("stck_prpr"))
-                            .build();
-                })
-                .collect(Collectors.toList());
-    }
-
-    private List<AssetTransaction> getMinuteAssetTransactions(String symbol, AssetType type) {
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .build();
-        String url = apiUrl + "/uapi/domestic-stock/v1/quotations//inquire-time-itemchartprice";
+        String url = apiUrl + "/uapi/domestic-stock/v1/quotations/inquire-time-itemchartprice";
         HttpHeaders headers = createHeaders();
         headers.add("tr_id", "FHKST03010200");
+        headers.add("custtype", "P");
         String fidEtcClsCode = "";
-        String fidCondMrktDivCode;
+        String fidCondMrktDivCode = "J";
         String fidInputIscd;
-        switch(type) {
+        switch(asset.getType()) {
             case STOCK:
-                fidCondMrktDivCode = "J";
-                fidInputIscd = symbol;
-                break;
             case ETF:
-                fidCondMrktDivCode = "ETF";
-                fidInputIscd = symbol;
+                fidInputIscd = asset.getSymbol();
                 break;
             case ETN:
-                fidCondMrktDivCode = "ETN";
-                fidInputIscd = "Q" + symbol;
+                fidInputIscd = "Q" + asset.getSymbol();
                 break;
             default:
-                throw new RuntimeException("invalid asset type - " + type);
+                throw new RuntimeException("invalid asset type - " + asset.getType());
         }
-        String fidInputHour1 = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HHmmss"));
+        LocalTime nowTime = LocalTime.now();
+        LocalTime closeTime = LocalTime.of(15,30);
+        LocalTime fidInputHour1Time = (nowTime.isAfter(closeTime) ? closeTime : nowTime);
+
+        // test
+        fidInputHour1Time = LocalTime.of(15, 5);
+
+        String fidInputHour1 = fidInputHour1Time.format(DateTimeFormatter.ofPattern("HHmmss"));
         url = UriComponentsBuilder.fromUriString(url)
                 .queryParam("FID_ETC_CLS_CODE", fidEtcClsCode)
                 .queryParam("FID_COND_MRKT_DIV_CODE", fidCondMrktDivCode)
                 .queryParam("FID_INPUT_ISCD", fidInputIscd)
                 .queryParam("FID_INPUT_HOUR_1", fidInputHour1)
+                .queryParam("FID_PW_DATA_INCU_YN","N")
                 .build()
                 .toUriString();
         RequestEntity<Void> requestEntity = RequestEntity
@@ -324,40 +260,47 @@ public class KisClient extends Client {
         JsonNode output2Node = rootNode.path("output2");
         List<ValueMap> output2 = objectMapper.convertValue(output2Node, new TypeReference<List<ValueMap>>(){});
 
-        List<BalanceAsset> assets = output1.stream()
+        Balance balance = Balance.builder()
+                .accountNo(accountNo)
+                .totalAmount(output2.get(0).getNumber("tot_evlu_amt"))
+                .cashAmount(output2.get(0).getNumber("prvs_rcdl_excc_amt"))
+                .purchaseAmount(output2.get(0).getNumber("pchs_amt_smtl_amt"))
+                .valuationAmount(output2.get(0).getNumber("evlu_amt_smtl_amt"))
+                .build();
+
+        List<BalanceAsset> balanceAssets = output1.stream()
                 .map(row -> {
                     return BalanceAsset.builder()
                             .accountNo(accountNo)
                             .symbol(row.getString("pdno"))
                             .name(row.getString("prdt_name"))
                             .quantity(row.getNumber("hldg_qty"))
+                            .purchaseAmount(row.getNumber("pchs_amt"))
+                            .valuationAmount(row.getNumber("evlu_amt"))
+                            .gainLossAmount(row.getNumber("evlu_pfls_amt"))
                             .build();
                 })
                 .collect(Collectors.toList());
+        balance.setBalanceAssets(balanceAssets);
 
-        return Balance.builder()
-                .accountNo(accountNo)
-                .total(output2.get(0).getNumber("tot_evlu_amt"))
-                .cash(output2.get(0).getNumber("dnca_tot_amt"))
-                .balanceAssets(assets)
-                .build();
+        return balance;
     }
 
     @Override
-    public void buyAsset(TradeAsset tradeAsset, BigDecimal price, int quantity) {
+    public void buyAsset(TradeAsset tradeAsset, int quantity) {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .build();
         String url = apiUrl + "/uapi/domestic-stock/v1/trading/order-cash";
         HttpHeaders headers = createHeaders();
-        String trId = production ? "TTTC0802U" : "VTTC9802U";
+        String trId = production ? "TTTC0802U" : "VTTC0802U";
         headers.add("tr_id", trId);
         ValueMap payloadMap = new ValueMap(){{
             put("CANO", accountNo.split("-")[0]);
             put("ACNT_PRDT_CD", accountNo.split("-")[1]);
             put("PDNO", tradeAsset.getSymbol());
-            put("ORD_DVSN", "00");
-            put("ORD_QTY", quantity);
-            put("ORD_UNPR", price);
+            put("ORD_DVSN", "01");
+            put("ORD_QTY", String.valueOf(quantity));
+            put("ORD_UNPR", "0");
         }};
         RequestEntity<ValueMap> requestEntity = RequestEntity
                 .post(url)
@@ -368,14 +311,14 @@ public class KisClient extends Client {
         ValueMap responseMap = Optional.ofNullable(responseEntity.getBody())
                 .orElseThrow();
         String rtCd = responseMap.getString("rt_cd");
-        String msg = responseMap.getString("msg");
+        String msg1 = responseMap.getString("msg1");
         if(!"0".equals(rtCd)) {
-            throw new RuntimeException(msg);
+            throw new RuntimeException(msg1);
         }
     }
 
     @Override
-    public void sellAsset(BalanceAsset balanceAsset, BigDecimal price, int quantity) {
+    public void sellAsset(BalanceAsset balanceAsset, int quantity) {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .build();
         String url = apiUrl + "/uapi/domestic-stock/v1/trading/order-cash";
@@ -386,9 +329,9 @@ public class KisClient extends Client {
             put("CANO", accountNo.split("-")[0]);
             put("ACNT_PRDT_CD", accountNo.split("-")[1]);
             put("PDNO", balanceAsset.getSymbol());
-            put("ORD_DVSN", "00");
-            put("ORD_QTY", quantity);
-            put("ORD_UNPR", price);
+            put("ORD_DVSN", "01");
+            put("ORD_QTY", String.valueOf(quantity));
+            put("ORD_UNPR", "0");
         }};
         RequestEntity<ValueMap> requestEntity = RequestEntity
                 .post(url)
@@ -399,9 +342,9 @@ public class KisClient extends Client {
         ValueMap responseMap = Optional.ofNullable(responseEntity.getBody())
                 .orElseThrow();
         String rtCd = responseMap.getString("rt_cd");
-        String msg = responseMap.getString("msg");
+        String msg1 = responseMap.getString("msg1");
         if(!"0".equals(rtCd)) {
-            throw new RuntimeException(msg);
+            throw new RuntimeException(msg1);
         }
     }
 

@@ -3,6 +3,7 @@ package org.oopscraft.fintics.thread;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.fintics.client.ClientFactory;
+import org.oopscraft.fintics.model.AssetIndicator;
 import org.oopscraft.fintics.model.Trade;
 import org.springframework.stereotype.Component;
 
@@ -47,6 +48,15 @@ public class TradeThreadManager {
     public Optional<Trade> getTrade(String tradeId) {
         return Optional.ofNullable(tradeThreadMap.get(tradeId))
                 .map(TradeThread::getTrade);
+    }
+
+    public List<AssetIndicator> getTradeAssetIndicators(String tradeId) {
+        List<AssetIndicator> tradeAssetIndicator = new ArrayList<>();
+        if(tradeThreadMap.containsKey(tradeId)) {
+            TradeThread tradeThread = tradeThreadMap.get(tradeId);
+            tradeAssetIndicator.addAll(tradeThread.getAssetIndicatorMap().values());
+        }
+        return tradeAssetIndicator;
     }
 
 }

@@ -15,9 +15,13 @@ public class Balance {
 
     private String accountNo;
 
-    private BigDecimal total;
+    private BigDecimal totalAmount;
 
-    private BigDecimal cash;
+    private BigDecimal cashAmount;
+
+    private BigDecimal purchaseAmount;
+
+    private BigDecimal valuationAmount;
 
     @Builder.Default
     private List<BalanceAsset> balanceAssets = new ArrayList<>();

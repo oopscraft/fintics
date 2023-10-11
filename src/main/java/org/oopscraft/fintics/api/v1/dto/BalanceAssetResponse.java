@@ -19,9 +19,11 @@ public class BalanceAssetResponse {
 
     private BigDecimal quantity;
 
-    private BigDecimal costBasis;
+    private BigDecimal purchaseAmount;
 
-    private BigDecimal marketValue;
+    private BigDecimal valuationAmount;
+
+    private BigDecimal gainLossAmount;
 
     public static BalanceAssetResponse from(BalanceAsset balanceAsset) {
         return BalanceAssetResponse.builder()
@@ -29,8 +31,9 @@ public class BalanceAssetResponse {
                 .symbol(balanceAsset.getSymbol())
                 .name(balanceAsset.getName())
                 .quantity(balanceAsset.getQuantity())
-                .costBasis(balanceAsset.getCostBasis())
-                .marketValue(balanceAsset.getMarketValue())
+                .purchaseAmount(balanceAsset.getPurchaseAmount())
+                .valuationAmount(balanceAsset.getValuationAmount())
+                .gainLossAmount(balanceAsset.getGainLossAmount())
                 .build();
     }
 }

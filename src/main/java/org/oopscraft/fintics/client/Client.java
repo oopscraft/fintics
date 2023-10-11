@@ -16,12 +16,12 @@ public abstract class Client {
         this.properties = properties;
     }
 
-    public abstract AssetIndicator getAssetIndicator(String symbol, AssetType type);
+    public abstract AssetIndicator getAssetIndicator(Asset asset);
 
     public abstract Balance getBalance();
 
-    public abstract void buyAsset(TradeAsset tradeAsset, BigDecimal price, int quantity);
+    public abstract void buyAsset(TradeAsset tradeAsset, int quantity);
 
-    public abstract void sellAsset(BalanceAsset balanceAsset, BigDecimal price, int quantity);
+    public abstract void sellAsset(BalanceAsset balanceAsset, int quantity);
 
 }

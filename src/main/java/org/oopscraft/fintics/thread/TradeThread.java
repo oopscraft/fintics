@@ -10,6 +10,8 @@ import org.oopscraft.fintics.model.*;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 public class TradeThread extends Thread {
@@ -17,6 +19,8 @@ public class TradeThread extends Thread {
     @Getter
     private final Trade trade;
 
+    @Getter
+    private final Map<String, AssetIndicator> assetIndicatorMap = new ConcurrentHashMap<>();
 
     public TradeThread(Trade trade) {
         this.trade = trade;
@@ -33,32 +37,41 @@ public class TradeThread extends Thread {
 
                 // checks buy condition
                 for(TradeAsset tradeAsset : trade.getTradeAssets()) {
-                    AssetIndicator assetIndicator = client.getAssetIndicator(tradeAsset.getSymbol(), tradeAsset.getType());
+
+                    // check enabled
+                    if(!tradeAsset.isEnabled()) {
+                        continue;
+                    }
+
+                    // force delay
+                    Thread.sleep(1000);
+
+                    // get indicator and decide hold
+                    AssetIndicator assetIndicator = client.getAssetIndicator(tradeAsset);
+                    assetIndicatorMap.put(assetIndicator.getSymbol(), assetIndicator);
                     Boolean holdConditionResult = getHoldConditionResult(assetIndicator);
 
-                    // no op
+                    // 1. null is no operation
                     if(holdConditionResult == null) {
                         continue;
                     }
 
-                    // buy and hold
+                    // 2. buy and hold
                     if(holdConditionResult.equals(Boolean.TRUE)) {
                         if(!balance.hasBalanceAsset(tradeAsset.getSymbol())) {
-                            BigDecimal buyAmount = balance.getTotal().divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP)
+                            BigDecimal buyAmount = balance.getTotalAmount().divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP)
                                             .multiply(tradeAsset.getHoldRatio());
-                            BigDecimal price = assetIndicator.getPrice();
                             BigDecimal quantity = buyAmount.divide(assetIndicator.getPrice(), 0, RoundingMode.FLOOR);
-                            client.buyAsset(tradeAsset, price, quantity.intValue());
+                            client.buyAsset(tradeAsset, quantity.intValue());
                         }
                     }
 
-                    // sell
+                    // 3. sell
                     else if(holdConditionResult.equals(Boolean.FALSE)) {
                         if(balance.hasBalanceAsset(tradeAsset.getSymbol())) {
                             BalanceAsset balanceAsset = balance.getBalanceAsset(tradeAsset.getSymbol());
-                            BigDecimal price = assetIndicator.getPrice();
                             BigDecimal quantity = balanceAsset.getQuantity();
-                            client.sellAsset(balanceAsset, price, quantity.intValue());
+                            client.sellAsset(balanceAsset, quantity.intValue());
                         }
                     }
                 }
@@ -77,6 +90,9 @@ public class TradeThread extends Thread {
         binding.setVariable("assetIndicator", assetIndicator);
         GroovyShell groovyShell = new GroovyShell(binding);
         String script = trade.getHoldCondition();
+        if(script == null || script.isBlank()) {
+            return null;
+        }
         Object result = groovyShell.evaluate(script);
         if(result == null) {
             return null;
