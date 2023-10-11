@@ -78,13 +78,61 @@ public class KisClient extends Client {
     @Override
     public AssetIndicator getAssetIndicator(Asset asset) {
         AssetIndicator assetIndicator = AssetIndicator.builder()
+                .collectedAt(LocalDateTime.now())
                 .symbol(asset.getSymbol())
                 .type(asset.getType())
                 .build();
 
+        RestTemplate restTemplate = RestTemplateBuilder.create()
+                .build();
+        String url = apiUrl + "/uapi/domestic-stock/v1/quotations/inquire-price";
+        HttpHeaders headers = createHeaders();
+        headers.add("tr_id", "FHKST01010100");
+        String fidCondMrktDivCode = "J";
+        String fidInputIscd;
+        switch(asset.getType()) {
+            case STOCK:
+            case ETF:
+                fidInputIscd = asset.getSymbol();
+                break;
+            case ETN:
+                fidCondMrktDivCode = "J";
+                fidInputIscd = "Q" + asset.getSymbol();
+                break;
+            default:
+                throw new RuntimeException("invalid asset type - " + asset.getType());
+        }
+        url = UriComponentsBuilder.fromUriString(url)
+                .queryParam("FID_COND_MRKT_DIV_CODE", fidCondMrktDivCode)
+                .queryParam("FID_INPUT_ISCD", fidInputIscd)
+                .build()
+                .toUriString();
+        RequestEntity<Void> requestEntity = RequestEntity
+                .get(url)
+                .headers(headers)
+                .build();
+        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+        JsonNode rootNode;
+        try {
+            rootNode = objectMapper.readTree(responseEntity.getBody());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+        String rtCd = objectMapper.convertValue(rootNode.path("rt_cd"), String.class);
+        String msg1 = objectMapper.convertValue(rootNode.path("msg1"), String.class);
+        if(!"0".equals(rtCd)) {
+            throw new RuntimeException(msg1);
+        }
+
+        ValueMap output = objectMapper.convertValue(rootNode.path("output"), ValueMap.class);
+        assetIndicator.setPrice(output.getNumber("stck_prpr"));
+
+        // daily transactions
         List<AssetTransaction> dailyAssetTransactions = getDailyAssetTransactions(asset);
         assetIndicator.setDailyAssetTransactions(dailyAssetTransactions);
 
+        // minute transactions
         List<AssetTransaction> minuteAssetTransactions = getMinuteAssetTransactions(asset);
         assetIndicator.setMinuteAssetTransaction(minuteAssetTransactions);
 

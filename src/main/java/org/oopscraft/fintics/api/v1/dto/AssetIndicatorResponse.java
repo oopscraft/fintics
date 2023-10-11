@@ -5,6 +5,7 @@ import org.oopscraft.fintics.model.AssetIndicator;
 import org.oopscraft.fintics.model.AssetType;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -17,6 +18,8 @@ public class AssetIndicatorResponse {
     private String name;
 
     private AssetType type;
+
+    private LocalDateTime collectedAt;
 
     private BigDecimal price;
 
@@ -33,6 +36,7 @@ public class AssetIndicatorResponse {
                 .symbol(assetIndicator.getSymbol())
                 .name(assetIndicator.getName())
                 .type(assetIndicator.getType())
+                .collectedAt(assetIndicator.getCollectedAt())
                 .price(assetIndicator.getPrice())
                 .dailyMacd(assetIndicator.getDailyMacd())
                 .minuteMacd(assetIndicator.getMinuteMacd())

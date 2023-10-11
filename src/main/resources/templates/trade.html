@@ -108,6 +108,8 @@
                     assetIndicators.forEach(assetIndicator => {
                         trade.tradeAssets.forEach(tradeAsset => {
                             if(tradeAsset.symbol === assetIndicator.symbol) {
+                                tradeAsset['collectedAt'] = assetIndicator['collectedAt'];
+                                tradeAsset['price'] = assetIndicator['price'];
                                 tradeAsset['dailyMacd'] = assetIndicator['dailyMacd'];
                                 tradeAsset['minuteMacd'] = assetIndicator['minuteMacd'];
                                 tradeAsset['dailyRsi'] = assetIndicator['dailyRsi'];
@@ -234,7 +236,7 @@
                         <col/>
                         <col/>
                         <col/>
-                        <col style="width:20%;"/>
+                        <col style="width:40%;"/>
                         <col style="width:5em;"/>
                     </colgroup>
                     <thead>
@@ -280,10 +282,12 @@
                            </label>
                         </td>
                         <td>
-                            <div class="overflow-y-scroll" style="height:100px;">
+                            <div class="overflow-y-scroll" style="max-height:100px;">
                                 <table class="width-100 border-0 font-size-smaller">
                                     <thead>
                                     <tr>
+                                        <th class="text-align-center">Collected At</th>
+                                        <th class="text-align-center">Price</th>
                                         <th>Indicator</th>
                                         <th>Daily</th>
                                         <th>Minute</th>
@@ -291,6 +295,8 @@
                                     </thead>
                                     <tbody>
                                     <tr>
+                                        <td rowspan="100%" data-duice-bind="tradeAsset" data-duice-property="collectedAt" data-duice-format="date('yyyy-MM-dd HH:mm:ss')" class="border-bottom-0 text-align-center"></td>
+                                        <td rowspan="100%" data-duice-bind="tradeAsset" data-duice-property="price" data-duice-format="number" class="border-bottom-0 text-align-center"></td>
                                         <td class="font-weight-bold">MACD</td>
                                         <td data-duice-bind="tradeAsset" data-duice-property="dailyMacd"></td>
                                         <td data-duice-bind="tradeAsset" data-duice-property="minuteMacd"></td>
