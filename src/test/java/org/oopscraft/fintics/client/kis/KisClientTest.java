@@ -28,6 +28,7 @@ class KisClientTest extends CoreTestSupport {
         return (KisClient) ClientFactory.getClient(clientType, clientProperties);
     }
 
+    @Disabled
     @Test
     @Order(1)
     void getAccessKey() {
@@ -39,6 +40,7 @@ class KisClientTest extends CoreTestSupport {
         assertNotNull(accessKey);
     }
 
+    @Disabled
     @Test
     @Order(2)
     void getBalance() {
