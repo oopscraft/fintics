@@ -33,7 +33,7 @@ class KisClientTest extends CoreTestSupport {
     void getAccessKey() {
         // given
         // when
-        String accessKey = getKisClient().getAccessKey();
+        String accessKey = getKisClient().getAccessToken();
 
         // then
         assertNotNull(accessKey);

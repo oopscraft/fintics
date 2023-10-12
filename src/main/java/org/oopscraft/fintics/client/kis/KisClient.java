@@ -19,10 +19,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class KisClient extends Client {
@@ -39,6 +36,8 @@ public class KisClient extends Client {
 
     private final ObjectMapper objectMapper;
 
+    private final String accessToken;
+
     public KisClient(Properties properties) {
         super(properties);
         this.production = Boolean.parseBoolean(properties.getProperty("production"));
@@ -47,9 +46,16 @@ public class KisClient extends Client {
         this.appSecret = properties.getProperty("appSecret");
         this.accountNo = properties.getProperty("accountNo");
         this.objectMapper = new ObjectMapper();
+        this.accessToken = getAccessToken();
     }
 
-    String getAccessKey() {
+    static synchronized void sleep() {
+        try {
+            Thread.sleep(500);
+        }catch(Throwable ignored){}
+    }
+
+    String getAccessToken() {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .build();
         ValueMap payloadMap = new ValueMap(){{
@@ -69,7 +75,7 @@ public class KisClient extends Client {
     HttpHeaders createHeaders() {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8");
-        httpHeaders.add("authorization", "Bearer " + getAccessKey());
+        httpHeaders.add("authorization", "Bearer " + accessToken);
         httpHeaders.add("appkey", appKey);
         httpHeaders.add("appsecret", appSecret);
         return httpHeaders;
@@ -111,6 +117,7 @@ public class KisClient extends Client {
                 .get(url)
                 .headers(headers)
                 .build();
+        sleep();
         ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
         JsonNode rootNode;
         try {
@@ -140,11 +147,9 @@ public class KisClient extends Client {
     }
 
     private List<AssetTransaction> getDailyAssetTransactions(Asset asset) {
+        List<AssetTransaction> dailyAssetTransactions = new ArrayList<>();
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .build();
-        String url = apiUrl + "/uapi/domestic-stock/v1/quotations/inquire-daily-price";
-        HttpHeaders headers = createHeaders();
-        headers.add("tr_id", "FHKST01010400");
         String fidCondMrktDivCode = "J";
         String fidInputIscd;
         switch(asset.getType()) {
@@ -159,51 +164,71 @@ public class KisClient extends Client {
             default:
                 throw new RuntimeException("invalid asset type - " + asset.getType());
         }
-        url = UriComponentsBuilder.fromUriString(url)
-                .queryParam("FID_COND_MRKT_DIV_CODE", fidCondMrktDivCode)
-                .queryParam("FID_INPUT_ISCD", fidInputIscd)
-                .queryParam("FID_PERIOD_DIV_CODE", "D") // 일봉
-                .queryParam("FID_ORG_ADJ_PRC", "0")     // 수정주가
-                .build()
-                .toUriString();
-        RequestEntity<Void> requestEntity = RequestEntity
-                .get(url)
-                .headers(headers)
-                .build();
-        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
-        JsonNode rootNode;
-        try {
-            rootNode = objectMapper.readTree(responseEntity.getBody());
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+
+        for(int i = 0; i < 1; i ++) {
+            String url = apiUrl + "/uapi/domestic-stock/v1/quotations/inquire-daily-price";
+            HttpHeaders headers = createHeaders();
+            headers.add("tr_id", "FHKST01010400");
+            url = UriComponentsBuilder.fromUriString(url)
+                    .queryParam("FID_COND_MRKT_DIV_CODE", fidCondMrktDivCode)
+                    .queryParam("FID_INPUT_ISCD", fidInputIscd)
+                    .queryParam("FID_PERIOD_DIV_CODE", "D") // 일봉
+                    .queryParam("FID_ORG_ADJ_PRC", "0")     // 수정주가
+                    .build()
+                    .toUriString();
+            RequestEntity<Void> requestEntity = RequestEntity
+                    .get(url)
+                    .headers(headers)
+                    .build();
+            sleep();
+            ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+            JsonNode rootNode;
+            try {
+                rootNode = objectMapper.readTree(responseEntity.getBody());
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+
+            String rtCd = objectMapper.convertValue(rootNode.path("rt_cd"), String.class);
+            String msg1 = objectMapper.convertValue(rootNode.path("msg1"), String.class);
+            if(!"0".equals(rtCd)) {
+                throw new RuntimeException(msg1);
+            }
+
+            List<ValueMap> output = objectMapper.convertValue(rootNode.path("output"), new TypeReference<>(){});
+
+            List<AssetTransaction> dailyAssetTransactionsPage = output.stream()
+                    .map(row -> {
+                        LocalDateTime dateTime = LocalDateTime.parse(row.getString("stck_bsop_date")+"000000", DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+                        return AssetTransaction.builder()
+                                .dateTime(dateTime)
+                                .price(row.getNumber("stck_clpr"))
+                                .build();
+                    })
+                    .collect(Collectors.toList());
+            dailyAssetTransactions.addAll(dailyAssetTransactionsPage);
+
+            // check empty
+            if(dailyAssetTransactionsPage.size() < 1) {
+                break;
+            }
+
+//            // next page
+//            fidInputHour1Time = minuteAssetTransactionsPage.get(minuteAssetTransactionsPage.size()-1)
+//                    .getDateTime()
+//                    .toLocalTime()
+//                    .minusMinutes(1);
+
         }
 
-        String rtCd = objectMapper.convertValue(rootNode.path("rt_cd"), String.class);
-        String msg1 = objectMapper.convertValue(rootNode.path("msg1"), String.class);
-        if(!"0".equals(rtCd)) {
-            throw new RuntimeException(msg1);
-        }
-
-        List<ValueMap> output = objectMapper.convertValue(rootNode.path("output"), new TypeReference<>(){});
-
-        return output.stream()
-                .map(row -> {
-                    LocalDateTime dateTime = LocalDateTime.parse(row.getString("stck_bsop_date")+"000000", DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-                    return AssetTransaction.builder()
-                            .dateTime(dateTime)
-                            .price(row.getNumber("stck_clpr"))
-                            .build();
-                })
-                .collect(Collectors.toList());
+        // return
+        return dailyAssetTransactions;
     }
 
     private List<AssetTransaction> getMinuteAssetTransactions(Asset asset) {
+        List<AssetTransaction> minuteAssetTransactions = new ArrayList<>();
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .build();
-        String url = apiUrl + "/uapi/domestic-stock/v1/quotations/inquire-time-itemchartprice";
-        HttpHeaders headers = createHeaders();
-        headers.add("tr_id", "FHKST03010200");
-        headers.add("custtype", "P");
         String fidEtcClsCode = "";
         String fidCondMrktDivCode = "J";
         String fidInputIscd;
@@ -222,51 +247,70 @@ public class KisClient extends Client {
         LocalTime closeTime = LocalTime.of(15,30);
         LocalTime fidInputHour1Time = (nowTime.isAfter(closeTime) ? closeTime : nowTime);
 
-        // test
-        fidInputHour1Time = LocalTime.of(15, 5);
+        for(int i = 0; i < 3; i ++) {
+            String url = apiUrl + "/uapi/domestic-stock/v1/quotations/inquire-time-itemchartprice";
+            HttpHeaders headers = createHeaders();
+            headers.add("tr_id", "FHKST03010200");
+            headers.add("custtype", "P");
+            String fidInputHour1 = fidInputHour1Time.format(DateTimeFormatter.ofPattern("HHmmss"));
+            url = UriComponentsBuilder.fromUriString(url)
+                    .queryParam("FID_ETC_CLS_CODE", fidEtcClsCode)
+                    .queryParam("FID_COND_MRKT_DIV_CODE", fidCondMrktDivCode)
+                    .queryParam("FID_INPUT_ISCD", fidInputIscd)
+                    .queryParam("FID_INPUT_HOUR_1", fidInputHour1)
+                    .queryParam("FID_PW_DATA_INCU_YN","N")
+                    .build()
+                    .toUriString();
+            RequestEntity<Void> requestEntity = RequestEntity
+                    .get(url)
+                    .headers(headers)
+                    .build();
+            sleep();
+            ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+            JsonNode rootNode;
+            try {
+                rootNode = objectMapper.readTree(responseEntity.getBody());
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
 
-        String fidInputHour1 = fidInputHour1Time.format(DateTimeFormatter.ofPattern("HHmmss"));
-        url = UriComponentsBuilder.fromUriString(url)
-                .queryParam("FID_ETC_CLS_CODE", fidEtcClsCode)
-                .queryParam("FID_COND_MRKT_DIV_CODE", fidCondMrktDivCode)
-                .queryParam("FID_INPUT_ISCD", fidInputIscd)
-                .queryParam("FID_INPUT_HOUR_1", fidInputHour1)
-                .queryParam("FID_PW_DATA_INCU_YN","N")
-                .build()
-                .toUriString();
-        RequestEntity<Void> requestEntity = RequestEntity
-                .get(url)
-                .headers(headers)
-                .build();
-        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
-        JsonNode rootNode;
-        try {
-            rootNode = objectMapper.readTree(responseEntity.getBody());
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            String rtCd = objectMapper.convertValue(rootNode.path("rt_cd"), String.class);
+            String msg1 = objectMapper.convertValue(rootNode.path("msg1"), String.class);
+            if(!"0".equals(rtCd)) {
+                throw new RuntimeException(msg1);
+            }
+
+            List<ValueMap> output2 = objectMapper.convertValue(rootNode.path("output2"), new TypeReference<>(){});
+
+            List<AssetTransaction> minuteAssetTransactionsPage = output2.stream()
+                    .map(row -> {
+                        LocalDateTime dateTime = LocalDateTime.parse(
+                                row.getString("stck_bsop_date") + row.getString("stck_cntg_hour"),
+                                DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
+                        );
+                        BigDecimal price = row.getNumber("stck_prpr");
+                        return AssetTransaction.builder()
+                                .dateTime(dateTime)
+                                .price(price)
+                                .build();
+                    })
+                    .collect(Collectors.toList());
+            minuteAssetTransactions.addAll(minuteAssetTransactionsPage);
+
+            // check empty
+            if(minuteAssetTransactionsPage.size() < 1) {
+                break;
+            }
+
+            // next page
+            fidInputHour1Time = minuteAssetTransactionsPage.get(minuteAssetTransactionsPage.size()-1)
+                    .getDateTime()
+                    .toLocalTime()
+                    .minusMinutes(1);
         }
 
-        String rtCd = objectMapper.convertValue(rootNode.path("rt_cd"), String.class);
-        String msg1 = objectMapper.convertValue(rootNode.path("msg1"), String.class);
-        if(!"0".equals(rtCd)) {
-            throw new RuntimeException(msg1);
-        }
-
-        List<ValueMap> output2 = objectMapper.convertValue(rootNode.path("output2"), new TypeReference<>(){});
-
-        return output2.stream()
-                .map(row -> {
-                    LocalDateTime dateTime = LocalDateTime.parse(
-                            row.getString("stck_bsop_date") + row.getString("stck_cntg_hour"),
-                            DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
-                    );
-                    BigDecimal price = row.getNumber("stck_prpr");
-                    return AssetTransaction.builder()
-                            .dateTime(dateTime)
-                            .price(price)
-                            .build();
-                })
-                .collect(Collectors.toList());
+        // return
+        return minuteAssetTransactions;
     }
 
     @Override
@@ -295,6 +339,7 @@ public class KisClient extends Client {
                 .get(url)
                 .headers(headers)
                 .build();
+        sleep();
         ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
         JsonNode rootNode;
         try {
@@ -355,6 +400,7 @@ public class KisClient extends Client {
                 .headers(headers)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(payloadMap);
+        sleep();
         ResponseEntity<ValueMap> responseEntity = restTemplate.exchange(requestEntity, ValueMap.class);
         ValueMap responseMap = Optional.ofNullable(responseEntity.getBody())
                 .orElseThrow();
@@ -386,6 +432,7 @@ public class KisClient extends Client {
                 .headers(headers)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(payloadMap);
+        sleep();
         ResponseEntity<ValueMap> responseEntity = restTemplate.exchange(requestEntity, ValueMap.class);
         ValueMap responseMap = Optional.ofNullable(responseEntity.getBody())
                 .orElseThrow();

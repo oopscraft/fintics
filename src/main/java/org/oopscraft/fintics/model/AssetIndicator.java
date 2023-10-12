@@ -1,19 +1,15 @@
 package org.oopscraft.fintics.model;
 
-import com.tictactec.ta.lib.Core;
-import com.tictactec.ta.lib.MAType;
-import com.tictactec.ta.lib.MInteger;
-import com.tictactec.ta.lib.RetCode;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ArrayUtils;
+import org.oopscraft.fintics.calculator.MacdCalculator;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -42,52 +38,11 @@ public class AssetIndicator extends Asset {
     }
 
     public static BigDecimal getMacd(List<AssetTransaction> assetTransactions) {
-
-        // real
-        double[] prices = assetTransactions.stream()
+        List<BigDecimal> prices = assetTransactions.stream()
                 .map(AssetTransaction::getPrice)
-                .mapToDouble(BigDecimal::doubleValue)
-                .toArray();
-        ArrayUtils.reverse(prices);
-
-        Core core = new Core();
-        int startIdx = 0;
-        int endIdx = prices.length - 1;
-        double[] inReal = prices;
-        int optInFastPeriod = 6;
-        int optInSlowPeriod = 13;
-        int optInSignalPeriod = 4;
-        MInteger outBegIdx = new MInteger();
-        MInteger outNBElement = new MInteger();
-        double[] outMACD = new double[prices.length];
-        double[] outMACDSignal = new double[prices.length];
-        double[] outMACDHist = new double[prices.length];
-
-        RetCode retCode = core.macdExt(
-                startIdx,
-                endIdx,
-                inReal,
-                optInFastPeriod,
-                MAType.Ema,
-                optInSlowPeriod,
-                MAType.Ema,
-                optInSignalPeriod,
-                MAType.Ema,
-                outBegIdx,
-                outNBElement,
-                outMACD,
-                outMACDSignal,
-                outMACDHist
-        );
-
-        if (!retCode.name().equals("Success")) {
-            throw new RuntimeException(retCode.name());
-        }
-
-        double currentMacd = outMACDHist[Math.max(0, outNBElement.value - 1)];
-        log.debug("== currentMacd:{}", currentMacd);
-        return BigDecimal.valueOf(currentMacd)
-                .setScale(2, RoundingMode.FLOOR);
+                .collect(Collectors.toList());
+        List<BigDecimal> macdValues = MacdCalculator.calculate(prices, 12, 26, 9);
+        return macdValues.get(macdValues.size()-1);
     }
 
     public BigDecimal getDailyRsi() {
@@ -99,41 +54,7 @@ public class AssetIndicator extends Asset {
     }
 
     public static BigDecimal getRsi(List<AssetTransaction> assetTransactions) {
-
-        // real
-        double[] prices = assetTransactions.stream()
-                .map(AssetTransaction::getPrice)
-                .mapToDouble(BigDecimal::doubleValue)
-                .toArray();
-        ArrayUtils.reverse(prices);
-
-        Core core = new Core();
-        int startIdx = 0;
-        int endIdx = prices.length - 1;
-        double[] inReal = prices;
-        int optInTimePeriod = 14;
-        MInteger outBegIdx = new MInteger();
-        MInteger outNBElement = new MInteger();
-        double[] outReal = new double[prices.length];
-
-        RetCode retCode = core.rsi(
-                startIdx,
-                endIdx,
-                inReal,
-                optInTimePeriod,
-                outBegIdx,
-                outNBElement,
-                outReal
-        );
-
-        if (!retCode.name().equals("Success")) {
-            throw new RuntimeException(retCode.name());
-        }
-
-        double currentRsi = outReal[Math.max(0, outNBElement.value - 1)];
-        log.debug("== currentRsi:{}", currentRsi);
-        return BigDecimal.valueOf(currentRsi)
-                .setScale(2, RoundingMode.FLOOR);
+        return BigDecimal.ZERO;
     }
 
 }
