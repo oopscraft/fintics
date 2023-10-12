@@ -28,3 +28,9 @@ insert into `fintics_trade_asset`
 insert into `fintics_trade_asset`
     (`trade_id`,`symbol`,`name`,`type`, `enabled`, `hold_ratio`) values
     ('06c228451ce0400fa57bb36f0568d7cb','114800','KODEX 인버스','ETF','Y','10');
+insert into `fintics_trade_asset`
+(`trade_id`,`symbol`,`name`,`type`, `enabled`, `hold_ratio`) values
+    ('06c228451ce0400fa57bb36f0568d7cb','229200','KODEX 코스닥150','ETF','Y','10');
+insert into `fintics_trade_asset`
+(`trade_id`,`symbol`,`name`,`type`, `enabled`, `hold_ratio`) values
+    ('06c228451ce0400fa57bb36f0568d7cb','251340','KODEX 코스닥150선물인버스','ETF','Y','10');
