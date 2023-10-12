@@ -228,100 +228,103 @@
             </label>
             <div class="grid-column-12">
                 <span data-th-text="#{fintics.TradeAsset}" class="font-weight-bold width-100"></span>
-                <table class="width-100">
-                    <colgroup>
-                        <col style="width:5em;"/>
-                        <col/>
-                        <col/>
-                        <col/>
-                        <col/>
-                        <col/>
-                        <col style="width:40%;"/>
-                        <col style="width:5em;"/>
-                    </colgroup>
-                    <thead>
-                    <tr>
-                        <th data-th-text="#{web.global.no}" class="text-align-center"></th>
-                        <th data-th-text="#{fintics.Asset.symbol}"></th>
-                        <th data-th-text="#{fintics.Asset.name}"></th>
-                        <th data-th-text="#{fintics.Asset.type}"></th>
-                        <th data-th-text="#{fintics.TradeAsset.enabled}" class="text-align-center"></th>
-                        <th data-th-text="#{fintics.TradeAsset.holdRatio}" class="text-align-center"></th>
-                        <th data-th-text="#{fintics.AssetIndicator}" class="text-align-center"></th>
-                        <th class="text-align-right">
-                            <button class="small">
-                                <img class="icon" th:src="@{/static/image/icon-add.svg}" alt="add"/>
-                                <span data-th-text="#{web.global.add}"></span>
-                            </button>
-                        </th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr data-duice-bind="trade.tradeAssets" data-duice-loop="tradeAsset,status">
-                        <td class="text-align-center">
-                            <span data-duice-bind="status" data-duice-property="count" class="text-align-center"></span>
-                        </td>
-                        <td>
-                            <span data-duice-bind="tradeAsset" data-duice-property="symbol"></span>
-                        </td>
-                        <td>
-                            <span data-duice-bind="tradeAsset" data-duice-property="name"></span>
-                        </td>
-                        <td>
-                            <span data-duice-bind="tradeAsset" data-duice-property="type"></span>
-                        </td>
-                        <td class="text-align-center">
-                            <label>
-                                <input type="checkbox" data-duice-bind="tradeAsset" data-duice-property="enabled"/>
-                            </label>
-                        </td>
-                        <td class="text-align-center">
-                           <label>
-                               <input type="number" data-duice-bind="tradeAsset" data-duice-property="holdRatio" class="width-50"/>
-                               %
-                           </label>
-                        </td>
-                        <td>
-                            <div class="overflow-y-scroll" style="max-height:100px;">
-                                <table class="width-100 border-0 font-size-smaller">
-                                    <thead>
-                                    <tr>
-                                        <th class="text-align-center">Collected At</th>
-                                        <th class="text-align-center">Price</th>
-                                        <th>Indicator</th>
-                                        <th>Daily</th>
-                                        <th>Minute</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr>
-                                        <td rowspan="100%" data-duice-bind="tradeAsset" data-duice-property="collectedAt" data-duice-format="date('yyyy-MM-dd HH:mm:ss')" class="border-bottom-0 text-align-center"></td>
-                                        <td rowspan="100%" data-duice-bind="tradeAsset" data-duice-property="price" data-duice-format="number" class="border-bottom-0 text-align-center"></td>
-                                        <td class="font-weight-bold">MACD</td>
-                                        <td data-duice-bind="tradeAsset" data-duice-property="dailyMacd"></td>
-                                        <td data-duice-bind="tradeAsset" data-duice-property="minuteMacd"></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="font-weight-bold">RSI</td>
-                                        <td data-duice-bind="tradeAsset" data-duice-property="dailyRsi"></td>
-                                        <td data-duice-bind="tradeAsset" data-duice-property="minuteRsi"></td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </td>
-                        <td class="text-align-right">
-                            <button class="small">
-                                <img class="icon" th:src="@{/static/image/icon-remove.svg}" alt="remove"/>
-                                <span data-th-text="#{web.global.remove}"></span>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr data-duice-bind="trade.tradeAssets" data-duice-execute="if(trade.tradeAssets.length === 0) this.hidden=false;" hidden>
-                        <td colspan="100%" class="text-align-center">No Data</td>
-                    </tr>
-                    </tbody>
-                </table>
+                <div class="overflow-x-scroll">
+                    <table class="width-100">
+                        <colgroup>
+                            <col style="width:5em;"/>
+                            <col/>
+                            <col/>
+                            <col/>
+                            <col/>
+                            <col/>
+                            <col style="width:40%;"/>
+                            <col style="width:5em;"/>
+                        </colgroup>
+                        <thead>
+                        <tr>
+                            <th data-th-text="#{web.global.no}" class="text-align-center"></th>
+                            <th data-th-text="#{fintics.Asset.symbol}"></th>
+                            <th data-th-text="#{fintics.Asset.name}"></th>
+                            <th data-th-text="#{fintics.Asset.type}"></th>
+                            <th data-th-text="#{fintics.TradeAsset.enabled}" class="text-align-center"></th>
+                            <th data-th-text="#{fintics.TradeAsset.holdRatio}" class="text-align-center"></th>
+                            <th data-th-text="#{fintics.AssetIndicator}" class="text-align-center"></th>
+                            <th class="text-align-right">
+                                <button class="small">
+                                    <img class="icon" th:src="@{/static/image/icon-add.svg}" alt="add"/>
+                                    <span data-th-text="#{web.global.add}"></span>
+                                </button>
+                            </th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr data-duice-bind="trade.tradeAssets" data-duice-loop="tradeAsset,status">
+                            <td class="text-align-center">
+                                <span data-duice-bind="status" data-duice-property="count" class="text-align-center"></span>
+                            </td>
+                            <td>
+                                <span data-duice-bind="tradeAsset" data-duice-property="symbol"></span>
+                            </td>
+                            <td>
+                                <span data-duice-bind="tradeAsset" data-duice-property="name"></span>
+                            </td>
+                            <td>
+                                <span data-duice-bind="tradeAsset" data-duice-property="type"></span>
+                            </td>
+                            <td class="text-align-center">
+                                <label>
+                                    <input type="checkbox" data-duice-bind="tradeAsset" data-duice-property="enabled"/>
+                                </label>
+                            </td>
+                            <td class="text-align-center">
+                               <label>
+                                   <input type="number" data-duice-bind="tradeAsset" data-duice-property="holdRatio" class="width-50"/>
+                                   %
+                               </label>
+                            </td>
+                            <td>
+                                <div class="overflow-y-scroll" style="max-height:100px;">
+                                    <table class="width-100 border-0 font-size-smaller">
+                                        <thead>
+                                        <tr>
+                                            <th class="text-align-center">Collected At</th>
+                                            <th class="text-align-center">Price</th>
+                                            <th>Indicator</th>
+                                            <th>Daily</th>
+                                            <th>Minute</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr>
+                                            <td rowspan="100%" data-duice-bind="tradeAsset" data-duice-property="collectedAt" data-duice-format="date('yyyy-MM-dd HH:mm:ss')" class="border-bottom-0 text-align-center"></td>
+                                            <td rowspan="100%" data-duice-bind="tradeAsset" data-duice-property="price" data-duice-format="number" class="border-bottom-0 text-align-center"></td>
+                                            <td class="font-weight-bold">MACD</td>
+                                            <td data-duice-bind="tradeAsset" data-duice-property="dailyMacd"></td>
+                                            <td data-duice-bind="tradeAsset" data-duice-property="minuteMacd"></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="font-weight-bold">RSI</td>
+                                            <td data-duice-bind="tradeAsset" data-duice-property="dailyRsi"></td>
+                                            <td data-duice-bind="tradeAsset" data-duice-property="minuteRsi"></td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </td>
+                            <td class="text-align-right">
+                                <button class="small">
+                                    <img class="icon" th:src="@{/static/image/icon-remove.svg}" alt="remove"/>
+                                    <span data-th-text="#{web.global.remove}"></span>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr data-duice-bind="trade.tradeAssets" data-duice-execute="if(trade.tradeAssets.length === 0) this.hidden=false;" hidden>
+                            <td colspan="100%" class="text-align-center">No Data</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
             </div>
             <div class="grid-column-12 justify-self-end">
                 <button type="button"
@@ -374,56 +377,58 @@
             </label>
             <div class="grid-column-12">
                 <span data-th-text="#{fintics.BalanceAsset}" class="font-weight-bold width-100"></span>
-                <table class="width-100">
-                    <colgroup>
-                        <col style="width:5em;"/>
-                        <col/>
-                        <col/>
-                        <col/>
-                        <col/>
-                        <col/>
-                        <col/>
-                    </colgroup>
-                    <thead>
-                    <tr>
-                        <th data-th-text="#{web.global.no}" class="text-align-center"></th>
-                        <th data-th-text="#{fintics.BalanceAsset.symbol}"></th>
-                        <th data-th-text="#{fintics.BalanceAsset.name}"></th>
-                        <th data-th-text="#{fintics.BalanceAsset.quantity}"></th>
-                        <th data-th-text="#{fintics.BalanceAsset.purchaseAmount}"></th>
-                        <th data-th-text="#{fintics.BalanceAsset.valuationAmount}"></th>
-                        <th data-th-text="#{fintics.BalanceAsset.gainLossAmount}"></thd>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr data-duice-bind="balance.balanceAssets" data-duice-loop="balanceAsset,status">
-                        <td class="text-align-center">
-                            <span data-duice-bind="status" data-duice-property="count" class="text-align-center"></span>
-                        </td>
-                        <td>
-                            <span data-duice-bind="balanceAsset" data-duice-property="symbol"></span>
-                        </td>
-                        <td>
-                            <span data-duice-bind="balanceAsset" data-duice-property="name"></span>
-                        </td>
-                        <td>
-                            <span data-duice-bind="balanceAsset" data-duice-property="quantity"></span>
-                        </td>
-                        <td>
-                            <span data-duice-bind="balanceAsset" data-duice-property="purchaseAmount" data-duice-format="number"></span>
-                        </td>
-                        <td>
-                            <span data-duice-bind="balanceAsset" data-duice-property="valuationAmount" data-duice-format="number"></span>
-                        </td>
-                        <td>
-                            <span data-duice-bind="balanceAsset" data-duice-property="gainLossAmount" data-duice-format="number"></span>
-                        </td>
-                    </tr>
-                    <tr data-duice-bind="balance.balanceAssets" data-duice-execute="if(balance.balanceAssets.length === 0) this.hidden=false;" hidden>
-                        <td colspan="100%" class="text-align-center">No Data</td>
-                    </tr>
-                    </tbody>
-                </table>
+                <div class="overflow-x-scroll">
+                    <table class="width-100">
+                        <colgroup>
+                            <col style="width:5em;"/>
+                            <col/>
+                            <col/>
+                            <col/>
+                            <col/>
+                            <col/>
+                            <col/>
+                        </colgroup>
+                        <thead>
+                        <tr>
+                            <th data-th-text="#{web.global.no}" class="text-align-center"></th>
+                            <th data-th-text="#{fintics.BalanceAsset.symbol}"></th>
+                            <th data-th-text="#{fintics.BalanceAsset.name}"></th>
+                            <th data-th-text="#{fintics.BalanceAsset.quantity}"></th>
+                            <th data-th-text="#{fintics.BalanceAsset.purchaseAmount}"></th>
+                            <th data-th-text="#{fintics.BalanceAsset.valuationAmount}"></th>
+                            <th data-th-text="#{fintics.BalanceAsset.gainLossAmount}"></thd>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr data-duice-bind="balance.balanceAssets" data-duice-loop="balanceAsset,status">
+                            <td class="text-align-center">
+                                <span data-duice-bind="status" data-duice-property="count" class="text-align-center"></span>
+                            </td>
+                            <td>
+                                <span data-duice-bind="balanceAsset" data-duice-property="symbol"></span>
+                            </td>
+                            <td>
+                                <span data-duice-bind="balanceAsset" data-duice-property="name"></span>
+                            </td>
+                            <td>
+                                <span data-duice-bind="balanceAsset" data-duice-property="quantity"></span>
+                            </td>
+                            <td>
+                                <span data-duice-bind="balanceAsset" data-duice-property="purchaseAmount" data-duice-format="number"></span>
+                            </td>
+                            <td>
+                                <span data-duice-bind="balanceAsset" data-duice-property="valuationAmount" data-duice-format="number"></span>
+                            </td>
+                            <td>
+                                <span data-duice-bind="balanceAsset" data-duice-property="gainLossAmount" data-duice-format="number"></span>
+                            </td>
+                        </tr>
+                        <tr data-duice-bind="balance.balanceAssets" data-duice-execute="if(balance.balanceAssets.length === 0) this.hidden=false;" hidden>
+                            <td colspan="100%" class="text-align-center">No Data</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

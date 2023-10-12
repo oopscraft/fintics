@@ -11,6 +11,7 @@ import org.oopscraft.fintics.model.TradeAsset;
 import org.oopscraft.fintics.service.TradeService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/v1/trade")
 @RequiredArgsConstructor
+@PreAuthorize("hasAuthority('TRADE')")
 public class TradeRestController {
 
     private final TradeService tradeService;
@@ -42,6 +44,7 @@ public class TradeRestController {
 
     @PostMapping
     @Transactional
+    @PreAuthorize("hasAuthority('TRADE_EDIT')")
     public ResponseEntity<TradeResponse> createTrade(@RequestBody TradeRequest tradeRequest) {
         Trade trade = Trade.builder()
                 .tradeId(tradeRequest.getTradeId())
@@ -74,6 +77,7 @@ public class TradeRestController {
 
     @PutMapping("{tradeId}")
     @Transactional
+    @PreAuthorize("hasAuthority('TRADE_EDIT')")
     public ResponseEntity<TradeResponse> modifyTrade(
             @PathVariable("tradeId")String tradeId,
             @RequestBody TradeRequest tradeRequest

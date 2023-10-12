@@ -8,7 +8,7 @@ insert into `core_authority` (`authority_id`,`system_required`,`authority_name`)
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('TRADE_EDIT','Y','Trade Edit Authority');
 
 -- core_role_authority
-insert into `core_role_authority` (`role_id`,`authority_id`) values ('USER', 'TRADE');
+insert into `core_role_authority` (`role_id`,`authority_id`) values ('ANONYMOUS', 'TRADE');
 
 -- fintics_trade
 insert into `fintics_trade`

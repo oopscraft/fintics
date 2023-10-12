@@ -11,10 +11,10 @@ import org.springframework.web.servlet.ModelAndView;
 @Controller
 @RequestMapping("trade")
 @RequiredArgsConstructor
+@PreAuthorize("hasAuthority('TRADE')")
 public class TradeController {
 
     @GetMapping
-    @PreAuthorize("hasAuthority('TRADE')")
     public ModelAndView trade() {
         ModelAndView modelAndView = new ModelAndView("trade.html");
         modelAndView.addObject("clientDefinitions", ClientDefinitionRegistry.getClientDefinitions());
