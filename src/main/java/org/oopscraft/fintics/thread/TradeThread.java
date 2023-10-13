@@ -42,8 +42,10 @@ public class TradeThread extends Thread {
 
                 // checks start,end time
                 if(!isBetweenStartAndEndTime(LocalTime.now())) {
+                    log.info("== [{}] not operating time. {} - {}", trade.getTradeId(), trade.getStartAt(), trade.getEndAt());
                     continue;
                 }
+                log.info("== [{}] check interval.", trade.getTradeId());
 
                 // creates interface client
                 Client client = ClientFactory.getClient(trade);
