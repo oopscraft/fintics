@@ -14,7 +14,7 @@ insert into `core_role_authority` (`role_id`,`authority_id`) values ('ANONYMOUS'
 -- core_alarm
 insert into `core_alarm`
     (`alarm_id`,`alarm_name`,`client_type`,`client_config`) values
-    ('fintics','Fintics','org.oopscraft.arch4j.core.alarm.client.slack.SlackAlarmClient','url=https://hooks.slack.com/services/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');
+    ('fintics','Fintics-Slack','org.oopscraft.arch4j.core.alarm.client.slack.SlackAlarmClient','url=https://hooks.slack.com/services/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');
 
 -- fintics_trade
 insert into `fintics_trade`
