@@ -6,6 +6,8 @@ import org.oopscraft.arch4j.core.data.SystemFieldEntity;
 import org.oopscraft.arch4j.core.data.converter.BooleanToYNConverter;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +34,13 @@ public class TradeEntity extends SystemFieldEntity {
     @Column(name = "interval")
     private Integer interval;
 
-    @Column(name = "clientType")
+    @Column(name = "start_at")
+    private LocalTime startAt;
+
+    @Column(name = "end_at")
+    private LocalTime endAt;
+
+    @Column(name = "client_type")
     private String clientType;
 
     @Column(name = "client_properties")
@@ -42,6 +50,17 @@ public class TradeEntity extends SystemFieldEntity {
     @Column(name = "hold_condition")
     @Lob
     private String holdCondition;
+
+    @Column(name = "alarm_id", length = 32)
+    private String alarmId;
+
+    @Column(name = "alarm_on_error", length = 1)
+    @Convert(converter = BooleanToYNConverter.class)
+    private boolean alarmOnError;
+
+    @Column(name = "alarm_on_order", length = 1)
+    @Convert(converter = BooleanToYNConverter.class)
+    private boolean alarmOnOrder;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "trade_id", updatable = false)

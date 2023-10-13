@@ -17,13 +17,13 @@ public class BalanceAssetResponse {
 
     private String name;
 
-    private BigDecimal quantity;
+    private Integer quantity;
 
-    private BigDecimal purchaseAmount;
+    private Double purchaseAmount;
 
-    private BigDecimal valuationAmount;
+    private Double valuationAmount;
 
-    private BigDecimal gainLossAmount;
+    private Double gainLossAmount;
 
     public static BalanceAssetResponse from(BalanceAsset balanceAsset) {
         return BalanceAssetResponse.builder()

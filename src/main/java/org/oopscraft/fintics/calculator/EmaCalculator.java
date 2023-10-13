@@ -1,8 +1,5 @@
 package org.oopscraft.fintics.calculator;
 
-import org.apache.commons.math3.stat.StatUtils;
-import org.apache.commons.math3.stat.descriptive.moment.Mean;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -10,21 +7,35 @@ import java.util.List;
 
 public class EmaCalculator {
 
-    public static List<BigDecimal> calculate(List<BigDecimal> prices, int period) {
-        List<BigDecimal> emaValues = new ArrayList<>();
+    private final List<Double> series;
 
-        if (prices.size() < period) {
-            period = prices.size();
+    private final int period;
+
+    public static EmaCalculator of(List<Double> series, int period) {
+        return new EmaCalculator(series, period);
+    }
+
+    public EmaCalculator(List<Double> series, int period) {
+        this.series = series;
+        this.period = Math.min(period, series.size());
+    }
+
+    public List<Double> calculate() {
+        List<Double> emaValues = new ArrayList<>();
+
+        if(series.isEmpty()) {
+            return emaValues;
         }
 
         BigDecimal multiplier = new BigDecimal("2.0")
-                .divide(new BigDecimal(period + 1), 10, RoundingMode.HALF_UP);
+                .divide(BigDecimal.valueOf(period + 1), 8, RoundingMode.HALF_UP);
 
-        BigDecimal ema = BigDecimal.valueOf(prices.get(0).doubleValue());
+        double ema = series.get(0);
         emaValues.add(ema);
-        for (int i = 1; i < prices.size(); i++) {
-            BigDecimal emaDiff = prices.get(i).subtract(ema);
-            ema = emaDiff.multiply(multiplier).add(ema);
+        for (int i = 1; i < series.size(); i++) {
+            double emaDiff = series.get(i) - ema;
+            ema = BigDecimal.valueOf(emaDiff)
+                    .multiply(multiplier).doubleValue() + ema;
             emaValues.add(ema);
         }
         return emaValues;

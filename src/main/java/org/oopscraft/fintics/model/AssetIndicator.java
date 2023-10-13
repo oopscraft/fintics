@@ -3,11 +3,13 @@ package org.oopscraft.fintics.model;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.slf4j.Slf4j;
+import org.oopscraft.fintics.calculator.Macd;
 import org.oopscraft.fintics.calculator.MacdCalculator;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,7 +23,9 @@ public class AssetIndicator extends Asset {
 
     private LocalDateTime collectedAt;
 
-    private BigDecimal price;
+    private Double price;
+
+    private Boolean holdConditionResult;
 
     @Builder.Default
     private List<AssetTransaction> dailyAssetTransactions = new ArrayList<>();
@@ -29,20 +33,22 @@ public class AssetIndicator extends Asset {
     @Builder.Default
     private List<AssetTransaction> minuteAssetTransaction = new ArrayList<>();
 
-    public BigDecimal getDailyMacd() {
+    public Macd getDailyMacd() {
         return getMacd(dailyAssetTransactions);
     }
 
-    public BigDecimal getMinuteMacd() {
+    public Macd getMinuteMacd() {
         return getMacd(minuteAssetTransaction);
     }
 
-    public static BigDecimal getMacd(List<AssetTransaction> assetTransactions) {
-        List<BigDecimal> prices = assetTransactions.stream()
+    public static Macd getMacd(List<AssetTransaction> assetTransactions) {
+        List<Double> prices = assetTransactions.stream()
                 .map(AssetTransaction::getPrice)
                 .collect(Collectors.toList());
-        List<BigDecimal> macdValues = MacdCalculator.calculate(prices, 12, 26, 9);
-        return macdValues.get(macdValues.size()-1);
+        Collections.reverse(prices);
+        List<Macd> macds = MacdCalculator.of(prices, 12, 26, 9)
+                .calculate();
+        return macds.get(macds.size()-1);
     }
 
     public BigDecimal getDailyRsi() {

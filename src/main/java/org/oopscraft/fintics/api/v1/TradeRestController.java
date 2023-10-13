@@ -5,7 +5,6 @@ import org.oopscraft.fintics.api.v1.dto.AssetIndicatorResponse;
 import org.oopscraft.fintics.api.v1.dto.BalanceResponse;
 import org.oopscraft.fintics.api.v1.dto.TradeRequest;
 import org.oopscraft.fintics.api.v1.dto.TradeResponse;
-import org.oopscraft.fintics.model.AssetIndicator;
 import org.oopscraft.fintics.model.Trade;
 import org.oopscraft.fintics.model.TradeAsset;
 import org.oopscraft.fintics.service.TradeService;
@@ -51,9 +50,14 @@ public class TradeRestController {
                 .name(tradeRequest.getName())
                 .enabled(tradeRequest.isEnabled())
                 .interval(tradeRequest.getInterval())
+                .startAt(tradeRequest.getStartAt())
+                .endAt(tradeRequest.getEndAt())
                 .clientType(tradeRequest.getClientType())
                 .clientProperties(tradeRequest.getClientProperties())
                 .holdCondition(tradeRequest.getHoldCondition())
+                .alarmId(tradeRequest.getAlarmId())
+                .alarmOnError(tradeRequest.isAlarmOnError())
+                .alarmOnOrder(tradeRequest.isAlarmOnOrder())
                 .build();
 
         List<TradeAsset> tradeAssets = tradeRequest.getTradeAssets().stream()
@@ -86,9 +90,14 @@ public class TradeRestController {
         trade.setName(tradeRequest.getName());
         trade.setEnabled(tradeRequest.isEnabled());
         trade.setInterval(tradeRequest.getInterval());
+        trade.setStartAt(tradeRequest.getStartAt());
+        trade.setEndAt(tradeRequest.getEndAt());
         trade.setClientType(tradeRequest.getClientType());
         trade.setClientProperties(tradeRequest.getClientProperties());
         trade.setHoldCondition(tradeRequest.getHoldCondition());
+        trade.setAlarmId(tradeRequest.getAlarmId());
+        trade.setAlarmOnError(tradeRequest.isAlarmOnError());
+        trade.setAlarmOnOrder(tradeRequest.isAlarmOnOrder());
 
         List<TradeAsset> tradeAssets = tradeRequest.getTradeAssets().stream()
                 .map(tradeAssetRequest ->

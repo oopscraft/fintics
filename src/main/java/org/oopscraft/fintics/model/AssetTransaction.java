@@ -13,6 +13,6 @@ public class AssetTransaction {
 
     private LocalDateTime dateTime;
 
-    private BigDecimal price;
+    private Double price;
 
 }

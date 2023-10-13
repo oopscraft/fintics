@@ -2,6 +2,7 @@ package org.oopscraft.fintics.thread;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.oopscraft.arch4j.core.alarm.AlarmService;
 import org.oopscraft.fintics.client.ClientFactory;
 import org.oopscraft.fintics.model.AssetIndicator;
 import org.oopscraft.fintics.model.Trade;
@@ -18,11 +19,13 @@ public class TradeThreadManager {
 
     private final Map<String, TradeThread> tradeThreadMap = new ConcurrentHashMap<>();
 
+    private final AlarmService alarmService;
+
     public synchronized void startTrade(Trade trade) {
         synchronized (this) {
             log.info("start trade - {}", trade);
             String tradeId = trade.getTradeId();
-            TradeThread tradeThread = new TradeThread(trade);
+            TradeThread tradeThread = new TradeThread(trade, alarmService);
             tradeThread.setDaemon(true);
             tradeThread.start();
             tradeThreadMap.put(tradeId, tradeThread);

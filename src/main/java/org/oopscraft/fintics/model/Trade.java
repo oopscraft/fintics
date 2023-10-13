@@ -1,10 +1,11 @@
 package org.oopscraft.fintics.model;
 
-import groovy.lang.Binding;
-import groovy.lang.GroovyShell;
 import lombok.*;
 import org.oopscraft.fintics.dao.TradeEntity;
 
+import javax.persistence.Column;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,11 +24,21 @@ public class Trade {
 
     private Integer interval;
 
+    private LocalTime startAt;
+
+    private LocalTime endAt;
+
     private String clientType;
 
     private String clientProperties;
 
     private String holdCondition;
+
+    private String alarmId;
+
+    private boolean alarmOnError;
+
+    private boolean alarmOnOrder;
 
     @Builder.Default
     private List<TradeAsset> tradeAssets = new ArrayList<>();
@@ -38,9 +49,14 @@ public class Trade {
                 .name(tradeEntity.getName())
                 .enabled(tradeEntity.isEnabled())
                 .interval(tradeEntity.getInterval())
+                .startAt(tradeEntity.getStartAt())
+                .endAt(tradeEntity.getEndAt())
                 .clientType(tradeEntity.getClientType())
                 .clientProperties(tradeEntity.getClientProperties())
                 .holdCondition(tradeEntity.getHoldCondition())
+                .alarmId(tradeEntity.getAlarmId())
+                .alarmOnError(tradeEntity.isAlarmOnError())
+                .alarmOnOrder(tradeEntity.isAlarmOnOrder())
                 .build();
         List<TradeAsset> tradeAssets = tradeEntity.getTradeAssetEntities().stream()
                 .map(TradeAsset::from)

@@ -2,6 +2,8 @@ package org.oopscraft.fintics.api.v1.dto;
 
 import lombok.*;
 
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,11 +21,21 @@ public class TradeRequest {
 
     private Integer interval;
 
+    private LocalTime startAt;
+
+    private LocalTime endAt;
+
     private String clientType;
 
     private String clientProperties;
 
     private String holdCondition;
+
+    private String alarmId;
+
+    private boolean alarmOnError;
+
+    private boolean alarmOnOrder;
 
     @Builder.Default
     private List<TradeAssetRequest> tradeAssets = new ArrayList<>();

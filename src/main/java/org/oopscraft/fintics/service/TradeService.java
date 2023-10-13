@@ -52,9 +52,14 @@ public class TradeService {
         tradeEntity.setName(trade.getName());
         tradeEntity.setEnabled(trade.isEnabled());
         tradeEntity.setInterval(trade.getInterval());
+        tradeEntity.setStartAt(trade.getStartAt());
+        tradeEntity.setEndAt(trade.getEndAt());
         tradeEntity.setClientType(trade.getClientType());
         tradeEntity.setClientProperties(trade.getClientProperties());
         tradeEntity.setHoldCondition(trade.getHoldCondition());
+        tradeEntity.setAlarmId(trade.getAlarmId());
+        tradeEntity.setAlarmOnError(trade.isAlarmOnError());
+        tradeEntity.setAlarmOnOrder(trade.isAlarmOnOrder());
 
         // trade asset
         tradeEntity.getTradeAssetEntities().clear();

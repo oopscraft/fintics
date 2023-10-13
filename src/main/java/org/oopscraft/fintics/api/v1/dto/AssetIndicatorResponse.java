@@ -1,6 +1,7 @@
 package org.oopscraft.fintics.api.v1.dto;
 
 import lombok.*;
+import org.oopscraft.fintics.calculator.Macd;
 import org.oopscraft.fintics.model.AssetIndicator;
 import org.oopscraft.fintics.model.AssetType;
 
@@ -21,15 +22,13 @@ public class AssetIndicatorResponse {
 
     private LocalDateTime collectedAt;
 
-    private BigDecimal price;
+    private Double price;
 
-    private BigDecimal dailyMacd;
+    private Macd dailyMacd;
 
-    private BigDecimal minuteMacd;
+    private Macd minuteMacd;
 
-    private BigDecimal dailyRsi;
-
-    private BigDecimal minuteRsi;
+    private Boolean holdConditionResult;
 
     public static AssetIndicatorResponse from(AssetIndicator assetIndicator) {
         return AssetIndicatorResponse.builder()
@@ -40,8 +39,7 @@ public class AssetIndicatorResponse {
                 .price(assetIndicator.getPrice())
                 .dailyMacd(assetIndicator.getDailyMacd())
                 .minuteMacd(assetIndicator.getMinuteMacd())
-                .dailyRsi(assetIndicator.getDailyRsi())
-                .minuteRsi(assetIndicator.getMinuteRsi())
+                .holdConditionResult(assetIndicator.getHoldConditionResult())
                 .build();
     }
 

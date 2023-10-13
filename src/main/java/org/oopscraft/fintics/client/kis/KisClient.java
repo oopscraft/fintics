@@ -15,7 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -36,7 +35,7 @@ public class KisClient extends Client {
 
     private final ObjectMapper objectMapper;
 
-    private final String accessToken;
+    private String accessToken;
 
     public KisClient(Properties properties) {
         super(properties);
@@ -57,6 +56,7 @@ public class KisClient extends Client {
 
     String getAccessToken() {
         RestTemplate restTemplate = RestTemplateBuilder.create()
+                .insecure(true)
                 .build();
         ValueMap payloadMap = new ValueMap(){{
             put("grant_type","client_credentials");
@@ -86,6 +86,7 @@ public class KisClient extends Client {
         AssetIndicator assetIndicator = AssetIndicator.builder()
                 .collectedAt(LocalDateTime.now())
                 .symbol(asset.getSymbol())
+                .name(asset.getName())
                 .type(asset.getType())
                 .build();
 
@@ -133,7 +134,7 @@ public class KisClient extends Client {
         }
 
         ValueMap output = objectMapper.convertValue(rootNode.path("output"), ValueMap.class);
-        assetIndicator.setPrice(output.getNumber("stck_prpr"));
+        assetIndicator.setPrice(output.getNumber("stck_prpr").doubleValue());
 
         // daily transactions
         List<AssetTransaction> dailyAssetTransactions = getDailyAssetTransactions(asset);
@@ -200,7 +201,7 @@ public class KisClient extends Client {
                     LocalDateTime dateTime = LocalDateTime.parse(row.getString("stck_bsop_date")+"000000", DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
                     return AssetTransaction.builder()
                             .dateTime(dateTime)
-                            .price(row.getNumber("stck_clpr"))
+                            .price(row.getNumber("stck_clpr").doubleValue())
                             .build();
                 })
                 .collect(Collectors.toList());
@@ -269,7 +270,7 @@ public class KisClient extends Client {
                                 row.getString("stck_bsop_date") + row.getString("stck_cntg_hour"),
                                 DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
                         );
-                        BigDecimal price = row.getNumber("stck_prpr");
+                        Double price = row.getNumber("stck_prpr").doubleValue();
                         return AssetTransaction.builder()
                                 .dateTime(dateTime)
                                 .price(price)
@@ -336,10 +337,12 @@ public class KisClient extends Client {
 
         Balance balance = Balance.builder()
                 .accountNo(accountNo)
-                .totalAmount(output2.get(0).getNumber("tot_evlu_amt"))
-                .cashAmount(output2.get(0).getNumber("prvs_rcdl_excc_amt"))
-                .purchaseAmount(output2.get(0).getNumber("pchs_amt_smtl_amt"))
-                .valuationAmount(output2.get(0).getNumber("evlu_amt_smtl_amt"))
+                .totalAmount(output2.get(0).getNumber("tot_evlu_amt").doubleValue())
+                .cashAmount(output2.get(0).getNumber("dnca_tot_amt").doubleValue())
+                .purchaseAmount(output2.get(0).getNumber("pchs_amt_smtl_amt").doubleValue())
+                .valuationAmount(output2.get(0).getNumber("evlu_amt_smtl_amt").doubleValue())
+                .gainLossAmount(output2.get(0).getNumber("evlu_pfls_amt").doubleValue())
+                .realizedGainLossAmount(output2.get(0).getNumber("rlzt_pfls").doubleValue())
                 .build();
 
         List<BalanceAsset> balanceAssets = output1.stream()
@@ -348,10 +351,10 @@ public class KisClient extends Client {
                             .accountNo(accountNo)
                             .symbol(row.getString("pdno"))
                             .name(row.getString("prdt_name"))
-                            .quantity(row.getNumber("hldg_qty"))
-                            .purchaseAmount(row.getNumber("pchs_amt"))
-                            .valuationAmount(row.getNumber("evlu_amt"))
-                            .gainLossAmount(row.getNumber("evlu_pfls_amt"))
+                            .quantity(row.getNumber("hldg_qty").intValue())
+                            .purchaseAmount(row.getNumber("pchs_amt").doubleValue())
+                            .valuationAmount(row.getNumber("evlu_amt").doubleValue())
+                            .gainLossAmount(row.getNumber("evlu_pfls_amt").doubleValue())
                             .build();
                 })
                 .collect(Collectors.toList());

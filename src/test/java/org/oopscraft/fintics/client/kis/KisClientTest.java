@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.oopscraft.arch4j.core.test.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
+import org.oopscraft.fintics.calculator.Macd;
 import org.oopscraft.fintics.client.ClientFactory;
 import org.oopscraft.fintics.dao.TradeEntity;
 import org.oopscraft.fintics.model.*;
@@ -64,16 +65,12 @@ class KisClientTest extends CoreTestSupport {
 
         // when
         AssetIndicator assetIndicator = getKisClient().getAssetIndicator(tradeAsset);
-        BigDecimal minuteMacd = assetIndicator.getMinuteMacd();
-        BigDecimal dailyMacd = assetIndicator.getDailyMacd();
-        BigDecimal minuteRsi = assetIndicator.getMinuteRsi();
-        BigDecimal dailyRsi = assetIndicator.getDailyRsi();
+        Macd minuteMacd = assetIndicator.getMinuteMacd();
+        Macd dailyMacd = assetIndicator.getDailyMacd();
 
         // then
         assertNotNull(minuteMacd);
         assertNotNull(dailyMacd);
-        assertNotNull(minuteRsi);
-        assertNotNull(dailyRsi);
     }
 
     @Disabled
@@ -88,16 +85,12 @@ class KisClientTest extends CoreTestSupport {
 
         // when
         AssetIndicator assetIndicator = getKisClient().getAssetIndicator(tradeAsset);
-        BigDecimal minuteMacd = assetIndicator.getMinuteMacd();
-        BigDecimal dailyMacd = assetIndicator.getDailyMacd();
-        BigDecimal minuteRsi = assetIndicator.getMinuteRsi();
-        BigDecimal dailyRsi = assetIndicator.getDailyRsi();
+        Macd minuteMacd = assetIndicator.getMinuteMacd();
+        Macd dailyMacd = assetIndicator.getDailyMacd();
 
         // then
         assertNotNull(minuteMacd);
         assertNotNull(dailyMacd);
-        assertNotNull(minuteRsi);
-        assertNotNull(dailyRsi);
     }
 
     @Disabled

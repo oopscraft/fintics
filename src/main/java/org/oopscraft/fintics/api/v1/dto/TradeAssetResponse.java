@@ -22,7 +22,7 @@ public class TradeAssetResponse {
 
     private boolean enabled;
 
-    private BigDecimal holdRatio;
+    private Double holdRatio;
 
     public static TradeAssetResponse from(TradeAsset tradeAsset) {
         return TradeAssetResponse.builder()

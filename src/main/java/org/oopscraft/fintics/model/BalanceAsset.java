@@ -18,12 +18,12 @@ public class BalanceAsset extends Asset {
 
     private String name;
 
-    private BigDecimal quantity;
+    private Integer quantity;
 
-    private BigDecimal purchaseAmount;
+    private Double purchaseAmount;
 
-    private BigDecimal valuationAmount;
+    private Double valuationAmount;
 
-    private BigDecimal gainLossAmount;
+    private Double gainLossAmount;
 
 }
