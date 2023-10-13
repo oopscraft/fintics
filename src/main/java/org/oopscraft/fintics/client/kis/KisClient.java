@@ -56,7 +56,6 @@ public class KisClient extends Client {
 
     String getAccessToken() {
         RestTemplate restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
                 .build();
         ValueMap payloadMap = new ValueMap(){{
             put("grant_type","client_credentials");
