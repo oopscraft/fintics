@@ -80,6 +80,12 @@ public class TradeService {
         return Trade.from(tradeEntity);
     }
 
+    @Transactional
+    public void deleteTrade(String tradeId) {
+        tradeRepository.deleteById(tradeId);
+        tradeRepository.flush();
+    }
+
     public Optional<Balance> getTradeBalance(String tradeId) {
         TradeEntity tradeEntity = tradeRepository.findById(tradeId).orElseThrow();
         Client client = ClientFactory.getClient(tradeEntity.getClientType(), tradeEntity.getClientProperties());

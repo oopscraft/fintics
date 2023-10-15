@@ -24,9 +24,13 @@ public class AssetIndicatorResponse {
 
     private Double price;
 
+    private Macd minuteMacd;
+
     private Macd dailyMacd;
 
-    private Macd minuteMacd;
+    private Double minuteRsi;
+
+    private Double dailyRsi;
 
     private Boolean holdConditionResult;
 
@@ -37,8 +41,10 @@ public class AssetIndicatorResponse {
                 .type(assetIndicator.getType())
                 .collectedAt(assetIndicator.getCollectedAt())
                 .price(assetIndicator.getPrice())
-                .dailyMacd(assetIndicator.getDailyMacd())
                 .minuteMacd(assetIndicator.getMinuteMacd())
+                .dailyMacd(assetIndicator.getDailyMacd())
+                .minuteRsi(assetIndicator.getMinuteRsi())
+                .dailyRsi(assetIndicator.getDailyRsi())
                 .holdConditionResult(assetIndicator.getHoldConditionResult())
                 .build();
     }

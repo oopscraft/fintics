@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-@Builder(access = AccessLevel.PROTECTED)
+@Builder
 public class Macd {
 
     private Double series;

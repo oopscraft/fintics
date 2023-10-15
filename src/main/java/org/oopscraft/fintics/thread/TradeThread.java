@@ -41,7 +41,7 @@ public class TradeThread extends Thread {
                 Thread.sleep(trade.getInterval() * 1_000);
 
                 // checks start,end time
-                if(!isBetweenStartAndEndTime(LocalTime.now())) {
+                if(!isOperatingTime(LocalTime.now())) {
                     log.info("== {}\t{} - not operating time. {} ~ {}", trade.getTradeId(), trade.getName(), trade.getStartAt(), trade.getEndAt());
                     continue;
                 }
@@ -79,7 +79,7 @@ public class TradeThread extends Thread {
                             BigDecimal buyAmount = BigDecimal.valueOf(balance.getTotalAmount())
                                     .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP)
                                     .multiply(BigDecimal.valueOf(tradeAsset.getHoldRatio()));
-                            Integer quantity = buyAmount
+                            int quantity = buyAmount
                                     .divide(BigDecimal.valueOf(assetIndicator.getPrice()), 0, RoundingMode.FLOOR)
                                     .intValue();
                             try {
@@ -133,14 +133,11 @@ public class TradeThread extends Thread {
         return (Boolean) result;
     }
 
-    private boolean isBetweenStartAndEndTime(LocalTime time) {
+    private boolean isOperatingTime(LocalTime time) {
         if(trade.getStartAt() == null || trade.getEndAt() == null) {
-            return true;
+            return false;
         }
-        if(time.isAfter(trade.getStartAt()) && time.isBefore(trade.getEndAt())) {
-            return true;
-        }
-        return false;
+        return time.isAfter(trade.getStartAt()) && time.isBefore(trade.getEndAt());
     }
 
     private void sendAlarmIfEnabled(String subject, String content) {

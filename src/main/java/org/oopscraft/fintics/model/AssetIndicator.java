@@ -5,6 +5,7 @@ import lombok.experimental.SuperBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.fintics.calculator.Macd;
 import org.oopscraft.fintics.calculator.MacdCalculator;
+import org.oopscraft.fintics.calculator.RsiCalculator;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -28,17 +29,17 @@ public class AssetIndicator extends Asset {
     private Boolean holdConditionResult;
 
     @Builder.Default
-    private List<AssetTransaction> dailyAssetTransactions = new ArrayList<>();
-
-    @Builder.Default
     private List<AssetTransaction> minuteAssetTransaction = new ArrayList<>();
 
-    public Macd getDailyMacd() {
-        return getMacd(dailyAssetTransactions);
-    }
+    @Builder.Default
+    private List<AssetTransaction> dailyAssetTransactions = new ArrayList<>();
 
     public Macd getMinuteMacd() {
         return getMacd(minuteAssetTransaction);
+    }
+
+    public Macd getDailyMacd() {
+        return getMacd(dailyAssetTransactions);
     }
 
     public static Macd getMacd(List<AssetTransaction> assetTransactions) {
@@ -48,19 +49,38 @@ public class AssetIndicator extends Asset {
         Collections.reverse(prices);
         List<Macd> macds = MacdCalculator.of(prices, 12, 26, 9)
                 .calculate();
-        return macds.get(macds.size()-1);
+        if(macds.size() > 0) {
+            return macds.get(macds.size()-1);
+        }else{
+            return Macd.builder()
+                    .series(0.0)
+                    .macd(0.0)
+                    .signal(0.0)
+                    .oscillator(0.0)
+                    .build();
+        }
     }
 
-    public BigDecimal getDailyRsi() {
-        return getRsi(dailyAssetTransactions);
-    }
-
-    public BigDecimal getMinuteRsi() {
+    public Double getMinuteRsi() {
         return getRsi(minuteAssetTransaction);
     }
 
-    public static BigDecimal getRsi(List<AssetTransaction> assetTransactions) {
-        return BigDecimal.ZERO;
+    public Double getDailyRsi() {
+        return getRsi(dailyAssetTransactions);
+    }
+
+    public static Double getRsi(List<AssetTransaction> assetTransactions) {
+        List<Double> prices = assetTransactions.stream()
+                .map(AssetTransaction::getPrice)
+                .collect(Collectors.toList());
+        Collections.reverse(prices);
+        List<Double> rsiValues = RsiCalculator.of(prices, 14)
+                .calculate();
+        if(rsiValues.size() > 0) {
+            return rsiValues.get(rsiValues.size() - 1);
+        }else{
+            return 50.0;
+        }
     }
 
 }

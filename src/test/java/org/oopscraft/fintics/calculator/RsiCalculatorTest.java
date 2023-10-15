@@ -1,60 +1,67 @@
 package org.oopscraft.fintics.calculator;
 
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.InputStream;
+import java.io.Reader;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Slf4j
 class RsiCalculatorTest {
 
+    /**
+     * 검증데이터는 한국투자증권 차트의 가격,RSI 데이터 (실제 한국증권 분봉 데이터를 사용함)
+     */
     @Test
-    void calculate() {
-        List<BigDecimal> prices = new ArrayList<>();
-        // 가격 데이터 추가 (BigDecimal로 초기화)
-        prices.add(new BigDecimal("45.15"));
-        prices.add(new BigDecimal("45.06"));
-        prices.add(new BigDecimal("45.50"));
-        prices.add(new BigDecimal("45.55"));
-        prices.add(new BigDecimal("45.40"));
-        prices.add(new BigDecimal("45.30"));
-        prices.add(new BigDecimal("45.55"));
-        prices.add(new BigDecimal("45.65"));
-        prices.add(new BigDecimal("45.75"));
-        prices.add(new BigDecimal("45.75"));
-        prices.add(new BigDecimal("45.85"));
-        prices.add(new BigDecimal("46.05"));
-        prices.add(new BigDecimal("46.20"));
-        prices.add(new BigDecimal("46.45"));
+    void calculate() throws Throwable {
+        // given
+        String filePath = "org/oopscraft/fintics/calculator/RsiCalculatorTest.tsv";
+        CSVFormat format = CSVFormat.Builder.create()
+                .setDelimiter("\t")
+                .setHeader("time","open","high","low","close","5","10","20","60","120","RSI","Signal")
+                .setSkipHeaderRecord(true)
+                .build();
+        final List<Double> closes = new ArrayList<>();
+        final List<Double> rsis = new ArrayList<>();
+        try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(filePath)) {
+            CSVParser.parse(inputStream, StandardCharsets.UTF_8, format).stream()
+                    .forEach(record -> {
+                        closes.add(Double.parseDouble(record.get("close").replaceAll(",","")));
+                        rsis.add(Double.parseDouble(record.get("RSI").replaceAll("[,%]","")));
+                    });
+        }
+        Collections.reverse(closes);
+        Collections.reverse(rsis);
 
+        // when
         int period = 14; // RSI 주기
+        RsiCalculator rsiCalculator = new RsiCalculator(closes, period);
+        List<Double> rsiValues = rsiCalculator.calculate();
+        for(int i = 0; i < closes.size(); i++) {
+            log.debug("[{}] {}, {}", i, rsis.get(i), rsiValues.get(i));
+        }
 
-        List<BigDecimal> rsiValues = RsiCalculator.calculate(prices, period);
-
-        // 기대값을 설정 (BigDecimal로 초기화)
-        BigDecimal[] expectedRSI = {
-                new BigDecimal("100.00"), // 첫 번째 값은 100으로 설정
-                new BigDecimal("98.21"),
-                new BigDecimal("72.73"),
-                new BigDecimal("76.47"),
-                new BigDecimal("60.00"),
-                new BigDecimal("48.78"),
-                new BigDecimal("64.71"),
-                new BigDecimal("70.31"),
-                new BigDecimal("75.68"),
-                new BigDecimal("75.68"),
-                new BigDecimal("80.56"),
-                new BigDecimal("90.00"),
-                new BigDecimal("93.75"),
-                new BigDecimal("96.77")
-        };
-
-//        // 결과 검사
-//        for (int i = 0; i < rsiValues.size(); i++) {
-//            assertEquals(expectedRSI[i], rsiValues.get(i));
-//        }
+        // then
+        for(int i = 0; i < closes.size(); i ++) {
+            // period + 1 전의 RSI는 데이터부족으로 50으로 반환됨.
+            if(i < period + 1) {
+                assertEquals(50, rsiValues.get(i));
+            }
+            // 이후 부터는 값이 일치해야함.
+            else{
+                assertEquals(rsis.get(i), rsiValues.get(i), 0.02);
+            }
+        }
     }
 
 }

@@ -118,6 +118,14 @@ public class TradeRestController {
         return ResponseEntity.ok(tradeResponse);
     }
 
+    @DeleteMapping("{tradeId}")
+    @Transactional
+    @PreAuthorize("hasAuthority('TRADE_EDIT')")
+    public ResponseEntity<Void> deleteTrade(@PathVariable("tradeId")String tradeId) {
+        tradeService.deleteTrade(tradeId);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("{tradeId}/balance")
     public ResponseEntity<BalanceResponse> getTradeBalance(@PathVariable("tradeId") String tradeId) {
         BalanceResponse balanceResponse = tradeService.getTradeBalance(tradeId)
