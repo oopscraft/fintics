@@ -29,7 +29,7 @@ insert into `core_alarm`
 -- fintics_trade
 insert into `fintics_trade`
     (`trade_id`,`name`,`enabled`,`interval`,`start_at`,`end_at`,`client_type`,`client_properties`,`hold_condition`) values
-    ('06c228451ce0400fa57bb36f0568d7cb','한국투자증권 모의투자 #1','Y','30','09:00','15:30',
+    ('06c228451ce0400fa57bb36f0568d7cb','한국투자증권 모의투자 #1','Y','30','09:00','23:30',
      'org.oopscraft.fintics.client.kis.KisClient','production=false
 apiUrl=https://openapivts.koreainvestment.com:29443
 appKey=PSEoPN1uMGYe67XzUuaEDhqpMYOJNumYb2yl

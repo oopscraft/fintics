@@ -7,11 +7,6 @@ public class TradeThreadTest {
 
     @Test
     void getHoldConditionResult() {
-        AssetIndicator assetIndicator = AssetIndicator.builder()
-                .symbol("00001")
-                .name("test")
-                .build();
-
-
+        // TODO
     }
 }

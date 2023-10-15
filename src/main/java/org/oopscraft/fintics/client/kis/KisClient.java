@@ -82,13 +82,6 @@ public class KisClient extends Client {
 
     @Override
     public AssetIndicator getAssetIndicator(Asset asset) {
-        AssetIndicator assetIndicator = AssetIndicator.builder()
-                .collectedAt(LocalDateTime.now())
-                .symbol(asset.getSymbol())
-                .name(asset.getName())
-                .type(asset.getType())
-                .build();
-
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .build();
         String url = apiUrl + "/uapi/domestic-stock/v1/quotations/inquire-price";
@@ -133,17 +126,22 @@ public class KisClient extends Client {
         }
 
         ValueMap output = objectMapper.convertValue(rootNode.path("output"), ValueMap.class);
-        assetIndicator.setPrice(output.getNumber("stck_prpr").doubleValue());
 
-        // daily transactions
-        List<AssetTransaction> dailyAssetTransactions = getDailyAssetTransactions(asset);
-        assetIndicator.setDailyAssetTransactions(dailyAssetTransactions);
+        // price
+        Double price = output.getNumber("stck_prpr").doubleValue();
 
         // minute transactions
         List<AssetTransaction> minuteAssetTransactions = getMinuteAssetTransactions(asset);
-        assetIndicator.setMinuteAssetTransaction(minuteAssetTransactions);
 
-        return assetIndicator;
+        // daily transactions
+        List<AssetTransaction> dailyAssetTransactions = getDailyAssetTransactions(asset);
+
+        return AssetIndicator.builder()
+                .asset(asset)
+                .price(price)
+                .minuteAssetTransactions(minuteAssetTransactions)
+                .dailyAssetTransactions(dailyAssetTransactions)
+                .build();
     }
 
     private List<AssetTransaction> getDailyAssetTransactions(Asset asset) {

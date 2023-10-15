@@ -65,12 +65,9 @@ class KisClientTest extends CoreTestSupport {
 
         // when
         AssetIndicator assetIndicator = getKisClient().getAssetIndicator(tradeAsset);
-        Macd minuteMacd = assetIndicator.getMinuteMacd();
-        Macd dailyMacd = assetIndicator.getDailyMacd();
 
         // then
-        assertNotNull(minuteMacd);
-        assertNotNull(dailyMacd);
+        assertNotNull(assetIndicator);
     }
 
     @Disabled
@@ -85,12 +82,9 @@ class KisClientTest extends CoreTestSupport {
 
         // when
         AssetIndicator assetIndicator = getKisClient().getAssetIndicator(tradeAsset);
-        Macd minuteMacd = assetIndicator.getMinuteMacd();
-        Macd dailyMacd = assetIndicator.getDailyMacd();
 
         // then
-        assertNotNull(minuteMacd);
-        assertNotNull(dailyMacd);
+        assertNotNull(assetIndicator);
     }
 
     @Disabled

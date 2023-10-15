@@ -3,84 +3,117 @@ package org.oopscraft.fintics.model;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.slf4j.Slf4j;
+import net.bytebuddy.implementation.bind.annotation.Super;
 import org.oopscraft.fintics.calculator.Macd;
 import org.oopscraft.fintics.calculator.MacdCalculator;
 import org.oopscraft.fintics.calculator.RsiCalculator;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Data
-@EqualsAndHashCode(callSuper = true)
-@SuperBuilder
-@NoArgsConstructor
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Slf4j
+@Getter
 public class AssetIndicator extends Asset {
 
-    private LocalDateTime collectedAt;
+    private final LocalDateTime collectedAt;
 
-    private Double price;
+    private final Double price;
 
+    private final List<AssetTransaction> minuteAssetTransactions;
+
+    private final List<AssetTransaction> dailyAssetTransactions;
+
+    private List<Macd> minuteMacds;
+
+    private List<Macd> dailyMacds;
+
+    private List<Double> minuteRsis;
+
+    private List<Double> dailyRsis;
+
+    @Setter
     private Boolean holdConditionResult;
 
-    @Builder.Default
-    private List<AssetTransaction> minuteAssetTransaction = new ArrayList<>();
+    @Builder
+    public AssetIndicator(Asset asset, Double price, List<AssetTransaction> minuteAssetTransactions, List<AssetTransaction> dailyAssetTransactions) {
+        setSymbol(asset.getSymbol());
+        setName(asset.getName());
+        setType(asset.getType());
+        this.collectedAt = LocalDateTime.now();
+        this.price = price;
+        this.minuteAssetTransactions = minuteAssetTransactions;
+        this.dailyAssetTransactions = dailyAssetTransactions;
 
-    @Builder.Default
-    private List<AssetTransaction> dailyAssetTransactions = new ArrayList<>();
+        // initialize
+        initialize();
+    }
+
+    private void initialize() {
+        // minute prices
+        List<Double> minutePrices = reverse(this.minuteAssetTransactions.stream()
+                .map(AssetTransaction::getPrice)
+                .collect(Collectors.toList()));
+
+        // daily prices
+        List<Double> dailyPrices = reverse(this.minuteAssetTransactions.stream()
+                .map(AssetTransaction::getPrice)
+                .collect(Collectors.toList()));
+
+        // minute macds
+        minuteMacds = reverse(MacdCalculator.of(minutePrices, 12, 26, 9)
+                .calculate());
+
+        // daily macds
+        dailyMacds = reverse(MacdCalculator.of(dailyPrices, 12, 26, 9)
+                .calculate());
+
+        // minute rsis
+        minuteRsis = reverse(RsiCalculator.of(minutePrices, 14)
+                .calculate());
+
+        // daily rsis
+        dailyRsis = reverse(RsiCalculator.of(dailyPrices, 14)
+                .calculate());
+    }
+
+    private static <T> List<T> reverse(List<T> list) {
+        Collections.reverse(list);
+        return list;
+    }
+
+    public Macd getMinuteMacd(int index) {
+        return minuteMacds.get(index);
+    }
 
     public Macd getMinuteMacd() {
-        return getMacd(minuteAssetTransaction);
+        return getMinuteMacd(0);
+    }
+
+    public Macd getDailyMacd(int index) {
+        return dailyMacds.get(index);
     }
 
     public Macd getDailyMacd() {
-        return getMacd(dailyAssetTransactions);
+        return getDailyMacd(0);
     }
 
-    public static Macd getMacd(List<AssetTransaction> assetTransactions) {
-        List<Double> prices = assetTransactions.stream()
-                .map(AssetTransaction::getPrice)
-                .collect(Collectors.toList());
-        Collections.reverse(prices);
-        List<Macd> macds = MacdCalculator.of(prices, 12, 26, 9)
-                .calculate();
-        if(macds.size() > 0) {
-            return macds.get(macds.size()-1);
-        }else{
-            return Macd.builder()
-                    .series(0.0)
-                    .macd(0.0)
-                    .signal(0.0)
-                    .oscillator(0.0)
-                    .build();
-        }
+    public Double getMinuteRsi(int index) {
+        return minuteRsis.get(index);
     }
 
     public Double getMinuteRsi() {
-        return getRsi(minuteAssetTransaction);
+        return getMinuteRsi(0);
+    }
+
+    public Double getDailyRsi(int index) {
+        return dailyRsis.get(index);
     }
 
     public Double getDailyRsi() {
-        return getRsi(dailyAssetTransactions);
-    }
-
-    public static Double getRsi(List<AssetTransaction> assetTransactions) {
-        List<Double> prices = assetTransactions.stream()
-                .map(AssetTransaction::getPrice)
-                .collect(Collectors.toList());
-        Collections.reverse(prices);
-        List<Double> rsiValues = RsiCalculator.of(prices, 14)
-                .calculate();
-        if(rsiValues.size() > 0) {
-            return rsiValues.get(rsiValues.size() - 1);
-        }else{
-            return 50.0;
-        }
+        return getDailyRsi(0);
     }
 
 }

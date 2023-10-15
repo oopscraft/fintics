@@ -3,10 +3,12 @@ package org.oopscraft.fintics.api.v1.dto;
 import lombok.*;
 import org.oopscraft.fintics.calculator.Macd;
 import org.oopscraft.fintics.model.AssetIndicator;
+import org.oopscraft.fintics.model.AssetTransaction;
 import org.oopscraft.fintics.model.AssetType;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -24,11 +26,23 @@ public class AssetIndicatorResponse {
 
     private Double price;
 
+//    private List<AssetTransaction> minuteAssetTransactions;
+
+//    private List<AssetTransaction> dailyAssetTransactions;
+
+//    private List<Macd> minuteMacds;
+
     private Macd minuteMacd;
+
+//    private List<Macd> dailyMacds;
 
     private Macd dailyMacd;
 
+//    private List<Double> minuteRsis;
+
     private Double minuteRsi;
+
+//    private List<Double> dailyRsis;
 
     private Double dailyRsi;
 
@@ -41,9 +55,15 @@ public class AssetIndicatorResponse {
                 .type(assetIndicator.getType())
                 .collectedAt(assetIndicator.getCollectedAt())
                 .price(assetIndicator.getPrice())
+//                .minuteAssetTransactions(assetIndicator.getMinuteAssetTransactions())
+//                .dailyAssetTransactions(assetIndicator.getDailyAssetTransactions())
+//                .minuteMacds(assetIndicator.getMinuteMacds())
                 .minuteMacd(assetIndicator.getMinuteMacd())
+//                .dailyMacds(assetIndicator.getDailyMacds())
                 .dailyMacd(assetIndicator.getDailyMacd())
+//                .minuteRsis(assetIndicator.getMinuteRsis())
                 .minuteRsi(assetIndicator.getMinuteRsi())
+//                .dailyRsis(assetIndicator.getDailyRsis())
                 .dailyRsi(assetIndicator.getDailyRsi())
                 .holdConditionResult(assetIndicator.getHoldConditionResult())
                 .build();
