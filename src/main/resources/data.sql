@@ -35,8 +35,7 @@ apiUrl=https://openapivts.koreainvestment.com:29443
 appKey=PSEoPN1uMGYe67XzUuaEDhqpMYOJNumYb2yl
 appSecret=kLdK3wGPQM3aS402GWetUxccOx4xMZbQZOYpxo3JJNearF64mjBjqG/msDdH9yCLWCGnSySvRw7HxClEMNtZ3ChF0TiSQxBdJfPerfQRyqLBRNmsdSaUOvHaiulNtTPvlOheqk16+0Ce4X7yyM0/DfTp5sZIP5mh2WCXkhF5wCwhUcOKLZk=
 accountNo=50096055-01
-','
-double macdOscillator = assetIndicator.getMinuteMacd().getOscillator();
+','double macdOscillator = assetIndicator.getMinuteMacd().getOscillator();
 double rsi = assetIndicator.getMinuteRsi();
 
 if(macdOscillator > 0) {
