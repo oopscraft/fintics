@@ -10,12 +10,12 @@ import org.oopscraft.fintics.dao.TradeRepository;
 import org.oopscraft.fintics.model.AssetIndicator;
 import org.oopscraft.fintics.model.Balance;
 import org.oopscraft.fintics.model.Trade;
-import org.oopscraft.fintics.model.TradeAsset;
 import org.oopscraft.fintics.thread.TradeThreadManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -92,8 +92,15 @@ public class TradeService {
         return Optional.ofNullable(client.getBalance());
     }
 
-    public List<AssetIndicator> getTradeAssetIndicator(String tradeId) {
+    public List<AssetIndicator> getTradeAssetIndicators(String tradeId) {
         return tradeThreadManager.getTradeAssetIndicators(tradeId);
+    }
+
+    public Optional<AssetIndicator> getTradeAssetIndicator(String tradeId, String symbol) {
+        return tradeThreadManager.getTradeAssetIndicators(tradeId).stream()
+                .filter(assetIndicator ->
+                        Objects.equals(assetIndicator.getSymbol(), symbol))
+                .findFirst();
     }
 
 }

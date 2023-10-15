@@ -26,6 +26,10 @@ public class AssetIndicator extends Asset {
 
     private final List<AssetTransaction> dailyAssetTransactions;
 
+    private List<Double> minutePrices;
+
+    private List<Double> dailyPrices;
+
     private List<Macd> minuteMacds;
 
     private List<Macd> dailyMacds;
@@ -53,39 +57,46 @@ public class AssetIndicator extends Asset {
 
     private void initialize() {
         // minute prices
-        List<Double> minutePrices = reverse(this.minuteAssetTransactions.stream()
+        minutePrices = this.minuteAssetTransactions.stream()
                 .map(AssetTransaction::getPrice)
-                .collect(Collectors.toList()));
+                .collect(Collectors.toList());
 
         // daily prices
-        List<Double> dailyPrices = reverse(this.minuteAssetTransactions.stream()
+        dailyPrices = this.minuteAssetTransactions.stream()
                 .map(AssetTransaction::getPrice)
-                .collect(Collectors.toList()));
+                .collect(Collectors.toList());
 
         // minute macds
-        minuteMacds = reverse(MacdCalculator.of(minutePrices, 12, 26, 9)
+        minuteMacds = reverse(MacdCalculator.of(reverse(minutePrices), 12, 26, 9)
                 .calculate());
 
         // daily macds
-        dailyMacds = reverse(MacdCalculator.of(dailyPrices, 12, 26, 9)
+        dailyMacds = reverse(MacdCalculator.of(reverse(dailyPrices), 12, 26, 9)
                 .calculate());
 
         // minute rsis
-        minuteRsis = reverse(RsiCalculator.of(minutePrices, 14)
+        minuteRsis = reverse(RsiCalculator.of(reverse(minutePrices), 14)
                 .calculate());
 
         // daily rsis
-        dailyRsis = reverse(RsiCalculator.of(dailyPrices, 14)
+        dailyRsis = reverse(RsiCalculator.of(reverse(dailyPrices), 14)
                 .calculate());
     }
 
     private static <T> List<T> reverse(List<T> list) {
-        Collections.reverse(list);
-        return list;
+        List<T> reversedList = new ArrayList<>(list);
+        Collections.reverse(reversedList);
+        return reversedList;
     }
 
     public Macd getMinuteMacd(int index) {
-        return minuteMacds.get(index);
+        return index > minuteMacds.size() - 1
+                ? Macd.builder()
+                .macd(0.0)
+                .signal(0.0)
+                .oscillator(0.0)
+                .build()
+                : minuteMacds.get(index);
     }
 
     public Macd getMinuteMacd() {
@@ -93,7 +104,13 @@ public class AssetIndicator extends Asset {
     }
 
     public Macd getDailyMacd(int index) {
-        return dailyMacds.get(index);
+        return index > dailyMacds.size() - 1
+                ? Macd.builder()
+                .macd(0.0)
+                .signal(0.0)
+                .oscillator(0.0)
+                .build()
+                : dailyMacds.get(index);
     }
 
     public Macd getDailyMacd() {
@@ -101,7 +118,9 @@ public class AssetIndicator extends Asset {
     }
 
     public Double getMinuteRsi(int index) {
-        return minuteRsis.get(index);
+        return index > minuteRsis.size() -1
+                ? 0.0
+                : minuteRsis.get(index);
     }
 
     public Double getMinuteRsi() {
@@ -109,7 +128,9 @@ public class AssetIndicator extends Asset {
     }
 
     public Double getDailyRsi(int index) {
-        return dailyRsis.get(index);
+        return index > dailyRsis.size() -1
+                ? 0.0
+                : dailyRsis.get(index);
     }
 
     public Double getDailyRsi() {

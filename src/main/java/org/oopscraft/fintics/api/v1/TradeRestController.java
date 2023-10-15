@@ -135,11 +135,19 @@ public class TradeRestController {
     }
 
     @GetMapping("{tradeId}/asset-indicator")
-    public ResponseEntity<List<AssetIndicatorResponse>> getTradeAssetIndicator(@PathVariable("tradeId") String tradeId) {
-        List<AssetIndicatorResponse> assetIndicatorResponses = tradeService.getTradeAssetIndicator(tradeId).stream()
+    public ResponseEntity<List<AssetIndicatorResponse>> getTradeAssetIndicators(@PathVariable("tradeId") String tradeId) {
+        List<AssetIndicatorResponse> assetIndicatorResponses = tradeService.getTradeAssetIndicators(tradeId).stream()
                 .map(AssetIndicatorResponse::from)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(assetIndicatorResponses);
+    }
+
+    @GetMapping("{tradeId}/asset-indicator/{symbol}")
+    public ResponseEntity<AssetIndicatorResponse> getTradeAssetIndicator(@PathVariable("tradeId") String tradeId, @PathVariable("symbol") String symbol) {
+        AssetIndicatorResponse assetIndicatorResponse = tradeService.getTradeAssetIndicator(tradeId, symbol)
+                .map(AssetIndicatorResponse::from)
+                .orElseThrow();
+        return ResponseEntity.ok(assetIndicatorResponse);
     }
 
 }

@@ -1,0 +1,78 @@
+package org.oopscraft.fintics.model;
+
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.junit.jupiter.api.Test;
+import org.oopscraft.fintics.calculator.Macd;
+
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+@Slf4j
+public class AssetIndicatorTest {
+
+    @Test
+    void test() throws Throwable {
+        // given
+        String filePath = "org/oopscraft/fintics/model/AssetIndicatorTest.tsv";
+        CSVFormat format = CSVFormat.Builder.create()
+                .setDelimiter("\t")
+                .setHeader("time","open","high","low","close","5","10","20","60","120","MACD","Signal","MACD-Oscillator", "RSI", "RSI-Signal")
+                .setSkipHeaderRecord(true)
+                .build();
+        final List<Double> closes = new ArrayList<>();
+        final List<Double> macds = new ArrayList<>();
+        final List<Double> signals = new ArrayList<>();
+        final List<Double> macdOscillators = new ArrayList<>();
+        final List<Double> rsis = new ArrayList<>();
+        final List<AssetTransaction> minuteAssetTransactions = new ArrayList<>();
+        try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(filePath)) {
+            CSVParser.parse(inputStream, StandardCharsets.UTF_8, format).stream()
+                    .forEach(record -> {
+                        closes.add(Double.parseDouble(record.get("close").replaceAll(",","")));
+                        macds.add(Double.parseDouble(record.get("MACD").replaceAll(",","")));
+                        signals.add(Double.parseDouble(record.get("Signal").replaceAll(",","")));
+                        macdOscillators.add(Double.parseDouble(record.get("MACD-Oscillator").replaceAll(",","")));
+                        rsis.add(Double.parseDouble(record.get("RSI").replaceAll("[,%]","")));
+                        minuteAssetTransactions.add(AssetTransaction.builder()
+                                .price(Double.parseDouble(record.get("close").replaceAll(",","")))
+                                .build());
+                    });
+        }
+
+        // when
+        AssetIndicator assetIndicator = AssetIndicator.builder()
+                .asset(TradeAsset.builder()
+                        .symbol("test")
+                        .name("Test")
+                        .build())
+                .minuteAssetTransactions(minuteAssetTransactions)
+                .build();
+
+        // then
+        for(int i = 0, size = assetIndicator.getMinuteAssetTransactions().size(); i < size; i ++ ) {
+            Macd macd = assetIndicator.getMinuteMacds().get(i);
+            double rsi = assetIndicator.getMinuteRsis().get(i);
+            log.debug("[{}] {}/{}/{}/{}, {}/{}/{}/{}",
+                    i,
+                    macds.get(i), signals.get(i), macdOscillators.get(i), rsis.get(i),
+                    macd.getMacd(), macd.getSignal(), macd.getOscillator(), rsi
+            );
+        }
+        for(int i = 0, size = assetIndicator.getMinuteAssetTransactions().size() - 70; i < size; i ++ ) {
+            Macd macd = assetIndicator.getMinuteMacds().get(i);
+            double rsi = assetIndicator.getMinuteRsis().get(i);
+            assertEquals(macds.get(i), macd.getMacd(), 0.02);
+            assertEquals(signals.get(i), macd.getSignal(), 0.02);
+            assertEquals(macdOscillators.get(i), macd.getOscillator(), 0.02);
+            assertEquals(rsis.get(i), rsi, 0.02);
+        }
+    }
+
+}

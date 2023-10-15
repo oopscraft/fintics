@@ -122,8 +122,24 @@
                 .then(response => response.json())
                 .then(data => {
                     duice.ArrayProxy.clear(assetIndicators);
-                    duice.ArrayProxy.assign(assetIndicators, data);
+                    duice.ArrayProxy.assign(assetIndicators, transformTradeAssetIndicators(data));
                 });
+        }
+
+        function transformTradeAssetIndicators(array) {
+            let newArray = [];
+            for(let i = 0; i < array.length; i++ ) {
+                let object = array[i];
+                let newObject = {};
+                [   'symbol', 'name', 'type','collectedAt','price',
+                    'minuteMacd','dailyMacd','minuteRsi','dailyRsi',
+                    'holdConditionResult'
+                ].forEach(name => {
+                    newObject[name] = object[name];
+                });
+                newArray.push(newObject);
+            }
+            return newArray;
         }
 
         function refreshTradeAssetIndicators() {
@@ -134,7 +150,7 @@
                         if(response.ok) {
                             let data = await response.json();
                             duice.ArrayProxy.clear(assetIndicators);
-                            duice.ArrayProxy.assign(assetIndicators, data);
+                            duice.ArrayProxy.assign(assetIndicators, transformTradeAssetIndicators(data));
                         }
                     });
             }
