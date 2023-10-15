@@ -2,6 +2,8 @@ package org.oopscraft.fintics.calculator;
 
 import org.apache.commons.math3.stat.descriptive.moment.Mean;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,12 +47,7 @@ public class MacdCalculator {
         // oscillator
         List<Double> oscillatorValues = new ArrayList<>();
         for (int i = 0; i < macdValues.size(); i++) {
-            Mean mean = new Mean();
-            double periodAverageMacd = mean.evaluate(macdValues
-                    .subList(Math.max(i-signalPeriod,0), i+1).stream()
-                            .mapToDouble(Double::doubleValue)
-                            .toArray());
-            double oscillator = macdValues.get(i) - periodAverageMacd;
+            double oscillator = macdValues.get(i) - signalValues.get(i);
             oscillatorValues.add(oscillator);
         }
 
@@ -58,15 +55,21 @@ public class MacdCalculator {
         List<Macd> macds = new ArrayList<>();
         for(int i = 0, size = this.series.size(); i < size; i ++ ) {
             Macd macd = Macd.builder()
-                    .series(series.get(i))
-                    .macd(macdValues.get(i))
-                    .signal(signalValues.get(i))
-                    .oscillator(oscillatorValues.get(i))
+                    .series(setScale(series.get(i)))
+                    .macd(setScale(macdValues.get(i)))
+                    .signal(setScale(signalValues.get(i)))
+                    .oscillator(setScale(oscillatorValues.get(i)))
                     .build();
             macds.add(macd);
         }
 
         return macds;
+    }
+
+    private double setScale(double value) {
+        return BigDecimal.valueOf(value)
+                .setScale(2, RoundingMode.HALF_UP)
+                .doubleValue();
     }
 
 }
