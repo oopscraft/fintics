@@ -1,4 +1,4 @@
-package org.oopscraft.fintics;
+package org.oopscraft.fintics.thread;
 
 import org.junit.jupiter.api.Test;
 import org.oopscraft.fintics.model.AssetIndicator;

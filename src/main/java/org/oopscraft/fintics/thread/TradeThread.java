@@ -1,7 +1,5 @@
 package org.oopscraft.fintics.thread;
 
-import groovy.lang.Binding;
-import groovy.lang.GroovyShell;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -76,7 +74,11 @@ public class TradeThread extends Thread {
                     assetIndicatorMap.put(assetIndicator.getSymbol(), assetIndicator);
 
                     // decides hold condition
-                    Boolean holdConditionResult = getHoldConditionResult(assetIndicator);
+                    TradeAssetDecider tradeAssetDecider = TradeAssetDecider.builder()
+                            .holdCondition(trade.getHoldCondition())
+                            .assetIndicator(assetIndicator)
+                            .build();
+                    Boolean holdConditionResult = tradeAssetDecider.execute();
                     assetIndicator.setHoldConditionResult(holdConditionResult);
 
                     // 1. null is no operation
@@ -128,21 +130,6 @@ public class TradeThread extends Thread {
                 sendErrorAlarmIfEnabled(t);
             }
         }
-    }
-
-    private Boolean getHoldConditionResult(AssetIndicator assetIndicator) {
-        Binding binding = new Binding();
-        binding.setVariable("assetIndicator", assetIndicator);
-        GroovyShell groovyShell = new GroovyShell(binding);
-        String script = trade.getHoldCondition();
-        if(script == null || script.isBlank()) {
-            return null;
-        }
-        Object result = groovyShell.evaluate(script);
-        if(result == null) {
-            return null;
-        }
-        return (Boolean) result;
     }
 
     private boolean isOperatingTime(LocalTime time) {

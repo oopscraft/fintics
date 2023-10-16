@@ -37,17 +37,20 @@ appSecret=kLdK3wGPQM3aS402GWetUxccOx4xMZbQZOYpxo3JJNearF64mjBjqG/msDdH9yCLWCGnSy
 accountNo=50096055-01
 ','double macdOscillator = assetIndicator.getMinuteMacd().getOscillator();
 double rsi = assetIndicator.getMinuteRsi();
-
 if(macdOscillator > 0) {
-    if(rsi > 90) {
-        return false;
+    if(rsi > 70) {
+        if(Tool.slope(assetIndicator.getMinuteRsis(),3) < 0) {
+            return false;
+        }
     }
     return true;
 }
 
 if(macdOscillator < 0) {
-    if(rsi < 10) {
-        return true;
+    if(rsi < 30) {
+        if(Tool.slope(assetIndicator.getMinuteRsis(),3) > 0) {
+            return true;
+        }
     }
     return false;
 }

@@ -3,7 +3,6 @@ package org.oopscraft.fintics.thread;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
-import org.oopscraft.fintics.client.ClientFactory;
 import org.oopscraft.fintics.model.AssetIndicator;
 import org.oopscraft.fintics.model.Trade;
 import org.springframework.stereotype.Component;

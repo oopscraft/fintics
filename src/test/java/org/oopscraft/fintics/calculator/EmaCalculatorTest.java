@@ -14,12 +14,12 @@ class EmaCalculatorTest {
     void calculate() {
         // given
         List<Double> prices = new ArrayList<>();
-        prices.add(100.0);
-        prices.add(105.0);
-        prices.add(110.0);
-        prices.add(115.0);
-        prices.add(120.0);
-        prices.add(125.0);
+        prices.add(1000.0);
+        prices.add(1005.0);
+        prices.add(1010.0);
+        prices.add(1015.0);
+        prices.add(1020.0);
+        prices.add(1025.0);
         int period = 5; // EMA 주기
 
         // when
