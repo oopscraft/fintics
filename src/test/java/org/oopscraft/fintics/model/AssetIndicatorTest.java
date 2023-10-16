@@ -9,7 +9,6 @@ import org.oopscraft.fintics.calculator.Macd;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -31,7 +30,7 @@ public class AssetIndicatorTest {
         final List<Double> signals = new ArrayList<>();
         final List<Double> macdOscillators = new ArrayList<>();
         final List<Double> rsis = new ArrayList<>();
-        final List<AssetTransaction> minuteAssetTransactions = new ArrayList<>();
+        final List<Ohlcv> minuteOhlcvs = new ArrayList<>();
         try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(filePath)) {
             CSVParser.parse(inputStream, StandardCharsets.UTF_8, format).stream()
                     .forEach(record -> {
@@ -40,8 +39,11 @@ public class AssetIndicatorTest {
                         signals.add(Double.parseDouble(record.get("Signal").replaceAll(",","")));
                         macdOscillators.add(Double.parseDouble(record.get("MACD-Oscillator").replaceAll(",","")));
                         rsis.add(Double.parseDouble(record.get("RSI").replaceAll("[,%]","")));
-                        minuteAssetTransactions.add(AssetTransaction.builder()
-                                .price(Double.parseDouble(record.get("close").replaceAll(",","")))
+                        minuteOhlcvs.add(Ohlcv.builder()
+                                .openPrice(Double.parseDouble(record.get("open").replaceAll(",","")))
+                                .highPrice(Double.parseDouble(record.get("high").replaceAll(",","")))
+                                .lowPrice(Double.parseDouble(record.get("low").replaceAll(",","")))
+                                .closePrice(Double.parseDouble(record.get("close").replaceAll(",","")))
                                 .build());
                     });
         }
@@ -52,11 +54,11 @@ public class AssetIndicatorTest {
                         .symbol("test")
                         .name("Test")
                         .build())
-                .minuteAssetTransactions(minuteAssetTransactions)
+                .minuteOhlcvs(minuteOhlcvs)
                 .build();
 
         // then
-        for(int i = 0, size = assetIndicator.getMinuteAssetTransactions().size(); i < size; i ++ ) {
+        for(int i = 0, size = assetIndicator.getMinuteOhlcvs().size(); i < size; i ++ ) {
             Macd macd = assetIndicator.getMinuteMacds().get(i);
             double rsi = assetIndicator.getMinuteRsis().get(i);
             log.debug("[{}] {}/{}/{}/{}, {}/{}/{}/{}",
@@ -65,7 +67,7 @@ public class AssetIndicatorTest {
                     macd.getMacd(), macd.getSignal(), macd.getOscillator(), rsi
             );
         }
-        for(int i = 0, size = assetIndicator.getMinuteAssetTransactions().size() - 70; i < size; i ++ ) {
+        for(int i = 0, size = assetIndicator.getMinuteOhlcvs().size() - 70; i < size; i ++ ) {
             Macd macd = assetIndicator.getMinuteMacds().get(i);
             double rsi = assetIndicator.getMinuteRsis().get(i);
             assertEquals(macds.get(i), macd.getMacd(), 0.02);

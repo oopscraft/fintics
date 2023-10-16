@@ -81,12 +81,12 @@ public class KisClient extends Client {
     }
 
     @Override
-    public AssetIndicator getAssetIndicator(Asset asset) {
+    public OrderBook getOrderBook(Asset asset) {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .build();
-        String url = apiUrl + "/uapi/domestic-stock/v1/quotations/inquire-price";
+        String url = apiUrl + "/uapi/domestic-stock/v1/quotations/inquire-asking-price-exp-ccn";
         HttpHeaders headers = createHeaders();
-        headers.add("tr_id", "FHKST01010100");
+        headers.add("tr_id", "FHKST01010200");
         String fidCondMrktDivCode = "J";
         String fidInputIscd;
         switch(asset.getType()) {
@@ -125,87 +125,23 @@ public class KisClient extends Client {
             throw new RuntimeException(msg1);
         }
 
-        ValueMap output = objectMapper.convertValue(rootNode.path("output"), ValueMap.class);
+        ValueMap output1 = objectMapper.convertValue(rootNode.path("output1"), ValueMap.class);
+        ValueMap output2 = objectMapper.convertValue(rootNode.path("output2"), ValueMap.class);
 
-        // price
-        Double price = output.getNumber("stck_prpr").doubleValue();
+        Double price = output2.getNumber("stck_prpr").doubleValue();
+        Double bidPrice = output1.getNumber("bidp1").doubleValue();
+        Double askPrice = output1.getNumber("askp1").doubleValue();
 
-        // minute transactions
-        List<AssetTransaction> minuteAssetTransactions = getMinuteAssetTransactions(asset);
-
-        // daily transactions
-        List<AssetTransaction> dailyAssetTransactions = getDailyAssetTransactions(asset);
-
-        return AssetIndicator.builder()
-                .asset(asset)
+        return OrderBook.builder()
                 .price(price)
-                .minuteAssetTransactions(minuteAssetTransactions)
-                .dailyAssetTransactions(dailyAssetTransactions)
+                .bidPrice(bidPrice)
+                .askPrice(askPrice)
                 .build();
     }
 
-    private List<AssetTransaction> getDailyAssetTransactions(Asset asset) {
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .build();
-        String fidCondMrktDivCode = "J";
-        String fidInputIscd;
-        switch(asset.getType()) {
-            case STOCK:
-            case ETF:
-                fidInputIscd = asset.getSymbol();
-                break;
-            case ETN:
-                fidCondMrktDivCode = "J";
-                fidInputIscd = "Q" + asset.getSymbol();
-                break;
-            default:
-                throw new RuntimeException("invalid asset type - " + asset.getType());
-        }
-
-        String url = apiUrl + "/uapi/domestic-stock/v1/quotations/inquire-daily-price";
-        HttpHeaders headers = createHeaders();
-        headers.add("tr_id", "FHKST01010400");
-        url = UriComponentsBuilder.fromUriString(url)
-                .queryParam("FID_COND_MRKT_DIV_CODE", fidCondMrktDivCode)
-                .queryParam("FID_INPUT_ISCD", fidInputIscd)
-                .queryParam("FID_PERIOD_DIV_CODE", "D") // 일봉
-                .queryParam("FID_ORG_ADJ_PRC", "0")     // 수정주가
-                .build()
-                .toUriString();
-        RequestEntity<Void> requestEntity = RequestEntity
-                .get(url)
-                .headers(headers)
-                .build();
-        sleep();
-        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
-        JsonNode rootNode;
-        try {
-            rootNode = objectMapper.readTree(responseEntity.getBody());
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-
-        String rtCd = objectMapper.convertValue(rootNode.path("rt_cd"), String.class);
-        String msg1 = objectMapper.convertValue(rootNode.path("msg1"), String.class);
-        if(!"0".equals(rtCd)) {
-            throw new RuntimeException(msg1);
-        }
-
-        List<ValueMap> output = objectMapper.convertValue(rootNode.path("output"), new TypeReference<>(){});
-
-        return output.stream()
-                .map(row -> {
-                    LocalDateTime dateTime = LocalDateTime.parse(row.getString("stck_bsop_date")+"000000", DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-                    return AssetTransaction.builder()
-                            .dateTime(dateTime)
-                            .price(row.getNumber("stck_clpr").doubleValue())
-                            .build();
-                })
-                .collect(Collectors.toList());
-    }
-
-    private List<AssetTransaction> getMinuteAssetTransactions(Asset asset) {
-        List<AssetTransaction> minuteAssetTransactions = new ArrayList<>();
+    @Override
+    public List<Ohlcv> getMinuteOhlcvs(Asset asset) {
+        List<Ohlcv> minuteOhlcvs = new ArrayList<>();
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .build();
         String fidEtcClsCode = "";
@@ -261,36 +197,115 @@ public class KisClient extends Client {
 
             List<ValueMap> output2 = objectMapper.convertValue(rootNode.path("output2"), new TypeReference<>(){});
 
-            List<AssetTransaction> minuteAssetTransactionsPage = output2.stream()
+            List<Ohlcv> minuteOhlcvsPage = output2.stream()
                     .map(row -> {
                         LocalDateTime dateTime = LocalDateTime.parse(
                                 row.getString("stck_bsop_date") + row.getString("stck_cntg_hour"),
                                 DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
                         );
-                        Double price = row.getNumber("stck_prpr").doubleValue();
-                        return AssetTransaction.builder()
+                        Double openPrice = row.getNumber("stck_oprc").doubleValue();
+                        Double highPrice = row.getNumber("stck_hgpr").doubleValue();
+                        Double lowPrice = row.getNumber("stck_lwpr").doubleValue();
+                        Double closePrice = row.getNumber("stck_prpr").doubleValue();
+                        Double volume = row.getNumber("cntg_vol").doubleValue();
+                        return Ohlcv.builder()
                                 .dateTime(dateTime)
-                                .price(price)
+                                .openPrice(openPrice)
+                                .highPrice(highPrice)
+                                .lowPrice(lowPrice)
+                                .closePrice(closePrice)
+                                .volume(volume)
                                 .build();
                     })
                     .collect(Collectors.toList());
-            minuteAssetTransactions.addAll(minuteAssetTransactionsPage);
+            minuteOhlcvs.addAll(minuteOhlcvsPage);
 
             // check empty
-            if(minuteAssetTransactionsPage.size() < 1) {
+            if(minuteOhlcvsPage.size() < 1) {
                 break;
             }
 
             // next page
-            fidInputHour1Time = minuteAssetTransactionsPage.get(minuteAssetTransactionsPage.size()-1)
+            fidInputHour1Time = minuteOhlcvsPage.get(minuteOhlcvsPage.size()-1)
                     .getDateTime()
                     .toLocalTime()
                     .minusMinutes(1);
         }
 
         // return
-        return minuteAssetTransactions;
+        return minuteOhlcvs;
     }
+
+    @Override
+    public List<Ohlcv> getDailyOhlcvs(Asset asset) {
+        RestTemplate restTemplate = RestTemplateBuilder.create()
+                .build();
+        String fidCondMrktDivCode = "J";
+        String fidInputIscd;
+        switch(asset.getType()) {
+            case STOCK:
+            case ETF:
+                fidInputIscd = asset.getSymbol();
+                break;
+            case ETN:
+                fidCondMrktDivCode = "J";
+                fidInputIscd = "Q" + asset.getSymbol();
+                break;
+            default:
+                throw new RuntimeException("invalid asset type - " + asset.getType());
+        }
+
+        String url = apiUrl + "/uapi/domestic-stock/v1/quotations/inquire-daily-price";
+        HttpHeaders headers = createHeaders();
+        headers.add("tr_id", "FHKST01010400");
+        url = UriComponentsBuilder.fromUriString(url)
+                .queryParam("FID_COND_MRKT_DIV_CODE", fidCondMrktDivCode)
+                .queryParam("FID_INPUT_ISCD", fidInputIscd)
+                .queryParam("FID_PERIOD_DIV_CODE", "D") // 일봉
+                .queryParam("FID_ORG_ADJ_PRC", "0")     // 수정주가
+                .build()
+                .toUriString();
+        RequestEntity<Void> requestEntity = RequestEntity
+                .get(url)
+                .headers(headers)
+                .build();
+        sleep();
+        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+        JsonNode rootNode;
+        try {
+            rootNode = objectMapper.readTree(responseEntity.getBody());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+        String rtCd = objectMapper.convertValue(rootNode.path("rt_cd"), String.class);
+        String msg1 = objectMapper.convertValue(rootNode.path("msg1"), String.class);
+        if(!"0".equals(rtCd)) {
+            throw new RuntimeException(msg1);
+        }
+
+        List<ValueMap> output = objectMapper.convertValue(rootNode.path("output"), new TypeReference<>(){});
+
+        return output.stream()
+                .map(row -> {
+                    LocalDateTime dateTime = LocalDateTime.parse(row.getString("stck_bsop_date")+"000000", DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+                    Double openPrice = row.getNumber("stck_oprc").doubleValue();
+                    Double highPrice = row.getNumber("stck_hgpr").doubleValue();
+                    Double lowPrice = row.getNumber("stck_lwpr").doubleValue();
+                    Double closePrice = row.getNumber("stck_clpr").doubleValue();
+                    Double volume = row.getNumber("acml_vol").doubleValue();
+                    return Ohlcv.builder()
+                            .dateTime(dateTime)
+                            .openPrice(openPrice)
+                            .highPrice(highPrice)
+                            .lowPrice(lowPrice)
+                            .closePrice(closePrice)
+                            .volume(volume)
+                            .build();
+                })
+                .collect(Collectors.toList());
+    }
+
 
     @Override
     public Balance getBalance() {
@@ -343,17 +358,15 @@ public class KisClient extends Client {
                 .build();
 
         List<BalanceAsset> balanceAssets = output1.stream()
-                .map(row -> {
-                    return BalanceAsset.builder()
-                            .accountNo(accountNo)
-                            .symbol(row.getString("pdno"))
-                            .name(row.getString("prdt_name"))
-                            .quantity(row.getNumber("hldg_qty").intValue())
-                            .purchaseAmount(row.getNumber("pchs_amt").doubleValue())
-                            .valuationAmount(row.getNumber("evlu_amt").doubleValue())
-                            .gainLossAmount(row.getNumber("evlu_pfls_amt").doubleValue())
-                            .build();
-                })
+                .map(row -> BalanceAsset.builder()
+                        .accountNo(accountNo)
+                        .symbol(row.getString("pdno"))
+                        .name(row.getString("prdt_name"))
+                        .quantity(row.getNumber("hldg_qty").intValue())
+                        .purchaseAmount(row.getNumber("pchs_amt").doubleValue())
+                        .valuationAmount(row.getNumber("evlu_amt").doubleValue())
+                        .gainLossAmount(row.getNumber("evlu_pfls_amt").doubleValue())
+                        .build())
                 .collect(Collectors.toList());
         balance.setBalanceAssets(balanceAssets);
 

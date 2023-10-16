@@ -131,7 +131,7 @@
             for(let i = 0; i < array.length; i++ ) {
                 let object = array[i];
                 let newObject = {};
-                [   'symbol', 'name', 'type','collectedAt','price',
+                [   'symbol', 'name', 'type','collectedAt','orderBook',
                     'minuteMacd','dailyMacd','minuteRsi','dailyRsi',
                     'holdConditionResult'
                 ].forEach(name => {
@@ -412,7 +412,7 @@
                             <span data-duice-bind="assetIndicator" data-duice-property="collectedAt" data-duice-format="date('yyyy-MM-dd HH:mm:ss')" class="font-size-smaller"></span>
                         </td>
                         <td class="text-align-center">
-                            <span data-duice-bind="assetIndicator" data-duice-property="price" data-duice-format="number" class="font-size-smaller"></span>
+                            <span data-duice-bind="assetIndicator.orderBook" data-duice-property="price" data-duice-format="number" class="font-size-smaller"></span>
                         </td>
                         <td>
                             <table class="width-100 font-size-smaller text-align-center">
@@ -460,7 +460,7 @@
                                 </tbody>
                             </table>
                         </td>
-                        <td>
+                        <td class="text-align-center">
                             <span data-duice-bind="assetIndicator" data-duice-property="holdConditionResult"></span>
                         </td>
                     </tr>

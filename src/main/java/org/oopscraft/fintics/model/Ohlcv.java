@@ -2,17 +2,24 @@ package org.oopscraft.fintics.model;
 
 import lombok.*;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class AssetTransaction {
+public class Ohlcv {
 
-    private LocalDateTime dateTime;
+    LocalDateTime dateTime;
 
-    private Double price;
+    Double openPrice;
+
+    Double highPrice;
+
+    Double lowPrice;
+
+    Double closePrice;
+
+    Double volume;
 
 }

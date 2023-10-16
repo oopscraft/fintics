@@ -4,6 +4,7 @@ import lombok.*;
 import org.oopscraft.fintics.calculator.Macd;
 import org.oopscraft.fintics.model.AssetIndicator;
 import org.oopscraft.fintics.model.AssetType;
+import org.oopscraft.fintics.model.OrderBook;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -23,7 +24,7 @@ public class AssetIndicatorResponse {
 
     private LocalDateTime collectedAt;
 
-    private Double price;
+    private OrderBook orderBook;
 
     @Builder.Default
     private List<Double> minutePrices = new ArrayList<>();
@@ -59,7 +60,7 @@ public class AssetIndicatorResponse {
                 .name(assetIndicator.getName())
                 .type(assetIndicator.getType())
                 .collectedAt(assetIndicator.getCollectedAt())
-                .price(assetIndicator.getPrice())
+                .orderBook(assetIndicator.getOrderBook())
                 .minutePrices(assetIndicator.getMinutePrices())
                 .dailyPrices(assetIndicator.getDailyPrices())
                 .minuteMacd(assetIndicator.getMinuteMacd())

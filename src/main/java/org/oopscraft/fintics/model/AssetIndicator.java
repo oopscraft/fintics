@@ -1,9 +1,9 @@
 package org.oopscraft.fintics.model;
 
-import lombok.*;
-import lombok.experimental.SuperBuilder;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import net.bytebuddy.implementation.bind.annotation.Super;
 import org.oopscraft.fintics.calculator.Macd;
 import org.oopscraft.fintics.calculator.MacdCalculator;
 import org.oopscraft.fintics.calculator.RsiCalculator;
@@ -20,11 +20,11 @@ public class AssetIndicator extends Asset {
 
     private final LocalDateTime collectedAt;
 
-    private final Double price;
+    private final OrderBook orderBook;
 
-    private final List<AssetTransaction> minuteAssetTransactions;
+    private final List<Ohlcv> minuteOhlcvs;
 
-    private final List<AssetTransaction> dailyAssetTransactions;
+    private final List<Ohlcv> dailyOhlcvs;
 
     private List<Double> minutePrices;
 
@@ -42,14 +42,14 @@ public class AssetIndicator extends Asset {
     private Boolean holdConditionResult;
 
     @Builder
-    public AssetIndicator(Asset asset, Double price, List<AssetTransaction> minuteAssetTransactions, List<AssetTransaction> dailyAssetTransactions) {
+    public AssetIndicator(Asset asset, OrderBook orderBook, List<Ohlcv> minuteOhlcvs, List<Ohlcv> dailyOhlcvs) {
         setSymbol(asset.getSymbol());
         setName(asset.getName());
         setType(asset.getType());
         this.collectedAt = LocalDateTime.now();
-        this.price = price;
-        this.minuteAssetTransactions = minuteAssetTransactions;
-        this.dailyAssetTransactions = dailyAssetTransactions;
+        this.orderBook = orderBook;
+        this.minuteOhlcvs = minuteOhlcvs;
+        this.dailyOhlcvs = dailyOhlcvs;
 
         // initialize
         initialize();
@@ -57,13 +57,13 @@ public class AssetIndicator extends Asset {
 
     private void initialize() {
         // minute prices
-        minutePrices = this.minuteAssetTransactions.stream()
-                .map(AssetTransaction::getPrice)
+        minutePrices = this.minuteOhlcvs.stream()
+                .map(Ohlcv::getClosePrice)
                 .collect(Collectors.toList());
 
         // daily prices
-        dailyPrices = this.minuteAssetTransactions.stream()
-                .map(AssetTransaction::getPrice)
+        dailyPrices = this.minuteOhlcvs.stream()
+                .map(Ohlcv::getClosePrice)
                 .collect(Collectors.toList());
 
         // minute macds

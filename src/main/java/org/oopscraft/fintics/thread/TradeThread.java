@@ -14,6 +14,7 @@ import org.oopscraft.fintics.model.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalTime;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -62,9 +63,19 @@ public class TradeThread extends Thread {
                     // force delay
                     Thread.sleep(1000);
 
-                    // get indicator and decide hold
-                    AssetIndicator assetIndicator = client.getAssetIndicator(tradeAsset);
+                    // build asset indicator
+                    OrderBook orderBook = client.getOrderBook(tradeAsset);
+                    List<Ohlcv> minuteOhlcvs = client.getMinuteOhlcvs(tradeAsset);
+                    List<Ohlcv> dailyOhlcvs = client.getDailyOhlcvs(tradeAsset);
+                    AssetIndicator assetIndicator = AssetIndicator.builder()
+                            .asset(tradeAsset)
+                            .orderBook(orderBook)
+                            .minuteOhlcvs(minuteOhlcvs)
+                            .dailyOhlcvs(dailyOhlcvs)
+                            .build();
                     assetIndicatorMap.put(assetIndicator.getSymbol(), assetIndicator);
+
+                    // decides hold condition
                     Boolean holdConditionResult = getHoldConditionResult(assetIndicator);
                     assetIndicator.setHoldConditionResult(holdConditionResult);
 
@@ -79,8 +90,9 @@ public class TradeThread extends Thread {
                             BigDecimal buyAmount = BigDecimal.valueOf(balance.getTotalAmount())
                                     .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP)
                                     .multiply(BigDecimal.valueOf(tradeAsset.getHoldRatio()));
+                            Double askPrice = assetIndicator.getOrderBook().getAskPrice();
                             int quantity = buyAmount
-                                    .divide(BigDecimal.valueOf(assetIndicator.getPrice()), 0, RoundingMode.FLOOR)
+                                    .divide(BigDecimal.valueOf(askPrice), 0, RoundingMode.FLOOR)
                                     .intValue();
                             try {
                                 client.buyAsset(tradeAsset, quantity);

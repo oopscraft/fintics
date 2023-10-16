@@ -1,6 +1,7 @@
 package org.oopscraft.fintics.client.kis;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -13,11 +14,13 @@ import org.oopscraft.fintics.model.*;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest(classes = FinticsConfiguration.class)
 @RequiredArgsConstructor
+@Slf4j
 class KisClientTest extends CoreTestSupport {
 
     private static final String TRADE_ID = "06c228451ce0400fa57bb36f0568d7cb";
@@ -44,19 +47,7 @@ class KisClientTest extends CoreTestSupport {
     @Disabled
     @Test
     @Order(2)
-    void getBalance() {
-        // given
-        // when
-        Balance balance = getKisClient().getBalance();
-
-        // then
-        assertNotNull(balance.getCashAmount());
-    }
-
-    @Disabled
-    @Test
-    @Order(4)
-    void getAssetIndicatorStock() {
+    void getOrderBook() {
         // given
         TradeAsset tradeAsset = TradeAsset.builder()
                 .symbol("005930")
@@ -64,27 +55,58 @@ class KisClientTest extends CoreTestSupport {
                 .build();
 
         // when
-        AssetIndicator assetIndicator = getKisClient().getAssetIndicator(tradeAsset);
+        OrderBook orderBook = getKisClient().getOrderBook(tradeAsset);
+        log.info("== orderBook:{}", orderBook);
 
         // then
-        assertNotNull(assetIndicator);
+        assertNotNull(orderBook);
+    }
+
+
+    @Disabled
+    @Test
+    @Order(4)
+    void getMinuteOhlcvs() {
+        // given
+        TradeAsset tradeAsset = TradeAsset.builder()
+                .symbol("005930")
+                .type(AssetType.STOCK)
+                .build();
+
+        // when
+        List<Ohlcv> minuteOhlcvs = getKisClient().getMinuteOhlcvs(tradeAsset);
+
+        // then
+        assertNotNull(minuteOhlcvs);
     }
 
     @Disabled
     @Test
     @Order(4)
-    void getAssetIndicatorEtf() {
+    void getDailyOhlcvs() {
         // given
         TradeAsset tradeAsset = TradeAsset.builder()
-                .symbol("069500")
-                .type(AssetType.ETF)
+                .symbol("005930")
+                .type(AssetType.STOCK)
                 .build();
 
         // when
-        AssetIndicator assetIndicator = getKisClient().getAssetIndicator(tradeAsset);
+        List<Ohlcv> dailyOhlcvs = getKisClient().getDailyOhlcvs(tradeAsset);
 
         // then
-        assertNotNull(assetIndicator);
+        assertNotNull(dailyOhlcvs);
+    }
+
+    @Disabled
+    @Test
+    @Order(2)
+    void getBalance() {
+        // given
+        // when
+        Balance balance = getKisClient().getBalance();
+
+        // then
+        assertNotNull(balance.getCashAmount());
     }
 
     @Disabled

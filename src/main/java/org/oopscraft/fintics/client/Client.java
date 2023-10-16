@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.oopscraft.fintics.model.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -16,7 +17,11 @@ public abstract class Client {
         this.properties = properties;
     }
 
-    public abstract AssetIndicator getAssetIndicator(Asset asset);
+    public abstract OrderBook getOrderBook(Asset asset);
+
+    public abstract List<Ohlcv> getMinuteOhlcvs(Asset asset);
+
+    public abstract List<Ohlcv> getDailyOhlcvs(Asset asset);
 
     public abstract Balance getBalance();
 
