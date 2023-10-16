@@ -64,9 +64,6 @@ dependencies {
     // arch4j-web
     implementation "org.oopscraft.arch4j:arch4j-web:1.0.0-SNAPSHOT"
 
-    // ta-lib
-    implementation 'com.tictactec:ta-lib:0.4.0'
-
 }
 
 test {
@@ -85,7 +82,7 @@ jar {
 bootJar {
     enabled = true
     archiveClassifier = 'boot'
-    mainClass = 'org.oopscraft.soma.admin.AdminApplication'
+    mainClass = 'org.oopscraft.fintics.FinticsApplication'
 }
 
 springBoot {

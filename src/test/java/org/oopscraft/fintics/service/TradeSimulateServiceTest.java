@@ -11,7 +11,7 @@ import org.oopscraft.fintics.model.SimulateTrade;
 import org.oopscraft.fintics.model.Trade;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import static org.testng.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @Slf4j
 @SpringBootTest(classes = FinticsConfiguration.class)
