@@ -33,18 +33,6 @@ class KisClientTest extends CoreTestSupport {
 
     @Disabled
     @Test
-    @Order(1)
-    void getAccessKey() {
-        // given
-        // when
-        String accessKey = getKisClient().getAccessToken();
-
-        // then
-        assertNotNull(accessKey);
-    }
-
-    @Disabled
-    @Test
     @Order(2)
     void getOrderBook() {
         // given

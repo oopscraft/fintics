@@ -3,13 +3,13 @@ package org.oopscraft.fintics.thread;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
-import org.oopscraft.fintics.model.AssetIndicator;
 import org.oopscraft.fintics.model.Trade;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -20,8 +20,11 @@ public class TradeThreadManager {
 
     private final AlarmService alarmService;
 
-    public synchronized void startTrade(Trade trade) {
+    public synchronized void startTradeThread(Trade trade) {
         synchronized (this) {
+            if(isTradeThreadRunning(trade.getTradeId())) {
+                throw new RuntimeException(String.format("Thread Thread[%s] is already running.", trade.getName()));
+            }
             log.info("start trade - {}", trade);
             String tradeId = trade.getTradeId();
             TradeThread tradeThread = new TradeThread(trade, alarmService);
@@ -31,34 +34,33 @@ public class TradeThreadManager {
         }
     }
 
-    public synchronized void stopTrade(Trade trade) {
+    public synchronized void stopTradeThread(String tradeId) {
         synchronized (this) {
-            log.info("stop trade - {}", trade);
-            String tradeId = trade.getTradeId();
+            if(!isTradeThreadRunning(tradeId)) {
+                throw new RuntimeException(String.format("Thread Thread[%s] is not running.", tradeId));
+            }
+            log.info("stop trade - {}", tradeId);
             TradeThread tradeThread = tradeThreadMap.get(tradeId);
             tradeThread.interrupt();
+            try {
+                tradeThread.join(60_000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             tradeThreadMap.remove(tradeId);
         }
     }
 
-    public List<Trade> getTrades() {
-       return tradeThreadMap.values().stream()
-               .map(TradeThread::getTrade)
-               .collect(Collectors.toList());
+    public boolean isTradeThreadRunning(String tradeId) {
+        return tradeThreadMap.containsKey(tradeId);
     }
 
-    public Optional<Trade> getTrade(String tradeId) {
-        return Optional.ofNullable(tradeThreadMap.get(tradeId))
-                .map(TradeThread::getTrade);
+    public List<TradeThread> getTradeThreads() {
+        return new ArrayList<>(tradeThreadMap.values());
     }
 
-    public List<AssetIndicator> getTradeAssetIndicators(String tradeId) {
-        List<AssetIndicator> tradeAssetIndicator = new ArrayList<>();
-        if(tradeThreadMap.containsKey(tradeId)) {
-            TradeThread tradeThread = tradeThreadMap.get(tradeId);
-            tradeAssetIndicator.addAll(tradeThread.getAssetIndicatorMap().values());
-        }
-        return tradeAssetIndicator;
+    public TradeThread getTradeThread(String tradeId) {
+        return tradeThreadMap.get(tradeId);
     }
 
 }

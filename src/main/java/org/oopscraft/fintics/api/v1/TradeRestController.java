@@ -130,7 +130,7 @@ public class TradeRestController {
     public ResponseEntity<BalanceResponse> getTradeBalance(@PathVariable("tradeId") String tradeId) {
         BalanceResponse balanceResponse = tradeService.getTradeBalance(tradeId)
                 .map(BalanceResponse::from)
-                .orElseThrow();
+                .orElse(new BalanceResponse());
         return ResponseEntity.ok(balanceResponse);
     }
 
@@ -146,7 +146,7 @@ public class TradeRestController {
     public ResponseEntity<AssetIndicatorResponse> getTradeAssetIndicator(@PathVariable("tradeId") String tradeId, @PathVariable("symbol") String symbol) {
         AssetIndicatorResponse assetIndicatorResponse = tradeService.getTradeAssetIndicator(tradeId, symbol)
                 .map(AssetIndicatorResponse::from)
-                .orElseThrow();
+                .orElse(new AssetIndicatorResponse());
         return ResponseEntity.ok(assetIndicatorResponse);
     }
 

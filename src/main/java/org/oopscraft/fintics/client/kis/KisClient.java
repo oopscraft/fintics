@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
 import org.oopscraft.arch4j.core.support.ValueMap;
 import org.oopscraft.fintics.client.Client;
@@ -21,6 +22,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class KisClient extends Client {
 
     private final boolean production;
@@ -37,6 +39,8 @@ public class KisClient extends Client {
 
     private String accessToken;
 
+    private LocalDateTime accessTokenExpiredDateTime;
+
     public KisClient(Properties properties) {
         super(properties);
         this.production = Boolean.parseBoolean(properties.getProperty("production"));
@@ -45,7 +49,9 @@ public class KisClient extends Client {
         this.appSecret = properties.getProperty("appSecret");
         this.accountNo = properties.getProperty("accountNo");
         this.objectMapper = new ObjectMapper();
-        this.accessToken = getAccessToken();
+
+        // load access toke
+        loadAccessToken();
     }
 
     static synchronized void sleep() {
@@ -54,7 +60,8 @@ public class KisClient extends Client {
         }catch(Throwable ignored){}
     }
 
-    String getAccessToken() {
+    void loadAccessToken() {
+        log.info("load access token");
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .build();
         ValueMap payloadMap = new ValueMap(){{
@@ -68,10 +75,19 @@ public class KisClient extends Client {
                 .body(payloadMap);
         ResponseEntity<ValueMap> responseEntity = restTemplate.exchange(requestEntity, ValueMap.class);
         ValueMap responseMap = responseEntity.getBody();
-        return responseMap.getString("access_token");
+        this.accessToken = responseMap.getString("access_token");
+        this.accessTokenExpiredDateTime = LocalDateTime.parse(
+                responseMap.getString("access_token_token_expired"),
+                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+        );
     }
 
     HttpHeaders createHeaders() {
+        // if access token is after exited time(1 hour buffer)
+        if(LocalDateTime.now().isAfter(accessTokenExpiredDateTime.minusHours(1))) {
+            log.info("access token exceeded expired time");
+            loadAccessToken();
+        }
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8");
         httpHeaders.add("authorization", "Bearer " + accessToken);

@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
+@EqualsAndHashCode
 public class Trade {
 
     private String tradeId;

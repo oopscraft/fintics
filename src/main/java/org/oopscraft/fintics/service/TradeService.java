@@ -10,10 +10,12 @@ import org.oopscraft.fintics.dao.TradeRepository;
 import org.oopscraft.fintics.model.AssetIndicator;
 import org.oopscraft.fintics.model.Balance;
 import org.oopscraft.fintics.model.Trade;
+import org.oopscraft.fintics.thread.TradeThread;
 import org.oopscraft.fintics.thread.TradeThreadManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -87,20 +89,26 @@ public class TradeService {
     }
 
     public Optional<Balance> getTradeBalance(String tradeId) {
-        TradeEntity tradeEntity = tradeRepository.findById(tradeId).orElseThrow();
-        Client client = ClientFactory.getClient(tradeEntity.getClientType(), tradeEntity.getClientProperties());
-        return Optional.ofNullable(client.getBalance());
+        Balance balance = Optional.ofNullable(tradeThreadManager.getTradeThread(tradeId))
+                .map(TradeThread::getBalance)
+                .orElse(null);
+        return Optional.ofNullable(balance);
     }
 
     public List<AssetIndicator> getTradeAssetIndicators(String tradeId) {
-        return tradeThreadManager.getTradeAssetIndicators(tradeId);
+        TradeThread tradeThread = tradeThreadManager.getTradeThread(tradeId);
+        if(tradeThread == null) {
+            return new ArrayList<>();
+        }
+        return new ArrayList<>(tradeThread.getAssetIndicatorMap().values());
     }
 
     public Optional<AssetIndicator> getTradeAssetIndicator(String tradeId, String symbol) {
-        return tradeThreadManager.getTradeAssetIndicators(tradeId).stream()
-                .filter(assetIndicator ->
-                        Objects.equals(assetIndicator.getSymbol(), symbol))
-                .findFirst();
+        TradeThread tradeThread = tradeThreadManager.getTradeThread(tradeId);
+        if(tradeThread == null) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(tradeThread.getAssetIndicatorMap().get(symbol));
     }
 
 }

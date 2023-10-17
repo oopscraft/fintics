@@ -26,33 +26,32 @@ public class TradeThreadSynchronizer {
     public void synchronize() {
         log.debug("== TradeThreadSynchronizer.synchronize");
         List<TradeEntity> tradeEntities = tradeRepository.findAll();
-        List<Trade> trades = tradeThreadManager.getTrades();
 
         // deleted trade thread
-        for(int index = trades.size() - 1; index >= 0; index --) {
-            Trade trade = trades.get(index);
+        for(int index = tradeThreadManager.getTradeThreads().size() - 1; index >= 0; index --) {
+            TradeThread tradeThread = tradeThreadManager.getTradeThreads().get(index);
             boolean notExists = tradeEntities.stream()
                     .noneMatch(tradeEntity ->
-                            tradeEntity.getTradeId().equals(trade.getTradeId()));
+                            tradeEntity.getTradeId().equals(tradeThread.getTrade().getTradeId()));
             if(notExists) {
-                tradeThreadManager.stopTrade(trade);
+                tradeThreadManager.stopTradeThread(tradeThread.getTrade().getTradeId());
             }
         }
 
         // existing service monitor thread
         tradeEntities.forEach(tradeEntity -> {
-            Trade trade = tradeThreadManager.getTrade(tradeEntity.getTradeId()).orElse(null);
-            if(trade == null) {
+            TradeThread tradeThread = tradeThreadManager.getTradeThread(tradeEntity.getTradeId());
+            if(tradeThread == null) {
                 if(tradeEntity.isEnabled()) {
-                    tradeThreadManager.startTrade(Trade.from(tradeEntity));
+                    tradeThreadManager.startTradeThread(Trade.from(tradeEntity));
                 }
             }else{
                 // when properties changed (checks overriding equals method)
                 Trade newTrade = Trade.from(tradeEntity);
-                if(!Objects.equals(newTrade, trade)) {
-                    tradeThreadManager.stopTrade(trade);
+                if(!Objects.equals(newTrade, tradeThread.getTrade())) {
+                    tradeThreadManager.stopTradeThread(newTrade.getTradeId());
                     if(tradeEntity.isEnabled()) {
-                        tradeThreadManager.startTrade(newTrade);
+                        tradeThreadManager.startTradeThread(newTrade);
                     }
                 }
             }

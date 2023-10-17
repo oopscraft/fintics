@@ -24,13 +24,21 @@ public class TradeThread extends Thread {
 
     private final AlarmService alarmService;
 
+    private final Client client;
+
     @Getter
     private final Map<String, AssetIndicator> assetIndicatorMap = new ConcurrentHashMap<>();
+
+    @Getter
+    private Balance balance;
 
     @Builder
     public TradeThread(Trade trade, AlarmService alarmService) {
         this.trade = trade;
         this.alarmService = alarmService;
+
+        // creates client
+        this.client = ClientFactory.getClient(trade.getClientType(), trade.getClientProperties());
     }
 
     @Override
@@ -46,9 +54,8 @@ public class TradeThread extends Thread {
                 }
                 log.info("== {}\t{} - checks trade interval.", trade.getTradeId(), trade.getName());
 
-                // creates interface client
-                Client client = ClientFactory.getClient(trade);
-                Balance balance = client.getBalance();
+                // balance
+                balance = client.getBalance();
 
                 // checks buy condition
                 for(TradeAsset tradeAsset : trade.getTradeAssets()) {

@@ -10,10 +10,6 @@ import java.util.Properties;
 
 public class ClientFactory {
 
-    public static Client getClient(Trade trade) {
-        return getClient(trade.getClientType(), trade.getClientProperties());
-    }
-
     public static Client getClient(String clientType, String clientProperties) {
         try {
             Class<? extends Client> clientTypeClass = Class.forName(clientType).asSubclass(Client.class);
