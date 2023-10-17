@@ -24,11 +24,10 @@ class EmaCalculatorTest {
 
         // when
         EmaCalculator emaCalculator = EmaCalculator.of(prices, period);
-        List<Double> emaValues = emaCalculator.calculate();
 
         // then
         double[] expectedEmaValues = {100.0, 102.5, 106.25, 110.125, 114.0625, 119.03125};
-        log.debug("== emaValues:{}", Arrays.toString(emaValues.toArray()));
+        log.debug("== emaValues:{}", Arrays.toString(emaCalculator.getEmas().toArray()));
         log.debug("== expectedEmaValues:{}", Arrays.toString(expectedEmaValues));
 
 

@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.oopscraft.arch4j.core.test.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
-import org.oopscraft.fintics.calculator.Macd;
 import org.oopscraft.fintics.client.ClientFactory;
 import org.oopscraft.fintics.dao.TradeEntity;
 import org.oopscraft.fintics.model.*;

@@ -6,12 +6,10 @@ import org.apache.commons.csv.CSVParser;
 import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
-import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -50,11 +48,10 @@ class MacdCalculatorTest {
         int longTermPeriod = 26;
         int signalPeriod = 9;
         MacdCalculator macdCalculator = new MacdCalculator(closes, shortTermPeriod, longTermPeriod, signalPeriod);
-        List<Macd> macdValues = macdCalculator.calculate();
         for(int i = 0; i < closes.size(); i++) {
             log.debug("[{}] {}/{}/{}, {}/{}/{}", i,
                     macds.get(i), signals.get(i), macdOscillators.get(i),
-                    macdValues.get(i).getMacd(), macdValues.get(i).getSignal(), macdValues.get(i).getOscillator());
+                    macdCalculator.getMacds().get(i), macdCalculator.getSignals().get(i), macdCalculator.getOscillators().get(i));
         }
 
         // then
@@ -64,10 +61,9 @@ class MacdCalculatorTest {
                 continue;
             }
             // 이후 부터는 값이 일치해야함.
-            Macd macd = macdValues.get(i);
-            assertEquals(macds.get(i), macd.getMacd(), 0.02);
-            assertEquals(signals.get(i), macd.getSignal(), 0.02);
-            assertEquals(macdOscillators.get(i), macd.getOscillator(), 0.02);
+            assertEquals(macds.get(i), macdCalculator.getMacds().get(i), 0.02);
+            assertEquals(signals.get(i), macdCalculator.getSignals().get(i), 0.02);
+            assertEquals(macdOscillators.get(i), macdCalculator.getOscillators().get(i), 0.02);
         }
     }
 

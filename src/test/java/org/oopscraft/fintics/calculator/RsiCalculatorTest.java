@@ -46,20 +46,19 @@ class RsiCalculatorTest {
         // when
         int period = 14; // RSI 주기
         RsiCalculator rsiCalculator = new RsiCalculator(closes, period);
-        List<Double> rsiValues = rsiCalculator.calculate();
         for(int i = 0; i < closes.size(); i++) {
-            log.debug("[{}] {}, {}", i, rsis.get(i), rsiValues.get(i));
+            log.debug("[{}] {}, {}", i, rsis.get(i), rsiCalculator.getRsis().get(i));
         }
 
         // then
         for(int i = 0; i < closes.size(); i ++) {
             // period + 1 전의 RSI는 데이터부족으로 50으로 반환됨.
             if(i < period + 1) {
-                assertEquals(50, rsiValues.get(i));
+                assertEquals(50, rsiCalculator.getRsis().get(i));
             }
             // 이후 부터는 값이 일치해야함.
             else{
-                assertEquals(rsis.get(i), rsiValues.get(i), 0.02);
+                assertEquals(rsis.get(i), rsiCalculator.getRsis().get(i), 0.02);
             }
         }
     }

@@ -3,6 +3,7 @@ package org.oopscraft.fintics.thread;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import lombok.Builder;
+import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.fintics.model.AssetIndicator;
 
 import java.math.BigDecimal;
@@ -13,6 +14,7 @@ import java.util.Collections;
 import java.util.List;
 
 @Builder
+@Slf4j
 public class TradeAssetDecider {
 
     private String holdCondition;
@@ -21,7 +23,8 @@ public class TradeAssetDecider {
 
     public Boolean execute() {
         Binding binding = new Binding();
-        binding.setVariable("Tool", Tool.class);
+        binding.setVariable("log", log);
+        binding.setVariable("tool", new Tool());
         binding.setVariable("assetIndicator", assetIndicator);
         GroovyShell groovyShell = new GroovyShell(binding);
         if(holdCondition == null || holdCondition.isBlank()) {
@@ -36,7 +39,7 @@ public class TradeAssetDecider {
 
     public static class Tool {
 
-        public static Double slope(List<Double> values, int period) {
+        public Double slope(List<Double> values, int period) {
             List<Double> periodValues = values.subList(
                     0,
                     Math.min(period, values.size())

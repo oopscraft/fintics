@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.junit.jupiter.api.Test;
-import org.oopscraft.fintics.calculator.Macd;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -59,21 +58,15 @@ public class AssetIndicatorTest {
 
         // then
         for(int i = 0, size = assetIndicator.getMinuteOhlcvs().size(); i < size; i ++ ) {
-            Macd macd = assetIndicator.getMinuteMacds().get(i);
-            double rsi = assetIndicator.getMinuteRsis().get(i);
-            log.debug("[{}] {}/{}/{}/{}, {}/{}/{}/{}",
+            log.debug("[{}] {}/{}, {}/{}",
                     i,
-                    macds.get(i), signals.get(i), macdOscillators.get(i), rsis.get(i),
-                    macd.getMacd(), macd.getSignal(), macd.getOscillator(), rsi
+                    macdOscillators.get(i), rsis.get(i),
+                    assetIndicator.getMinuteMacdOscillator(i), assetIndicator.getMinuteRsi(i)
             );
         }
         for(int i = 0, size = assetIndicator.getMinuteOhlcvs().size() - 70; i < size; i ++ ) {
-            Macd macd = assetIndicator.getMinuteMacds().get(i);
-            double rsi = assetIndicator.getMinuteRsis().get(i);
-            assertEquals(macds.get(i), macd.getMacd(), 0.02);
-            assertEquals(signals.get(i), macd.getSignal(), 0.02);
-            assertEquals(macdOscillators.get(i), macd.getOscillator(), 0.02);
-            assertEquals(rsis.get(i), rsi, 0.02);
+            assertEquals(macdOscillators.get(i), assetIndicator.getMinuteMacdOscillator(i), 0.02);
+            assertEquals(rsis.get(i), assetIndicator.getMinuteRsi(i), 0.02);
         }
     }
 

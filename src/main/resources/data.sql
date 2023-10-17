@@ -32,26 +32,26 @@ insert into `fintics_trade`
     ('06c228451ce0400fa57bb36f0568d7cb','한국투자증권 모의투자 #1','N','30','09:00','15:30',
      'org.oopscraft.fintics.client.kis.KisClient','production=false
 apiUrl=https://openapivts.koreainvestment.com:29443
-appKey=PSEoPN1uMGYe67XzUuaEDhqpMYOJNumYb2yl
-appSecret=kLdK3wGPQM3aS402GWetUxccOx4xMZbQZOYpxo3JJNearF64mjBjqG/msDdH9yCLWCGnSySvRw7HxClEMNtZ3ChF0TiSQxBdJfPerfQRyqLBRNmsdSaUOvHaiulNtTPvlOheqk16+0Ce4X7yyM0/DfTp5sZIP5mh2WCXkhF5wCwhUcOKLZk=
+appKey=PSTxd5BurtHzO3Viit4rL4Syhuz8RyzxuyJL
+appSecret=dMrEmCtbBQS2+oMUDUBgnKDVKrns3RqVYOGkBG8/Zxpm5M1M92yEoelrWenmn5CLCCgncwgneBqrV/GOiNpTOxrYVrYWLJVTbBRTSeqsH60nJXZ2lrjhfAxWNKzcXeyR8EbWcid4bQDTL3vtrQmCz+Jazky5cm5fx0lBs7ciL33x7EIp+5w=
 accountNo=50096055-01
-','double macdOscillator = assetIndicator.getMinuteMacd().getOscillator();
-double rsi = assetIndicator.getMinuteRsi();
-if(macdOscillator > 0) {
-    if(rsi > 70) {
-        if(Tool.slope(assetIndicator.getMinuteRsis(),3) < 0) {
-            return false;
-        }
-    }
+','double priceSlope = tool.slope(assetIndicator.getMinutePrices(), 5);
+double macdOscillatorSlope = tool.slope(assetIndicator.getMinuteMacdOscillators(), 5);
+double rsiSlope = tool.slope(assetIndicator.getMinuteRsis(), 5);
+
+log.info("priceSlope:{}, macdOscillatorSlop:{}, rsiSlope:{}", priceSlope, macdOscillatorSlope, rsiSlope);
+
+if(priceSlope > 0
+&& macdOscillatorSlope > 0
+&& rsiSlope > 0
+) {
     return true;
 }
 
-if(macdOscillator < 0) {
-    if(rsi < 30) {
-        if(Tool.slope(assetIndicator.getMinuteRsis(),3) > 0) {
-            return true;
-        }
-    }
+if(priceSlope < 0
+&& macdOscillatorSlope < 0
+&& rsiSlope < 0
+) {
     return false;
 }
 ');

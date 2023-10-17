@@ -1,7 +1,6 @@
 package org.oopscraft.fintics.api.v1.dto;
 
 import lombok.*;
-import org.oopscraft.fintics.calculator.Macd;
 import org.oopscraft.fintics.model.AssetIndicator;
 import org.oopscraft.fintics.model.AssetType;
 import org.oopscraft.fintics.model.OrderBook;
@@ -32,22 +31,14 @@ public class AssetIndicatorResponse {
     @Builder.Default
     private List<Double> dailyPrices = new ArrayList<>();
 
-    private Macd minuteMacd;
+    @Builder.Default
+    private List<Double> minuteMacdOscillators = new ArrayList<>();
 
     @Builder.Default
-    private List<Macd> minuteMacds = new ArrayList<>();
-
-    private Macd dailyMacd;
-
-    @Builder.Default
-    private List<Macd> dailyMacds = new ArrayList<>();
-
-    private Double minuteRsi;
+    private List<Double> dailyMacdOscillators = new ArrayList<>();
 
     @Builder.Default
     private List<Double> minuteRsis = new ArrayList<>();
-
-    private Double dailyRsi;
 
     @Builder.Default
     private List<Double> dailyRsis = new ArrayList<>();
@@ -63,13 +54,9 @@ public class AssetIndicatorResponse {
                 .orderBook(assetIndicator.getOrderBook())
                 .minutePrices(assetIndicator.getMinutePrices())
                 .dailyPrices(assetIndicator.getDailyPrices())
-                .minuteMacd(assetIndicator.getMinuteMacd())
-                .minuteMacds(assetIndicator.getMinuteMacds())
-                .dailyMacd(assetIndicator.getDailyMacd())
-                .dailyMacds(assetIndicator.getDailyMacds())
-                .minuteRsi(assetIndicator.getMinuteRsi())
+                .minuteMacdOscillators(assetIndicator.getMinuteMacdOscillators())
+                .dailyMacdOscillators(assetIndicator.getDailyMacdOscillators())
                 .minuteRsis(assetIndicator.getMinuteRsis())
-                .dailyRsi(assetIndicator.getDailyRsi())
                 .dailyRsis(assetIndicator.getDailyRsis())
                 .holdConditionResult(assetIndicator.getHoldConditionResult())
                 .build();

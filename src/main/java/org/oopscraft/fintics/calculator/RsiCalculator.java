@@ -1,5 +1,6 @@
 package org.oopscraft.fintics.calculator;
 
+import lombok.Getter;
 import org.apache.commons.math3.stat.descriptive.moment.Mean;
 
 import java.math.BigDecimal;
@@ -10,21 +11,14 @@ import java.util.List;
 
 public class RsiCalculator {
 
-    private final List<Double> series;
-
-    private final Integer period;
+    @Getter
+    private final List<Double> rsis = new ArrayList<>();
 
     public static RsiCalculator of(List<Double> series, int period) {
         return new RsiCalculator(series, period);
     }
 
     public RsiCalculator(List<Double> series, int period) {
-        this.series = series;
-        this.period = period;
-    }
-
-    public List<Double> calculate() {
-        List<Double> rsiValues = new ArrayList<>();
 
         // price changes
         List<Double> priceChanges = new ArrayList<>();
@@ -66,7 +60,7 @@ public class RsiCalculator {
 
             // 기간(period)+1 이전 평균은 정확한 기간평균이 아님으로 중립(50.00)으로 설정
             if(i < period + 1) {
-                rsiValues.add(50.00);
+                rsis.add(50.00);
                 continue;
             }
 
@@ -82,7 +76,7 @@ public class RsiCalculator {
 
             // check zero
             if(rs.equals(BigDecimal.ZERO)) {
-                rsiValues.add(100.0);
+                rsis.add(100.0);
                 continue;
             }
 
@@ -91,10 +85,8 @@ public class RsiCalculator {
                     .divide(rs.add(BigDecimal.valueOf(1)), MathContext.DECIMAL128)
                     .multiply(BigDecimal.valueOf(100))
                     .setScale(2, RoundingMode.HALF_UP);
-            rsiValues.add(rsi.doubleValue());
+            rsis.add(rsi.doubleValue());
         }
-
-        return rsiValues;
     }
 
     private static double getAverage(List<Double> gains) {

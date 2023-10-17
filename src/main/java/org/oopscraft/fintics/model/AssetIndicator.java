@@ -4,7 +4,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.oopscraft.fintics.calculator.Macd;
 import org.oopscraft.fintics.calculator.MacdCalculator;
 import org.oopscraft.fintics.calculator.RsiCalculator;
 
@@ -30,9 +29,9 @@ public class AssetIndicator extends Asset {
 
     private List<Double> dailyPrices;
 
-    private List<Macd> minuteMacds;
+    private List<Double> minuteMacdOscillators;
 
-    private List<Macd> dailyMacds;
+    private List<Double> dailyMacdOscillators;
 
     private List<Double> minuteRsis;
 
@@ -66,21 +65,21 @@ public class AssetIndicator extends Asset {
                 .map(Ohlcv::getClosePrice)
                 .collect(Collectors.toList());
 
-        // minute macds
-        minuteMacds = reverse(MacdCalculator.of(reverse(minutePrices), 12, 26, 9)
-                .calculate());
+        // minute macd oscillators
+        minuteMacdOscillators = reverse(MacdCalculator.of(reverse(minutePrices), 12, 26, 9)
+                .getOscillators());
 
-        // daily macds
-        dailyMacds = reverse(MacdCalculator.of(reverse(dailyPrices), 12, 26, 9)
-                .calculate());
+        // daily macd oscillators
+        dailyMacdOscillators = reverse(MacdCalculator.of(reverse(dailyPrices), 12, 26, 9)
+                .getOscillators());
 
         // minute rsis
         minuteRsis = reverse(RsiCalculator.of(reverse(minutePrices), 14)
-                .calculate());
+                .getRsis());
 
         // daily rsis
         dailyRsis = reverse(RsiCalculator.of(reverse(dailyPrices), 14)
-                .calculate());
+                .getRsis());
     }
 
     private static <T> List<T> reverse(List<T> list) {
@@ -89,32 +88,24 @@ public class AssetIndicator extends Asset {
         return reversedList;
     }
 
-    public Macd getMinuteMacd(int index) {
-        return index > minuteMacds.size() - 1
-                ? Macd.builder()
-                .macd(0.0)
-                .signal(0.0)
-                .oscillator(0.0)
-                .build()
-                : minuteMacds.get(index);
+    public Double getMinuteMacdOscillator(int index) {
+        return index > minuteMacdOscillators.size() - 1
+                ? 0.0
+                : minuteMacdOscillators.get(index);
     }
 
-    public Macd getMinuteMacd() {
-        return getMinuteMacd(0);
+    public Double getMinuteMacdOscillator() {
+        return getMinuteMacdOscillator(0);
     }
 
-    public Macd getDailyMacd(int index) {
-        return index > dailyMacds.size() - 1
-                ? Macd.builder()
-                .macd(0.0)
-                .signal(0.0)
-                .oscillator(0.0)
-                .build()
-                : dailyMacds.get(index);
+    public Double getDailyMacdOscillator(int index) {
+        return index > dailyMacdOscillators.size() - 1
+                ? 0.0
+                : dailyMacdOscillators.get(index);
     }
 
-    public Macd getDailyMacd() {
-        return getDailyMacd(0);
+    public Double getDailyMacdOscillator() {
+        return getDailyMacdOscillator(0);
     }
 
     public Double getMinuteRsi(int index) {

@@ -18,7 +18,7 @@ class TradeAssetDeciderTest {
 
     @Test
     void test() {
-        String holdCondition = "println Tool.slope(assetIndicator.getMinutePrices(),1);";
+        String holdCondition = "println tool.slope(assetIndicator.getMinutePrices(),1);";
 
         TradeAssetDecider tradeAssetDecider = TradeAssetDecider.builder()
                 .holdCondition(holdCondition)
