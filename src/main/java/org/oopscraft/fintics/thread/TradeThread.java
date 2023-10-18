@@ -49,10 +49,10 @@ public class TradeThread extends Thread {
 
                 // checks start,end time
                 if(!isOperatingTime(LocalTime.now())) {
-                    log.info("== {}\t{} - not operating time. {} ~ {}", trade.getTradeId(), trade.getName(), trade.getStartAt(), trade.getEndAt());
+                    log.info("Not operating time.[{}] - {} ~ {}", trade.getName(), trade.getStartAt(), trade.getEndAt());
                     continue;
                 }
-                log.info("== [{}] - start trade.", trade.getName());
+                log.info("start trade.[{}]", trade.getName());
 
                 // balance
                 balance = client.getBalance();
@@ -69,7 +69,7 @@ public class TradeThread extends Thread {
                     Thread.sleep(1000);
 
                     // logging
-                    log.info("[{}] - check asset.", tradeAsset.getName());
+                    log.info("check asset.[{}]", tradeAsset.getName());
 
                     // build asset indicator
                     OrderBook orderBook = client.getOrderBook(tradeAsset);
