@@ -57,7 +57,7 @@ if(priceSlope > 0
     // 하락추세일 경우 일시적인 상승인지 이동평균선 체크 후 매수
     if(macdOscillator < 0) {
         if(smaSlope > 0) {
-            reutrn true;
+            return true;
         }
     }
 }
