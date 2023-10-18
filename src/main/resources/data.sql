@@ -35,8 +35,7 @@ apiUrl=https://openapivts.koreainvestment.com:29443
 appKey=PSTxd5BurtHzO3Viit4rL4Syhuz8RyzxuyJL
 appSecret=dMrEmCtbBQS2+oMUDUBgnKDVKrns3RqVYOGkBG8/Zxpm5M1M92yEoelrWenmn5CLCCgncwgneBqrV/GOiNpTOxrYVrYWLJVTbBRTSeqsH60nJXZ2lrjhfAxWNKzcXeyR8EbWcid4bQDTL3vtrQmCz+Jazky5cm5fx0lBs7ciL33x7EIp+5w=
 accountNo=50096055-01
-','
-double priceSlope = tool.slope(assetIndicator.getMinutePrices(), 7);
+','double priceSlope = tool.slope(assetIndicator.getMinutePrices(), 7);
 double smaSlope = tool.slope(tool.sma(assetIndicator.getMinutePrices(), 7), 7);
 double macdOscillator = assetIndicator.getMinuteMacdOscillator();
 double macdOscillatorSlope = tool.slope(assetIndicator.getMinuteMacdOscillators(), 7);
