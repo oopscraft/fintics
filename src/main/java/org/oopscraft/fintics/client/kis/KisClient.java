@@ -63,6 +63,7 @@ public class KisClient extends Client {
     void loadAccessToken() {
         log.info("load access token");
         RestTemplate restTemplate = RestTemplateBuilder.create()
+                .insecure(true)
                 .build();
         ValueMap payloadMap = new ValueMap(){{
             put("grant_type","client_credentials");
@@ -99,6 +100,7 @@ public class KisClient extends Client {
     @Override
     public OrderBook getOrderBook(Asset asset) {
         RestTemplate restTemplate = RestTemplateBuilder.create()
+                .insecure(true)
                 .build();
         String url = apiUrl + "/uapi/domestic-stock/v1/quotations/inquire-asking-price-exp-ccn";
         HttpHeaders headers = createHeaders();
@@ -159,6 +161,7 @@ public class KisClient extends Client {
     public List<Ohlcv> getMinuteOhlcvs(Asset asset) {
         List<Ohlcv> minuteOhlcvs = new ArrayList<>();
         RestTemplate restTemplate = RestTemplateBuilder.create()
+                .insecure(true)
                 .build();
         String fidEtcClsCode = "";
         String fidCondMrktDivCode = "J";
@@ -255,6 +258,7 @@ public class KisClient extends Client {
     @Override
     public List<Ohlcv> getDailyOhlcvs(Asset asset) {
         RestTemplate restTemplate = RestTemplateBuilder.create()
+                .insecure(true)
                 .build();
         String fidCondMrktDivCode = "J";
         String fidInputIscd;
@@ -326,6 +330,7 @@ public class KisClient extends Client {
     @Override
     public Balance getBalance() {
         RestTemplate restTemplate = RestTemplateBuilder.create()
+                .insecure(true)
                 .build();
         String url = apiUrl + "/uapi/domestic-stock/v1/trading/inquire-balance";
         HttpHeaders headers = createHeaders();
@@ -392,6 +397,7 @@ public class KisClient extends Client {
     @Override
     public void buyAsset(TradeAsset tradeAsset, int quantity) {
         RestTemplate restTemplate = RestTemplateBuilder.create()
+                .insecure(true)
                 .build();
         String url = apiUrl + "/uapi/domestic-stock/v1/trading/order-cash";
         HttpHeaders headers = createHeaders();
@@ -424,6 +430,7 @@ public class KisClient extends Client {
     @Override
     public void sellAsset(BalanceAsset balanceAsset, int quantity) {
         RestTemplate restTemplate = RestTemplateBuilder.create()
+                .insecure(true)
                 .build();
         String url = apiUrl + "/uapi/domestic-stock/v1/trading/order-cash";
         HttpHeaders headers = createHeaders();

@@ -52,7 +52,7 @@ public class TradeThread extends Thread {
                     log.info("== {}\t{} - not operating time. {} ~ {}", trade.getTradeId(), trade.getName(), trade.getStartAt(), trade.getEndAt());
                     continue;
                 }
-                log.info("== {}\t{} - checks trade interval.", trade.getTradeId(), trade.getName());
+                log.info("== [{}] - start trade.", trade.getName());
 
                 // balance
                 balance = client.getBalance();
@@ -67,6 +67,9 @@ public class TradeThread extends Thread {
 
                     // force delay
                     Thread.sleep(1000);
+
+                    // logging
+                    log.info("[{}] - check asset.", tradeAsset.getName());
 
                     // build asset indicator
                     OrderBook orderBook = client.getOrderBook(tradeAsset);
@@ -132,9 +135,9 @@ public class TradeThread extends Thread {
             } catch (InterruptedException e) {
                 log.warn(e.getMessage());
                 break;
-            } catch (Throwable t) {
-                log.warn(t.getMessage());
-                sendErrorAlarmIfEnabled(t);
+            } catch (Throwable e) {
+                log.warn(e.getMessage());
+                sendErrorAlarmIfEnabled(e);
             }
         }
     }
