@@ -4,6 +4,8 @@ import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
+import org.oopscraft.fintics.calculator.EmaCalculator;
+import org.oopscraft.fintics.calculator.SmaCalculator;
 import org.oopscraft.fintics.model.AssetIndicator;
 
 import java.math.BigDecimal;
@@ -38,6 +40,22 @@ public class TradeAssetDecider {
     }
 
     public static class Tool {
+
+        public List<Double> sma(List<Double> values, int period) {
+            List<Double> series = new ArrayList<>(values);
+            Collections.reverse(series);
+            List<Double> smas = SmaCalculator.of(series, period).getSmas();
+            Collections.reverse(smas);
+            return smas;
+        }
+
+        public List<Double> ema(List<Double> values, int period) {
+            List<Double> series = new ArrayList<>(values);
+            Collections.reverse(series);
+            List<Double> emas = EmaCalculator.of(series, period).getEmas();
+            Collections.reverse(emas);
+            return emas;
+        }
 
         public Double slope(List<Double> values, int period) {
             List<Double> periodValues = values.subList(

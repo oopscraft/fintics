@@ -35,25 +35,48 @@ apiUrl=https://openapivts.koreainvestment.com:29443
 appKey=PSTxd5BurtHzO3Viit4rL4Syhuz8RyzxuyJL
 appSecret=dMrEmCtbBQS2+oMUDUBgnKDVKrns3RqVYOGkBG8/Zxpm5M1M92yEoelrWenmn5CLCCgncwgneBqrV/GOiNpTOxrYVrYWLJVTbBRTSeqsH60nJXZ2lrjhfAxWNKzcXeyR8EbWcid4bQDTL3vtrQmCz+Jazky5cm5fx0lBs7ciL33x7EIp+5w=
 accountNo=50096055-01
-','String name = assetIndicator.getName();
+','
 double priceSlope = tool.slope(assetIndicator.getMinutePrices(), 7);
+double smaSlope = tool.slope(tool.sma(assetIndicator.getMinutePrices(), 7), 7);
+double macdOscillator = assetIndicator.getMinuteMacdOscillator();
 double macdOscillatorSlope = tool.slope(assetIndicator.getMinuteMacdOscillators(), 7);
+double rsi = assetIndicator.getMinuteRsi();
 double rsiSlope = tool.slope(assetIndicator.getMinuteRsis(), 7);
 
-log.info("[{}] priceSlope:{}, macdOscillatorSlope:{}, rsiSlope:{}", name, priceSlope, macdOscillatorSlope, rsiSlope);
+log.info("priceSlope:{}, macdOscillatorSlope:{}, rsiSlope:{}, smaSlope:{}", priceSlope, macdOscillatorSlope, rsiSlope, smaSlope);
 
+// 매수 조건 - 가격,MACD,RSI 모두 상승중인 경우
 if(priceSlope > 0
 && macdOscillatorSlope > 0
 && rsiSlope > 0
 ) {
-    return true;
+    // 상승추세일 경우 즉각 매수
+    if(macdOscillator > 0) {
+        return true;
+    }
+    // 하락추세일 경우 일시적인 상승인지 이동평균선 체크 후 매수
+    if(macdOscillator < 0) {
+        if(smaSlope > 0) {
+            reutrn true;
+        }
+    }
 }
 
+// 매도조건 - 가격,MACD,RSI 모두 하락중인 경우
 if(priceSlope < 0
 && macdOscillatorSlope < 0
 && rsiSlope < 0
 ) {
-    return false;
+    // 하락추세시에는 즉각 매도
+    if(macdOscillator < 0) {
+        return false;
+    }
+    // 상승추세시에는 일시적인 하락인지 이동평균선 체크 후 매도
+    if(maceOscillator > 0) {
+        if(smaSlope < 0) {
+            return false
+        }
+    }
 }
 ');
 

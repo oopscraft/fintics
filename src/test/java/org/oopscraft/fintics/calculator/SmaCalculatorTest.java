@@ -1,17 +1,17 @@
 package org.oopscraft.fintics.calculator;
 
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
-class EmaCalculatorTest {
+public class SmaCalculatorTest {
 
     @Test
-    void calculate() {
+    @Order(1)
+    void test1() {
         // given
         List<Double> series = List.of(
                 100.0,
@@ -25,12 +25,11 @@ class EmaCalculatorTest {
         );
 
         // when
-        List<Double> emas = EmaCalculator.of(series, 3)
-                .getEmas();
+        List<Double> smas = SmaCalculator.of(series, 3)
+                .getSmas();
 
         // then
-        emas.forEach(ema -> log.debug("{}", ema));
+        smas.forEach(sma -> log.debug("{}", sma));
     }
-
 
 }

@@ -32,6 +32,8 @@ public class TradeThread extends Thread {
     @Getter
     private Balance balance;
 
+    private boolean terminated;
+
     @Builder
     public TradeThread(Trade trade, AlarmService alarmService) {
         this.trade = trade;
@@ -41,18 +43,28 @@ public class TradeThread extends Thread {
         this.client = ClientFactory.getClient(trade.getClientType(), trade.getClientProperties());
     }
 
+    public void terminate() {
+        this.terminated = true;
+        this.interrupt();
+        try {
+            this.join();
+        } catch (InterruptedException e) {
+            log.warn(e.getMessage());
+        }
+    }
+
     @Override
     public void run() {
-        while(!Thread.interrupted()) {
+        while(!Thread.interrupted() && !terminated) {
             try {
                 Thread.sleep(trade.getInterval() * 1_000);
 
                 // checks start,end time
                 if(!isOperatingTime(LocalTime.now())) {
-                    log.info("Not operating time.[{}] - {} ~ {}", trade.getName(), trade.getStartAt(), trade.getEndAt());
+                    log.info("Not operating time - [{}] {} ~ {}", trade.getName(), trade.getStartAt(), trade.getEndAt());
                     continue;
                 }
-                log.info("start trade.[{}]", trade.getName());
+                log.info("Check trade - [{}]", trade.getName());
 
                 // balance
                 balance = client.getBalance();
@@ -69,7 +81,7 @@ public class TradeThread extends Thread {
                     Thread.sleep(1000);
 
                     // logging
-                    log.info("check asset.[{}]", tradeAsset.getName());
+                    log.info("Check asset - [{}]", tradeAsset.getName());
 
                     // build asset indicator
                     OrderBook orderBook = client.getOrderBook(tradeAsset);

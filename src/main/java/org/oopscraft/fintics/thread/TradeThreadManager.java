@@ -25,7 +25,7 @@ public class TradeThreadManager {
             if(isTradeThreadRunning(trade.getTradeId())) {
                 throw new RuntimeException(String.format("Thread Thread[%s] is already running.", trade.getName()));
             }
-            log.info("start trade - {}", trade);
+            log.info("Start TradeThread - {}", trade);
             String tradeId = trade.getTradeId();
             TradeThread tradeThread = new TradeThread(trade, alarmService);
             tradeThread.setDaemon(true);
@@ -39,14 +39,9 @@ public class TradeThreadManager {
             if(!isTradeThreadRunning(tradeId)) {
                 throw new RuntimeException(String.format("Thread Thread[%s] is not running.", tradeId));
             }
-            log.info("stop trade - {}", tradeId);
+            log.info("Terminate Trade Thread - {}", tradeId);
             TradeThread tradeThread = tradeThreadMap.get(tradeId);
-            tradeThread.interrupt();
-            try {
-                tradeThread.join(60_000);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+            tradeThread.terminate();
             tradeThreadMap.remove(tradeId);
         }
     }
