@@ -37,10 +37,6 @@ public class KisClient extends Client {
 
     private final ObjectMapper objectMapper;
 
-    private String accessToken;
-
-    private LocalDateTime accessTokenExpiredDateTime;
-
     public KisClient(Properties properties) {
         super(properties);
         this.production = Boolean.parseBoolean(properties.getProperty("production"));
@@ -49,9 +45,6 @@ public class KisClient extends Client {
         this.appSecret = properties.getProperty("appSecret");
         this.accountNo = properties.getProperty("accountNo");
         this.objectMapper = new ObjectMapper();
-
-        // load access toke
-        loadAccessToken();
     }
 
     static synchronized void sleep() {
@@ -60,38 +53,11 @@ public class KisClient extends Client {
         }catch(Throwable ignored){}
     }
 
-    void loadAccessToken() {
-        log.info("load access token");
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .build();
-        ValueMap payloadMap = new ValueMap(){{
-            put("grant_type","client_credentials");
-            put("appkey", appKey);
-            put("appsecret", appSecret);
-        }};
-        RequestEntity<Map<String,Object>> requestEntity = RequestEntity
-                .post(apiUrl + "/oauth2/tokenP")
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(payloadMap);
-        ResponseEntity<ValueMap> responseEntity = restTemplate.exchange(requestEntity, ValueMap.class);
-        ValueMap responseMap = responseEntity.getBody();
-        this.accessToken = responseMap.getString("access_token");
-        this.accessTokenExpiredDateTime = LocalDateTime.parse(
-                responseMap.getString("access_token_token_expired"),
-                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-        );
-    }
-
     HttpHeaders createHeaders() {
-        // if access token is after exited time(1 hour buffer)
-        if(LocalDateTime.now().isAfter(accessTokenExpiredDateTime.minusHours(1))) {
-            log.info("access token exceeded expired time");
-            loadAccessToken();
-        }
+        KisAccessToken accessToken = KisAccessTokenRegistry.getAccessToken(apiUrl, appKey, appSecret);
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8");
-        httpHeaders.add("authorization", "Bearer " + accessToken);
+        httpHeaders.add("authorization", "Bearer " + accessToken.getAccessToken());
         httpHeaders.add("appkey", appKey);
         httpHeaders.add("appsecret", appSecret);
         return httpHeaders;
@@ -366,7 +332,7 @@ public class KisClient extends Client {
         List<ValueMap> output1 = objectMapper.convertValue(output1Node, new TypeReference<>(){});
 
         JsonNode output2Node = rootNode.path("output2");
-        List<ValueMap> output2 = objectMapper.convertValue(output2Node, new TypeReference<List<ValueMap>>(){});
+        List<ValueMap> output2 = objectMapper.convertValue(output2Node, new TypeReference<>(){});
 
         Balance balance = Balance.builder()
                 .accountNo(accountNo)
