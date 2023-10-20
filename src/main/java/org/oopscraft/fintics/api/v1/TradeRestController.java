@@ -1,18 +1,20 @@
 package org.oopscraft.fintics.api.v1;
 
 import lombok.RequiredArgsConstructor;
-import org.oopscraft.fintics.api.v1.dto.AssetIndicatorResponse;
 import org.oopscraft.fintics.api.v1.dto.BalanceResponse;
 import org.oopscraft.fintics.api.v1.dto.TradeRequest;
 import org.oopscraft.fintics.api.v1.dto.TradeResponse;
 import org.oopscraft.fintics.model.Trade;
 import org.oopscraft.fintics.model.TradeAsset;
 import org.oopscraft.fintics.service.TradeService;
+import org.oopscraft.fintics.thread.TradeThread;
+import org.oopscraft.fintics.thread.TradeThreadManager;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,6 +26,8 @@ import java.util.stream.Collectors;
 public class TradeRestController {
 
     private final TradeService tradeService;
+
+    private final TradeThreadManager tradeThreadManager;
 
     @GetMapping
     public ResponseEntity<List<TradeResponse>> getTrades() {
@@ -134,20 +138,14 @@ public class TradeRestController {
         return ResponseEntity.ok(balanceResponse);
     }
 
-    @GetMapping("{tradeId}/asset-indicator")
-    public ResponseEntity<List<AssetIndicatorResponse>> getTradeAssetIndicators(@PathVariable("tradeId") String tradeId) {
-        List<AssetIndicatorResponse> assetIndicatorResponses = tradeService.getTradeAssetIndicators(tradeId).stream()
-                .map(AssetIndicatorResponse::from)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(assetIndicatorResponses);
-    }
-
-    @GetMapping("{tradeId}/asset-indicator/{symbol}")
-    public ResponseEntity<AssetIndicatorResponse> getTradeAssetIndicator(@PathVariable("tradeId") String tradeId, @PathVariable("symbol") String symbol) {
-        AssetIndicatorResponse assetIndicatorResponse = tradeService.getTradeAssetIndicator(tradeId, symbol)
-                .map(AssetIndicatorResponse::from)
-                .orElse(new AssetIndicatorResponse());
-        return ResponseEntity.ok(assetIndicatorResponse);
+    @GetMapping(value = "{tradeId}/log", produces = "text/event-stream")
+    public SseEmitter getTradeLog(@PathVariable("tradeId")String tradeId) {
+        TradeThread tradeThread = tradeThreadManager.getTradeThread(tradeId);
+        if(tradeThread != null) {
+            return tradeThread.getTradeLogAppender().getSseEmitter();
+        }else{
+            return new SseEmitter();
+        }
     }
 
 }

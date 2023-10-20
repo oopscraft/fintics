@@ -11,14 +11,20 @@ import java.util.List;
 
 public class RsiCalculator {
 
-    @Getter
-    private final List<Double> rsis = new ArrayList<>();
+    private final List<Double> series;
+
+    private final int period;
 
     public static RsiCalculator of(List<Double> series, int period) {
         return new RsiCalculator(series, period);
     }
 
     public RsiCalculator(List<Double> series, int period) {
+        this.series = series;
+        this.period = period;
+    }
+
+    public List<Double> calculate() {
 
         // price changes
         List<Double> priceChanges = new ArrayList<>();
@@ -47,6 +53,7 @@ public class RsiCalculator {
             }
         }
 
+        List<Double> rsis = new ArrayList<>();
         for (int i = 0; i < series.size(); i++) {
             // period data of gain/loss
             List<Double> periodGains = gains.subList(
@@ -87,6 +94,8 @@ public class RsiCalculator {
                     .setScale(2, RoundingMode.HALF_UP);
             rsis.add(rsi.doubleValue());
         }
+
+        return rsis;
     }
 
     private static double getAverage(List<Double> gains) {

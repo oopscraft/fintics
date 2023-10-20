@@ -25,45 +25,44 @@ class MacdCalculatorTest {
                 .setHeader("time","open","high","low","close","5","10","20","60","120","MACD","Signal","MACD-Oscillator")
                 .setSkipHeaderRecord(true)
                 .build();
-        final List<Double> closes = new ArrayList<>();
-        final List<Double> macds = new ArrayList<>();
-        final List<Double> signals = new ArrayList<>();
-        final List<Double> macdOscillators = new ArrayList<>();
+        final List<Double> inputCloses = new ArrayList<>();
+        final List<Macd> inputMacds = new ArrayList<>();
         try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(filePath)) {
             CSVParser.parse(inputStream, StandardCharsets.UTF_8, format).stream()
                     .forEach(record -> {
-                        closes.add(Double.parseDouble(record.get("close").replaceAll(",","")));
-                        macds.add(Double.parseDouble(record.get("MACD").replaceAll(",","")));
-                        signals.add(Double.parseDouble(record.get("Signal").replaceAll(",","")));
-                        macdOscillators.add(Double.parseDouble(record.get("MACD-Oscillator").replaceAll(",","")));
+                        inputCloses.add(Double.parseDouble(record.get("close").replaceAll(",","")));
+                        inputMacds.add(Macd.builder()
+                                .value(Double.parseDouble(record.get("MACD").replaceAll(",","")))
+                                .signal(Double.parseDouble(record.get("Signal").replaceAll(",","")))
+                                .oscillator(Double.parseDouble(record.get("MACD-Oscillator").replaceAll(",","")))
+                                .build());
                     });
         }
-        Collections.reverse(closes);
-        Collections.reverse(macds);
-        Collections.reverse(signals);
-        Collections.reverse(macdOscillators);
+        Collections.reverse(inputCloses);
+        Collections.reverse(inputMacds);
 
         // when
-        int shortTermPeriod = 12;
-        int longTermPeriod = 26;
-        int signalPeriod = 9;
-        MacdCalculator macdCalculator = new MacdCalculator(closes, shortTermPeriod, longTermPeriod, signalPeriod);
-        for(int i = 0; i < closes.size(); i++) {
+        List<Macd> outputMacds = MacdCalculator.of(inputCloses, 12, 26, 9).calculate();
+        for(int i = 0; i < inputCloses.size(); i++) {
+            Macd inputMacd = inputMacds.get(i);
+            Macd outputMacd = outputMacds.get(i);
             log.debug("[{}] {}/{}/{}, {}/{}/{}", i,
-                    macds.get(i), signals.get(i), macdOscillators.get(i),
-                    macdCalculator.getMacds().get(i), macdCalculator.getSignals().get(i), macdCalculator.getOscillators().get(i));
+                    inputMacd.getValue(), inputMacd.getSignal(), inputMacd.getOscillator(),
+                    outputMacd.getValue(), outputMacd.getSignal(), outputMacd.getOscillator());
         }
 
         // then
-        for(int i = 0; i < closes.size(); i ++) {
+        for(int i = 0; i < inputCloses.size(); i ++) {
             // 초반 데이터는 데이터 부족으로 불일치함.
-            if(i < (longTermPeriod*3) + 1) {
+            if(i < (26*3) + 1) {
                 continue;
             }
             // 이후 부터는 값이 일치해야함.
-            assertEquals(macds.get(i), macdCalculator.getMacds().get(i), 0.02);
-            assertEquals(signals.get(i), macdCalculator.getSignals().get(i), 0.02);
-            assertEquals(macdOscillators.get(i), macdCalculator.getOscillators().get(i), 0.02);
+            Macd inputMacd = inputMacds.get(i);
+            Macd outputMacd = outputMacds.get(i);
+            assertEquals(inputMacd.getValue(), outputMacd.getValue(), 0.02);
+            assertEquals(inputMacd.getSignal(), outputMacd.getSignal(), 0.02);
+            assertEquals(inputMacd.getOscillator(), outputMacd.getOscillator(), 0.02);
         }
     }
 

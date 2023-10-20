@@ -36,11 +36,11 @@ appKey=PSTxd5BurtHzO3Viit4rL4Syhuz8RyzxuyJL
 appSecret=dMrEmCtbBQS2+oMUDUBgnKDVKrns3RqVYOGkBG8/Zxpm5M1M92yEoelrWenmn5CLCCgncwgneBqrV/GOiNpTOxrYVrYWLJVTbBRTSeqsH60nJXZ2lrjhfAxWNKzcXeyR8EbWcid4bQDTL3vtrQmCz+Jazky5cm5fx0lBs7ciL33x7EIp+5w=
 accountNo=50096055-01
 ','double priceSlope = tool.slope(assetIndicator.getMinutePrices(), 10);
-double smaSlope = tool.slope(tool.sma(assetIndicator.getMinutePrices(), 10), 10);
-double macdOscillator = assetIndicator.getMinuteMacdOscillator();
-double macdOscillatorSlope = tool.slope(assetIndicator.getMinuteMacdOscillators(), 10);
-double rsi = assetIndicator.getMinuteRsi();
-double rsiSlope = tool.slope(assetIndicator.getMinuteRsis(), 10);
+double smaSlope = tool.slope(assetIndicator.getMinuteSmas(10), 10);
+double macdOscillator = assetIndicator.getMinuteMacd(12, 26, 9).getOscillator();
+double macdOscillatorSlope = tool.slope(assetIndicator.getMinuteMacds(12, 26, 9).collect { it.oscillator }, 10);
+double rsi = assetIndicator.getMinuteRsi(14);
+double rsiSlope = tool.slope(assetIndicator.getMinuteRsis(14), 10);
 
 log.info("priceSlope:{}, smaSlope:{} , macdOscillator:{}, macdOscillatorSlope:{}, rsi:{}, rsiSlope:{}",
 priceSlope, smaSlope, macdOscillator, macdOscillatorSlope, rsi, rsiSlope);

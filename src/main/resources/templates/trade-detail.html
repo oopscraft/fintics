@@ -14,7 +14,6 @@
             clientProperties: null,
             tradeAssets: []
         });
-        const assetIndicators = new duice.ArrayProxy([]);
         const balance = new duice.ObjectProxy({
             total: null,
             cash: null,
@@ -31,7 +30,6 @@
                 .then(data => {
                     duice.ObjectProxy.assign(trade, data);
                     if(trade.clientType && trade.clientProperties) {
-                        getTradeAssetIndicators(data.tradeId);
                         getTradeBalance(data.tradeId);
                     }
                 });
@@ -116,43 +114,33 @@
             }
         }
 
-        function getTradeAssetIndicators() {
-            let url = new URL(`${_apiUrl}/v1/trade/${tradeId}/asset-indicator`, document.location.origin);
-            _fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    duice.ArrayProxy.clear(assetIndicators);
-                    duice.ArrayProxy.assign(assetIndicators, transformTradeAssetIndicators(data));
-                });
-        }
+        // trade log listener
+        let tradeLog;
+        let tradeLogEventSource;
 
-        function transformTradeAssetIndicators(array) {
-            let newArray = [];
-            for(let i = 0; i < array.length; i++ ) {
-                let object = array[i];
-                let newObject = {};
-                [   'symbol', 'name', 'type','collectedAt','orderBook',
-                    'minuteMacd','dailyMacd','minuteRsi','dailyRsi',
-                    'holdConditionResult'
-                ].forEach(name => {
-                    newObject[name] = object[name];
-                });
-                newArray.push(newObject);
+        function startListenTradeLog() {
+            tradeLog = document.getElementById("tradeLog");
+            tradeLogEventSource = new EventSource(`${_apiUrl}/v1/trade/${tradeId}/log`);
+            tradeLogEventSource.onopen = () => {
+                tradeLog.value += 'connected.\n';
+                tradeLog.scrollTop = tradeLog.scrollHeight;
             }
-            return newArray;
+            tradeLogEventSource.onmessage = (event) => {
+                let logMessage = event.data;
+                console.log(logMessage);
+                tradeLog.value += logMessage + '\n';
+                tradeLog.scrollTop = tradeLog.scrollHeight;
+            };
+            tradeLogEventSource.onerror = (error) => {
+                console.error('SSE error:', error);
+                tradeLog.value += 'error.\n';
+                tradeLog.scrollTop = tradeLog.scrollHeight;
+            };
         }
 
-        function refreshTradeAssetIndicators() {
-            if(!trade._new && trade.tradeId) {
-                let url = new URL(`${_apiUrl}/v1/trade/${trade.tradeId}/asset-indicator`, document.location.origin);
-                _fetch(url, {}, true)
-                    .then(async response => {
-                        if(response.ok) {
-                            let data = await response.json();
-                            duice.ArrayProxy.clear(assetIndicators);
-                            duice.ArrayProxy.assign(assetIndicators, transformTradeAssetIndicators(data));
-                        }
-                    });
+        function stopListenTradeLog() {
+            if(tradeLogEventSource) {
+                tradeLogEventSource.close();
             }
         }
 
@@ -162,14 +150,25 @@
                 setInterval(function() {
                     refreshTradeBalance();
                 }, 1000*5);
-                setInterval(function() {
-                    refreshTradeAssetIndicators();
-                }, 1000*10);
+                startListenTradeLog();
             }
+        });
+
+        window.addEventListener('beforeunload', () => {
+            stopListenTradeLog();
         });
 
     </script>
     <style th:inline="css">
+        #tradeLog {
+            padding-top: 0.5em;
+            min-height: 15rem;
+            line-height: 1.2em;
+            background-color: black;
+            color: white;
+            font-size: smaller;
+            font-family: monospace;
+        }
     </style>
 
     <!-- ====================================== -->
@@ -366,114 +365,17 @@
         <!-- ====================================== -->
 
         <!-- ================================== -->
-        <!-- start: indicator                   -->
+        <!-- start: tradeLog                    -->
         <!-- ================================== -->
         <div class="border-1 padding-1em margin-top-1em">
             <h2>
-                <img class="icon" th:src="@{/static/image/icon-indicator.svg}" alt="indicator"/>
-                <span>Technical Analysis</span>
+                <img class="icon" th:src="@{/static/image/icon-log.svg}" alt="log"/>
+                <span>Trade Log</span>
             </h2>
-            <div class="overflow-x-scroll">
-                <table class="width-100">
-                    <colgroup>
-                        <col style="width:7em;"/>
-                        <col style="width:20em;"/>
-                        <col style="width:5em;"/>
-                        <col style="width:10em;"/>
-                        <col style="width:7em;"/>
-                        <col/>
-                        <col/>
-                        <col style="width:10em;"/>
-                    </colgroup>
-                    <thead>
-                    <tr>
-                        <th data-th-text="#{fintics.Asset.symbol}"></th>
-                        <th data-th-text="#{fintics.Asset.name}"></th>
-                        <th data-th-text="#{fintics.Asset.type}"></th>
-                        <th class="text-align-center">Collected At</th>
-                        <th class="text-align-center">Price</th>
-                        <th class="text-align-center">MACD</th>
-                        <th class="text-align-center">RSI</th>
-                        <th class="text-align-center">Buy/Hold</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr data-duice-bind="assetIndicators" data-duice-loop="assetIndicator,status">
-                        <td>
-                            <span data-duice-bind="assetIndicator" data-duice-property="symbol"></span>
-                        </td>
-                        <td>
-                            <span data-duice-bind="assetIndicator" data-duice-property="name"></span>
-                        </td>
-                        <td>
-                            <span data-duice-bind="assetIndicator" data-duice-property="type"></span>
-                        </td>
-                        <td class="text-align-center">
-                            <span data-duice-bind="assetIndicator" data-duice-property="collectedAt" data-duice-format="date('yyyy-MM-dd HH:mm:ss')" class="font-size-smaller"></span>
-                        </td>
-                        <td class="text-align-center">
-                            <span data-duice-bind="assetIndicator.orderBook" data-duice-property="price" data-duice-format="number" class="font-size-smaller"></span>
-                        </td>
-                        <td>
-                            <table class="width-100 font-size-smaller text-align-center">
-                                <thead>
-                                <tr>
-                                    <th>-</th>
-                                    <th>MACD</th>
-                                    <th>signal</th>
-                                    <th>oscillator</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr>
-                                    <td class="font-weight-bold">Minute</td>
-                                    <td data-duice-bind="assetIndicator.minuteMacd" data-duice-property="macd" data-duice-format="number(2)"></td>
-                                    <td data-duice-bind="assetIndicator.minuteMacd" data-duice-property="signal" data-duice-format="number(2)"></td>
-                                    <td data-duice-bind="assetIndicator.minuteMacd" data-duice-property="oscillator" data-duice-format="number(2)"></td>
-                                </tr>
-                                <tr>
-                                    <td class="font-weight-bold">Daily</td>
-                                    <td data-duice-bind="assetIndicator.dailyMacd" data-duice-property="macd" data-duice-format="number(2)"></td>
-                                    <td data-duice-bind="assetIndicator.dailyMacd" data-duice-property="signal" data-duice-format="number(2)"></td>
-                                    <td data-duice-bind="assetIndicator.dailyMacd" data-duice-property="oscillator" data-duice-format="number(2)"></td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </td>
-                        <td>
-                            <table class="width-100 font-size-smaller text-align-center">
-                                <thead>
-                                <tr>
-                                    <th>-</th>
-                                    <th>RSI</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr>
-                                    <td class="font-weight-bold">Minute</td>
-                                    <td data-duice-bind="assetIndicator" data-duice-property="minuteRsi" data-duice-format="number(2)"></td>
-                                </tr>
-                                <tr>
-                                    <td class="font-weight-bold">Daily</td>
-                                    <td data-duice-bind="assetIndicator" data-duice-property="dailyRsi" data-duice-format="number(2)"></td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </td>
-                        <td class="text-align-center">
-                            <span data-duice-bind="assetIndicator" data-duice-property="holdConditionResult"></span>
-                        </td>
-                    </tr>
-                    <tr data-duice-bind="assetIndicators"
-                        data-duice-execute="if(assetIndicators.length === 0) this.hidden=false;" hidden>
-                        <td colspan="100%" class="text-align-center">No Data</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
+            <textarea id="tradeLog" rows="20" class="width-100"></textarea>
         </div>
         <!-- ================================== -->
-        <!-- end: indicator                     -->
+        <!-- end: tradeLog                      -->
         <!-- ================================== -->
 
         <!-- ================================== -->

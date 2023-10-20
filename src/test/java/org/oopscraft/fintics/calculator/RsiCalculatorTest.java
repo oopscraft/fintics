@@ -31,34 +31,33 @@ class RsiCalculatorTest {
                 .setHeader("time","open","high","low","close","5","10","20","60","120","RSI","Signal")
                 .setSkipHeaderRecord(true)
                 .build();
-        final List<Double> closes = new ArrayList<>();
-        final List<Double> rsis = new ArrayList<>();
+        final List<Double> inputCloses = new ArrayList<>();
+        final List<Double> inputRsis = new ArrayList<>();
         try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(filePath)) {
             CSVParser.parse(inputStream, StandardCharsets.UTF_8, format).stream()
                     .forEach(record -> {
-                        closes.add(Double.parseDouble(record.get("close").replaceAll(",","")));
-                        rsis.add(Double.parseDouble(record.get("RSI").replaceAll("[,%]","")));
+                        inputCloses.add(Double.parseDouble(record.get("close").replaceAll(",","")));
+                        inputRsis.add(Double.parseDouble(record.get("RSI").replaceAll("[,%]","")));
                     });
         }
-        Collections.reverse(closes);
-        Collections.reverse(rsis);
+        Collections.reverse(inputCloses);
+        Collections.reverse(inputRsis);
 
         // when
-        int period = 14; // RSI 주기
-        RsiCalculator rsiCalculator = new RsiCalculator(closes, period);
-        for(int i = 0; i < closes.size(); i++) {
-            log.debug("[{}] {}, {}", i, rsis.get(i), rsiCalculator.getRsis().get(i));
+        List<Double> outputRsis = RsiCalculator.of(inputCloses, 14).calculate();
+        for(int i = 0; i < inputCloses.size(); i++) {
+            log.debug("[{}] {}, {}", i, inputRsis.get(i), outputRsis.get(i));
         }
 
         // then
-        for(int i = 0; i < closes.size(); i ++) {
+        for(int i = 0; i < inputCloses.size(); i ++) {
             // period + 1 전의 RSI는 데이터부족으로 50으로 반환됨.
-            if(i < period + 1) {
-                assertEquals(50, rsiCalculator.getRsis().get(i));
+            if(i < 14 + 1) {
+                assertEquals(50, outputRsis.get(i));
             }
             // 이후 부터는 값이 일치해야함.
             else{
-                assertEquals(rsis.get(i), rsiCalculator.getRsis().get(i), 0.02);
+                assertEquals(inputRsis.get(i), outputRsis.get(i), 0.02);
             }
         }
     }

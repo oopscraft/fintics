@@ -10,14 +10,21 @@ import java.util.List;
 
 public class SmaCalculator {
 
-    @Getter
-    private final List<Double> smas = new ArrayList<>();
+    private final List<Double> series;
+
+    private final int period;
 
     public static SmaCalculator of(List<Double> series, int period) {
         return new SmaCalculator(series, period);
     }
 
     public SmaCalculator(List<Double> series, int period) {
+        this.series = series;
+        this.period = period;
+    }
+
+    public List<Double> calculate() {
+        List<Double> smas = new ArrayList<>();
         for(int i = 0; i < series.size(); i ++) {
             List<Double> perioidSeries = series.subList(
                 Math.max(i - period + 1, 0),
@@ -32,6 +39,8 @@ public class SmaCalculator {
             BigDecimal sma = sum.divide(BigDecimal.valueOf(perioidSeries.size()), MathContext.DECIMAL128);
             smas.add(sma.doubleValue());
         }
+
+        return smas;
     }
 
 }

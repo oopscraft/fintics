@@ -1,12 +1,11 @@
 package org.oopscraft.fintics.thread;
 
 import groovy.lang.Binding;
+import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyShell;
 import lombok.Builder;
-import lombok.extern.slf4j.Slf4j;
-import org.oopscraft.fintics.calculator.EmaCalculator;
-import org.oopscraft.fintics.calculator.SmaCalculator;
 import org.oopscraft.fintics.model.AssetIndicator;
+import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -15,20 +14,30 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-@Builder
-@Slf4j
 public class TradeAssetDecider {
 
-    private String holdCondition;
+    private final String holdCondition;
 
-    private AssetIndicator assetIndicator;
+    private final AssetIndicator assetIndicator;
+
+    private final Logger logger;
+
+    @Builder
+    public TradeAssetDecider(String holdCondition, AssetIndicator assetIndicator, Logger logger) {
+        this.holdCondition = holdCondition;
+        this.assetIndicator = assetIndicator;
+        this.logger = logger;
+    }
 
     public Boolean execute() {
+        ClassLoader classLoader = this.getClass().getClassLoader();
+        GroovyClassLoader groovyClassLoader = new GroovyClassLoader(classLoader);
         Binding binding = new Binding();
-        binding.setVariable("log", log);
-        binding.setVariable("tool", new Tool());
         binding.setVariable("assetIndicator", assetIndicator);
-        GroovyShell groovyShell = new GroovyShell(binding);
+        binding.setVariable("tool", new Tool());
+        binding.setVariable("log", logger);
+        GroovyShell groovyShell = new GroovyShell(groovyClassLoader, binding);
+
         if(holdCondition == null || holdCondition.isBlank()) {
             return null;
         }
@@ -40,22 +49,6 @@ public class TradeAssetDecider {
     }
 
     public static class Tool {
-
-        public List<Double> sma(List<Double> values, int period) {
-            List<Double> series = new ArrayList<>(values);
-            Collections.reverse(series);
-            List<Double> smas = SmaCalculator.of(series, period).getSmas();
-            Collections.reverse(smas);
-            return smas;
-        }
-
-        public List<Double> ema(List<Double> values, int period) {
-            List<Double> series = new ArrayList<>(values);
-            Collections.reverse(series);
-            List<Double> emas = EmaCalculator.of(series, period).getEmas();
-            Collections.reverse(emas);
-            return emas;
-        }
 
         public Double slope(List<Double> values, int period) {
             List<Double> periodValues = values.subList(

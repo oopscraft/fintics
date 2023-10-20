@@ -25,8 +25,7 @@ class EmaCalculatorTest {
         );
 
         // when
-        List<Double> emas = EmaCalculator.of(series, 3)
-                .getEmas();
+        List<Double> emas = EmaCalculator.of(series, 3).calculate();
 
         // then
         emas.forEach(ema -> log.debug("{}", ema));

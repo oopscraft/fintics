@@ -25,8 +25,7 @@ public class SmaCalculatorTest {
         );
 
         // when
-        List<Double> smas = SmaCalculator.of(series, 3)
-                .getSmas();
+        List<Double> smas = SmaCalculator.of(series, 3).calculate();
 
         // then
         smas.forEach(sma -> log.debug("{}", sma));

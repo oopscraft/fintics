@@ -1,5 +1,6 @@
 package org.oopscraft.fintics.thread;
 
+import ch.qos.logback.classic.Logger;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -13,8 +14,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 public class TradeThread extends Thread {
@@ -22,12 +21,12 @@ public class TradeThread extends Thread {
     @Getter
     private final Trade trade;
 
+    @Getter
+    private final TradeLogAppender tradeLogAppender;
+
     private final AlarmService alarmService;
 
     private final Client client;
-
-    @Getter
-    private final Map<String, AssetIndicator> assetIndicatorMap = new ConcurrentHashMap<>();
 
     @Getter
     private Balance balance;
@@ -35,9 +34,13 @@ public class TradeThread extends Thread {
     private boolean terminated;
 
     @Builder
-    public TradeThread(Trade trade, AlarmService alarmService) {
+    public TradeThread(Trade trade, TradeLogAppender tradeLogAppender, AlarmService alarmService) {
         this.trade = trade;
+        this.tradeLogAppender = tradeLogAppender;
         this.alarmService = alarmService;
+
+        // add log appender
+        ((Logger)log).addAppender(this.tradeLogAppender);
 
         // creates client
         this.client = ClientFactory.getClient(trade.getClientType(), trade.getClientProperties());
@@ -48,6 +51,7 @@ public class TradeThread extends Thread {
         this.interrupt();
         try {
             this.join();
+            this.tradeLogAppender.stop();
         } catch (InterruptedException e) {
             log.warn(e.getMessage());
         }
@@ -93,15 +97,14 @@ public class TradeThread extends Thread {
                             .minuteOhlcvs(minuteOhlcvs)
                             .dailyOhlcvs(dailyOhlcvs)
                             .build();
-                    assetIndicatorMap.put(assetIndicator.getSymbol(), assetIndicator);
 
                     // decides hold condition
                     TradeAssetDecider tradeAssetDecider = TradeAssetDecider.builder()
                             .holdCondition(trade.getHoldCondition())
                             .assetIndicator(assetIndicator)
+                            .logger(log)
                             .build();
                     Boolean holdConditionResult = tradeAssetDecider.execute();
-                    assetIndicator.setHoldConditionResult(holdConditionResult);
 
                     // 1. null is no operation
                     if(holdConditionResult == null) {
@@ -147,8 +150,9 @@ public class TradeThread extends Thread {
             } catch (InterruptedException e) {
                 log.warn(e.getMessage());
                 break;
-            } catch (Throwable e) {
-                log.warn(e.getMessage());
+            } catch (RuntimeException e) {
+                String errorMessage = e.getMessage();
+                log.error(e.getMessage(), e);
                 sendErrorAlarmIfEnabled(e);
             }
         }
@@ -181,12 +185,12 @@ public class TradeThread extends Thread {
 
     private void sendBuyOrderAlarmIfEnabled(TradeAsset tradeAsset, int quantity) {
         String subject = String.format("Buy [%s], %d", tradeAsset.getName(), quantity);
-        sendOrderAlarmIfEnabled(subject, subject);
+        sendOrderAlarmIfEnabled(subject, null);
     }
 
     private void sendSellOrderAlarmIfEnabled(BalanceAsset balanceAsset, int quantity) {
         String subject = String.format("Sell [%s], %d", balanceAsset.getName(), quantity);
-        sendOrderAlarmIfEnabled(subject, subject);
+        sendOrderAlarmIfEnabled(subject, null);
     }
 
 }

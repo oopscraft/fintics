@@ -1,10 +1,13 @@
 package org.oopscraft.fintics.thread;
 
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.core.Context;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
 import org.oopscraft.fintics.model.Trade;
 import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +21,8 @@ public class TradeThreadManager {
 
     private final Map<String, TradeThread> tradeThreadMap = new ConcurrentHashMap<>();
 
+    private final Map<String, TradeLogAppender> tradeLogAppenderMap = new ConcurrentHashMap<>();
+
     private final AlarmService alarmService;
 
     public synchronized void startTradeThread(Trade trade) {
@@ -27,7 +32,14 @@ public class TradeThreadManager {
             }
             log.info("Start TradeThread - {}", trade);
             String tradeId = trade.getTradeId();
-            TradeThread tradeThread = new TradeThread(trade, alarmService);
+
+            // add log appender
+            Context context = ((Logger)log).getLoggerContext();
+            TradeLogAppender tradeLogAppender = new TradeLogAppender(context);
+            tradeLogAppender.start();
+            tradeLogAppenderMap.put(tradeId, tradeLogAppender);
+
+            TradeThread tradeThread = new TradeThread(trade, tradeLogAppender, alarmService);
             tradeThread.setDaemon(true);
             tradeThread.start();
             tradeThreadMap.put(tradeId, tradeThread);
@@ -43,6 +55,9 @@ public class TradeThreadManager {
             TradeThread tradeThread = tradeThreadMap.get(tradeId);
             tradeThread.terminate();
             tradeThreadMap.remove(tradeId);
+
+            /// removes log appender
+            tradeLogAppenderMap.remove(tradeId);
         }
     }
 

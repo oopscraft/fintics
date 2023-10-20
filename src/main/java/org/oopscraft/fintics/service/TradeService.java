@@ -95,20 +95,4 @@ public class TradeService {
         return Optional.ofNullable(balance);
     }
 
-    public List<AssetIndicator> getTradeAssetIndicators(String tradeId) {
-        TradeThread tradeThread = tradeThreadManager.getTradeThread(tradeId);
-        if(tradeThread == null) {
-            return new ArrayList<>();
-        }
-        return new ArrayList<>(tradeThread.getAssetIndicatorMap().values());
-    }
-
-    public Optional<AssetIndicator> getTradeAssetIndicator(String tradeId, String symbol) {
-        TradeThread tradeThread = tradeThreadManager.getTradeThread(tradeId);
-        if(tradeThread == null) {
-            return Optional.empty();
-        }
-        return Optional.ofNullable(tradeThread.getAssetIndicatorMap().get(symbol));
-    }
-
 }

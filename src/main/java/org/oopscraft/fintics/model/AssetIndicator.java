@@ -4,8 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.oopscraft.fintics.calculator.MacdCalculator;
-import org.oopscraft.fintics.calculator.RsiCalculator;
+import org.oopscraft.fintics.calculator.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -25,21 +24,6 @@ public class AssetIndicator extends Asset {
 
     private final List<Ohlcv> dailyOhlcvs;
 
-    private List<Double> minutePrices;
-
-    private List<Double> dailyPrices;
-
-    private List<Double> minuteMacdOscillators;
-
-    private List<Double> dailyMacdOscillators;
-
-    private List<Double> minuteRsis;
-
-    private List<Double> dailyRsis;
-
-    @Setter
-    private Boolean holdConditionResult;
-
     @Builder
     public AssetIndicator(Asset asset, OrderBook orderBook, List<Ohlcv> minuteOhlcvs, List<Ohlcv> dailyOhlcvs) {
         setSymbol(asset.getSymbol());
@@ -49,83 +33,134 @@ public class AssetIndicator extends Asset {
         this.orderBook = orderBook;
         this.minuteOhlcvs = minuteOhlcvs;
         this.dailyOhlcvs = dailyOhlcvs;
-
-        // initialize
-        initialize();
     }
 
-    private void initialize() {
-        // minute prices
-        minutePrices = this.minuteOhlcvs.stream()
-                .map(Ohlcv::getClosePrice)
-                .collect(Collectors.toList());
-
-        // daily prices
-        dailyPrices = this.minuteOhlcvs.stream()
-                .map(Ohlcv::getClosePrice)
-                .collect(Collectors.toList());
-
-        // minute macd oscillators
-        minuteMacdOscillators = reverse(MacdCalculator.of(reverse(minutePrices), 12, 26, 9)
-                .getOscillators());
-
-        // daily macd oscillators
-        dailyMacdOscillators = reverse(MacdCalculator.of(reverse(dailyPrices), 12, 26, 9)
-                .getOscillators());
-
-        // minute rsis
-        minuteRsis = reverse(RsiCalculator.of(reverse(minutePrices), 14)
-                .getRsis());
-
-        // daily rsis
-        dailyRsis = reverse(RsiCalculator.of(reverse(dailyPrices), 14)
-                .getRsis());
-    }
-
-    private static <T> List<T> reverse(List<T> list) {
+    private <T> List<T> reverse(List<T> list) {
         List<T> reversedList = new ArrayList<>(list);
         Collections.reverse(reversedList);
         return reversedList;
     }
 
-    public Double getMinuteMacdOscillator(int index) {
-        return index > minuteMacdOscillators.size() - 1
-                ? 0.0
-                : minuteMacdOscillators.get(index);
+    private List<Double> getPrices(List<Ohlcv> ohlcvs) {
+        return ohlcvs.stream()
+                .map(Ohlcv::getClosePrice)
+                .collect(Collectors.toList());
     }
 
-    public Double getMinuteMacdOscillator() {
-        return getMinuteMacdOscillator(0);
+    public List<Double> getMinutePrices() {
+        return getPrices(this.minuteOhlcvs);
     }
 
-    public Double getDailyMacdOscillator(int index) {
-        return index > dailyMacdOscillators.size() - 1
-                ? 0.0
-                : dailyMacdOscillators.get(index);
+    public List<Double> getDailyPrices() {
+        return getPrices(this.dailyOhlcvs);
     }
 
-    public Double getDailyMacdOscillator() {
-        return getDailyMacdOscillator(0);
+    private List<Double> getSmas(List<Double> prices, int period) {
+        List<Double> series = reverse(prices);
+        List<Double> smas = SmaCalculator.of(series, period).calculate();
+        return reverse(smas);
     }
 
-    public Double getMinuteRsi(int index) {
-        return index > minuteRsis.size() -1
-                ? 0.0
-                : minuteRsis.get(index);
+    private Double getSma(List<Double> prices, int period) {
+        List<Double> smas = getSmas(prices, period);
+        return smas.isEmpty() ? 0.0 : smas.get(0);
     }
 
-    public Double getMinuteRsi() {
-        return getMinuteRsi(0);
+    public List<Double> getMinuteSmas(int period) {
+        return getSmas(getMinutePrices(), period);
     }
 
-    public Double getDailyRsi(int index) {
-        return index > dailyRsis.size() -1
-                ? 0.0
-                : dailyRsis.get(index);
+    public Double getMinuteSma(int period) {
+        return getSma(getMinutePrices(), period);
     }
 
-    public Double getDailyRsi() {
-        return getDailyRsi(0);
+    public List<Double> getDailySmas(int period) {
+        return getSmas(getDailyPrices(), period);
+    }
+
+    public Double getDailySma(int period) {
+        return getSma(getDailyPrices(), period);
+    }
+
+    private List<Double> getEmas(List<Double> prices, int period) {
+        List<Double> series = reverse(prices);
+        List<Double> emas = EmaCalculator.of(series, period).calculate();
+        return reverse(emas);
+    }
+
+    private Double getEma(List<Double> prices, int period) {
+        List<Double> emas = getEmas(prices, period);
+        return emas.isEmpty() ? 0.0 : emas.get(0);
+    }
+
+    public List<Double> getMinuteEmas(int period) {
+        return getEmas(getMinutePrices(), period);
+    }
+
+    public Double getMinuteEma(int period) {
+        return getEma(getMinutePrices(), period);
+    }
+
+    public List<Double> getDailyEmas(int period) {
+        return getEmas(getDailyPrices(), period);
+    }
+
+    public Double getDailyEma(int period) {
+        return getEma(getDailyPrices(), period);
+    }
+
+    private List<Macd> getMacds(List<Double> prices, int shortPeriod, int longPeriod, int signalPeriod) {
+        List<Double> series = reverse(prices);
+        List<Macd> macds = MacdCalculator.of(series, shortPeriod, longPeriod, signalPeriod).calculate();
+        return reverse(macds);
+    }
+
+    private Macd getMacd(List<Double> prices, int shortPeriod, int longPeriod, int signalPeriod) {
+        List<Macd> macds = getMacds(prices, shortPeriod, longPeriod, signalPeriod);
+        return macds.isEmpty() ? Macd.builder().build() : macds.get(0);
+    }
+
+    public List<Macd> getMinuteMacds(int shortPeriod, int longPeriod, int signalPeriod) {
+        return getMacds(getMinutePrices(), shortPeriod, longPeriod, signalPeriod);
+    }
+
+    public Macd getMinuteMacd(int shortPeriod, int longPeriod, int signalPeriod) {
+        return getMacd(getMinutePrices(), shortPeriod, longPeriod, signalPeriod);
+    }
+
+    public List<Macd> getDailyMacds(int shortPeriod, int longPeriod, int signalPeriod) {
+        return getMacds(getDailyPrices(), shortPeriod, longPeriod, signalPeriod);
+    }
+
+    public Macd getDailyMacd(int shortPeriod, int longPeriod, int signalPeriod) {
+        return getMacd(getDailyPrices(), shortPeriod, longPeriod, signalPeriod);
+    }
+
+    private List<Double> getRsis(List<Double> prices, int period) {
+        List<Double> series = reverse(prices);
+        List<Double> rsis = RsiCalculator.of(series, period).calculate();
+        return reverse(rsis);
+    }
+
+    private Double getRsi(List<Double> prices, int period) {
+        List<Double> rsis = getRsis(prices, period);
+        return rsis.isEmpty() ? 50.0 : rsis.get(0);
+    }
+
+    public List<Double> getMinuteRsis(int period) {
+        return getRsis(getMinutePrices(), period);
+    }
+
+    public Double getMinuteRsi(int period) {
+        return getRsi(getMinutePrices(), period);
+    }
+
+    public List<Double> getDailyRsis(int period) {
+        return getRsis(getDailyPrices(), period);
+    }
+
+    public Double getDailyRsi(int period) {
+        return getRsi(getDailyPrices(), period);
     }
 
 }
