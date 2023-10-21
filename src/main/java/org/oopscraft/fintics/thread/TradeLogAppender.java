@@ -20,7 +20,7 @@ public class TradeLogAppender extends AppenderBase<ILoggingEvent> {
 
     public TradeLogAppender(Context context) {
         layout = new PatternLayout();
-        layout.setPattern("%date [%thread] - %msg");
+        layout.setPattern("%d{yyyy-MM-dd HH:mm:ss} %-5level [%thread] - %msg");
         layout.setContext(context);
         layout.start();
         sseEmitter = new SseEmitter(Long.MAX_VALUE);
