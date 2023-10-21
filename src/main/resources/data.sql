@@ -42,6 +42,7 @@ double macdOscillatorSlope = tool.slope(assetIndicator.getMinuteMacds(12, 26, 9)
 double rsi = assetIndicator.getMinuteRsi(14);
 double rsiSlope = tool.slope(assetIndicator.getMinuteRsis(14), 10);
 
+log.debug("{}", assetIndicator.getMinutePrices());
 log.info("priceSlope:{}, smaSlope:{} , macdOscillator:{}, macdOscillatorSlope:{}, rsi:{}, rsiSlope:{}",
 priceSlope, smaSlope, macdOscillator, macdOscillatorSlope, rsi, rsiSlope);
 
