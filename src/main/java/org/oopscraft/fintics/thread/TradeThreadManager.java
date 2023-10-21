@@ -41,6 +41,9 @@ public class TradeThreadManager {
 
             TradeThread tradeThread = new TradeThread(trade, tradeLogAppender, alarmService);
             tradeThread.setDaemon(true);
+            tradeThread.setUncaughtExceptionHandler((thread, throwable) -> {
+                log.error("[{}] {}", thread.getName(), throwable.getMessage());
+            });
             tradeThread.start();
             tradeThreadMap.put(tradeId, tradeThread);
         }

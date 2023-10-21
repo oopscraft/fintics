@@ -59,12 +59,12 @@ public class TradeThread extends Thread {
 
     @Override
     public void run() {
-        while(!terminated) {
+        while(!this.isInterrupted() && !terminated) {
             try {
                 sleepMillis(trade.getInterval() * 1_000);
 
                 // checks start,end time
-                if(!isOperatingTime(LocalTime.now())) {
+                if (!isOperatingTime(LocalTime.now())) {
                     log.info("Not operating time - [{}] {} ~ {}", trade.getName(), trade.getStartAt(), trade.getEndAt());
                     continue;
                 }
@@ -74,10 +74,10 @@ public class TradeThread extends Thread {
                 balance = client.getBalance();
 
                 // checks buy condition
-                for(TradeAsset tradeAsset : trade.getTradeAssets()) {
+                for (TradeAsset tradeAsset : trade.getTradeAssets()) {
 
                     // check enabled
-                    if(!tradeAsset.isEnabled()) {
+                    if (!tradeAsset.isEnabled()) {
                         continue;
                     }
 
@@ -107,13 +107,13 @@ public class TradeThread extends Thread {
                     Boolean holdConditionResult = tradeAssetDecider.execute();
 
                     // 1. null is no operation
-                    if(holdConditionResult == null) {
+                    if (holdConditionResult == null) {
                         continue;
                     }
 
                     // 2. buy and hold
-                    if(holdConditionResult.equals(Boolean.TRUE)) {
-                        if(!balance.hasBalanceAsset(tradeAsset.getSymbol())) {
+                    if (holdConditionResult.equals(Boolean.TRUE)) {
+                        if (!balance.hasBalanceAsset(tradeAsset.getSymbol())) {
                             BigDecimal buyAmount = BigDecimal.valueOf(balance.getTotalAmount())
                                     .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP)
                                     .multiply(BigDecimal.valueOf(tradeAsset.getHoldRatio()));
@@ -124,7 +124,7 @@ public class TradeThread extends Thread {
                             try {
                                 client.buyAsset(tradeAsset, quantity);
                                 sendBuyOrderAlarmIfEnabled(tradeAsset, quantity);
-                            }catch(Throwable e) {
+                            } catch (Throwable e) {
                                 log.warn(e.getMessage());
                                 sendErrorAlarmIfEnabled(e);
                             }
@@ -132,21 +132,20 @@ public class TradeThread extends Thread {
                     }
 
                     // 3. sell
-                    else if(holdConditionResult.equals(Boolean.FALSE)) {
-                        if(balance.hasBalanceAsset(tradeAsset.getSymbol())) {
+                    else if (holdConditionResult.equals(Boolean.FALSE)) {
+                        if (balance.hasBalanceAsset(tradeAsset.getSymbol())) {
                             BalanceAsset balanceAsset = balance.getBalanceAsset(tradeAsset.getSymbol());
                             Integer quantity = balanceAsset.getQuantity();
                             try {
                                 client.sellAsset(balanceAsset, quantity);
                                 sendSellOrderAlarmIfEnabled(balanceAsset, quantity);
-                            }catch(Throwable e) {
+                            } catch (Throwable e) {
                                 log.warn(e.getMessage());
                                 sendErrorAlarmIfEnabled(e);
                             }
                         }
                     }
                 }
-
             } catch (Throwable e) {
                 log.error(e.getMessage(), e);
                 sendErrorAlarmIfEnabled(e);
