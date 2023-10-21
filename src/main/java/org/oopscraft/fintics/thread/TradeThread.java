@@ -59,9 +59,9 @@ public class TradeThread extends Thread {
 
     @Override
     public void run() {
-        while(!Thread.interrupted() && !terminated) {
+        while(!terminated) {
             try {
-                Thread.sleep(trade.getInterval() * 1_000);
+                sleepMillis(trade.getInterval() * 1_000);
 
                 // checks start,end time
                 if(!isOperatingTime(LocalTime.now())) {
@@ -82,7 +82,7 @@ public class TradeThread extends Thread {
                     }
 
                     // force delay
-                    Thread.sleep(1000);
+                    sleepMillis(1000);
 
                     // logging
                     log.info("Check asset - [{}]", tradeAsset.getName());
@@ -147,15 +147,17 @@ public class TradeThread extends Thread {
                     }
                 }
 
-            } catch (InterruptedException e) {
-                log.warn(e.getMessage());
-                break;
-            } catch (RuntimeException e) {
-                String errorMessage = e.getMessage();
+            } catch (Throwable e) {
                 log.error(e.getMessage(), e);
                 sendErrorAlarmIfEnabled(e);
             }
         }
+    }
+
+    private void sleepMillis(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException ignored) { }
     }
 
     private boolean isOperatingTime(LocalTime time) {
