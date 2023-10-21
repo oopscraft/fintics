@@ -64,6 +64,18 @@ dependencies {
     // arch4j-web
     implementation "org.oopscraft.arch4j:arch4j-web:1.0.0-SNAPSHOT"
 
+    // spring boot configuration processor
+    api 'org.springframework.boot:spring-boot-configuration-processor'
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+
+    // query dsl
+    api "com.querydsl:querydsl-jpa"
+    api "com.querydsl:querydsl-apt"
+    api 'org.hibernate:hibernate-jpamodelgen'
+    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+    annotationProcessor group: 'com.querydsl', name: 'querydsl-apt', classifier: 'jpa'
+    annotationProcessor 'org.hibernate:hibernate-jpamodelgen'
+
 }
 
 test {

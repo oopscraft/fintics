@@ -15,6 +15,12 @@ public class TradeAsset extends Asset {
 
     private String tradeId;
 
+    private String symbol;
+
+    private String name;
+
+    private AssetType type;
+
     private boolean enabled;
 
     private Double holdRatio;

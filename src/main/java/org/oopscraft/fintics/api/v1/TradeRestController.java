@@ -140,12 +140,9 @@ public class TradeRestController {
 
     @GetMapping(value = "{tradeId}/log", produces = "text/event-stream")
     public SseEmitter getTradeLog(@PathVariable("tradeId")String tradeId) {
-        TradeThread tradeThread = tradeThreadManager.getTradeThread(tradeId);
-        if(tradeThread != null) {
-            return tradeThread.getTradeLogAppender().getSseEmitter();
-        }else{
-            return new SseEmitter();
-        }
+        TradeThread tradeThread = tradeThreadManager.getTradeThread(tradeId)
+                .orElseThrow();
+        return tradeThread.getTradeLogAppender().getSseEmitter();
     }
 
 }

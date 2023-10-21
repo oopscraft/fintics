@@ -28,9 +28,6 @@ public class TradeThread extends Thread {
 
     private final Client client;
 
-    @Getter
-    private Balance balance;
-
     private boolean terminated;
 
     @Builder
@@ -71,7 +68,7 @@ public class TradeThread extends Thread {
                 log.info("Check trade - [{}]", trade.getName());
 
                 // balance
-                balance = client.getBalance();
+                Balance balance = client.getBalance();
 
                 // checks buy condition
                 for (TradeAsset tradeAsset : trade.getTradeAssets()) {

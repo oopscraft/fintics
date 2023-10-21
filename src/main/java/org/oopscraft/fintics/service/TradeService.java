@@ -68,7 +68,7 @@ public class TradeService {
         List<TradeAssetEntity> tradeAssetEntities = trade.getTradeAssets().stream()
                 .map(tradeAsset ->
                         TradeAssetEntity.builder()
-                                .tradeId(tradeAsset.getTradeId())
+                                .tradeId(trade.getTradeId())
                                 .symbol(tradeAsset.getSymbol())
                                 .name(tradeAsset.getName())
                                 .type(tradeAsset.getType())
@@ -89,10 +89,9 @@ public class TradeService {
     }
 
     public Optional<Balance> getTradeBalance(String tradeId) {
-        Balance balance = Optional.ofNullable(tradeThreadManager.getTradeThread(tradeId))
-                .map(TradeThread::getBalance)
-                .orElse(null);
-        return Optional.ofNullable(balance);
+        Trade trade = getTrade(tradeId).orElseThrow();
+        Client client = ClientFactory.getClient(trade.getClientType(), trade.getClientProperties());
+        return Optional.ofNullable(client.getBalance());
     }
 
 }

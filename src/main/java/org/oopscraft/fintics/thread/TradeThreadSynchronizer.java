@@ -40,7 +40,7 @@ public class TradeThreadSynchronizer {
 
         // existing service monitor thread
         tradeEntities.forEach(tradeEntity -> {
-            TradeThread tradeThread = tradeThreadManager.getTradeThread(tradeEntity.getTradeId());
+            TradeThread tradeThread = tradeThreadManager.getTradeThread(tradeEntity.getTradeId()).orElse(null);
             if(tradeThread == null) {
                 if(tradeEntity.isEnabled()) {
                     tradeThreadManager.startTradeThread(Trade.from(tradeEntity));

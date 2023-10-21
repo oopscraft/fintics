@@ -6,17 +6,18 @@ import lombok.experimental.SuperBuilder;
 import java.math.BigDecimal;
 
 @Data
-@EqualsAndHashCode(callSuper = true)
-@SuperBuilder
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class BalanceAsset extends Asset {
+public class BalanceAsset {
 
     private String accountNo;
 
     private String symbol;
 
     private String name;
+
+    private AssetType type;
 
     private Integer quantity;
 

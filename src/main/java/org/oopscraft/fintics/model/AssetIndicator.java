@@ -14,7 +14,13 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Getter
-public class AssetIndicator extends Asset {
+public class AssetIndicator {
+
+    private final String symbol;
+
+    private final String name;
+
+    private final AssetType type;
 
     private final LocalDateTime collectedAt;
 
@@ -26,9 +32,9 @@ public class AssetIndicator extends Asset {
 
     @Builder
     public AssetIndicator(Asset asset, OrderBook orderBook, List<Ohlcv> minuteOhlcvs, List<Ohlcv> dailyOhlcvs) {
-        setSymbol(asset.getSymbol());
-        setName(asset.getName());
-        setType(asset.getType());
+        this.symbol = asset.getSymbol();
+        this.name = asset.getName();
+        this.type = asset.getType();
         this.collectedAt = LocalDateTime.now();
         this.orderBook = orderBook;
         this.minuteOhlcvs = minuteOhlcvs;

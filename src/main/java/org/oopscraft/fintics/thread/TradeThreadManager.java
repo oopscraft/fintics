@@ -7,11 +7,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
 import org.oopscraft.fintics.model.Trade;
 import org.springframework.stereotype.Component;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
@@ -72,8 +72,8 @@ public class TradeThreadManager {
         return new ArrayList<>(tradeThreadMap.values());
     }
 
-    public TradeThread getTradeThread(String tradeId) {
-        return tradeThreadMap.get(tradeId);
+    public Optional<TradeThread> getTradeThread(String tradeId) {
+        return Optional.ofNullable(tradeThreadMap.get(tradeId));
     }
 
 }
