@@ -35,7 +35,7 @@
                 });
         }
 
-        async function selectAsset() {
+        async function addTradeAsset() {
             let disabledSymbols = [];
             trade.tradeAssets.forEach(tradeAsset => {
                 disabledSymbols.push(tradeAsset.symbol);
@@ -50,6 +50,10 @@
                     holdRatio: 0
                 });
             });
+        }
+
+        function removeTradeAsset(index) {
+            trade.tradeAssets.splice(index, 1);
         }
 
         async function saveTrade() {
@@ -306,7 +310,7 @@
                                     <th data-th-text="#{fintics.TradeAsset.enabled}" class="text-align-center"></th>
                                     <th data-th-text="#{fintics.TradeAsset.holdRatio}" class="text-align-center"></th>
                                     <th class="text-align-right">
-                                        <button type="button" class="small" onclick="selectAsset();">
+                                        <button type="button" class="small" onclick="addTradeAsset();">
                                             <img class="icon" th:src="@{/static/image/icon-add.svg}" alt="add"/>
                                         </button>
                                     </th>
@@ -341,7 +345,10 @@
                                         </label>
                                     </td>
                                     <td class="text-align-right">
-                                        <button class="small">
+                                        <button type="button" class="small"
+                                                data-duice-bind="tradeAsset"
+                                                data-duice-execute="this.dataset.index=status.index;"
+                                                onclick="removeTradeAsset(this.dataset.index);">
                                             <img class="icon" th:src="@{/static/image/icon-remove.svg}" alt="remove"/>
                                         </button>
                                     </td>
