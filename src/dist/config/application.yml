@@ -48,7 +48,7 @@ core:
     location: /.tmp/fintics/git/
 
 # fintics
-fintics
+fintics:
   scheduler:
     asset-collect-scheduler:
       limit: 10000
