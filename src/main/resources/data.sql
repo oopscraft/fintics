@@ -37,17 +37,19 @@ appSecret=dMrEmCtbBQS2+oMUDUBgnKDVKrns3RqVYOGkBG8/Zxpm5M1M92yEoelrWenmn5CLCCgncw
 accountNo=50096055-01
 ','double priceSlope = tool.slope(assetIndicator.getMinutePrices(), 10);
 double smaSlope = tool.slope(assetIndicator.getMinuteSmas(10), 10);
+double smaLongSlope = tool.slope(assetIndicator.getMinuteSmas(20), 20);
 double macdOscillator = assetIndicator.getMinuteMacd(12, 26, 9).getOscillator();
 double macdOscillatorSlope = tool.slope(assetIndicator.getMinuteMacds(12, 26, 9).collect { it.oscillator }, 10);
 double rsi = assetIndicator.getMinuteRsi(14);
 double rsiSlope = tool.slope(assetIndicator.getMinuteRsis(14), 10);
 
 log.debug("{}", assetIndicator.getMinutePrices());
-log.info("priceSlope:{}, smaSlope:{} , macdOscillator:{}, macdOscillatorSlope:{}, rsi:{}, rsiSlope:{}",
-priceSlope, smaSlope, macdOscillator, macdOscillatorSlope, rsi, rsiSlope);
+log.info("priceSlope:{}, smaSlope:{}, smaLongSlope:{} , macdOscillator:{}, macdOscillatorSlope:{}, rsi:{}, rsiSlope:{}",
+priceSlope, smaSlope, smaLongSlope, macdOscillator, macdOscillatorSlope, rsi, rsiSlope);
 
 // 매수 조건 - 가격,MACD,RSI 모두 상승중인 경우
 if(priceSlope > 0
+&& smaSlope > 0
 && macdOscillatorSlope > 0
 && rsiSlope > 0
 ) {
@@ -57,7 +59,7 @@ if(priceSlope > 0
     }
     // 하락추세일 경우 일시적인 상승인지 이동평균선 체크 후 매수
     if(macdOscillator < 0) {
-        if(smaSlope > 0) {
+        if(smaLongSlope > 0) {
             return true;
         }
     }
@@ -65,6 +67,7 @@ if(priceSlope > 0
 
 // 매도조건 - 가격,MACD,RSI 모두 하락중인 경우
 if(priceSlope < 0
+&& smaSlope < 0
 && macdOscillatorSlope < 0
 && rsiSlope < 0
 ) {
@@ -74,7 +77,7 @@ if(priceSlope < 0
     }
     // 상승추세시에는 일시적인 하락인지 이동평균선 체크 후 매도
     if(macdOscillator > 0) {
-        if(smaSlope < 0) {
+        if(smaLongSlope < 0) {
             return false
         }
     }

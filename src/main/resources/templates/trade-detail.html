@@ -143,8 +143,7 @@
             tradeLog = document.getElementById("tradeLog");
             tradeLogEventSource = new EventSource(`${_apiUrl}/v1/trade/${tradeId}/log`);
             tradeLogEventSource.onopen = () => {
-                tradeLog.value += 'connected.\n';
-                tradeLog.scrollTop = tradeLog.scrollHeight;
+                console.log("connected.");
             }
             tradeLogEventSource.onmessage = (event) => {
                 let logMessage = event.data;
@@ -154,8 +153,6 @@
             };
             tradeLogEventSource.onerror = (error) => {
                 console.error('SSE error:', error);
-                tradeLog.value += 'error.\n';
-                tradeLog.scrollTop = tradeLog.scrollHeight;
             };
         }
 
