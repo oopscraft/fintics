@@ -28,14 +28,14 @@ insert into `core_alarm`
 
 -- fintics_trade
 insert into `fintics_trade`
-    (`trade_id`,`name`,`enabled`,`interval`,`start_at`,`end_at`,`client_type`,`client_properties`,`hold_condition`) values
+    (`trade_id`,`name`,`enabled`,`interval`,`start_at`,`end_at`,`client_type`,`client_properties`,`alarm_id`,`hold_condition`) values
     ('06c228451ce0400fa57bb36f0568d7cb','한국투자증권 모의투자 #1','N','30','09:00','15:30',
      'org.oopscraft.fintics.client.kis.KisClient','production=false
 apiUrl=https://openapivts.koreainvestment.com:29443
 appKey=PSTxd5BurtHzO3Viit4rL4Syhuz8RyzxuyJL
 appSecret=dMrEmCtbBQS2+oMUDUBgnKDVKrns3RqVYOGkBG8/Zxpm5M1M92yEoelrWenmn5CLCCgncwgneBqrV/GOiNpTOxrYVrYWLJVTbBRTSeqsH60nJXZ2lrjhfAxWNKzcXeyR8EbWcid4bQDTL3vtrQmCz+Jazky5cm5fx0lBs7ciL33x7EIp+5w=
 accountNo=50096055-01
-','double priceSlope = tool.slope(assetIndicator.getMinutePrices(), 10);
+','fintics','double priceSlope = tool.slope(assetIndicator.getMinutePrices(), 10);
 double smaSlope = tool.slope(assetIndicator.getMinuteSmas(10), 10);
 double smaLongSlope = tool.slope(assetIndicator.getMinuteSmas(20), 20);
 double macdOscillator = assetIndicator.getMinuteMacd(12, 26, 9).getOscillator();
