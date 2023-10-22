@@ -135,7 +135,7 @@ public class TradeRestController {
     public ResponseEntity<BalanceResponse> getTradeBalance(@PathVariable("tradeId") String tradeId) {
         BalanceResponse balanceResponse = tradeService.getTradeBalance(tradeId)
                 .map(BalanceResponse::from)
-                .orElse(new BalanceResponse());
+                .orElseThrow();
         return ResponseEntity.ok(balanceResponse);
     }
 

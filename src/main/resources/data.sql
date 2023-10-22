@@ -32,9 +32,9 @@ insert into `fintics_trade`
     ('06c228451ce0400fa57bb36f0568d7cb','한국투자증권 모의투자 #1','N','30','09:00','15:30',
      'org.oopscraft.fintics.client.kis.KisClient','production=false
 apiUrl=https://openapivts.koreainvestment.com:29443
-appKey=PSTxd5BurtHzO3Viit4rL4Syhuz8RyzxuyJL
-appSecret=dMrEmCtbBQS2+oMUDUBgnKDVKrns3RqVYOGkBG8/Zxpm5M1M92yEoelrWenmn5CLCCgncwgneBqrV/GOiNpTOxrYVrYWLJVTbBRTSeqsH60nJXZ2lrjhfAxWNKzcXeyR8EbWcid4bQDTL3vtrQmCz+Jazky5cm5fx0lBs7ciL33x7EIp+5w=
-accountNo=50096055-01
+appKey=ENC(mqcEUDQAO57SaLBCvhoz0RpFYBXtMQG2Y+NIK2jfQZ6koEUDlYx+5W8AW+eW0KVd)
+appSecret=ENC(cPLNx3yraMH7FKXfEkcs0/r7ZrKDrW7nBgQ/NpKs3BeQGUkjDl+j8VG0FOhqly/DYwJdyZ5kpLMJ7GAGSv8vEZhUOlSPPP1lFNiVyWZKk+b9jhzyCQOcKs5c+Q5BxHI/A4Nhf4oVIEm8N8nQzVAypLIBQZHu3Re+aPRkWUbdArWaBI+RyLSlemy2ZsDCJh6+/kh8Bic1ooCit0Jx4y1mBZFohtf4zRGdafkkIDIL1OujMz5yRDqigYSNvcSAXRUX)
+accountNo=ENC(BCcz1quNQASvnQ4/ME2CSOiufCl6GfxN)
 ','fintics','double priceSlope = tool.slope(assetIndicator.getMinutePrices(), 10);
 double smaSlope = tool.slope(assetIndicator.getMinuteSmas(10), 10);
 double smaLongSlope = tool.slope(assetIndicator.getMinuteSmas(20), 20);

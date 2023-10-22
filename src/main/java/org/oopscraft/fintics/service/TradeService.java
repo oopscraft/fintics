@@ -2,6 +2,7 @@ package org.oopscraft.fintics.service;
 
 import lombok.RequiredArgsConstructor;
 import org.oopscraft.arch4j.core.data.IdGenerator;
+import org.oopscraft.arch4j.core.data.pbe.PbePropertiesUtil;
 import org.oopscraft.fintics.client.Client;
 import org.oopscraft.fintics.client.ClientFactory;
 import org.oopscraft.fintics.dao.TradeAssetEntity;
@@ -57,7 +58,10 @@ public class TradeService {
         tradeEntity.setStartAt(trade.getStartAt());
         tradeEntity.setEndAt(trade.getEndAt());
         tradeEntity.setClientType(trade.getClientType());
-        tradeEntity.setClientProperties(trade.getClientProperties());
+        if(trade.getClientProperties() != null) {
+            String clientProperties = PbePropertiesUtil.encode(trade.getClientProperties());
+            tradeEntity.setClientProperties(clientProperties);
+        }
         tradeEntity.setHoldCondition(trade.getHoldCondition());
         tradeEntity.setAlarmId(trade.getAlarmId());
         tradeEntity.setAlarmOnError(trade.isAlarmOnError());
@@ -90,8 +94,12 @@ public class TradeService {
 
     public Optional<Balance> getTradeBalance(String tradeId) {
         Trade trade = getTrade(tradeId).orElseThrow();
-        Client client = ClientFactory.getClient(trade.getClientType(), trade.getClientProperties());
-        return Optional.ofNullable(client.getBalance());
+        if(trade.getClientType() != null) {
+            Client client = ClientFactory.getClient(trade.getClientType(), trade.getClientProperties());
+            return Optional.ofNullable(client.getBalance());
+        }else{
+            return Optional.empty();
+        }
     }
 
 }
