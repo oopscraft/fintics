@@ -11,8 +11,8 @@ plugins {
 
 group = project.projectGroup
 version = project.projectVersion
-sourceCompatibility = "11"
-targetCompatibility = "11"
+sourceCompatibility = "17"
+targetCompatibility = "17"
 compileJava.options.encoding = "UTF-8"
 tasks.withType(JavaCompile){
     options.encoding = 'UTF-8'
@@ -75,6 +75,9 @@ dependencies {
     annotationProcessor "jakarta.persistence:jakarta.persistence-api"
     annotationProcessor group: 'com.querydsl', name: 'querydsl-apt', classifier: 'jpa'
     annotationProcessor 'org.hibernate:hibernate-jpamodelgen'
+
+    // tensorflow
+    implementation 'org.tensorflow:tensorflow-core-platform:0.2.0'
 
 }
 
