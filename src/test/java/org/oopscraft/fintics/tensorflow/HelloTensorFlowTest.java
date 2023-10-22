@@ -9,14 +9,14 @@ import org.tensorflow.op.core.Placeholder;
 import org.tensorflow.op.math.Add;
 import org.tensorflow.types.TInt32;
 
-public class HelloTensorFlow {
+public class HelloTensorFlowTest {
 
     public static void main(String[] args) throws Exception {
         System.out.println("Hello TensorFlow " + TensorFlow.version());
 
-        try (ConcreteFunction dbl = ConcreteFunction.create(HelloTensorFlow::dbl);
-             TInt32 x = TInt32.scalarOf(10);
-             Tensor dblX = dbl.call(x)) {
+        try (ConcreteFunction dbl = ConcreteFunction.create(HelloTensorFlowTest::dbl);
+            TInt32 x = TInt32.scalarOf(10);
+            Tensor dblX = dbl.call(x)) {
             System.out.println(x.getInt() + " doubled is " + ((TInt32)dblX).getInt());
         }
     }
@@ -26,4 +26,5 @@ public class HelloTensorFlow {
         Add<TInt32> dblX = tf.math.add(x, x);
         return Signature.builder().input("x", x).output("dbl", dblX).build();
     }
+
 }

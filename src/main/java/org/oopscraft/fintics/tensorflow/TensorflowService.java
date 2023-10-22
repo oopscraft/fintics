@@ -1,2 +1,4 @@
-package org.oopscraft.fintics.tensorflow;public class TensorflowService {
+package org.oopscraft.fintics.tensorflow;
+
+public class TensorflowService {
 }
