@@ -300,7 +300,7 @@ public class KisClient extends Client {
                 .build();
         String url = apiUrl + "/uapi/domestic-stock/v1/trading/inquire-balance";
         HttpHeaders headers = createHeaders();
-        String trId = production ? "TTTC8424R" : "VTTC8434R";
+        String trId = production ? "TTTC8434R" : "VTTC8434R";
         headers.add("tr_id", trId);
         url = UriComponentsBuilder.fromUriString(url)
                 .queryParam("CANO", accountNo.split("-")[0])
