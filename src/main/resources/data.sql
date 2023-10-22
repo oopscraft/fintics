@@ -87,6 +87,12 @@ if(priceSlope < 0
 -- fintics_trade_asset
 insert into `fintics_trade_asset`
 (`trade_id`,`symbol`,`name`,`type`, `enabled`, `hold_ratio`) values
+    ('06c228451ce0400fa57bb36f0568d7cb','122630','KODEX 레버리지','ETF','Y','10');
+insert into `fintics_trade_asset`
+(`trade_id`,`symbol`,`name`,`type`, `enabled`, `hold_ratio`) values
+    ('06c228451ce0400fa57bb36f0568d7cb','252670','KODEX 200선물인버스2X','ETF','Y','10');
+insert into `fintics_trade_asset`
+(`trade_id`,`symbol`,`name`,`type`, `enabled`, `hold_ratio`) values
     ('06c228451ce0400fa57bb36f0568d7cb','229200','KODEX 코스닥150','ETF','Y','10');
 insert into `fintics_trade_asset`
 (`trade_id`,`symbol`,`name`,`type`, `enabled`, `hold_ratio`) values
