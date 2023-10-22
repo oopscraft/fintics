@@ -10,20 +10,21 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.parameters.P;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 @Slf4j
 public class TradeLogAppender extends AppenderBase<ILoggingEvent> {
 
     private final PatternLayout layout;
 
-    @Getter
-    private final SseEmitter sseEmitter;
+    private final List<SseEmitter> sseEmitters = new CopyOnWriteArrayList<>();
 
     public TradeLogAppender(Context context) {
         layout = new PatternLayout();
         layout.setPattern("%d{yyyy-MM-dd HH:mm:ss} %-5level [%thread] - %msg");
         layout.setContext(context);
         layout.start();
-        sseEmitter = new SseEmitter(Long.MAX_VALUE);
     }
 
     @Override
@@ -31,11 +32,21 @@ public class TradeLogAppender extends AppenderBase<ILoggingEvent> {
         try {
             String logMessage = layout.doLayout(event);
             for(String logMessageLine : logMessage.split("\n")) {
-                sseEmitter.send(logMessageLine);
+                for(SseEmitter sseEmitter : sseEmitters) {
+                    sseEmitter.send(logMessageLine);
+                }
             }
         } catch (Exception e) {
             log.info(e.getMessage());
         }
+    }
+
+    public synchronized void addSseEmitter(SseEmitter sseEmitter) {
+        sseEmitters.add(sseEmitter);
+    }
+
+    public synchronized void removeSseEmitter(SseEmitter sseEmitter) {
+        sseEmitters.remove(sseEmitter);
     }
 
 }
