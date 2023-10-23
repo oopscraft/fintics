@@ -68,12 +68,14 @@ public class TradeRunnable implements Runnable {
                 boolean firstTrade = previousDateTime.isBefore(startDateTime);
                 boolean lastTrade = nextDateTime.isAfter(endDateTime);
                 if(firstTrade) {
-                    log.info("First trade - [{}]", trade.getName());
-                    sendAlarmIfEnabled("Start trade.", null);
+                    String message = String.format("First trade - [%s]", trade.getName());
+                    log.info(message);
+                    sendAlarmIfEnabled(message, null);
                 }
                 if(lastTrade) {
-                    log.info("Last trade - [{}]", trade.getName());
-                    sendAlarmIfEnabled("End trade.", null);
+                    String message = String.format("Last trade[%s]", trade.getName());
+                    log.info(message);
+                    sendAlarmIfEnabled(message, null);
                 }
 
                 // balance
