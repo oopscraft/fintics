@@ -2,10 +2,7 @@ package org.oopscraft.fintics.thread;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
-import org.oopscraft.fintics.model.AssetIndicator;
-import org.oopscraft.fintics.model.AssetType;
-import org.oopscraft.fintics.model.Ohlcv;
-import org.oopscraft.fintics.model.TradeAsset;
+import org.oopscraft.fintics.model.*;
 
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
@@ -18,10 +15,20 @@ class TradeAssetDeciderTest {
 
     @Test
     void test() {
-        String holdCondition = "println tool.slope(assetIndicator.getMinutePrices(),1);";
+        // given
+        Trade trade = Trade.builder()
+                .tradeId("test")
+                .holdCondition("println tool.slope(assetIndicator.getMinutePrices(),1);")
+                .build();
+        TradeAsset tradeAsset = TradeAsset.builder()
+                .tradeId("test")
+                .name("Test")
+                .build();
 
+        // when
         TradeAssetDecider tradeAssetDecider = TradeAssetDecider.builder()
-                .holdCondition(holdCondition)
+                .trade(trade)
+                .tradeAsset(tradeAsset)
                 .assetIndicator(AssetIndicator.builder()
                         .asset(TradeAsset.builder()
                                 .tradeId("test")
@@ -57,7 +64,6 @@ class TradeAssetDeciderTest {
         Boolean result = tradeAssetDecider.execute();
 
         log.info("== result:{}", result);
-
     }
 
 }
