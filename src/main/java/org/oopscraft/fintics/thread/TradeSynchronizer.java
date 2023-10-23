@@ -24,7 +24,7 @@ public class TradeSynchronizer {
     @Scheduled(initialDelay = 1_000, fixedDelay = 1_000 * 10)
     @Transactional
     public void synchronize() {
-        log.debug("TradeSynchronizer.synchronize");
+        log.info("TradeSynchronizer.synchronize");
         List<TradeEntity> tradeEntities = tradeRepository.findAll();
 
         // deleted trade thread
