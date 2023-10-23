@@ -19,10 +19,10 @@ public class MacdCalculator {
         return new MacdCalculator(series, shortPeriod, longPeriod, signalPeriod);
     }
 
-    public MacdCalculator(List<Double> series, int shortTermPeriod, int longTermPeriod, int signalPeriod) {
+    public MacdCalculator(List<Double> series, int shortPeriod, int longPeriod, int signalPeriod) {
         this.series = series;
-        this.shortPeriod = shortTermPeriod;
-        this.longPeriod = longTermPeriod;
+        this.shortPeriod = shortPeriod;
+        this.longPeriod = longPeriod;
         this.signalPeriod = signalPeriod;
 
     }
