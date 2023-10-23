@@ -5,6 +5,7 @@ import ch.qos.logback.core.Context;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
+import org.oopscraft.arch4j.web.support.SseLogAppender;
 import org.oopscraft.fintics.model.Trade;
 import org.springframework.stereotype.Component;
 
@@ -19,61 +20,92 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class TradeThreadManager {
 
-    private final Map<String, TradeThread> tradeThreadMap = new ConcurrentHashMap<>();
+    private final Map<String, TradeRunnable> tradeRunnableMap = new ConcurrentHashMap<>();
 
-    private final Map<String, TradeLogAppender> tradeLogAppenderMap = new ConcurrentHashMap<>();
+    private final ThreadGroup tradeThreadGroup = new ThreadGroup("trace");
 
     private final AlarmService alarmService;
 
     public synchronized void startTradeThread(Trade trade) {
         synchronized (this) {
-            if(isTradeThreadRunning(trade.getTradeId())) {
-                throw new RuntimeException(String.format("Thread Thread[%s] is already running.", trade.getName()));
-            }
             log.info("Start TradeThread - {}", trade);
             String tradeId = trade.getTradeId();
 
+            // check already running
+            if(isTradeThreadRunning(tradeId)) {
+                throw new RuntimeException(String.format("Thread Thread[%s] is already running.", trade.getName()));
+            }
+
             // add log appender
             Context context = ((Logger)log).getLoggerContext();
-            TradeLogAppender tradeLogAppender = new TradeLogAppender(context);
-            tradeLogAppender.start();
-            tradeLogAppenderMap.put(tradeId, tradeLogAppender);
+            SseLogAppender sseLogAppender = new SseLogAppender(context);
+            sseLogAppender.start();
 
-            TradeThread tradeThread = new TradeThread(trade, tradeLogAppender, alarmService);
+            // trade runnable
+            TradeRunnable tradeRunnable = new TradeRunnable(trade, sseLogAppender, alarmService);
+            tradeRunnableMap.put(tradeId, tradeRunnable);
+
+            // start thread
+            Thread tradeThread = new Thread(tradeThreadGroup, tradeRunnable, tradeId);
             tradeThread.setDaemon(true);
             tradeThread.setUncaughtExceptionHandler((thread, throwable) -> {
-                log.error("[{}] {}", thread.getName(), throwable.getMessage());
+                log.error("[{}] {}", thread.getName(), throwable);
             });
             tradeThread.start();
-            tradeThreadMap.put(tradeId, tradeThread);
         }
     }
 
     public synchronized void stopTradeThread(String tradeId) {
         synchronized (this) {
+            log.info("Stop Trade Thread - {}", tradeId);
+
+            // checks target exists
             if(!isTradeThreadRunning(tradeId)) {
                 throw new RuntimeException(String.format("Thread Thread[%s] is not running.", tradeId));
             }
-            log.info("Terminate Trade Thread - {}", tradeId);
-            TradeThread tradeThread = tradeThreadMap.get(tradeId);
-            tradeThread.terminate();
-            tradeThreadMap.remove(tradeId);
 
-            /// removes log appender
-            tradeLogAppenderMap.remove(tradeId);
+            Thread[] tradeThreads = new Thread[tradeThreadGroup.activeCount()];
+            tradeThreadGroup.enumerate(tradeThreads);
+            for(Thread tradeThread : tradeThreads) {
+                if(tradeThread.getName().equals(tradeId)) {
+                    try {
+                        tradeThread.interrupt();
+                        tradeThread.join();
+                    } catch (InterruptedException e) {
+                        log.error(e.getMessage(), e);
+                    } finally {
+                        tradeRunnableMap.remove(tradeId);
+                    }
+                }
+            }
         }
     }
 
+    public List<Thread> getTradeThreads() {
+        Thread[] tradeThreads = new Thread[tradeThreadGroup.activeCount()];
+        tradeThreadGroup.enumerate(tradeThreads);
+        return List.of(tradeThreads);
+    }
+
+    public Optional<Thread> getTradeThread(String tradeId) {
+        for(Thread tradeThread : getTradeThreads()) {
+            if(tradeThread.getName().equals(tradeId)) {
+                return Optional.of(tradeThread);
+            }
+        }
+        return Optional.empty();
+    }
+
     public boolean isTradeThreadRunning(String tradeId) {
-        return tradeThreadMap.containsKey(tradeId);
+        return getTradeThread(tradeId).isPresent();
     }
 
-    public List<TradeThread> getTradeThreads() {
-        return new ArrayList<>(tradeThreadMap.values());
+    public List<TradeRunnable> getTradeRunnables() {
+        return new ArrayList<>(tradeRunnableMap.values());
     }
 
-    public Optional<TradeThread> getTradeThread(String tradeId) {
-        return Optional.ofNullable(tradeThreadMap.get(tradeId));
+    public Optional<TradeRunnable> getTradeRunnable(String tradeId) {
+        return Optional.ofNullable(tradeRunnableMap.get(tradeId));
     }
 
 }

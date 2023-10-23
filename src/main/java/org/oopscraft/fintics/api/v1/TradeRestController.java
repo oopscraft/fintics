@@ -1,14 +1,14 @@
 package org.oopscraft.fintics.api.v1;
 
 import lombok.RequiredArgsConstructor;
+import org.oopscraft.arch4j.web.support.SseLogAppender;
 import org.oopscraft.fintics.api.v1.dto.BalanceResponse;
 import org.oopscraft.fintics.api.v1.dto.TradeRequest;
 import org.oopscraft.fintics.api.v1.dto.TradeResponse;
 import org.oopscraft.fintics.model.Trade;
 import org.oopscraft.fintics.model.TradeAsset;
 import org.oopscraft.fintics.service.TradeService;
-import org.oopscraft.fintics.thread.TradeLogAppender;
-import org.oopscraft.fintics.thread.TradeThread;
+import org.oopscraft.fintics.thread.TradeRunnable;
 import org.oopscraft.fintics.thread.TradeThreadManager;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -141,13 +141,13 @@ public class TradeRestController {
 
     @GetMapping(value = "{tradeId}/log", produces = "text/event-stream")
     public SseEmitter getTradeLog(@PathVariable("tradeId")String tradeId) {
-        TradeLogAppender tradeLogAppender = tradeThreadManager.getTradeThread(tradeId)
-                .map(TradeThread::getTradeLogAppender)
+        SseLogAppender sseLogAppender = tradeThreadManager.getTradeRunnable(tradeId)
+                .map(TradeRunnable::getSseLogAppender)
                 .orElseThrow();
         SseEmitter sseEmitter = new SseEmitter(60_000L);
-        tradeLogAppender.addSseEmitter(sseEmitter);
+        sseLogAppender.addSseEmitter(sseEmitter);
         sseEmitter.onCompletion(() -> {
-            tradeLogAppender.removeSseEmitter(sseEmitter);
+            sseLogAppender.removeSseEmitter(sseEmitter);
         });
         return sseEmitter;
     }

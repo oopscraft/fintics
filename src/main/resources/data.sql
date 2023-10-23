@@ -35,13 +35,13 @@ apiUrl=https://openapivts.koreainvestment.com:29443
 appKey=ENC(mqcEUDQAO57SaLBCvhoz0RpFYBXtMQG2Y+NIK2jfQZ6koEUDlYx+5W8AW+eW0KVd)
 appSecret=ENC(cPLNx3yraMH7FKXfEkcs0/r7ZrKDrW7nBgQ/NpKs3BeQGUkjDl+j8VG0FOhqly/DYwJdyZ5kpLMJ7GAGSv8vEZhUOlSPPP1lFNiVyWZKk+b9jhzyCQOcKs5c+Q5BxHI/A4Nhf4oVIEm8N8nQzVAypLIBQZHu3Re+aPRkWUbdArWaBI+RyLSlemy2ZsDCJh6+/kh8Bic1ooCit0Jx4y1mBZFohtf4zRGdafkkIDIL1OujMz5yRDqigYSNvcSAXRUX)
 accountNo=ENC(BCcz1quNQASvnQ4/ME2CSOiufCl6GfxN)
-','fintics','double priceSlope = tool.slope(assetIndicator.getMinutePrices(), 10);
-double smaSlope = tool.slope(assetIndicator.getMinuteSmas(10), 10);
-double smaLongSlope = tool.slope(assetIndicator.getMinuteSmas(20), 20);
+','fintics','double priceSlope = tool.slope(assetIndicator.getMinutePrices(), 5);
+double smaSlope = tool.slope(assetIndicator.getMinuteSmas(5), 5);
+double smaLongSlope = tool.slope(assetIndicator.getMinuteSmas(10), 10);
 double macdOscillator = assetIndicator.getMinuteMacd(12, 26, 9).getOscillator();
-double macdOscillatorSlope = tool.slope(assetIndicator.getMinuteMacds(12, 26, 9).collect { it.oscillator }, 10);
+double macdOscillatorSlope = tool.slope(assetIndicator.getMinuteMacds(12, 26, 9).collect { it.oscillator }, 5);
 double rsi = assetIndicator.getMinuteRsi(14);
-double rsiSlope = tool.slope(assetIndicator.getMinuteRsis(14), 10);
+double rsiSlope = tool.slope(assetIndicator.getMinuteRsis(14), 5);
 
 log.debug("{}", assetIndicator.getMinutePrices());
 log.info("priceSlope:{}, smaSlope:{}, smaLongSlope:{} , macdOscillator:{}, macdOscillatorSlope:{}, rsi:{}, rsiSlope:{}",
@@ -53,7 +53,7 @@ if(priceSlope > 0
 && macdOscillatorSlope > 0
 && rsiSlope > 0
 ) {
-    // 상승추세일 경우 즉각 매수
+    // 상승추세일 경우 매수
     if(macdOscillator > 0) {
         return true;
     }
@@ -71,7 +71,7 @@ if(priceSlope < 0
 && macdOscillatorSlope < 0
 && rsiSlope < 0
 ) {
-    // 하락추세시에는 즉각 매도
+    // 하락추세시에는 매도
     if(macdOscillator < 0) {
         return false;
     }

@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
+import org.oopscraft.arch4j.web.support.SseLogAppender;
 import org.oopscraft.fintics.client.Client;
 import org.oopscraft.fintics.client.ClientFactory;
 import org.oopscraft.fintics.model.*;
@@ -16,49 +17,37 @@ import java.time.LocalTime;
 import java.util.List;
 
 @Slf4j
-public class TradeThread extends Thread {
+public class TradeRunnable implements Runnable {
 
     @Getter
     private final Trade trade;
 
     @Getter
-    private final TradeLogAppender tradeLogAppender;
+    private final SseLogAppender sseLogAppender;
 
     private final AlarmService alarmService;
 
     private final Client client;
 
-    private boolean terminated;
-
     @Builder
-    public TradeThread(Trade trade, TradeLogAppender tradeLogAppender, AlarmService alarmService) {
+    public TradeRunnable(Trade trade, SseLogAppender sseLogAppender, AlarmService alarmService) {
         this.trade = trade;
-        this.tradeLogAppender = tradeLogAppender;
+        this.sseLogAppender = sseLogAppender;
         this.alarmService = alarmService;
 
         // add log appender
-        ((Logger)log).addAppender(this.tradeLogAppender);
+        ((Logger)log).addAppender(this.sseLogAppender);
 
         // creates client
         this.client = ClientFactory.getClient(trade.getClientType(), trade.getClientProperties());
     }
 
-    public void terminate() {
-        this.terminated = true;
-        this.interrupt();
-        try {
-            this.join();
-            this.tradeLogAppender.stop();
-        } catch (InterruptedException e) {
-            log.warn(e.getMessage());
-        }
-    }
-
     @Override
     public void run() {
-        while(!this.isInterrupted() && !terminated) {
+        log.info("Start Trade Thread: {}", trade);
+        while(!Thread.currentThread().isInterrupted()) {
             try {
-                sleepMillis(trade.getInterval() * 1_000);
+                Thread.sleep(trade.getInterval() * 1_000);
 
                 // checks start,end time
                 if (!isOperatingTime(LocalTime.now())) {
@@ -79,7 +68,7 @@ public class TradeThread extends Thread {
                     }
 
                     // force delay
-                    sleepMillis(1000);
+                    Thread.sleep(1000);
 
                     // logging
                     log.info("Check asset - [{}]", tradeAsset.getName());
@@ -87,7 +76,9 @@ public class TradeThread extends Thread {
                     // build asset indicator
                     OrderBook orderBook = client.getOrderBook(tradeAsset);
                     List<Ohlcv> minuteOhlcvs = client.getMinuteOhlcvs(tradeAsset);
+                    log.info("Latest minuteOhlcv.dateTime: {}", minuteOhlcvs.size() < 1 ? null : minuteOhlcvs.get(0).getDateTime());
                     List<Ohlcv> dailyOhlcvs = client.getDailyOhlcvs(tradeAsset);
+                    log.info("Latest dailyOhlcvs.dateTime: {}", dailyOhlcvs.size() < 1 ? null : dailyOhlcvs.get(0).getDateTime());
                     AssetIndicator assetIndicator = AssetIndicator.builder()
                             .asset(tradeAsset)
                             .orderBook(orderBook)
@@ -119,6 +110,7 @@ public class TradeThread extends Thread {
                                     .divide(BigDecimal.valueOf(askPrice), 0, RoundingMode.FLOOR)
                                     .intValue();
                             try {
+                                log.info("Buy asset: {}", tradeAsset.getName());
                                 client.buyAsset(tradeAsset, quantity);
                                 sendBuyOrderAlarmIfEnabled(tradeAsset, quantity);
                             } catch (Throwable e) {
@@ -134,6 +126,7 @@ public class TradeThread extends Thread {
                             BalanceAsset balanceAsset = balance.getBalanceAsset(tradeAsset.getSymbol());
                             Integer quantity = balanceAsset.getQuantity();
                             try {
+                                log.info("Sell asset: {}", tradeAsset.getName());
                                 client.sellAsset(balanceAsset, quantity);
                                 sendSellOrderAlarmIfEnabled(balanceAsset, quantity);
                             } catch (Throwable e) {
@@ -143,17 +136,15 @@ public class TradeThread extends Thread {
                         }
                     }
                 }
-            } catch (Throwable e) {
+            } catch(InterruptedException e) {
+                log.warn(e.getMessage());
+                Thread.currentThread().interrupt();
+                break;
+            } catch (Exception e) {
                 log.error(e.getMessage(), e);
                 sendErrorAlarmIfEnabled(e);
             }
         }
-    }
-
-    private void sleepMillis(long millis) {
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException ignored) { }
     }
 
     private boolean isOperatingTime(LocalTime time) {

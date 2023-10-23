@@ -143,16 +143,22 @@
             tradeLog = document.getElementById("tradeLog");
             tradeLogEventSource = new EventSource(`${_apiUrl}/v1/trade/${tradeId}/log`);
             tradeLogEventSource.onopen = () => {
-                console.log("connected.");
+                let message = 'SSE Connected.';
+                console.log(message);
             }
             tradeLogEventSource.onmessage = (event) => {
-                let logMessage = event.data;
-                console.log(logMessage);
-                tradeLog.value += logMessage + '\n';
+                let message = event.data;
+                console.log(message);
+                tradeLog.value += message + '\n';
                 tradeLog.scrollTop = tradeLog.scrollHeight;
             };
-            tradeLogEventSource.onerror = (error) => {
-                console.error('SSE error:', error);
+            tradeLogEventSource.onerror = (event) => {
+                if (event.eventPhase === EventSource.CLOSED) {
+                    let message = 'SSE connection closed. Reconnecting...';
+                    console.log(message);
+                    tradeLogEventSource.close();
+                    setTimeout(startListenTradeLog, 1000);
+                }
             };
         }
 

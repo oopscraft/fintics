@@ -15,7 +15,7 @@ import java.util.Objects;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class TradeThreadSynchronizer {
+public class TradeSynchronizer {
 
     private final TradeRepository tradeRepository;
 
@@ -24,31 +24,31 @@ public class TradeThreadSynchronizer {
     @Scheduled(initialDelay = 1_000, fixedDelay = 1_000 * 10)
     @Transactional
     public void synchronize() {
-        log.debug("== TradeThreadSynchronizer.synchronize");
+        log.debug("TradeSynchronizer.synchronize");
         List<TradeEntity> tradeEntities = tradeRepository.findAll();
 
         // deleted trade thread
-        for(int index = tradeThreadManager.getTradeThreads().size() - 1; index >= 0; index --) {
-            TradeThread tradeThread = tradeThreadManager.getTradeThreads().get(index);
+        for(Thread tradeThread : tradeThreadManager.getTradeThreads()) {
+            String tradeId = tradeThread.getName();
             boolean notExists = tradeEntities.stream()
                     .noneMatch(tradeEntity ->
-                            tradeEntity.getTradeId().equals(tradeThread.getTrade().getTradeId()));
+                            tradeEntity.getTradeId().equals(tradeId));
             if(notExists) {
-                tradeThreadManager.stopTradeThread(tradeThread.getTrade().getTradeId());
+                tradeThreadManager.stopTradeThread(tradeId);
             }
         }
 
         // existing service monitor thread
         tradeEntities.forEach(tradeEntity -> {
-            TradeThread tradeThread = tradeThreadManager.getTradeThread(tradeEntity.getTradeId()).orElse(null);
-            if(tradeThread == null) {
+            TradeRunnable tradeRunnable = tradeThreadManager.getTradeRunnable(tradeEntity.getTradeId()).orElse(null);
+            if(!tradeThreadManager.isTradeThreadRunning(tradeEntity.getTradeId())) {
                 if(tradeEntity.isEnabled()) {
                     tradeThreadManager.startTradeThread(Trade.from(tradeEntity));
                 }
             }else{
                 // when properties changed (checks overriding equals method)
                 Trade newTrade = Trade.from(tradeEntity);
-                if(!Objects.equals(newTrade, tradeThread.getTrade())) {
+                if(!Objects.equals(newTrade, tradeRunnable.getTrade())) {
                     tradeThreadManager.stopTradeThread(newTrade.getTradeId());
                     if(tradeEntity.isEnabled()) {
                         tradeThreadManager.startTradeThread(newTrade);

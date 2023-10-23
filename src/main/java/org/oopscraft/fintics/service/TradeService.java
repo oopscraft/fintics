@@ -8,17 +8,13 @@ import org.oopscraft.fintics.client.ClientFactory;
 import org.oopscraft.fintics.dao.TradeAssetEntity;
 import org.oopscraft.fintics.dao.TradeEntity;
 import org.oopscraft.fintics.dao.TradeRepository;
-import org.oopscraft.fintics.model.AssetIndicator;
 import org.oopscraft.fintics.model.Balance;
 import org.oopscraft.fintics.model.Trade;
-import org.oopscraft.fintics.thread.TradeThread;
 import org.oopscraft.fintics.thread.TradeThreadManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
