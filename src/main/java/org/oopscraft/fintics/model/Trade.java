@@ -3,8 +3,6 @@ package org.oopscraft.fintics.model;
 import lombok.*;
 import org.oopscraft.fintics.dao.TradeEntity;
 
-import javax.persistence.Column;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;

@@ -35,53 +35,40 @@ apiUrl=https://openapivts.koreainvestment.com:29443
 appKey=ENC(mqcEUDQAO57SaLBCvhoz0RpFYBXtMQG2Y+NIK2jfQZ6koEUDlYx+5W8AW+eW0KVd)
 appSecret=ENC(cPLNx3yraMH7FKXfEkcs0/r7ZrKDrW7nBgQ/NpKs3BeQGUkjDl+j8VG0FOhqly/DYwJdyZ5kpLMJ7GAGSv8vEZhUOlSPPP1lFNiVyWZKk+b9jhzyCQOcKs5c+Q5BxHI/A4Nhf4oVIEm8N8nQzVAypLIBQZHu3Re+aPRkWUbdArWaBI+RyLSlemy2ZsDCJh6+/kh8Bic1ooCit0Jx4y1mBZFohtf4zRGdafkkIDIL1OujMz5yRDqigYSNvcSAXRUX)
 accountNo=ENC(BCcz1quNQASvnQ4/ME2CSOiufCl6GfxN)
-','fintics','double priceSlope = tool.slope(assetIndicator.getMinutePrices(), 5);
-double smaSlope = tool.slope(assetIndicator.getMinuteSmas(5), 5);
-double smaLongSlope = tool.slope(assetIndicator.getMinuteSmas(10), 10);
+','fintics','Boolean hold;
+double priceSlope = tool.slope(assetIndicator.getMinutePrices(), 10);
+double emaSlope = tool.slope(assetIndicator.getMinuteEmas(10), 10);
+double smaSlope = tool.slope(assetIndicator.getMinuteSmas(10), 10);
 double macdOscillator = assetIndicator.getMinuteMacd(12, 26, 9).getOscillator();
-double macdOscillatorSlope = tool.slope(assetIndicator.getMinuteMacds(12, 26, 9).collect { it.oscillator }, 5);
+double macdOscillatorSlope = tool.slope(assetIndicator.getMinuteMacds(12, 26, 9).collect { it.oscillator }, 10);
 double rsi = assetIndicator.getMinuteRsi(14);
-double rsiSlope = tool.slope(assetIndicator.getMinuteRsis(14), 5);
+double rsiSlope = tool.slope(assetIndicator.getMinuteRsis(14), 10);
 
-log.debug("{}", assetIndicator.getMinutePrices());
-log.info("priceSlope:{}, smaSlope:{}, smaLongSlope:{} , macdOscillator:{}, macdOscillatorSlope:{}, rsi:{}, rsiSlope:{}",
-priceSlope, smaSlope, smaLongSlope, macdOscillator, macdOscillatorSlope, rsi, rsiSlope);
+log.info("priceSlope:{}, emaSlope:{}, smaSlope:{} , macdOscillator:{}, macdOscillatorSlope:{}, rsi:{}, rsiSlope:{}",
+priceSlope, emaSlope, smaSlope, macdOscillator, macdOscillatorSlope, rsi, rsiSlope);
 
-// 매수 조건 - 가격,MACD,RSI 모두 상승중인 경우
+// 보유 조건 - 가격,SMA,EMA,MACD,RSI 모두 상승중인 경우
 if(priceSlope > 0
+&& emaSlope > 0
 && smaSlope > 0
 && macdOscillatorSlope > 0
 && rsiSlope > 0
 ) {
-    // 상승추세일 경우 매수
-    if(macdOscillator > 0) {
-        return true;
-    }
-    // 하락추세일 경우 일시적인 상승인지 이동평균선 체크 후 매수
-    if(macdOscillator < 0) {
-        if(smaLongSlope > 0) {
-            return true;
-        }
-    }
+    hold = true;
+}
+// 그외 보유하지 않음
+else {
+    hold = false;
 }
 
-// 매도조건 - 가격,MACD,RSI 모두 하락중인 경우
-if(priceSlope < 0
-&& smaSlope < 0
-&& macdOscillatorSlope < 0
-&& rsiSlope < 0
-) {
-    // 하락추세시에는 매도
-    if(macdOscillator < 0) {
-        return false;
-    }
-    // 상승추세시에는 일시적인 하락인지 이동평균선 체크 후 매도
-    if(macdOscillator > 0) {
-        if(smaLongSlope < 0) {
-            return false
-        }
-    }
+// 마지막 거래일 경우 모두 매도(보유하지 않음)
+if(lastTrade) {
+    hold = false;
 }
+
+// 결과 반환
+return hold;
+
 ');
 
 -- fintics_trade_asset

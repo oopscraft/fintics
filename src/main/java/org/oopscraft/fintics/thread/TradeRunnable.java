@@ -13,6 +13,8 @@ import org.oopscraft.fintics.model.*;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -54,7 +56,25 @@ public class TradeRunnable implements Runnable {
                     log.info("Not operating time - [{}] {} ~ {}", trade.getName(), trade.getStartAt(), trade.getEndAt());
                     continue;
                 }
+
+                // logging
                 log.info("Check trade - [{}]", trade.getName());
+
+                // set is final flag
+                LocalDateTime startDateTime = LocalDate.now().atTime(trade.getStartAt());
+                LocalDateTime endDateTime = LocalDate.now().atTime(trade.getEndAt());
+                LocalDateTime previousDateTime = LocalDateTime.now().minusSeconds(trade.getInterval());
+                LocalDateTime nextDateTime = LocalDateTime.now().plusSeconds(trade.getInterval());
+                boolean firstTrade = previousDateTime.isBefore(startDateTime);
+                boolean lastTrade = nextDateTime.isAfter(endDateTime);
+                if(firstTrade) {
+                    log.info("First trade - [{}]", trade.getName());
+                    sendAlarmIfEnabled("Start trade.", null);
+                }
+                if(lastTrade) {
+                    log.info("Last trade - [{}]", trade.getName());
+                    sendAlarmIfEnabled("End trade.", null);
+                }
 
                 // balance
                 Balance balance = client.getBalance();
@@ -88,11 +108,15 @@ public class TradeRunnable implements Runnable {
 
                     // decides hold condition
                     TradeAssetDecider tradeAssetDecider = TradeAssetDecider.builder()
-                            .holdCondition(trade.getHoldCondition())
+                            .trade(trade)
+                            .tradeAsset(tradeAsset)
                             .assetIndicator(assetIndicator)
                             .logger(log)
+                            .firstTrade(firstTrade)
+                            .lastTrade(lastTrade)
                             .build();
                     Boolean holdConditionResult = tradeAssetDecider.execute();
+                    log.info("holdConditionResult: {}", holdConditionResult);
 
                     // 1. null is no operation
                     if (holdConditionResult == null) {
@@ -136,6 +160,7 @@ public class TradeRunnable implements Runnable {
                         }
                     }
                 }
+
             } catch(InterruptedException e) {
                 log.warn(e.getMessage());
                 Thread.currentThread().interrupt();
