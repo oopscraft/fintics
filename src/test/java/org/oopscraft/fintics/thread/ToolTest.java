@@ -43,7 +43,7 @@ public class ToolTest {
 
     @Test
     @Order(3)
-    void averagePeriodUnderSize() {
+    void averagePeriodOverSize() {
         // given
         List<Double> values = new ArrayList<>(){{
             add(10.0);
@@ -56,6 +56,20 @@ public class ToolTest {
 
         // then
         assertEquals(15, average);
+    }
+
+    @Test
+    @Order(4)
+    void averagePeriodUnderSize() {
+        // given
+        List<Double> values = List.of(1.0, 2.0, 3.0, 4.0);
+
+        // when
+        Tool tool = new Tool();
+        Double average = tool.average(values, 2);
+
+        // then
+        assertEquals(1.5, average);
     }
 
 }

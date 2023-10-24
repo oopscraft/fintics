@@ -41,15 +41,15 @@ double emaSlope = tool.slope(assetIndicator.getMinuteEmas(10), 10);
 double smaSlope = tool.slope(assetIndicator.getMinuteSmas(10), 10);
 double macdOscillator = assetIndicator.getMinuteMacd(12, 26, 9).getOscillator();
 double macdOscillatorSlope = tool.slope(assetIndicator.getMinuteMacds(12, 26, 9).collect { it.oscillator }, 10);
-double macdOscillatorAverage = tool.slope(assetIndicator.getMinuteMacds(12, 26, 9).collect { it.oscillator }, 10);
+double macdOscillatorAverage = tool.average(assetIndicator.getMinuteMacds(12, 26, 9).collect { it.oscillator }, 10);
 double rsi = assetIndicator.getMinuteRsi(14);
 double rsiSlope = tool.slope(assetIndicator.getMinuteRsis(14), 10);
 double rsiAverage = tool.average(assetIndicator.getMinuteRsis(14), 10);
 
-log.info("priceSlope:{}, emaSlope:{}, smaSlope:{} , macdOscillator:{}, macdOscillatorSlope:{}, rsi:{}, rsiSlope:{}",
-priceSlope, emaSlope, smaSlope, macdOscillator, macdOscillatorSlope, rsi, rsiSlope);
+log.info("priceSlope:{}, emaSlope:{}, smaSlope:{} , macdOscillator:{}, macdOscillatorSlope:{}, macdOscillatorAverage:{}, rsi:{}, rsiSlope:{}",
+priceSlope, emaSlope, smaSlope, macdOscillator, macdOscillatorSlope, macdOscillatorAverage, rsi, rsiSlope);
 
-// 보유 조건 - 가격,SMA,EMA,MACD,RSI 모두 상승중인 경우
+// 보유 조건 - 가격,SMA,EMA,MACD 모두 상승중인 경우
 if(priceSlope > 0
 && emaSlope > 0
 && smaSlope > 0
