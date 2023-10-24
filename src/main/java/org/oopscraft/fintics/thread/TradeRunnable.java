@@ -40,7 +40,7 @@ public class TradeRunnable implements Runnable {
         this.alarmService = alarmService;
 
         // add log appender
-        log = (Logger) LoggerFactory.getLogger(TradeRunnable.class);
+        log = (Logger) LoggerFactory.getLogger(trade.getTradeId());
         ((Logger)log).addAppender(this.sseLogAppender);
 
         // creates client
