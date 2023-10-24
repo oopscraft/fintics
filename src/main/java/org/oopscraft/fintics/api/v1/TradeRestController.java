@@ -1,6 +1,7 @@
 package org.oopscraft.fintics.api.v1;
 
 import lombok.RequiredArgsConstructor;
+import org.oopscraft.arch4j.core.security.SecurityUtils;
 import org.oopscraft.arch4j.web.support.SseLogAppender;
 import org.oopscraft.fintics.api.v1.dto.BalanceResponse;
 import org.oopscraft.fintics.api.v1.dto.TradeRequest;
@@ -12,12 +13,14 @@ import org.oopscraft.fintics.thread.TradeRunnable;
 import org.oopscraft.fintics.thread.TradeThreadManager;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @RestController
@@ -39,6 +42,7 @@ public class TradeRestController {
     }
 
     @GetMapping("{tradeId}")
+    @PreAuthorize("@tradePermissionEvaluator.hasEditPermission(#tradeId)")
     public ResponseEntity<TradeResponse> getTrade(@PathVariable("tradeId")String tradeId) {
         TradeResponse tradeResponse = tradeService.getTrade(tradeId)
                 .map(TradeResponse::from)
@@ -63,6 +67,8 @@ public class TradeRestController {
                 .alarmId(tradeRequest.getAlarmId())
                 .alarmOnError(tradeRequest.isAlarmOnError())
                 .alarmOnOrder(tradeRequest.isAlarmOnOrder())
+                .userId(SecurityUtils.getCurrentUserId())
+                .publicEnabled(tradeRequest.isPublicEnabled())
                 .build();
 
         List<TradeAsset> tradeAssets = tradeRequest.getTradeAssets().stream()
@@ -78,15 +84,14 @@ public class TradeRestController {
                 .collect(Collectors.toList());
         trade.setTradeAssets(tradeAssets);
 
-        trade = tradeService.saveTrade(trade);
-
-        TradeResponse tradeResponse = TradeResponse.from(trade);
-        return ResponseEntity.status(HttpStatus.CREATED).body(tradeResponse);
+        Trade savedTrade = tradeService.saveTrade(trade);
+        TradeResponse savedTradeResponse = TradeResponse.from(savedTrade);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedTradeResponse);
     }
 
     @PutMapping("{tradeId}")
     @Transactional
-    @PreAuthorize("hasAuthority('TRADE_EDIT')")
+    @PreAuthorize("hasAuthority('TRADE_EDIT') and @tradePermissionEvaluator.hasEditPermission(#tradeId)")
     public ResponseEntity<TradeResponse> modifyTrade(
             @PathVariable("tradeId")String tradeId,
             @RequestBody TradeRequest tradeRequest
@@ -103,6 +108,7 @@ public class TradeRestController {
         trade.setAlarmId(tradeRequest.getAlarmId());
         trade.setAlarmOnError(tradeRequest.isAlarmOnError());
         trade.setAlarmOnOrder(tradeRequest.isAlarmOnOrder());
+        trade.setPublicEnabled(tradeRequest.isPublicEnabled());
 
         List<TradeAsset> tradeAssets = tradeRequest.getTradeAssets().stream()
                 .map(tradeAssetRequest ->
@@ -117,21 +123,22 @@ public class TradeRestController {
                 .collect(Collectors.toList());
         trade.setTradeAssets(tradeAssets);
 
-        trade = tradeService.saveTrade(trade);
+        Trade savedTrade = tradeService.saveTrade(trade);
 
-        TradeResponse tradeResponse = TradeResponse.from(trade);
-        return ResponseEntity.ok(tradeResponse);
+        TradeResponse savedTradeResponse = TradeResponse.from(savedTrade);
+        return ResponseEntity.ok(savedTradeResponse);
     }
 
     @DeleteMapping("{tradeId}")
     @Transactional
-    @PreAuthorize("hasAuthority('TRADE_EDIT')")
+    @PreAuthorize("hasAuthority('TRADE_EDIT') and @tradePermissionEvaluator.hasEditPermission(#tradeId)")
     public ResponseEntity<Void> deleteTrade(@PathVariable("tradeId")String tradeId) {
         tradeService.deleteTrade(tradeId);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("{tradeId}/balance")
+    @PreAuthorize("@tradePermissionEvaluator.hasEditPermission(#tradeId)")
     public ResponseEntity<BalanceResponse> getTradeBalance(@PathVariable("tradeId") String tradeId) {
         BalanceResponse balanceResponse = tradeService.getTradeBalance(tradeId)
                 .map(BalanceResponse::from)
@@ -140,6 +147,7 @@ public class TradeRestController {
     }
 
     @GetMapping(value = "{tradeId}/log", produces = "text/event-stream")
+    @PreAuthorize("@tradePermissionEvaluator.hasEditPermission(#tradeId)")
     public SseEmitter getTradeLog(@PathVariable("tradeId")String tradeId) {
         SseLogAppender sseLogAppender = tradeThreadManager.getTradeRunnable(tradeId)
                 .map(TradeRunnable::getSseLogAppender)

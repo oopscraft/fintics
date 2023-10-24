@@ -3,6 +3,7 @@ package org.oopscraft.fintics.service;
 import lombok.RequiredArgsConstructor;
 import org.oopscraft.arch4j.core.data.IdGenerator;
 import org.oopscraft.arch4j.core.data.pbe.PbePropertiesUtil;
+import org.oopscraft.arch4j.core.security.SecurityUtils;
 import org.oopscraft.fintics.client.Client;
 import org.oopscraft.fintics.client.ClientFactory;
 import org.oopscraft.fintics.dao.TradeAssetEntity;
@@ -39,13 +40,13 @@ public class TradeService {
 
     @Transactional
     public Trade saveTrade(Trade trade) {
-        TradeEntity tradeEntity = null;
+        final TradeEntity tradeEntity;
         if(trade.getTradeId() != null) {
             tradeEntity = tradeRepository.findById(trade.getTradeId()).orElseThrow();
-        }
-        if(tradeEntity == null) {
+        } else {
             tradeEntity = TradeEntity.builder()
                     .tradeId(IdGenerator.uuid())
+                    .userId(trade.getUserId())
                     .build();
         }
         tradeEntity.setName(trade.getName());
@@ -62,6 +63,7 @@ public class TradeService {
         tradeEntity.setAlarmId(trade.getAlarmId());
         tradeEntity.setAlarmOnError(trade.isAlarmOnError());
         tradeEntity.setAlarmOnOrder(trade.isAlarmOnOrder());
+        tradeEntity.setPublicEnabled(trade.isPublicEnabled());
 
         // trade asset
         tradeEntity.getTradeAssetEntities().clear();
@@ -78,8 +80,9 @@ public class TradeService {
                 .collect(Collectors.toList());
         tradeEntity.getTradeAssetEntities().addAll(tradeAssetEntities);
 
-        tradeEntity = tradeRepository.saveAndFlush(tradeEntity);
-        return Trade.from(tradeEntity);
+        // save and return
+        TradeEntity savedTradeEntity = tradeRepository.saveAndFlush(tradeEntity);
+        return Trade.from(savedTradeEntity);
     }
 
     @Transactional

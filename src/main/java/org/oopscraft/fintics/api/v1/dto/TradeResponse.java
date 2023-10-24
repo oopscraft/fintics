@@ -1,6 +1,8 @@
 package org.oopscraft.fintics.api.v1.dto;
 
 import lombok.*;
+import org.oopscraft.arch4j.core.role.Role;
+import org.oopscraft.arch4j.core.security.SecurityPolicy;
 import org.oopscraft.fintics.model.Trade;
 
 import java.time.LocalDateTime;
@@ -39,6 +41,8 @@ public class TradeResponse {
 
     private boolean alarmOnOrder;
 
+    private boolean publicEnabled;
+
     @Builder.Default
     private List<TradeAssetResponse> tradeAssets = new ArrayList<>();
 
@@ -56,11 +60,16 @@ public class TradeResponse {
                 .alarmId(trade.getAlarmId())
                 .alarmOnError(trade.isAlarmOnError())
                 .alarmOnOrder(trade.isAlarmOnOrder())
+                .publicEnabled(trade.isPublicEnabled())
                 .build();
+
+        // trade asset
         List<TradeAssetResponse> tradeAssetResponses = trade.getTradeAssets().stream()
                 .map(TradeAssetResponse::from)
                 .collect(Collectors.toList());
         tradeResponse.setTradeAssets(tradeAssetResponses);
+
+        // returns
         return tradeResponse;
     }
 

@@ -1,11 +1,14 @@
 package org.oopscraft.fintics.model;
 
 import lombok.*;
+import org.oopscraft.arch4j.core.security.SecurityUtils;
 import org.oopscraft.fintics.dao.TradeEntity;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Data
@@ -39,8 +42,26 @@ public class Trade {
 
     private boolean alarmOnOrder;
 
+    private String userId;
+
+    private boolean publicEnabled;
+
     @Builder.Default
     private List<TradeAsset> tradeAssets = new ArrayList<>();
+
+    public boolean hasAccessPermission() {
+        if(userId == null || publicEnabled) {
+            return true;
+        }
+        return Objects.equals(userId, SecurityUtils.getCurrentUserId());
+    }
+
+    public boolean hasEditPermission() {
+        if(userId == null || publicEnabled) {
+            return true;
+        }
+        return Objects.equals(userId, SecurityUtils.getCurrentUserId());
+    }
 
     public static Trade from(TradeEntity tradeEntity) {
         Trade trade = Trade.builder()
@@ -56,11 +77,17 @@ public class Trade {
                 .alarmId(tradeEntity.getAlarmId())
                 .alarmOnError(tradeEntity.isAlarmOnError())
                 .alarmOnOrder(tradeEntity.isAlarmOnOrder())
+                .userId(tradeEntity.getUserId())
+                .publicEnabled(tradeEntity.isPublicEnabled())
                 .build();
+
+        // trade assets
         List<TradeAsset> tradeAssets = tradeEntity.getTradeAssetEntities().stream()
                 .map(TradeAsset::from)
                 .collect(Collectors.toList());
         trade.setTradeAssets(tradeAssets);
+
+        // return
         return trade;
     }
 

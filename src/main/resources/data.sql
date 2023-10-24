@@ -50,8 +50,7 @@ log.info("priceSlope:{}, emaSlope:{}, smaSlope:{} , macdOscillator:{}, macdOscil
 priceSlope, emaSlope, smaSlope, macdOscillator, macdOscillatorSlope, macdOscillatorAverage, rsi, rsiSlope);
 
 // 보유 조건 - 가격,SMA,EMA,MACD 모두 상승중인 경우
-if(priceSlope > 0
-&& emaSlope > 0
+if(emaSlope > 0
 && smaSlope > 0
 && macdOscillatorAverage > 0
 ) {

@@ -12,6 +12,10 @@
             interval: null,
             clientType: null,
             clientProperties: null,
+            accessPolicy: null,
+            accessRoles: [],
+            editPolicy: null,
+            editRoles: [],
             tradeAssets: []
         });
         const balance = new duice.ObjectProxy({
@@ -282,17 +286,22 @@
                             <span data-th-text="#{fintics.Trade.alarmOnOrder}" class="font-weight-bold"></span>
                         </label>
                     </div>
+                    <label class="grid-column-6">
+                        <span data-th-text="#{fintics.Trade.publicEnabled}" class="font-weight-bold"></span>
+                        <br/>
+                        <input type="checkbox" data-duice-bind="trade" data-duice-property="publicEnabled"/>
+                    </label>
                 </div>
                 <div class="grid-column-1 s-grid-column-2 grid grid-template-columns-12 grid-gap-1em">
                     <label class="grid-column-12">
                         <span data-th-text="#{fintics.Trade.holdCondition}" class="font-weight-bold width-100"></span>
                         <small class="font-weight-bold">(Groovy Script)</small>
-                        <textarea data-duice-bind="trade" data-duice-property="holdCondition" rows="10" class="border-1 width-100"
+                        <textarea data-duice-bind="trade" data-duice-property="holdCondition" rows="20" class="border-1 width-100"
                                   style="font-family: monospace;"></textarea>
                     </label>
                     <div class="grid-column-12">
                         <span data-th-text="#{fintics.TradeAsset}" class="font-weight-bold width-100"></span>
-                        <div class="overflow-y-scroll border-1" style="max-height:200px;">
+                        <div class="overflow-y-scroll border-1" style="max-height:400px;">
                             <table class="width-100 border-0">
                                 <colgroup>
                                     <col style="width:4em;"/>
@@ -362,7 +371,6 @@
                                 </tbody>
                             </table>
                         </div>
-
                     </div>
                 </div>
                 <div class="grid-column-2 justify-self-end">
