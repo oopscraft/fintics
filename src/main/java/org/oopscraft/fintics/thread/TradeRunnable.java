@@ -10,6 +10,7 @@ import org.oopscraft.arch4j.web.support.SseLogAppender;
 import org.oopscraft.fintics.client.Client;
 import org.oopscraft.fintics.client.ClientFactory;
 import org.oopscraft.fintics.model.*;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -18,11 +19,12 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
-@Slf4j
 public class TradeRunnable implements Runnable {
 
     @Getter
     private final Trade trade;
+
+    private final Logger log;
 
     @Getter
     private final SseLogAppender sseLogAppender;
@@ -38,6 +40,7 @@ public class TradeRunnable implements Runnable {
         this.alarmService = alarmService;
 
         // add log appender
+        log = (Logger) LoggerFactory.getLogger(TradeRunnable.class);
         ((Logger)log).addAppender(this.sseLogAppender);
 
         // creates client
