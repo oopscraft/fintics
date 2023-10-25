@@ -92,7 +92,8 @@
                     }).then(response => response.json())
                         .then(data => {
                             _alert(/*[[#{web.global.saveItemComplete(#{fintics.Trade})}]]*/'').then(() => {
-                                document.location.href = `${_rootUrl}/trade/trade-detail?tradeId=${data.tradeId}`;
+                                duice.ObjectProxy.clear(trade);
+                                duice.ObjectProxy.assign(trade, data);
                             });
                     });
                 }

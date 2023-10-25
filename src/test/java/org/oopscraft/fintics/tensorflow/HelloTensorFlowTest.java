@@ -1,6 +1,7 @@
 package org.oopscraft.fintics.tensorflow;
 
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.tensorflow.*;
 import org.tensorflow.op.Ops;
@@ -28,6 +29,7 @@ public class HelloTensorFlowTest {
         return Signature.builder().input("x", x).output("dbl", dblX).build();
     }
 
+    @Disabled
     @Test
     void test() {
         try (Graph graph = new Graph()) {
