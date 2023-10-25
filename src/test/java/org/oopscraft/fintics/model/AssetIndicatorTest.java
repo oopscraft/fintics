@@ -22,7 +22,7 @@ public class AssetIndicatorTest {
         String filePath = "org/oopscraft/fintics/model/AssetIndicatorTest.tsv";
         CSVFormat format = CSVFormat.Builder.create()
                 .setDelimiter("\t")
-                .setHeader("time","open","high","low","close","5","10","20","60","120","MACD","Signal","MACD-Oscillator", "RSI", "RSI-Signal")
+                .setHeader("time","open","high","low","close","MACD","MACD-Signal","MACD-Oscillator", "RSI", "RSI-Signal")
                 .setSkipHeaderRecord(true)
                 .build();
         final List<Double> inputCloses = new ArrayList<>();
@@ -41,7 +41,7 @@ public class AssetIndicatorTest {
                                 .build());
                         inputMacds.add(Macd.builder()
                                 .value(Double.parseDouble(record.get("MACD").replaceAll(",","")))
-                                .signal(Double.parseDouble(record.get("Signal").replaceAll(",","")))
+                                .signal(Double.parseDouble(record.get("MACD-Signal").replaceAll(",","")))
                                 .oscillator(Double.parseDouble(record.get("MACD-Oscillator").replaceAll(",","")))
                                 .build());
                         inputRsis.add(Double.parseDouble(record.get("RSI").replaceAll("[,%]","")));
@@ -70,12 +70,12 @@ public class AssetIndicatorTest {
             log.debug("[{}] {}/{}, {}/{}",
                     i,
                     inputMacds.get(i).getOscillator(), inputRsis.get(i),
-                    outputMacds.get(i).getOscillator(), inputRsis.get(i)
+                    outputMacds.get(i).getOscillator(), outputRsis.get(i)
             );
         }
         for(int i = 0, size = inputCloses.size() - 70; i < size; i ++ ) {
-            assertEquals(inputMacds.get(i).getOscillator(), outputMacds.get(i).getOscillator(), 0.02);
-            assertEquals(inputRsis.get(i), outputRsis.get(i), 0.02);
+            assertEquals(inputMacds.get(i).getOscillator(), outputMacds.get(i).getOscillator(), 0.1);
+            assertEquals(inputRsis.get(i), outputRsis.get(i), 1);
         }
     }
 

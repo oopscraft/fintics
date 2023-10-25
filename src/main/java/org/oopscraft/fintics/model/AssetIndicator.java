@@ -6,6 +6,9 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.fintics.calculator.*;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,7 +52,13 @@ public class AssetIndicator {
 
     private List<Double> getPrices(List<Ohlcv> ohlcvs) {
         return ohlcvs.stream()
-                .map(Ohlcv::getClosePrice)
+                .map(ohlcv -> {
+                    int scale = BigDecimal.valueOf(ohlcv.getClosePrice()).scale();
+                    return BigDecimal.valueOf(ohlcv.getHighPrice() + ohlcv.getLowPrice() + ohlcv.getClosePrice())
+                            .divide(BigDecimal.valueOf(3), MathContext.DECIMAL128)
+                            .setScale(scale, RoundingMode.FLOOR)
+                            .doubleValue();
+                })
                 .collect(Collectors.toList());
     }
 
