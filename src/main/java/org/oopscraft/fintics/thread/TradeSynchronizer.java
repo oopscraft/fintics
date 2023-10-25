@@ -21,10 +21,10 @@ public class TradeSynchronizer {
 
     private final TradeThreadManager tradeThreadManager;
 
-    @Scheduled(initialDelay = 1_000, fixedDelay = 1_000 * 10)
-    @Transactional
+    @Scheduled(initialDelay = 1_000, fixedDelay = 10_000)
+    @Transactional(readOnly = true)
     public void synchronize() {
-        log.info("TradeSynchronizer.synchronize");
+        log.info("Start TradeSynchronizer.synchronize.");
         List<TradeEntity> tradeEntities = tradeRepository.findAll();
 
         // deleted trade thread
@@ -56,6 +56,7 @@ public class TradeSynchronizer {
                 }
             }
         });
+        log.info("End TradeSynchronizer.synchronize.");
     }
 
 }

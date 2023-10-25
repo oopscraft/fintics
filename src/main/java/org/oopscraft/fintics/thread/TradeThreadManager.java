@@ -22,7 +22,7 @@ public class TradeThreadManager {
 
     private final Map<String, TradeRunnable> tradeRunnableMap = new ConcurrentHashMap<>();
 
-    private final ThreadGroup tradeThreadGroup = new ThreadGroup("trace");
+    private final ThreadGroup tradeThreadGroup = new ThreadGroup("trade");
 
     private final AlarmService alarmService;
 
