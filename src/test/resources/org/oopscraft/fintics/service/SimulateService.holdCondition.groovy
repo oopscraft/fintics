@@ -1,21 +1,21 @@
 Boolean hold;
-int period = 30;
-double priceSlope = tool.slope(assetIndicator.getMinutePrices(), period);
-double emaSlope = tool.slope(assetIndicator.getMinuteEmas(20), period);
-double smaSlope = tool.slope(assetIndicator.getMinuteSmas(20), period);
+int maPeriod = 20;
+int slopePeriod = 30;
+double priceSlope = tool.slope(assetIndicator.getMinutePrices(), slopePeriod);
+double emaSlope = tool.slope(assetIndicator.getMinuteEmas(maPeriod), slopePeriod);
+double smaSlope = tool.slope(assetIndicator.getMinuteSmas(maPeriod), slopePeriod);
 double macdOscillator = assetIndicator.getMinuteMacd(12, 26, 9).getOscillator();
-double macdOscillatorSlope = tool.slope(assetIndicator.getMinuteMacds(12, 26, 9).collect { it.oscillator }, period);
-double macdOscillatorAverage = tool.average(assetIndicator.getMinuteMacds(12, 26, 9).collect { it.oscillator }, period);
+double macdOscillatorSlope = tool.slope(assetIndicator.getMinuteMacds(12, 26, 9).collect { it.oscillator }, slopePeriod);
+double macdOscillatorAverage = tool.average(assetIndicator.getMinuteMacds(12, 26, 9).collect { it.oscillator }, slopePeriod);
 double rsi = assetIndicator.getMinuteRsi(14);
-double rsiSlope = tool.slope(assetIndicator.getMinuteRsis(14), period);
-double rsiAverage = tool.average(assetIndicator.getMinuteRsis(14), period);
+double rsiSlope = tool.slope(assetIndicator.getMinuteRsis(14), slopePeriod);
+double rsiAverage = tool.average(assetIndicator.getMinuteRsis(14), slopePeriod);
 
 log.info("priceSlope:{}, emaSlope:{}, smaSlope:{} , macdOscillator:{}, macdOscillatorSlope:{}, macdOscillatorAverage:{}, rsi:{}, rsiSlope:{}",
 priceSlope, emaSlope, smaSlope, macdOscillator, macdOscillatorSlope, macdOscillatorAverage, rsi, rsiSlope);
 
 // 보유 조건 - 가격,SMA,EMA,MACD 모두 상승중인 경우
-if(priceSlope > -1000
-&& emaSlope > 0
+if(emaSlope > 0
 //&& smaSlope > 0
 //&& macdOscillator > 0
 //&& macdOscillatorAverage > 0
