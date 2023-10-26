@@ -70,7 +70,7 @@ class SimulateServiceTest extends CoreTestSupport {
         Simulate simulate = Simulate.builder()
                 .holdCondition(holdCondition)
                 .interval(interval)
-                .startAt(LocalTime.of(12,0))
+                .startAt(LocalTime.of(9,30))
                 .endAt(LocalTime.of(15,0))
                 .ohlcvs(ohlcvs)
                 .feeRate(0.02)
