@@ -147,7 +147,7 @@ public class KisClient extends Client {
         LocalTime closeTime = LocalTime.of(15,30);
         LocalTime fidInputHour1Time = (nowTime.isAfter(closeTime) ? closeTime : nowTime);
 
-        for(int i = 0; i < 6; i ++) {
+        for(int i = 0; i < 10; i ++) {
             String url = apiUrl + "/uapi/domestic-stock/v1/quotations/inquire-time-itemchartprice";
             HttpHeaders headers = createHeaders();
             headers.add("tr_id", "FHKST03010200");
