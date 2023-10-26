@@ -8,6 +8,9 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +20,8 @@ public class SimulateService {
 
     public Simulate simulate(Simulate simulate) {
 
+        LocalTime startAt = simulate.getStartAt();
+        LocalTime endAt = simulate.getEndAt();
         List<Ohlcv> ohlcvs = simulate.getOhlcvs();
         Double feeRate = simulate.getFeeRate();
         Double bidAskSpread = simulate.getBidAskSpread();
@@ -28,10 +33,18 @@ public class SimulateService {
         double buyPrice = 0;
         double profit = 0;
 
-        for(int i = 0; i < ohlcvs.size(); i ++ ) {
+        for(int i = ohlcvs.size()-1; i >= 0; i --) {
+            Ohlcv ohlcv = ohlcvs.get(i);
+            LocalTime time = ohlcv.getDateTime().toLocalTime();
+            log.info("time:{}", time);
+            if(startAt != null && endAt != null) {
+                if(time.isBefore(startAt) || time.isAfter(endAt)) {
+                    continue;
+                }
+            }
 
+            int fromIndex = i;
             int toIndex = ohlcvs.size();
-            int fromIndex = toIndex - i - 1;
             List<Ohlcv> currentOhlcvs = ohlcvs.subList(fromIndex, toIndex);
 
             Trade trade = Trade.builder()
@@ -51,8 +64,19 @@ public class SimulateService {
                     .dailyOhlcvs(currentOhlcvs)
                     .build();
 
-            boolean firstTrade = (i == 0);
-            boolean lastTrade = (i == ohlcvs.size() - 1);
+            // set is final flag
+            LocalTime previousTime = time.minusMinutes(1);
+            LocalTime nextTime = time.plusSeconds(1);
+            boolean firstTrade = (startAt != null && previousTime.isBefore(startAt));
+            boolean lastTrade = (endAt != null && nextTime.isAfter(endAt));
+            if(firstTrade) {
+                String message = String.format("First trade - [%s]", trade.getName());
+                log.info(message);
+            }
+            if(lastTrade) {
+                String message = String.format("Last trade[%s]", trade.getName());
+                log.info(message);
+            }
 
             TradeAssetDecider tradeAssetDecider = TradeAssetDecider.builder()
                     .trade(trade)
@@ -73,7 +97,7 @@ public class SimulateService {
                         log.info("=".repeat(80));
                         log.info("== buy[{}]", currentOhlcvs.get(0).getDateTime());
                         hold = true;
-                        buyPrice = currentOhlcvs.get(0).getHighPrice() + bidAskSpread;
+                        buyPrice = currentOhlcvs.get(0).getClosePrice() + bidAskSpread;
                         log.info("== buyPrice:{}", buyPrice);
                         profit -= calculateFee(buyPrice, feeRate);
                         log.info("== profit:{}", profit);
@@ -85,7 +109,7 @@ public class SimulateService {
                         tradeCount ++;
                         log.info("=".repeat(80));
                         log.info("== sell[{}]", currentOhlcvs.get(0).getDateTime());
-                        double sellPrice = currentOhlcvs.get(0).getLowPrice() - bidAskSpread;
+                        double sellPrice = currentOhlcvs.get(0).getClosePrice() - bidAskSpread;
                         log.info("== buyPrice:{}", buyPrice);
                         log.info("== sellPrice:{}", sellPrice);
                         profit -= calculateFee(sellPrice, feeRate);

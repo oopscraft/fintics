@@ -50,6 +50,20 @@ public class AssetIndicator {
         return reversedList;
     }
 
+    private List<LocalDateTime> getDateTimes(List<Ohlcv> ohlcvs) {
+        return ohlcvs.stream()
+                .map(Ohlcv::getDateTime)
+                .collect(Collectors.toList());
+    }
+
+    public List<LocalDateTime> getMinuteDateTimes() {
+        return getDateTimes(this.minuteOhlcvs);
+    }
+
+    public List<LocalDateTime> getDailyDateTimes() {
+        return getDateTimes(this.dailyOhlcvs);
+    }
+
     private List<Double> getPrices(List<Ohlcv> ohlcvs) {
         return ohlcvs.stream()
                 .map(ohlcv -> {

@@ -7,6 +7,8 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.oopscraft.arch4j.core.test.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
 import org.oopscraft.fintics.model.Ohlcv;
@@ -17,6 +19,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,14 +41,12 @@ class SimulateServiceTest extends CoreTestSupport {
         return stringBuilder.toString();
     }
 
-
-    @Test
-    void simulate() throws Exception {
+    void simulateWithFileName(String fileName) throws Exception {
         // given
         String holdCondition = readFileAsString("org/oopscraft/fintics/service/SimulateService.holdCondition.groovy");
         Integer interval = 30;
 
-        String filePath = "org/oopscraft/fintics/service/SimulateService.ohlcv.tsv";
+        String filePath = "org/oopscraft/fintics/service/" + fileName;
         CSVFormat format = CSVFormat.Builder.create()
                 .setDelimiter("\t")
                 .setHeader("time","open","high","low","close","MACD","MACD-Signal","MACD-Oscillator", "RSI", "RSI-Signal")
@@ -69,6 +70,8 @@ class SimulateServiceTest extends CoreTestSupport {
         Simulate simulate = Simulate.builder()
                 .holdCondition(holdCondition)
                 .interval(interval)
+                .startAt(LocalTime.of(12,0))
+                .endAt(LocalTime.of(15,0))
                 .ohlcvs(ohlcvs)
                 .feeRate(0.02)
                 .bidAskSpread(5.0)
@@ -77,9 +80,21 @@ class SimulateServiceTest extends CoreTestSupport {
 
         // then
         log.info("{}", simulate.getHoldConditionResults());
+    }
 
+    @Test
+    void simulate20231025_KODEX레버리지() throws Exception {
+        simulateWithFileName("SimulateService.ohlcv.20231025_KODEX레버리지.tsv");
+    }
 
+    @Test
+    void simulate20231026_20231026_KODEX코스닥150() throws Exception {
+        simulateWithFileName("SimulateService.ohlcv.20231026_KODEX코스닥150.tsv");
+    }
 
+    @Test
+    void simulate20231026_KODEX코스닥150선물인버스() throws Exception {
+        simulateWithFileName("SimulateService.ohlcv.20231026_KODEX코스닥150선물인버스.tsv");
     }
 
 
