@@ -97,5 +97,14 @@ class SimulateServiceTest extends CoreTestSupport {
         simulateWithFileName("SimulateService.ohlcv.20231026_KODEX코스닥150선물인버스.tsv");
     }
 
+    @Test
+    void simulate20231027_20231026_KODEX코스닥150() throws Exception {
+        simulateWithFileName("SimulateService.ohlcv.20231027_KODEX코스닥150.tsv");
+    }
+
+    @Test
+    void simulate20231027_KODEX코스닥150선물인버스() throws Exception {
+        simulateWithFileName("SimulateService.ohlcv.20231027_KODEX코스닥150선물인버스.tsv");
+    }
 
 }
