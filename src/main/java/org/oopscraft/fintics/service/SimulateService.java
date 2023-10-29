@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -83,7 +82,7 @@ public class SimulateService {
                         log.info("=".repeat(80));
                         log.info("== buy[{}]", currentOhlcvs.get(0).getDateTime());
                         hold = true;
-                        buyPrice = currentOhlcvs.get(0).getClosePrice() + bidAskSpread;
+                        buyPrice = currentOhlcvs.get(0).getClosePrice().doubleValue() + bidAskSpread;
                         log.info("== buyPrice:{}", buyPrice);
                         profit -= calculateFee(buyPrice, feeRate);
                         log.info("== profit:{}", profit);
@@ -95,7 +94,7 @@ public class SimulateService {
                         tradeCount ++;
                         log.info("=".repeat(80));
                         log.info("== sell[{}]", currentOhlcvs.get(0).getDateTime());
-                        double sellPrice = currentOhlcvs.get(0).getClosePrice() - bidAskSpread;
+                        double sellPrice = currentOhlcvs.get(0).getClosePrice().doubleValue() - bidAskSpread;
                         log.info("== buyPrice:{}", buyPrice);
                         log.info("== sellPrice:{}", sellPrice);
                         profit -= calculateFee(sellPrice, feeRate);

@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -18,14 +19,14 @@ class AdxCalculatorTest extends AbstractCalculatorTest {
                 "org/oopscraft/fintics/calculator/" + fileName,
                 new String[]{"time","open","high","low","close","adx","pdi","mdi"});
         Collections.reverse(inputList);
-        List<Double> highSeries = inputList.stream()
-                .map(map -> Double.parseDouble(map.get("high").replaceAll(",","")))
+        List<BigDecimal> highSeries = inputList.stream()
+                .map(map -> new BigDecimal(map.get("high").replaceAll(",","")))
                 .collect(Collectors.toList());
-        List<Double> lowSeries = inputList.stream()
-                .map(map -> Double.parseDouble(map.get("low").replaceAll(",","")))
+        List<BigDecimal> lowSeries = inputList.stream()
+                .map(map -> new BigDecimal(map.get("low").replaceAll(",","")))
                 .collect(Collectors.toList());
-        List<Double> closeSeries = inputList.stream()
-                .map(map -> Double.parseDouble(map.get("close").replaceAll(",","")))
+        List<BigDecimal> closeSeries = inputList.stream()
+                .map(map -> new BigDecimal(map.get("close").replaceAll(",","")))
                 .collect(Collectors.toList());
 
         // when

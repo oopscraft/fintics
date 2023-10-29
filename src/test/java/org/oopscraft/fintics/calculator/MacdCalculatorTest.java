@@ -6,6 +6,7 @@ import org.apache.commons.csv.CSVParser;
 import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,16 +26,16 @@ class MacdCalculatorTest {
                 .setHeader("time","open","high","low","close","5","10","20","60","120","MACD","Signal","MACD-Oscillator")
                 .setSkipHeaderRecord(true)
                 .build();
-        final List<Double> inputCloses = new ArrayList<>();
+        final List<BigDecimal> inputCloses = new ArrayList<>();
         final List<Macd> inputMacds = new ArrayList<>();
         try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(filePath)) {
             CSVParser.parse(inputStream, StandardCharsets.UTF_8, format).stream()
                     .forEach(record -> {
-                        inputCloses.add(Double.parseDouble(record.get("close").replaceAll(",","")));
+                        inputCloses.add(new BigDecimal(record.get("close").replaceAll(",","")));
                         inputMacds.add(Macd.builder()
-                                .value(Double.parseDouble(record.get("MACD").replaceAll(",","")))
-                                .signal(Double.parseDouble(record.get("Signal").replaceAll(",","")))
-                                .oscillator(Double.parseDouble(record.get("MACD-Oscillator").replaceAll(",","")))
+                                .value(new BigDecimal(record.get("MACD").replaceAll(",","")))
+                                .signal(new BigDecimal(record.get("Signal").replaceAll(",","")))
+                                .oscillator(new BigDecimal(record.get("MACD-Oscillator").replaceAll(",","")))
                                 .build());
                     });
         }
@@ -60,9 +61,9 @@ class MacdCalculatorTest {
             // 이후 부터는 값이 일치해야함.
             Macd inputMacd = inputMacds.get(i);
             Macd outputMacd = outputMacds.get(i);
-            assertEquals(inputMacd.getValue(), outputMacd.getValue(), 0.02);
-            assertEquals(inputMacd.getSignal(), outputMacd.getSignal(), 0.02);
-            assertEquals(inputMacd.getOscillator(), outputMacd.getOscillator(), 0.02);
+            assertEquals(inputMacd.getValue().doubleValue(), outputMacd.getValue().doubleValue(), 0.02);
+            assertEquals(inputMacd.getSignal().doubleValue(), outputMacd.getSignal().doubleValue(), 0.02);
+            assertEquals(inputMacd.getOscillator().doubleValue(), outputMacd.getOscillator().doubleValue(), 0.02);
         }
     }
 

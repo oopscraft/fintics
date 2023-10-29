@@ -2,6 +2,7 @@ package org.oopscraft.fintics.model;
 
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -12,14 +13,14 @@ public class Ohlcv {
 
     LocalDateTime dateTime;
 
-    Double openPrice;
+    BigDecimal openPrice;
 
-    Double highPrice;
+    BigDecimal highPrice;
 
-    Double lowPrice;
+    BigDecimal lowPrice;
 
-    Double closePrice;
+    BigDecimal closePrice;
 
-    Double volume;
+    BigDecimal volume;
 
 }

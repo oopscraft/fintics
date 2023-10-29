@@ -14,6 +14,7 @@ import org.oopscraft.fintics.model.Simulate;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -55,10 +56,10 @@ class SimulateServiceTest extends CoreTestSupport {
                     .forEach(record -> {
                         ohlcvs.add(Ohlcv.builder()
                                 .dateTime(LocalDateTime.parse("2000 " + record.get("time"),DateTimeFormatter.ofPattern("yyyy MM/dd,HH:mm")))
-                                .openPrice(Double.parseDouble(record.get("open").replaceAll(",","")))
-                                .highPrice(Double.parseDouble(record.get("high").replaceAll(",","")))
-                                .lowPrice(Double.parseDouble(record.get("low").replaceAll(",","")))
-                                .closePrice(Double.parseDouble(record.get("close").replaceAll(",","")))
+                                .openPrice(new BigDecimal(record.get("open").replaceAll(",","")))
+                                .highPrice(new BigDecimal(record.get("high").replaceAll(",","")))
+                                .lowPrice(new BigDecimal(record.get("low").replaceAll(",","")))
+                                .closePrice(new BigDecimal(record.get("close").replaceAll(",","")))
                                 .build());
                     });
         }

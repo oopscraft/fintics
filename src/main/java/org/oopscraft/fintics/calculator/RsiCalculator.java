@@ -1,8 +1,5 @@
 package org.oopscraft.fintics.calculator;
 
-import lombok.Getter;
-import org.apache.commons.math3.stat.descriptive.moment.Mean;
-
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
@@ -11,100 +8,103 @@ import java.util.List;
 
 public class RsiCalculator {
 
-    private final List<Double> series;
+    private final List<BigDecimal> series;
 
     private final int period;
 
-    public static RsiCalculator of(List<Double> series, int period) {
+    public static RsiCalculator of(List<BigDecimal> series, int period) {
         return new RsiCalculator(series, period);
     }
 
-    public RsiCalculator(List<Double> series, int period) {
+    public RsiCalculator(List<BigDecimal> series, int period) {
         this.series = series;
         this.period = period;
     }
 
-    public List<Double> calculate() {
+    public List<BigDecimal> calculate() {
 
         // price changes
-        List<Double> priceChanges = new ArrayList<>();
+        List<BigDecimal> priceChanges = new ArrayList<>();
         for (int i = 0; i < series.size(); i++) {
             if(i == 0) {
-                priceChanges.add(0.0);
+                priceChanges.add(BigDecimal.ZERO);
                 continue;
             }
-            double priceChange = series.get(i) - series.get(i - 1);
+            BigDecimal priceChange = series.get(i)
+                    .subtract(series.get(i - 1));
             priceChanges.add(priceChange);
         }
 
         // gain/loss values
-        List<Double> gains = new ArrayList<>();
-        List<Double> losses = new ArrayList<>();
-        for (double priceChange : priceChanges) {
-            if(priceChange > 0) {
+        List<BigDecimal> gains = new ArrayList<>();
+        List<BigDecimal> losses = new ArrayList<>();
+        for (BigDecimal priceChange : priceChanges) {
+            if(priceChange.compareTo(BigDecimal.ZERO) > 0) {
                 gains.add(priceChange);
-                losses.add(0.0);
-            }else if(priceChange < 0) {
-                gains.add(0.0);
-                losses.add(priceChange*-1);
+                losses.add(BigDecimal.ZERO);
+            }else if(priceChange.compareTo(BigDecimal.ZERO) < 0) {
+                gains.add(BigDecimal.ZERO);
+                losses.add(priceChange.multiply(BigDecimal.valueOf(-1)));
             }else{
-                gains.add(0.0);
-                losses.add(0.0);
+                gains.add(BigDecimal.ZERO);
+                losses.add(BigDecimal.ZERO);
             }
         }
 
-        List<Double> rsis = new ArrayList<>();
+        List<BigDecimal> rsis = new ArrayList<>();
         for (int i = 0; i < series.size(); i++) {
             // period data of gain/loss
-            List<Double> periodGains = gains.subList(
+            List<BigDecimal> periodGains = gains.subList(
                 Math.max(i - period + 1,0),
                 i + 1
             );
-            List<Double> periodLosses = losses.subList(
+            List<BigDecimal> periodLosses = losses.subList(
                 Math.max(i - period + 1,0),
                 i + 1
             );
 
             // 기간(period)+1 이전 평균은 정확한 기간평균이 아님으로 중립(50.00)으로 설정
             if(i < period + 1) {
-                rsis.add(50.00);
+                rsis.add(BigDecimal.valueOf(50.00));
                 continue;
             }
 
             // average of gain/loss
-            double avgGain = getAverage(periodGains);
-            double avgLoss = getAverage(periodLosses);
+            BigDecimal avgGain = getAverage(periodGains);
+            BigDecimal avgLoss = getAverage(periodLosses);
 
-            // Calculate Relative Strength (RS)
-            BigDecimal rs = avgLoss == 0 ? BigDecimal.ZERO
-                    : BigDecimal.valueOf(avgGain)
-                            .divide(BigDecimal.valueOf(avgLoss), MathContext.DECIMAL128)
-                            .setScale(5, RoundingMode.HALF_UP);
-
-            // check zero
-            if(rs.equals(BigDecimal.ZERO)) {
-                rsis.add(100.0);
+            if(avgLoss.compareTo(BigDecimal.ZERO) == 0) {
+                if(avgGain.compareTo(BigDecimal.ZERO) == 0) {
+                    rsis.add(BigDecimal.ZERO);
+                }else{
+                    rsis.add(BigDecimal.valueOf(100.0));
+                }
                 continue;
             }
+
+            // Calculate Relative Strength (RS)
+            BigDecimal rs = avgLoss.compareTo(BigDecimal.ZERO) == 0 ? BigDecimal.ZERO
+                    : avgGain.divide(avgLoss, MathContext.DECIMAL128)
+                    .setScale(5, RoundingMode.HALF_UP);
 
             // Calculate RSI
             BigDecimal rsi = rs
                     .divide(rs.add(BigDecimal.valueOf(1)), MathContext.DECIMAL128)
                     .multiply(BigDecimal.valueOf(100))
                     .setScale(2, RoundingMode.HALF_UP);
-            rsis.add(rsi.doubleValue());
+            rsis.add(rsi);
         }
 
         return rsis;
     }
 
-    private static double getAverage(List<Double> gains) {
-        if(gains.isEmpty()){
-            return 0.0;
+    private static BigDecimal getAverage(List<BigDecimal> values) {
+        if(values.isEmpty()){
+            return BigDecimal.ZERO;
         }
-        return new Mean().evaluate(gains.stream()
-                .mapToDouble(Double::doubleValue)
-                .toArray());
+        return values.stream()
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .divide(BigDecimal.valueOf(values.size()), MathContext.DECIMAL128);
     }
 
 }

@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.oopscraft.fintics.model.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -37,7 +38,7 @@ class TradeAssetDeciderTest {
                                 .build())
                         .minuteOhlcvs(IntStream.range(1,11)
                                 .mapToObj(i -> {
-                                    double price = 1000 - (i*10);
+                                    BigDecimal price = BigDecimal.valueOf(1000 - (i*10));
                                     return Ohlcv.builder()
                                             .dateTime(LocalDateTime.now().minusMinutes(i))
                                             .openPrice(price)
@@ -49,7 +50,7 @@ class TradeAssetDeciderTest {
                                 .collect(Collectors.toList()))
                         .dailyOhlcvs(IntStream.range(1,11)
                                 .mapToObj(i -> {
-                                    double price = 1000 - (i*10);
+                                    BigDecimal price = BigDecimal.valueOf(1000 - (i*10));
                                     return Ohlcv.builder()
                                             .dateTime(LocalDateTime.now().minusDays(i))
                                             .openPrice(price)

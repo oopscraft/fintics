@@ -4,6 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -13,19 +15,14 @@ public class SmaCalculatorTest {
     @Order(1)
     void test1() {
         // given
-        List<Double> series = List.of(
-                100.0,
-                200.0,
-                300.0,
-                400.0,
-                500.0,
-                600.0,
-                700.0,
-                800.0
-        );
+        List<BigDecimal> series = new ArrayList<>(){{
+            add(BigDecimal.valueOf(100));
+            add(BigDecimal.valueOf(200));
+            add(BigDecimal.valueOf(300));
+        }};
 
         // when
-        List<Double> smas = SmaCalculator.of(series, 3).calculate();
+        List<BigDecimal> smas = SmaCalculator.of(series, 3).calculate();
 
         // then
         smas.forEach(sma -> log.debug("{}", sma));

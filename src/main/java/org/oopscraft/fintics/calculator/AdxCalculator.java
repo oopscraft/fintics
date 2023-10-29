@@ -8,19 +8,19 @@ import java.util.List;
 
 public class AdxCalculator {
 
-    private final List<Double> highSeries;
+    private final List<BigDecimal> highSeries;
 
-    private final List<Double> lowSeries;
+    private final List<BigDecimal> lowSeries;
 
-    private final List<Double> closeSeries;
+    private final List<BigDecimal> closeSeries;
 
     private final int period;
 
-    public static AdxCalculator of(List<Double> highSeries, List<Double> lowSeries, List<Double> closeSeries, int period) {
+    public static AdxCalculator of(List<BigDecimal> highSeries, List<BigDecimal> lowSeries, List<BigDecimal> closeSeries, int period) {
         return new AdxCalculator(highSeries, lowSeries, closeSeries, period);
     }
 
-    public AdxCalculator(List<Double> highSeries, List<Double> lowSeries, List<Double> closeSeries, int period) {
+    public AdxCalculator(List<BigDecimal> highSeries, List<BigDecimal> lowSeries, List<BigDecimal> closeSeries, int period) {
         this.highSeries = highSeries;
         this.lowSeries = lowSeries;
         this.closeSeries = closeSeries;
@@ -28,131 +28,141 @@ public class AdxCalculator {
     }
 
     public List<Adx> calculate() {
-
-        List<Double> pdms = new ArrayList<>();
-        List<Double> mdms = new ArrayList<>();
-        List<Double> trs = new ArrayList<>();
+        List<BigDecimal> pdms = new ArrayList<>();
+        List<BigDecimal> mdms = new ArrayList<>();
+        List<BigDecimal> trs = new ArrayList<>();
         for(int i = 0; i < highSeries.size(); i ++ ) {
-            double high = highSeries.get(i);
-            double low = lowSeries.get(i);
-            double previousHigh = highSeries.get(Math.max(i-1, 0));
-            double previousLow = lowSeries.get(Math.max(i-1, 0));
-            double previousClose = closeSeries.get(Math.max(i-1, 0));
+            BigDecimal high = highSeries.get(i);
+            BigDecimal low = lowSeries.get(i);
+            BigDecimal previousHigh = highSeries.get(Math.max(i-1, 0));
+            BigDecimal previousLow = lowSeries.get(Math.max(i-1, 0));
+            BigDecimal previousClose = closeSeries.get(Math.max(i-1, 0));
 
             // calculates
-            double pdm = high > previousHigh && (high - previousHigh) > (previousLow - low)
-                    ? high - previousHigh
-                    : 0.0;
-            double mdm = previousLow > low && (high - previousHigh) < (previousLow - low)
-                    ? previousLow - low
-                    : 0.0;
+            BigDecimal pdm = high.compareTo(previousHigh) > 0 && high.subtract(previousHigh).compareTo(previousLow.subtract(low)) > 0
+                    ? high.subtract(previousHigh)
+                    : BigDecimal.ZERO;
+            BigDecimal mdm = previousLow.compareTo(low) > 0 && high.subtract(previousHigh).compareTo(previousLow.subtract(low)) < 0
+                    ? previousLow.subtract(low)
+                    : BigDecimal.ZERO;
 
-            double s1 = high - low;
-            double s2 = Math.abs(previousClose - high);
-            double s3 = Math.abs(previousClose - low);
-            Double tr = Math.max(Math.max(s1, s2), s3);
+            BigDecimal tr1 = high.subtract(low);
+            BigDecimal tr2 = high.subtract(previousClose).abs();
+            BigDecimal tr3 = previousClose.subtract(low).abs();
+            BigDecimal tr = tr1.max(tr2).max(tr3);
 
             pdms.add(pdm);
             mdms.add(mdm);
             trs.add(tr);
         }
 
-        List<Double> pdis = new ArrayList<>();
-        List<Double> mdis = new ArrayList<>();
-        List<Double> dxs = new ArrayList<>();
+//        // test
+//        pdms = MmaCalculator.of(pdms, period).calculate();
+//        mdms = MmaCalculator.of(mdms, period).calculate();
+//        trs = MmaCalculator.of(trs, period).calculate();
+
+
+        List<BigDecimal> pdis = new ArrayList<>();
+        List<BigDecimal> mdis = new ArrayList<>();
+        List<BigDecimal> dxs = new ArrayList<>();
         for(int i = 0; i < highSeries.size(); i ++) {
             int fromIndex = Math.max(i - period + 1, 0);
             int toIndex = i + 1;
-            List<Double> periodPdms = pdms.subList(fromIndex, toIndex);
-            List<Double> periodMdms = mdms.subList(fromIndex, toIndex);
-            List<Double> periodTrs = trs.subList(fromIndex, toIndex);
+            List<BigDecimal> periodPdms = pdms.subList(fromIndex, toIndex);
+            List<BigDecimal> periodMdms = mdms.subList(fromIndex, toIndex);
+            List<BigDecimal> periodTrs = trs.subList(fromIndex, toIndex);
 
             // di
-            double pdi = calculateDi(periodPdms, periodTrs);
-            double mdi = calculateDi(periodMdms, periodTrs);
+            BigDecimal pdi = calculateDi(periodPdms, periodTrs);
+            BigDecimal mdi = calculateDi(periodMdms, periodTrs);
+
+//            pdi = pdms.get(i)
+//                    .divide(trs.get(i), MathContext.DECIMAL128)
+//                    .multiply(BigDecimal.valueOf(100));
+//            mdi =  mdms.get(i)
+//                    .divide(trs.get(i), MathContext.DECIMAL128)
+//                    .multiply(BigDecimal.valueOf(100));
+
             pdis.add(pdi);
             mdis.add(mdi);
 
             // dx
-            double dx = calculateDx(pdi, mdi);
+            BigDecimal dx = calculateDx(pdi, mdi);
             dxs.add(dx);
         }
 
+        // test
+//        List<Double> adxs = MmaCalculator.of(dxs, period).calculate();
+
         // adx
-        List<Double> adxs = new ArrayList<>();
+        List<BigDecimal> adxValues = new ArrayList<>();
         for(int i = 0; i < dxs.size(); i ++) {
             int fromIndex = Math.max(i - period + 1, 0);
             int toIndex = i + 1;
-            List<Double> periodDxs = dxs.subList(fromIndex, toIndex);
-            double adx = calculateAdx(periodDxs);
-            adxs.add(adx);
+            List<BigDecimal> periodDxs = dxs.subList(fromIndex, toIndex);
+            BigDecimal adxValue = calculateAdx(periodDxs);
+            adxValues.add(adxValue);
         }
 
 
-        // return Dmi
-        List<Adx> dmis = new ArrayList<>();
+        // return
+        List<Adx> adxs = new ArrayList<>();
         for(int i = 0; i < pdis.size(); i ++ ) {
             Adx dmi = Adx.builder()
-                    .value(adxs.get(i))
-                    .pdi(pdis.get(i))
-                    .mdi(mdis.get(i))
+                    .value(adxValues.get(i).setScale(2, RoundingMode.HALF_UP))
+                    .pdi(pdis.get(i).setScale(2, RoundingMode.HALF_UP))
+                    .mdi(mdis.get(i).setScale(2, RoundingMode.HALF_UP))
                     .build();
-            dmis.add(dmi);
+            adxs.add(dmi);
         }
-        return dmis;
+        return adxs;
     }
 
-    private static Double calculateDi(List<Double> dms, List<Double> trs) {
+    private static BigDecimal calculateDi(List<BigDecimal> dms, List<BigDecimal> trs) {
         if(dms.isEmpty() || trs.isEmpty()) {
-            return 0.0;
+            return BigDecimal.ZERO;
         }
 
         BigDecimal sumOfDms = BigDecimal.ZERO;
-        for(Double dm : dms) {
-            sumOfDms = sumOfDms.add(BigDecimal.valueOf(dm));
+        for(BigDecimal dm : dms) {
+            sumOfDms = sumOfDms.add(dm);
         }
         BigDecimal averageOfDms = sumOfDms.divide(BigDecimal.valueOf(dms.size()), MathContext.DECIMAL128);
 
         BigDecimal sumOfTrs = BigDecimal.ZERO;
-        for(Double trueRange : trs) {
-            sumOfTrs = sumOfTrs.add(BigDecimal.valueOf(trueRange));
+        for(BigDecimal trueRange : trs) {
+            sumOfTrs = sumOfTrs.add(trueRange);
         }
         BigDecimal averageOfTrs = sumOfTrs.divide(BigDecimal.valueOf(trs.size()), MathContext.DECIMAL128);
 
-        double di;
+        BigDecimal di;
         if(averageOfTrs.doubleValue() > 0) {
             di = averageOfDms.divide(averageOfTrs, MathContext.DECIMAL128)
-                    .multiply(BigDecimal.valueOf(100))
-                    .setScale(2, RoundingMode.HALF_UP)
-                    .doubleValue();
+                    .multiply(BigDecimal.valueOf(100));
         }else{
-            di = 0.0;
+            di = BigDecimal.ZERO;
         }
         return di;
     }
 
-    private static Double calculateDx(Double pdi, Double mdi) {
-        if(pdi + mdi == 0) {
-           return 0.0;
+    private static BigDecimal calculateDx(BigDecimal pdi, BigDecimal mdi) {
+        if(pdi.add(mdi).compareTo(BigDecimal.ZERO) == 0) {
+           return BigDecimal.ZERO;
         }
-        return BigDecimal.valueOf(Math.abs(pdi - mdi))
-                .divide(BigDecimal.valueOf(pdi + mdi), MathContext.DECIMAL128)
-                .multiply(BigDecimal.valueOf(100))
-                .setScale(2, RoundingMode.HALF_UP)
-                .doubleValue();
+        return pdi.subtract(mdi).abs()
+                .divide(pdi.add(mdi), MathContext.DECIMAL128)
+                .multiply(BigDecimal.valueOf(100));
     }
 
-    private static Double calculateAdx(List<Double> dxs) {
+    private static BigDecimal calculateAdx(List<BigDecimal> dxs) {
         if(dxs.isEmpty()) {
-            return 0.0;
+            return BigDecimal.ZERO;
         }
         BigDecimal adx = BigDecimal.ZERO;
-        for(Double dx : dxs) {
-            adx = adx.add(BigDecimal.valueOf(dx));
+        for(BigDecimal dx : dxs) {
+            adx = adx.add(dx);
         }
-        return adx.divide(BigDecimal.valueOf(dxs.size()), MathContext.DECIMAL128)
-                .setScale(2, RoundingMode.HALF_UP)
-                .doubleValue();
+        return adx.divide(BigDecimal.valueOf(dxs.size()), MathContext.DECIMAL128);
     }
 
 

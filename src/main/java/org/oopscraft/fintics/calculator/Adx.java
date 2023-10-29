@@ -4,18 +4,20 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
 
+import java.math.BigDecimal;
+
 @Builder
 @Getter
 @ToString
 public class Adx {
 
     @Builder.Default
-    private Double value = 0.0;
+    private BigDecimal value = BigDecimal.ZERO;
 
     @Builder.Default
-    private Double pdi = 0.0;
+    private BigDecimal pdi = BigDecimal.ZERO;
 
     @Builder.Default
-    private Double mdi = 0.0;
+    private BigDecimal mdi = BigDecimal.ZERO;
 
 }

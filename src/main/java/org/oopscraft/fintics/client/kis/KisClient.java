@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -188,11 +189,11 @@ public class KisClient extends Client {
                                 row.getString("stck_bsop_date") + row.getString("stck_cntg_hour"),
                                 DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
                         );
-                        Double openPrice = row.getNumber("stck_oprc").doubleValue();
-                        Double highPrice = row.getNumber("stck_hgpr").doubleValue();
-                        Double lowPrice = row.getNumber("stck_lwpr").doubleValue();
-                        Double closePrice = row.getNumber("stck_prpr").doubleValue();
-                        Double volume = row.getNumber("cntg_vol").doubleValue();
+                        BigDecimal openPrice = row.getNumber("stck_oprc");
+                        BigDecimal highPrice = row.getNumber("stck_hgpr");
+                        BigDecimal lowPrice = row.getNumber("stck_lwpr");
+                        BigDecimal closePrice = row.getNumber("stck_prpr");
+                        BigDecimal volume = row.getNumber("cntg_vol");
                         return Ohlcv.builder()
                                 .dateTime(dateTime)
                                 .openPrice(openPrice)
@@ -275,11 +276,11 @@ public class KisClient extends Client {
         return output.stream()
                 .map(row -> {
                     LocalDateTime dateTime = LocalDateTime.parse(row.getString("stck_bsop_date")+"000000", DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-                    Double openPrice = row.getNumber("stck_oprc").doubleValue();
-                    Double highPrice = row.getNumber("stck_hgpr").doubleValue();
-                    Double lowPrice = row.getNumber("stck_lwpr").doubleValue();
-                    Double closePrice = row.getNumber("stck_clpr").doubleValue();
-                    Double volume = row.getNumber("acml_vol").doubleValue();
+                    BigDecimal openPrice = row.getNumber("stck_oprc");
+                    BigDecimal highPrice = row.getNumber("stck_hgpr");
+                    BigDecimal lowPrice = row.getNumber("stck_lwpr");
+                    BigDecimal closePrice = row.getNumber("stck_clpr");
+                    BigDecimal volume = row.getNumber("acml_vol");
                     return Ohlcv.builder()
                             .dateTime(dateTime)
                             .openPrice(openPrice)

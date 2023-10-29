@@ -31,20 +31,20 @@ class RsiCalculatorTest {
                 .setHeader("time","open","high","low","close","5","10","20","60","120","RSI","Signal")
                 .setSkipHeaderRecord(true)
                 .build();
-        final List<Double> inputCloses = new ArrayList<>();
-        final List<Double> inputRsis = new ArrayList<>();
+        final List<BigDecimal> inputCloses = new ArrayList<>();
+        final List<BigDecimal> inputRsis = new ArrayList<>();
         try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(filePath)) {
             CSVParser.parse(inputStream, StandardCharsets.UTF_8, format).stream()
                     .forEach(record -> {
-                        inputCloses.add(Double.parseDouble(record.get("close").replaceAll(",","")));
-                        inputRsis.add(Double.parseDouble(record.get("RSI").replaceAll("[,%]","")));
+                        inputCloses.add(new BigDecimal(record.get("close").replaceAll(",","")));
+                        inputRsis.add(new BigDecimal(record.get("RSI").replaceAll("[,%]","")));
                     });
         }
         Collections.reverse(inputCloses);
         Collections.reverse(inputRsis);
 
         // when
-        List<Double> outputRsis = RsiCalculator.of(inputCloses, 14).calculate();
+        List<BigDecimal> outputRsis = RsiCalculator.of(inputCloses, 14).calculate();
         for(int i = 0; i < inputCloses.size(); i++) {
             log.debug("[{}] {}, {}", i, inputRsis.get(i), outputRsis.get(i));
         }
@@ -53,11 +53,11 @@ class RsiCalculatorTest {
         for(int i = 0; i < inputCloses.size(); i ++) {
             // period + 1 전의 RSI는 데이터부족으로 50으로 반환됨.
             if(i < 14 + 1) {
-                assertEquals(50, outputRsis.get(i));
+                assertEquals(50, outputRsis.get(i).doubleValue());
             }
             // 이후 부터는 값이 일치해야함.
             else{
-                assertEquals(inputRsis.get(i), outputRsis.get(i), 0.02);
+                assertEquals(inputRsis.get(i).doubleValue(), outputRsis.get(i).doubleValue(), 0.02);
             }
         }
     }
