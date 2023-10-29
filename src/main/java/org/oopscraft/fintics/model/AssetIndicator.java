@@ -2,7 +2,6 @@ package org.oopscraft.fintics.model;
 
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.fintics.calculator.*;
 
@@ -190,6 +189,42 @@ public class AssetIndicator {
 
     public Double getDailyRsi(int period) {
         return getRsi(getDailyPrices(), period);
+    }
+
+    private List<Adx> getAdxs(List<Ohlcv> prices, int period) {
+        List<Ohlcv> series = reverse(prices);
+        List<Double> highSeries = series.stream()
+                .map(Ohlcv::getHighPrice)
+                .collect(Collectors.toList());
+        List<Double> lowSeries = series.stream()
+                .map(Ohlcv::getLowPrice)
+                .collect(Collectors.toList());
+        List<Double> closeSeries = series.stream()
+                .map(Ohlcv::getClosePrice)
+                .collect(Collectors.toList());
+        List<Adx> adxs = AdxCalculator.of(highSeries, lowSeries, closeSeries, period).calculate();
+        return reverse(adxs);
+    }
+
+    private Adx getAdx(List<Ohlcv> prices, int period) {
+        List<Adx> adxs = getAdxs(prices, period);
+        return adxs.isEmpty() ? Adx.builder().build() : adxs.get(0);
+    }
+
+    public List<Adx> getMinuteAdxs(int period) {
+        return getAdxs(getMinuteOhlcvs(), period);
+    }
+
+    public Adx getMinuteAdx(int period) {
+        return getAdx(getMinuteOhlcvs(), period);
+    }
+
+    public List<Adx> getDailyAdxs(int period) {
+        return getAdxs(getDailyOhlcvs(), period);
+    }
+
+    public Adx getDailyAdx(int period) {
+        return getAdx(getDailyOhlcvs(), period);
     }
 
 }
