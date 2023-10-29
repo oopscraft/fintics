@@ -35,38 +35,46 @@ apiUrl=https://openapivts.koreainvestment.com:29443
 appKey=ENC(mqcEUDQAO57SaLBCvhoz0RpFYBXtMQG2Y+NIK2jfQZ6koEUDlYx+5W8AW+eW0KVd)
 appSecret=ENC(cPLNx3yraMH7FKXfEkcs0/r7ZrKDrW7nBgQ/NpKs3BeQGUkjDl+j8VG0FOhqly/DYwJdyZ5kpLMJ7GAGSv8vEZhUOlSPPP1lFNiVyWZKk+b9jhzyCQOcKs5c+Q5BxHI/A4Nhf4oVIEm8N8nQzVAypLIBQZHu3Re+aPRkWUbdArWaBI+RyLSlemy2ZsDCJh6+/kh8Bic1ooCit0Jx4y1mBZFohtf4zRGdafkkIDIL1OujMz5yRDqigYSNvcSAXRUX)
 accountNo=ENC(BCcz1quNQASvnQ4/ME2CSOiufCl6GfxN)
-',null,'Boolean hold;
-int maPeriod = 20;
-int slopePeriod = 30;
-double priceSlope = tool.slope(assetIndicator.getMinutePrices(), slopePeriod);
-double emaSlope = tool.slope(assetIndicator.getMinuteEmas(maPeriod), slopePeriod);
-double smaSlope = tool.slope(assetIndicator.getMinuteSmas(maPeriod), slopePeriod);
-double macdOscillator = assetIndicator.getMinuteMacd(12, 26, 9).getOscillator();
-double macdOscillatorSlope = tool.slope(assetIndicator.getMinuteMacds(12, 26, 9).collect { it.oscillator }, slopePeriod);
-double macdOscillatorAverage = tool.average(assetIndicator.getMinuteMacds(12, 26, 9).collect { it.oscillator }, slopePeriod);
-double rsi = assetIndicator.getMinuteRsi(14);
-double rsiSlope = tool.slope(assetIndicator.getMinuteRsis(14), slopePeriod);
-double rsiAverage = tool.average(assetIndicator.getMinuteRsis(14), slopePeriod);
+',null,'import java.time.LocalDateTime;
+import java.time.LocalTime;
 
-log.info("priceSlope:{}, emaSlope:{}, smaSlope:{} , macdOscillator:{}, macdOscillatorSlope:{}, macdOscillatorAverage:{}, rsi:{}, rsiSlope:{}",
-priceSlope, emaSlope, smaSlope, macdOscillator, macdOscillatorSlope, macdOscillatorAverage, rsi, rsiSlope);
+int period = 10;
+Boolean hold;
+LocalDateTime dateTime = assetIndicator.getMinuteDateTimes().get(0);
+double price = assetIndicator.getMinutePrices().get(0);
+double emaSlope = tool.slope(assetIndicator.getMinuteEmas(20), period);
+double macdOscillatorAverage = tool.average(assetIndicator.getMinuteMacds(24, 52, 18).collect { it.oscillator }, period);
+double rsiAverage = tool.average(assetIndicator.getMinuteRsis(28), period);
 
-// 보유 조건 - 가격,SMA,EMA,MACD 모두 상승중인 경우
-if(emaSlope > 0
-//&& smaSlope > 0
-//&& macdOscillator > 0
-//&& macdOscillatorAverage > 0
-//&& macdOscillatorSlope > 0
-) {
-    hold = true;
-}
-// 그외 보유하지 않음
-else {
-    hold = false;
+double adxAverage = tool.average(assetIndicator.getMinuteAdxs(28).collect { it.value }, period);
+double adxPdiAverage = tool.average(assetIndicator.getMinuteAdxs(28).collect { it.pdi }, period);
+double adxMdiAverage = tool.average(assetIndicator.getMinuteAdxs(28).collect { it.mdi }, period);
+
+log.info("- dateTime:{}, price:{}, emaSlope:{}, macdOscillatorAverage:{}, rsiAverage:{}, adxAverage:{}, adxPdiAverage:{}, adxMdiAverage:{}",
+dateTime, price, emaSlope, macdOscillatorAverage, rsiAverage, adxAverage, adxPdiAverage, adxMdiAverage);
+
+// 매수조건
+if(emaSlope > 0) {
+    if(macdOscillatorAverage > 0
+    && rsiAverage > 50
+    && (adxAverage > 20 && adxPdiAverage > adxMdiAverage)
+    ) {
+        hold = true;
+    }
 }
 
-// 마지막 거래일 경우 모두 매도(보유하지 않음)
-if(lastTrade) {
+// 매도조건
+if(emaSlope < 0) {
+    if(macdOscillatorAverage < 0
+    && rsiAverage < 50
+    || (adxAverage < 20 || adxMdiAverage > adxPdiAverage)
+    ) {
+        hold = false;
+    }
+}
+
+// 장종료전 모두 청산(보유하지 않음)
+if(dateTime.toLocalTime().isAfter(LocalTime.of(15,15))) {
     hold = false;
 }
 

@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -27,11 +28,9 @@ public class TradeAssetDecider {
 
     private final AssetIndicator assetIndicator;
 
+    private final LocalDateTime dateTime;
+
     private final Logger logger;
-
-    private final boolean firstTrade;
-
-    private final boolean lastTrade;
 
     public Boolean execute() {
         ClassLoader classLoader = this.getClass().getClassLoader();
@@ -39,9 +38,8 @@ public class TradeAssetDecider {
         Binding binding = new Binding();
         binding.setVariable("assetIndicator", assetIndicator);
         binding.setVariable("tool", new Tool());
+        binding.setVariable("dateTime", dateTime);
         binding.setVariable("log", logger);
-        binding.setVariable("firstTrade", firstTrade);
-        binding.setVariable("lastTrade", lastTrade);
         GroovyShell groovyShell = new GroovyShell(groovyClassLoader, binding);
 
         if(trade.getHoldCondition() == null || trade.getHoldCondition().isBlank()) {

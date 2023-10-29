@@ -1,4 +1,5 @@
-import java.time.LocalDateTime
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 int period = 10;
 Boolean hold;
@@ -35,8 +36,8 @@ if(emaSlope < 0) {
     }
 }
 
-// 마지막 거래일 경우 모두 매도(보유하지 않음)
-if(lastTrade) {
+// 장종료전 모두 청산(보유하지 않음)
+if(dateTime.toLocalTime().isAfter(LocalTime.of(15,15))) {
     hold = false;
 }
 

@@ -3,7 +3,6 @@ package org.oopscraft.fintics.thread;
 import ch.qos.logback.classic.Logger;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
 import org.oopscraft.arch4j.web.support.SseLogAppender;
@@ -14,7 +13,6 @@ import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
@@ -53,33 +51,16 @@ public class TradeRunnable implements Runnable {
         while(!Thread.currentThread().isInterrupted()) {
             try {
                 Thread.sleep(trade.getInterval() * 1_000);
+                LocalDateTime dateTime = LocalDateTime.now();
 
                 // checks start,end time
-                if (!isOperatingTime(LocalTime.now())) {
+                if (!isOperatingTime(dateTime.toLocalTime())) {
                     log.info("Not operating time - [{}] {} ~ {}", trade.getName(), trade.getStartAt(), trade.getEndAt());
                     continue;
                 }
 
                 // logging
                 log.info("Check trade - [{}]", trade.getName());
-
-                // set is final flag
-                LocalDateTime startDateTime = LocalDate.now().atTime(trade.getStartAt());
-                LocalDateTime endDateTime = LocalDate.now().atTime(trade.getEndAt());
-                LocalDateTime previousDateTime = LocalDateTime.now().minusSeconds(trade.getInterval());
-                LocalDateTime nextDateTime = LocalDateTime.now().plusSeconds(trade.getInterval());
-                boolean firstTrade = previousDateTime.isBefore(startDateTime);
-                boolean lastTrade = nextDateTime.isAfter(endDateTime);
-                if(firstTrade) {
-                    String message = String.format("First trade - [%s]", trade.getName());
-                    log.info(message);
-                    sendAlarmIfEnabled(message, null);
-                }
-                if(lastTrade) {
-                    String message = String.format("Last trade[%s]", trade.getName());
-                    log.info(message);
-                    sendAlarmIfEnabled(message, null);
-                }
 
                 // balance
                 Balance balance = client.getBalance();
@@ -116,9 +97,8 @@ public class TradeRunnable implements Runnable {
                             .trade(trade)
                             .tradeAsset(tradeAsset)
                             .assetIndicator(assetIndicator)
+                            .dateTime(dateTime)
                             .logger(log)
-                            .firstTrade(firstTrade)
-                            .lastTrade(lastTrade)
                             .build();
                     Boolean holdConditionResult = tradeAssetDecider.execute();
                     log.info("holdConditionResult: {}", holdConditionResult);

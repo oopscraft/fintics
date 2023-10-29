@@ -35,8 +35,9 @@ public class SimulateService {
 
         for(int i = ohlcvs.size()-1; i >= 0; i --) {
             Ohlcv ohlcv = ohlcvs.get(i);
-            LocalTime time = ohlcv.getDateTime().toLocalTime();
-            log.info("time:{}", time);
+            LocalDateTime dateTime = ohlcv.getDateTime();
+            LocalTime time = dateTime.toLocalTime();
+            log.info("dateTime:{}", dateTime);
             if(startAt != null && endAt != null) {
                 if(time.isBefore(startAt) || time.isAfter(endAt)) {
                     continue;
@@ -64,27 +65,12 @@ public class SimulateService {
                     .dailyOhlcvs(currentOhlcvs)
                     .build();
 
-            // set is final flag
-            LocalTime previousTime = time.minusMinutes(1);
-            LocalTime nextTime = time.plusSeconds(1);
-            boolean firstTrade = (startAt != null && previousTime.isBefore(startAt));
-            boolean lastTrade = (endAt != null && nextTime.isAfter(endAt));
-            if(firstTrade) {
-                String message = String.format("First trade - [%s]", trade.getName());
-                log.info(message);
-            }
-            if(lastTrade) {
-                String message = String.format("Last trade[%s]", trade.getName());
-                log.info(message);
-            }
-
             TradeAssetDecider tradeAssetDecider = TradeAssetDecider.builder()
                     .trade(trade)
                     .tradeAsset(tradeAsset)
                     .assetIndicator(assetIndicator)
+                    .dateTime(dateTime)
                     .logger(log)
-                    .firstTrade(firstTrade)
-                    .lastTrade(lastTrade)
                     .build();
             Boolean holdConditionResult = tradeAssetDecider.execute();
             holdConditionResults.add(holdConditionResult);
