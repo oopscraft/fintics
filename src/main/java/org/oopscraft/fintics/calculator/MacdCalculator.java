@@ -55,9 +55,9 @@ public class MacdCalculator {
         List<Macd> macds = new ArrayList<>();
         for(int i = 0; i < values.size(); i ++ ) {
             Macd macd = Macd.builder()
-                    .macd(values.get(i).setScale(2,RoundingMode.HALF_UP))
-                    .signal(signals.get(i).setScale(2, RoundingMode.HALF_UP))
-                    .oscillator(oscillators.get(i).setScale(2, RoundingMode.HALF_UP))
+                    .macd(values.get(i))
+                    .signal(signals.get(i))
+                    .oscillator(oscillators.get(i))
                     .build();
             macds.add(macd);
         }

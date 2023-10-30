@@ -36,8 +36,7 @@ public class SmaCalculator {
                 sum = sum.add(value);
             }
 
-            BigDecimal sma = sum.divide(BigDecimal.valueOf(perioidSeries.size()), MathContext.DECIMAL128)
-                    .setScale(2, RoundingMode.HALF_UP);
+            BigDecimal sma = sum.divide(BigDecimal.valueOf(perioidSeries.size()), MathContext.DECIMAL128);
             smas.add(sma);
         }
 

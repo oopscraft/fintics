@@ -8,7 +8,7 @@ def price = assetIndicator.getMinutePrices().get(0);
 // MA indicator
 def priceEma = assetIndicator.getMinuteEma(60);
 def priceEmaSlope = tool.slope(assetIndicator.getMinuteEmas(60), period);
-def priceSma = assetIndicator.getMinuteSma(20);
+def priceSma = assetIndicator.getMinuteSma(60);
 def priceSmaSlope = tool.slope(assetIndicator.getMinuteSmas(60), period);
 
 // MACD indicator

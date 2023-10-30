@@ -10,6 +10,7 @@ import java.io.FileReader;
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -44,7 +45,9 @@ class RsiCalculatorTest {
         Collections.reverse(inputRsis);
 
         // when
-        List<BigDecimal> outputRsis = RsiCalculator.of(inputCloses, 14).calculate();
+        List<BigDecimal> outputRsis = RsiCalculator.of(inputCloses, 14).calculate().stream()
+                .map(e -> e.setScale(2, RoundingMode.HALF_UP))
+                .collect(Collectors.toList());
         for(int i = 0; i < inputCloses.size(); i++) {
             log.debug("[{}] {}, {}", i, inputRsis.get(i), outputRsis.get(i));
         }

@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.fintics.calculator.*;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -79,7 +78,9 @@ public class AssetIndicator {
 
     private List<BigDecimal> getSmas(List<BigDecimal> prices, int period) {
         List<BigDecimal> series = reverse(prices);
-        List<BigDecimal> smas = SmaCalculator.of(series, period).calculate();
+        List<BigDecimal> smas = SmaCalculator.of(series, period).calculate().stream()
+                .map(e -> e.setScale(2, RoundingMode.HALF_UP))
+                .collect(Collectors.toList());
         return reverse(smas);
     }
 
@@ -106,7 +107,9 @@ public class AssetIndicator {
 
     private List<BigDecimal> getEmas(List<BigDecimal> prices, int period) {
         List<BigDecimal> series = reverse(prices);
-        List<BigDecimal> emas = EmaCalculator.of(series, period).calculate();
+        List<BigDecimal> emas = EmaCalculator.of(series, period).calculate().stream()
+                .map(e -> e.setScale(2, RoundingMode.HALF_UP))
+                .collect(Collectors.toList());
         return reverse(emas);
     }
 
@@ -133,7 +136,9 @@ public class AssetIndicator {
 
     private List<Macd> getMacds(List<BigDecimal> prices, int shortPeriod, int longPeriod, int signalPeriod) {
         List<BigDecimal> series = reverse(prices);
-        List<Macd> macds = MacdCalculator.of(series, shortPeriod, longPeriod, signalPeriod).calculate();
+        List<Macd> macds = MacdCalculator.of(series, shortPeriod, longPeriod, signalPeriod).calculate().stream()
+                .map(e -> e.setScale(2, RoundingMode.HALF_UP))
+                .collect(Collectors.toList());
         return reverse(macds);
     }
 
@@ -160,7 +165,9 @@ public class AssetIndicator {
 
     private List<BigDecimal> getRsis(List<BigDecimal> prices, int period) {
         List<BigDecimal> series = reverse(prices);
-        List<BigDecimal> rsis = RsiCalculator.of(series, period).calculate();
+        List<BigDecimal> rsis = RsiCalculator.of(series, period).calculate().stream()
+                .map(e -> e.setScale(2, RoundingMode.HALF_UP))
+                .collect(Collectors.toList());
         return reverse(rsis);
     }
 
@@ -196,7 +203,9 @@ public class AssetIndicator {
         List<BigDecimal> closeSeries = series.stream()
                 .map(Ohlcv::getClosePrice)
                 .collect(Collectors.toList());
-        List<Dmi> dmis = DmiCalculator.of(highSeries, lowSeries, closeSeries, period).calculate();
+        List<Dmi> dmis = DmiCalculator.of(highSeries, lowSeries, closeSeries, period).calculate().stream()
+                .map(e -> e.setScale(2, RoundingMode.HALF_UP))
+                .collect(Collectors.toList());
         return reverse(dmis);
     }
 

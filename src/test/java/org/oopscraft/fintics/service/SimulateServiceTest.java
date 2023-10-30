@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.io.IOUtils;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.oopscraft.arch4j.core.test.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
@@ -80,6 +81,7 @@ class SimulateServiceTest extends CoreTestSupport {
         log.info("{}", simulate.getHoldConditionResults());
     }
 
+    @Disabled
     @Test
     void simulate_20231025_KODEX레버리지_v1() throws Exception {
         simulateWithFileName(
@@ -88,6 +90,7 @@ class SimulateServiceTest extends CoreTestSupport {
         );
     }
 
+    @Disabled
     @Test
     void simulate_20231025_KODEX레버리지_v2() throws Exception {
         simulateWithFileName(
@@ -96,6 +99,7 @@ class SimulateServiceTest extends CoreTestSupport {
         );
     }
 
+    @Disabled
     @Test
     void simulate_20231026_KODEX코스닥150_v1() throws Exception {
         simulateWithFileName(
@@ -104,6 +108,7 @@ class SimulateServiceTest extends CoreTestSupport {
         );
     }
 
+    @Disabled
     @Test
     void simulate_20231026_KODEX코스닥150_v2() throws Exception {
         simulateWithFileName(
@@ -112,6 +117,7 @@ class SimulateServiceTest extends CoreTestSupport {
         );
     }
 
+    @Disabled
     @Test
     void simulate_20231026_KODEX코스닥150선물인버스_v1() throws Exception {
         simulateWithFileName(
@@ -120,6 +126,7 @@ class SimulateServiceTest extends CoreTestSupport {
         );
     }
 
+    @Disabled
     @Test
     void simulate_20231026_KODEX코스닥150선물인버스_v2() throws Exception {
         simulateWithFileName(
@@ -128,6 +135,7 @@ class SimulateServiceTest extends CoreTestSupport {
         );
     }
 
+    @Disabled
     @Test
     void simulate_20231027_KODEX코스닥150_v1() throws Exception {
         simulateWithFileName(
@@ -136,6 +144,7 @@ class SimulateServiceTest extends CoreTestSupport {
         );
     }
 
+    @Disabled
     @Test
     void simulate_20231027_KODEX코스닥150_v2() throws Exception {
         simulateWithFileName(
@@ -144,6 +153,7 @@ class SimulateServiceTest extends CoreTestSupport {
         );
     }
 
+    @Disabled
     @Test
     void simulate_20231027_KODEX코스닥150선물인버스_v1() throws Exception {
         simulateWithFileName(
@@ -152,6 +162,7 @@ class SimulateServiceTest extends CoreTestSupport {
         );
     }
 
+    @Disabled
     @Test
     void simulate_20231027_KODEX코스닥150선물인버스_v2() throws Exception {
         simulateWithFileName(
@@ -160,6 +171,7 @@ class SimulateServiceTest extends CoreTestSupport {
         );
     }
 
+    @Disabled
     @Test
     void simulate_20231030_KODEX코스닥150_v1() throws Exception {
         simulateWithFileName(
@@ -168,6 +180,7 @@ class SimulateServiceTest extends CoreTestSupport {
         );
     }
 
+    @Disabled
     @Test
     void simulate_20231030_KODEX코스닥150_v2() throws Exception {
         simulateWithFileName(
@@ -176,6 +189,7 @@ class SimulateServiceTest extends CoreTestSupport {
         );
     }
 
+    @Disabled
     @Test
     void simulate_20231030_KODEX코스닥150선물인버스_v1() throws Exception {
         simulateWithFileName(

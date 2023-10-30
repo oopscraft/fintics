@@ -7,10 +7,12 @@ import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -43,7 +45,9 @@ class MacdCalculatorTest {
         Collections.reverse(inputMacds);
 
         // when
-        List<Macd> outputMacds = MacdCalculator.of(inputCloses, 12, 26, 9).calculate();
+        List<Macd> outputMacds = MacdCalculator.of(inputCloses, 12, 26, 9).calculate().stream()
+                .map(e -> e.setScale(2, RoundingMode.HALF_UP))
+                .collect(Collectors.toList());
         for(int i = 0; i < inputCloses.size(); i++) {
             Macd inputMacd = inputMacds.get(i);
             Macd outputMacd = outputMacds.get(i);

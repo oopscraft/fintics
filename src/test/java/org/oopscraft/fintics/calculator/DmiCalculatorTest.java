@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -41,8 +42,9 @@ class DmiCalculatorTest extends AbstractCalculatorTest {
                 .collect(Collectors.toList());
 
         // when
-        List<Dmi> dmis = DmiCalculator.of(highSeries, lowSeries, closeSeries, 14)
-                .calculate();
+        List<Dmi> dmis = DmiCalculator.of(highSeries, lowSeries, closeSeries, 14).calculate().stream()
+                .map(e -> e.setScale(2, RoundingMode.HALF_UP))
+                .collect(Collectors.toList());
 
         // then
         for(int i = 0; i < dmis.size(); i ++) {

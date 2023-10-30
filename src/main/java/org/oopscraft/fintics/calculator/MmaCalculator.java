@@ -32,8 +32,7 @@ public class MmaCalculator {
         for (int i = 1; i < series.size(); i++) {
             BigDecimal mmaDiff = series.get(i).subtract(mma);
             mma = mmaDiff.multiply(multiplier)
-                    .add(mma)
-                    .setScale(2, RoundingMode.HALF_UP);
+                    .add(mma);
             mmas.add(mma);
         }
 

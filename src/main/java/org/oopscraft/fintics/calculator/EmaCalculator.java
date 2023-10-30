@@ -35,8 +35,7 @@ public class EmaCalculator {
             BigDecimal emaDiff = series.get(i).subtract(ema);
             ema = emaDiff
                     .multiply(multiplier)
-                    .add(ema)
-                    .setScale(2, RoundingMode.HALF_UP);
+                    .add(ema);
             emas.add(ema);
         }
 

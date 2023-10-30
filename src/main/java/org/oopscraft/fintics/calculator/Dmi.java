@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.ToString;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 @Builder
 @Getter
@@ -19,5 +20,12 @@ public class Dmi {
 
     @Builder.Default
     private BigDecimal adx = BigDecimal.ZERO;
+
+    public Dmi setScale(int scale, RoundingMode roundingMode) {
+        pdi = pdi.setScale(scale, roundingMode);
+        mdi = mdi.setScale(scale, roundingMode);
+        adx = adx.setScale(scale, roundingMode);
+        return this;
+    }
 
 }

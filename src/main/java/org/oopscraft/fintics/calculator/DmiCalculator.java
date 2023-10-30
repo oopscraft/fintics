@@ -56,12 +56,6 @@ public class DmiCalculator {
         List<BigDecimal> mdis = new ArrayList<>();
         List<BigDecimal> dxs = new ArrayList<>();
         for(int i = 0; i < highSeries.size(); i ++) {
-            int fromIndex = Math.max(i - period + 1, 0);
-            int toIndex = i + 1;
-            List<BigDecimal> periodPdms = pdms.subList(fromIndex, toIndex);
-            List<BigDecimal> periodMdms = mdms.subList(fromIndex, toIndex);
-            List<BigDecimal> periodTrs = trs.subList(fromIndex, toIndex);
-
             BigDecimal pdi = calculatePdi(pdms.get(i), trs.get(i));
             BigDecimal mdi = calculateMdi(mdms.get(i), trs.get(i));
             pdis.add(pdi);
@@ -79,9 +73,9 @@ public class DmiCalculator {
         List<Dmi> dmis = new ArrayList<>();
         for(int i = 0; i < highSeries.size(); i ++) {
             Dmi dmi = Dmi.builder()
-                    .adx(dxs.get(i).setScale(2, RoundingMode.HALF_UP))
-                    .pdi(pdis.get(i).setScale(2, RoundingMode.HALF_UP))
-                    .mdi(mdis.get(i).setScale(2, RoundingMode.HALF_UP))
+                    .adx(dxs.get(i))
+                    .pdi(pdis.get(i))
+                    .mdi(mdis.get(i))
                     .build();
             dmis.add(dmi);
         }
