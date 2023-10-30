@@ -9,15 +9,15 @@ import java.math.BigDecimal;
 @Builder
 @Getter
 @ToString
-public class Adx {
-
-    @Builder.Default
-    private BigDecimal value = BigDecimal.ZERO;
+public class Dmi {
 
     @Builder.Default
     private BigDecimal pdi = BigDecimal.ZERO;
 
     @Builder.Default
     private BigDecimal mdi = BigDecimal.ZERO;
+
+    @Builder.Default
+    private BigDecimal adx = BigDecimal.ZERO;
 
 }

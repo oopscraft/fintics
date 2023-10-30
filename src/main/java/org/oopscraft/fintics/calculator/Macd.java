@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 public class Macd {
 
     @Builder.Default
-    private BigDecimal value = BigDecimal.ZERO;
+    private BigDecimal macd = BigDecimal.ZERO;
 
     @Builder.Default
     private BigDecimal signal = BigDecimal.ZERO;

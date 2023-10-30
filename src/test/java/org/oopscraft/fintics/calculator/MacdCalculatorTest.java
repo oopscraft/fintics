@@ -33,7 +33,7 @@ class MacdCalculatorTest {
                     .forEach(record -> {
                         inputCloses.add(new BigDecimal(record.get("close").replaceAll(",","")));
                         inputMacds.add(Macd.builder()
-                                .value(new BigDecimal(record.get("MACD").replaceAll(",","")))
+                                .macd(new BigDecimal(record.get("MACD").replaceAll(",","")))
                                 .signal(new BigDecimal(record.get("Signal").replaceAll(",","")))
                                 .oscillator(new BigDecimal(record.get("MACD-Oscillator").replaceAll(",","")))
                                 .build());
@@ -48,8 +48,8 @@ class MacdCalculatorTest {
             Macd inputMacd = inputMacds.get(i);
             Macd outputMacd = outputMacds.get(i);
             log.debug("[{}] {}/{}/{}, {}/{}/{}", i,
-                    inputMacd.getValue(), inputMacd.getSignal(), inputMacd.getOscillator(),
-                    outputMacd.getValue(), outputMacd.getSignal(), outputMacd.getOscillator());
+                    inputMacd.getMacd(), inputMacd.getSignal(), inputMacd.getOscillator(),
+                    outputMacd.getMacd(), outputMacd.getSignal(), outputMacd.getOscillator());
         }
 
         // then
@@ -61,7 +61,7 @@ class MacdCalculatorTest {
             // 이후 부터는 값이 일치해야함.
             Macd inputMacd = inputMacds.get(i);
             Macd outputMacd = outputMacds.get(i);
-            assertEquals(inputMacd.getValue().doubleValue(), outputMacd.getValue().doubleValue(), 0.02);
+            assertEquals(inputMacd.getMacd().doubleValue(), outputMacd.getMacd().doubleValue(), 0.02);
             assertEquals(inputMacd.getSignal().doubleValue(), outputMacd.getSignal().doubleValue(), 0.02);
             assertEquals(inputMacd.getOscillator().doubleValue(), outputMacd.getOscillator().doubleValue(), 0.02);
         }

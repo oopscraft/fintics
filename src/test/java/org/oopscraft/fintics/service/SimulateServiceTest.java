@@ -68,7 +68,7 @@ class SimulateServiceTest extends CoreTestSupport {
         Simulate simulate = Simulate.builder()
                 .holdCondition(holdCondition)
                 .interval(interval)
-                .startAt(LocalTime.of(9,30))
+                .startAt(LocalTime.of(9,0))
                 .endAt(LocalTime.of(15,0))
                 .ohlcvs(ohlcvs)
                 .feeRate(0.02)
@@ -159,5 +159,46 @@ class SimulateServiceTest extends CoreTestSupport {
                 "SimulateServiceTest.ohlcv.20231027_KODEX코스닥150선물인버스.tsv"
         );
     }
+
+    @Test
+    void simulate_20231030_KODEX코스닥150_v1() throws Exception {
+        simulateWithFileName(
+                "SimulateServiceTest.holdCondition.v1.groovy",
+                "SimulateServiceTest.ohlcv.20231030_KODEX코스닥150.tsv"
+        );
+    }
+
+    @Test
+    void simulate_20231030_KODEX코스닥150_v2() throws Exception {
+        simulateWithFileName(
+                "SimulateServiceTest.holdCondition.v2.groovy",
+                "SimulateServiceTest.ohlcv.20231030_KODEX코스닥150.tsv"
+        );
+    }
+
+    @Test
+    void simulate_20231030_KODEX코스닥150선물인버스_v1() throws Exception {
+        simulateWithFileName(
+                "SimulateServiceTest.holdCondition.v1.groovy",
+                "SimulateServiceTest.ohlcv.20231030_KODEX코스닥150선물인버스.tsv"
+        );
+    }
+
+    @Test
+    void simulate_20231030_KODEX코스닥150선물인버스_v2() throws Exception {
+        simulateWithFileName(
+                "SimulateServiceTest.holdCondition.v2.groovy",
+                "SimulateServiceTest.ohlcv.20231030_KODEX코스닥150선물인버스.tsv"
+        );
+    }
+
+    @Test
+    void simulate_20231030_KODEX레버리지_v2() throws Exception {
+        simulateWithFileName(
+                "SimulateServiceTest.holdCondition.v2.groovy",
+                "SimulateServiceTest.ohlcv.20231030_KODEX레버리지.tsv"
+        );
+    }
+
 
 }

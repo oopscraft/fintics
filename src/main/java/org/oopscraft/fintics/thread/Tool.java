@@ -31,7 +31,8 @@ public class Tool {
         }
 
         // average
-        return sum.divide(BigDecimal.valueOf(series.size()), MathContext.DECIMAL128);
+        return sum.divide(BigDecimal.valueOf(series.size()), MathContext.DECIMAL128)
+                .setScale(2, RoundingMode.HALF_UP);
     }
 
     public BigDecimal average(List<BigDecimal> values, int period) {
@@ -45,7 +46,8 @@ public class Tool {
         for(int i = 0; i < period; i ++ ) {
             sum = sum.add(values.get(i));
         }
-        return sum.divide(BigDecimal.valueOf(period), MathContext.DECIMAL128);
+        return sum.divide(BigDecimal.valueOf(period), MathContext.DECIMAL128)
+                .setScale(2, RoundingMode.HALF_UP);
     }
 
 }

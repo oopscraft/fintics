@@ -10,8 +10,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 @Slf4j
-class AdxCalculatorTest extends AbstractCalculatorTest {
+class DmiCalculatorTest extends AbstractCalculatorTest {
 
     void calculate(String fileName) {
         // given
@@ -28,33 +30,53 @@ class AdxCalculatorTest extends AbstractCalculatorTest {
         List<BigDecimal> closeSeries = inputList.stream()
                 .map(map -> new BigDecimal(map.get("close").replaceAll(",","")))
                 .collect(Collectors.toList());
+        List<BigDecimal> adxSeries = inputList.stream()
+                .map(map -> new BigDecimal(map.get("adx").replaceAll("[,%]","")))
+                .collect(Collectors.toList());
+        List<BigDecimal> pdiSeries = inputList.stream()
+                .map(map -> new BigDecimal(map.get("pdi").replaceAll("[,%]","")))
+                .collect(Collectors.toList());
+        List<BigDecimal> mdiSeries = inputList.stream()
+                .map(map -> new BigDecimal(map.get("mdi").replaceAll("[,%]","")))
+                .collect(Collectors.toList());
 
         // when
-        List<Adx> dmis = AdxCalculator.of(highSeries, lowSeries, closeSeries, 14)
+        List<Dmi> dmis = DmiCalculator.of(highSeries, lowSeries, closeSeries, 14)
                 .calculate();
 
         // then
         for(int i = 0; i < dmis.size(); i ++) {
             Map<String,String> row  = inputList.get(i);
-            Adx dmi = dmis.get(i);
+            Dmi dmi = dmis.get(i);
             log.info("[{}][{}|{}|{}|{}] {}\t{}\t{} | {}\t{}\t{}",
                     i, row.get("time"), row.get("high"), row.get("low"), row.get("close"),
                     row.get("adx"), row.get("pdi"), row.get("mdi"),
-                    dmi.getValue(), dmi.getPdi(), dmi.getMdi()
+                    dmi.getAdx(), dmi.getPdi(), dmi.getMdi()
             );
+        }
+        for(int i = 0; i < highSeries.size(); i ++) {
+            // 초반 데이터는 데이터 부족으로 불일치함.
+            if(i < 50) {
+                continue;
+            }
+            // 이후 부터는 값이 일치해야함.
+            Dmi dmi = dmis.get(i);
+            assertEquals(dmi.getAdx().doubleValue(), adxSeries.get(i).doubleValue(), 1);
+            assertEquals(dmi.getPdi().doubleValue(), pdiSeries.get(i).doubleValue(), 1);
+            assertEquals(dmi.getMdi().doubleValue(), mdiSeries.get(i).doubleValue(), 1);
         }
     }
 
     @Test
     @Order(2)
     void calculate_KODEX코스닥150() {
-        calculate("AdxCalculatorTest.KODEX코스닥150.tsv");
+        calculate("DmiCalculatorTest.KODEX코스닥150.tsv");
     }
 
     @Test
     @Order(3)
     void calculate_KODEX코스닥150선물인버스() {
-        calculate("AdxCalculatorTest.KODEX코스닥150선물인버스.tsv");
+        calculate("DmiCalculatorTest.KODEX코스닥150선물인버스.tsv");
     }
 
 }

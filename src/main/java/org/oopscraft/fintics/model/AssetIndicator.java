@@ -65,14 +65,7 @@ public class AssetIndicator {
 
     private List<BigDecimal> getPrices(List<Ohlcv> ohlcvs) {
         return ohlcvs.stream()
-                .map(ohlcv -> {
-                    int scale = ohlcv.getClosePrice().scale();
-                    return ohlcv.getHighPrice()
-                            .add(ohlcv.getLowPrice())
-                            .add(ohlcv.getClosePrice())
-                            .divide(BigDecimal.valueOf(3), MathContext.DECIMAL128)
-                            .setScale(scale, RoundingMode.FLOOR);
-                })
+                .map(Ohlcv::getClosePrice)
                 .collect(Collectors.toList());
     }
 
@@ -192,7 +185,7 @@ public class AssetIndicator {
         return getRsi(getDailyPrices(), period);
     }
 
-    private List<Adx> getAdxs(List<Ohlcv> prices, int period) {
+    private List<Dmi> getDmis(List<Ohlcv> prices, int period) {
         List<Ohlcv> series = reverse(prices);
         List<BigDecimal> highSeries = series.stream()
                 .map(Ohlcv::getHighPrice)
@@ -203,29 +196,29 @@ public class AssetIndicator {
         List<BigDecimal> closeSeries = series.stream()
                 .map(Ohlcv::getClosePrice)
                 .collect(Collectors.toList());
-        List<Adx> adxs = AdxCalculator.of(highSeries, lowSeries, closeSeries, period).calculate();
-        return reverse(adxs);
+        List<Dmi> dmis = DmiCalculator.of(highSeries, lowSeries, closeSeries, period).calculate();
+        return reverse(dmis);
     }
 
-    private Adx getAdx(List<Ohlcv> prices, int period) {
-        List<Adx> adxs = getAdxs(prices, period);
-        return adxs.isEmpty() ? Adx.builder().build() : adxs.get(0);
+    private Dmi getDmi(List<Ohlcv> prices, int period) {
+        List<Dmi> adxs = getDmis(prices, period);
+        return adxs.isEmpty() ? Dmi.builder().build() : adxs.get(0);
     }
 
-    public List<Adx> getMinuteAdxs(int period) {
-        return getAdxs(getMinuteOhlcvs(), period);
+    public List<Dmi> getMinuteDmis(int period) {
+        return getDmis(getMinuteOhlcvs(), period);
     }
 
-    public Adx getMinuteAdx(int period) {
-        return getAdx(getMinuteOhlcvs(), period);
+    public Dmi getMinuteDmi(int period) {
+        return getDmi(getMinuteOhlcvs(), period);
     }
 
-    public List<Adx> getDailyAdxs(int period) {
-        return getAdxs(getDailyOhlcvs(), period);
+    public List<Dmi> getDailyDmis(int period) {
+        return getDmis(getDailyOhlcvs(), period);
     }
 
-    public Adx getDailyAdx(int period) {
-        return getAdx(getDailyOhlcvs(), period);
+    public Dmi getDailyDmi(int period) {
+        return getDmi(getDailyOhlcvs(), period);
     }
 
 }
