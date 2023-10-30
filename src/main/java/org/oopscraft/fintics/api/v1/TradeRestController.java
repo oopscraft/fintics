@@ -10,6 +10,7 @@ import org.oopscraft.fintics.model.Trade;
 import org.oopscraft.fintics.model.TradeAsset;
 import org.oopscraft.fintics.service.TradeService;
 import org.oopscraft.fintics.thread.TradeRunnable;
+import org.oopscraft.fintics.thread.TradeThread;
 import org.oopscraft.fintics.thread.TradeThreadManager;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -149,9 +150,8 @@ public class TradeRestController {
     @GetMapping(value = "{tradeId}/log", produces = "text/event-stream")
     @PreAuthorize("@tradePermissionEvaluator.hasEditPermission(#tradeId)")
     public SseEmitter getTradeLog(@PathVariable("tradeId")String tradeId) {
-        SseLogAppender sseLogAppender = tradeThreadManager.getTradeRunnable(tradeId)
-                .map(TradeRunnable::getSseLogAppender)
-                .orElseThrow();
+        TradeThread tradeThread = tradeThreadManager.getTradeThread(tradeId).orElseThrow();
+        SseLogAppender sseLogAppender = tradeThread.getTradeRunnable().getSseLogAppender();
         SseEmitter sseEmitter = new SseEmitter(60_000L);
         sseLogAppender.addSseEmitter(sseEmitter);
         sseEmitter.onCompletion(() -> {

@@ -29,7 +29,7 @@ if(emaSlope > 0) {
 // 매도조건
 if(emaSlope < 0) {
     if(macdOscillatorAverage < 0
-    && rsiAverage < 50
+    || rsiAverage < 50
     || (adxAverage < 20 || adxMdiAverage > adxPdiAverage)
     ) {
         hold = false;

@@ -20,8 +20,6 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class TradeThreadManager {
 
-    private final Map<String, TradeRunnable> tradeRunnableMap = new ConcurrentHashMap<>();
-
     private final ThreadGroup tradeThreadGroup = new ThreadGroup("trade");
 
     private final AlarmService alarmService;
@@ -41,12 +39,9 @@ public class TradeThreadManager {
             SseLogAppender sseLogAppender = new SseLogAppender(context);
             sseLogAppender.start();
 
-            // trade runnable
-            TradeRunnable tradeRunnable = new TradeRunnable(trade, sseLogAppender, alarmService);
-            tradeRunnableMap.put(tradeId, tradeRunnable);
-
             // start thread
-            Thread tradeThread = new Thread(tradeThreadGroup, tradeRunnable, tradeId);
+            TradeRunnable tradeRunnable = new TradeRunnable(trade, sseLogAppender, alarmService);
+            TradeThread tradeThread = new TradeThread(tradeThreadGroup, tradeRunnable, tradeId);
             tradeThread.setDaemon(true);
             tradeThread.setUncaughtExceptionHandler((thread, throwable) -> {
                 log.error("[{}] {}", thread.getName(), throwable);
@@ -70,25 +65,24 @@ public class TradeThreadManager {
                 if(tradeThread.getName().equals(tradeId)) {
                     try {
                         tradeThread.interrupt();
-                        tradeThread.join();
+                        tradeThread.join(10_000);
                     } catch (InterruptedException e) {
                         log.error(e.getMessage(), e);
-                    } finally {
-                        tradeRunnableMap.remove(tradeId);
+                        throw new RuntimeException(e);
                     }
                 }
             }
         }
     }
 
-    public List<Thread> getTradeThreads() {
-        Thread[] tradeThreads = new Thread[tradeThreadGroup.activeCount()];
+    public List<TradeThread> getTradeThreads() {
+        TradeThread[] tradeThreads = new TradeThread[tradeThreadGroup.activeCount()];
         tradeThreadGroup.enumerate(tradeThreads);
         return List.of(tradeThreads);
     }
 
-    public Optional<Thread> getTradeThread(String tradeId) {
-        for(Thread tradeThread : getTradeThreads()) {
+    public Optional<TradeThread> getTradeThread(String tradeId) {
+        for(TradeThread tradeThread : getTradeThreads()) {
             if(tradeThread.getName().equals(tradeId)) {
                 return Optional.of(tradeThread);
             }
@@ -98,14 +92,6 @@ public class TradeThreadManager {
 
     public boolean isTradeThreadRunning(String tradeId) {
         return getTradeThread(tradeId).isPresent();
-    }
-
-    public List<TradeRunnable> getTradeRunnables() {
-        return new ArrayList<>(tradeRunnableMap.values());
-    }
-
-    public Optional<TradeRunnable> getTradeRunnable(String tradeId) {
-        return Optional.ofNullable(tradeRunnableMap.get(tradeId));
     }
 
 }

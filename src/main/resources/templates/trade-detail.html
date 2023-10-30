@@ -174,6 +174,22 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            let tabFolder = duice.tabFolder(
+                duice.tabItem(
+                    document.getElementById('tradeTabButton'),
+                    document.getElementById('tradeTabContent'),
+                    () => {}),
+                duice.tabItem(
+                    document.getElementById('tradeLogTabButton'),
+                    document.getElementById('tradeLogTabContent'),
+                    () => {}),
+                duice.tabItem(
+                    document.getElementById('tradeBalanceTabButton'),
+                    document.getElementById('tradeBalanceTabContent'),
+                    () => {})
+            );
+            tabFolder.setActive(0);
+
             if(tradeId) {
                 getTrade();
                 setInterval(function() {
@@ -210,11 +226,34 @@
     <!-- end: title                             -->
     <!-- ====================================== -->
 
+    <!-- ====================================== -->
+    <!-- start: tab index                       -->
+    <!-- ====================================== -->
+    <div id="tabIndex">
+        <button id="tradeTabButton" type="button" class="tab">
+            <img class="icon" th:src="@{/static/image/icon-trade.svg}" alt="trade"/>
+            <span data-th-text="#{fintics.Trade}"></span>
+        </button>
+        <button id="tradeLogTabButton" type="button" class="tab">
+            <img class="icon" th:src="@{/static/image/icon-log.svg}" alt="tradeLog"/>
+            <span>Trade Log</span>
+        </button>
+        <button id="tradeBalanceTabButton" type="button" class="tab">
+            <img class="icon" th:src="@{/static/image/icon-balance.svg}" alt="balance"/>
+            <span data-th-text="#{fintics.Balance}"></span>
+        </button>
+        <hr class="margin-1px"/>
+    </div>
+    <!-- ====================================== -->
+    <!-- end: tab index                         -->
+    <!-- ====================================== -->
+
+
     <div>
         <!-- ====================================== -->
         <!-- start: trade                           -->
         <!-- ====================================== -->
-        <div class="border-1 padding-1em">
+        <div id="tradeTabContent" class="border-1 padding-1em">
             <h2>
                 <img class="icon" th:src="@{/static/image/icon-detail.svg}" alt="asset"/>
                 <span data-th-text="#{fintics.Trade} + ' ' + #{web.global.detail}"></span>
@@ -400,12 +439,12 @@
         <!-- ================================== -->
         <!-- start: tradeLog                    -->
         <!-- ================================== -->
-        <div class="border-1 padding-1em margin-top-1em">
+        <div id="tradeLogTabContent" class="border-1 padding-1em" style="min-height:400px;">
             <h2>
                 <img class="icon" th:src="@{/static/image/icon-log.svg}" alt="log"/>
                 <span>Trade Log</span>
             </h2>
-            <textarea id="tradeLog" rows="20" class="width-100"></textarea>
+            <textarea id="tradeLog" rows="40" class="width-100"></textarea>
         </div>
         <!-- ================================== -->
         <!-- end: tradeLog                      -->
@@ -414,7 +453,7 @@
         <!-- ================================== -->
         <!-- start: balance                     -->
         <!-- ================================== -->
-        <div class="border-1 padding-1em margin-top-1em">
+        <div id="tradeBalanceTabContent" class="border-1 padding-1em" style="min-height:400px;">
             <h2>
                 <img class="icon" th:src="@{/static/image/icon-balance.svg}" alt="balance"/>
                 <span data-th-text="#{fintics.Balance}"></span>

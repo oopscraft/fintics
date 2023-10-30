@@ -40,7 +40,6 @@ public class TradeSynchronizer {
 
         // existing service monitor thread
         tradeEntities.forEach(tradeEntity -> {
-            TradeRunnable tradeRunnable = tradeThreadManager.getTradeRunnable(tradeEntity.getTradeId()).orElse(null);
             if(!tradeThreadManager.isTradeThreadRunning(tradeEntity.getTradeId())) {
                 if(tradeEntity.isEnabled()) {
                     tradeThreadManager.startTradeThread(Trade.from(tradeEntity));
@@ -48,8 +47,12 @@ public class TradeSynchronizer {
             }else{
                 // when properties changed (checks overriding equals method)
                 Trade newTrade = Trade.from(tradeEntity);
-                if(!Objects.equals(newTrade, tradeRunnable.getTrade())) {
-                    tradeThreadManager.stopTradeThread(newTrade.getTradeId());
+                Trade oldTrade =  tradeThreadManager.getTradeThread(tradeEntity.getTradeId())
+                        .map(TradeThread::getTradeRunnable)
+                        .map(TradeRunnable::getTrade)
+                        .orElseThrow();
+                if(!Objects.equals(newTrade, oldTrade)) {
+                    tradeThreadManager.stopTradeThread(oldTrade.getTradeId());
                     if(tradeEntity.isEnabled()) {
                         tradeThreadManager.startTradeThread(newTrade);
                     }
