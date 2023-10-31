@@ -12,7 +12,7 @@ def priceSma = assetIndicator.getMinuteSma(60);
 def priceSmaSlope = tool.slope(assetIndicator.getMinuteSmas(60), period);
 
 // MACD indicator
-def macds = assetIndicator.getMinuteMacds(60, 120, 30);
+def macds = assetIndicator.getMinuteMacds(60, 120, 40);
 def macdOscillatorSlope = tool.slope(macds.collect { it.oscillator }, period);
 def macdOscillatorAverage = tool.average(macds.collect { it.oscillator }, period);
 
@@ -32,9 +32,9 @@ def dmiAdxAverage = tool.average(dmis.collect { it.adx }, period);
 
 log.info(
         "dateTime:{}, price:{}, priceEma:{}, priceEmaSlope:{}, priceSma:{}, priceSmaSlope:{} " +
-        "macdOscillatorSlope:{}, macdOscillatorAverage:{}, " +
-        "rsiSlope:{}, rsiAverage:{}, " +
-        "dmiPdiSlope:{}, dmiPdiAverage:{}, dmiMdiSlope:{}, dmiMdiAverage:{}, dmiAdxSlope:{}, dmiAdxAverage:{}",
+                "macdOscillatorSlope:{}, macdOscillatorAverage:{}, " +
+                "rsiSlope:{}, rsiAverage:{}, " +
+                "dmiPdiSlope:{}, dmiPdiAverage:{}, dmiMdiSlope:{}, dmiMdiAverage:{}, dmiAdxSlope:{}, dmiAdxAverage:{}",
         dateTime, price, priceEma, priceEmaSlope, priceSma, priceSmaSlope,
         macdOscillatorSlope, macdOscillatorAverage,
         rsiSlope, rsiAverage,
@@ -43,22 +43,22 @@ log.info(
 
 // 매수조건
 if(priceEmaSlope > 0) {
-    if(1 == 1
-            && macdOscillatorAverage > 0
-            && rsiAverage > 50
-            && dmiPdiAverage > dmiMdiAverage
-    ){
+    def voteBuy = 0;
+    voteBuy += macdOscillatorAverage > 0 ? 1 : 0;
+    voteBuy += rsiAverage > 50 ? 1 : 0;
+    voteBuy += dmiPdiAverage > dmiMdiAverage ? 1 : 0;
+    if(voteBuy >= 3) {
         hold = true;
     }
 }
 
 // 매도조건
 if(priceEmaSlope < 0) {
-    if(1 == 1
-            && macdOscillatorAverage < 0
-            && rsiAverage < 50
-            && dmiPdiAverage < dmiMdiAverage
-    ) {
+    def voteSell = 0;
+    voteSell += macdOscillatorAverage < 0 ? 1 : 0;
+    voteSell += rsiAverage < 50 ? 1 : 0;
+    voteSell += dmiPdiAverage < dmiMdiAverage ? 1 : 0;
+    if(voteSell >= 3) {
         hold = false;
     }
 }

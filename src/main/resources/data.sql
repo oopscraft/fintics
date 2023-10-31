@@ -29,13 +29,14 @@ insert into `core_alarm`
 -- fintics_trade
 insert into `fintics_trade`
     (`trade_id`,`name`,`enabled`,`interval`,`start_at`,`end_at`,`client_type`,`client_properties`,`alarm_id`,`hold_condition`) values
-    ('06c228451ce0400fa57bb36f0568d7cb','한국투자증권 모의투자 #1','N','30','09:00','15:30',
+    ('06c228451ce0400fa57bb36f0568d7cb','한국투자증권 모의투자 #1','N','30','09:00','15:20',
      'org.oopscraft.fintics.client.kis.KisClient','production=false
 apiUrl=https://openapivts.koreainvestment.com:29443
 appKey=ENC(mqcEUDQAO57SaLBCvhoz0RpFYBXtMQG2Y+NIK2jfQZ6koEUDlYx+5W8AW+eW0KVd)
 appSecret=ENC(cPLNx3yraMH7FKXfEkcs0/r7ZrKDrW7nBgQ/NpKs3BeQGUkjDl+j8VG0FOhqly/DYwJdyZ5kpLMJ7GAGSv8vEZhUOlSPPP1lFNiVyWZKk+b9jhzyCQOcKs5c+Q5BxHI/A4Nhf4oVIEm8N8nQzVAypLIBQZHu3Re+aPRkWUbdArWaBI+RyLSlemy2ZsDCJh6+/kh8Bic1ooCit0Jx4y1mBZFohtf4zRGdafkkIDIL1OujMz5yRDqigYSNvcSAXRUX)
 accountNo=ENC(BCcz1quNQASvnQ4/ME2CSOiufCl6GfxN)
-',null,'import java.time.LocalTime;
+',null,'
+import java.time.LocalTime;
 
 int period = 10;
 Boolean hold;
@@ -49,7 +50,7 @@ def priceSma = assetIndicator.getMinuteSma(60);
 def priceSmaSlope = tool.slope(assetIndicator.getMinuteSmas(60), period);
 
 // MACD indicator
-def macds = assetIndicator.getMinuteMacds(60, 120, 30);
+def macds = assetIndicator.getMinuteMacds(60, 120, 40);
 def macdOscillatorSlope = tool.slope(macds.collect { it.oscillator }, period);
 def macdOscillatorAverage = tool.average(macds.collect { it.oscillator }, period);
 
@@ -69,9 +70,9 @@ def dmiAdxAverage = tool.average(dmis.collect { it.adx }, period);
 
 log.info(
         "dateTime:{}, price:{}, priceEma:{}, priceEmaSlope:{}, priceSma:{}, priceSmaSlope:{} " +
-        "macdOscillatorSlope:{}, macdOscillatorAverage:{}, " +
-        "rsiSlope:{}, rsiAverage:{}, " +
-        "dmiPdiSlope:{}, dmiPdiAverage:{}, dmiMdiSlope:{}, dmiMdiAverage:{}, dmiAdxSlope:{}, dmiAdxAverage:{}",
+                "macdOscillatorSlope:{}, macdOscillatorAverage:{}, " +
+                "rsiSlope:{}, rsiAverage:{}, " +
+                "dmiPdiSlope:{}, dmiPdiAverage:{}, dmiMdiSlope:{}, dmiMdiAverage:{}, dmiAdxSlope:{}, dmiAdxAverage:{}",
         dateTime, price, priceEma, priceEmaSlope, priceSma, priceSmaSlope,
         macdOscillatorSlope, macdOscillatorAverage,
         rsiSlope, rsiAverage,
@@ -80,24 +81,24 @@ log.info(
 
 // 매수조건
 if(priceEmaSlope > 0) {
-    if(1 == 1
-            && macdOscillatorAverage > 0
-            && rsiAverage > 50
-            && dmiPdiAverage > dmiMdiAverage
-    ){
+    def voteBuy = 0;
+    voteBuy += macdOscillatorAverage > 0 ? 1 : 0;
+    voteBuy += rsiAverage > 50 ? 1 : 0;
+    voteBuy += dmiPdiAverage > dmiMdiAverage ? 1 : 0;
+    if(voteBuy >= 3) {
         hold = true;
-}
+    }
 }
 
 // 매도조건
 if(priceEmaSlope < 0) {
-    if(1 == 1
-            && macdOscillatorAverage < 0
-            && rsiAverage < 50
-            && dmiPdiAverage < dmiMdiAverage
-    ) {
+    def voteSell = 0;
+    voteSell += macdOscillatorAverage < 0 ? 1 : 0;
+    voteSell += rsiAverage < 50 ? 1 : 0;
+    voteSell += dmiPdiAverage < dmiMdiAverage ? 1 : 0;
+    if(voteSell >= 3) {
         hold = false;
-}
+    }
 }
 
 // 장종료전 모두 청산(보유하지 않음)
@@ -107,7 +108,6 @@ if(time.isAfter(LocalTime.of(15,15))) {
 
 // 결과 반환
 return hold;
-
 ');
 
 -- fintics_trade_asset
