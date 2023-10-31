@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -37,6 +38,8 @@ public class KisClient extends Client {
     private final String accountNo;
 
     private final ObjectMapper objectMapper;
+
+    private final Map<String, KisOhlcvCache> minuteOhlcvCacheMap = new ConcurrentHashMap<>();
 
     public KisClient(Properties properties) {
         super(properties);
@@ -219,6 +222,7 @@ public class KisClient extends Client {
         }
 
         // return
+        List minuteOhlcvsCache;
         return minuteOhlcvs;
     }
 
