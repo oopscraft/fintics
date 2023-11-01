@@ -44,6 +44,6 @@ public class TradeAssetEntity extends SystemFieldEntity {
     private boolean enabled;
 
     @Column(name = "hold_ratio")
-    private Double holdRatio;
+    private BigDecimal holdRatio;
 
 }

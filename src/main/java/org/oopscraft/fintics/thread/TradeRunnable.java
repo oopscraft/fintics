@@ -12,6 +12,7 @@ import org.oopscraft.fintics.model.*;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -111,20 +112,21 @@ public class TradeRunnable implements Runnable {
                     // 2. buy and hold
                     if (holdConditionResult.equals(Boolean.TRUE)) {
                         if (!balance.hasBalanceAsset(tradeAsset.getSymbol())) {
-                            BigDecimal buyAmount = BigDecimal.valueOf(balance.getTotalAmount())
-                                    .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP)
-                                    .multiply(BigDecimal.valueOf(tradeAsset.getHoldRatio()));
-                            Double askPrice = assetIndicator.getOrderBook().getAskPrice();
+                            BigDecimal buyAmount = balance.getTotalAmount()
+                                    .divide(BigDecimal.valueOf(100), MathContext.DECIMAL128)
+                                    .multiply(tradeAsset.getHoldRatio())
+                                    .setScale(2, RoundingMode.HALF_UP);
+                            BigDecimal askPrice = assetIndicator.getOrderBook().getAskPrice();
                             int quantity = buyAmount
-                                    .divide(BigDecimal.valueOf(askPrice), 0, RoundingMode.FLOOR)
+                                    .divide(askPrice, 0, RoundingMode.FLOOR)
                                     .intValue();
                             try {
                                 log.info("Buy asset: {}", tradeAsset.getName());
                                 client.buyAsset(tradeAsset, quantity);
-                                sendBuyOrderAlarmIfEnabled(tradeAsset, quantity);
+                                sendBuyOrderAlarmIfEnabled(trade, tradeAsset, quantity);
                             } catch (Throwable e) {
                                 log.warn(e.getMessage());
-                                sendErrorAlarmIfEnabled(e);
+                                sendErrorAlarmIfEnabled(trade, e);
                             }
                         }
                     }
@@ -133,14 +135,14 @@ public class TradeRunnable implements Runnable {
                     else if (holdConditionResult.equals(Boolean.FALSE)) {
                         if (balance.hasBalanceAsset(tradeAsset.getSymbol())) {
                             BalanceAsset balanceAsset = balance.getBalanceAsset(tradeAsset.getSymbol());
-                            Integer quantity = balanceAsset.getQuantity();
+                            Integer orderableQuantity = balanceAsset.getOrderableQuantity();
                             try {
                                 log.info("Sell asset: {}", tradeAsset.getName());
-                                client.sellAsset(balanceAsset, quantity);
-                                sendSellOrderAlarmIfEnabled(balanceAsset, quantity);
+                                client.sellAsset(balanceAsset, orderableQuantity);
+                                sendSellOrderAlarmIfEnabled(trade, balanceAsset, orderableQuantity);
                             } catch (Throwable e) {
                                 log.warn(e.getMessage());
-                                sendErrorAlarmIfEnabled(e);
+                                sendErrorAlarmIfEnabled(trade, e);
                             }
                         }
                     }
@@ -152,7 +154,7 @@ public class TradeRunnable implements Runnable {
                 break;
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
-                sendErrorAlarmIfEnabled(e);
+                sendErrorAlarmIfEnabled(trade, e);
             }
         }
     }
@@ -170,26 +172,28 @@ public class TradeRunnable implements Runnable {
         }
     }
 
-    private void sendErrorAlarmIfEnabled(Throwable t) {
+    private void sendErrorAlarmIfEnabled(Trade trade, Throwable t) {
         if(trade.isAlarmOnError()) {
-            sendAlarmIfEnabled(t.getMessage(), ExceptionUtils.getStackTrace(t));
+            String subject = String.format("[%s]", trade.getName());
+            sendAlarmIfEnabled(subject, ExceptionUtils.getStackTrace(t));
         }
     }
 
-    private void sendOrderAlarmIfEnabled(String subject, String content) {
+    private void sendOrderAlarmIfEnabled(Trade trade, String content) {
         if(trade.isAlarmOnOrder()) {
+            String subject = String.format("[%s]", trade.getName());
             sendAlarmIfEnabled(subject, content);
         }
     }
 
-    private void sendBuyOrderAlarmIfEnabled(TradeAsset tradeAsset, int quantity) {
-        String subject = String.format("Buy [%s], %d", tradeAsset.getName(), quantity);
-        sendOrderAlarmIfEnabled(subject, null);
+    private void sendBuyOrderAlarmIfEnabled(Trade trade, TradeAsset tradeAsset, int quantity) {
+        String content = String.format("[%s] Buy %d", tradeAsset.getName(), quantity);
+        sendOrderAlarmIfEnabled(trade, content);
     }
 
-    private void sendSellOrderAlarmIfEnabled(BalanceAsset balanceAsset, int quantity) {
-        String subject = String.format("Sell [%s], %d", balanceAsset.getName(), quantity);
-        sendOrderAlarmIfEnabled(subject, null);
+    private void sendSellOrderAlarmIfEnabled(Trade trade, BalanceAsset balanceAsset, int quantity) {
+        String content = String.format("[%s] Sell %d", balanceAsset.getName(), quantity);
+        sendOrderAlarmIfEnabled(trade, content);
     }
 
 }

@@ -47,7 +47,7 @@ if(priceEmaSlope > 0) {
     voteBuy += macdOscillatorAverage > 0 ? 1 : 0;
     voteBuy += rsiAverage > 50 ? 1 : 0;
     voteBuy += dmiPdiAverage > dmiMdiAverage ? 1 : 0;
-    if(voteBuy >= 3) {
+    if(voteBuy >= 2) {
         hold = true;
     }
 }
@@ -58,7 +58,7 @@ if(priceEmaSlope < 0) {
     voteSell += macdOscillatorAverage < 0 ? 1 : 0;
     voteSell += rsiAverage < 50 ? 1 : 0;
     voteSell += dmiPdiAverage < dmiMdiAverage ? 1 : 0;
-    if(voteSell >= 3) {
+    if(voteSell >= 2) {
         hold = false;
     }
 }

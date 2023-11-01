@@ -43,20 +43,22 @@ log.info(
 
 // 매수조건
 if(priceEmaSlope > 0) {
-    if(macdOscillatorAverage > 0
-            && rsiAverage > 50
-            && dmiPdiAverage > dmiMdiAverage
-    ){
+    def voteBuy = 0;
+    voteBuy += macdOscillatorAverage > 0 ? 1 : 0;
+    voteBuy += rsiAverage > 50 ? 1 : 0;
+    voteBuy += dmiPdiAverage > dmiMdiAverage ? 1 : 0;
+    if(voteBuy >= 3) {
         hold = true;
     }
 }
 
 // 매도조건
 if(priceEmaSlope < 0) {
-    if(macdOscillatorAverage < 0
-            && rsiAverage < 50
-            && dmiPdiAverage < dmiMdiAverage
-    ) {
+    def voteSell = 0;
+    voteSell += macdOscillatorAverage < 0 ? 1 : 0;
+    voteSell += rsiAverage < 50 ? 1 : 0;
+    voteSell += dmiPdiAverage < dmiMdiAverage ? 1 : 0;
+    if(voteSell >= 3) {
         hold = false;
     }
 }

@@ -16,17 +16,17 @@ public class BalanceResponse {
 
     private String accountNo;
 
-    private Double totalAmount;
+    private BigDecimal totalAmount;
 
-    private Double cashAmount;
+    private BigDecimal cashAmount;
 
-    private Double purchaseAmount;
+    private BigDecimal purchaseAmount;
 
-    private Double valuationAmount;
+    private BigDecimal valuationAmount;
 
-    private Double gainLossAmount;
+    private BigDecimal profitAmount;
 
-    private Double realizedGainLossAmount;
+    private BigDecimal realizedProfitAmount;
 
     @Builder.Default
     private List<BalanceAssetResponse> balanceAssets = new ArrayList<>();
@@ -38,8 +38,8 @@ public class BalanceResponse {
                 .cashAmount(balance.getCashAmount())
                 .purchaseAmount(balance.getPurchaseAmount())
                 .valuationAmount(balance.getValuationAmount())
-                .gainLossAmount(balance.getGainLossAmount())
-                .realizedGainLossAmount(balance.getRealizedGainLossAmount())
+                .profitAmount(balance.getProfitAmount())
+                .realizedProfitAmount(balance.getRealizedProfitAmount())
                 .build();
         List<BalanceAssetResponse> balanceAssetResponses = balance.getBalanceAssets().stream()
                 .map(BalanceAssetResponse::from)

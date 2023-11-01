@@ -23,7 +23,7 @@ public class TradeAsset extends Asset {
 
     private boolean enabled;
 
-    private Double holdRatio;
+    private BigDecimal holdRatio;
 
     public static TradeAsset from(TradeAssetEntity tradeAssetEntity) {
         return TradeAsset.builder()

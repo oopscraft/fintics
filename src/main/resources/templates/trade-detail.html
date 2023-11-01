@@ -92,8 +92,7 @@
                     }).then(response => response.json())
                         .then(data => {
                             _alert(/*[[#{web.global.saveItemComplete(#{fintics.Trade})}]]*/'').then(() => {
-                                duice.ObjectProxy.clear(trade);
-                                duice.ObjectProxy.assign(trade, data);
+                                document.location.href = `${_rootUrl}/trade/trade-detail?tradeId=${data.tradeId}`;
                             });
                     });
                 }
@@ -109,7 +108,7 @@
                     }).then(response => {
                         if (response.ok) {
                             _alert(/*[[#{web.global.deleteItemComplete(#{fintics.Trade})}]]*/'').then(() => {
-                                history.back();
+                                document.location.href = `${_rootUrl}/trade`;
                             });
                         }
                     })
@@ -463,28 +462,28 @@
             <div class="grid grid-template-columns-12 grid-gap-1em padding-y-1em s-padding-y-0">
                 <label class="grid-column-6 s-grid-column-12">
                     <span data-th-text="#{fintics.Balance.totalAmount}" class="font-weight-bold"></span>
-                    <input type="text" data-duice-bind="balance" data-duice-property="totalAmount" data-duice-format="number" class="width-100"/>
+                    <input type="number" data-duice-bind="balance" data-duice-property="totalAmount" data-duice-format="number" class="width-100"/>
                 </label>
                 <label class="grid-column-6 s-grid-column-12">
                     <span data-th-text="#{fintics.Balance.cashAmount}" class="font-weight-bold"></span>
-                    <input type="text" data-duice-bind="balance" data-duice-property="cashAmount" data-duice-format="number" class="width-100"/>
+                    <input type="number" data-duice-bind="balance" data-duice-property="cashAmount" data-duice-format="number" class="width-100"/>
                 </label>
                 <label class="grid-column-6 s-grid-column-12">
                     <span data-th-text="#{fintics.Balance.purchaseAmount}" class="font-weight-bold"></span>
-                    <input type="text" data-duice-bind="balance" data-duice-property="purchaseAmount" data-duice-format="number" class="width-100"/>
+                    <input type="number" data-duice-bind="balance" data-duice-property="purchaseAmount" data-duice-format="number" class="width-100"/>
                 </label>
                 <label class="grid-column-6 s-grid-column-12">
                     <span data-th-text="#{fintics.Balance.valuationAmount}" class="font-weight-bold width-100"></span>
-                    <input type="text" data-duice-bind="balance" data-duice-property="valuationAmount" data-duice-format="number" class="width-100"/>
+                    <input type="number" data-duice-bind="balance" data-duice-property="valuationAmount" data-duice-format="number" class="width-100"/>
                 </label>
                 <label class="grid-column-6 s-grid-column-12">
-                    <span data-th-text="#{fintics.Balance.gainLossAmount}" class="font-weight-bold"></span>
+                    <span data-th-text="#{fintics.Balance.profitAmount}" class="font-weight-bold"></span>
                     <input type="text"
                            data-duice-bind="balance"
-                           data-duice-property="gainLossAmount"
+                           data-duice-property="profitAmount"
                            data-duice-format="number"
                            data-duice-execute="
-                                if(balance.gainLossAmount > 0) {
+                                if(balance.profitAmount > 0) {
                                     this.style.color='red';
                                 }else{
                                     this.style.color='blue';
@@ -493,13 +492,13 @@
                            class="width-100"/>
                 </label>
                 <label class="grid-column-6 s-grid-column-12">
-                    <span data-th-text="#{fintics.Balance.realizedGainLossAmount}" class="font-weight-bold width-100"></span>
+                    <span data-th-text="#{fintics.Balance.realizedProfitAmount}" class="font-weight-bold width-100"></span>
                     <input type="text"
                            data-duice-bind="balance"
-                           data-duice-property="realizedGainLossAmount"
+                           data-duice-property="realizedProfitAmount"
                            data-duice-format="number"
                            data-duice-execute="
-                                if(balance.realizedGainLossAmount > 0) {
+                                if(balance.realizedProfitAmount > 0) {
                                     this.style.color='red';
                                 }else{
                                     this.style.color='blue';
@@ -528,7 +527,7 @@
                                 <th data-th-text="#{fintics.BalanceAsset.quantity}"></th>
                                 <th data-th-text="#{fintics.BalanceAsset.purchaseAmount}"></th>
                                 <th data-th-text="#{fintics.BalanceAsset.valuationAmount}"></th>
-                                <th data-th-text="#{fintics.BalanceAsset.gainLossAmount}"></thd>
+                                <th data-th-text="#{fintics.BalanceAsset.profitAmount}" class="text-align-center"></thd>
                             </tr>
                             </thead>
                             <tbody>
@@ -543,20 +542,21 @@
                                     <span data-duice-bind="balanceAsset" data-duice-property="name"></span>
                                 </td>
                                 <td>
-                                    <span data-duice-bind="balanceAsset" data-duice-property="quantity"></span>
+                                    <span data-duice-bind="balanceAsset" data-duice-property="quantity" data-duice-format="number"></span>
+                                    (<span data-duice-bind="balanceAsset" data-duice-property="orderableQuantity" data-duice-format="number"></span>)
                                 </td>
                                 <td>
                                     <span data-duice-bind="balanceAsset" data-duice-property="purchaseAmount" data-duice-format="number"></span>
                                 </td>
-                                <td>
+                                <td class="text-align-center">
                                     <span data-duice-bind="balanceAsset" data-duice-property="valuationAmount" data-duice-format="number"></span>
                                 </td>
                                 <td>
                                     <span data-duice-bind="balanceAsset"
-                                          data-duice-property="gainLossAmount"
+                                          data-duice-property="profitAmount"
                                           data-duice-format="number"
                                           data-duice-execute="
-                                            if(balanceAsset.gainLossAmount > 0) {
+                                            if(balanceAsset.profitAmount > 0) {
                                                 this.style.color='red';
                                             }else{
                                                 this.style.color='blue';

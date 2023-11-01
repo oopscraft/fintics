@@ -15,17 +15,17 @@ public class Balance {
 
     private String accountNo;
 
-    private Double totalAmount;
+    private BigDecimal totalAmount;
 
-    private Double cashAmount;
+    private BigDecimal cashAmount;
 
-    private Double purchaseAmount;
+    private BigDecimal purchaseAmount;
 
-    private Double valuationAmount;
+    private BigDecimal valuationAmount;
 
-    private Double gainLossAmount;
+    private BigDecimal profitAmount;
 
-    private Double realizedGainLossAmount;
+    private BigDecimal realizedProfitAmount;
 
     @Builder.Default
     private List<BalanceAsset> balanceAssets = new ArrayList<>();

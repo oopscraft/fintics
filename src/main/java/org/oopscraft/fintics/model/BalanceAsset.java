@@ -1,7 +1,6 @@
 package org.oopscraft.fintics.model;
 
 import lombok.*;
-import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 
@@ -21,10 +20,12 @@ public class BalanceAsset {
 
     private Integer quantity;
 
-    private Double purchaseAmount;
+    private Integer orderableQuantity;
 
-    private Double valuationAmount;
+    private BigDecimal purchaseAmount;
 
-    private Double gainLossAmount;
+    private BigDecimal valuationAmount;
+
+    private BigDecimal profitAmount;
 
 }

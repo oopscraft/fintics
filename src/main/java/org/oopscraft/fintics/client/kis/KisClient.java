@@ -17,6 +17,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -113,9 +114,9 @@ public class KisClient extends Client {
         ValueMap output1 = objectMapper.convertValue(rootNode.path("output1"), ValueMap.class);
         ValueMap output2 = objectMapper.convertValue(rootNode.path("output2"), ValueMap.class);
 
-        Double price = output2.getNumber("stck_prpr").doubleValue();
-        Double bidPrice = output1.getNumber("bidp1").doubleValue();
-        Double askPrice = output1.getNumber("askp1").doubleValue();
+        BigDecimal price = output2.getNumber("stck_prpr");
+        BigDecimal bidPrice = output1.getNumber("bidp1");
+        BigDecimal askPrice = output1.getNumber("askp1");
 
         return OrderBook.builder()
                 .price(price)
@@ -337,12 +338,10 @@ public class KisClient extends Client {
 
         Balance balance = Balance.builder()
                 .accountNo(accountNo)
-                .totalAmount(output2.get(0).getNumber("tot_evlu_amt").doubleValue())
-                .cashAmount(output2.get(0).getNumber("dnca_tot_amt").doubleValue())
-                .purchaseAmount(output2.get(0).getNumber("pchs_amt_smtl_amt").doubleValue())
-                .valuationAmount(output2.get(0).getNumber("evlu_amt_smtl_amt").doubleValue())
-                .gainLossAmount(output2.get(0).getNumber("evlu_pfls_amt").doubleValue())
-                .realizedGainLossAmount(output2.get(0).getNumber("rlzt_pfls").doubleValue())
+                .totalAmount(output2.get(0).getNumber("tot_evlu_amt"))
+                .cashAmount(output2.get(0).getNumber("prvs_rcdl_excc_amt"))
+                .purchaseAmount(output2.get(0).getNumber("pchs_amt_smtl_amt"))
+                .valuationAmount(output2.get(0).getNumber("evlu_amt_smtl_amt"))
                 .build();
 
         List<BalanceAsset> balanceAssets = output1.stream()
@@ -351,14 +350,66 @@ public class KisClient extends Client {
                         .symbol(row.getString("pdno"))
                         .name(row.getString("prdt_name"))
                         .quantity(row.getNumber("hldg_qty").intValue())
-                        .purchaseAmount(row.getNumber("pchs_amt").doubleValue())
-                        .valuationAmount(row.getNumber("evlu_amt").doubleValue())
-                        .gainLossAmount(row.getNumber("evlu_pfls_amt").doubleValue())
+                        .orderableQuantity(row.getNumber("ord_psbl_qty").intValue())
+                        .purchaseAmount(row.getNumber("pchs_amt"))
+                        .valuationAmount(row.getNumber("evlu_amt"))
+                        .profitAmount(row.getNumber("evlu_pfls_amt"))
                         .build())
+                .filter(balanceAsset -> balanceAsset.getQuantity() > 0)
                 .collect(Collectors.toList());
         balance.setBalanceAssets(balanceAssets);
 
+        BigDecimal profitAmount = balanceAssets.stream()
+                .map(BalanceAsset::getProfitAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        balance.setProfitAmount(profitAmount);
+
+        if(production) {
+            BigDecimal realizedProfitAmount = getBalanceRealizedProfitAmount();
+            balance.setRealizedProfitAmount(realizedProfitAmount);
+        }
+
         return balance;
+    }
+
+    private BigDecimal getBalanceRealizedProfitAmount() {
+        RestTemplate restTemplate = RestTemplateBuilder.create()
+                .insecure(true)
+                .build();
+        String url = apiUrl + "/uapi/domestic-stock/v1/trading/inquire-balance-rlz-pl";
+        HttpHeaders headers = createHeaders();
+        String trId = "TTTC8494R";
+        headers.add("tr_id", trId);
+        url = UriComponentsBuilder.fromUriString(url)
+                .queryParam("CANO", accountNo.split("-")[0])
+                .queryParam("ACNT_PRDT_CD", accountNo.split("-")[1])
+                .queryParam("AFHR_FLPR_YN", "N")
+                .queryParam("OFL_YN", "")
+                .queryParam("INQR_DVSN", "00")
+                .queryParam("UNPR_DVSN", "01")
+                .queryParam("FUND_STTL_ICLD_YN", "N")
+                .queryParam("FNCG_AMT_AUTO_RDPT_YN", "N")
+                .queryParam("PRCS_DVSN", "00")
+                .queryParam("COST_ICLD_YN", "Y")
+                .queryParam("CTX_AREA_FK100", "")
+                .queryParam("CTX_AREA_NK100", "")
+                .build()
+                .toUriString();
+        RequestEntity<Void> requestEntity = RequestEntity
+                .get(url)
+                .headers(headers)
+                .build();
+        sleep();
+        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+        JsonNode rootNode;
+        try {
+            rootNode = objectMapper.readTree(responseEntity.getBody());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        JsonNode output2Node = rootNode.path("Output2");
+        List<ValueMap> output2 = objectMapper.convertValue(output2Node, new TypeReference<>(){});
+        return output2.get(0).getNumber("rlzt_pfls");
     }
 
     @Override

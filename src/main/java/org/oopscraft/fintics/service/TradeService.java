@@ -70,7 +70,7 @@ public class TradeService {
         List<TradeAssetEntity> tradeAssetEntities = trade.getTradeAssets().stream()
                 .map(tradeAsset ->
                         TradeAssetEntity.builder()
-                                .tradeId(trade.getTradeId())
+                                .tradeId(tradeEntity.getTradeId())
                                 .symbol(tradeAsset.getSymbol())
                                 .name(tradeAsset.getName())
                                 .type(tradeAsset.getType())
