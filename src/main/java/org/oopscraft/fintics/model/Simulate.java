@@ -21,7 +21,10 @@ public class Simulate {
     private LocalTime endAt;
 
     @Builder.Default
-    private List<Ohlcv> ohlcvs = new ArrayList<>();
+    private List<Ohlcv> minuteOhlcvs = new ArrayList<>();
+
+    @Builder.Default
+    private List<Ohlcv> dailyOhlcvs = new ArrayList<>();
 
     private Double feeRate;
 

@@ -23,8 +23,6 @@ public class AssetIndicator {
 
     private final AssetType type;
 
-    private final LocalDateTime collectedAt;
-
     private final OrderBook orderBook;
 
     private final List<Ohlcv> minuteOhlcvs;
@@ -36,7 +34,6 @@ public class AssetIndicator {
         this.symbol = asset.getSymbol();
         this.name = asset.getName();
         this.type = asset.getType();
-        this.collectedAt = LocalDateTime.now();
         this.orderBook = orderBook;
         this.minuteOhlcvs = minuteOhlcvs;
         this.dailyOhlcvs = dailyOhlcvs;

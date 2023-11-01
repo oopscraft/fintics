@@ -17,11 +17,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @SpringBootTest(classes = FinticsConfiguration.class)
 @RequiredArgsConstructor
@@ -30,7 +31,8 @@ class SimulateServiceTest extends CoreTestSupport {
 
     private final SimulateService simulateService;
 
-    private String readFileAsString(String filePath) throws Exception {
+    private String loadHoldCondition(String fileName) throws Exception {
+        String filePath = "org/oopscraft/fintics/service/" + fileName;
         StringBuilder stringBuilder = new StringBuilder();
         try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(filePath)) {
             IOUtils.readLines(inputStream, StandardCharsets.UTF_8).forEach(line -> {
@@ -40,30 +42,56 @@ class SimulateServiceTest extends CoreTestSupport {
         return stringBuilder.toString();
     }
 
-    void simulateWithFileName(String holdConditionFileName, String ohlcvFileName) throws Exception {
-        // given
-        String holdCondition = readFileAsString("org/oopscraft/fintics/service/" + holdConditionFileName);
-        Integer interval = 30;
-
-        String filePath = "org/oopscraft/fintics/service/" + ohlcvFileName;
+    private List<Ohlcv> loadDailyOhlcvs(String fileName) {
+        String filePath = "org/oopscraft/fintics/service/" + fileName;
         CSVFormat format = CSVFormat.Builder.create()
                 .setDelimiter("\t")
-                .setHeader("time","open","high","low","close","MACD","MACD-Signal","MACD-Oscillator", "RSI", "RSI-Signal")
+                .setHeader("dateTime","open","high","low","close")
                 .setSkipHeaderRecord(true)
                 .build();
-        final List<Ohlcv> ohlcvs = new ArrayList<>();
         try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(filePath)) {
-            CSVParser.parse(inputStream, StandardCharsets.UTF_8, format).stream()
-                    .forEach(record -> {
-                        ohlcvs.add(Ohlcv.builder()
-                                .dateTime(LocalDateTime.parse("2000 " + record.get("time"),DateTimeFormatter.ofPattern("yyyy MM/dd,HH:mm")))
+            return CSVParser.parse(inputStream, StandardCharsets.UTF_8, format).stream()
+                    .map(record -> Ohlcv.builder()
+                                .dateTime(LocalDate.parse(record.get("dateTime"),DateTimeFormatter.ofPattern("yyyy/MM/dd")).atTime(0,0))
                                 .openPrice(new BigDecimal(record.get("open").replaceAll(",","")))
                                 .highPrice(new BigDecimal(record.get("high").replaceAll(",","")))
                                 .lowPrice(new BigDecimal(record.get("low").replaceAll(",","")))
                                 .closePrice(new BigDecimal(record.get("close").replaceAll(",","")))
-                                .build());
-                    });
+                                .build())
+                    .collect(Collectors.toList());
+        }catch(Throwable e) {
+            throw new RuntimeException(e);
         }
+    }
+
+    private List<Ohlcv> loadMinuteOhlcvs(String fileName) {
+        String filePath = "org/oopscraft/fintics/service/" + fileName;
+        CSVFormat format = CSVFormat.Builder.create()
+                .setDelimiter("\t")
+                .setHeader("dateTime","open","high","low","close")
+                .setSkipHeaderRecord(true)
+                .build();
+        try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(filePath)) {
+            return CSVParser.parse(inputStream, StandardCharsets.UTF_8, format).stream()
+                    .map(record -> Ohlcv.builder()
+                            .dateTime(LocalDate.of(1,1,1).atTime(LocalTime.parse(record.get("dateTime"),DateTimeFormatter.ofPattern("MM/dd,HH:mm"))))
+                            .openPrice(new BigDecimal(record.get("open").replaceAll(",","")))
+                            .highPrice(new BigDecimal(record.get("high").replaceAll(",","")))
+                            .lowPrice(new BigDecimal(record.get("low").replaceAll(",","")))
+                            .closePrice(new BigDecimal(record.get("close").replaceAll(",","")))
+                            .build())
+                    .collect(Collectors.toList());
+        }catch(Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    void simulate(String holdConditionFileName, String minuteOhlcvFileName, String dailyOhlcvFileName) throws Exception {
+        // given
+        String holdCondition = loadHoldCondition(holdConditionFileName);
+        List<Ohlcv> minuteOhlcvs = loadMinuteOhlcvs(minuteOhlcvFileName);
+        List<Ohlcv> dailyOhlcvs = loadDailyOhlcvs(dailyOhlcvFileName);
+        Integer interval = 30;
 
         // when
         Simulate simulate = Simulate.builder()
@@ -71,7 +99,8 @@ class SimulateServiceTest extends CoreTestSupport {
                 .interval(interval)
                 .startAt(LocalTime.of(9,0))
                 .endAt(LocalTime.of(15,30))
-                .ohlcvs(ohlcvs)
+                .minuteOhlcvs(minuteOhlcvs)
+                .dailyOhlcvs(dailyOhlcvs)
                 .feeRate(0.02)
                 .bidAskSpread(5.0)
                 .build();
@@ -83,153 +112,50 @@ class SimulateServiceTest extends CoreTestSupport {
 
     @Disabled
     @Test
-    void simulate_20231025_KODEX레버리지_v1() throws Exception {
-        simulateWithFileName(
-                "SimulateServiceTest.holdCondition.v1.groovy",
-                "SimulateServiceTest.ohlcv.20231025_KODEX레버리지.tsv"
-        );
+    void simulate_20231030_KODEX코스닥150() throws Exception {
+        simulate("SimulateServiceTest.holdCondition.groovy",
+                "SimulateServiceTest.20231030_KODEX코스닥150.minuteOhlcv.tsv",
+                "SimulateServiceTest.20231030_KODEX코스닥150.dailyOhlcv.tsv");
     }
 
     @Disabled
     @Test
-    void simulate_20231025_KODEX레버리지_v2() throws Exception {
-        simulateWithFileName(
-                "SimulateServiceTest.holdCondition.v2.groovy",
-                "SimulateServiceTest.ohlcv.20231025_KODEX레버리지.tsv"
-        );
+    void simulate_20231030_KODEX코스닥150선물인버스() throws Exception {
+        simulate("SimulateServiceTest.holdCondition.groovy",
+                "SimulateServiceTest.20231030_KODEX코스닥150선물인버스.minuteOhlcv.tsv",
+                "SimulateServiceTest.20231030_KODEX코스닥150선물인버스.dailyOhlcv.tsv");
     }
 
     @Disabled
     @Test
-    void simulate_20231026_KODEX코스닥150_v1() throws Exception {
-        simulateWithFileName(
-                "SimulateServiceTest.holdCondition.v1.groovy",
-                "SimulateServiceTest.ohlcv.20231026_KODEX코스닥150.tsv"
-        );
+    void simulate_20231031_KODEX코스닥150() throws Exception {
+        simulate("SimulateServiceTest.holdCondition.groovy",
+                "SimulateServiceTest.20231031_KODEX코스닥150.minuteOhlcv.tsv",
+                "SimulateServiceTest.20231031_KODEX코스닥150.dailyOhlcv.tsv");
     }
 
     @Disabled
     @Test
-    void simulate_20231026_KODEX코스닥150_v2() throws Exception {
-        simulateWithFileName(
-                "SimulateServiceTest.holdCondition.v2.groovy",
-                "SimulateServiceTest.ohlcv.20231026_KODEX코스닥150.tsv"
-        );
+    void simulate_20231031_KODEX코스닥150선물인버스() throws Exception {
+        simulate("SimulateServiceTest.holdCondition.groovy",
+                "SimulateServiceTest.20231031_KODEX코스닥150선물인버스.minuteOhlcv.tsv",
+                "SimulateServiceTest.20231031_KODEX코스닥150선물인버스.dailyOhlcv.tsv");
     }
 
     @Disabled
     @Test
-    void simulate_20231026_KODEX코스닥150선물인버스_v1() throws Exception {
-        simulateWithFileName(
-                "SimulateServiceTest.holdCondition.v1.groovy",
-                "SimulateServiceTest.ohlcv.20231026_KODEX코스닥150선물인버스.tsv"
-        );
+    void simulate_20231101_KODEX코스닥150() throws Exception {
+        simulate("SimulateServiceTest.holdCondition.groovy",
+                "SimulateServiceTest.20231101_KODEX코스닥150.minuteOhlcv.tsv",
+                "SimulateServiceTest.20231101_KODEX코스닥150.dailyOhlcv.tsv");
     }
 
     @Disabled
     @Test
-    void simulate_20231026_KODEX코스닥150선물인버스_v2() throws Exception {
-        simulateWithFileName(
-                "SimulateServiceTest.holdCondition.v2.groovy",
-                "SimulateServiceTest.ohlcv.20231026_KODEX코스닥150선물인버스.tsv"
-        );
-    }
-
-    @Disabled
-    @Test
-    void simulate_20231027_KODEX코스닥150_v1() throws Exception {
-        simulateWithFileName(
-                "SimulateServiceTest.holdCondition.v1.groovy",
-                "SimulateServiceTest.ohlcv.20231027_KODEX코스닥150.tsv"
-        );
-    }
-
-    @Disabled
-    @Test
-    void simulate_20231027_KODEX코스닥150_v2() throws Exception {
-        simulateWithFileName(
-                "SimulateServiceTest.holdCondition.v2.groovy",
-                "SimulateServiceTest.ohlcv.20231027_KODEX코스닥150.tsv"
-        );
-    }
-
-    @Disabled
-    @Test
-    void simulate_20231027_KODEX코스닥150선물인버스_v1() throws Exception {
-        simulateWithFileName(
-                "SimulateServiceTest.holdCondition.v1.groovy",
-                "SimulateServiceTest.ohlcv.20231027_KODEX코스닥150선물인버스.tsv"
-        );
-    }
-
-    @Disabled
-    @Test
-    void simulate_20231027_KODEX코스닥150선물인버스_v2() throws Exception {
-        simulateWithFileName(
-                "SimulateServiceTest.holdCondition.v2.groovy",
-                "SimulateServiceTest.ohlcv.20231027_KODEX코스닥150선물인버스.tsv"
-        );
-    }
-
-    @Disabled
-    @Test
-    void simulate_20231030_KODEX코스닥150_v1() throws Exception {
-        simulateWithFileName(
-                "SimulateServiceTest.holdCondition.v1.groovy",
-                "SimulateServiceTest.ohlcv.20231030_KODEX코스닥150.tsv"
-        );
-    }
-
-    @Disabled
-    @Test
-    void simulate_20231030_KODEX코스닥150_v2() throws Exception {
-        simulateWithFileName(
-                "SimulateServiceTest.holdCondition.v2.groovy",
-                "SimulateServiceTest.ohlcv.20231030_KODEX코스닥150.tsv"
-        );
-    }
-
-    @Disabled
-    @Test
-    void simulate_20231030_KODEX코스닥150선물인버스_v1() throws Exception {
-        simulateWithFileName(
-                "SimulateServiceTest.holdCondition.v1.groovy",
-                "SimulateServiceTest.ohlcv.20231030_KODEX코스닥150선물인버스.tsv"
-        );
-    }
-
-    @Disabled
-    @Test
-    void simulate_20231030_KODEX코스닥150선물인버스_v2() throws Exception {
-        simulateWithFileName(
-                "SimulateServiceTest.holdCondition.v2.groovy",
-                "SimulateServiceTest.ohlcv.20231030_KODEX코스닥150선물인버스.tsv"
-        );
-    }
-
-    @Disabled
-    @Test
-    void simulate_20231030_KODEX레버리지_v2() throws Exception {
-        simulateWithFileName(
-                "SimulateServiceTest.holdCondition.v2.groovy",
-                "SimulateServiceTest.ohlcv.20231030_KODEX레버리지.tsv"
-        );
-    }
-
-    @Test
-    void simulate_20231031_KODEX코스닥150_v2() throws Exception {
-        simulateWithFileName(
-                "SimulateServiceTest.holdCondition.v2.groovy",
-                "SimulateServiceTest.ohlcv.20231031_KODEX코스닥150.tsv"
-        );
-    }
-
-    @Test
-    void simulate_20231031_KODEX코스닥150선물인버스_v2() throws Exception {
-        simulateWithFileName(
-                "SimulateServiceTest.holdCondition.v2.groovy",
-                "SimulateServiceTest.ohlcv.20231031_KODEX코스닥150선물인버스.tsv"
-        );
+    void simulate_20231101_KODEX코스닥150선물인버스() throws Exception {
+        simulate("SimulateServiceTest.holdCondition.groovy",
+                "SimulateServiceTest.20231101_KODEX코스닥150선물인버스.minuteOhlcv.tsv",
+                "SimulateServiceTest.20231101_KODEX코스닥150선물인버스.dailyOhlcv.tsv");
     }
 
 }

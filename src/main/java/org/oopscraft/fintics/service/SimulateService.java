@@ -21,7 +21,8 @@ public class SimulateService {
 
         LocalTime startAt = simulate.getStartAt();
         LocalTime endAt = simulate.getEndAt();
-        List<Ohlcv> ohlcvs = simulate.getOhlcvs();
+        List<Ohlcv> minuteOhlcvs = simulate.getMinuteOhlcvs();
+        List<Ohlcv> dailyOhlcvs = simulate.getDailyOhlcvs();
         Double feeRate = simulate.getFeeRate();
         Double bidAskSpread = simulate.getBidAskSpread();
         List<Boolean> holdConditionResults = new ArrayList<>();
@@ -32,8 +33,8 @@ public class SimulateService {
         double buyPrice = 0;
         double profit = 0;
 
-        for(int i = ohlcvs.size()-1; i >= 0; i --) {
-            Ohlcv ohlcv = ohlcvs.get(i);
+        for(int i = minuteOhlcvs.size()-1; i >= 0; i --) {
+            Ohlcv ohlcv = minuteOhlcvs.get(i);
             LocalDateTime dateTime = ohlcv.getDateTime();
             LocalTime time = dateTime.toLocalTime();
             log.info("dateTime:{}", dateTime);
@@ -44,8 +45,8 @@ public class SimulateService {
             }
 
             int fromIndex = i;
-            int toIndex = ohlcvs.size();
-            List<Ohlcv> currentOhlcvs = ohlcvs.subList(fromIndex, toIndex);
+            int toIndex = minuteOhlcvs.size();
+            List<Ohlcv> currentMinuteOhlcvs = minuteOhlcvs.subList(fromIndex, toIndex);
 
             Trade trade = Trade.builder()
                     .tradeId("simulate")
@@ -60,8 +61,8 @@ public class SimulateService {
 
             AssetIndicator assetIndicator = AssetIndicator.builder()
                     .asset(tradeAsset)
-                    .minuteOhlcvs(currentOhlcvs)
-                    .dailyOhlcvs(currentOhlcvs)
+                    .minuteOhlcvs(currentMinuteOhlcvs)
+                    .dailyOhlcvs(dailyOhlcvs)
                     .build();
 
             TradeAssetDecider tradeAssetDecider = TradeAssetDecider.builder()
@@ -80,9 +81,9 @@ public class SimulateService {
                     if (!hold) {
                         tradeCount ++;
                         log.info("=".repeat(80));
-                        log.info("== buy[{}]", currentOhlcvs.get(0).getDateTime());
+                        log.info("== buy[{}]", currentMinuteOhlcvs.get(0).getDateTime());
                         hold = true;
-                        buyPrice = currentOhlcvs.get(0).getClosePrice().doubleValue() + bidAskSpread;
+                        buyPrice = currentMinuteOhlcvs.get(0).getClosePrice().doubleValue() + bidAskSpread;
                         log.info("== buyPrice:{}", buyPrice);
                         profit -= calculateFee(buyPrice, feeRate);
                         log.info("== profit:{}", profit);
@@ -93,8 +94,8 @@ public class SimulateService {
                     if (hold) {
                         tradeCount ++;
                         log.info("=".repeat(80));
-                        log.info("== sell[{}]", currentOhlcvs.get(0).getDateTime());
-                        double sellPrice = currentOhlcvs.get(0).getClosePrice().doubleValue() - bidAskSpread;
+                        log.info("== sell[{}]", currentMinuteOhlcvs.get(0).getDateTime());
+                        double sellPrice = currentMinuteOhlcvs.get(0).getClosePrice().doubleValue() - bidAskSpread;
                         log.info("== buyPrice:{}", buyPrice);
                         log.info("== sellPrice:{}", sellPrice);
                         profit -= calculateFee(sellPrice, feeRate);
