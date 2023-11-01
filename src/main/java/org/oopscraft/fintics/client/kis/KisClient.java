@@ -330,6 +330,13 @@ public class KisClient extends Client {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
+
+        String rtCd = objectMapper.convertValue(rootNode.path("rt_cd"), String.class);
+        String msg1 = objectMapper.convertValue(rootNode.path("msg1"), String.class);
+        if(!"0".equals(rtCd)) {
+            throw new RuntimeException(msg1);
+        }
+
         JsonNode output1Node = rootNode.path("output1");
         List<ValueMap> output1 = objectMapper.convertValue(output1Node, new TypeReference<>(){});
 
@@ -407,7 +414,14 @@ public class KisClient extends Client {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-        JsonNode output2Node = rootNode.path("Output2");
+
+        String rtCd = objectMapper.convertValue(rootNode.path("rt_cd"), String.class);
+        String msg1 = objectMapper.convertValue(rootNode.path("msg1"), String.class);
+        if(!"0".equals(rtCd)) {
+            throw new RuntimeException(msg1);
+        }
+
+        JsonNode output2Node = rootNode.path("output2");
         List<ValueMap> output2 = objectMapper.convertValue(output2Node, new TypeReference<>(){});
         return output2.get(0).getNumber("rlzt_pfls");
     }
