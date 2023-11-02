@@ -46,6 +46,16 @@ def dailyDmiPdiSlope = tool.slope(dailyDmis.collect { it.pdi }, period);
 def dailyDmiMdiAverage = tool.average(dailyDmis.collect { it.mdi }, period);
 def dailyDmiMdiSlope = tool.slope(dailyDmis.collect { it.mdi }, period);
 
+// market
+def spxFutureIndicator = market.getSpxFuture();
+def spxFutureEmaSlope = tool.slope(spxFutureIndicator.getMinuteEmas(60), period);
+def spxFutureMacds = spxFutureIndicator.getMinuteMacds(60, 120, 40);
+def spxFutureMacdOscillatorSlope = tool.slope(spxFutureMacds.collect { it.oscillator }, period);
+def spxFutureMacdOscillatorAverage = tool.average(spxFutureMacds.collect { it.oscillator }, period);
+def spxFutureRsis = spxFutureIndicator.getMinuteRsis(60);
+def spxFutureRsiSlope = tool.slope(spxFutureRsis, period);
+def spxFutureRsiAverage = tool.average(spxFutureRsis, period);
+
 // 매수조건
 if(priceEmaSlope > 0) {
     def buyVotes = [];
@@ -58,7 +68,7 @@ if(priceEmaSlope > 0) {
     buyVotes.add(dmiPdiSlope > 0 ? weight : 0);
     buyVotes.add(dmiMdiSlope < 0 ? weight : 0);
     // daily factor
-    def dailyWeight = 70;
+    def dailyWeight = 100;
     buyVotes.add(dailyMacdOscillatorAverage > 0 ? dailyWeight : 0);
     buyVotes.add(dailyMacdOscillatorSlope > 0 ? dailyWeight : 0);
     buyVotes.add(dailyRsiAverage > 50 ? dailyWeight : 0);
@@ -66,6 +76,13 @@ if(priceEmaSlope > 0) {
     buyVotes.add(dailyDmiPdiAverage > dailyDmiMdiAverage ? dailyWeight : 0);
     buyVotes.add(dailyDmiPdiSlope > 0 ? dailyWeight : 0);
     buyVotes.add(dailyDmiMdiSlope < 0 ? dailyWeight : 0);
+    // market factor
+    def marketWeight = 100;
+    buyVotes.add(spxFutureEmaSlope > 0 ? marketWeight : 0);
+    buyVotes.add(spxFutureMacdOscillatorAverage > 0 ? marketWeight : 0);
+    buyVotes.add(spxFutureMacdOscillatorSlope > 0 ? marketWeight : 0);
+    buyVotes.add(spxFutureRsiAverage > 50 ? marketWeight : 0);
+    buyVotes.add(spxFutureRsiSlope > 0 ? marketWeight : 0);
     log.info("buyVotes[{}] - {}", buyVotes.average(), buyVotes);
     if(buyVotes.average() > 70) {
         hold = true;
@@ -84,7 +101,7 @@ if(priceEmaSlope < 0) {
     sellVotes.add(dmiPdiSlope < 0 ? weight : 0);
     sellVotes.add(dmiMdiSlope > 0 ? weight : 0);
     // daily factor
-    def dailyWeight = 70;
+    def dailyWeight = 100;
     sellVotes.add(dailyMacdOscillatorAverage < 0 ? dailyWeight : 0);
     sellVotes.add(dailyMacdOscillatorSlope < 0 ? dailyWeight : 0);
     sellVotes.add(dailyRsiAverage < 50 ? dailyWeight : 0);
@@ -92,16 +109,17 @@ if(priceEmaSlope < 0) {
     sellVotes.add(dailyDmiPdiAverage < dailyDmiMdiAverage ? dailyWeight : 0);
     sellVotes.add(dailyDmiPdiSlope < 0 ? dailyWeight : 0);
     sellVotes.add(dailyDmiMdiSlope > 0 ? dailyWeight : 0);
+    // market factor
+    def marketWeight = 100;
+    sellVotes.add(spxFutureEmaSlope < 0 ? marketWeight : 0);
+    sellVotes.add(spxFutureMacdOscillatorAverage < 0 ? marketWeight : 0);
+    sellVotes.add(spxFutureMacdOscillatorSlope < 0 ? marketWeight : 0);
+    sellVotes.add(spxFutureRsiAverage < 50 ? marketWeight : 0);
+    sellVotes.add(spxFutureRsiSlope < 0 ? marketWeight : 0);
     log.info("sellVotes[{}] - {}", sellVotes.average(), sellVotes);
     if(sellVotes.average() > 70) {
         hold = false;
     }
-}
-
-// 장종료전 모두 청산
-def time = assetIndicator.getMinuteDateTimes().get(0).toLocalTime();
-if(time.isAfter(LocalTime.of(15,15))) {
-    hold = false;
 }
 
 // 결과 반환

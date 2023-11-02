@@ -1,5 +1,6 @@
 package org.oopscraft.fintics.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.fintics.model.*;
 import org.oopscraft.fintics.thread.TradeAssetDecider;
@@ -15,7 +16,10 @@ import java.util.List;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class SimulateService {
+
+    private final MarketService marketService;
 
     public Simulate simulate(Simulate simulate) {
 
@@ -28,7 +32,6 @@ public class SimulateService {
         List<Boolean> holdConditionResults = new ArrayList<>();
 
         int tradeCount = 0;
-        Boolean previousHoldConditionResult = false;
         boolean hold = false;
         double buyPrice = 0;
         double profit = 0;
@@ -60,16 +63,22 @@ public class SimulateService {
                     .build();
 
             AssetIndicator assetIndicator = AssetIndicator.builder()
-                    .asset(tradeAsset)
+                    .symbol(tradeAsset.getSymbol())
+                    .name(tradeAsset.getName())
                     .minuteOhlcvs(currentMinuteOhlcvs)
                     .dailyOhlcvs(dailyOhlcvs)
                     .build();
 
+            Market market = marketService.getMarket();
+//            Market market = Market.builder()
+//                    .spxFuture(MarketIndicator.builder().build())
+//                    .build();
+
             TradeAssetDecider tradeAssetDecider = TradeAssetDecider.builder()
-                    .trade(trade)
-                    .tradeAsset(tradeAsset)
-                    .assetIndicator(assetIndicator)
+                    .holdCondition(simulate.getHoldCondition())
                     .dateTime(dateTime)
+                    .assetIndicator(assetIndicator)
+                    .market(market)
                     .logger(log)
                     .build();
             Boolean holdConditionResult = tradeAssetDecider.execute();

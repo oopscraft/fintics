@@ -5,14 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
 import org.oopscraft.arch4j.core.data.IdGenerator;
 import org.oopscraft.arch4j.core.data.pbe.PbePropertiesUtil;
-import org.oopscraft.arch4j.core.security.SecurityUtils;
 import org.oopscraft.fintics.client.Client;
 import org.oopscraft.fintics.client.ClientFactory;
 import org.oopscraft.fintics.dao.TradeAssetEntity;
 import org.oopscraft.fintics.dao.TradeEntity;
 import org.oopscraft.fintics.dao.TradeRepository;
 import org.oopscraft.fintics.model.*;
-import org.oopscraft.fintics.thread.TradeThreadManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -28,6 +26,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class TradeService {
+
+    private static final String CACHE_TRADE_ASSET_INDICATOR = "TradeService.getTradeAssetIndicator";
 
     private final TradeRepository tradeRepository;
 
@@ -107,7 +107,7 @@ public class TradeService {
         }
     }
 
-    @Cacheable(value = "TradeService.getTradeAssetIndicator", key = "#symbol")
+    @Cacheable(value = CACHE_TRADE_ASSET_INDICATOR, key = "#symbol")
     public Optional<AssetIndicator> getTradeAssetIndicator(String tradeId, String symbol) {
         Trade trade = getTrade(tradeId).orElseThrow();
         TradeAsset tradeAsset = trade.getTradeAssets().stream()
@@ -120,17 +120,18 @@ public class TradeService {
         List<Ohlcv> minuteOhlcvs = client.getMinuteOhlcvs(tradeAsset);
         List<Ohlcv> dailyOhlcvs = client.getDailyOhlcvs(tradeAsset);
         return Optional.ofNullable(AssetIndicator.builder()
-                .asset(tradeAsset)
+                .symbol(tradeAsset.getSymbol())
+                .name(tradeAsset.getName())
                 .orderBook(orderBook)
                 .minuteOhlcvs(minuteOhlcvs)
                 .dailyOhlcvs(dailyOhlcvs)
                 .build());
     }
 
-    @CacheEvict(value = "TradeService.getTradeAssetIndicator", allEntries = true)
+    @CacheEvict(value = CACHE_TRADE_ASSET_INDICATOR, allEntries = true)
     @Scheduled(initialDelay = 1_000, fixedDelay = 60_000)
-    public void purgeTransactionIndicatorCache() {
-        log.info("cacheEvict[TradeService.getTradeAssetIndicator");
+    public void purgeTradeAssetIndicatorCache() {
+        log.info("cacheEvict[{}]", CACHE_TRADE_ASSET_INDICATOR);
     }
 
     public void buyTradeAsset(String tradeId, String symbol, Integer quantity) {

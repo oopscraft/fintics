@@ -7,16 +7,16 @@ import lombok.Getter;
 @Getter
 public class Market {
 
-    private MarketIndex spx;
+    private MarketIndicator spx;
 
-    private MarketIndex spxFuture;
+    private MarketIndicator spxFuture;
 
-    private MarketIndex dji;
+    private MarketIndicator dji;
 
-    private MarketIndex djiFuture;
+    private MarketIndicator djiFuture;
 
-    private MarketIndex ndx;
+    private MarketIndicator ndx;
 
-    private MarketIndex ndxFuture;
+    private MarketIndicator ndxFuture;
 
 }

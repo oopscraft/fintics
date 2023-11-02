@@ -28,14 +28,10 @@ class TradeAssetDeciderTest {
 
         // when
         TradeAssetDecider tradeAssetDecider = TradeAssetDecider.builder()
-                .trade(trade)
-                .tradeAsset(tradeAsset)
+                .holdCondition(trade.getHoldCondition())
                 .assetIndicator(AssetIndicator.builder()
-                        .asset(TradeAsset.builder()
-                                .tradeId("test")
-                                .symbol("test")
-                                .type(AssetType.ETF)
-                                .build())
+                        .symbol(tradeAsset.getSymbol())
+                        .name(tradeAsset.getName())
                         .minuteOhlcvs(IntStream.range(1,11)
                                 .mapToObj(i -> {
                                     BigDecimal price = BigDecimal.valueOf(1000 - (i*10));

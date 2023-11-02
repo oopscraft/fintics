@@ -61,12 +61,14 @@ public class AssetIndicatorTest {
         List<BigDecimal> outputRsis = new ArrayList<>();
         List<Dmi> outputDmis = new ArrayList<>();
         for(int i = 0, size = inputCloses.size(); i < size; i ++ ) {
+            TradeAsset tradeAsset = TradeAsset.builder()
+                    .symbol("test")
+                    .name("Test")
+                    .build();
             List<Ohlcv> ohlcvs = inputMinuteOhlcvs.subList(i, inputMinuteOhlcvs.size()-1);
             AssetIndicator assetIndicator = AssetIndicator.builder()
-                    .asset(TradeAsset.builder()
-                            .symbol("test")
-                            .name("Test")
-                            .build())
+                    .symbol(tradeAsset.getSymbol())
+                    .name(tradeAsset.getName())
                     .minuteOhlcvs(ohlcvs)
                     .build();
             outputMacds.add(assetIndicator.getMinuteMacd(12,26,9));

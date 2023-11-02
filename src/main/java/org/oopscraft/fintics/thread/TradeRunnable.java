@@ -7,6 +7,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
 import org.oopscraft.arch4j.web.support.SseLogAppender;
 import org.oopscraft.fintics.model.*;
+import org.oopscraft.fintics.service.MarketService;
 import org.oopscraft.fintics.service.TradeService;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -33,6 +34,8 @@ public class TradeRunnable implements Runnable {
 
     private final TradeService tradeService;
 
+    private final MarketService marketService;
+
     private final AlarmService alarmService;
 
     private final Logger log;
@@ -45,6 +48,7 @@ public class TradeRunnable implements Runnable {
         // component
         this.transactionManager = applicationContext.getBean(PlatformTransactionManager.class);
         this.tradeService = applicationContext.getBean(TradeService.class);
+        this.marketService = applicationContext.getBean(MarketService.class);
         this.alarmService = applicationContext.getBean(AlarmService.class);
 
         // add log appender
@@ -88,16 +92,15 @@ public class TradeRunnable implements Runnable {
                         // logging
                         log.info("Check asset - [{}]", tradeAsset.getName());
 
-                        // build asset indicator
+                        // decides hold condition
                         AssetIndicator assetIndicator = tradeService.getTradeAssetIndicator(trade.getTradeId(), tradeAsset.getSymbol())
                                 .orElseThrow();
-
-                        // decides hold condition
+                        Market market = marketService.getMarket();
                         TradeAssetDecider tradeAssetDecider = TradeAssetDecider.builder()
-                                .trade(trade)
-                                .tradeAsset(tradeAsset)
-                                .assetIndicator(assetIndicator)
+                                .holdCondition(trade.getHoldCondition())
                                 .dateTime(dateTime)
+                                .assetIndicator(assetIndicator)
+                                .market(market)
                                 .logger(log)
                                 .build();
                         Boolean holdConditionResult = tradeAssetDecider.execute();

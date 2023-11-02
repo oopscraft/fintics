@@ -6,6 +6,7 @@ import groovy.lang.GroovyShell;
 import lombok.Builder;
 import lombok.Getter;
 import org.oopscraft.fintics.model.AssetIndicator;
+import org.oopscraft.fintics.model.Market;
 import org.oopscraft.fintics.model.Trade;
 import org.oopscraft.fintics.model.TradeAsset;
 import org.slf4j.Logger;
@@ -22,13 +23,13 @@ import java.util.List;
 @Getter
 public class TradeAssetDecider {
 
-    private final Trade trade;
+    private final LocalDateTime dateTime;
 
-    private final TradeAsset tradeAsset;
+    private final String holdCondition;
 
     private final AssetIndicator assetIndicator;
 
-    private final LocalDateTime dateTime;
+    private final Market market;
 
     private final Logger logger;
 
@@ -36,16 +37,17 @@ public class TradeAssetDecider {
         ClassLoader classLoader = this.getClass().getClassLoader();
         GroovyClassLoader groovyClassLoader = new GroovyClassLoader(classLoader);
         Binding binding = new Binding();
-        binding.setVariable("assetIndicator", assetIndicator);
-        binding.setVariable("tool", new Tool());
         binding.setVariable("dateTime", dateTime);
+        binding.setVariable("assetIndicator", assetIndicator);
+        binding.setVariable("market", market);
+        binding.setVariable("tool", new Tool());
         binding.setVariable("log", logger);
         GroovyShell groovyShell = new GroovyShell(groovyClassLoader, binding);
 
-        if(trade.getHoldCondition() == null || trade.getHoldCondition().isBlank()) {
+        if(holdCondition == null || holdCondition.isBlank()) {
             return null;
         }
-        Object result = groovyShell.evaluate(trade.getHoldCondition());
+        Object result = groovyShell.evaluate(holdCondition);
         if(result == null) {
             return null;
         }
