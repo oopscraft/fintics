@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Data
 @Builder
@@ -35,12 +36,11 @@ public class Balance {
                 .anyMatch(e -> Objects.equals(e.getSymbol(), symbol));
     }
 
-    public BalanceAsset getBalanceAsset(String symbol) {
+    public Optional<BalanceAsset> getBalanceAsset(String symbol) {
         return balanceAssets.stream()
                 .filter(balanceAsset ->
                     Objects.equals(balanceAsset.getSymbol(), symbol))
-                .findFirst()
-                .orElse(null);
+                .findFirst();
     }
 
 }

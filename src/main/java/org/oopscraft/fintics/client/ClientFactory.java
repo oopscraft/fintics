@@ -25,6 +25,10 @@ public class ClientFactory {
         }
     }
 
+    public static Client getClient(Trade trade) {
+        return getClient(trade.getClientType(), trade.getClientProperties());
+    }
+
     private static Properties loadPropertiesFromString(String propertiesString) {
         Properties properties = new Properties();
         try {

@@ -1,6 +1,8 @@
 package org.oopscraft.fintics.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.oopscraft.arch4j.core.alarm.AlarmService;
 import org.oopscraft.arch4j.core.data.IdGenerator;
 import org.oopscraft.arch4j.core.data.pbe.PbePropertiesUtil;
 import org.oopscraft.arch4j.core.security.SecurityUtils;
@@ -9,23 +11,27 @@ import org.oopscraft.fintics.client.ClientFactory;
 import org.oopscraft.fintics.dao.TradeAssetEntity;
 import org.oopscraft.fintics.dao.TradeEntity;
 import org.oopscraft.fintics.dao.TradeRepository;
-import org.oopscraft.fintics.model.Balance;
-import org.oopscraft.fintics.model.Trade;
+import org.oopscraft.fintics.model.*;
 import org.oopscraft.fintics.thread.TradeThreadManager;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TradeService {
 
     private final TradeRepository tradeRepository;
 
-    private final TradeThreadManager tradeThreadManager;
+    private final AlarmService alarmService;
 
     public List<Trade> getTrades() {
         return tradeRepository.findAll().stream()
@@ -98,6 +104,58 @@ public class TradeService {
             return Optional.ofNullable(client.getBalance());
         }else{
             return Optional.empty();
+        }
+    }
+
+    @Cacheable(value = "TradeService.getTradeAssetIndicator", key = "#symbol")
+    public Optional<AssetIndicator> getTradeAssetIndicator(String tradeId, String symbol) {
+        Trade trade = getTrade(tradeId).orElseThrow();
+        TradeAsset tradeAsset = trade.getTradeAssets().stream()
+                .filter(e -> Objects.equals(e.getSymbol(), symbol))
+                .findFirst()
+                .orElseThrow();
+
+        Client client = ClientFactory.getClient(trade);
+        OrderBook orderBook = client.getOrderBook(tradeAsset);
+        List<Ohlcv> minuteOhlcvs = client.getMinuteOhlcvs(tradeAsset);
+        List<Ohlcv> dailyOhlcvs = client.getDailyOhlcvs(tradeAsset);
+        return Optional.ofNullable(AssetIndicator.builder()
+                .asset(tradeAsset)
+                .orderBook(orderBook)
+                .minuteOhlcvs(minuteOhlcvs)
+                .dailyOhlcvs(dailyOhlcvs)
+                .build());
+    }
+
+    @CacheEvict(value = "TradeService.getTradeAssetIndicator", allEntries = true)
+    @Scheduled(initialDelay = 1_000, fixedDelay = 60_000)
+    public void purgeTransactionIndicatorCache() {
+        log.info("cacheEvict[TradeService.getTradeAssetIndicator");
+    }
+
+    public void buyTradeAsset(String tradeId, String symbol, Integer quantity) {
+        Trade trade = getTrade(tradeId).orElseThrow();
+        TradeAsset tradeAsset = trade.getTradeAsset(symbol).orElseThrow();
+        Client client = ClientFactory.getClient(trade);
+        client.buyAsset(tradeAsset, quantity);
+        sendOrderAlarmIfEnabled(trade, String.format("[%s] Buy %d", tradeAsset.getName(), quantity));
+    }
+
+    public void sellBalanceAsset(String tradeId, String symbol, Integer quantity) {
+        Trade trade = getTrade(tradeId).orElseThrow();
+        Client client = ClientFactory.getClient(trade);
+        Balance balance = client.getBalance();
+        BalanceAsset balanceAsset = balance.getBalanceAsset(symbol).orElseThrow();
+        client.sellAsset(balanceAsset, quantity);
+        sendOrderAlarmIfEnabled(trade, String.format("[%s] Sell %d", balanceAsset.getName(), quantity));
+    }
+
+    private void sendOrderAlarmIfEnabled(Trade trade, String content) {
+        if(trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
+            if (trade.isAlarmOnOrder()) {
+                String subject = String.format("[%s]", trade.getName());
+                alarmService.sendAlarm(trade.getAlarmId(), subject, content);
+            }
         }
     }
 

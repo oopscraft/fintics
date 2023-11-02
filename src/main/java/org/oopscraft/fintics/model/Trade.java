@@ -9,6 +9,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Data
@@ -48,6 +49,13 @@ public class Trade {
 
     @Builder.Default
     private List<TradeAsset> tradeAssets = new ArrayList<>();
+
+    public Optional<TradeAsset> getTradeAsset(String symbol) {
+        return tradeAssets.stream()
+                .filter(tradeAsset ->
+                        Objects.equals(tradeAsset.getSymbol(), symbol))
+                .findFirst();
+    }
 
     public boolean hasAccessPermission() {
         if(userId == null || publicEnabled) {

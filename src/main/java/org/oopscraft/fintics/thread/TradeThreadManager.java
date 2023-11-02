@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
 import org.oopscraft.arch4j.web.support.SseLogAppender;
 import org.oopscraft.fintics.model.Trade;
+import org.oopscraft.fintics.service.TradeService;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -21,6 +23,10 @@ import java.util.concurrent.ConcurrentHashMap;
 public class TradeThreadManager {
 
     private final ThreadGroup tradeThreadGroup = new ThreadGroup("trade");
+
+    private final ApplicationContext applicationContext;
+
+    private final TradeService tradeService;
 
     private final AlarmService alarmService;
 
@@ -40,7 +46,7 @@ public class TradeThreadManager {
             sseLogAppender.start();
 
             // start thread
-            TradeRunnable tradeRunnable = new TradeRunnable(trade, sseLogAppender, alarmService);
+            TradeRunnable tradeRunnable = new TradeRunnable(applicationContext, trade, sseLogAppender);
             TradeThread tradeThread = new TradeThread(tradeThreadGroup, tradeRunnable, tradeId);
             tradeThread.setDaemon(true);
             tradeThread.setUncaughtExceptionHandler((thread, throwable) -> {

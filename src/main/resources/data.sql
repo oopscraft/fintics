@@ -136,12 +136,6 @@ if(priceEmaSlope < 0) {
     }
 }
 
-// 장종료전 모두 청산
-def time = assetIndicator.getMinuteDateTimes().get(0).toLocalTime();
-if(time.isAfter(LocalTime.of(15,15))) {
-    hold = false;
-}
-
 // 결과 반환
 return hold;
 
