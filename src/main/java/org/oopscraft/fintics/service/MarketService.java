@@ -123,12 +123,9 @@ public class MarketService {
                     .volume(volume)
                     .build();
             ohlcvs.add(ohlcv);
-            if(i >= limit) {
-                break;
-            }
         }
         Collections.reverse(ohlcvs);
-        return ohlcvs;
+        return ohlcvs.subList(0, Math.min(limit, ohlcvs.size()));
     }
 
     private HttpHeaders createYahooFinanceHeader() {
