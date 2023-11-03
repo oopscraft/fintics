@@ -38,12 +38,12 @@ public class MarketService {
     @Cacheable(value = CACHE_MARKET)
     public Market getMarket() {
         return Market.builder()
+                .ndx(getMarketIndex("^NDX","NASDAQ 100"))
+                .ndxFuture(getMarketIndex("NQ=F","Nasdaq Futures"))
                 .spx(getMarketIndex( "^GSPC", "S&P 500"))
                 .spxFuture(getMarketIndex("ES=F","S&P 500 Future"))
-//                .dji(getMarketIndexDji())
-//                .djiFuture(getMarketIndexDjiFuture())
-//                .ndx(getMarketIndexNdx())
-//                .ndxFuture(getMarketIndexNdxFuture())
+                .dji(getMarketIndex("^DJI","Dow Jones Industrial Average"))
+                .djiFuture(getMarketIndex("YM=F","Dow Futures"))
                 .build();
     }
 

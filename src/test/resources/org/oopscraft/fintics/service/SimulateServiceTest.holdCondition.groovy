@@ -45,16 +45,16 @@ def dailyDmiMdiAverage = tool.average(dailyDmis.collect { it.mdi }, period);
 def dailyDmiMdiSlope = tool.slope(dailyDmis.collect { it.mdi }, period);
 
 // market
-def spxFutureIndicator = market.getSpxFuture();
-def spxFutureOhlcv = spxFutureIndicator.getDailyOhlcvs().get(0);
-log.info("spxFutureOhlcv:{}", spxFutureOhlcv);
-def spxFutureEmaSlope = tool.slope(spxFutureIndicator.getMinuteEmas(60), period);
-def spxFutureMacds = spxFutureIndicator.getMinuteMacds(60, 120, 40);
-def spxFutureMacdOscillatorSlope = tool.slope(spxFutureMacds.collect { it.oscillator }, period);
-def spxFutureMacdOscillatorAverage = tool.average(spxFutureMacds.collect { it.oscillator }, period);
-def spxFutureRsis = spxFutureIndicator.getMinuteRsis(60);
-def spxFutureRsiSlope = tool.slope(spxFutureRsis, period);
-def spxFutureRsiAverage = tool.average(spxFutureRsis, period);
+def ndxFutureIndicator = market.getNdxFuture();
+def ndxFutureOhlcv = ndxFutureIndicator.getDailyOhlcvs().get(0);
+log.info("ndxFutureOhlcv:{}", ndxFutureOhlcv);
+def ndxFutureEmaSlope = tool.slope(ndxFutureIndicator.getMinuteEmas(60), period);
+def ndxFutureMacds = ndxFutureIndicator.getMinuteMacds(60, 120, 40);
+def ndxFutureMacdOscillatorSlope = tool.slope(ndxFutureMacds.collect { it.oscillator }, period);
+def ndxFutureMacdOscillatorAverage = tool.average(ndxFutureMacds.collect { it.oscillator }, period);
+def ndxFutureRsis = ndxFutureIndicator.getMinuteRsis(60);
+def ndxFutureRsiSlope = tool.slope(ndxFutureRsis, period);
+def ndxFutureRsiAverage = tool.average(ndxFutureRsis, period);
 
 // 매수조건
 if(priceEmaSlope > 0) {
@@ -78,11 +78,11 @@ if(priceEmaSlope > 0) {
     buyVotes.add(dailyDmiMdiSlope < 0 ? dailyWeight : 0);
     // market factor
     def marketWeight = 100;
-    buyVotes.add(spxFutureEmaSlope > 0 ? marketWeight : 0);
-    buyVotes.add(spxFutureMacdOscillatorAverage > 0 ? marketWeight : 0);
-    buyVotes.add(spxFutureMacdOscillatorSlope > 0 ? marketWeight : 0);
-    buyVotes.add(spxFutureRsiAverage > 50 ? marketWeight : 0);
-    buyVotes.add(spxFutureRsiSlope > 0 ? marketWeight : 0);
+    buyVotes.add(ndxFutureEmaSlope > 0 ? marketWeight : 0);
+    buyVotes.add(ndxFutureMacdOscillatorAverage > 0 ? marketWeight : 0);
+    buyVotes.add(ndxFutureMacdOscillatorSlope > 0 ? marketWeight : 0);
+    buyVotes.add(ndxFutureRsiAverage > 50 ? marketWeight : 0);
+    buyVotes.add(ndxFutureRsiSlope > 0 ? marketWeight : 0);
     log.info("buyVotes[{}] - {}", buyVotes.average(), buyVotes);
     if(buyVotes.average() > 70) {
         hold = true;
@@ -111,11 +111,11 @@ if(priceEmaSlope < 0) {
     sellVotes.add(dailyDmiMdiSlope > 0 ? dailyWeight : 0);
     // market factor
     def marketWeight = 100;
-    sellVotes.add(spxFutureEmaSlope < 0 ? marketWeight : 0);
-    sellVotes.add(spxFutureMacdOscillatorAverage < 0 ? marketWeight : 0);
-    sellVotes.add(spxFutureMacdOscillatorSlope < 0 ? marketWeight : 0);
-    sellVotes.add(spxFutureRsiAverage < 50 ? marketWeight : 0);
-    sellVotes.add(spxFutureRsiSlope < 0 ? marketWeight : 0);
+    sellVotes.add(ndxFutureEmaSlope < 0 ? marketWeight : 0);
+    sellVotes.add(ndxFutureMacdOscillatorAverage < 0 ? marketWeight : 0);
+    sellVotes.add(ndxFutureMacdOscillatorSlope < 0 ? marketWeight : 0);
+    sellVotes.add(ndxFutureRsiAverage < 50 ? marketWeight : 0);
+    sellVotes.add(ndxFutureRsiSlope < 0 ? marketWeight : 0);
     log.info("sellVotes[{}] - {}", sellVotes.average(), sellVotes);
     if(sellVotes.average() > 70) {
         hold = false;
