@@ -25,40 +25,43 @@ class TradeAssetDeciderTest {
                 .tradeId("test")
                 .name("Test")
                 .build();
+        AssetIndicator assetIndicator = AssetIndicator.builder()
+                .symbol(tradeAsset.getSymbol())
+                .name(tradeAsset.getName())
+                .minuteOhlcvs(IntStream.range(1,11)
+                        .mapToObj(i -> {
+                            BigDecimal price = BigDecimal.valueOf(1000 - (i*10));
+                            return Ohlcv.builder()
+                                    .dateTime(LocalDateTime.now().minusMinutes(i))
+                                    .openPrice(price)
+                                    .highPrice(price)
+                                    .lowPrice(price)
+                                    .closePrice(price)
+                                    .build();
+                        })
+                        .collect(Collectors.toList()))
+                .dailyOhlcvs(IntStream.range(1,11)
+                        .mapToObj(i -> {
+                            BigDecimal price = BigDecimal.valueOf(1000 - (i*10));
+                            return Ohlcv.builder()
+                                    .dateTime(LocalDateTime.now().minusDays(i))
+                                    .openPrice(price)
+                                    .highPrice(price)
+                                    .lowPrice(price)
+                                    .closePrice(price)
+                                    .build();
+                        })
+                        .collect(Collectors.toList()))
+                .build();
+        Market market = Market.builder()
+                .build();
 
         // when
         TradeAssetDecider tradeAssetDecider = TradeAssetDecider.builder()
                 .holdCondition(trade.getHoldCondition())
-                .assetIndicator(AssetIndicator.builder()
-                        .symbol(tradeAsset.getSymbol())
-                        .name(tradeAsset.getName())
-                        .minuteOhlcvs(IntStream.range(1,11)
-                                .mapToObj(i -> {
-                                    BigDecimal price = BigDecimal.valueOf(1000 - (i*10));
-                                    return Ohlcv.builder()
-                                            .dateTime(LocalDateTime.now().minusMinutes(i))
-                                            .openPrice(price)
-                                            .highPrice(price)
-                                            .lowPrice(price)
-                                            .closePrice(price)
-                                            .build();
-                                })
-                                .collect(Collectors.toList()))
-                        .dailyOhlcvs(IntStream.range(1,11)
-                                .mapToObj(i -> {
-                                    BigDecimal price = BigDecimal.valueOf(1000 - (i*10));
-                                    return Ohlcv.builder()
-                                            .dateTime(LocalDateTime.now().minusDays(i))
-                                            .openPrice(price)
-                                            .highPrice(price)
-                                            .lowPrice(price)
-                                            .closePrice(price)
-                                            .build();
-                                })
-                                .collect(Collectors.toList()))
-                        .build())
+                .logger(log)
                 .build();
-        Boolean result = tradeAssetDecider.execute();
+        Boolean result = tradeAssetDecider.execute(LocalDateTime.now(), assetIndicator, market);
 
         log.info("== result:{}", result);
     }

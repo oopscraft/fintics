@@ -9,6 +9,7 @@ import org.oopscraft.arch4j.web.support.SseLogAppender;
 import org.oopscraft.fintics.model.*;
 import org.oopscraft.fintics.service.MarketService;
 import org.oopscraft.fintics.service.TradeService;
+import org.slf4j.ILoggerFactory;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -40,6 +41,8 @@ public class TradeRunnable implements Runnable {
 
     private final Logger log;
 
+    private final TradeAssetDecider tradeAssetDecider;
+
     @Builder
     public TradeRunnable(ApplicationContext applicationContext, Trade trade, SseLogAppender sseLogAppender) {
         this.trade = trade;
@@ -54,6 +57,12 @@ public class TradeRunnable implements Runnable {
         // add log appender
         log = (Logger) LoggerFactory.getLogger(trade.getTradeId());
         ((Logger)log).addAppender(this.sseLogAppender);
+
+        // create trade asset decider
+        tradeAssetDecider = TradeAssetDecider.builder()
+                .holdCondition(trade.getHoldCondition())
+                .logger(log)
+                .build();
     }
 
     @Override
@@ -95,15 +104,8 @@ public class TradeRunnable implements Runnable {
                         // decides hold condition
                         AssetIndicator assetIndicator = tradeService.getTradeAssetIndicator(trade.getTradeId(), tradeAsset.getSymbol())
                                 .orElseThrow();
-                        Market market = marketService.getMarket();
-                        TradeAssetDecider tradeAssetDecider = TradeAssetDecider.builder()
-                                .holdCondition(trade.getHoldCondition())
-                                .dateTime(dateTime)
-                                .assetIndicator(assetIndicator)
-                                .market(market)
-                                .logger(log)
-                                .build();
-                        Boolean holdConditionResult = tradeAssetDecider.execute();
+                        Market market = marketService.getMarketCache();
+                        Boolean holdConditionResult = tradeAssetDecider.execute(dateTime, assetIndicator, market);
                         log.info("holdConditionResult: {}", holdConditionResult);
 
                         // 1. null is no operation

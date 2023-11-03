@@ -19,23 +19,23 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-@Builder
-@Getter
 public class TradeAssetDecider {
 
-    private final LocalDateTime dateTime;
+    private final GroovyClassLoader groovyClassLoader;
 
     private final String holdCondition;
 
-    private final AssetIndicator assetIndicator;
-
-    private final Market market;
-
     private final Logger logger;
 
-    public Boolean execute() {
+    @Builder
+    public TradeAssetDecider(String holdCondition, Logger logger) {
+        this.holdCondition = holdCondition;
         ClassLoader classLoader = this.getClass().getClassLoader();
-        GroovyClassLoader groovyClassLoader = new GroovyClassLoader(classLoader);
+        this.groovyClassLoader = new GroovyClassLoader(classLoader);
+        this.logger = logger;
+    }
+
+    public Boolean execute(LocalDateTime dateTime, AssetIndicator assetIndicator, Market market) {
         Binding binding = new Binding();
         binding.setVariable("dateTime", dateTime);
         binding.setVariable("assetIndicator", assetIndicator);

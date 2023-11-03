@@ -10,7 +10,7 @@ import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
 import org.oopscraft.fintics.model.Market;
 import org.oopscraft.fintics.model.MarketIndicator;
 import org.oopscraft.fintics.model.Ohlcv;
-import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.RequestEntity;
@@ -35,18 +35,17 @@ public class MarketService {
 
     private final ObjectMapper objectMapper;
 
-    @Cacheable(value = CACHE_MARKET)
     public Market getMarket() {
         MarketIndicator ndxIndicator = getMarketIndex("^NDX","NASDAQ 100");
-        sleep(500);
+        sleep(200);
         MarketIndicator ndxFutureIndicator = getMarketIndex("NQ=F","Nasdaq Futures");
-        sleep(500);
+        sleep(200);
         MarketIndicator spxIndicator = getMarketIndex( "^GSPC", "S&P 500");
-        sleep(500);
+        sleep(200);
         MarketIndicator spxFutureIndicator = getMarketIndex("ES=F","S&P 500 Future");
-        sleep(500);
+        sleep(200);
         MarketIndicator djiIndicator = getMarketIndex("^DJI","Dow Jones Industrial Average");
-        sleep(500);
+        sleep(200);
         MarketIndicator djiFutureIndicator = getMarketIndex("YM=F","Dow Futures");
         return Market.builder()
                 .ndxIndicator(ndxIndicator)
@@ -64,15 +63,21 @@ public class MarketService {
         }catch(Throwable ignored) {}
     }
 
-    @CacheEvict(value = CACHE_MARKET, allEntries = true)
+    @Cacheable(value = CACHE_MARKET)
+    public Market getMarketCache() {
+        return getMarket();
+    }
+
+    @CachePut(value = CACHE_MARKET)
     @Scheduled(initialDelay = 1_000, fixedDelay = 60_000)
-    public void purgeMarketCache() {
-        log.info("cacheEvict[{}]", CACHE_MARKET);
+    public Market putMarketCache() {
+        log.info("cachePut[{}]", CACHE_MARKET);
+        return getMarket();
     }
 
     MarketIndicator getMarketIndex(String symbol, String name) {
-        List<Ohlcv> minuteOhlcvs = getOhlcvs(symbol, "1m", LocalDateTime.now().minusWeeks(1), LocalDateTime.now(), 60*8);
-        List<Ohlcv> dailyOhlcvs = getOhlcvs(symbol, "1d", LocalDateTime.now().minusMonths(3), LocalDateTime.now(), 90);
+        List<Ohlcv> minuteOhlcvs = getOhlcvs(symbol, "1m", LocalDateTime.now().minusWeeks(1), LocalDateTime.now(), 30*10);
+        List<Ohlcv> dailyOhlcvs = getOhlcvs(symbol, "1d", LocalDateTime.now().minusMonths(3), LocalDateTime.now(), 30*2);
         return MarketIndicator.builder()
                 .name(name)
                 .minuteOhlcvs(minuteOhlcvs)

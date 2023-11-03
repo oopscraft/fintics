@@ -220,8 +220,8 @@
     <h1 id="title">
         <img class="icon" th:src="@{/static/image/icon-trade.svg}" alt="variable"/>
         <span data-th-text="#{fintics.Trade}"></span>
-        -
-        <span data-duice-bind="trade" data-duice-property="name"></span>
+        <small>|</small>
+        <small data-duice-bind="trade" data-duice-property="name"></small>
     </h1>
     <!-- ====================================== -->
     <!-- end: title                             -->
@@ -232,8 +232,8 @@
     <!-- ====================================== -->
     <div id="tabIndex">
         <button id="tradeTabButton" type="button" class="tab">
-            <img class="icon" th:src="@{/static/image/icon-trade.svg}" alt="trade"/>
-            <span data-th-text="#{fintics.Trade}"></span>
+            <img class="icon" th:src="@{/static/image/icon-detail.svg}" alt="detail"/>
+            <span data-th-text="#{fintics.Trade} + ' ' + #{web.global.detail}"></span>
         </button>
         <button id="tradeLogTabButton" type="button" class="tab">
             <img class="icon" th:src="@{/static/image/icon-log.svg}" alt="log"/>
@@ -255,8 +255,8 @@
         <!-- ====================================== -->
         <div id="tradeTabContent" class="border-1 padding-1em">
             <h2>
-                <img class="icon" th:src="@{/static/image/icon-trade.svg}" alt="detail"/>
-                <span data-th-text="#{fintics.Trade}"></span>
+                <img class="icon" th:src="@{/static/image/icon-detail.svg}" alt="detail"/>
+                <span data-th-text="#{fintics.Trade} + ' ' + #{web.global.detail}"></span>
             </h2>
             <form class="grid grid-template-columns-12 grid-gap-1em grid-column-gap-2em padding-y-1em s-padding-y-0">
                 <div class="grid-column-5 s-grid-column-12 grid grid-template-columns-12 grid-gap-1em">
@@ -442,7 +442,7 @@
         <div id="tradeLogTabContent" class="border-1 padding-1em" style="min-height:400px;">
             <h2>
                 <img class="icon" th:src="@{/static/image/icon-log.svg}" alt="log"/>
-                <span>Trade Log</span>
+                <span data-th-text="#{web.global.log}"></span>
             </h2>
             <textarea id="tradeLog" rows="40" class="width-100"></textarea>
         </div>
@@ -533,7 +533,15 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <tr data-duice-bind="balance.balanceAssets" data-duice-loop="balanceAsset,status">
+                            <tr data-duice-bind="balance.balanceAssets"
+                                data-duice-loop="balanceAsset,status"
+                                data-duice-execute="
+                                    let length = trade.tradeAssets.filter(tradeAsset => {
+                                        return tradeAsset.symbol === balanceAsset.symbol;
+                                    }).length;
+                                    if(length === 0) {
+                                        this.style.opacity=0.5;
+                                    }">
                                 <td class="text-align-center">
                                     <span data-duice-bind="status" data-duice-property="count" class="text-align-center"></span>
                                 </td>
@@ -550,10 +558,10 @@
                                 <td>
                                     <span data-duice-bind="balanceAsset" data-duice-property="purchaseAmount" data-duice-format="number"></span>
                                 </td>
-                                <td class="text-align-center">
+                                <td>
                                     <span data-duice-bind="balanceAsset" data-duice-property="valuationAmount" data-duice-format="number"></span>
                                 </td>
-                                <td>
+                                <td class="text-align-center">
                                     <span data-duice-bind="balanceAsset"
                                           data-duice-property="profitAmount"
                                           data-duice-format="number"
