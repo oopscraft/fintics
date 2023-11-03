@@ -45,7 +45,7 @@ def dailyDmiMdiAverage = tool.average(dailyDmis.collect { it.mdi }, period);
 def dailyDmiMdiSlope = tool.slope(dailyDmis.collect { it.mdi }, period);
 
 // market
-def ndxFutureIndicator = market.getNdxFuture();
+def ndxFutureIndicator = market.getNdxFutureIndicator();
 def ndxFutureOhlcv = ndxFutureIndicator.getDailyOhlcvs().get(0);
 log.info("ndxFutureOhlcv:{}", ndxFutureOhlcv);
 def ndxFutureEmaSlope = tool.slope(ndxFutureIndicator.getMinuteEmas(60), period);

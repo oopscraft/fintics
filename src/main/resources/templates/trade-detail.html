@@ -220,6 +220,8 @@
     <h1 id="title">
         <img class="icon" th:src="@{/static/image/icon-trade.svg}" alt="variable"/>
         <span data-th-text="#{fintics.Trade}"></span>
+        -
+        <span data-duice-bind="trade" data-duice-property="name"></span>
     </h1>
     <!-- ====================================== -->
     <!-- end: title                             -->
@@ -234,8 +236,8 @@
             <span data-th-text="#{fintics.Trade}"></span>
         </button>
         <button id="tradeLogTabButton" type="button" class="tab">
-            <img class="icon" th:src="@{/static/image/icon-log.svg}" alt="tradeLog"/>
-            <span>Trade Log</span>
+            <img class="icon" th:src="@{/static/image/icon-log.svg}" alt="log"/>
+            <span data-th-text="#{web.global.log}"></span>
         </button>
         <button id="tradeBalanceTabButton" type="button" class="tab">
             <img class="icon" th:src="@{/static/image/icon-balance.svg}" alt="balance"/>
@@ -253,11 +255,11 @@
         <!-- ====================================== -->
         <div id="tradeTabContent" class="border-1 padding-1em">
             <h2>
-                <img class="icon" th:src="@{/static/image/icon-detail.svg}" alt="asset"/>
-                <span data-th-text="#{fintics.Trade} + ' ' + #{web.global.detail}"></span>
+                <img class="icon" th:src="@{/static/image/icon-trade.svg}" alt="detail"/>
+                <span data-th-text="#{fintics.Trade}"></span>
             </h2>
-            <form class="grid grid-template-columns-2 grid-gap-1em grid-column-gap-2em padding-y-1em s-padding-y-0">
-                <div class="grid-column-1 s-grid-column-2 grid grid-template-columns-12 grid-gap-1em">
+            <form class="grid grid-template-columns-12 grid-gap-1em grid-column-gap-2em padding-y-1em s-padding-y-0">
+                <div class="grid-column-5 s-grid-column-12 grid grid-template-columns-12 grid-gap-1em">
                     <label class="grid-column-12">
                         <span data-th-text="#{fintics.Trade.name}" class="font-weight-bold tag-required"></span>
                         <input type="text" data-duice-bind="trade" data-duice-property="name"
@@ -330,7 +332,7 @@
                         <input type="checkbox" data-duice-bind="trade" data-duice-property="publicEnabled"/>
                     </label>
                 </div>
-                <div class="grid-column-1 s-grid-column-2 grid grid-template-columns-12 grid-gap-1em">
+                <div class="grid-column-7 s-grid-column-12 grid grid-template-columns-12 grid-gap-1em">
                     <label class="grid-column-12">
                         <span data-th-text="#{fintics.Trade.holdCondition}" class="font-weight-bold width-100"></span>
                         <small class="font-weight-bold">(Groovy Script)</small>
@@ -411,7 +413,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="grid-column-2 justify-self-end">
+                <div class="grid-column-12 justify-self-end">
                     <button type="button"
                             data-duice-bind="trade"
                             data-duice-execute="this.disabled=(trade._new);"

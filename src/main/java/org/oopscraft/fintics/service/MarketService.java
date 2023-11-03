@@ -37,14 +37,31 @@ public class MarketService {
 
     @Cacheable(value = CACHE_MARKET)
     public Market getMarket() {
+        MarketIndicator ndxIndicator = getMarketIndex("^NDX","NASDAQ 100");
+        sleep(500);
+        MarketIndicator ndxFutureIndicator = getMarketIndex("NQ=F","Nasdaq Futures");
+        sleep(500);
+        MarketIndicator spxIndicator = getMarketIndex( "^GSPC", "S&P 500");
+        sleep(500);
+        MarketIndicator spxFutureIndicator = getMarketIndex("ES=F","S&P 500 Future");
+        sleep(500);
+        MarketIndicator djiIndicator = getMarketIndex("^DJI","Dow Jones Industrial Average");
+        sleep(500);
+        MarketIndicator djiFutureIndicator = getMarketIndex("YM=F","Dow Futures");
         return Market.builder()
-                .ndx(getMarketIndex("^NDX","NASDAQ 100"))
-                .ndxFuture(getMarketIndex("NQ=F","Nasdaq Futures"))
-                .spx(getMarketIndex( "^GSPC", "S&P 500"))
-                .spxFuture(getMarketIndex("ES=F","S&P 500 Future"))
-                .dji(getMarketIndex("^DJI","Dow Jones Industrial Average"))
-                .djiFuture(getMarketIndex("YM=F","Dow Futures"))
+                .ndxIndicator(ndxIndicator)
+                .ndxFutureIndicator(ndxFutureIndicator)
+                .spx(spxIndicator)
+                .spxFutureIndicator(spxFutureIndicator)
+                .djiIndicator(djiIndicator)
+                .djiFutureIndicator(djiFutureIndicator)
                 .build();
+    }
+
+    private void sleep(int millis) {
+        try {
+            Thread.sleep(millis);
+        }catch(Throwable ignored) {}
     }
 
     @CacheEvict(value = CACHE_MARKET, allEntries = true)
