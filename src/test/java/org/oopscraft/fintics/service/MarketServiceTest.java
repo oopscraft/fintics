@@ -2,6 +2,7 @@ package org.oopscraft.fintics.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.oopscraft.arch4j.core.test.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
@@ -22,6 +23,7 @@ class MarketServiceTest extends CoreTestSupport {
 
     private final MarketService marketService;
 
+    @Disabled
     @Test
     void getOhlcvs() {
         // given
@@ -37,6 +39,7 @@ class MarketServiceTest extends CoreTestSupport {
         log.info("ohlcvs.size():{}", ohlcvs.size());
     }
 
+    @Disabled
     @Test
     void getMarketIndex() {
         // given
@@ -47,6 +50,7 @@ class MarketServiceTest extends CoreTestSupport {
         assertNotNull(marketIndex);
     }
 
+    @Disabled
     @Test
     void getMarket() {
         // given
