@@ -4,13 +4,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.fintics.dao.TradeEntity;
 import org.oopscraft.fintics.dao.TradeRepository;
-import org.oopscraft.fintics.model.Trade;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
@@ -38,27 +36,26 @@ public class TradeSynchronizer {
             }
         }
 
-        // existing service monitor thread
-        tradeEntities.forEach(tradeEntity -> {
-            if(!tradeThreadManager.isTradeThreadRunning(tradeEntity.getTradeId())) {
-                if(tradeEntity.isEnabled()) {
-                    tradeThreadManager.startTradeThread(Trade.from(tradeEntity));
+        // start trade thread if enabled
+        for(TradeEntity tradeEntity : tradeEntities) {
+            String tradeId = tradeEntity.getTradeId();
+            boolean enabled = tradeEntity.isEnabled();
+            Integer interval = tradeEntity.getInterval();
+            if(enabled) {
+                TradeThread tradeThread = tradeThreadManager.getTradeThread(tradeId).orElse(null);
+                if(tradeThread == null) {
+                    tradeThreadManager.startTradeThread(tradeId, interval);
+                    continue;
+                }
+                if(tradeThread.getTradeRunnable().getInterval().intValue() != interval.intValue()) {
+                    tradeThreadManager.restartTradeThread(tradeId, interval);
                 }
             }else{
-                // when properties changed (checks overriding equals method)
-                Trade newTrade = Trade.from(tradeEntity);
-                Trade oldTrade =  tradeThreadManager.getTradeThread(tradeEntity.getTradeId())
-                        .map(TradeThread::getTradeRunnable)
-                        .map(TradeRunnable::getTrade)
-                        .orElseThrow();
-                if(!Objects.equals(newTrade, oldTrade)) {
-                    tradeThreadManager.stopTradeThread(oldTrade.getTradeId());
-                    if(tradeEntity.isEnabled()) {
-                        tradeThreadManager.startTradeThread(newTrade);
-                    }
+                if(tradeThreadManager.isTradeThreadRunning(tradeId)) {
+                    tradeThreadManager.stopTradeThread(tradeId);
                 }
             }
-        });
+        }
         log.info("End TradeSynchronizer.synchronize.");
     }
 

@@ -11,7 +11,7 @@ public class Market {
 
     private MarketIndicator ndxFutureIndicator;
 
-    private MarketIndicator spx;
+    private MarketIndicator spxIndicator;
 
     private MarketIndicator spxFutureIndicator;
 

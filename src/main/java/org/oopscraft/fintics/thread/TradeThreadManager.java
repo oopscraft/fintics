@@ -11,10 +11,7 @@ import org.oopscraft.fintics.service.TradeService;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
@@ -24,34 +21,31 @@ public class TradeThreadManager {
 
     private final ThreadGroup tradeThreadGroup = new ThreadGroup("trade");
 
+    private final Map<String, SseLogAppender> sseLogAppenderMap = new HashMap<>();
+
     private final ApplicationContext applicationContext;
 
-    private final TradeService tradeService;
-
-    private final AlarmService alarmService;
-
-    public synchronized void startTradeThread(Trade trade) {
+    public synchronized void startTradeThread(String tradeId, Integer interval) {
         synchronized (this) {
-            log.info("Start TradeThread - {}", trade);
-            String tradeId = trade.getTradeId();
+            log.info("Start TradeThread - {}", tradeId);
 
             // check already running
             if(isTradeThreadRunning(tradeId)) {
-                throw new RuntimeException(String.format("Thread Thread[%s] is already running.", trade.getName()));
+                throw new RuntimeException(String.format("Thread Thread[%s] is already running.", tradeId));
             }
 
             // add log appender
-            Context context = ((Logger)log).getLoggerContext();
-            SseLogAppender sseLogAppender = new SseLogAppender(context);
-            sseLogAppender.start();
+            if(!sseLogAppenderMap.containsKey(tradeId)) {
+                Context context = ((Logger)log).getLoggerContext();
+                SseLogAppender sseLogAppender = new SseLogAppender(context);
+                sseLogAppender.start();
+                sseLogAppenderMap.put(tradeId, sseLogAppender);
+            }
 
             // start thread
-            TradeRunnable tradeRunnable = new TradeRunnable(applicationContext, trade, sseLogAppender);
+            TradeRunnable tradeRunnable = new TradeRunnable(tradeId, interval, applicationContext, sseLogAppenderMap.get(tradeId));
             TradeThread tradeThread = new TradeThread(tradeThreadGroup, tradeRunnable, tradeId);
             tradeThread.setDaemon(true);
-            tradeThread.setUncaughtExceptionHandler((thread, throwable) -> {
-                log.error("[{}] {}", thread.getName(), throwable);
-            });
             tradeThread.start();
         }
     }
@@ -72,6 +66,10 @@ public class TradeThreadManager {
                     try {
                         tradeThread.interrupt();
                         tradeThread.join(10_000);
+                        if(sseLogAppenderMap.containsKey(tradeId)) {
+                            sseLogAppenderMap.get(tradeId).stop();
+                            sseLogAppenderMap.remove(tradeId);
+                        }
                     } catch (InterruptedException e) {
                         log.error(e.getMessage(), e);
                         throw new RuntimeException(e);
@@ -79,6 +77,13 @@ public class TradeThreadManager {
                 }
             }
         }
+    }
+
+    public synchronized void restartTradeThread(String tradeId, Integer interval) {
+        if(isTradeThreadRunning(tradeId)) {
+            stopTradeThread(tradeId);
+        }
+        startTradeThread(tradeId, interval);
     }
 
     public List<TradeThread> getTradeThreads() {
@@ -98,6 +103,13 @@ public class TradeThreadManager {
 
     public boolean isTradeThreadRunning(String tradeId) {
         return getTradeThread(tradeId).isPresent();
+    }
+
+    public Optional<SseLogAppender> getSseLogAppender(String tradeId) {
+        if (sseLogAppenderMap.containsKey(tradeId)) {
+            return Optional.of(sseLogAppenderMap.get(tradeId));
+        }
+        return Optional.empty();
     }
 
 }

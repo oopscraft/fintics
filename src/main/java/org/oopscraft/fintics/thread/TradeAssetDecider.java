@@ -21,27 +21,34 @@ import java.util.List;
 
 public class TradeAssetDecider {
 
-    private final GroovyClassLoader groovyClassLoader;
-
     private final String holdCondition;
 
     private final Logger logger;
 
+    private final LocalDateTime dateTime;
+
+    private final AssetIndicator assetIndicator;
+
+    private final Market market;
+
     @Builder
-    public TradeAssetDecider(String holdCondition, Logger logger) {
+    public TradeAssetDecider(String holdCondition, Logger logger, LocalDateTime dateTime, AssetIndicator assetIndicator, Market market) {
         this.holdCondition = holdCondition;
-        ClassLoader classLoader = this.getClass().getClassLoader();
-        this.groovyClassLoader = new GroovyClassLoader(classLoader);
         this.logger = logger;
+        this.dateTime = dateTime;
+        this.assetIndicator = assetIndicator;
+        this.market = market;
     }
 
-    public Boolean execute(LocalDateTime dateTime, AssetIndicator assetIndicator, Market market) {
+    public Boolean execute() {
+        ClassLoader classLoader = this.getClass().getClassLoader();
+        GroovyClassLoader groovyClassLoader = new GroovyClassLoader(classLoader);
         Binding binding = new Binding();
+        binding.setVariable("log", logger);
         binding.setVariable("dateTime", dateTime);
         binding.setVariable("assetIndicator", assetIndicator);
         binding.setVariable("market", market);
         binding.setVariable("tool", new Tool());
-        binding.setVariable("log", logger);
         GroovyShell groovyShell = new GroovyShell(groovyClassLoader, binding);
 
         if(holdCondition == null || holdCondition.isBlank()) {

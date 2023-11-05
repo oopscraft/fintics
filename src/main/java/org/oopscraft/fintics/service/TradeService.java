@@ -2,6 +2,7 @@ package org.oopscraft.fintics.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
 import org.oopscraft.arch4j.core.data.IdGenerator;
 import org.oopscraft.arch4j.core.data.pbe.PbePropertiesUtil;
@@ -139,7 +140,13 @@ public class TradeService {
         TradeAsset tradeAsset = trade.getTradeAsset(symbol).orElseThrow();
         Client client = ClientFactory.getClient(trade);
         client.buyAsset(tradeAsset, quantity);
-        sendOrderAlarmIfEnabled(trade, String.format("[%s] Buy %d", tradeAsset.getName(), quantity));
+        if (trade.isAlarmOnOrder()) {
+            if(trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
+                String subject = String.format("[%s]", trade.getName());
+                String content = String.format("[%s] Buy %d", tradeAsset.getName(), quantity);
+                alarmService.sendAlarm(trade.getAlarmId(), subject, content);
+            }
+        }
     }
 
     public void sellBalanceAsset(String tradeId, String symbol, Integer quantity) {
@@ -148,13 +155,22 @@ public class TradeService {
         Balance balance = client.getBalance();
         BalanceAsset balanceAsset = balance.getBalanceAsset(symbol).orElseThrow();
         client.sellAsset(balanceAsset, quantity);
-        sendOrderAlarmIfEnabled(trade, String.format("[%s] Sell %d", balanceAsset.getName(), quantity));
+        if (trade.isAlarmOnOrder()) {
+            if(trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
+                String subject = String.format("[%s]", trade.getName());
+                String content = String.format("[%s] Sell %d", balanceAsset.getName(), quantity);
+                alarmService.sendAlarm(trade.getAlarmId(), subject, content);
+            }
+        }
     }
 
-    private void sendOrderAlarmIfEnabled(Trade trade, String content) {
+    @Transactional
+    public void sendErrorAlarmIfEnabled(String tradeId, Throwable t) {
+        Trade trade = getTrade(tradeId).orElseThrow();
         if(trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
-            if (trade.isAlarmOnOrder()) {
+            if (trade.isAlarmOnError()) {
                 String subject = String.format("[%s]", trade.getName());
+                String content = ExceptionUtils.getRootCause(t).getMessage();
                 alarmService.sendAlarm(trade.getAlarmId(), subject, content);
             }
         }

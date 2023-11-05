@@ -1,14 +1,15 @@
 package org.oopscraft.fintics.client.kis;
 
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
+import lombok.*;
+import net.minidev.json.annotate.JsonIgnore;
 
 import java.time.LocalDateTime;
 
 @Builder
 @Getter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@NoArgsConstructor
+@AllArgsConstructor
 public class KisAccessToken {
 
     @EqualsAndHashCode.Include

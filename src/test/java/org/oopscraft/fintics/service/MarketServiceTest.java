@@ -54,7 +54,7 @@ class MarketServiceTest extends CoreTestSupport {
         Market market = marketService.getMarket();
 
         // then
-        assertNotNull(market.getSpx());
+        assertNotNull(market.getSpxIndicator());
     }
 
 }

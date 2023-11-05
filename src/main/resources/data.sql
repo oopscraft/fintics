@@ -42,8 +42,8 @@ Boolean hold;
 int period = 10;
 
 // OHLCV
-def minuteOhlcv = assetIndicator.getMinuteOhlcvs().get(0);
-def dailyOhlcv = assetIndicator.getDailyOhlcvs().get(0);
+def minuteOhlcv = assetIndicator.getMinuteOhlcv();
+def dailyOhlcv = assetIndicator.getDailyOhlcv();
 log.info("minuteOhlcv:{}", minuteOhlcv);
 log.info("dailyOhlcv:{}", dailyOhlcv);
 
@@ -85,7 +85,7 @@ def dailyDmiMdiAverage = tool.average(dailyDmis.collect { it.mdi }, period);
 def dailyDmiMdiSlope = tool.slope(dailyDmis.collect { it.mdi }, period);
 
 // market
-def spxFutureIndicator = market.getSpxFuture();
+def spxFutureIndicator = market.getSpxFutureIndicator();
 def spxFutureEmaSlope = tool.slope(spxFutureIndicator.getMinuteEmas(60), period);
 def spxFutureMacds = spxFutureIndicator.getMinuteMacds(60, 120, 40);
 def spxFutureMacdOscillatorSlope = tool.slope(spxFutureMacds.collect { it.oscillator }, period);
@@ -230,7 +230,7 @@ def dailyDmiMdiAverage = tool.average(dailyDmis.collect { it.mdi }, period);
 def dailyDmiMdiSlope = tool.slope(dailyDmis.collect { it.mdi }, period);
 
 // market
-def spxFutureIndicator = market.getSpxFuture();
+def spxFutureIndicator = market.getSpxFutureIndicator();
 def spxFutureEmaSlope = tool.slope(spxFutureIndicator.getMinuteEmas(60), period);
 def spxFutureMacds = spxFutureIndicator.getMinuteMacds(60, 120, 40);
 def spxFutureMacdOscillatorSlope = tool.slope(spxFutureMacds.collect { it.oscillator }, period);

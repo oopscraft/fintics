@@ -12,10 +12,6 @@
             interval: null,
             clientType: null,
             clientProperties: null,
-            accessPolicy: null,
-            accessRoles: [],
-            editPolicy: null,
-            editRoles: [],
             tradeAssets: []
         });
         const balance = new duice.ObjectProxy({
@@ -24,6 +20,9 @@
             balanceAssets: []
         });
         duice.ObjectProxy.setReadonlyAll(balance, true);
+
+
+        // etc
         const clientDefinitions = new duice.ArrayProxy([[${clientDefinitions}]]);
         const alarms = new duice.ArrayProxy([[${alarms}]]);
 
@@ -92,7 +91,12 @@
                     }).then(response => response.json())
                         .then(data => {
                             _alert(/*[[#{web.global.saveItemComplete(#{fintics.Trade})}]]*/'').then(() => {
-                                document.location.href = `${_rootUrl}/trade/trade-detail?tradeId=${data.tradeId}`;
+                                if(trade.tradeId) {
+                                    duice.ObjectProxy.clear(trade);
+                                    duice.ObjectProxy.assign(trade, data);
+                                }else{
+                                    document.location.href = `${_rootUrl}/trade/trade-detail?tradeId=${data.tradeId}`;
+                                }
                             });
                     });
                 }
@@ -114,6 +118,249 @@
                     })
                 }
             });
+        }
+
+
+        // chart
+        let tradeIndicator = null;
+        let assetIndicatorsChart = null;
+        let marketIndicatorsChart = null;
+
+        Chart.defaults.font.size = 10;
+        Chart.defaults.animation = false;
+
+        function initializeAssetIndicatorsChart() {
+            assetIndicatorsChart = new Chart(document.getElementById("assetIndicatorsChart"), {
+                type: 'line',
+                data: {
+                    datasets: []
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    parsing: {
+                        xAxisKey: 'dateTime',
+                        yAxisKey: 'pctChange'
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'hour',
+                                displayFormats: {
+                                    hour: 'MM-dd HH:00'
+                                }
+                            },
+                            ticks: {
+                                stepSize: 1,
+                                font: {
+                                    size: 8
+                                }
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                stepSize: 0.5,
+                                font: {
+                                    size: 8
+                                },
+                                callback: function(value, index, values) {
+                                    return value.toFixed(2) + ' %';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    console.log(context);
+                                    return context.dataset.label + ': ' + context.raw['closePrice'].toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function initializeMarketIndicatorsChart() {
+            marketIndicatorsChart = new Chart(document.getElementById("marketIndicatorsChart"), {
+                type: 'line',
+                data: {
+                    datasets: []
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    parsing: {
+                        xAxisKey: 'dateTime',
+                        yAxisKey: 'pctChange'
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'hour',
+                                displayFormats: {
+                                    hour: 'MM-dd HH:00'
+                                }
+                            },
+                            ticks: {
+                                stepSize: 1,
+                                font: {
+                                    size: 8
+                                }
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                stepSize: 0.5,
+                                font: {
+                                    size: 8
+                                },
+                                callback: function(value, index, values) {
+                                    return value.toFixed(2) + ' %';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    console.log(context);
+                                    return context.dataset.label + ': ' + context.raw['closePrice'].toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function getTradeIndicator() {
+            let url = new URL(`${_apiUrl}/v1/trade/${tradeId}/indicator`, document.location.origin);
+            _fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    tradeIndicator = data;
+                    let assetIndicators = tradeIndicator['assetIndicators'];
+                    let market = tradeIndicator['market'];
+                    let marketIndicatorNames = [
+                        'ndxFutureIndicator',
+                        'ndxIndicator',
+                        'spxIndicator',
+                        'spxFutureIndicator'
+                    ];
+
+                    // defines date to
+                    let latestDateTimes = [];
+                    assetIndicators.forEach(el => {
+                        let minuteOhlcvs = el['minuteOhlcvs'];
+                        if(minuteOhlcvs.length > 0) {
+                            latestDateTimes.push(new Date(minuteOhlcvs[0].dateTime));
+                        }
+                    });
+                    marketIndicatorNames.forEach(name => {
+                        let minuteOhlcvs = market[name]['minuteOhlcvs'];
+                        if(minuteOhlcvs.length > 0) {
+                            latestDateTimes.push(new Date(minuteOhlcvs[0].dateTime));
+                        }
+                    });
+                    let dateTo = latestDateTimes.reduce((previousDate, currentDate) => {
+                        return currentDate > previousDate ? currentDate : previousDate;
+                    }, latestDateTimes[0]);
+
+                    // define date from
+                    let dateFrom = dateFns.subHours(dateTo, 20);
+
+                    // asset chart
+                    for(let i = 0; i < assetIndicators.length; i ++) {
+                        let assetIndicator = assetIndicators[i];
+                        let minuteOhlcvs = assetIndicator['minuteOhlcvs'];
+                        let minuteTimeSeries = createMinuteTimeSeries(dateFrom, dateTo, minuteOhlcvs);
+                        let dataset = {
+                            label: assetIndicator.name,
+                            data: minuteTimeSeries,
+                            borderWidth: 1,
+                            pointStyle: false
+                        };
+                        assetIndicatorsChart.data.datasets.push(dataset);
+                    }
+                    assetIndicatorsChart.update();
+
+                    // market chart
+                    for(let i = 0; i < marketIndicatorNames.length; i ++) {
+                        let marketIndicatorName = marketIndicatorNames[i];
+                        let marketIndicator = market[marketIndicatorName];
+                        let marketMinuteOhlcvs = marketIndicator['minuteOhlcvs'];
+                        let minuteTimeSeries = createMinuteTimeSeries(dateFrom, dateTo, marketMinuteOhlcvs);
+                        console.log("== ", minuteTimeSeries);
+                        let dataset = {
+                            label: marketIndicator.name,
+                            data: minuteTimeSeries,
+                            borderWidth: 1,
+                            pointStyle: false
+                        };
+                        marketIndicatorsChart.data.datasets.push(dataset);
+                    }
+                    marketIndicatorsChart.update();
+                });
+        }
+
+        function refreshTradeIndicator() {
+            console.log("refreshTradeIndicator");
+            if(!trade._new && trade.tradeId) {
+                getTradeIndicator();
+            }
+        }
+
+        function createBaseTimeSeries(dateFrom, dateTo, intervalMillis) {
+            let timeSeries = [];
+            let dateFromMillis = dateFrom.getTime();
+            let dateToMillis = dateTo.getTime();
+            for(let millis = dateFromMillis; millis <= dateToMillis; millis += intervalMillis) {
+                timeSeries.push({
+                    dateTime: new Date(millis),
+                    openPrice: 0,
+                    highPrice: 0,
+                    lowPrice: 0,
+                    closePrice: 0,
+                    pctChange: 0.0
+                });
+            }
+            return timeSeries;
+        }
+
+        function createMinuteTimeSeries(dateFrom, dateTo, ohlcvs) {
+            let timeSeries = createBaseTimeSeries(dateFrom, dateTo, 60000);
+            let ohlcvSeries = JSON.parse(JSON.stringify(ohlcvs)).reverse();
+            let ohlcvPos = Math.max(0, ohlcvSeries.findIndex((ohlcv) => {
+                return new Date(ohlcv.dateTime).getTime() >= timeSeries[0].dateTime.getTime();
+            }));
+            let ohlcvBasePrice = ohlcvSeries.length > 0 ? ohlcvSeries[ohlcvPos].openPrice : 0.0;
+            for(let i = 0, length = timeSeries.length; i < length; i ++) {
+                let timePoint = timeSeries[i];
+                let timeRangeFromMillis = timePoint.dateTime.getTime();
+                let timeRangeToMillis = timeRangeFromMillis + 59999;
+                if(ohlcvPos < ohlcvSeries.length) {
+                    let ohlcvPoint = ohlcvSeries[ohlcvPos];
+                    let ohlcvDateTimeMillis = new Date(ohlcvPoint.dateTime).getTime();
+                    if(timeRangeFromMillis <= ohlcvDateTimeMillis && ohlcvDateTimeMillis < timeRangeToMillis) {
+                        ohlcvPoint.pctChange = (ohlcvPoint.closePrice - ohlcvBasePrice)/ohlcvBasePrice * 100;
+                        timeSeries[i] = ohlcvPoint;
+                        ohlcvPos ++;
+                    }
+                }
+                if(ohlcvPos >= ohlcvSeries.length) {
+                    let lastOhlcv = ohlcvSeries[ohlcvSeries.length-1];
+                    timeSeries[i].openPrice = lastOhlcv.openPrice;
+                    timeSeries[i].highPrice = lastOhlcv.highPrice;
+                    timeSeries[i].lowPrice = lastOhlcv.lowPrice;
+                    timeSeries[i].closePrice = lastOhlcv.closePrice;
+                    timeSeries[i].pctChange = lastOhlcv.pctChange;
+                }
+            }
+            return timeSeries;
         }
 
         function getTradeBalance() {
@@ -191,6 +438,13 @@
 
             if(tradeId) {
                 getTrade();
+                initializeAssetIndicatorsChart();
+                initializeMarketIndicatorsChart();
+                getTradeIndicator();
+                setInterval(function() {
+                    refreshTradeIndicator();
+                }, 1000*60);
+                getTradeBalance();
                 setInterval(function() {
                     refreshTradeBalance();
                 }, 1000*5);
@@ -221,7 +475,7 @@
         <img class="icon" th:src="@{/static/image/icon-trade.svg}" alt="variable"/>
         <span data-th-text="#{fintics.Trade}"></span>
         <small>|</small>
-        <small data-duice-bind="trade" data-duice-property="name"></small>
+        <span data-duice-bind="trade" data-duice-property="name"></span>
     </h1>
     <!-- ====================================== -->
     <!-- end: title                             -->
@@ -236,8 +490,8 @@
             <span data-th-text="#{fintics.Trade} + ' ' + #{web.global.detail}"></span>
         </button>
         <button id="tradeLogTabButton" type="button" class="tab">
-            <img class="icon" th:src="@{/static/image/icon-log.svg}" alt="log"/>
-            <span data-th-text="#{web.global.log}"></span>
+            <img class="icon" th:src="@{/static/image/icon-monitor.svg}" alt="log"/>
+            <span data-th-text="#{web.global.monitor}"></span>
         </button>
         <button id="tradeBalanceTabButton" type="button" class="tab">
             <img class="icon" th:src="@{/static/image/icon-balance.svg}" alt="balance"/>
@@ -437,17 +691,43 @@
         <!-- ====================================== -->
 
         <!-- ================================== -->
-        <!-- start: tradeLog                    -->
+        <!-- start: monitor                     -->
         <!-- ================================== -->
         <div id="tradeLogTabContent" class="border-1 padding-1em" style="min-height:400px;">
             <h2>
-                <img class="icon" th:src="@{/static/image/icon-log.svg}" alt="log"/>
-                <span data-th-text="#{web.global.log}"></span>
+                <img class="icon" th:src="@{/static/image/icon-monitor.svg}" alt="log"/>
+                <span data-th-text="#{web.global.monitor}"></span>
             </h2>
-            <textarea id="tradeLog" rows="40" class="width-100"></textarea>
+            <div class="margin-1em">
+                <h3>
+                    <img class="icon" th:src="@{/static/image/icon-asset.svg}" alt="asset"/>
+                    Asset Indicator
+                </h3>
+                <div style="width:100%; height:200px;">
+                    <canvas id="assetIndicatorsChart"></canvas>
+                </div>
+            </div>
+            <div class="margin-1em">
+                <h3>
+                    <img class="icon" th:src="@{/static/image/icon-market.svg}" alt="market"/>
+                    Market Indicator
+                </h3>
+                <div style="width:100%; height:200px;">
+                    <canvas id="marketIndicatorsChart"></canvas>
+                </div>
+            </div>
+            <div class="margin-1em">
+                <h3>
+                    <img class="icon" th:src="@{/static/image/icon-log.svg}" alt="log"/>
+                    Log
+                </h3>
+                <div>
+                    <textarea id="tradeLog" rows="15" class="width-100"></textarea>
+                </div>
+            </div>
         </div>
         <!-- ================================== -->
-        <!-- end: tradeLog                      -->
+        <!-- end: monitor                       -->
         <!-- ================================== -->
 
         <!-- ================================== -->

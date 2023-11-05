@@ -9,15 +9,17 @@ import org.oopscraft.fintics.calculator.*;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @SuperBuilder
 @Slf4j
-public class Indicator {
+public abstract class Indicator {
 
     @Builder.Default
     @Getter
@@ -26,6 +28,14 @@ public class Indicator {
     @Builder.Default
     @Getter
     private final List<Ohlcv> dailyOhlcvs = new ArrayList<>();
+
+    public Ohlcv getMinuteOhlcv() {
+        return this.minuteOhlcvs.isEmpty() ? null : this.minuteOhlcvs.get(0);
+    }
+
+    public Ohlcv getDailyOhlcv() {
+        return this.dailyOhlcvs.isEmpty() ? null : this.dailyOhlcvs.get(0);
+    }
 
     private <T> List<T> reverse(List<T> list) {
         List<T> reversedList = new ArrayList<>(list);

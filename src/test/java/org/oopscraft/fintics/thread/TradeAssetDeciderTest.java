@@ -60,8 +60,11 @@ class TradeAssetDeciderTest {
         TradeAssetDecider tradeAssetDecider = TradeAssetDecider.builder()
                 .holdCondition(trade.getHoldCondition())
                 .logger(log)
+                .dateTime(LocalDateTime.now())
+                .assetIndicator(assetIndicator)
+                .market(market)
                 .build();
-        Boolean result = tradeAssetDecider.execute(LocalDateTime.now(), assetIndicator, market);
+        Boolean result = tradeAssetDecider.execute();
 
         log.info("== result:{}", result);
     }

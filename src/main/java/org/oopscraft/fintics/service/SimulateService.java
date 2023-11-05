@@ -36,10 +36,6 @@ public class SimulateService {
         double buyPrice = 0;
         double profit = 0;
 
-        TradeAssetDecider tradeAssetDecider = TradeAssetDecider.builder()
-                .holdCondition(simulate.getHoldCondition())
-                .logger(log)
-                .build();
 
         for(int i = minuteOhlcvs.size()-1; i >= 0; i --) {
             Ohlcv ohlcv = minuteOhlcvs.get(i);
@@ -74,9 +70,16 @@ public class SimulateService {
                     .dailyOhlcvs(dailyOhlcvs)
                     .build();
 
-            Market market = marketService.getMarketCache();
+            Market market = marketService.getMarket();
 
-            Boolean holdConditionResult = tradeAssetDecider.execute(dateTime, assetIndicator, market);
+            TradeAssetDecider tradeAssetDecider = TradeAssetDecider.builder()
+                    .holdCondition(simulate.getHoldCondition())
+                    .logger(log)
+                    .dateTime(dateTime)
+                    .assetIndicator(assetIndicator)
+                    .market(market)
+                    .build();
+            Boolean holdConditionResult = tradeAssetDecider.execute();
             holdConditionResults.add(holdConditionResult);
             log.info("[{}] holdConditionResult: {}", i, holdConditionResult);
 

@@ -10,6 +10,7 @@ import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
 import org.oopscraft.fintics.model.Market;
 import org.oopscraft.fintics.model.MarketIndicator;
 import org.oopscraft.fintics.model.Ohlcv;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpHeaders;
@@ -21,9 +22,9 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.*;
 
 @Service
@@ -35,49 +36,33 @@ public class MarketService {
 
     private final ObjectMapper objectMapper;
 
+    @Cacheable(value = CACHE_MARKET)
     public Market getMarket() {
-        MarketIndicator ndxIndicator = getMarketIndex("^NDX","NASDAQ 100");
-        sleep(200);
-        MarketIndicator ndxFutureIndicator = getMarketIndex("NQ=F","Nasdaq Futures");
-        sleep(200);
-        MarketIndicator spxIndicator = getMarketIndex( "^GSPC", "S&P 500");
-        sleep(200);
-        MarketIndicator spxFutureIndicator = getMarketIndex("ES=F","S&P 500 Future");
-        sleep(200);
-        MarketIndicator djiIndicator = getMarketIndex("^DJI","Dow Jones Industrial Average");
-        sleep(200);
-        MarketIndicator djiFutureIndicator = getMarketIndex("YM=F","Dow Futures");
+        MarketIndicator ndxIndicator = getMarketIndex("^NDX", "NASDAQ 100");
+        MarketIndicator ndxFutureIndicator = getMarketIndex("NQ=F", "Nasdaq Futures");
+        MarketIndicator spxIndicator = getMarketIndex("^GSPC", "S&P 500");
+        MarketIndicator spxFutureIndicator = getMarketIndex("ES=F", "S&P 500 Future");
+        MarketIndicator djiIndicator = getMarketIndex("^DJI", "Dow Jones Industrial Average");
+        MarketIndicator djiFutureIndicator = getMarketIndex("YM=F", "Dow Futures");
         return Market.builder()
                 .ndxIndicator(ndxIndicator)
                 .ndxFutureIndicator(ndxFutureIndicator)
-                .spx(spxIndicator)
+                .spxIndicator(spxIndicator)
                 .spxFutureIndicator(spxFutureIndicator)
                 .djiIndicator(djiIndicator)
                 .djiFutureIndicator(djiFutureIndicator)
                 .build();
     }
 
-    private void sleep(int millis) {
-        try {
-            Thread.sleep(millis);
-        }catch(Throwable ignored) {}
-    }
-
-    @Cacheable(value = CACHE_MARKET)
-    public Market getMarketCache() {
-        return getMarket();
-    }
-
-    @CachePut(value = CACHE_MARKET)
+    @CacheEvict(value = CACHE_MARKET, allEntries = true)
     @Scheduled(initialDelay = 1_000, fixedDelay = 60_000)
-    public Market putMarketCache() {
-        log.info("cachePut[{}]", CACHE_MARKET);
-        return getMarket();
+    public void purgeMarketCache() {
+        log.info("cacheEvict[{}]", CACHE_MARKET);
     }
 
     MarketIndicator getMarketIndex(String symbol, String name) {
-        List<Ohlcv> minuteOhlcvs = getOhlcvs(symbol, "1m", LocalDateTime.now().minusWeeks(1), LocalDateTime.now(), 30*10);
-        List<Ohlcv> dailyOhlcvs = getOhlcvs(symbol, "1d", LocalDateTime.now().minusMonths(3), LocalDateTime.now(), 30*2);
+        List<Ohlcv> minuteOhlcvs = getOhlcvs(symbol, "1m", LocalDateTime.now().minusWeeks(1), LocalDateTime.now(), 60*24*3);    // 3 days
+        List<Ohlcv> dailyOhlcvs = getOhlcvs(symbol, "1d", LocalDateTime.now().minusMonths(3), LocalDateTime.now(), 30*2);       // 2 months
         return MarketIndicator.builder()
                 .name(name)
                 .minuteOhlcvs(minuteOhlcvs)
@@ -127,7 +112,9 @@ public class MarketService {
 
         List<Ohlcv> ohlcvs = new ArrayList<>();
         for(int i = 0; i < timestamps.size(); i ++) {
-            LocalDateTime dateTime = LocalDateTime.ofEpochSecond(timestamps.get(i), 0, ZoneOffset.UTC);
+            LocalDateTime dateTime = Instant.ofEpochSecond(timestamps.get(i))
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDateTime();
             BigDecimal openPrice = opens.get(i);
             if(openPrice == null) {     // sometimes open price is null (data error)
                 continue;

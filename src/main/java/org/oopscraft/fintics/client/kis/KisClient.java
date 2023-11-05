@@ -17,11 +17,13 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -49,10 +51,12 @@ public class KisClient extends Client {
         this.objectMapper = new ObjectMapper();
     }
 
-    static synchronized void sleep() {
+    private synchronized static void sleep() {
         try {
-            Thread.sleep(500);
-        }catch(Throwable ignored){}
+            Thread.sleep(200);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     HttpHeaders createHeaders() {
@@ -66,7 +70,7 @@ public class KisClient extends Client {
     }
 
     @Override
-    public OrderBook getOrderBook(Asset asset) {
+    public synchronized OrderBook getOrderBook(Asset asset) {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
@@ -126,7 +130,7 @@ public class KisClient extends Client {
     }
 
     @Override
-    public List<Ohlcv> getMinuteOhlcvs(Asset asset) {
+    public synchronized List<Ohlcv> getMinuteOhlcvs(Asset asset) {
         List<Ohlcv> minuteOhlcvs = new ArrayList<>();
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
@@ -224,7 +228,7 @@ public class KisClient extends Client {
     }
 
     @Override
-    public List<Ohlcv> getDailyOhlcvs(Asset asset) {
+    public synchronized List<Ohlcv> getDailyOhlcvs(Asset asset) {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
@@ -296,7 +300,7 @@ public class KisClient extends Client {
 
 
     @Override
-    public Balance getBalance() {
+    public synchronized Balance getBalance() {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
@@ -427,7 +431,7 @@ public class KisClient extends Client {
     }
 
     @Override
-    public void buyAsset(TradeAsset tradeAsset, int quantity) {
+    public synchronized void buyAsset(TradeAsset tradeAsset, int quantity) {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
@@ -460,7 +464,7 @@ public class KisClient extends Client {
     }
 
     @Override
-    public void sellAsset(BalanceAsset balanceAsset, int quantity) {
+    public synchronized void sellAsset(BalanceAsset balanceAsset, int quantity) {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();

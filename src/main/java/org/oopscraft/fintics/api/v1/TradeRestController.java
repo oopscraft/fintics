@@ -1,38 +1,57 @@
 package org.oopscraft.fintics.api.v1;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.v3.oas.models.links.Link;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.security.SecurityUtils;
 import org.oopscraft.arch4j.web.support.SseLogAppender;
-import org.oopscraft.fintics.api.v1.dto.BalanceResponse;
-import org.oopscraft.fintics.api.v1.dto.TradeRequest;
-import org.oopscraft.fintics.api.v1.dto.TradeResponse;
+import org.oopscraft.fintics.api.v1.dto.*;
+import org.oopscraft.fintics.model.AssetIndicator;
+import org.oopscraft.fintics.model.Market;
 import org.oopscraft.fintics.model.Trade;
 import org.oopscraft.fintics.model.TradeAsset;
+import org.oopscraft.fintics.service.MarketService;
 import org.oopscraft.fintics.service.TradeService;
-import org.oopscraft.fintics.thread.TradeRunnable;
-import org.oopscraft.fintics.thread.TradeThread;
 import org.oopscraft.fintics.thread.TradeThreadManager;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import javax.annotation.security.PermitAll;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/trade")
 @RequiredArgsConstructor
 @PreAuthorize("hasAuthority('TRADE')")
+@Slf4j
 public class TradeRestController {
 
     private final TradeService tradeService;
 
     private final TradeThreadManager tradeThreadManager;
+
+    private final ObjectMapper objectMapper;
+
+    private final MarketService marketService;
 
     @GetMapping
     public ResponseEntity<List<TradeResponse>> getTrades() {
@@ -147,17 +166,40 @@ public class TradeRestController {
         return ResponseEntity.ok(balanceResponse);
     }
 
-    @GetMapping(value = "{tradeId}/log", produces = "text/event-stream")
+    @GetMapping("{tradeId}/indicator")
+    @PreAuthorize("@tradePermissionEvaluator.hasEditPermission(#tradeId)")
+    public ResponseEntity<TradeIndicator> getTradeIndicator(@PathVariable("tradeId") String tradeId) {
+        Trade trade = tradeService.getTrade(tradeId).orElseThrow();
+
+        // asset indicators
+        List<AssetIndicatorResponse> assetIndicators = new ArrayList<>();
+        for(TradeAsset tradeAsset : trade.getTradeAssets()) {
+            AssetIndicator assetIndicator = tradeService.getTradeAssetIndicator(tradeId, tradeAsset.getSymbol()).orElseThrow();
+            assetIndicators.add(AssetIndicatorResponse.from(assetIndicator));
+        }
+
+        // market
+        Market market = marketService.getMarket();
+
+        // response
+        TradeIndicator tradeIndicator = TradeIndicator.builder()
+                .assetIndicators(assetIndicators)
+                .market(MarketResponse.from(market))
+                .build();
+        return ResponseEntity.ok(tradeIndicator);
+    }
+
+
+    @GetMapping(value = "{tradeId}/log", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     @PreAuthorize("@tradePermissionEvaluator.hasEditPermission(#tradeId)")
     public SseEmitter getTradeLog(@PathVariable("tradeId")String tradeId) {
-        TradeThread tradeThread = tradeThreadManager.getTradeThread(tradeId).orElseThrow();
-        SseLogAppender sseLogAppender = tradeThread.getTradeRunnable().getSseLogAppender();
+        SseLogAppender sseLogAppender = tradeThreadManager.getSseLogAppender(tradeId).orElseThrow();
         SseEmitter sseEmitter = new SseEmitter(60_000L);
         sseLogAppender.addSseEmitter(sseEmitter);
-        sseEmitter.onCompletion(() -> {
-            sseLogAppender.removeSseEmitter(sseEmitter);
-        });
+        sseEmitter.onCompletion(() -> sseLogAppender.removeSseEmitter(sseEmitter));
+        sseEmitter.onTimeout(() -> sseLogAppender.removeSseEmitter(sseEmitter));
         return sseEmitter;
     }
+
 
 }

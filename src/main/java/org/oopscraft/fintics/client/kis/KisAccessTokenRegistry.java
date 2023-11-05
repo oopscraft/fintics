@@ -17,9 +17,9 @@ import java.util.Set;
 @Slf4j
 public class KisAccessTokenRegistry {
 
-    private final static Set<KisAccessToken> accessTokens = new HashSet<>();
+    private static final Set<KisAccessToken> accessTokens = new HashSet<>();
 
-    public static KisAccessToken getAccessToken(String apiUrl, String appKey, String appSecret) {
+    public synchronized static KisAccessToken getAccessToken(String apiUrl, String appKey, String appSecret) {
         KisAccessToken accessToken = accessTokens.stream()
                 .filter(element ->
                         element.getApiUrl().equals(apiUrl)
@@ -36,7 +36,7 @@ public class KisAccessTokenRegistry {
         return accessToken;
     }
 
-    private static KisAccessToken refreshAccessToken(String apiUrl, String appKey, String appSecret) {
+    private synchronized static KisAccessToken refreshAccessToken(String apiUrl, String appKey, String appSecret) {
         log.info("Refresh Access Token - {}", apiUrl);
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
