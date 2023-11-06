@@ -22,7 +22,7 @@ public class TradeSynchronizer {
     @Scheduled(initialDelay = 1_000, fixedDelay = 10_000)
     @Transactional(readOnly = true)
     public void synchronize() {
-        log.info("Start TradeSynchronizer.synchronize.");
+        log.info("TradeSynchronizer.synchronize.");
         List<TradeEntity> tradeEntities = tradeRepository.findAll();
 
         // deleted trade thread
@@ -33,6 +33,7 @@ public class TradeSynchronizer {
                             tradeEntity.getTradeId().equals(tradeId));
             if(notExists) {
                 tradeThreadManager.stopTradeThread(tradeId);
+                sleep();
             }
         }
 
@@ -45,18 +46,28 @@ public class TradeSynchronizer {
                 TradeThread tradeThread = tradeThreadManager.getTradeThread(tradeId).orElse(null);
                 if(tradeThread == null) {
                     tradeThreadManager.startTradeThread(tradeId, interval);
+                    sleep();
                     continue;
                 }
                 if(tradeThread.getTradeRunnable().getInterval().intValue() != interval.intValue()) {
                     tradeThreadManager.restartTradeThread(tradeId, interval);
+                    sleep();
                 }
             }else{
                 if(tradeThreadManager.isTradeThreadRunning(tradeId)) {
                     tradeThreadManager.stopTradeThread(tradeId);
+                    sleep();
                 }
             }
         }
-        log.info("End TradeSynchronizer.synchronize.");
+    }
+
+    private static void sleep() {
+        try {
+            Thread.sleep(3_000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

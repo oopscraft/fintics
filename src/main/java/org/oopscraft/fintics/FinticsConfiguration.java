@@ -24,7 +24,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @ConfigurationPropertiesScan
 @EnableScheduling
 @EnableCaching
-@EnableAsync
 public class FinticsConfiguration {
 
 }

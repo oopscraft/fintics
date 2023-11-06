@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.oopscraft.fintics.model.*;
 
 import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -17,9 +19,10 @@ class TradeAssetDeciderTest {
     @Test
     void test() {
         // given
+        String holdCondition = "println assetIndicator.getMinuteMacds(60,120,40);";
         Trade trade = Trade.builder()
                 .tradeId("test")
-                .holdCondition("println tool.slope(assetIndicator.getMinutePrices(),1);")
+                .holdCondition(holdCondition)
                 .build();
         TradeAsset tradeAsset = TradeAsset.builder()
                 .tradeId("test")
@@ -28,7 +31,7 @@ class TradeAssetDeciderTest {
         AssetIndicator assetIndicator = AssetIndicator.builder()
                 .symbol(tradeAsset.getSymbol())
                 .name(tradeAsset.getName())
-                .minuteOhlcvs(IntStream.range(1,11)
+                .minuteOhlcvs(IntStream.range(1,501)
                         .mapToObj(i -> {
                             BigDecimal price = BigDecimal.valueOf(1000 - (i*10));
                             return Ohlcv.builder()
@@ -40,7 +43,7 @@ class TradeAssetDeciderTest {
                                     .build();
                         })
                         .collect(Collectors.toList()))
-                .dailyOhlcvs(IntStream.range(1,11)
+                .dailyOhlcvs(IntStream.range(1,301)
                         .mapToObj(i -> {
                             BigDecimal price = BigDecimal.valueOf(1000 - (i*10));
                             return Ohlcv.builder()
@@ -64,7 +67,13 @@ class TradeAssetDeciderTest {
                 .assetIndicator(assetIndicator)
                 .market(market)
                 .build();
+        Instant groovyStart = Instant.now();
         Boolean result = tradeAssetDecider.execute();
+        log.info("groovy duration:{}", Duration.between(groovyStart, Instant.now()));
+
+        Instant javaStart = Instant.now();
+        assetIndicator.getMinuteMacds(60,120,40);
+        log.info("java duration:{}", Duration.between(javaStart, Instant.now()));
 
         log.info("== result:{}", result);
     }

@@ -108,7 +108,7 @@ public class TradeService {
         }
     }
 
-    @Cacheable(value = CACHE_TRADE_ASSET_INDICATOR, key = "#symbol")
+    @Cacheable(value = CACHE_TRADE_ASSET_INDICATOR, key = "#tradeId + ':' + #symbol")
     public synchronized Optional<AssetIndicator> getTradeAssetIndicator(String tradeId, String symbol) {
         Trade trade = getTrade(tradeId).orElseThrow();
         TradeAsset tradeAsset = trade.getTradeAssets().stream()
