@@ -25,7 +25,7 @@ public class MarketResponse {
         return MarketResponse.builder()
                 .ndxIndicator(MarketIndicatorResponse.from(market.getNdxIndicator()))
                 .ndxFutureIndicator(MarketIndicatorResponse.from(market.getNdxFutureIndicator()))
-                .spxIndicator(MarketIndicatorResponse.from(market.getSpxFutureIndicator()))
+                .spxIndicator(MarketIndicatorResponse.from(market.getSpxIndicator()))
                 .spxFutureIndicator(MarketIndicatorResponse.from(market.getSpxFutureIndicator()))
                 .djiIndicator(MarketIndicatorResponse.from(market.getDjiIndicator()))
                 .djiFutureIndicator(MarketIndicatorResponse.from(market.getDjiFutureIndicator()))
