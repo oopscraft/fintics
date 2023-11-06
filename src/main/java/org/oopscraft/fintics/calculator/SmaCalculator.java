@@ -14,13 +14,20 @@ public class SmaCalculator {
 
     private final int period;
 
+    private final MathContext mathContext;
+
     public static SmaCalculator of(List<BigDecimal> series, int period) {
-        return new SmaCalculator(series, period);
+        return of(series, period, new MathContext(4, RoundingMode.HALF_UP));
     }
 
-    public SmaCalculator(List<BigDecimal> series, int period) {
+    public static SmaCalculator of(List<BigDecimal> series, int period, MathContext mathContext) {
+        return new SmaCalculator(series, period, mathContext);
+    }
+
+    public SmaCalculator(List<BigDecimal> series, int period, MathContext mathContext) {
         this.series = series;
         this.period = period;
+        this.mathContext = mathContext;
     }
 
     public List<BigDecimal> calculate() {
@@ -36,7 +43,7 @@ public class SmaCalculator {
                 sum = sum.add(value);
             }
 
-            BigDecimal sma = sum.divide(BigDecimal.valueOf(perioidSeries.size()), MathContext.DECIMAL128);
+            BigDecimal sma = sum.divide(BigDecimal.valueOf(perioidSeries.size()), mathContext);
             smas.add(sma);
         }
 

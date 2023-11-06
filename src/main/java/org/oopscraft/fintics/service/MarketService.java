@@ -10,7 +10,6 @@ import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
 import org.oopscraft.fintics.model.Market;
 import org.oopscraft.fintics.model.MarketIndicator;
 import org.oopscraft.fintics.model.Ohlcv;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpHeaders;

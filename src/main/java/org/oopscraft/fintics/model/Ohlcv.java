@@ -11,16 +11,16 @@ import java.time.LocalDateTime;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Ohlcv {
 
-    LocalDateTime dateTime;
+    private LocalDateTime dateTime;
 
-    BigDecimal openPrice;
+    private BigDecimal openPrice;
 
-    BigDecimal highPrice;
+    private BigDecimal highPrice;
 
-    BigDecimal lowPrice;
+    private BigDecimal lowPrice;
 
-    BigDecimal closePrice;
+    private BigDecimal closePrice;
 
-    BigDecimal volume;
+    private BigDecimal volume;
 
 }

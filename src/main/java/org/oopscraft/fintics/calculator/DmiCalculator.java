@@ -16,15 +16,22 @@ public class DmiCalculator {
 
     private final int period;
 
+    private final MathContext mathContext;
+
     public static DmiCalculator of(List<BigDecimal> highSeries, List<BigDecimal> lowSeries, List<BigDecimal> closeSeries, int period) {
-        return new DmiCalculator(highSeries, lowSeries, closeSeries, period);
+        return of(highSeries, lowSeries, closeSeries, period, new MathContext(4, RoundingMode.HALF_UP));
     }
 
-    public DmiCalculator(List<BigDecimal> highSeries, List<BigDecimal> lowSeries, List<BigDecimal> closeSeries, int period) {
+    public static DmiCalculator of(List<BigDecimal> highSeries, List<BigDecimal> lowSeries, List<BigDecimal> closeSeries, int period, MathContext mathContext) {
+        return new DmiCalculator(highSeries, lowSeries, closeSeries, period, mathContext);
+    }
+
+    public DmiCalculator(List<BigDecimal> highSeries, List<BigDecimal> lowSeries, List<BigDecimal> closeSeries, int period, MathContext mathContext) {
         this.highSeries = highSeries;
         this.lowSeries = lowSeries;
         this.closeSeries = closeSeries;
         this.period = period;
+        this.mathContext = mathContext;
     }
 
     public List<Dmi> calculate() {
@@ -48,9 +55,9 @@ public class DmiCalculator {
         }
 
         // average
-        pdms = EmaCalculator.of(pdms, period).calculate();
-        mdms = EmaCalculator.of(mdms, period).calculate();
-        trs = EmaCalculator.of(trs, period).calculate();
+        pdms = EmaCalculator.of(pdms, period, mathContext).calculate();
+        mdms = EmaCalculator.of(mdms, period, mathContext).calculate();
+        trs = EmaCalculator.of(trs, period, mathContext).calculate();
 
         List<BigDecimal> pdis = new ArrayList<>();
         List<BigDecimal> mdis = new ArrayList<>();
@@ -67,7 +74,7 @@ public class DmiCalculator {
         }
 
         // average
-        dxs = EmaCalculator.of(dxs, period).calculate();
+        dxs = EmaCalculator.of(dxs, period, mathContext).calculate();
 
         // dmi
         List<Dmi> dmis = new ArrayList<>();
@@ -110,12 +117,12 @@ public class DmiCalculator {
     }
 
     private BigDecimal calculatePdi(BigDecimal pdm, BigDecimal tr) {
-        return pdm.divide(tr, MathContext.DECIMAL128)
+        return pdm.divide(tr, mathContext)
                 .multiply(BigDecimal.valueOf(100));
     }
 
     public BigDecimal calculateMdi(BigDecimal mdm, BigDecimal tr) {
-        return mdm.divide(tr, MathContext.DECIMAL128)
+        return mdm.divide(tr, mathContext)
                 .multiply(BigDecimal.valueOf(100));
     }
 
@@ -124,7 +131,7 @@ public class DmiCalculator {
             return BigDecimal.ZERO;
         }
         return pdi.subtract(mdi).abs()
-                .divide(pdi.add(mdi), MathContext.DECIMAL128)
+                .divide(pdi.add(mdi), mathContext)
                 .multiply(BigDecimal.valueOf(100));
     }
 

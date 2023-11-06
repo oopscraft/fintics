@@ -12,13 +12,20 @@ public class RsiCalculator {
 
     private final int period;
 
+    private final MathContext mathContext;
+
     public static RsiCalculator of(List<BigDecimal> series, int period) {
-        return new RsiCalculator(series, period);
+        return of(series, period, new MathContext(4, RoundingMode.HALF_UP));
     }
 
-    public RsiCalculator(List<BigDecimal> series, int period) {
+    public static RsiCalculator of(List<BigDecimal> series, int period, MathContext mathContext) {
+        return new RsiCalculator(series, period, mathContext);
+    }
+
+    public RsiCalculator(List<BigDecimal> series, int period, MathContext mathContext) {
         this.series = series;
         this.period = period;
+        this.mathContext = mathContext;
     }
 
     public List<BigDecimal> calculate() {
@@ -89,7 +96,7 @@ public class RsiCalculator {
 
             // Calculate RSI
             BigDecimal rsi = rs
-                    .divide(rs.add(BigDecimal.valueOf(1)), MathContext.DECIMAL128)
+                    .divide(rs.add(BigDecimal.valueOf(1)), MathContext.DECIMAL32)
                     .multiply(BigDecimal.valueOf(100))
                     .setScale(2, RoundingMode.HALF_UP);
             rsis.add(rsi);
@@ -104,7 +111,7 @@ public class RsiCalculator {
         }
         return values.stream()
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
-                .divide(BigDecimal.valueOf(values.size()), MathContext.DECIMAL128);
+                .divide(BigDecimal.valueOf(values.size()), MathContext.DECIMAL32);
     }
 
 }

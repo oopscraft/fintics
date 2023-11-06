@@ -1,7 +1,5 @@
 package org.oopscraft.fintics.calculator;
 
-import lombok.Getter;
-
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
@@ -14,20 +12,27 @@ public class EmaCalculator {
 
     private final int period;
 
+    private final MathContext mathContext;
+
     public static EmaCalculator of(List<BigDecimal> series, int period) {
-        return new EmaCalculator(series, period);
+        return new EmaCalculator(series, period, new MathContext(4, RoundingMode.HALF_UP));
     }
 
-    public EmaCalculator(List<BigDecimal> series, int period) {
+    public static EmaCalculator of(List<BigDecimal> series, int period, MathContext mathContext) {
+        return new EmaCalculator(series, period, mathContext);
+    }
+
+    public EmaCalculator(List<BigDecimal> series, int period, MathContext mathContext) {
         this.series = series;
         this.period = period;
+        this.mathContext = mathContext;
     }
 
     public List<BigDecimal> calculate() {
         List<BigDecimal> emas = new ArrayList<>();
 
         BigDecimal multiplier = BigDecimal.valueOf(2.0)
-                .divide(BigDecimal.valueOf(period + 1), MathContext.DECIMAL128);
+                .divide(BigDecimal.valueOf(period + 1), mathContext);
 
         BigDecimal ema = series.isEmpty() ? BigDecimal.ZERO : series.get(0);
         emas.add(ema);

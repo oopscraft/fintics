@@ -4,20 +4,11 @@ import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyShell;
 import lombok.Builder;
-import lombok.Getter;
 import org.oopscraft.fintics.model.AssetIndicator;
 import org.oopscraft.fintics.model.Market;
-import org.oopscraft.fintics.model.Trade;
-import org.oopscraft.fintics.model.TradeAsset;
 import org.slf4j.Logger;
 
-import java.math.BigDecimal;
-import java.math.MathContext;
-import java.math.RoundingMode;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 public class TradeAssetDecider {
 
@@ -32,7 +23,7 @@ public class TradeAssetDecider {
     private final Market market;
 
     @Builder
-    public TradeAssetDecider(String holdCondition, Logger logger, LocalDateTime dateTime, AssetIndicator assetIndicator, Market market) {
+    protected TradeAssetDecider(String holdCondition, Logger logger, LocalDateTime dateTime, AssetIndicator assetIndicator, Market market) {
         this.holdCondition = holdCondition;
         this.logger = logger;
         this.dateTime = dateTime;

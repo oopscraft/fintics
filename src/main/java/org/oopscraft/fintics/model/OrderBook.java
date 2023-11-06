@@ -12,10 +12,10 @@ import java.math.BigDecimal;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class OrderBook {
 
-    BigDecimal price;
+    private BigDecimal price;
 
-    BigDecimal bidPrice;
+    private BigDecimal bidPrice;
 
-    BigDecimal askPrice;
+    private BigDecimal askPrice;
 
 }

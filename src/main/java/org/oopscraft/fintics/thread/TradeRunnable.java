@@ -52,7 +52,7 @@ public class TradeRunnable implements Runnable {
 
         // add log appender
         log = (Logger) LoggerFactory.getLogger(tradeId);
-        ((Logger)log).addAppender(this.sseLogAppender);
+        log.addAppender(this.sseLogAppender);
     }
 
     @Override
@@ -66,9 +66,8 @@ public class TradeRunnable implements Runnable {
                 DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition();
                 transactionDefinition.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
                 TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager, transactionDefinition);
-                transactionTemplate.executeWithoutResult(transactionStatus -> {
-                    executeTrade();
-                });
+                transactionTemplate.executeWithoutResult(transactionStatus ->
+                        executeTrade());
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             } finally {

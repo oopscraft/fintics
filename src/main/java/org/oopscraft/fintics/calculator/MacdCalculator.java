@@ -1,6 +1,7 @@
 package org.oopscraft.fintics.calculator;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,16 +16,22 @@ public class MacdCalculator {
 
     private final int signalPeriod;
 
+    private final MathContext mathContext;
+
     public static MacdCalculator of(List<BigDecimal> series, int shortPeriod, int longPeriod, int signalPeriod) {
-        return new MacdCalculator(series, shortPeriod, longPeriod, signalPeriod);
+        return of(series, shortPeriod, longPeriod, signalPeriod, new MathContext(4, RoundingMode.HALF_UP));
     }
 
-    public MacdCalculator(List<BigDecimal> series, int shortPeriod, int longPeriod, int signalPeriod) {
+    public static MacdCalculator of(List<BigDecimal> series, int shortPeriod, int longPeriod, int signalPeriod, MathContext mathContext) {
+        return new MacdCalculator(series, shortPeriod, longPeriod, signalPeriod, mathContext);
+    }
+
+    public MacdCalculator(List<BigDecimal> series, int shortPeriod, int longPeriod, int signalPeriod, MathContext mathContext) {
         this.series = series;
         this.shortPeriod = shortPeriod;
         this.longPeriod = longPeriod;
         this.signalPeriod = signalPeriod;
-
+        this.mathContext = mathContext;
     }
 
     public List<Macd> calculate() {
@@ -32,9 +39,9 @@ public class MacdCalculator {
         List<BigDecimal> oscillators = new ArrayList<>();
 
         // Calculate MACD line
-        List<BigDecimal> shortTermEma = EmaCalculator.of(series, shortPeriod)
+        List<BigDecimal> shortTermEma = EmaCalculator.of(series, shortPeriod, mathContext)
                 .calculate();
-        List<BigDecimal> longTermEma = EmaCalculator.of(series, longPeriod)
+        List<BigDecimal> longTermEma = EmaCalculator.of(series, longPeriod, mathContext)
                 .calculate();
         for (int i = 0; i < longTermEma.size(); i++) {
             BigDecimal macd = shortTermEma.get(i).subtract(longTermEma.get(i));
@@ -42,7 +49,7 @@ public class MacdCalculator {
         }
 
         // ine using MACD line
-        List<BigDecimal> signals = new ArrayList<>(EmaCalculator.of(values, signalPeriod)
+        List<BigDecimal> signals = new ArrayList<>(EmaCalculator.of(values, signalPeriod, mathContext)
                 .calculate());
 
         // oscillator
