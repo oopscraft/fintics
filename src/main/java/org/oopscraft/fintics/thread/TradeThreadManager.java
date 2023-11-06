@@ -115,6 +115,7 @@ public class TradeThreadManager implements DisposableBean {
 
     @Override
     public void destroy() throws Exception {
+        log.info("start tradeManager.destroy");
         tradeThreadGroup.interrupt();
     }
 

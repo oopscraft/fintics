@@ -29,7 +29,7 @@ insert into `core_alarm`
 -- fintics_trade: 한국투자증권 모의투자 - 지수ETF
 insert into `fintics_trade`
     (`trade_id`,`name`,`enabled`,`interval`,`start_at`,`end_at`,`client_type`,`client_properties`,`alarm_id`,`hold_condition`) values
-    ('06c228451ce0400fa57bb36f0568d7cb','한국투자증권 모의투자 - 지수ETF','N','30','09:00','15:30',
+    ('06c228451ce0400fa57bb36f0568d7cb','한국투자증권 모의투자 - 지수ETF','N','60','09:00','15:30',
      'org.oopscraft.fintics.client.kis.KisClient','production=false
 apiUrl=https://openapivts.koreainvestment.com:29443
 appKey=ENC(mqcEUDQAO57SaLBCvhoz0RpFYBXtMQG2Y+NIK2jfQZ6koEUDlYx+5W8AW+eW0KVd)
@@ -174,7 +174,7 @@ insert into `fintics_trade_asset`
 -- fintics_trade: 한국투자증권 모의투자 - 지수ETF(인버스)
 insert into `fintics_trade`
 (`trade_id`,`name`,`enabled`,`interval`,`start_at`,`end_at`,`client_type`,`client_properties`,`alarm_id`,`hold_condition`) values
-    ('7af6bc641eef4254b12dd9fa1d43384d','한국투자증권 모의투자 - 지수ETF(인버스)','N','30','09:00','15:30',
+    ('7af6bc641eef4254b12dd9fa1d43384d','한국투자증권 모의투자 - 지수ETF(인버스)','N','60','09:00','15:30',
      'org.oopscraft.fintics.client.kis.KisClient','production=false
 apiUrl=https://openapivts.koreainvestment.com:29443
 appKey=ENC(mqcEUDQAO57SaLBCvhoz0RpFYBXtMQG2Y+NIK2jfQZ6koEUDlYx+5W8AW+eW0KVd)

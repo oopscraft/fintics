@@ -109,7 +109,7 @@ public class TradeService {
     }
 
     @Cacheable(value = CACHE_TRADE_ASSET_INDICATOR, key = "#symbol")
-    public Optional<AssetIndicator> getTradeAssetIndicator(String tradeId, String symbol) {
+    public synchronized Optional<AssetIndicator> getTradeAssetIndicator(String tradeId, String symbol) {
         Trade trade = getTrade(tradeId).orElseThrow();
         TradeAsset tradeAsset = trade.getTradeAssets().stream()
                 .filter(e -> Objects.equals(e.getSymbol(), symbol))
@@ -131,7 +131,7 @@ public class TradeService {
 
     @CacheEvict(value = CACHE_TRADE_ASSET_INDICATOR, allEntries = true)
     @Scheduled(initialDelay = 1_000, fixedDelay = 60_000)
-    public void purgeTradeAssetIndicatorCache() {
+    public synchronized void purgeTradeAssetIndicatorCache() {
         log.info("cacheEvict[{}]", CACHE_TRADE_ASSET_INDICATOR);
     }
 

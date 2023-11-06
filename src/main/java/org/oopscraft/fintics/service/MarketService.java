@@ -37,7 +37,7 @@ public class MarketService {
     private final ObjectMapper objectMapper;
 
     @Cacheable(value = CACHE_MARKET)
-    public Market getMarket() {
+    public synchronized Market getMarket() {
         MarketIndicator ndxIndicator = getMarketIndex("^NDX", "NASDAQ 100");
         MarketIndicator ndxFutureIndicator = getMarketIndex("NQ=F", "Nasdaq Futures");
         MarketIndicator spxIndicator = getMarketIndex("^GSPC", "S&P 500");
@@ -54,10 +54,11 @@ public class MarketService {
                 .build();
     }
 
-    @CacheEvict(value = CACHE_MARKET, allEntries = true)
+    @CachePut(value = CACHE_MARKET)
     @Scheduled(initialDelay = 1_000, fixedDelay = 60_000)
-    public void purgeMarketCache() {
+    public synchronized Market putMarketCache() {
         log.info("cacheEvict[{}]", CACHE_MARKET);
+        return getMarket();
     }
 
     MarketIndicator getMarketIndex(String symbol, String name) {
