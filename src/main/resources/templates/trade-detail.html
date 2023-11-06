@@ -274,6 +274,7 @@
                     let dateFrom = dateFns.subHours(dateTo, 20);
 
                     // asset chart
+                    assetIndicatorsChart.data.datasets.length = 0;
                     for(let i = 0; i < assetIndicators.length; i ++) {
                         let assetIndicator = assetIndicators[i];
                         let minuteOhlcvs = assetIndicator['minuteOhlcvs'];
@@ -289,6 +290,7 @@
                     assetIndicatorsChart.update();
 
                     // market chart
+                    marketIndicatorsChart.data.datasets.length = 0;
                     for(let i = 0; i < marketIndicatorNames.length; i ++) {
                         let marketIndicatorName = marketIndicatorNames[i];
                         let marketIndicator = market[marketIndicatorName];
