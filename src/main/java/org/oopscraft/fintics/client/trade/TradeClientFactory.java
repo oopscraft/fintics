@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.client;
+package org.oopscraft.fintics.client.trade;
 
 import org.oopscraft.arch4j.core.data.pbe.PbePropertiesUtil;
 import org.oopscraft.fintics.model.Trade;
@@ -8,12 +8,12 @@ import java.io.StringReader;
 import java.lang.reflect.Constructor;
 import java.util.Properties;
 
-public class ClientFactory {
+public class TradeClientFactory {
 
-    public static Client getClient(String clientType, String clientProperties) {
+    public static TradeClient getClient(String clientType, String clientProperties) {
         try {
-            Class<? extends Client> clientTypeClass = Class.forName(clientType).asSubclass(Client.class);
-            Constructor<? extends Client> constructor = clientTypeClass.getConstructor(Properties.class);
+            Class<? extends TradeClient> clientTypeClass = Class.forName(clientType).asSubclass(TradeClient.class);
+            Constructor<? extends TradeClient> constructor = clientTypeClass.getConstructor(Properties.class);
             Properties properties = loadPropertiesFromString(clientProperties);
             return constructor.newInstance(properties);
         } catch (ClassNotFoundException e) {
@@ -25,7 +25,7 @@ public class ClientFactory {
         }
     }
 
-    public static Client getClient(Trade trade) {
+    public static TradeClient getClient(Trade trade) {
         return getClient(trade.getClientType(), trade.getClientProperties());
     }
 

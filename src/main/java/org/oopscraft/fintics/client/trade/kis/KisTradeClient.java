@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.client.kis;
+package org.oopscraft.fintics.client.trade.kis;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
 import org.oopscraft.arch4j.core.support.ValueMap;
-import org.oopscraft.fintics.client.Client;
+import org.oopscraft.fintics.client.trade.TradeClient;
 import org.oopscraft.fintics.model.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -27,7 +27,7 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class KisClient extends Client {
+public class KisTradeClient extends TradeClient {
 
     private final boolean production;
 
@@ -41,7 +41,7 @@ public class KisClient extends Client {
 
     private final ObjectMapper objectMapper;
 
-    public KisClient(Properties properties) {
+    public KisTradeClient(Properties properties) {
         super(properties);
         this.production = Boolean.parseBoolean(properties.getProperty("production"));
         this.apiUrl = properties.getProperty("apiUrl");
@@ -83,10 +83,6 @@ public class KisClient extends Client {
             case STOCK:
             case ETF:
                 fidInputIscd = asset.getSymbol();
-                break;
-            case ETN:
-                fidCondMrktDivCode = "J";
-                fidInputIscd = "Q" + asset.getSymbol();
                 break;
             default:
                 throw new RuntimeException("invalid asset type - " + asset.getType());
@@ -142,9 +138,6 @@ public class KisClient extends Client {
             case STOCK:
             case ETF:
                 fidInputIscd = asset.getSymbol();
-                break;
-            case ETN:
-                fidInputIscd = "Q" + asset.getSymbol();
                 break;
             default:
                 throw new RuntimeException("invalid asset type - " + asset.getType());
@@ -238,10 +231,6 @@ public class KisClient extends Client {
             case STOCK:
             case ETF:
                 fidInputIscd = asset.getSymbol();
-                break;
-            case ETN:
-                fidCondMrktDivCode = "J";
-                fidInputIscd = "Q" + asset.getSymbol();
                 break;
             default:
                 throw new RuntimeException("invalid asset type - " + asset.getType());

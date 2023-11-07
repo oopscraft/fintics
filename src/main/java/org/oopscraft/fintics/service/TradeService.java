@@ -6,8 +6,8 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
 import org.oopscraft.arch4j.core.data.IdGenerator;
 import org.oopscraft.arch4j.core.data.pbe.PbePropertiesUtil;
-import org.oopscraft.fintics.client.Client;
-import org.oopscraft.fintics.client.ClientFactory;
+import org.oopscraft.fintics.client.trade.TradeClient;
+import org.oopscraft.fintics.client.trade.TradeClientFactory;
 import org.oopscraft.fintics.dao.TradeAssetEntity;
 import org.oopscraft.fintics.dao.TradeEntity;
 import org.oopscraft.fintics.dao.TradeRepository;
@@ -101,8 +101,8 @@ public class TradeService {
     public Optional<Balance> getTradeBalance(String tradeId) {
         Trade trade = getTrade(tradeId).orElseThrow();
         if(trade.getClientType() != null) {
-            Client client = ClientFactory.getClient(trade.getClientType(), trade.getClientProperties());
-            return Optional.ofNullable(client.getBalance());
+            TradeClient tradeClient = TradeClientFactory.getClient(trade.getClientType(), trade.getClientProperties());
+            return Optional.ofNullable(tradeClient.getBalance());
         }else{
             return Optional.empty();
         }
@@ -116,10 +116,10 @@ public class TradeService {
                 .findFirst()
                 .orElseThrow();
 
-        Client client = ClientFactory.getClient(trade);
-        OrderBook orderBook = client.getOrderBook(tradeAsset);
-        List<Ohlcv> minuteOhlcvs = client.getMinuteOhlcvs(tradeAsset);
-        List<Ohlcv> dailyOhlcvs = client.getDailyOhlcvs(tradeAsset);
+        TradeClient tradeClient = TradeClientFactory.getClient(trade);
+        OrderBook orderBook = tradeClient.getOrderBook(tradeAsset);
+        List<Ohlcv> minuteOhlcvs = tradeClient.getMinuteOhlcvs(tradeAsset);
+        List<Ohlcv> dailyOhlcvs = tradeClient.getDailyOhlcvs(tradeAsset);
         return Optional.ofNullable(AssetIndicator.builder()
                 .symbol(tradeAsset.getSymbol())
                 .name(tradeAsset.getName())
@@ -138,8 +138,8 @@ public class TradeService {
     public void buyTradeAsset(String tradeId, String symbol, Integer quantity) {
         Trade trade = getTrade(tradeId).orElseThrow();
         TradeAsset tradeAsset = trade.getTradeAsset(symbol).orElseThrow();
-        Client client = ClientFactory.getClient(trade);
-        client.buyAsset(tradeAsset, quantity);
+        TradeClient tradeClient = TradeClientFactory.getClient(trade);
+        tradeClient.buyAsset(tradeAsset, quantity);
         if (trade.isAlarmOnOrder()) {
             if(trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
                 String subject = String.format("[%s]", trade.getName());
@@ -151,10 +151,10 @@ public class TradeService {
 
     public void sellBalanceAsset(String tradeId, String symbol, Integer quantity) {
         Trade trade = getTrade(tradeId).orElseThrow();
-        Client client = ClientFactory.getClient(trade);
-        Balance balance = client.getBalance();
+        TradeClient tradeClient = TradeClientFactory.getClient(trade);
+        Balance balance = tradeClient.getBalance();
         BalanceAsset balanceAsset = balance.getBalanceAsset(symbol).orElseThrow();
-        client.sellAsset(balanceAsset, quantity);
+        tradeClient.sellAsset(balanceAsset, quantity);
         if (trade.isAlarmOnOrder()) {
             if(trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
                 String subject = String.format("[%s]", trade.getName());

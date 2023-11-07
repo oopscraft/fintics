@@ -1,18 +1,17 @@
-package org.oopscraft.fintics.client.kis;
+package org.oopscraft.fintics.client.trade.kis;
 
-import org.oopscraft.fintics.client.Client;
-import org.oopscraft.fintics.client.ClientDefinition;
+import org.oopscraft.fintics.client.trade.TradeClient;
+import org.oopscraft.fintics.client.trade.TradeClientDefinition;
 import org.springframework.stereotype.Component;
 
-import java.util.Properties;
 import java.util.StringJoiner;
 
 @Component
-public class KisClientDefinition implements ClientDefinition {
+public class KisTradeClientDefinition implements TradeClientDefinition {
 
     @Override
-    public Class<? extends Client> getType() {
-        return KisClient.class;
+    public Class<? extends TradeClient> getType() {
+        return KisTradeClient.class;
     }
 
     @Override

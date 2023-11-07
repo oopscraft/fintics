@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.client;
+package org.oopscraft.fintics.client.trade;
 
 import lombok.Getter;
 import org.springframework.beans.BeansException;
@@ -11,24 +11,24 @@ import java.util.Objects;
 import java.util.Optional;
 
 @Component
-public class ClientDefinitionRegistry implements BeanPostProcessor {
+public class TradeClientDefinitionRegistry implements BeanPostProcessor {
 
     @Getter
-    private static final List<ClientDefinition> clientDefinitions = new ArrayList<>();
+    private static final List<TradeClientDefinition> clientDefinitions = new ArrayList<>();
 
-    public void add(ClientDefinition executorDefinition) {
+    public void add(TradeClientDefinition executorDefinition) {
         clientDefinitions.add(executorDefinition);
     }
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-        if(bean instanceof ClientDefinition) {
-            clientDefinitions.add((ClientDefinition) bean);
+        if(bean instanceof TradeClientDefinition) {
+            clientDefinitions.add((TradeClientDefinition) bean);
         }
         return bean;
     }
 
-    public static Optional<ClientDefinition> getProbeDefinition(String type) {
+    public static Optional<TradeClientDefinition> getProbeDefinition(String type) {
         return clientDefinitions.stream()
                 .filter(probe -> Objects.equals(probe.getType().getName(), type))
                 .findFirst();

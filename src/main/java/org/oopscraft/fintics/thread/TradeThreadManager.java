@@ -60,13 +60,13 @@ public class TradeThreadManager implements DisposableBean {
                 throw new RuntimeException(String.format("Thread Thread[%s] is not running.", tradeId));
             }
 
-            Thread[] tradeThreads = new Thread[tradeThreadGroup.activeCount()];
+            TradeThread[] tradeThreads = new TradeThread[tradeThreadGroup.activeCount()];
             tradeThreadGroup.enumerate(tradeThreads);
-            for(Thread tradeThread : tradeThreads) {
+            for(TradeThread tradeThread : tradeThreads) {
                 if(tradeThread.getName().equals(tradeId)) {
                     try {
                         tradeThread.interrupt();
-                        tradeThread.join(10_000);
+                        tradeThread.join(60_000);
                         if(sseLogAppenderMap.containsKey(tradeId)) {
                             sseLogAppenderMap.get(tradeId).stop();
                             sseLogAppenderMap.remove(tradeId);

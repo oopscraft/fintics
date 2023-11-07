@@ -49,6 +49,6 @@ core:
 
 # fintics
 fintics:
-  scheduler:
-    asset-collect-scheduler:
+  collector:
+    asset-collector:
       limit: 10000

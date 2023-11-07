@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.client.kis;
+package org.oopscraft.fintics.client.trade.kis;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -7,12 +7,11 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.oopscraft.arch4j.core.test.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
-import org.oopscraft.fintics.client.ClientFactory;
+import org.oopscraft.fintics.client.trade.TradeClientFactory;
 import org.oopscraft.fintics.dao.TradeEntity;
 import org.oopscraft.fintics.model.*;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -24,11 +23,11 @@ class KisClientTest extends CoreTestSupport {
 
     private static final String TRADE_ID = "06c228451ce0400fa57bb36f0568d7cb";
 
-    KisClient getKisClient() {
+    KisTradeClient getKisClient() {
         TradeEntity tradeEntity = entityManager.find(TradeEntity.class, TRADE_ID);
-        String clientType = KisClient.class.getName();
+        String clientType = KisTradeClient.class.getName();
         String clientProperties = tradeEntity.getClientProperties();
-        return (KisClient) ClientFactory.getClient(clientType, clientProperties);
+        return (KisTradeClient) TradeClientFactory.getClient(clientType, clientProperties);
     }
 
     @Disabled

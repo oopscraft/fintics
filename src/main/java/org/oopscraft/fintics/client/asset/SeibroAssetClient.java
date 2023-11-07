@@ -1,27 +1,22 @@
-package org.oopscraft.fintics.collector;
+package org.oopscraft.fintics.client.asset;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
 import org.oopscraft.arch4j.core.support.ValueMap;
-import org.oopscraft.fintics.dao.AssetEntity;
-import org.oopscraft.fintics.dao.AssetRepository;
+import org.oopscraft.fintics.model.Asset;
 import org.oopscraft.fintics.model.AssetType;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.w3c.dom.*;
 import org.xml.sax.InputSource;
 
-import javax.persistence.EntityManager;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -36,49 +31,29 @@ import javax.xml.xpath.XPathFactory;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.math.RoundingMode;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Component
+@ConditionalOnProperty(prefix = "fintics.client.asset", name = "class-name", havingValue="org.oopscraft.fintics.client.asset.SeibroAssetClient")
 @RequiredArgsConstructor
 @Slf4j
-public class AssetCollectScheduler {
+public class SeibroAssetClient implements AssetClient {
 
-    @Value("${fintics.scheduler.asset-collect-scheduler.limit:100}")
-    private Integer limit = 100;
-
-    private final EntityManager entityManager;
-
-    private final AssetRepository assetRepository;
-
-    @Scheduled(initialDelay = 3_000, fixedDelay = 360_000 * 24)
-    @Transactional
-    public void collectAssets() {
-        log.info("Start collect assets.");
-        LocalDateTime collectedAt = LocalDateTime.now();
-
-        collectEtfAssets(collectedAt);
-
-        collectStockAssets(collectedAt);
-
-        // delete not merged
-        entityManager.createQuery(
-                        "delete from AssetEntity where collectedAt <> :collectedAt"
-                )
-                .setParameter("collectedAt", collectedAt)
-                .executeUpdate();
-        entityManager.flush();
-        log.info("End collect assets.");
+    @Override
+    public List<Asset> getStockAssets(int offset, int limit) {
+        List<Asset> assets = new ArrayList<>();
+        BigDecimal dividedBy = BigDecimal.valueOf(2);
+        int kospiOffset = BigDecimal.valueOf(offset).divide(dividedBy).setScale(0, RoundingMode.CEILING).intValue();
+        int kospiLimit = BigDecimal.valueOf(limit).divide(dividedBy).setScale(0, RoundingMode.CEILING).intValue();
+        int kosdaqOffset = BigDecimal.valueOf(offset).divide(dividedBy).setScale(0, RoundingMode.FLOOR).intValue();
+        int kosdaqLimit = BigDecimal.valueOf(limit).divide(dividedBy).setScale(0, RoundingMode.FLOOR).intValue();
+        assets.addAll(getStockAssetsByMarketType("11", kospiOffset, kospiLimit));
+        assets.addAll(getStockAssetsByMarketType("12", kosdaqOffset, kosdaqLimit));
+        return assets;
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    protected void collectStockAssets(LocalDateTime collectedAt) {
-        collectStockAssetsByMarketType(collectedAt, "11");    // kospi
-        collectStockAssetsByMarketType(collectedAt, "12");    // kosdaq
-    }
-
-    private void collectStockAssetsByMarketType(LocalDateTime collectedAt, String marketType) {
+    private List<Asset> getStockAssetsByMarketType(String marketType, int offset, int limit) {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .readTimeout(30_000)
@@ -118,34 +93,30 @@ public class AssetCollectScheduler {
         String responseBody = responseEntity.getBody();
         List<ValueMap> rows = convertXmlToList(responseBody);
 
-        // sort, limit
+        // sort
         rows.sort((o1, o2) -> {
             BigDecimal o1MarketCap = new BigDecimal(StringUtils.defaultIfBlank(o1.getString("MARTP_TOTAMT"),"0"));
             BigDecimal o2MarketCap = new BigDecimal(StringUtils.defaultIfBlank(o2.getString("MARTP_TOTAMT "),"0"));
             return o2MarketCap.compareTo(o1MarketCap);
         });
-        if(rows.size() > limit) {
-            rows.subList(limit, rows.size()).clear();
-        }
 
-        List<AssetEntity> assetEntities = rows.stream()
-                .map(row -> {
-                    String symbol = row.getString("SHOTN_ISIN");
-                    AssetEntity assetEntity = AssetEntity.builder()
-                            .symbol(symbol)
-                            .name(row.getString("KOR_SECN_NM"))
-                            .type(AssetType.STOCK)
-                            .collectedAt(collectedAt)
-                            .build();
-                    return assetEntity;
-                })
-                .collect(Collectors.toList());
-        assetRepository.saveAllAndFlush(assetEntities);
+        // offset, limit
+        List<Asset> assets = new ArrayList<>();
+        for(int i = offset; i < offset + limit; i ++) {
+            ValueMap row = rows.get(i);
+            String symbol = row.getString("SHOTN_ISIN");
+            String name = row.getString("KOR_SECN_NM");
+            assets.add(Asset.builder()
+                    .symbol(symbol)
+                    .name(name)
+                    .type(AssetType.STOCK)
+                    .build());
+        }
+        return assets;
     }
 
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    protected void collectEtfAssets(LocalDateTime collectedAt) {
+    @Override
+    public List<Asset> getEtfAssets(int offset, int limit) {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .readTimeout(30_000)
@@ -185,31 +156,29 @@ public class AssetCollectScheduler {
         String responseBody = responseEntity.getBody();
         List<ValueMap> rows = convertXmlToList(responseBody);
 
-        // sort, limit
+        // sort
         rows.sort((o1, o2) -> {
             BigDecimal o1MarketCap = new BigDecimal(StringUtils.defaultIfBlank(o1.getString("NETASST_TOTAMT"),"0"));
             BigDecimal o2MarketCap = new BigDecimal(StringUtils.defaultIfBlank(o2.getString("NETASST_TOTAMT"),"0"));
             return o2MarketCap.compareTo(o1MarketCap);
         });
-        if(rows.size() > limit) {
-            rows.subList(limit, rows.size()).clear();
-        }
 
-        List<AssetEntity> assetEntities = rows.stream()
-                .map(row -> {
-                    String symbol = row.getString("SHOTN_ISIN");
-                    return AssetEntity.builder()
-                            .symbol(symbol)
-                            .name(row.getString("KOR_SECN_NM"))
-                            .type(AssetType.ETF)
-                            .collectedAt(collectedAt)
-                            .build();
-                })
-                .collect(Collectors.toList());
-        assetRepository.saveAllAndFlush(assetEntities);
+        // offset, limit
+        List<Asset> assets = new ArrayList<>();
+        for(int i = offset; i < offset + limit; i ++) {
+            ValueMap row = rows.get(i);
+            String symbol = row.getString("SHOTN_ISIN");
+            String name = row.getString("KOR_SECN_NM");
+            assets.add(Asset.builder()
+                    .symbol(symbol)
+                    .name(name)
+                    .type(AssetType.ETF)
+                    .build());
+        }
+        return assets;
     }
 
-    public static HttpHeaders createSeibroHeaders(String w2xPath) {
+    private static HttpHeaders createSeibroHeaders(String w2xPath) {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Accept", "application/xml");
         headers.add("Origin","https://seibro.or.kr");
@@ -217,7 +186,7 @@ public class AssetCollectScheduler {
         return headers;
     }
 
-    public static String createPayloadXml(String action, String task, Map<String,String> payloadMap) {
+    private static String createPayloadXml(String action, String task, Map<String,String> payloadMap) {
 
         // Create a new Document
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -304,7 +273,7 @@ public class AssetCollectScheduler {
         return list;
     }
 
-    public static ValueMap convertXmlToMap(String responseXml) {
+    private static ValueMap convertXmlToMap(String responseXml) {
         ValueMap map  = new ValueMap();
         InputSource inputSource;
         StringReader stringReader;
@@ -332,13 +301,13 @@ public class AssetCollectScheduler {
         return map;
     }
 
-    public static String getIsin(String symbol) {
+    private static String getIsin(String symbol) {
         ValueMap map = getSecInfo(symbol);
         return Optional.ofNullable(map.getString("ISIN"))
                 .orElseThrow();
     }
 
-    public static String getIssucoCustNo(String symbol) {
+    private static String getIssucoCustNo(String symbol) {
         ValueMap map = getSecInfo(symbol);
         return Optional.ofNullable(map.getString("ISSUCO_CUSTNO"))
                 .orElseThrow();
@@ -372,6 +341,5 @@ public class AssetCollectScheduler {
         String responseBody = responseEntity.getBody();
         return convertXmlToMap(responseBody);
     }
-
 
 }

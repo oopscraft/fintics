@@ -12,4 +12,9 @@ public class TradeThread extends Thread {
         this.tradeRunnable = tradeRunnable;
     }
 
+    public void interrupt() {
+        super.interrupt();
+        tradeRunnable.setInterrupted(true);
+    }
+
 }

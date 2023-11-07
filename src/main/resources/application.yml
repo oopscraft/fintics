@@ -9,6 +9,11 @@ web:
 
 # fintics
 fintics:
-  scheduler:
-    asset-collect-scheduler:
+  client:
+    asset:
+      class-name: org.oopscraft.fintics.client.asset.SeibroAssetClient
+    market:
+      class-name: org.oopscraft.fintics.client.market.YahooMarketClient
+  collector:
+    asset-collector:
       limit: 100

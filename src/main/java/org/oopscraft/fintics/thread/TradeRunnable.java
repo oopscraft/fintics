@@ -3,6 +3,7 @@ package org.oopscraft.fintics.thread;
 import ch.qos.logback.classic.Logger;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 import org.oopscraft.arch4j.web.support.SseLogAppender;
 import org.oopscraft.fintics.model.*;
 import org.oopscraft.fintics.service.MarketService;
@@ -11,8 +12,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
-import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -39,6 +40,10 @@ public class TradeRunnable implements Runnable {
 
     private final Logger log;
 
+    @Setter
+    @Getter
+    private boolean interrupted = false;
+
     @Builder
     public TradeRunnable(String tradeId, Integer interval, ApplicationContext applicationContext, SseLogAppender sseLogAppender) {
         this.tradeId = tradeId;
@@ -59,24 +64,31 @@ public class TradeRunnable implements Runnable {
     public void run() {
         this.sseLogAppender.start();
         log.info("Start TradeRunnable: {}", tradeId);
-        boolean active = true;
-        while(!Thread.currentThread().isInterrupted() && active) {
+        while(!Thread.currentThread().isInterrupted() && !interrupted) {
+            TransactionStatus transactionStatus = null;
             try {
-                // execute trade
+                Thread.sleep(3_000);
+
+                // start transaction
                 DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition();
-                transactionDefinition.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
-                TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager, transactionDefinition);
-                transactionTemplate.executeWithoutResult(transactionStatus ->
-                        executeTrade());
-            } catch (Exception e) {
+                transactionDefinition.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+                transactionStatus = transactionManager.getTransaction(transactionDefinition);
+
+                // execute trade
+                executeTrade();
+
+                // wait interval
+                log.info("Waiting interval: {} seconds", interval);
+                Thread.sleep(interval * 1_000);
+
+            } catch (InterruptedException e) {
+                log.warn("TradeRunnable is interrupted.");
+                break;
+            } catch (Throwable e) {
                 log.error(e.getMessage(), e);
             } finally {
-                try {
-                    log.info("Waiting interval: {} seconds", interval);
-                    Thread.sleep(interval * 1_000);
-                }catch(InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    active = false;
+                if(transactionStatus != null) {
+                    transactionManager.commit(transactionStatus);
                 }
             }
         }
@@ -84,7 +96,7 @@ public class TradeRunnable implements Runnable {
         this.sseLogAppender.stop();
     }
 
-    private void executeTrade() {
+    private void executeTrade() throws InterruptedException {
         try {
             // load trade info
             Trade trade = tradeService.getTrade(tradeId).orElseThrow();
@@ -104,6 +116,7 @@ public class TradeRunnable implements Runnable {
 
             // checks buy condition
             for (TradeAsset tradeAsset : trade.getTradeAssets()) {
+                Thread.sleep(100);
 
                 // check enabled
                 if (!tradeAsset.isEnabled()) {
@@ -170,7 +183,8 @@ public class TradeRunnable implements Runnable {
                     }
                 }
             }
-
+        } catch(InterruptedException e) {
+            throw e;
         } catch (Throwable e) {
             log.error(e.getMessage(), e);
             tradeService.sendErrorAlarmIfEnabled(tradeId, e);
