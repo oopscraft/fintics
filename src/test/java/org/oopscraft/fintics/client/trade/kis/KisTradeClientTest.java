@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @SpringBootTest(classes = FinticsConfiguration.class)
 @RequiredArgsConstructor
 @Slf4j
-class KisClientTest extends CoreTestSupport {
+class KisTradeClientTest extends CoreTestSupport {
 
     private static final String TRADE_ID = "06c228451ce0400fa57bb36f0568d7cb";
 

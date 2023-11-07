@@ -25,40 +25,13 @@ class MarketServiceTest extends CoreTestSupport {
 
     @Disabled
     @Test
-    void getOhlcvs() {
-        // given
-        String symbol = "^GSPC";
-        String interval = "1m";
-        LocalDateTime dateTimeFrom = LocalDateTime.now().minusWeeks(1);
-        LocalDateTime dateTimeTo = LocalDateTime.now();
-
-        // when
-        List<Ohlcv> ohlcvs = marketService.getOhlcvs(symbol, interval, dateTimeFrom, dateTimeTo, 100);
-
-        // then
-        log.info("ohlcvs.size():{}", ohlcvs.size());
-    }
-
-    @Disabled
-    @Test
-    void getMarketIndex() {
-        // given
-        // when
-        MarketIndicator marketIndex = marketService.getMarketIndex( "^GSPC", "S&P 500");
-
-        // then
-        assertNotNull(marketIndex);
-    }
-
-    @Disabled
-    @Test
     void getMarket() {
         // given
         // when
         Market market = marketService.getMarket();
 
         // then
-        assertNotNull(market.getSpxIndicator());
+        assertNotNull(market);
     }
 
 }
