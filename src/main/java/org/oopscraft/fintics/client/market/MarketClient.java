@@ -6,17 +6,17 @@ import java.util.List;
 
 public interface MarketClient {
 
-    MarketIndicator getNdxIndicator();
+    MarketIndicator getNdxIndicator() throws InterruptedException;
 
-    MarketIndicator getNdxFutureIndicator();
+    MarketIndicator getNdxFutureIndicator() throws InterruptedException;
 
-    MarketIndicator getSpxIndicator();
+    MarketIndicator getSpxIndicator() throws InterruptedException;
 
-    MarketIndicator getSpxFutureIndicator();
+    MarketIndicator getSpxFutureIndicator() throws InterruptedException;
 
-    MarketIndicator getDjiIndicator();
+    MarketIndicator getDjiIndicator() throws InterruptedException;
 
-    MarketIndicator getDjiFutureIndicator();
+    MarketIndicator getDjiFutureIndicator() throws InterruptedException;
 
 
 }

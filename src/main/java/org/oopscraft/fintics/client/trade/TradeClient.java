@@ -15,16 +15,16 @@ public abstract class TradeClient {
         this.properties = properties;
     }
 
-    public abstract OrderBook getOrderBook(Asset asset);
+    public abstract OrderBook getOrderBook(Asset asset) throws InterruptedException;
 
-    public abstract List<Ohlcv> getMinuteOhlcvs(Asset asset);
+    public abstract List<Ohlcv> getMinuteOhlcvs(Asset asset) throws InterruptedException;
 
-    public abstract List<Ohlcv> getDailyOhlcvs(Asset asset);
+    public abstract List<Ohlcv> getDailyOhlcvs(Asset asset) throws InterruptedException;
 
-    public abstract Balance getBalance();
+    public abstract Balance getBalance() throws InterruptedException;
 
-    public abstract void buyAsset(TradeAsset tradeAsset, int quantity);
+    public abstract void buyAsset(TradeAsset tradeAsset, int quantity) throws InterruptedException;
 
-    public abstract void sellAsset(BalanceAsset balanceAsset, int quantity);
+    public abstract void sellAsset(BalanceAsset balanceAsset, int quantity) throws InterruptedException;
 
 }

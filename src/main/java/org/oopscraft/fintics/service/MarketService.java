@@ -37,7 +37,7 @@ public class MarketService {
     private final MarketClient marketClient;
 
     @Cacheable(value = CACHE_MARKET)
-    public synchronized Market getMarket() {
+    public synchronized Market getMarket() throws InterruptedException {
         return Market.builder()
                 .ndxIndicator(marketClient.getNdxIndicator())
                 .ndxFutureIndicator(marketClient.getNdxFutureIndicator())
@@ -50,7 +50,7 @@ public class MarketService {
 
     @CachePut(value = CACHE_MARKET)
     @Scheduled(initialDelay = 1_000, fixedDelay = 60_000)
-    public synchronized Market putMarketCache() {
+    public synchronized Market putMarketCache() throws InterruptedException{
         log.info("cacheEvict[{}]", CACHE_MARKET);
         return getMarket();
     }

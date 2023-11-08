@@ -22,7 +22,7 @@ class AssetCollectorTest extends CoreTestSupport {
 
     @Disabled
     @Test
-    void collectAssets() {
+    void collectAssets() throws InterruptedException {
         // given
         // when
         assetCollector.collectAssets();

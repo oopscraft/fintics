@@ -21,7 +21,7 @@ public class SimulateService {
 
     private final MarketService marketService;
 
-    public Simulate simulate(Simulate simulate) {
+    public Simulate simulate(Simulate simulate) throws InterruptedException {
 
         LocalTime startAt = simulate.getStartAt();
         LocalTime endAt = simulate.getEndAt();

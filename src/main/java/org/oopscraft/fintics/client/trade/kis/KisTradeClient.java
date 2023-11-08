@@ -51,12 +51,8 @@ public class KisTradeClient extends TradeClient {
         this.objectMapper = new ObjectMapper();
     }
 
-    private synchronized static void sleep() {
-        try {
-            Thread.sleep(200);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+    private synchronized static void sleep() throws InterruptedException {
+        Thread.sleep(300);
     }
 
     HttpHeaders createHeaders() {
@@ -70,7 +66,7 @@ public class KisTradeClient extends TradeClient {
     }
 
     @Override
-    public synchronized OrderBook getOrderBook(Asset asset) {
+    public synchronized OrderBook getOrderBook(Asset asset) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
@@ -126,7 +122,7 @@ public class KisTradeClient extends TradeClient {
     }
 
     @Override
-    public synchronized List<Ohlcv> getMinuteOhlcvs(Asset asset) {
+    public synchronized List<Ohlcv> getMinuteOhlcvs(Asset asset) throws InterruptedException {
         List<Ohlcv> minuteOhlcvs = new ArrayList<>();
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
@@ -146,7 +142,7 @@ public class KisTradeClient extends TradeClient {
         LocalTime closeTime = LocalTime.of(15,30);
         LocalTime fidInputHour1Time = (nowTime.isAfter(closeTime) ? closeTime : nowTime);
 
-        for(int i = 0; i < 10; i ++) {
+        for(int i = 0; i < 20; i ++) {
             String url = apiUrl + "/uapi/domestic-stock/v1/quotations/inquire-time-itemchartprice";
             HttpHeaders headers = createHeaders();
             headers.add("tr_id", "FHKST03010200");
@@ -221,7 +217,7 @@ public class KisTradeClient extends TradeClient {
     }
 
     @Override
-    public synchronized List<Ohlcv> getDailyOhlcvs(Asset asset) {
+    public synchronized List<Ohlcv> getDailyOhlcvs(Asset asset) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
@@ -289,7 +285,7 @@ public class KisTradeClient extends TradeClient {
 
 
     @Override
-    public synchronized Balance getBalance() {
+    public synchronized Balance getBalance() throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
@@ -372,7 +368,7 @@ public class KisTradeClient extends TradeClient {
         return balance;
     }
 
-    private BigDecimal getBalanceRealizedProfitAmount() {
+    private BigDecimal getBalanceRealizedProfitAmount() throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
@@ -420,7 +416,7 @@ public class KisTradeClient extends TradeClient {
     }
 
     @Override
-    public synchronized void buyAsset(TradeAsset tradeAsset, int quantity) {
+    public synchronized void buyAsset(TradeAsset tradeAsset, int quantity) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
@@ -453,7 +449,7 @@ public class KisTradeClient extends TradeClient {
     }
 
     @Override
-    public synchronized void sellAsset(BalanceAsset balanceAsset, int quantity) {
+    public synchronized void sellAsset(BalanceAsset balanceAsset, int quantity) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();

@@ -36,7 +36,7 @@ public class AssetCollector {
 
     @Scheduled(initialDelay = 3_000, fixedDelay = 360_000 * 24)
     @Transactional
-    public void collectAssets() {
+    public void collectAssets() throws InterruptedException {
         log.info("Start collect assets.");
         LocalDateTime collectedAt = LocalDateTime.now();
         BigDecimal dividedBy = BigDecimal.valueOf(2);
@@ -60,7 +60,7 @@ public class AssetCollector {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    void collectStockAssets(int limit, LocalDateTime collectedAt) {
+    void collectStockAssets(int limit, LocalDateTime collectedAt) throws InterruptedException {
         List<Asset> stockAssets = assetClient.getStockAssets(0, limit);
         List<AssetEntity> stockAssetEntities = stockAssets.stream()
                 .map(asset -> AssetEntity.builder()
@@ -74,7 +74,7 @@ public class AssetCollector {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    void collectEtfAssets(int limit, LocalDateTime collectedAt) {
+    void collectEtfAssets(int limit, LocalDateTime collectedAt) throws InterruptedException {
         List<Asset> etfAssets = assetClient.getEtfAssets(0, limit);
         List<AssetEntity> etfAssetEntities = etfAssets.stream()
                 .map(asset -> AssetEntity.builder()

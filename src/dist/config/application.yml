@@ -14,7 +14,8 @@ spring:
       username: fintics
       password: fintics
       minimum-idle: 10
-      maximum-pool-size: 20
+      maximum-pool-size: 30
+      connection-test-query: select 1 from dual
   mail:
     host: smtp.gmail.com
     port: 587

@@ -98,7 +98,7 @@ public class TradeService {
         tradeRepository.flush();
     }
 
-    public Optional<Balance> getTradeBalance(String tradeId) {
+    public Optional<Balance> getTradeBalance(String tradeId) throws InterruptedException {
         Trade trade = getTrade(tradeId).orElseThrow();
         if(trade.getClientType() != null) {
             TradeClient tradeClient = TradeClientFactory.getClient(trade.getClientType(), trade.getClientProperties());
@@ -109,7 +109,7 @@ public class TradeService {
     }
 
     @Cacheable(value = CACHE_TRADE_ASSET_INDICATOR, key = "#tradeId + ':' + #symbol")
-    public synchronized Optional<AssetIndicator> getTradeAssetIndicator(String tradeId, String symbol) {
+    public synchronized Optional<AssetIndicator> getTradeAssetIndicator(String tradeId, String symbol) throws InterruptedException {
         Trade trade = getTrade(tradeId).orElseThrow();
         TradeAsset tradeAsset = trade.getTradeAssets().stream()
                 .filter(e -> Objects.equals(e.getSymbol(), symbol))
@@ -135,7 +135,7 @@ public class TradeService {
         log.info("cacheEvict[{}]", CACHE_TRADE_ASSET_INDICATOR);
     }
 
-    public void buyTradeAsset(String tradeId, String symbol, Integer quantity) {
+    public void buyTradeAsset(String tradeId, String symbol, Integer quantity) throws InterruptedException {
         Trade trade = getTrade(tradeId).orElseThrow();
         TradeAsset tradeAsset = trade.getTradeAsset(symbol).orElseThrow();
         TradeClient tradeClient = TradeClientFactory.getClient(trade);
@@ -149,7 +149,7 @@ public class TradeService {
         }
     }
 
-    public void sellBalanceAsset(String tradeId, String symbol, Integer quantity) {
+    public void sellBalanceAsset(String tradeId, String symbol, Integer quantity) throws InterruptedException {
         Trade trade = getTrade(tradeId).orElseThrow();
         TradeClient tradeClient = TradeClientFactory.getClient(trade);
         Balance balance = tradeClient.getBalance();
@@ -165,7 +165,7 @@ public class TradeService {
     }
 
     @Transactional
-    public void sendErrorAlarmIfEnabled(String tradeId, Throwable t) {
+    public void sendErrorAlarmIfEnabled(String tradeId, Throwable t) throws InterruptedException {
         Trade trade = getTrade(tradeId).orElseThrow();
         if(trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
             if (trade.isAlarmOnError()) {

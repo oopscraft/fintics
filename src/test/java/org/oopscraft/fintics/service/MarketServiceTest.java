@@ -25,7 +25,7 @@ class MarketServiceTest extends CoreTestSupport {
 
     @Disabled
     @Test
-    void getMarket() {
+    void getMarket() throws InterruptedException {
         // given
         // when
         Market market = marketService.getMarket();

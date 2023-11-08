@@ -1,8 +1,6 @@
 package org.oopscraft.fintics.api.v1;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.swagger.v3.oas.models.links.Link;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.security.SecurityUtils;
@@ -18,24 +16,13 @@ import org.oopscraft.fintics.thread.TradeThreadManager;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import javax.annotation.security.PermitAll;
-import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @RestController
@@ -159,7 +146,7 @@ public class TradeRestController {
 
     @GetMapping("{tradeId}/balance")
     @PreAuthorize("@tradePermissionEvaluator.hasEditPermission(#tradeId)")
-    public ResponseEntity<BalanceResponse> getTradeBalance(@PathVariable("tradeId") String tradeId) {
+    public ResponseEntity<BalanceResponse> getTradeBalance(@PathVariable("tradeId") String tradeId) throws InterruptedException {
         BalanceResponse balanceResponse = tradeService.getTradeBalance(tradeId)
                 .map(BalanceResponse::from)
                 .orElseThrow();
@@ -168,7 +155,7 @@ public class TradeRestController {
 
     @GetMapping("{tradeId}/indicator")
     @PreAuthorize("@tradePermissionEvaluator.hasEditPermission(#tradeId)")
-    public ResponseEntity<TradeIndicator> getTradeIndicator(@PathVariable("tradeId") String tradeId) {
+    public ResponseEntity<TradeIndicator> getTradeIndicator(@PathVariable("tradeId") String tradeId) throws InterruptedException {
         Trade trade = tradeService.getTrade(tradeId).orElseThrow();
 
         // asset indicators

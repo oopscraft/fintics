@@ -120,17 +120,34 @@
             });
         }
 
-
         // chart
         let tradeIndicator = null;
-        let assetIndicatorsChart = null;
-        let marketIndicatorsChart = null;
+        let assetMinuteIndicatorsChart = null;
+        let assetDailyIndicatorsChart = null;
+        let marketMinuteIndicatorsChart = null;
+        let marketDailyIndicatorsChart = null;
 
-        Chart.defaults.font.size = 10;
+        Chart.defaults.font.size = 8;
         Chart.defaults.animation = false;
 
-        function initializeAssetIndicatorsChart() {
-            assetIndicatorsChart = new Chart(document.getElementById("assetIndicatorsChart"), {
+        function initializeAssetDailyIndicatorsChart() {
+            assetDailyIndicatorsChart = createDailyIndicatorsChart('assetDailyIndicatorsChart');
+        }
+
+        function initializeAssetMinuteIndicatorsChart() {
+            assetMinuteIndicatorsChart = createMinuteIndicatorsChart('assetMinuteIndicatorsChart');
+        }
+
+        function initializeMarketDailyIndicatorsChart() {
+            marketDailyIndicatorsChart = createDailyIndicatorsChart('marketDailyIndicatorsChart');
+        }
+
+        function initializeMarketMinuteIndicatorsChart() {
+            marketMinuteIndicatorsChart = createMinuteIndicatorsChart('marketMinuteIndicatorsChart');
+        }
+
+        function createDailyIndicatorsChart(elementId) {
+            return new Chart(document.getElementById(elementId), {
                 type: 'line',
                 data: {
                     datasets: []
@@ -144,17 +161,28 @@
                     scales: {
                         x: {
                             type: 'time',
+                            distribution: 'linear',
                             time: {
-                                unit: 'hour',
+                                unit: 'day',
                                 displayFormats: {
-                                    hour: 'MM-dd HH:00'
+                                    hour: 'MM-dd'
                                 }
                             },
                             ticks: {
-                                stepSize: 1,
+                                stepSize: 7,
                                 font: {
                                     size: 8
                                 }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Daily',
+                                color: '#911',
+                                font: {
+                                    weight: 'bold',
+                                    lineHeight: 1.2,
+                                },
+                                padding: {top: 5, left: 0, right: 0, bottom: 0}
                             }
                         },
                         y: {
@@ -174,7 +202,8 @@
                             callbacks: {
                                 label: function(context) {
                                     console.log(context);
-                                    return context.dataset.label + ': ' + context.raw['closePrice'].toLocaleString();
+                                    return context.dataset.label + ': ' + context.raw['closePrice'].toLocaleString() +
+                                        ' (' + context.raw['pctChange'] + '%)';
                                 }
                             }
                         }
@@ -183,8 +212,8 @@
             });
         }
 
-        function initializeMarketIndicatorsChart() {
-            marketIndicatorsChart = new Chart(document.getElementById("marketIndicatorsChart"), {
+        function createMinuteIndicatorsChart(elementId) {
+            return new Chart(document.getElementById(elementId), {
                 type: 'line',
                 data: {
                     datasets: []
@@ -198,6 +227,7 @@
                     scales: {
                         x: {
                             type: 'time',
+                            distribution: 'linear',
                             time: {
                                 unit: 'hour',
                                 displayFormats: {
@@ -205,10 +235,20 @@
                                 }
                             },
                             ticks: {
-                                stepSize: 1,
+                                stepSize: 2,
                                 font: {
                                     size: 8
                                 }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Minute',
+                                color: '#911',
+                                font: {
+                                    weight: 'bold',
+                                    lineHeight: 1.2,
+                                },
+                                padding: {top: 5, left: 0, right: 0, bottom: 0}
                             }
                         },
                         y: {
@@ -228,13 +268,58 @@
                             callbacks: {
                                 label: function(context) {
                                     console.log(context);
-                                    return context.dataset.label + ': ' + context.raw['closePrice'].toLocaleString();
+                                    return context.dataset.label + ': ' + context.raw['closePrice'].toLocaleString() +
+                                        ' (' + context.raw['pctChange'] + '%)';
                                 }
                             }
                         }
                     }
                 }
             });
+        }
+
+        function createTimeSeries(dateFrom, dateTo, ohlcvs, interval) {
+            let timeSeries = [];
+            let dateFromMillis = dateFrom.getTime();
+            let dateToMillis = dateTo.getTime();
+            for(let millis = dateFromMillis; millis <= dateToMillis; millis += interval) {
+                timeSeries.push({
+                    dateTime: new Date(millis),
+                    pctChange: 0.0,
+                    openPrice: 0,
+                    highPrice: 0,
+                    lowPrice: 0,
+                    closePrice: 0
+                });
+            }
+
+            let ohlcvSeries = JSON.parse(JSON.stringify(ohlcvs)).reverse();
+            ohlcvSeries.forEach((ohlcv) => ohlcv.dateTime = new Date(ohlcv.dateTime));
+            let ohlcvPos = Math.max(0, ohlcvSeries.findIndex((ohlcv) => {
+                return ohlcv.dateTime.getTime() >= timeSeries[0].dateTime.getTime();
+            }));
+            let ohlcvBasePrice = ohlcvSeries.length > 0 ? ohlcvSeries[ohlcvPos].openPrice : 0.0;
+            let prevOhlcvPoint;
+            for(let i = 0, length = timeSeries.length; i < length; i ++) {
+                let timePoint = timeSeries[i];
+                let timeRangeFromMillis = timePoint.dateTime.getTime();
+                let timeRangeToMillis = timeRangeFromMillis + (interval - 1);
+                if(ohlcvPos < ohlcvSeries.length) {
+                    let ohlcvPoint = ohlcvSeries[ohlcvPos];
+                    let ohlcvDateTimeMillis = ohlcvPoint.dateTime.getTime();
+                    if(timeRangeFromMillis <= ohlcvDateTimeMillis && ohlcvDateTimeMillis < timeRangeToMillis) {
+                        ohlcvPoint.pctChange = Number((ohlcvPoint.closePrice - ohlcvBasePrice)/ohlcvBasePrice * 100).toFixed(4);
+                        timeSeries[i] = ohlcvPoint;
+                        prevOhlcvPoint = ohlcvPoint;
+                        ohlcvPos ++;
+                        continue;
+                    }
+                }
+                if(prevOhlcvPoint) {
+                    timeSeries[i] = prevOhlcvPoint;
+                }
+            }
+            return timeSeries;
         }
 
         function getTradeIndicator() {
@@ -252,60 +337,78 @@
                         'spxFutureIndicator'
                     ];
 
-                    // defines date to
-                    let latestDateTimes = [];
-                    assetIndicators.forEach(el => {
-                        let minuteOhlcvs = el['minuteOhlcvs'];
-                        if(minuteOhlcvs.length > 0) {
-                            latestDateTimes.push(new Date(minuteOhlcvs[0].dateTime));
-                        }
-                    });
-                    marketIndicatorNames.forEach(name => {
-                        let minuteOhlcvs = market[name]['minuteOhlcvs'];
-                        if(minuteOhlcvs.length > 0) {
-                            latestDateTimes.push(new Date(minuteOhlcvs[0].dateTime));
-                        }
-                    });
-                    let dateTo = latestDateTimes.reduce((previousDate, currentDate) => {
-                        return currentDate > previousDate ? currentDate : previousDate;
-                    }, latestDateTimes[0]);
-
                     // define date from
-                    let dateFrom = dateFns.subHours(dateTo, 20);
+                    let dailyFrom = dateFns.startOfDay(new Date());
+                    dailyFrom = dateFns.subDays(dailyFrom, 90);
+                    let dailyTo = dateFns.startOfDay(new Date());
+                    console.log("dailyFrom,dailyTo:", dailyFrom, dailyTo);
+
+                    let minuteTo = new Date();
+                    let minuteFrom = dateFns.subHours(minuteTo, 15);
+                    console.log("minuteFrom,minuteTo:", minuteFrom, minuteTo);
 
                     // asset chart
-                    assetIndicatorsChart.data.datasets.length = 0;
+                    assetDailyIndicatorsChart.data.datasets.length = 0;
+                    assetMinuteIndicatorsChart.data.datasets.length = 0;
                     for(let i = 0; i < assetIndicators.length; i ++) {
                         let assetIndicator = assetIndicators[i];
+
+                        // daily
+                        let dailyOhlcvs = assetIndicator['dailyOhlcvs'];
+                        let dailyTimeSeries = createTimeSeries(dailyFrom, dailyTo, dailyOhlcvs, 60000*60*24);
+                        let dailyDataset = {
+                            label: assetIndicator.name,
+                            data: dailyTimeSeries,
+                            borderWidth: 1,
+                            pointStyle: 'circle'
+                        };
+                        assetDailyIndicatorsChart.data.datasets.push(dailyDataset);
+
+                        // minute
                         let minuteOhlcvs = assetIndicator['minuteOhlcvs'];
-                        let minuteTimeSeries = createMinuteTimeSeries(dateFrom, dateTo, minuteOhlcvs);
-                        let dataset = {
+                        let minuteTimeSeries = createTimeSeries(minuteFrom, minuteTo, minuteOhlcvs, 60000);
+                        let minuteDataset = {
                             label: assetIndicator.name,
                             data: minuteTimeSeries,
                             borderWidth: 1,
                             pointStyle: false
                         };
-                        assetIndicatorsChart.data.datasets.push(dataset);
+                        assetMinuteIndicatorsChart.data.datasets.push(minuteDataset);
                     }
-                    assetIndicatorsChart.update();
+                    assetDailyIndicatorsChart.update();
+                    assetMinuteIndicatorsChart.update();
 
                     // market chart
-                    marketIndicatorsChart.data.datasets.length = 0;
+                    marketMinuteIndicatorsChart.data.datasets.length = 0;
+                    marketDailyIndicatorsChart.data.datasets.length = 0;
                     for(let i = 0; i < marketIndicatorNames.length; i ++) {
                         let marketIndicatorName = marketIndicatorNames[i];
                         let marketIndicator = market[marketIndicatorName];
-                        let marketMinuteOhlcvs = marketIndicator['minuteOhlcvs'];
-                        let minuteTimeSeries = createMinuteTimeSeries(dateFrom, dateTo, marketMinuteOhlcvs);
-                        console.log("== ", minuteTimeSeries);
-                        let dataset = {
+
+                        // daily
+                        let dailyOhlcvs = marketIndicator['dailyOhlcvs'];
+                        let dailyTimeSeries = createTimeSeries(dailyFrom, dailyTo, dailyOhlcvs, 60000*60*24);
+                        let dailyDataset = {
+                            label: marketIndicator.name,
+                            data: dailyTimeSeries,
+                            borderWidth: 1,
+                            pointStyle: 'circle'
+                        };
+                        marketDailyIndicatorsChart.data.datasets.push(dailyDataset);
+
+                        // minute
+                        let minuteOhlcvs = marketIndicator['minuteOhlcvs'];
+                        let minuteTimeSeries = createTimeSeries(minuteFrom, minuteTo, minuteOhlcvs, 60000);
+                        let minuteDataset = {
                             label: marketIndicator.name,
                             data: minuteTimeSeries,
                             borderWidth: 1,
                             pointStyle: false
                         };
-                        marketIndicatorsChart.data.datasets.push(dataset);
+                        marketMinuteIndicatorsChart.data.datasets.push(minuteDataset);
                     }
-                    marketIndicatorsChart.update();
+                    marketDailyIndicatorsChart.update();
+                    marketMinuteIndicatorsChart.update();
                 });
         }
 
@@ -314,55 +417,6 @@
             if(!trade._new && trade.tradeId) {
                 getTradeIndicator();
             }
-        }
-
-        function createBaseTimeSeries(dateFrom, dateTo, intervalMillis) {
-            let timeSeries = [];
-            let dateFromMillis = dateFrom.getTime();
-            let dateToMillis = dateTo.getTime();
-            for(let millis = dateFromMillis; millis <= dateToMillis; millis += intervalMillis) {
-                timeSeries.push({
-                    dateTime: new Date(millis),
-                    openPrice: 0,
-                    highPrice: 0,
-                    lowPrice: 0,
-                    closePrice: 0,
-                    pctChange: 0.0
-                });
-            }
-            return timeSeries;
-        }
-
-        function createMinuteTimeSeries(dateFrom, dateTo, ohlcvs) {
-            let timeSeries = createBaseTimeSeries(dateFrom, dateTo, 60000);
-            let ohlcvSeries = JSON.parse(JSON.stringify(ohlcvs)).reverse();
-            let ohlcvPos = Math.max(0, ohlcvSeries.findIndex((ohlcv) => {
-                return new Date(ohlcv.dateTime).getTime() >= timeSeries[0].dateTime.getTime();
-            }));
-            let ohlcvBasePrice = ohlcvSeries.length > 0 ? ohlcvSeries[ohlcvPos].openPrice : 0.0;
-            for(let i = 0, length = timeSeries.length; i < length; i ++) {
-                let timePoint = timeSeries[i];
-                let timeRangeFromMillis = timePoint.dateTime.getTime();
-                let timeRangeToMillis = timeRangeFromMillis + 59999;
-                if(ohlcvPos < ohlcvSeries.length) {
-                    let ohlcvPoint = ohlcvSeries[ohlcvPos];
-                    let ohlcvDateTimeMillis = new Date(ohlcvPoint.dateTime).getTime();
-                    if(timeRangeFromMillis <= ohlcvDateTimeMillis && ohlcvDateTimeMillis < timeRangeToMillis) {
-                        ohlcvPoint.pctChange = (ohlcvPoint.closePrice - ohlcvBasePrice)/ohlcvBasePrice * 100;
-                        timeSeries[i] = ohlcvPoint;
-                        ohlcvPos ++;
-                    }
-                }
-                if(ohlcvPos >= ohlcvSeries.length) {
-                    let lastOhlcv = ohlcvSeries[ohlcvSeries.length-1];
-                    timeSeries[i].openPrice = lastOhlcv.openPrice;
-                    timeSeries[i].highPrice = lastOhlcv.highPrice;
-                    timeSeries[i].lowPrice = lastOhlcv.lowPrice;
-                    timeSeries[i].closePrice = lastOhlcv.closePrice;
-                    timeSeries[i].pctChange = lastOhlcv.pctChange;
-                }
-            }
-            return timeSeries;
         }
 
         function getTradeBalance() {
@@ -440,8 +494,10 @@
 
             if(tradeId) {
                 getTrade();
-                initializeAssetIndicatorsChart();
-                initializeMarketIndicatorsChart();
+                initializeAssetDailyIndicatorsChart();
+                initializeAssetMinuteIndicatorsChart();
+                initializeMarketDailyIndicatorsChart();
+                initializeMarketMinuteIndicatorsChart();
                 getTradeIndicator();
                 setInterval(function() {
                     refreshTradeIndicator();
@@ -449,7 +505,7 @@
                 getTradeBalance();
                 setInterval(function() {
                     refreshTradeBalance();
-                }, 1000*5);
+                }, 1000*60);
                 startListenTradeLog();
             }
         });
@@ -700,22 +756,32 @@
                 <img class="icon" th:src="@{/static/image/icon-monitor.svg}" alt="log"/>
                 <span data-th-text="#{web.global.monitor}"></span>
             </h2>
-            <div class="margin-1em">
-                <h3>
-                    <img class="icon" th:src="@{/static/image/icon-asset.svg}" alt="asset"/>
-                    Asset Indicator
-                </h3>
-                <div style="width:100%; height:200px;">
-                    <canvas id="assetIndicatorsChart"></canvas>
+            <div class="grid grid-template-columns-12 margin-1em">
+                <div class="grid-column-12">
+                    <h3>
+                        <img class="icon" th:src="@{/static/image/icon-asset.svg}" alt="asset"/>
+                        Asset Indicator
+                    </h3>
+                </div>
+                <div class="grid-column-5 s-grid-column-12" style="width:100%; height:200px;">
+                    <canvas id="assetDailyIndicatorsChart"></canvas>
+                </div>
+                <div class="grid-column-7 s-grid-column-12">
+                    <canvas id="assetMinuteIndicatorsChart"></canvas>
                 </div>
             </div>
-            <div class="margin-1em">
-                <h3>
-                    <img class="icon" th:src="@{/static/image/icon-market.svg}" alt="market"/>
-                    Market Indicator
-                </h3>
-                <div style="width:100%; height:200px;">
-                    <canvas id="marketIndicatorsChart"></canvas>
+            <div class="grid grid-template-columns-12 margin-1em">
+                <div class="grid-column-12">
+                    <h3>
+                        <img class="icon" th:src="@{/static/image/icon-market.svg}" alt="market"/>
+                        Market Indicator
+                    </h3>
+                </div>
+                <div class="grid-column-5 s-grid-column-12">
+                    <canvas id="marketDailyIndicatorsChart"></canvas>
+                </div>
+                <div class="grid-column-7 s-grid-column-12" style="width:100%; height:200px;">
+                    <canvas id="marketMinuteIndicatorsChart"></canvas>
                 </div>
             </div>
             <div class="margin-1em">

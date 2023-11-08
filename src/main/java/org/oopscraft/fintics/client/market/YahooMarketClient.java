@@ -33,32 +33,32 @@ public class YahooMarketClient implements MarketClient {
     private final ObjectMapper objectMapper;
 
     @Override
-    public MarketIndicator getNdxIndicator() {
+    public MarketIndicator getNdxIndicator() throws InterruptedException {
         return getMarketIndex("^NDX", "NASDAQ 100");
     }
 
     @Override
-    public MarketIndicator getNdxFutureIndicator() {
+    public MarketIndicator getNdxFutureIndicator() throws InterruptedException {
         return getMarketIndex("NQ=F", "Nasdaq Futures");
     }
 
     @Override
-    public MarketIndicator getSpxIndicator() {
+    public MarketIndicator getSpxIndicator() throws InterruptedException {
         return getMarketIndex("^GSPC", "S&P 500");
     }
 
     @Override
-    public MarketIndicator getSpxFutureIndicator() {
+    public MarketIndicator getSpxFutureIndicator() throws InterruptedException{
         return getMarketIndex("ES=F", "S&P 500 Future");
     }
 
     @Override
-    public MarketIndicator getDjiIndicator() {
+    public MarketIndicator getDjiIndicator() throws InterruptedException {
         return getMarketIndex("^DJI", "Dow Jones Industrial Average");
     }
 
     @Override
-    public MarketIndicator getDjiFutureIndicator() {
+    public MarketIndicator getDjiFutureIndicator() throws InterruptedException {
         return getMarketIndex("YM=F", "Dow Futures");
     }
 

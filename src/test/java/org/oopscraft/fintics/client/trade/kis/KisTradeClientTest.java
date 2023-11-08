@@ -33,7 +33,7 @@ class KisTradeClientTest extends CoreTestSupport {
     @Disabled
     @Test
     @Order(2)
-    void getOrderBook() {
+    void getOrderBook() throws InterruptedException {
         // given
         TradeAsset tradeAsset = TradeAsset.builder()
                 .symbol("005930")
@@ -52,7 +52,7 @@ class KisTradeClientTest extends CoreTestSupport {
     @Disabled
     @Test
     @Order(4)
-    void getMinuteOhlcvs() {
+    void getMinuteOhlcvs() throws InterruptedException {
         // given
         TradeAsset tradeAsset = TradeAsset.builder()
                 .symbol("005930")
@@ -69,7 +69,7 @@ class KisTradeClientTest extends CoreTestSupport {
     @Disabled
     @Test
     @Order(4)
-    void getDailyOhlcvs() {
+    void getDailyOhlcvs() throws InterruptedException {
         // given
         TradeAsset tradeAsset = TradeAsset.builder()
                 .symbol("005930")
@@ -86,7 +86,7 @@ class KisTradeClientTest extends CoreTestSupport {
     @Disabled
     @Test
     @Order(2)
-    void getBalance() {
+    void getBalance() throws InterruptedException {
         // given
         // when
         Balance balance = getKisClient().getBalance();
@@ -98,7 +98,7 @@ class KisTradeClientTest extends CoreTestSupport {
     @Disabled
     @Test
     @Order(5)
-    void buyAssetStock() {
+    void buyAssetStock() throws InterruptedException {
         // given
         TradeAsset tradeAsset = TradeAsset.builder()
                 .symbol("005930")           // Samsung Electronic
@@ -112,7 +112,7 @@ class KisTradeClientTest extends CoreTestSupport {
     @Disabled
     @Test
     @Order(5)
-    void buyAssetEtf() {
+    void buyAssetEtf() throws InterruptedException {
         // given
         TradeAsset tradeAsset = TradeAsset.builder()
                 .symbol("005930")           // KODEX 200
@@ -126,7 +126,7 @@ class KisTradeClientTest extends CoreTestSupport {
     @Disabled
     @Test
     @Order(5)
-    void sellAssetStock() {
+    void sellAssetStock() throws InterruptedException {
         // given
         BalanceAsset balanceAsset = BalanceAsset.builder()
                 .symbol("005930")           // Samsung Electronic
@@ -140,7 +140,7 @@ class KisTradeClientTest extends CoreTestSupport {
     @Disabled
     @Test
     @Order(5)
-    void sellAssetEtf() {
+    void sellAssetEtf() throws InterruptedException {
         // given
         BalanceAsset balanceAsset = BalanceAsset.builder()
                 .symbol("005930")           // KODEX 200

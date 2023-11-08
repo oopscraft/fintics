@@ -12,7 +12,7 @@ class SeibroAssetClientTest {
 
     @Disabled
     @Test
-    void getStockAssets() {
+    void getStockAssets() throws InterruptedException {
         // given
         AssetClient assetClient = new SeibroAssetClient();
         int offset = 15;
@@ -27,7 +27,7 @@ class SeibroAssetClientTest {
 
     @Disabled
     @Test
-    void getEtfAssets() {
+    void getEtfAssets() throws InterruptedException {
         // given
         AssetClient assetClient = new SeibroAssetClient();
         int offset = 10;

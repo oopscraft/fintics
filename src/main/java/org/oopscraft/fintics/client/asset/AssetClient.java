@@ -6,8 +6,8 @@ import java.util.List;
 
 public interface AssetClient {
 
-    List<Asset> getStockAssets(int offset, int limit);
+    List<Asset> getStockAssets(int offset, int limit) throws InterruptedException;
 
-    List<Asset> getEtfAssets(int offset, int limit);
+    List<Asset> getEtfAssets(int offset, int limit) throws InterruptedException;
 
 }
