@@ -63,6 +63,11 @@ public class YahooMarketClient implements MarketClient {
     }
 
     @Override
+    public MarketIndicator getKospiIndicator() throws InterruptedException {
+        return getMarketIndex("^KS11", "KOSPI");
+    }
+
+    @Override
     public MarketIndicator getUsdKrwIndicator() throws InterruptedException {
         return getMarketIndex("KRW=X", "USD/KRW");
     }

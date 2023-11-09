@@ -19,6 +19,8 @@ public class Market {
 
     private MarketIndicator djiFutureIndicator;
 
+    private MarketIndicator kospiIndicator;
+
     private MarketIndicator usdKrwIndicator;
 
 }

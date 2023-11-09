@@ -40,13 +40,16 @@ if(priceEmaSlope > 0) {
     def buyVotes = [];
     buyVotes.add(getIndicatorVotes(assetIndicator, period).average() > 50 ? 100 : 0);
 
-    // 달러환율체크(환율하락시 매수)
+    // 코스피체크(하락시 매수)
+    buyVotes.add(getIndicatorVotes(market.getKospiIndicator(), period).average() < 50 ? 100 : 0);
+
+    // 달러환율체크(상승시 매수)
     buyVotes.add(getIndicatorVotes(market.getUsdKrwIndicator(), period).average() > 50 ? 100 : 0);
 
-    // 나스닥선물체크
+    // 나스닥선물체크(하락시 매수)
     buyVotes.add(getIndicatorVotes(market.getNdxFutureIndicator(), period).average() < 50 ? 100 : 0);
 
-    // 전일나스닥지수체크
+    // 전일나스닥지수체크(하락시 매수)
     buyVotes.add(getIndicatorVotes(market.getNdxFutureIndicator(), period).average() < 50 ? 100 : 0);
 
     log.info("buyVotes[{}] - {}", buyVotes.average(), buyVotes);
@@ -60,16 +63,19 @@ if(priceEmaSlope < 0) {
     def sellVotes = [];
     sellVotes.add(getIndicatorVotes(assetIndicator, period).average() < 50 ? 100 : 0);
 
-    // 달러환율체크(환율상승시 매도)
+    // 코스피체크(상승시 매도)
+    sellVotes.add(getIndicatorVotes(market.getKospiIndicator(), period).average() > 50 ? 100 : 0);
+
+    // 달러환율체크(하락시 매도)
     sellVotes.add(getIndicatorVotes(market.getUsdKrwIndicator(), period).average() < 50 ? 100 : 0);
 
-    // 나스닥선물체크
+    // 나스닥선물체크(상승시 매도)
     sellVotes.add(getIndicatorVotes(market.getNdxFutureIndicator(), period).average() > 50 ? 100 : 0);
 
-    // 전일나스닥지수체크
+    // 전일나스닥지수체크(상승시 매도)
     sellVotes.add(getIndicatorVotes(market.getNdxFutureIndicator(), period).average() > 50 ? 100 : 0);
 
-    log.info("buyVotes[{}] - {}", sellVotes.average(), sellVotes);
+    log.info("sellVotes[{}] - {}", sellVotes.average(), sellVotes);
     if(sellVotes.average() > 50) {
         hold = true;
     }
