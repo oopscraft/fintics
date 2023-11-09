@@ -10,7 +10,12 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "fintics_order")
+@Table(
+        name = "fintics_order",
+        indexes = {
+                @Index(name = "ix_fintics_order_trade_id", columnList = "trade_id")
+        }
+)
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
