@@ -6,17 +6,21 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
 import org.oopscraft.arch4j.core.data.IdGenerator;
 import org.oopscraft.arch4j.core.data.pbe.PbePropertiesUtil;
+import org.oopscraft.arch4j.core.user.User;
+import org.oopscraft.arch4j.core.user.dao.UserEntity;
 import org.oopscraft.fintics.client.trade.TradeClient;
 import org.oopscraft.fintics.client.trade.TradeClientFactory;
 import org.oopscraft.fintics.dao.*;
 import org.oopscraft.fintics.model.*;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -36,7 +40,7 @@ public class TradeService {
 
     private final TradeRepository tradeRepository;
 
-    private final TradeOrderRepository tradeOrderRepository;
+    private final OrderRepository orderRepository;
 
     private final AlarmService alarmService;
 
@@ -167,7 +171,7 @@ public class TradeService {
             errorMessage = e.getMessage();
             throw e;
         } finally {
-            saveTradeOrder(tradeId, OrderType.BUY, symbol, name, quantity, orderResult, errorMessage);
+            saveTradeOrder(OrderType.BUY, tradeId, symbol, name, quantity, orderResult, errorMessage);
         }
 
 
@@ -198,7 +202,7 @@ public class TradeService {
             errorMessage = e.getMessage();
             throw e;
         } finally {
-            saveTradeOrder(tradeId, OrderType.SELL, symbol, name, quantity, orderResult, errorMessage);
+            saveTradeOrder(OrderType.SELL, tradeId, symbol, name, quantity, orderResult, errorMessage);
         }
     }
 
@@ -214,14 +218,15 @@ public class TradeService {
         }
     }
 
-    private void saveTradeOrder(String tradeId, OrderType orderType, String symbol, String name, Integer quantity, OrderResult orderResult, String errorMessage) {
+    private void saveTradeOrder(OrderType orderType, String tradeId, String symbol, String name, Integer quantity, OrderResult orderResult, String errorMessage) {
         DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager, transactionDefinition);
         transactionTemplate.executeWithoutResult(transactionStatus -> {
-            tradeOrderRepository.saveAndFlush(TradeOrderEntity.builder()
-                    .tradeId(tradeId)
+            orderRepository.saveAndFlush(OrderEntity.builder()
+                    .orderId(IdGenerator.uuid())
                     .orderAt(LocalDateTime.now())
                     .orderType(orderType)
+                    .tradeId(tradeId)
                     .symbol(symbol)
                     .name(name)
                     .quantity(quantity)
@@ -229,6 +234,15 @@ public class TradeService {
                     .errorMessage(errorMessage)
                     .build());
         });
+    }
+
+    public Page<Order> getTradeOrders(String tradeId, Pageable pageable) {
+        Page<OrderEntity> orderEntityPage = orderRepository.findAllByTradeId(tradeId, pageable);
+        List<Order> orders = orderEntityPage.getContent().stream()
+                .map(Order::from)
+                .collect(Collectors.toList());
+        long total = orderEntityPage.getTotalElements();
+        return new PageImpl<>(orders, pageable, total);
     }
 
 }

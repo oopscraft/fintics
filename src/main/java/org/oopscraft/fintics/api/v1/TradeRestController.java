@@ -4,15 +4,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.security.SecurityUtils;
+import org.oopscraft.arch4j.web.support.PageableUtils;
 import org.oopscraft.arch4j.web.support.SseLogAppender;
 import org.oopscraft.fintics.api.v1.dto.*;
-import org.oopscraft.fintics.model.AssetIndicator;
-import org.oopscraft.fintics.model.Market;
-import org.oopscraft.fintics.model.Trade;
-import org.oopscraft.fintics.model.TradeAsset;
+import org.oopscraft.fintics.model.*;
 import org.oopscraft.fintics.service.MarketService;
 import org.oopscraft.fintics.service.TradeService;
 import org.oopscraft.fintics.thread.TradeThreadManager;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -188,5 +189,15 @@ public class TradeRestController {
         return sseEmitter;
     }
 
+    @GetMapping(value = "{tradeId}/order")
+    public ResponseEntity<List<OrderResponse>> getTradeOrders(@PathVariable("tradeId")String tradeId, Pageable pageable) {
+        Page<Order> orderPage = tradeService.getTradeOrders(tradeId, pageable);
+        List<OrderResponse> orderResponses = orderPage.getContent().stream()
+                .map(OrderResponse::from)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_RANGE, PageableUtils.toContentRange("order", pageable, orderPage.getTotalElements()))
+                .body(orderResponses);
+    }
 
 }

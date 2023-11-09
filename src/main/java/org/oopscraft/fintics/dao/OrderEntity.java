@@ -7,34 +7,29 @@ import org.oopscraft.fintics.model.OrderResult;
 import org.oopscraft.fintics.model.OrderType;
 
 import javax.persistence.*;
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "fintics_trade_order")
-@IdClass(TradeOrderEntity.Pk.class)
+@Table(name = "fintics_order")
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class TradeOrderEntity extends SystemFieldEntity {
-
-    public static class Pk implements Serializable {
-        private String tradeId;
-        private LocalDateTime orderAt;
-    }
+public class OrderEntity extends SystemFieldEntity {
 
     @Id
-    @Column(name = "trade_id", length = 32)
-    private String tradeId;
+    @Column(name = "order_id", length = 32)
+    private String orderId;
 
-    @Id
     @Column(name = "order_at")
     private LocalDateTime orderAt;
 
     @Column(name = "order_type", length = 32)
     private OrderType orderType;
+
+    @Column(name = "trade_id", length = 32)
+    private String tradeId;
 
     @Column(name = "symbol", length = 32)
     private String symbol;
