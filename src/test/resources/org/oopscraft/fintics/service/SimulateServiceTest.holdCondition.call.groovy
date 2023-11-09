@@ -38,22 +38,34 @@ def priceEmaSlope = tool.slope(assetIndicator.getMinuteEmas(60), period);
 // 매수조건
 if(priceEmaSlope > 0) {
     def buyVotes = [];
-    buyVotes.add(getIndicatorVotes(assetIndicator, period).average() > 50 ? 100 : 0);
+
+    // 대상종목체크
+    def assetVotes = getIndicatorVotes(assetIndicator, perid);
+    log.info("assetVotes:{}", assetVotes);
+    buyVotes.add(assetVotes.average() > 50 ? 100 : 0);
 
     // 코스피체크(상승시 매수)
-    buyVotes.add(getIndicatorVotes(market.getKospiIndicator(), period).average() > 50 ? 100 : 0);
+    def kospiVotes = getIndicatorVotes(market.getKospiIndicator(), period);
+    log.info("kospiVotes:{}", kospiVotes);
+    buyVotes.add(kospiVotes.average() > 50 ? 100 : 0);
 
     // 달러환율체크(하락시 매수)
-    buyVotes.add(getIndicatorVotes(market.getUsdKrwIndicator(), period).average() < 50 ? 100 : 0);
+    def usdKrwVotes = getIndicatorVotes(market.getUsdKrwIndicator(), period);
+    log.info("usdKrwVotes:{}", usdKrwVotes);
+    buyVotes.add(usdKrwVotes.average() < 50 ? 100 : 0);
 
     // 나스닥선물체크(상승시 매수)
-    buyVotes.add(getIndicatorVotes(market.getNdxFutureIndicator(), period).average() > 50 ? 100 : 0);
+    def ndxFutureVotes = getIndicatorVotes(market.getNdxFutureIndicator(), period);
+    log.info("ndxFutureVotes:{}", ndxFutureVotes);
+    buyVotes.add(ndxFutureVotes.average() > 50 ? 100 : 0);
 
     // 전일나스닥지수체크(상승시 매수)
-    buyVotes.add(getIndicatorVotes(market.getNdxFutureIndicator(), period).average() > 50 ? 100 : 0);
+    def ndxVotes = getIndicatorVotes(market.getNdxIndicator(), period);
+    log.info("ndxVotes:{}", ndxVotes);
+    buyVotes.add(ndxVotes.average() > 50 ? 100 : 0);
 
     log.info("buyVotes[{}] - {}", buyVotes.average(), buyVotes);
-    if(buyVotes.average() > 60) {
+    if(buyVotes.average() >= 60) {
         hold = true;
     }
 }
@@ -61,6 +73,8 @@ if(priceEmaSlope > 0) {
 // 매도조건
 if(priceEmaSlope < 0) {
     def sellVotes = [];
+
+    // 대상종목체크
     sellVotes.add(getIndicatorVotes(assetIndicator, period).average() < 50 ? 100 : 0);
 
     // 코스피체크(하락시 매도)
@@ -73,11 +87,11 @@ if(priceEmaSlope < 0) {
     sellVotes.add(getIndicatorVotes(market.getNdxFutureIndicator(), period).average() < 50 ? 100 : 0);
 
     // 전일나스닥지수체크(하락시 매도)
-    sellVotes.add(getIndicatorVotes(market.getNdxFutureIndicator(), period).average() < 50 ? 100 : 0);
+    sellVotes.add(getIndicatorVotes(market.getNdxIndicator(), period).average() < 50 ? 100 : 0);
 
     log.info("sellVotes[{}] - {}", sellVotes.average(), sellVotes);
-    if(sellVotes.average() > 40) {
-        hold = true;
+    if(sellVotes.average() >= 40) {
+        hold = false;
     }
 }
 

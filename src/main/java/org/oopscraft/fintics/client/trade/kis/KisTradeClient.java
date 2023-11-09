@@ -51,7 +51,7 @@ public class KisTradeClient extends TradeClient {
         this.objectMapper = new ObjectMapper();
     }
 
-    private synchronized static void sleep() throws InterruptedException {
+    private static void sleep() throws InterruptedException {
         Thread.sleep(300);
     }
 
@@ -66,7 +66,7 @@ public class KisTradeClient extends TradeClient {
     }
 
     @Override
-    public synchronized OrderBook getOrderBook(Asset asset) throws InterruptedException {
+    public OrderBook getOrderBook(Asset asset) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
@@ -122,7 +122,7 @@ public class KisTradeClient extends TradeClient {
     }
 
     @Override
-    public synchronized List<Ohlcv> getMinuteOhlcvs(Asset asset) throws InterruptedException {
+    public List<Ohlcv> getMinuteOhlcvs(Asset asset) throws InterruptedException {
         List<Ohlcv> minuteOhlcvs = new ArrayList<>();
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
@@ -217,7 +217,7 @@ public class KisTradeClient extends TradeClient {
     }
 
     @Override
-    public synchronized List<Ohlcv> getDailyOhlcvs(Asset asset) throws InterruptedException {
+    public List<Ohlcv> getDailyOhlcvs(Asset asset) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
@@ -285,7 +285,7 @@ public class KisTradeClient extends TradeClient {
 
 
     @Override
-    public synchronized Balance getBalance() throws InterruptedException {
+    public Balance getBalance() throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
@@ -416,7 +416,7 @@ public class KisTradeClient extends TradeClient {
     }
 
     @Override
-    public synchronized void buyAsset(TradeAsset tradeAsset, int quantity) throws InterruptedException {
+    public void buyAsset(TradeAsset tradeAsset, int quantity) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
@@ -449,7 +449,7 @@ public class KisTradeClient extends TradeClient {
     }
 
     @Override
-    public synchronized void sellAsset(BalanceAsset balanceAsset, int quantity) throws InterruptedException {
+    public void sellAsset(BalanceAsset balanceAsset, int quantity) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();

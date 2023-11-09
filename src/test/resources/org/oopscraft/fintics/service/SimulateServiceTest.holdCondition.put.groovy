@@ -50,10 +50,10 @@ if(priceEmaSlope > 0) {
     buyVotes.add(getIndicatorVotes(market.getNdxFutureIndicator(), period).average() < 50 ? 100 : 0);
 
     // 전일나스닥지수체크(하락시 매수)
-    buyVotes.add(getIndicatorVotes(market.getNdxFutureIndicator(), period).average() < 50 ? 100 : 0);
+    buyVotes.add(getIndicatorVotes(market.getNdxIndicator(), period).average() < 50 ? 100 : 0);
 
     log.info("buyVotes[{}] - {}", buyVotes.average(), buyVotes);
-    if(buyVotes.average() > 60) {
+    if(buyVotes.average() >= 60) {
         hold = true;
     }
 }
@@ -73,11 +73,11 @@ if(priceEmaSlope < 0) {
     sellVotes.add(getIndicatorVotes(market.getNdxFutureIndicator(), period).average() > 50 ? 100 : 0);
 
     // 전일나스닥지수체크(상승시 매도)
-    sellVotes.add(getIndicatorVotes(market.getNdxFutureIndicator(), period).average() > 50 ? 100 : 0);
+    sellVotes.add(getIndicatorVotes(market.getNdxIndicator(), period).average() > 50 ? 100 : 0);
 
     log.info("sellVotes[{}] - {}", sellVotes.average(), sellVotes);
-    if(sellVotes.average() > 40) {
-        hold = true;
+    if(sellVotes.average() >= 40) {
+        hold = false;
     }
 }
 

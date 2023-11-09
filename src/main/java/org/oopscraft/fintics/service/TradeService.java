@@ -109,7 +109,7 @@ public class TradeService {
     }
 
     @Cacheable(value = CACHE_TRADE_ASSET_INDICATOR, key = "#tradeId + ':' + #symbol")
-    public synchronized Optional<AssetIndicator> getTradeAssetIndicator(String tradeId, String symbol) throws InterruptedException {
+    public Optional<AssetIndicator> getTradeAssetIndicator(String tradeId, String symbol) throws InterruptedException {
         Trade trade = getTrade(tradeId).orElseThrow();
         TradeAsset tradeAsset = trade.getTradeAssets().stream()
                 .filter(e -> Objects.equals(e.getSymbol(), symbol))
