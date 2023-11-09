@@ -8,6 +8,8 @@ import org.oopscraft.fintics.model.AssetIndicator;
 import org.oopscraft.fintics.model.Market;
 import org.slf4j.Logger;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 public class TradeAssetDecider {
@@ -45,7 +47,9 @@ public class TradeAssetDecider {
         if(holdCondition == null || holdCondition.isBlank()) {
             return null;
         }
+        Instant startTime = Instant.now();
         Object result = groovyShell.evaluate(holdCondition);
+        logger.info("Elapsed:{}", Duration.between(startTime, Instant.now()));
         if(result == null) {
             return null;
         }
