@@ -67,30 +67,6 @@ class YahooMarketClientTest extends CoreTestSupport {
 
     @Disabled
     @Test
-    void getDjiIndicator() throws InterruptedException {
-        // given
-        // when
-        MarketClient marketClient = new YahooMarketClient(objectMapper);
-        MarketIndicator marketIndicator = marketClient.getDjiIndicator();
-
-        // then
-        assertNotNull(marketIndicator);
-    }
-
-    @Disabled
-    @Test
-    void getDjiFutureIndicator() throws InterruptedException {
-        // given
-        // when
-        MarketClient marketClient = new YahooMarketClient(objectMapper);
-        MarketIndicator marketIndicator = marketClient.getDjiFutureIndicator();
-
-        // then
-        assertNotNull(marketIndicator);
-    }
-
-    @Disabled
-    @Test
     void getUsdKrwIndicator() throws InterruptedException {
         // given
         // when

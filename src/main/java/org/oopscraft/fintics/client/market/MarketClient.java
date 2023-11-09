@@ -12,10 +12,6 @@ public interface MarketClient {
 
     MarketIndicator getSpxFutureIndicator() throws InterruptedException;
 
-    MarketIndicator getDjiIndicator() throws InterruptedException;
-
-    MarketIndicator getDjiFutureIndicator() throws InterruptedException;
-
     MarketIndicator getKospiIndicator() throws InterruptedException;
 
     MarketIndicator getUsdKrwIndicator() throws InterruptedException;

@@ -17,9 +17,9 @@ public class MarketResponse {
 
     private MarketIndicatorResponse spxFutureIndicator;
 
-    private MarketIndicatorResponse djiIndicator;
+    private MarketIndicatorResponse kospiIndicator;
 
-    private MarketIndicatorResponse djiFutureIndicator;
+    private MarketIndicatorResponse usdKrwIndicator;
 
     public static MarketResponse from(Market market) {
         return MarketResponse.builder()
@@ -27,8 +27,8 @@ public class MarketResponse {
                 .ndxFutureIndicator(MarketIndicatorResponse.from(market.getNdxFutureIndicator()))
                 .spxIndicator(MarketIndicatorResponse.from(market.getSpxIndicator()))
                 .spxFutureIndicator(MarketIndicatorResponse.from(market.getSpxFutureIndicator()))
-                .djiIndicator(MarketIndicatorResponse.from(market.getDjiIndicator()))
-                .djiFutureIndicator(MarketIndicatorResponse.from(market.getDjiFutureIndicator()))
+                .kospiIndicator(MarketIndicatorResponse.from(market.getKospiIndicator()))
+                .usdKrwIndicator(MarketIndicatorResponse.from(market.getUsdKrwIndicator()))
                 .build();
     }
 

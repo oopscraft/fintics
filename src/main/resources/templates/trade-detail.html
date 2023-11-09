@@ -334,7 +334,9 @@
                         'ndxFutureIndicator',
                         'ndxIndicator',
                         'spxIndicator',
-                        'spxFutureIndicator'
+                        'spxFutureIndicator',
+                        'kospiIndicator',
+                        'usdKrwIndicator',
                     ];
 
                     // define date from
@@ -360,7 +362,7 @@
                             label: assetIndicator.name,
                             data: dailyTimeSeries,
                             borderWidth: 1,
-                            pointStyle: 'circle'
+                            pointStyle: false
                         };
                         assetDailyIndicatorsChart.data.datasets.push(dailyDataset);
 
@@ -392,7 +394,7 @@
                             label: marketIndicator.name,
                             data: dailyTimeSeries,
                             borderWidth: 1,
-                            pointStyle: 'circle'
+                            pointStyle: false
                         };
                         marketDailyIndicatorsChart.data.datasets.push(dailyDataset);
 

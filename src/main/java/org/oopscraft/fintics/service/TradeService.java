@@ -8,16 +8,20 @@ import org.oopscraft.arch4j.core.data.IdGenerator;
 import org.oopscraft.arch4j.core.data.pbe.PbePropertiesUtil;
 import org.oopscraft.fintics.client.trade.TradeClient;
 import org.oopscraft.fintics.client.trade.TradeClientFactory;
-import org.oopscraft.fintics.dao.TradeAssetEntity;
-import org.oopscraft.fintics.dao.TradeEntity;
-import org.oopscraft.fintics.dao.TradeRepository;
+import org.oopscraft.fintics.dao.*;
 import org.oopscraft.fintics.model.*;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.transaction.support.TransactionTemplate;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -32,7 +36,11 @@ public class TradeService {
 
     private final TradeRepository tradeRepository;
 
+    private final TradeOrderRepository tradeOrderRepository;
+
     private final AlarmService alarmService;
+
+    private final PlatformTransactionManager transactionManager;
 
     public List<Trade> getTrades() {
         return tradeRepository.findAll().stream()
@@ -135,32 +143,62 @@ public class TradeService {
         log.info("cacheEvict[{}]", CACHE_TRADE_ASSET_INDICATOR);
     }
 
-    public void buyTradeAsset(String tradeId, String symbol, Integer quantity) throws InterruptedException {
-        Trade trade = getTrade(tradeId).orElseThrow();
-        TradeAsset tradeAsset = trade.getTradeAsset(symbol).orElseThrow();
-        TradeClient tradeClient = TradeClientFactory.getClient(trade);
-        tradeClient.buyAsset(tradeAsset, quantity);
-        if (trade.isAlarmOnOrder()) {
-            if(trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
-                String subject = String.format("[%s]", trade.getName());
-                String content = String.format("[%s] Buy %d", tradeAsset.getName(), quantity);
-                alarmService.sendAlarm(trade.getAlarmId(), subject, content);
+    @Transactional
+    public void buyTradeAsset(String tradeId, String symbol, String name, Integer quantity) throws InterruptedException {
+        OrderResult orderResult = null;
+        String errorMessage = null;
+        try {
+            Trade trade = getTrade(tradeId).orElseThrow();
+            TradeAsset tradeAsset = trade.getTradeAsset(symbol).orElseThrow();
+            TradeClient tradeClient = TradeClientFactory.getClient(trade);
+            tradeClient.buyAsset(tradeAsset, quantity);
+
+            if (trade.isAlarmOnOrder()) {
+                if (trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
+                    String subject = String.format("[%s]", trade.getName());
+                    String content = String.format("[%s] Buy %d", tradeAsset.getName(), quantity);
+                    alarmService.sendAlarm(trade.getAlarmId(), subject, content);
+                }
             }
+
+            orderResult = OrderResult.COMPLETED;
+        } catch(Throwable e) {
+            orderResult = OrderResult.FAILED;
+            errorMessage = e.getMessage();
+            throw e;
+        } finally {
+            saveTradeOrder(tradeId, OrderType.BUY, symbol, name, quantity, orderResult, errorMessage);
         }
+
+
     }
 
-    public void sellBalanceAsset(String tradeId, String symbol, Integer quantity) throws InterruptedException {
-        Trade trade = getTrade(tradeId).orElseThrow();
-        TradeClient tradeClient = TradeClientFactory.getClient(trade);
-        Balance balance = tradeClient.getBalance();
-        BalanceAsset balanceAsset = balance.getBalanceAsset(symbol).orElseThrow();
-        tradeClient.sellAsset(balanceAsset, quantity);
-        if (trade.isAlarmOnOrder()) {
-            if(trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
-                String subject = String.format("[%s]", trade.getName());
-                String content = String.format("[%s] Sell %d", balanceAsset.getName(), quantity);
-                alarmService.sendAlarm(trade.getAlarmId(), subject, content);
+    @Transactional
+    public void sellBalanceAsset(String tradeId, String symbol, String name, Integer quantity) throws InterruptedException {
+        OrderResult orderResult = null;
+        String errorMessage = null;
+        try {
+            Trade trade = getTrade(tradeId).orElseThrow();
+            TradeClient tradeClient = TradeClientFactory.getClient(trade);
+            Balance balance = tradeClient.getBalance();
+            BalanceAsset balanceAsset = balance.getBalanceAsset(symbol).orElseThrow();
+            tradeClient.sellAsset(balanceAsset, quantity);
+
+            if (trade.isAlarmOnOrder()) {
+                if (trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
+                    String subject = String.format("[%s]", trade.getName());
+                    String content = String.format("[%s] Sell %d", balanceAsset.getName(), quantity);
+                    alarmService.sendAlarm(trade.getAlarmId(), subject, content);
+                }
             }
+
+            orderResult = OrderResult.COMPLETED;
+        } catch(Throwable e) {
+            orderResult = OrderResult.FAILED;
+            errorMessage = e.getMessage();
+            throw e;
+        } finally {
+            saveTradeOrder(tradeId, OrderType.SELL, symbol, name, quantity, orderResult, errorMessage);
         }
     }
 
@@ -174,6 +212,23 @@ public class TradeService {
                 alarmService.sendAlarm(trade.getAlarmId(), subject, content);
             }
         }
+    }
+
+    private void saveTradeOrder(String tradeId, OrderType orderType, String symbol, String name, Integer quantity, OrderResult orderResult, String errorMessage) {
+        DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager, transactionDefinition);
+        transactionTemplate.executeWithoutResult(transactionStatus -> {
+            tradeOrderRepository.saveAndFlush(TradeOrderEntity.builder()
+                    .tradeId(tradeId)
+                    .orderAt(LocalDateTime.now())
+                    .orderType(orderType)
+                    .symbol(symbol)
+                    .name(name)
+                    .quantity(quantity)
+                    .orderResult(orderResult)
+                    .errorMessage(errorMessage)
+                    .build());
+        });
     }
 
 }

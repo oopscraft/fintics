@@ -160,7 +160,7 @@ public class TradeRunnable implements Runnable {
                                 .intValue();
                         try {
                             log.info("Buy asset: {}", tradeAsset.getName());
-                            tradeService.buyTradeAsset(tradeAsset.getTradeId(), tradeAsset.getSymbol(), quantity);
+                            tradeService.buyTradeAsset(tradeAsset.getTradeId(), tradeAsset.getSymbol(), tradeAsset.getName(), quantity);
                         } catch (Throwable e) {
                             log.warn(e.getMessage());
                             tradeService.sendErrorAlarmIfEnabled(tradeId, e);
@@ -175,7 +175,7 @@ public class TradeRunnable implements Runnable {
                         Integer orderableQuantity = balanceAsset.getOrderableQuantity();
                         try {
                             log.info("Sell asset: {}", tradeAsset.getName());
-                            tradeService.sellBalanceAsset(tradeAsset.getTradeId(), tradeAsset.getSymbol(), orderableQuantity);
+                            tradeService.sellBalanceAsset(tradeAsset.getTradeId(), tradeAsset.getSymbol(), tradeAsset.getName(), orderableQuantity);
                         } catch (Throwable e) {
                             log.warn(e.getMessage());
                             tradeService.sendErrorAlarmIfEnabled(tradeId, e);

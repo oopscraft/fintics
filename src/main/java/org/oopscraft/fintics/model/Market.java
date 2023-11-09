@@ -15,10 +15,6 @@ public class Market {
 
     private MarketIndicator spxFutureIndicator;
 
-    private MarketIndicator djiIndicator;
-
-    private MarketIndicator djiFutureIndicator;
-
     private MarketIndicator kospiIndicator;
 
     private MarketIndicator usdKrwIndicator;

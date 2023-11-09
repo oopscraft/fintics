@@ -53,16 +53,6 @@ public class YahooMarketClient implements MarketClient {
     }
 
     @Override
-    public MarketIndicator getDjiIndicator() throws InterruptedException {
-        return getMarketIndex("^DJI", "Dow Jones Industrial Average");
-    }
-
-    @Override
-    public MarketIndicator getDjiFutureIndicator() throws InterruptedException {
-        return getMarketIndex("YM=F", "Dow Futures");
-    }
-
-    @Override
     public MarketIndicator getKospiIndicator() throws InterruptedException {
         return getMarketIndex("^KS11", "KOSPI");
     }
