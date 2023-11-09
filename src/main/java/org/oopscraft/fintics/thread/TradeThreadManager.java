@@ -10,6 +10,8 @@ import org.oopscraft.fintics.model.Trade;
 import org.oopscraft.fintics.service.TradeService;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -18,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class TradeThreadManager implements DisposableBean {
+public class TradeThreadManager implements ApplicationListener<ContextClosedEvent> {
 
     private final ThreadGroup tradeThreadGroup = new ThreadGroup("trade");
 
@@ -114,8 +116,8 @@ public class TradeThreadManager implements DisposableBean {
     }
 
     @Override
-    public void destroy() throws Exception {
-        log.info("start tradeManager.destroy");
+    public void onApplicationEvent(ContextClosedEvent event) {
+        log.info("Shutdown all trade trade.");
         tradeThreadGroup.interrupt();
     }
 
