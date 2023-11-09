@@ -10,7 +10,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class SeibroAssetClientTest {
 
-    @Disabled
     @Test
     void getStockAssets() throws InterruptedException {
         // given
@@ -25,7 +24,6 @@ class SeibroAssetClientTest {
         assertTrue(stockAssets.size() == limit);
     }
 
-    @Disabled
     @Test
     void getEtfAssets() throws InterruptedException {
         // given

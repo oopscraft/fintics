@@ -19,4 +19,6 @@ public class Market {
 
     private MarketIndicator djiFutureIndicator;
 
+    private MarketIndicator usdKrwIndicator;
+
 }

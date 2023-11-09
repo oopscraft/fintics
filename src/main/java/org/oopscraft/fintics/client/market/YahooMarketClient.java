@@ -62,6 +62,11 @@ public class YahooMarketClient implements MarketClient {
         return getMarketIndex("YM=F", "Dow Futures");
     }
 
+    @Override
+    public MarketIndicator getUsdKrwIndicator() throws InterruptedException {
+        return getMarketIndex("KRW=X", "USD/KRW");
+    }
+
     MarketIndicator getMarketIndex(String symbol, String name) {
         List<Ohlcv> minuteOhlcvs = getOhlcvs(symbol, "1m", LocalDateTime.now().minusWeeks(1), LocalDateTime.now(), 60*24*3);    // 3 days
         List<Ohlcv> dailyOhlcvs = getOhlcvs(symbol, "1d", LocalDateTime.now().minusMonths(3), LocalDateTime.now(), 30*2);       // 2 months

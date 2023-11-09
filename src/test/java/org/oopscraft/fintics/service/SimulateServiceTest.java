@@ -113,7 +113,7 @@ class SimulateServiceTest extends CoreTestSupport {
     @Disabled
     @Test
     void simulate_20231030_KODEX코스닥150() throws Exception {
-        simulate("SimulateServiceTest.holdCondition.groovy",
+        simulate("SimulateServiceTest.holdCondition.call.groovy",
                 "SimulateServiceTest.20231030_KODEX코스닥150.minuteOhlcv.tsv",
                 "SimulateServiceTest.20231030_KODEX코스닥150.dailyOhlcv.tsv");
     }
@@ -121,7 +121,7 @@ class SimulateServiceTest extends CoreTestSupport {
     @Disabled
     @Test
     void simulate_20231030_KODEX코스닥150선물인버스() throws Exception {
-        simulate("SimulateServiceTest.holdCondition.groovy",
+        simulate("SimulateServiceTest.holdCondition.put.groovy",
                 "SimulateServiceTest.20231030_KODEX코스닥150선물인버스.minuteOhlcv.tsv",
                 "SimulateServiceTest.20231030_KODEX코스닥150선물인버스.dailyOhlcv.tsv");
     }
@@ -129,7 +129,7 @@ class SimulateServiceTest extends CoreTestSupport {
     @Disabled
     @Test
     void simulate_20231031_KODEX코스닥150() throws Exception {
-        simulate("SimulateServiceTest.holdCondition.groovy",
+        simulate("SimulateServiceTest.holdCondition.call.groovy",
                 "SimulateServiceTest.20231031_KODEX코스닥150.minuteOhlcv.tsv",
                 "SimulateServiceTest.20231031_KODEX코스닥150.dailyOhlcv.tsv");
     }
@@ -137,7 +137,7 @@ class SimulateServiceTest extends CoreTestSupport {
     @Disabled
     @Test
     void simulate_20231031_KODEX코스닥150선물인버스() throws Exception {
-        simulate("SimulateServiceTest.holdCondition.groovy",
+        simulate("SimulateServiceTest.holdCondition.put.groovy",
                 "SimulateServiceTest.20231031_KODEX코스닥150선물인버스.minuteOhlcv.tsv",
                 "SimulateServiceTest.20231031_KODEX코스닥150선물인버스.dailyOhlcv.tsv");
     }
@@ -145,7 +145,7 @@ class SimulateServiceTest extends CoreTestSupport {
     @Disabled
     @Test
     void simulate_20231101_KODEX코스닥150() throws Exception {
-        simulate("SimulateServiceTest.holdCondition.groovy",
+        simulate("SimulateServiceTest.holdCondition.call.groovy",
                 "SimulateServiceTest.20231101_KODEX코스닥150.minuteOhlcv.tsv",
                 "SimulateServiceTest.20231101_KODEX코스닥150.dailyOhlcv.tsv");
     }
@@ -153,7 +153,7 @@ class SimulateServiceTest extends CoreTestSupport {
     @Disabled
     @Test
     void simulate_20231101_KODEX코스닥150선물인버스() throws Exception {
-        simulate("SimulateServiceTest.holdCondition.groovy",
+        simulate("SimulateServiceTest.holdCondition.put.groovy",
                 "SimulateServiceTest.20231101_KODEX코스닥150선물인버스.minuteOhlcv.tsv",
                 "SimulateServiceTest.20231101_KODEX코스닥150선물인버스.dailyOhlcv.tsv");
     }

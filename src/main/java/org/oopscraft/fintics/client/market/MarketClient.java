@@ -2,8 +2,6 @@ package org.oopscraft.fintics.client.market;
 
 import org.oopscraft.fintics.model.MarketIndicator;
 
-import java.util.List;
-
 public interface MarketClient {
 
     MarketIndicator getNdxIndicator() throws InterruptedException;
@@ -18,5 +16,6 @@ public interface MarketClient {
 
     MarketIndicator getDjiFutureIndicator() throws InterruptedException;
 
+    MarketIndicator getUsdKrwIndicator() throws InterruptedException;
 
 }

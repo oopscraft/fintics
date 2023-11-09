@@ -45,6 +45,7 @@ public class MarketService {
                 .spxFutureIndicator(marketClient.getSpxFutureIndicator())
                 .djiIndicator(marketClient.getDjiIndicator())
                 .djiFutureIndicator(marketClient.getDjiFutureIndicator())
+                .usdKrwIndicator(marketClient.getUsdKrwIndicator())
                 .build();
     }
 
