@@ -51,7 +51,7 @@ public class KisTradeClient extends TradeClient {
         this.objectMapper = new ObjectMapper();
     }
 
-    private static void sleep() throws InterruptedException {
+    private synchronized static void sleep() throws InterruptedException {
         Thread.sleep(300);
     }
 
