@@ -11,6 +11,7 @@ import org.oopscraft.fintics.client.market.MarketClient;
 import org.oopscraft.fintics.model.Market;
 import org.oopscraft.fintics.model.MarketIndicator;
 import org.oopscraft.fintics.model.Ohlcv;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpHeaders;
@@ -53,7 +54,7 @@ public class MarketService {
     @CachePut(value = CACHE_MARKET)
     @Scheduled(initialDelay = 1_000, fixedDelay = 60_000)
     public Market putMarketCache() throws InterruptedException{
-        log.info("cacheEvict[{}]", CACHE_MARKET);
+        log.info("cachePut[{}]", CACHE_MARKET);
         return getMarket();
     }
 

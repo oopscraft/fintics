@@ -131,7 +131,7 @@ public class TradeService {
 
     @CacheEvict(value = CACHE_TRADE_ASSET_INDICATOR, allEntries = true)
     @Scheduled(initialDelay = 1_000, fixedDelay = 60_000)
-    public synchronized void purgeTradeAssetIndicatorCache() {
+    public void purgeTradeAssetIndicatorCache() {
         log.info("cacheEvict[{}]", CACHE_TRADE_ASSET_INDICATOR);
     }
 
