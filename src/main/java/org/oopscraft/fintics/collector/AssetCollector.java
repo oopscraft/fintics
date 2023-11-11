@@ -14,10 +14,11 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
@@ -32,6 +33,7 @@ public class AssetCollector {
 
     private final AssetRepository assetRepository;
 
+    @PersistenceContext
     private final EntityManager entityManager;
 
     @Scheduled(initialDelay = 3_000, fixedDelay = 360_000 * 24)
@@ -56,6 +58,7 @@ public class AssetCollector {
                 .setParameter("collectedAt", collectedAt)
                 .executeUpdate();
         entityManager.flush();
+        entityManager.clear();
         log.info("End collect assets.");
     }
 

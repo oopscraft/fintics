@@ -5,6 +5,8 @@ import org.oopscraft.fintics.model.AssetType;
 import org.oopscraft.fintics.model.IndiceSymbol;
 
 import javax.persistence.Converter;
+import java.lang.reflect.ParameterizedType;
+import java.util.Optional;
 
 @Converter(autoApply = true)
 public class IndiceSymbolConverter extends AbstractEnumConverter<IndiceSymbol> {

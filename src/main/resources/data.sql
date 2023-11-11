@@ -36,91 +36,69 @@ appKey=ENC(mqcEUDQAO57SaLBCvhoz0RpFYBXtMQG2Y+NIK2jfQZ6koEUDlYx+5W8AW+eW0KVd)
 appSecret=ENC(cPLNx3yraMH7FKXfEkcs0/r7ZrKDrW7nBgQ/NpKs3BeQGUkjDl+j8VG0FOhqly/DYwJdyZ5kpLMJ7GAGSv8vEZhUOlSPPP1lFNiVyWZKk+b9jhzyCQOcKs5c+Q5BxHI/A4Nhf4oVIEm8N8nQzVAypLIBQZHu3Re+aPRkWUbdArWaBI+RyLSlemy2ZsDCJh6+/kh8Bic1ooCit0Jx4y1mBZFohtf4zRGdafkkIDIL1OujMz5yRDqigYSNvcSAXRUX)
 accountNo=ENC(BCcz1quNQASvnQ4/ME2CSOiufCl6GfxN)
 ',null,'
-import java.time.LocalTime;
-
 Boolean hold;
 int period = 10;
 
-// OHLCV
-def minuteOhlcv = assetIndicator.getMinuteOhlcv();
-def dailyOhlcv = assetIndicator.getDailyOhlcv();
-log.info("minuteOhlcv:{}", minuteOhlcv);
-log.info("dailyOhlcv:{}", dailyOhlcv);
+// EMA
+def assetEmas = assetIndicator.getMinuteEmas(60);
+def assetEmaSlope = tool.slope(assetEmas, period);
+log.info("assetEmaSlope:{}", assetEmaSlope);
 
-// MA indicator
-def priceEma = assetIndicator.getMinuteEma(60);
-def priceEmaSlope = tool.slope(assetIndicator.getMinuteEmas(60), period);
-def priceSma = assetIndicator.getMinuteSma(60);
-def priceSmaSlope = tool.slope(assetIndicator.getMinuteSmas(60), period);
+// MACD
+def assetMacds = assetIndicator.getMinuteMacds(60, 120, 40);
+def assetMacdOscillatorAverage = tool.average(assetMacds.collect{it.oscillator}, period);
+log.info("assetMacdOscillatorAverage:{}", assetMacdOscillatorAverage);
 
-// MACD indicator
-def macds = assetIndicator.getMinuteMacds(60, 120, 40);
-def macdOscillatorSlope = tool.slope(macds.collect { it.oscillator }, period);
-def macdOscillatorAverage = tool.average(macds.collect { it.oscillator }, period);
+// RSI
+def assetRsis = assetIndicator.getMinuteRsis(60);
+def assetRsiAverage = tool.average(assetRsis, period);
+log.info("assetRsiAverage:{}", assetRsiAverage);
 
-// RSI indicator
-def rsis = assetIndicator.getMinuteRsis(60);
-def rsiSlope = tool.slope(rsis, period);
-def rsiAverage = tool.average(rsis, period);
+// DMI
+def assetDmis = assetIndicator.getMinuteDmis(60);
+def assetDmiPdiAverage = tool.average(assetDmis.collect{it.pdi}, period);
+def assetDmiMdiAverage = tool.average(assetDmis.collect{it.mdi}, period);
+log.info("assetDmiPdiAverage:{}", assetDmiPdiAverage);
+log.info("assetDmiMdiAverage:{}", assetDmiMdiAverage);
 
-// DMI indicator
-def dmis = assetIndicator.getMinuteDmis(60);
-def dmiPdiAverage = tool.average(dmis.collect { it.pdi }, period);
-def dmiPdiSlope = tool.slope(dmis.collect { it.pdi }, period);
-def dmiMdiAverage = tool.average(dmis.collect { it.mdi }, period);
-def dmiMdiSlope = tool.slope(dmis.collect { it.mdi }, period);
+// Kospi
+def kospiIndicator = indiceIndicators[''KOSPI''];
+def kospiEmas = kospiIndicator.getMinuteEmas(60);
+def kospiEmaSlope = tool.slope(kospiEmas, period);
+log.info("kospiEmaSlope:{}", kospiEmaSlope);
 
-// daily
-def dailyPeriod = 3;
-def dailyMacds = assetIndicator.getDailyMacds(12, 16, 9);
-def dailyMacdOscillatorAverage = tool.average(dailyMacds.collect { it.oscillator }, dailyPeriod);
-def dailyMacdOscillatorSlope = tool.slope(dailyMacds.collect { it.oscillator }, dailyPeriod);
-def dailyRsis = assetIndicator.getDailyRsis(14);
-def dailyRsiAverage = tool.average(dailyRsis, dailyPeriod);
-def dailyRsiSlope = tool.slope(dailyRsis, dailyPeriod);
-def dailyDmis = assetIndicator.getDailyDmis(14);
-def dailyDmiPdiAverage = tool.average(dailyDmis.collect { it.pdi }, period);
-def dailyDmiPdiSlope = tool.slope(dailyDmis.collect { it.pdi }, period);
-def dailyDmiMdiAverage = tool.average(dailyDmis.collect { it.mdi }, period);
-def dailyDmiMdiSlope = tool.slope(dailyDmis.collect { it.mdi }, period);
+// USD/KRW
+def usdKrwIndicator = indiceIndicators[''USD_KRW''];
+def usdKrwEmas = usdKrwIndicator.getMinuteEmas(60);
+def usdKrwEmaSlope = tool.slope(usdKrwEmas, period);
+log.info("usdKrwEmaSlope:{}", usdKrwEmaSlope);
 
-// market
-def spxFutureIndicator = market.getSpxFutureIndicator();
-def spxFutureEmaSlope = tool.slope(spxFutureIndicator.getMinuteEmas(60), period);
-def spxFutureMacds = spxFutureIndicator.getMinuteMacds(60, 120, 40);
-def spxFutureMacdOscillatorSlope = tool.slope(spxFutureMacds.collect { it.oscillator }, period);
-def spxFutureMacdOscillatorAverage = tool.average(spxFutureMacds.collect { it.oscillator }, period);
-def spxFutureRsis = spxFutureIndicator.getMinuteRsis(60);
-def spxFutureRsiSlope = tool.slope(spxFutureRsis, period);
-def spxFutureRsiAverage = tool.average(spxFutureRsis, period);
+// Nasdaq Future
+def ndxFutureIndicator = indiceIndicators[''NDX_FUTURE''];
+def ndxFutureEmas = ndxFutureIndicator.getMinuteEmas(60);
+def ndxFutureEmaSlope = tool.slope(ndxFutureEmas, period);
+log.info("ndxFutureEmaSlope:{}", ndxFutureEmaSlope);
 
 // 매수조건
-if(priceEmaSlope > 0) {
+if(assetEmaSlope > 0) {
     def buyVotes = [];
-    def weight = 100;
-    buyVotes.add(macdOscillatorAverage > 0 ? weight : 0);
-    buyVotes.add(macdOscillatorSlope > 0 ? weight : 0);
-    buyVotes.add(rsiAverage > 50 ? weight : 0);
-    buyVotes.add(rsiSlope > 0 ? weight : 0);
-    buyVotes.add(dmiPdiAverage > dmiMdiAverage ? weight : 0);
-    buyVotes.add(dmiPdiSlope > 0 ? weight : 0);
-    buyVotes.add(dmiMdiSlope < 0 ? weight : 0);
-    // daily factor
-    def dailyWeight = 100;
-    buyVotes.add(dailyMacdOscillatorAverage > 0 ? dailyWeight : 0);
-    buyVotes.add(dailyMacdOscillatorSlope > 0 ? dailyWeight : 0);
-    buyVotes.add(dailyRsiAverage > 50 ? dailyWeight : 0);
-    buyVotes.add(dailyRsiSlope > 0 ? dailyWeight : 0);
-    buyVotes.add(dailyDmiPdiAverage > dailyDmiMdiAverage ? dailyWeight : 0);
-    buyVotes.add(dailyDmiPdiSlope > 0 ? dailyWeight : 0);
-    buyVotes.add(dailyDmiMdiSlope < 0 ? dailyWeight : 0);
-    // market factor
-    def marketWeight = 100;
-    buyVotes.add(spxFutureEmaSlope > 0 ? marketWeight : 0);
-    buyVotes.add(spxFutureMacdOscillatorAverage > 0 ? marketWeight : 0);
-    buyVotes.add(spxFutureMacdOscillatorSlope > 0 ? marketWeight : 0);
-    buyVotes.add(spxFutureRsiAverage > 50 ? marketWeight : 0);
-    buyVotes.add(spxFutureRsiSlope > 0 ? marketWeight : 0);
+
+    // 대상종목 상승시 매수
+    buyVotes.add(assetEmaSlope > 0 ? 100 : 0);
+    buyVotes.add(assetMacdOscillatorAverage > 0 ? 100 : 0);
+    buyVotes.add(assetRsiAverage > 50 ? 100 : 0);
+    buyVotes.add(assetDmiPdiAverage > assetDmiMdiAverage ? 100 : 0);
+
+    // 코스피 상승시 매수
+    buyVotes.add(kospiEmaSlope > 0 ? 100 : 0);
+
+    // 달러환율 하락시 매수
+    buyVotes.add(usdKrwEmaSlope < 0 ? 100 : 0);
+
+    // 나스닥선물 상승시 매수
+    buyVotes.add(ndxFutureEmaSlope > 0 ? 100 : 0);
+
+    // 매수여부 결과
     log.info("buyVotes[{}] - {}", buyVotes.average(), buyVotes);
     if(buyVotes.average() > 70) {
         hold = true;
@@ -128,39 +106,32 @@ if(priceEmaSlope > 0) {
 }
 
 // 매도조건
-if(priceEmaSlope < 0) {
+if(assetEmaSlope < 0) {
     def sellVotes = [];
-    def weight = 100;
-    sellVotes.add(macdOscillatorAverage < 0 ? weight : 0);
-    sellVotes.add(macdOscillatorSlope < 0 ? weight : 0);
-    sellVotes.add(rsiAverage < 50 ? weight : 0);
-    sellVotes.add(rsiSlope < 0 ? weight : 0);
-    sellVotes.add(dmiPdiAverage < dmiMdiAverage ? weight : 0);
-    sellVotes.add(dmiPdiSlope < 0 ? weight : 0);
-    sellVotes.add(dmiMdiSlope > 0 ? weight : 0);
-    // daily factor
-    def dailyWeight = 100;
-    sellVotes.add(dailyMacdOscillatorAverage < 0 ? dailyWeight : 0);
-    sellVotes.add(dailyMacdOscillatorSlope < 0 ? dailyWeight : 0);
-    sellVotes.add(dailyRsiAverage < 50 ? dailyWeight : 0);
-    sellVotes.add(dailyRsiSlope < 0 ? dailyWeight : 0);
-    sellVotes.add(dailyDmiPdiAverage < dailyDmiMdiAverage ? dailyWeight : 0);
-    sellVotes.add(dailyDmiPdiSlope < 0 ? dailyWeight : 0);
-    sellVotes.add(dailyDmiMdiSlope > 0 ? dailyWeight : 0);
-    // market factor
-    def marketWeight = 100;
-    sellVotes.add(spxFutureEmaSlope < 0 ? marketWeight : 0);
-    sellVotes.add(spxFutureMacdOscillatorAverage < 0 ? marketWeight : 0);
-    sellVotes.add(spxFutureMacdOscillatorSlope < 0 ? marketWeight : 0);
-    sellVotes.add(spxFutureRsiAverage < 50 ? marketWeight : 0);
-    sellVotes.add(spxFutureRsiSlope < 0 ? marketWeight : 0);
+
+    // 대상종목 하락시 매도
+    sellVotes.add(assetEmaSlope < 0 ? 100 : 0);
+    sellVotes.add(assetMacdOscillatorAverage < 0 ? 100 : 0);
+    sellVotes.add(assetRsiAverage < 50 ? 100 : 0);
+    sellVotes.add(assetDmiPdiAverage < assetDmiMdiAverage ? 100 : 0);
+
+    // 코스피 하락시 매도
+    sellVotes.add(kospiEmaSlope < 0 ? 100 : 0);
+
+    // 달러환율 상승시 매도
+    sellVotes.add(usdKrwEmaSlope > 0 ? 100 : 0);
+
+    // 나스닥선물 하락시 매도
+    sellVotes.add(ndxFutureEmaSlope < 0 ? 100 : 0);
+
+    // 매도여부 결과
     log.info("sellVotes[{}] - {}", sellVotes.average(), sellVotes);
-    if(sellVotes.average() > 70) {
+    if(sellVotes.average() > 30) {
         hold = false;
     }
 }
 
-// 결과 반환
+// 결과반환
 return hold;
 
 ');
@@ -181,131 +152,102 @@ appKey=ENC(mqcEUDQAO57SaLBCvhoz0RpFYBXtMQG2Y+NIK2jfQZ6koEUDlYx+5W8AW+eW0KVd)
 appSecret=ENC(cPLNx3yraMH7FKXfEkcs0/r7ZrKDrW7nBgQ/NpKs3BeQGUkjDl+j8VG0FOhqly/DYwJdyZ5kpLMJ7GAGSv8vEZhUOlSPPP1lFNiVyWZKk+b9jhzyCQOcKs5c+Q5BxHI/A4Nhf4oVIEm8N8nQzVAypLIBQZHu3Re+aPRkWUbdArWaBI+RyLSlemy2ZsDCJh6+/kh8Bic1ooCit0Jx4y1mBZFohtf4zRGdafkkIDIL1OujMz5yRDqigYSNvcSAXRUX)
 accountNo=ENC(BCcz1quNQASvnQ4/ME2CSOiufCl6GfxN)
 ',null,'
-import java.time.LocalTime;
-
 Boolean hold;
 int period = 10;
 
-// OHLCV
-def minuteOhlcv = assetIndicator.getMinuteOhlcvs().get(0);
-def dailyOhlcv = assetIndicator.getDailyOhlcvs().get(0);
-log.info("minuteOhlcv:{}", minuteOhlcv);
-log.info("dailyOhlcv:{}", dailyOhlcv);
+// EMA
+def assetEmas = assetIndicator.getMinuteEmas(60);
+def assetEmaSlope = tool.slope(assetEmas, period);
+log.info("assetEmaSlope:{}", assetEmaSlope);
 
-// MA indicator
-def priceEma = assetIndicator.getMinuteEma(60);
-def priceEmaSlope = tool.slope(assetIndicator.getMinuteEmas(60), period);
-def priceSma = assetIndicator.getMinuteSma(60);
-def priceSmaSlope = tool.slope(assetIndicator.getMinuteSmas(60), period);
+// MACD
+def assetMacds = assetIndicator.getMinuteMacds(60, 120, 40);
+def assetMacdOscillatorAverage = tool.average(assetMacds.collect{it.oscillator}, period);
+log.info("assetMacdOscillatorAverage:{}", assetMacdOscillatorAverage);
 
-// MACD indicator
-def macds = assetIndicator.getMinuteMacds(60, 120, 40);
-def macdOscillatorSlope = tool.slope(macds.collect { it.oscillator }, period);
-def macdOscillatorAverage = tool.average(macds.collect { it.oscillator }, period);
+// RSI
+def assetRsis = assetIndicator.getMinuteRsis(60);
+def assetRsiAverage = tool.average(assetRsis, period);
+log.info("assetRsiAverage:{}", assetRsiAverage);
 
-// RSI indicator
-def rsis = assetIndicator.getMinuteRsis(60);
-def rsiSlope = tool.slope(rsis, period);
-def rsiAverage = tool.average(rsis, period);
+// DMI
+def assetDmis = assetIndicator.getMinuteDmis(60);
+def assetDmiPdiAverage = tool.average(assetDmis.collect{it.pdi}, period);
+def assetDmiMdiAverage = tool.average(assetDmis.collect{it.mdi}, period);
+log.info("assetDmiPdiAverage:{}", assetDmiPdiAverage);
+log.info("assetDmiMdiAverage:{}", assetDmiMdiAverage);
 
-// DMI indicator
-def dmis = assetIndicator.getMinuteDmis(60);
-def dmiPdiAverage = tool.average(dmis.collect { it.pdi }, period);
-def dmiPdiSlope = tool.slope(dmis.collect { it.pdi }, period);
-def dmiMdiAverage = tool.average(dmis.collect { it.mdi }, period);
-def dmiMdiSlope = tool.slope(dmis.collect { it.mdi }, period);
+// Kospi
+def kospiIndicator = indiceIndicators[''KOSPI''];
+def kospiEmas = kospiIndicator.getMinuteEmas(60);
+def kospiEmaSlope = tool.slope(kospiEmas, period);
+log.info("kospiEmaSlope:{}", kospiEmaSlope);
 
-// daily
-def dailyPeriod = 3;
-def dailyMacds = assetIndicator.getDailyMacds(12, 16, 9);
-def dailyMacdOscillatorAverage = tool.average(dailyMacds.collect { it.oscillator }, dailyPeriod);
-def dailyMacdOscillatorSlope = tool.slope(dailyMacds.collect { it.oscillator }, dailyPeriod);
-def dailyRsis = assetIndicator.getDailyRsis(14);
-def dailyRsiAverage = tool.average(dailyRsis, dailyPeriod);
-def dailyRsiSlope = tool.slope(dailyRsis, dailyPeriod);
-def dailyDmis = assetIndicator.getDailyDmis(14);
-def dailyDmiPdiAverage = tool.average(dailyDmis.collect { it.pdi }, period);
-def dailyDmiPdiSlope = tool.slope(dailyDmis.collect { it.pdi }, period);
-def dailyDmiMdiAverage = tool.average(dailyDmis.collect { it.mdi }, period);
-def dailyDmiMdiSlope = tool.slope(dailyDmis.collect { it.mdi }, period);
+// USD/KRW
+def usdKrwIndicator = indiceIndicators[''USD_KRW''];
+def usdKrwEmas = usdKrwIndicator.getMinuteEmas(60);
+def usdKrwEmaSlope = tool.slope(usdKrwEmas, period);
+log.info("usdKrwEmaSlope:{}", usdKrwEmaSlope);
 
-// market
-def spxFutureIndicator = market.getSpxFutureIndicator();
-def spxFutureEmaSlope = tool.slope(spxFutureIndicator.getMinuteEmas(60), period);
-def spxFutureMacds = spxFutureIndicator.getMinuteMacds(60, 120, 40);
-def spxFutureMacdOscillatorSlope = tool.slope(spxFutureMacds.collect { it.oscillator }, period);
-def spxFutureMacdOscillatorAverage = tool.average(spxFutureMacds.collect { it.oscillator }, period);
-def spxFutureRsis = spxFutureIndicator.getMinuteRsis(60);
-def spxFutureRsiSlope = tool.slope(spxFutureRsis, period);
-def spxFutureRsiAverage = tool.average(spxFutureRsis, period);
+// Nasdaq Future
+def ndxFutureIndicator = indiceIndicators[''NDX_FUTURE''];
+def ndxFutureEmas = ndxFutureIndicator.getMinuteEmas(60);
+def ndxFutureEmaSlope = tool.slope(ndxFutureEmas, period);
+log.info("ndxFutureEmaSlope:{}", ndxFutureEmaSlope);
 
-// 매수조건
-if(priceEmaSlope > 0) {
+// 매수조건(인버스)
+if(assetEmaSlope > 0) {
     def buyVotes = [];
-    def weight = 100;
-    buyVotes.add(macdOscillatorAverage > 0 ? weight : 0);
-    buyVotes.add(macdOscillatorSlope > 0 ? weight : 0);
-    buyVotes.add(rsiAverage > 50 ? weight : 0);
-    buyVotes.add(rsiSlope > 0 ? weight : 0);
-    buyVotes.add(dmiPdiAverage > dmiMdiAverage ? weight : 0);
-    buyVotes.add(dmiPdiSlope > 0 ? weight : 0);
-    buyVotes.add(dmiMdiSlope < 0 ? weight : 0);
-    // daily factor
-    def dailyWeight = 100;
-    buyVotes.add(dailyMacdOscillatorAverage > 0 ? dailyWeight : 0);
-    buyVotes.add(dailyMacdOscillatorSlope > 0 ? dailyWeight : 0);
-    buyVotes.add(dailyRsiAverage > 50 ? dailyWeight : 0);
-    buyVotes.add(dailyRsiSlope > 0 ? dailyWeight : 0);
-    buyVotes.add(dailyDmiPdiAverage > dailyDmiMdiAverage ? dailyWeight : 0);
-    buyVotes.add(dailyDmiPdiSlope > 0 ? dailyWeight : 0);
-    buyVotes.add(dailyDmiMdiSlope < 0 ? dailyWeight : 0);
-    // market factor
-    def marketWeight = 100;
-    buyVotes.add(spxFutureEmaSlope > 0 ? marketWeight : 0);
-    buyVotes.add(spxFutureMacdOscillatorAverage > 0 ? marketWeight : 0);
-    buyVotes.add(spxFutureMacdOscillatorSlope > 0 ? marketWeight : 0);
-    buyVotes.add(spxFutureRsiAverage > 50 ? marketWeight : 0);
-    buyVotes.add(spxFutureRsiSlope > 0 ? marketWeight : 0);
+
+    // 대상종목 상승시 매수
+    buyVotes.add(assetEmaSlope > 0 ? 100 : 0);
+    buyVotes.add(assetMacdOscillatorAverage > 0 ? 100 : 0);
+    buyVotes.add(assetRsiAverage > 50 ? 100 : 0);
+    buyVotes.add(assetDmiPdiAverage > assetDmiMdiAverage ? 100 : 0);
+
+    // 코스피 하락시 매수(인버스)
+    buyVotes.add(kospiEmaSlope < 0 ? 100 : 0);
+
+    // 달러환율 상승시 매수(인버스)
+    buyVotes.add(usdKrwEmaSlope > 0 ? 100 : 0);
+
+    // 나스닥선물 하락시 매수(인버스)
+    buyVotes.add(ndxFutureEmaSlope < 0 ? 100 : 0);
+
+    // 매수여부 결과
     log.info("buyVotes[{}] - {}", buyVotes.average(), buyVotes);
     if(buyVotes.average() > 70) {
         hold = true;
     }
 }
 
-// 매도조건
-if(priceEmaSlope < 0) {
+// 매도조건(인버스)
+if(assetEmaSlope < 0) {
     def sellVotes = [];
-    def weight = 100;
-    sellVotes.add(macdOscillatorAverage < 0 ? weight : 0);
-    sellVotes.add(macdOscillatorSlope < 0 ? weight : 0);
-    sellVotes.add(rsiAverage < 50 ? weight : 0);
-    sellVotes.add(rsiSlope < 0 ? weight : 0);
-    sellVotes.add(dmiPdiAverage < dmiMdiAverage ? weight : 0);
-    sellVotes.add(dmiPdiSlope < 0 ? weight : 0);
-    sellVotes.add(dmiMdiSlope > 0 ? weight : 0);
-    // daily factor
-    def dailyWeight = 100;
-    sellVotes.add(dailyMacdOscillatorAverage < 0 ? dailyWeight : 0);
-    sellVotes.add(dailyMacdOscillatorSlope < 0 ? dailyWeight : 0);
-    sellVotes.add(dailyRsiAverage < 50 ? dailyWeight : 0);
-    sellVotes.add(dailyRsiSlope < 0 ? dailyWeight : 0);
-    sellVotes.add(dailyDmiPdiAverage < dailyDmiMdiAverage ? dailyWeight : 0);
-    sellVotes.add(dailyDmiPdiSlope < 0 ? dailyWeight : 0);
-    sellVotes.add(dailyDmiMdiSlope > 0 ? dailyWeight : 0);
-    // market factor
-    def marketWeight = 100;
-    sellVotes.add(spxFutureEmaSlope < 0 ? marketWeight : 0);
-    sellVotes.add(spxFutureMacdOscillatorAverage < 0 ? marketWeight : 0);
-    sellVotes.add(spxFutureMacdOscillatorSlope < 0 ? marketWeight : 0);
-    sellVotes.add(spxFutureRsiAverage < 50 ? marketWeight : 0);
-    sellVotes.add(spxFutureRsiSlope < 0 ? marketWeight : 0);
+
+    // 대상종목 하락시 매도
+    sellVotes.add(assetEmaSlope < 0 ? 100 : 0);
+    sellVotes.add(assetMacdOscillatorAverage < 0 ? 100 : 0);
+    sellVotes.add(assetRsiAverage < 50 ? 100 : 0);
+    sellVotes.add(assetDmiPdiAverage < assetDmiMdiAverage ? 100 : 0);
+
+    // 코스피 상승시 매도(인버스)
+    sellVotes.add(kospiEmaSlope > 0 ? 100 : 0);
+
+    // 달러환율 하락시 매도(인버스)
+    sellVotes.add(usdKrwEmaSlope < 0 ? 100 : 0);
+
+    // 나스닥선물 상승시 매도(인버스)
+    sellVotes.add(ndxFutureEmaSlope > 0 ? 100 : 0);
+
+    // 매도여부 결과
     log.info("sellVotes[{}] - {}", sellVotes.average(), sellVotes);
-    if(sellVotes.average() > 70) {
+    if(sellVotes.average() > 30) {
         hold = false;
     }
 }
 
-// 결과 반환
+// 결과반환
 return hold;
 
 ');

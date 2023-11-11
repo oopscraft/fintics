@@ -12,10 +12,11 @@ import java.time.LocalDateTime;
 
 @MappedSuperclass
 @Data
+@EqualsAndHashCode(callSuper = true)
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-public class OhlcvEntity {
+public class OhlcvEntity extends SystemFieldEntity {
 
     @Id
     @Column(name = "date_time")
