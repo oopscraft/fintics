@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.client.market;
+package org.oopscraft.fintics.client.indice;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -7,14 +7,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
-import org.oopscraft.fintics.model.MarketIndicator;
+import org.oopscraft.fintics.model.IndiceIndicator;
+import org.oopscraft.fintics.model.IndiceSymbol;
 import org.oopscraft.fintics.model.Ohlcv;
+import org.oopscraft.fintics.model.OhlcvType;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -28,51 +29,66 @@ import java.util.*;
 @ConditionalOnProperty(prefix = "fintics.client.market", name = "class-name", havingValue="org.oopscraft.fintics.client.market.YahooMarketClient")
 @RequiredArgsConstructor
 @Slf4j
-public class YahooMarketClient implements MarketClient {
+public class YahooIndiceClient extends IndiceClient {
 
     private final ObjectMapper objectMapper;
 
     @Override
-    public MarketIndicator getNdxIndicator() throws InterruptedException {
-        return getMarketIndex("^NDX", "NASDAQ 100");
+    public List<Ohlcv> getMinuteOhlcvs(IndiceSymbol symbol) {
+        switch(symbol) {
+            case NDX:
+                return getMinuteOhlcvs("^NDX");
+            case NDX_FUTURE:
+                return getMinuteOhlcvs("NQ=F");
+            case SPX:
+                return getMinuteOhlcvs("^GSPC");
+            case SPX_FUTURE:
+                return getMinuteOhlcvs("ES=F");
+            case KOSPI:
+                return getMinuteOhlcvs("^KS11");
+            case USD_KRW:
+                return getMinuteOhlcvs("KRW=X");
+            default:
+                throw new UnsupportedOperationException("not supported indice");
+        }
     }
 
     @Override
-    public MarketIndicator getNdxFutureIndicator() throws InterruptedException {
-        return getMarketIndex("NQ=F", "Nasdaq Futures");
+    public List<Ohlcv> getDailyOhlcvs(IndiceSymbol symbol) {
+        switch(symbol) {
+            case NDX:
+                return getDailyOhlcvs("^NDX");
+            case NDX_FUTURE:
+                return getDailyOhlcvs("NQ=F");
+            case SPX:
+                return getDailyOhlcvs("^GSPC");
+            case SPX_FUTURE:
+                return getDailyOhlcvs("ES=F");
+            case KOSPI:
+                return getDailyOhlcvs("^KS11");
+            case USD_KRW:
+                return getDailyOhlcvs("KRW=X");
+            default:
+                throw new UnsupportedOperationException("not supported indice");
+        }
     }
 
-    @Override
-    public MarketIndicator getSpxIndicator() throws InterruptedException {
-        return getMarketIndex("^GSPC", "S&P 500");
+    private List<Ohlcv> getMinuteOhlcvs(String yahooSymbol) {
+        return getOhlcvs(yahooSymbol, OhlcvType.MINUTE, LocalDateTime.now().minusWeeks(1), LocalDateTime.now(), 60*24*3);    // 3 days
     }
 
-    @Override
-    public MarketIndicator getSpxFutureIndicator() throws InterruptedException{
-        return getMarketIndex("ES=F", "S&P 500 Future");
+    private List<Ohlcv> getDailyOhlcvs(String yahooSymbol) {
+        return getOhlcvs(yahooSymbol, OhlcvType.DAILY, LocalDateTime.now().minusMonths(3), LocalDateTime.now(), 30*2);
     }
 
-    @Override
-    public MarketIndicator getKospiIndicator() throws InterruptedException {
-        return getMarketIndex("^KS11", "KOSPI");
-    }
+    private List<Ohlcv> getOhlcvs(String symbol, OhlcvType ohlcvType, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo, Integer limit) {
+        String interval;
+        switch(ohlcvType) {
+            case MINUTE -> interval = "1m";
+            case DAILY -> interval = "1d";
+            default -> throw new IllegalArgumentException("invalid ohlcvType");
+        }
 
-    @Override
-    public MarketIndicator getUsdKrwIndicator() throws InterruptedException {
-        return getMarketIndex("KRW=X", "USD/KRW");
-    }
-
-    MarketIndicator getMarketIndex(String symbol, String name) {
-        List<Ohlcv> minuteOhlcvs = getOhlcvs(symbol, "1m", LocalDateTime.now().minusWeeks(1), LocalDateTime.now(), 60*24*3);    // 3 days
-        List<Ohlcv> dailyOhlcvs = getOhlcvs(symbol, "1d", LocalDateTime.now().minusMonths(3), LocalDateTime.now(), 30*2);       // 2 months
-        return MarketIndicator.builder()
-                .name(name)
-                .minuteOhlcvs(minuteOhlcvs)
-                .dailyOhlcvs(dailyOhlcvs)
-                .build();
-    }
-
-    List<Ohlcv> getOhlcvs(String symbol, String interval, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo, Integer limit) {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
@@ -127,6 +143,7 @@ public class YahooMarketClient implements MarketClient {
             BigDecimal volume = Optional.ofNullable(volumes.get(i)).orElse(BigDecimal.ZERO);
             Ohlcv ohlcv = Ohlcv.builder()
                     .dateTime(dateTime)
+                    .ohlcvType(ohlcvType)
                     .openPrice(openPrice)
                     .highPrice(highPrice)
                     .lowPrice(lowPrice)

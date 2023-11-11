@@ -24,17 +24,20 @@ log.info("assetDmiPdiAverage:{}", assetDmiPdiAverage);
 log.info("assetDmiMdiAverage:{}", assetDmiMdiAverage);
 
 // Kospi
-def kospiEmas = market.getKospiIndicator().getMinuteEmas(60);
+def kospiIndicator = indiceIndicators['KOSPI'];
+def kospiEmas = kospiIndicator.getMinuteEmas(60);
 def kospiEmaSlope = tool.slope(kospiEmas, period);
 log.info("kospiEmaSlope:{}", kospiEmaSlope);
 
 // USD/KRW
-def usdKrwEmas = market.getUsdKrwIndicator().getMinuteEmas(60);
+def usdKrwIndicator = indiceIndicators['USD_KRW'];
+def usdKrwEmas = usdKrwIndicator.getMinuteEmas(60);
 def usdKrwEmaSlope = tool.slope(usdKrwEmas, period);
 log.info("usdKrwEmaSlope:{}", usdKrwEmaSlope);
 
 // Nasdaq Future
-def ndxFutureEmas = market.getNdxFutureIndicator().getMinuteEmas(60);
+def ndxFutureIndicator = indiceIndicators['NDX_FUTURE'];
+def ndxFutureEmas = ndxFutureIndicator.getMinuteEmas(60);
 def ndxFutureEmaSlope = tool.slope(ndxFutureEmas, period);
 log.info("ndxFutureEmaSlope:{}", ndxFutureEmaSlope);
 

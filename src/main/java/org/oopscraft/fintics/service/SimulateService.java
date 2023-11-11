@@ -19,7 +19,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SimulateService {
 
-    private final MarketService marketService;
+    private final IndiceService indiceService;
 
     public Simulate simulate(Simulate simulate) throws InterruptedException {
 
@@ -70,14 +70,14 @@ public class SimulateService {
                     .dailyOhlcvs(dailyOhlcvs)
                     .build();
 
-            Market market = marketService.getMarket();
+            List<IndiceIndicator> indiceIndicators = indiceService.getIndiceIndicators();
 
             TradeAssetDecider tradeAssetDecider = TradeAssetDecider.builder()
                     .holdCondition(simulate.getHoldCondition())
                     .logger(log)
                     .dateTime(dateTime)
                     .assetIndicator(assetIndicator)
-                    .market(market)
+                    .indiceIndicators(indiceIndicators)
                     .build();
             Boolean holdConditionResult = tradeAssetDecider.execute();
             holdConditionResults.add(holdConditionResult);

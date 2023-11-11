@@ -124,8 +124,8 @@
         let tradeIndicator = null;
         let assetMinuteIndicatorsChart = null;
         let assetDailyIndicatorsChart = null;
-        let marketMinuteIndicatorsChart = null;
-        let marketDailyIndicatorsChart = null;
+        let indiceMinuteIndicatorsChart = null;
+        let indiceDailyIndicatorsChart = null;
 
         Chart.defaults.font.size = 8;
         Chart.defaults.animation = false;
@@ -138,12 +138,12 @@
             assetMinuteIndicatorsChart = createMinuteIndicatorsChart('assetMinuteIndicatorsChart');
         }
 
-        function initializeMarketDailyIndicatorsChart() {
-            marketDailyIndicatorsChart = createDailyIndicatorsChart('marketDailyIndicatorsChart');
+        function initializeIndiceDailyIndicatorsChart() {
+            indiceDailyIndicatorsChart = createDailyIndicatorsChart('indiceDailyIndicatorsChart');
         }
 
-        function initializeMarketMinuteIndicatorsChart() {
-            marketMinuteIndicatorsChart = createMinuteIndicatorsChart('marketMinuteIndicatorsChart');
+        function initializeIndiceMinuteIndicatorsChart() {
+            indiceMinuteIndicatorsChart = createMinuteIndicatorsChart('indiceMinuteIndicatorsChart');
         }
 
         function createDailyIndicatorsChart(elementId) {
@@ -329,15 +329,7 @@
                 .then(data => {
                     tradeIndicator = data;
                     let assetIndicators = tradeIndicator['assetIndicators'];
-                    let market = tradeIndicator['market'];
-                    let marketIndicatorNames = [
-                        'ndxFutureIndicator',
-                        'ndxIndicator',
-                        'spxIndicator',
-                        'spxFutureIndicator',
-                        'kospiIndicator',
-                        'usdKrwIndicator',
-                    ];
+                    let indiceIndicators = tradeIndicator['indiceIndicators'];
 
                     // define date from
                     let dailyFrom = dateFns.startOfDay(new Date());
@@ -380,37 +372,36 @@
                     assetDailyIndicatorsChart.update();
                     assetMinuteIndicatorsChart.update();
 
-                    // market chart
-                    marketMinuteIndicatorsChart.data.datasets.length = 0;
-                    marketDailyIndicatorsChart.data.datasets.length = 0;
-                    for(let i = 0; i < marketIndicatorNames.length; i ++) {
-                        let marketIndicatorName = marketIndicatorNames[i];
-                        let marketIndicator = market[marketIndicatorName];
+                    // indice chart
+                    indiceMinuteIndicatorsChart.data.datasets.length = 0;
+                    indiceDailyIndicatorsChart.data.datasets.length = 0;
+                    for(let i = 0; i < indiceIndicators.length; i ++) {
+                        let indiceIndicator = indiceIndicators[i];
 
                         // daily
-                        let dailyOhlcvs = marketIndicator['dailyOhlcvs'];
+                        let dailyOhlcvs = indiceIndicator['dailyOhlcvs'];
                         let dailyTimeSeries = createTimeSeries(dailyFrom, dailyTo, dailyOhlcvs, 60000*60*24);
                         let dailyDataset = {
-                            label: marketIndicator.name,
+                            label: indiceIndicator.name,
                             data: dailyTimeSeries,
                             borderWidth: 1,
                             pointStyle: false
                         };
-                        marketDailyIndicatorsChart.data.datasets.push(dailyDataset);
+                        indiceDailyIndicatorsChart.data.datasets.push(dailyDataset);
 
                         // minute
-                        let minuteOhlcvs = marketIndicator['minuteOhlcvs'];
+                        let minuteOhlcvs = indiceIndicator['minuteOhlcvs'];
                         let minuteTimeSeries = createTimeSeries(minuteFrom, minuteTo, minuteOhlcvs, 60000);
                         let minuteDataset = {
-                            label: marketIndicator.name,
+                            label: indiceIndicator.name,
                             data: minuteTimeSeries,
                             borderWidth: 1,
                             pointStyle: false
                         };
-                        marketMinuteIndicatorsChart.data.datasets.push(minuteDataset);
+                        indiceMinuteIndicatorsChart.data.datasets.push(minuteDataset);
                     }
-                    marketDailyIndicatorsChart.update();
-                    marketMinuteIndicatorsChart.update();
+                    indiceDailyIndicatorsChart.update();
+                    indiceMinuteIndicatorsChart.update();
                 });
         }
 
@@ -498,8 +489,8 @@
                 getTrade();
                 initializeAssetDailyIndicatorsChart();
                 initializeAssetMinuteIndicatorsChart();
-                initializeMarketDailyIndicatorsChart();
-                initializeMarketMinuteIndicatorsChart();
+                initializeIndiceDailyIndicatorsChart();
+                initializeIndiceMinuteIndicatorsChart();
                 getTradeIndicator();
                 setInterval(function() {
                     refreshTradeIndicator();
@@ -780,10 +771,10 @@
                     </h3>
                 </div>
                 <div class="grid-column-5 s-grid-column-12">
-                    <canvas id="marketDailyIndicatorsChart"></canvas>
+                    <canvas id="indiceDailyIndicatorsChart"></canvas>
                 </div>
                 <div class="grid-column-7 s-grid-column-12" style="width:100%; height:200px;">
-                    <canvas id="marketMinuteIndicatorsChart"></canvas>
+                    <canvas id="indiceMinuteIndicatorsChart"></canvas>
                 </div>
             </div>
             <div class="margin-1em">

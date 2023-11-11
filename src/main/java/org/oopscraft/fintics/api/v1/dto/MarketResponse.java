@@ -3,32 +3,31 @@ package org.oopscraft.fintics.api.v1.dto;
 import lombok.Builder;
 import lombok.Getter;
 import org.oopscraft.fintics.model.Market;
-import org.oopscraft.fintics.model.MarketIndicator;
 
 @Builder
 @Getter
 public class MarketResponse {
 
-    private MarketIndicatorResponse ndxIndicator;
+    private IndiceIndicatorResponse ndxIndicator;
 
-    private MarketIndicatorResponse ndxFutureIndicator;
+    private IndiceIndicatorResponse ndxFutureIndicator;
 
-    private MarketIndicatorResponse spxIndicator;
+    private IndiceIndicatorResponse spxIndicator;
 
-    private MarketIndicatorResponse spxFutureIndicator;
+    private IndiceIndicatorResponse spxFutureIndicator;
 
-    private MarketIndicatorResponse kospiIndicator;
+    private IndiceIndicatorResponse kospiIndicator;
 
-    private MarketIndicatorResponse usdKrwIndicator;
+    private IndiceIndicatorResponse usdKrwIndicator;
 
     public static MarketResponse from(Market market) {
         return MarketResponse.builder()
-                .ndxIndicator(MarketIndicatorResponse.from(market.getNdxIndicator()))
-                .ndxFutureIndicator(MarketIndicatorResponse.from(market.getNdxFutureIndicator()))
-                .spxIndicator(MarketIndicatorResponse.from(market.getSpxIndicator()))
-                .spxFutureIndicator(MarketIndicatorResponse.from(market.getSpxFutureIndicator()))
-                .kospiIndicator(MarketIndicatorResponse.from(market.getKospiIndicator()))
-                .usdKrwIndicator(MarketIndicatorResponse.from(market.getUsdKrwIndicator()))
+                .ndxIndicator(IndiceIndicatorResponse.from(market.getNdxIndicator()))
+                .ndxFutureIndicator(IndiceIndicatorResponse.from(market.getNdxFutureIndicator()))
+                .spxIndicator(IndiceIndicatorResponse.from(market.getSpxIndicator()))
+                .spxFutureIndicator(IndiceIndicatorResponse.from(market.getSpxFutureIndicator()))
+                .kospiIndicator(IndiceIndicatorResponse.from(market.getKospiIndicator()))
+                .usdKrwIndicator(IndiceIndicatorResponse.from(market.getUsdKrwIndicator()))
                 .build();
     }
 

@@ -8,7 +8,7 @@ import org.oopscraft.arch4j.web.support.PageableUtils;
 import org.oopscraft.arch4j.web.support.SseLogAppender;
 import org.oopscraft.fintics.api.v1.dto.*;
 import org.oopscraft.fintics.model.*;
-import org.oopscraft.fintics.service.MarketService;
+import org.oopscraft.fintics.service.IndiceService;
 import org.oopscraft.fintics.service.TradeService;
 import org.oopscraft.fintics.thread.TradeThreadManager;
 import org.springframework.data.domain.Page;
@@ -39,7 +39,7 @@ public class TradeRestController {
 
     private final ObjectMapper objectMapper;
 
-    private final MarketService marketService;
+    private final IndiceService indiceService;
 
     @GetMapping
     public ResponseEntity<List<TradeResponse>> getTrades() {
@@ -156,7 +156,7 @@ public class TradeRestController {
 
     @GetMapping("{tradeId}/indicator")
     @PreAuthorize("@tradePermissionEvaluator.hasEditPermission(#tradeId)")
-    public ResponseEntity<TradeIndicator> getTradeIndicator(@PathVariable("tradeId") String tradeId) throws InterruptedException {
+    public ResponseEntity<TradeIndicatorResponse> getTradeIndicator(@PathVariable("tradeId") String tradeId) throws InterruptedException {
         Trade trade = tradeService.getTrade(tradeId).orElseThrow();
 
         // asset indicators
@@ -166,13 +166,15 @@ public class TradeRestController {
             assetIndicators.add(AssetIndicatorResponse.from(assetIndicator));
         }
 
-        // market
-        Market market = marketService.getMarket();
+        // indice indicators
+        List<IndiceIndicatorResponse> indiceIndicators = indiceService.getIndiceIndicators().stream()
+                .map(IndiceIndicatorResponse::from)
+                .collect(Collectors.toList());
 
         // response
-        TradeIndicator tradeIndicator = TradeIndicator.builder()
+        TradeIndicatorResponse tradeIndicator = TradeIndicatorResponse.builder()
                 .assetIndicators(assetIndicators)
-                .market(MarketResponse.from(market))
+                .indiceIndicators(indiceIndicators)
                 .build();
         return ResponseEntity.ok(tradeIndicator);
     }

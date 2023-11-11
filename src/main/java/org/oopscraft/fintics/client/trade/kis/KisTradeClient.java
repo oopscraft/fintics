@@ -189,6 +189,7 @@ public class KisTradeClient extends TradeClient {
                         BigDecimal closePrice = row.getNumber("stck_prpr");
                         BigDecimal volume = row.getNumber("cntg_vol");
                         return Ohlcv.builder()
+                                .ohlcvType(OhlcvType.MINUTE)
                                 .dateTime(dateTime)
                                 .openPrice(openPrice)
                                 .highPrice(highPrice)
@@ -272,6 +273,7 @@ public class KisTradeClient extends TradeClient {
                     BigDecimal closePrice = row.getNumber("stck_clpr");
                     BigDecimal volume = row.getNumber("acml_vol");
                     return Ohlcv.builder()
+                            .ohlcvType(OhlcvType.DAILY)
                             .dateTime(dateTime)
                             .openPrice(openPrice)
                             .highPrice(highPrice)

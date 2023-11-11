@@ -22,6 +22,4 @@ public class AssetIndicator extends Indicator {
 
     private final AssetType type;
 
-    private final OrderBook orderBook;
-
 }

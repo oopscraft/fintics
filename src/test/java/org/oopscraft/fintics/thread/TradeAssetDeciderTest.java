@@ -11,8 +11,6 @@ import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 @Slf4j
 class TradeAssetDeciderTest {
 
@@ -65,7 +63,6 @@ class TradeAssetDeciderTest {
                 .logger(log)
                 .dateTime(LocalDateTime.now())
                 .assetIndicator(assetIndicator)
-                .market(market)
                 .build();
         Instant groovyStart = Instant.now();
         Boolean result = tradeAssetDecider.execute();

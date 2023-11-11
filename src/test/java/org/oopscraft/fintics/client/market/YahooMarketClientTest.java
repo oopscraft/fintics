@@ -6,8 +6,15 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.oopscraft.arch4j.core.test.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
-import org.oopscraft.fintics.model.MarketIndicator;
+import org.oopscraft.fintics.client.indice.IndiceClient;
+import org.oopscraft.fintics.client.indice.YahooIndiceClient;
+import org.oopscraft.fintics.dao.IndiceOhlcvEntity;
+import org.oopscraft.fintics.model.IndiceIndicator;
+import org.oopscraft.fintics.model.IndiceSymbol;
+import org.oopscraft.fintics.model.Ohlcv;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -19,62 +26,26 @@ class YahooMarketClientTest extends CoreTestSupport {
 
     @Disabled
     @Test
-    void getNdxIndicator() throws InterruptedException {
+    void getMinuteOhlcvs() throws InterruptedException {
         // given
         // when
-        MarketClient marketClient = new YahooMarketClient(objectMapper);
-        MarketIndicator marketIndicator = marketClient.getNdxIndicator();
+        IndiceClient indiceClient = new YahooIndiceClient(objectMapper);
+        List<Ohlcv> minuteOhlcvs = indiceClient.getMinuteOhlcvs(IndiceSymbol.NDX);
 
         // then
-        assertNotNull(marketIndicator);
+        assertTrue(minuteOhlcvs.size() > 0);
     }
 
     @Disabled
     @Test
-    void getNdxFutureIndicator() throws InterruptedException {
+    void getDailyOhlcvs() throws InterruptedException {
         // given
         // when
-        MarketClient marketClient = new YahooMarketClient(objectMapper);
-        MarketIndicator marketIndicator = marketClient.getNdxFutureIndicator();
+        IndiceClient indiceClient = new YahooIndiceClient(objectMapper);
+        List<Ohlcv> dailyOhlcvs = indiceClient.getDailyOhlcvs(IndiceSymbol.NDX);
 
         // then
-        assertNotNull(marketIndicator);
-    }
-
-    @Disabled
-    @Test
-    void getSpxIndicator() throws InterruptedException {
-        // given
-        // when
-        MarketClient marketClient = new YahooMarketClient(objectMapper);
-        MarketIndicator marketIndicator = marketClient.getSpxIndicator();
-
-        // then
-        assertNotNull(marketIndicator);
-    }
-
-    @Disabled
-    @Test
-    void getSpxFutureIndicator() throws InterruptedException {
-        // given
-        // when
-        MarketClient marketClient = new YahooMarketClient(objectMapper);
-        MarketIndicator marketIndicator = marketClient.getSpxFutureIndicator();
-
-        // then
-        assertNotNull(marketIndicator);
-    }
-
-    @Disabled
-    @Test
-    void getUsdKrwIndicator() throws InterruptedException {
-        // given
-        // when
-        MarketClient marketClient = new YahooMarketClient(objectMapper);
-        MarketIndicator krwIndicator = marketClient.getUsdKrwIndicator();
-
-        // then
-        assertNotNull(krwIndicator);
+        assertTrue(dailyOhlcvs.size() > 0);
     }
 
 }

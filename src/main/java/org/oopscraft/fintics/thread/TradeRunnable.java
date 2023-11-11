@@ -4,22 +4,32 @@ import ch.qos.logback.classic.Logger;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.oopscraft.arch4j.core.alarm.AlarmService;
+import org.oopscraft.arch4j.core.data.IdGenerator;
 import org.oopscraft.arch4j.web.support.SseLogAppender;
+import org.oopscraft.fintics.client.indice.IndiceClient;
+import org.oopscraft.fintics.client.trade.TradeClient;
+import org.oopscraft.fintics.client.trade.TradeClientFactory;
+import org.oopscraft.fintics.dao.OrderEntity;
+import org.oopscraft.fintics.dao.OrderRepository;
+import org.oopscraft.fintics.dao.TradeRepository;
 import org.oopscraft.fintics.model.*;
-import org.oopscraft.fintics.service.MarketService;
-import org.oopscraft.fintics.service.TradeService;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TradeRunnable implements Runnable {
 
@@ -34,9 +44,14 @@ public class TradeRunnable implements Runnable {
 
     private final PlatformTransactionManager transactionManager;
 
-    private final TradeService tradeService;
+    private final AlarmService alarmService;
 
-    private final MarketService marketService;
+    private final IndiceClient indiceClient;
+
+    private final TradeRepository tradeRepository;
+
+    private final OrderRepository orderRepository;
+
 
     private final Logger log;
 
@@ -52,8 +67,10 @@ public class TradeRunnable implements Runnable {
 
         // component
         this.transactionManager = applicationContext.getBean(PlatformTransactionManager.class);
-        this.tradeService = applicationContext.getBean(TradeService.class);
-        this.marketService = applicationContext.getBean(MarketService.class);
+        this.alarmService = applicationContext.getBean(AlarmService.class);
+        this.indiceClient = applicationContext.getBean(IndiceClient.class);
+        this.tradeRepository = applicationContext.getBean(TradeRepository.class);
+        this.orderRepository = applicationContext.getBean(OrderRepository.class);
 
         // add log appender
         log = (Logger) LoggerFactory.getLogger(tradeId);
@@ -97,9 +114,13 @@ public class TradeRunnable implements Runnable {
     }
 
     private void executeTrade() throws InterruptedException {
+        // trade info
+        Trade trade = tradeRepository.findById(tradeId)
+                .map(Trade::from)
+                .orElseThrow();
         try {
-            // load trade info
-            Trade trade = tradeService.getTrade(tradeId).orElseThrow();
+            // client
+            TradeClient tradeClient = TradeClientFactory.getClient(trade);
 
             // checks start,end time
             LocalDateTime dateTime = LocalDateTime.now();
@@ -111,8 +132,18 @@ public class TradeRunnable implements Runnable {
             // logging
             log.info("Check trade - [{}]", trade.getName());
 
+            // indice indicators
+            List<IndiceIndicator> indiceIndicators = new ArrayList<>();
+            for(IndiceSymbol symbol : IndiceSymbol.values()) {
+                indiceIndicators.add(IndiceIndicator.builder()
+                        .symbol(symbol)
+                        .minuteOhlcvs(indiceClient.getMinuteOhlcvs(symbol))
+                        .dailyOhlcvs(indiceClient.getDailyOhlcvs(symbol))
+                        .build());
+            }
+
             // balance
-            Balance balance = tradeService.getTradeBalance(trade.getTradeId()).orElseThrow();
+            Balance balance = tradeClient.getBalance();
 
             // checks buy condition
             for (TradeAsset tradeAsset : trade.getTradeAssets()) {
@@ -126,10 +157,15 @@ public class TradeRunnable implements Runnable {
                 // logging
                 log.info("Check asset - [{}]", tradeAsset.getName());
 
-                // binding variables
-                AssetIndicator assetIndicator = tradeService.getTradeAssetIndicator(trade.getTradeId(), tradeAsset.getSymbol())
-                        .orElseThrow();
-                Market market = marketService.getMarket();
+                // indicator
+                AssetIndicator assetIndicator = AssetIndicator.builder()
+                        .symbol(tradeAsset.getSymbol())
+                        .minuteOhlcvs(tradeClient.getMinuteOhlcvs(tradeAsset))
+                        .dailyOhlcvs(tradeClient.getDailyOhlcvs(tradeAsset))
+                        .build();
+
+                // order book
+                OrderBook orderBook = tradeClient.getOrderBook(tradeAsset);
 
                 // executes trade asset decider
                 TradeAssetDecider tradeAssetDecider = TradeAssetDecider.builder()
@@ -137,7 +173,7 @@ public class TradeRunnable implements Runnable {
                         .logger(log)
                         .dateTime(dateTime)
                         .assetIndicator(assetIndicator)
-                        .market(market)
+                        .indiceIndicators(indiceIndicators)
                         .build();
                 Boolean holdConditionResult = tradeAssetDecider.execute();
                 log.info("holdConditionResult: {}", holdConditionResult);
@@ -151,20 +187,15 @@ public class TradeRunnable implements Runnable {
                 if (holdConditionResult.equals(Boolean.TRUE)) {
                     if (!balance.hasBalanceAsset(tradeAsset.getSymbol())) {
                         BigDecimal buyAmount = balance.getTotalAmount()
-                                .divide(BigDecimal.valueOf(100), MathContext.DECIMAL128)
+                                .divide(BigDecimal.valueOf(100), MathContext.DECIMAL32)
                                 .multiply(tradeAsset.getHoldRatio())
                                 .setScale(2, RoundingMode.HALF_UP);
-                        BigDecimal askPrice = assetIndicator.getOrderBook().getAskPrice();
+                        BigDecimal askPrice = orderBook.getAskPrice();
                         int quantity = buyAmount
                                 .divide(askPrice, 0, RoundingMode.FLOOR)
                                 .intValue();
-                        try {
-                            log.info("Buy asset: {}", tradeAsset.getName());
-                            tradeService.buyTradeAsset(tradeAsset.getTradeId(), tradeAsset.getSymbol(), tradeAsset.getName(), quantity);
-                        } catch (Throwable e) {
-                            log.warn(e.getMessage());
-                            tradeService.sendErrorAlarmIfEnabled(tradeId, e);
-                        }
+                        log.info("Buy asset: {}", tradeAsset.getName());
+                        buyTradeAsset(trade, tradeAsset, quantity);
                     }
                 }
 
@@ -173,13 +204,8 @@ public class TradeRunnable implements Runnable {
                     if (balance.hasBalanceAsset(tradeAsset.getSymbol())) {
                         BalanceAsset balanceAsset = balance.getBalanceAsset(tradeAsset.getSymbol()).orElseThrow();
                         Integer orderableQuantity = balanceAsset.getOrderableQuantity();
-                        try {
-                            log.info("Sell asset: {}", tradeAsset.getName());
-                            tradeService.sellBalanceAsset(tradeAsset.getTradeId(), tradeAsset.getSymbol(), tradeAsset.getName(), orderableQuantity);
-                        } catch (Throwable e) {
-                            log.warn(e.getMessage());
-                            tradeService.sendErrorAlarmIfEnabled(tradeId, e);
-                        }
+                        log.info("Sell asset: {}", tradeAsset.getName());
+                        sellBalanceAsset(trade, balanceAsset, orderableQuantity);
                     }
                 }
             }
@@ -187,16 +213,89 @@ public class TradeRunnable implements Runnable {
             throw e;
         } catch (Throwable e) {
             log.error(e.getMessage(), e);
-            tradeService.sendErrorAlarmIfEnabled(tradeId, e);
+            sendErrorAlarmIfEnabled(trade, e);
         }
     }
-
 
     private boolean isOperatingTime(Trade trade, LocalTime time) {
         if(trade.getStartAt() == null || trade.getEndAt() == null) {
             return false;
         }
         return time.isAfter(trade.getStartAt()) && time.isBefore(trade.getEndAt());
+    }
+
+    private void sendErrorAlarmIfEnabled(Trade trade, Throwable t) throws InterruptedException {
+        if(trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
+            if (trade.isAlarmOnError()) {
+                String subject = String.format("[%s]", trade.getName());
+                String content = ExceptionUtils.getRootCause(t).getMessage();
+                alarmService.sendAlarm(trade.getAlarmId(), subject, content);
+            }
+        }
+    }
+
+    private void buyTradeAsset(Trade trade, TradeAsset tradeAsset, Integer quantity) throws InterruptedException {
+        OrderResult orderResult = null;
+        String errorMessage = null;
+        try {
+            TradeClient tradeClient = TradeClientFactory.getClient(trade);
+            tradeClient.buyAsset(tradeAsset, quantity);
+            if (trade.isAlarmOnOrder()) {
+                if (trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
+                    String subject = String.format("[%s]", trade.getName());
+                    String content = String.format("[%s] Buy %d", tradeAsset.getName(), quantity);
+                    alarmService.sendAlarm(trade.getAlarmId(), subject, content);
+                }
+            }
+            orderResult = OrderResult.COMPLETED;
+        } catch(Throwable e) {
+            orderResult = OrderResult.FAILED;
+            errorMessage = e.getMessage();
+            throw e;
+        } finally {
+            saveTradeOrder(OrderType.BUY, tradeId, tradeAsset.getSymbol(), tradeAsset.getName(), quantity, orderResult, errorMessage);
+        }
+    }
+
+    private void sellBalanceAsset(Trade trade, BalanceAsset balanceAsset, Integer quantity) throws InterruptedException {
+        OrderResult orderResult = null;
+        String errorMessage = null;
+        try {
+            TradeClient tradeClient = TradeClientFactory.getClient(trade);
+            tradeClient.sellAsset(balanceAsset, quantity);
+            if (trade.isAlarmOnOrder()) {
+                if (trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
+                    String subject = String.format("[%s]", trade.getName());
+                    String content = String.format("[%s] Sell %d", balanceAsset.getName(), quantity);
+                    alarmService.sendAlarm(trade.getAlarmId(), subject, content);
+                }
+            }
+            orderResult = OrderResult.COMPLETED;
+        } catch(Throwable e) {
+            orderResult = OrderResult.FAILED;
+            errorMessage = e.getMessage();
+            throw e;
+        } finally {
+            saveTradeOrder(OrderType.SELL, tradeId, balanceAsset.getSymbol(), balanceAsset.getName(), quantity, orderResult, errorMessage);
+        }
+    }
+
+    private void saveTradeOrder(OrderType orderType, String tradeId, String symbol, String name, Integer quantity, OrderResult orderResult, String errorMessage) {
+        DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager, transactionDefinition);
+        transactionTemplate.executeWithoutResult(transactionStatus -> {
+            orderRepository.saveAndFlush(OrderEntity.builder()
+                    .orderId(IdGenerator.uuid())
+                    .orderAt(LocalDateTime.now())
+                    .orderType(orderType)
+                    .tradeId(tradeId)
+                    .symbol(symbol)
+                    .name(name)
+                    .quantity(quantity)
+                    .orderResult(orderResult)
+                    .errorMessage(errorMessage)
+                    .build());
+        });
     }
 
 }
