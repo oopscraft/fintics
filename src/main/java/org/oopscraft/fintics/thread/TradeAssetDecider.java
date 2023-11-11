@@ -6,8 +6,6 @@ import groovy.lang.GroovyShell;
 import lombok.Builder;
 import org.oopscraft.fintics.model.AssetIndicator;
 import org.oopscraft.fintics.model.IndiceIndicator;
-import org.oopscraft.fintics.model.IndiceSymbol;
-import org.oopscraft.fintics.model.Market;
 import org.slf4j.Logger;
 
 import java.time.Duration;

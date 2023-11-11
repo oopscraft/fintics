@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.oopscraft.arch4j.core.test.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
 import org.oopscraft.fintics.model.IndiceIndicator;
-import org.oopscraft.fintics.model.Market;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;

@@ -8,6 +8,8 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -54,8 +56,7 @@ class TradeAssetDeciderTest {
                         })
                         .collect(Collectors.toList()))
                 .build();
-        Market market = Market.builder()
-                .build();
+        List<IndiceIndicator> indiceIndicators = new ArrayList<>();
 
         // when
         TradeAssetDecider tradeAssetDecider = TradeAssetDecider.builder()
@@ -63,6 +64,7 @@ class TradeAssetDeciderTest {
                 .logger(log)
                 .dateTime(LocalDateTime.now())
                 .assetIndicator(assetIndicator)
+                .indiceIndicators(indiceIndicators)
                 .build();
         Instant groovyStart = Instant.now();
         Boolean result = tradeAssetDecider.execute();
