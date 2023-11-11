@@ -22,7 +22,7 @@ public class OhlcvEntity extends SystemFieldEntity {
     @Column(name = "date_time")
     private LocalDateTime dateTime;
 
-    @Column(name = "ohlcv_type")
+    @Column(name = "ohlcv_type", length = 32)
     private OhlcvType ohlcvType;
 
     @Column(name = "open_price")

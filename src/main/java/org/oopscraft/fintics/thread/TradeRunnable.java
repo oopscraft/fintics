@@ -52,7 +52,6 @@ public class TradeRunnable implements Runnable {
 
     private final OrderRepository orderRepository;
 
-
     private final Logger log;
 
     @Setter

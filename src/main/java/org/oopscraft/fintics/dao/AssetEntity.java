@@ -21,13 +21,13 @@ import java.time.LocalDateTime;
 public class AssetEntity extends SystemFieldEntity {
 
     @Id
-    @Column(name = "symbol")
+    @Column(name = "symbol", length = 32)
     private String symbol;
 
     @Column(name = "name")
     private String name;
 
-    @Column(name = "type")
+    @Column(name = "type", length = 32)
     private AssetType type;
 
     @Column(name = "collected_at")

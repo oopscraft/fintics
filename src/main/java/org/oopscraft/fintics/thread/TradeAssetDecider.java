@@ -34,7 +34,8 @@ public class TradeAssetDecider {
         this.dateTime = dateTime;
         this.assetIndicator = assetIndicator;
         this.indiceIndicators = indiceIndicators.stream()
-                .collect(Collectors.toMap(indiceIndicator -> indiceIndicator.getSymbol().name(), indiceIndicator -> indiceIndicator));
+                .collect(Collectors.toMap(indiceIndicator ->
+                        indiceIndicator.getSymbol().name(), indiceIndicator -> indiceIndicator));
     }
 
     public Boolean execute() {

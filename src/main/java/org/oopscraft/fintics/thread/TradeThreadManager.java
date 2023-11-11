@@ -117,7 +117,7 @@ public class TradeThreadManager implements ApplicationListener<ContextClosedEven
 
     @Override
     public void onApplicationEvent(ContextClosedEvent event) {
-        log.info("Shutdown all trade trade.");
+        log.info("Shutdown all trade trade.[{}]", event);
         tradeThreadGroup.interrupt();
     }
 

@@ -25,11 +25,11 @@ public class TradeAssetOhlcvEntity extends OhlcvEntity {
     }
 
     @Id
-    @Column(name = "trade_id")
+    @Column(name = "trade_id", length = 32)
     private String tradeId;
 
     @Id
-    @Column(name = "symbol")
+    @Column(name = "symbol", length = 32)
     private String symbol;
 
 }

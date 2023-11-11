@@ -24,7 +24,7 @@ public class IndiceOhlcvEntity extends OhlcvEntity {
     }
 
     @Id
-    @Column(name = "symbol")
+    @Column(name = "symbol", length = 32)
     @Enumerated(EnumType.STRING)    // @Id is converter not work
     private IndiceSymbol symbol;
 

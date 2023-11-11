@@ -36,7 +36,7 @@ public class TradeAssetEntity extends SystemFieldEntity {
     @Column(name = "name")
     private String name;
 
-    @Column(name = "type", length = 16)
+    @Column(name = "type", length = 32)
     AssetType type;
 
     @Column(name = "enabled", length = 1)
