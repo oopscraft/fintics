@@ -34,7 +34,7 @@ public class TradeService {
     private final OrderRepository orderRepository;
 
     public List<Trade> getTrades() {
-        return tradeRepository.findAll().stream()
+        return tradeRepository.findAllOrderByName().stream()
                 .map(Trade::from)
                 .collect(Collectors.toList());
     }
