@@ -201,7 +201,6 @@
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    console.log(context);
                                     return context.dataset.label + ': ' + context.raw['closePrice'].toLocaleString() +
                                         ' (' + context.raw['pctChange'] + '%)';
                                 }
@@ -267,7 +266,6 @@
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    console.log(context);
                                     return context.dataset.label + ': ' + context.raw['closePrice'].toLocaleString() +
                                         ' (' + context.raw['pctChange'] + '%)';
                                 }
@@ -309,14 +307,24 @@
                     let ohlcvDateTimeMillis = ohlcvPoint.dateTime.getTime();
                     if(timeRangeFromMillis <= ohlcvDateTimeMillis && ohlcvDateTimeMillis < timeRangeToMillis) {
                         ohlcvPoint.pctChange = Number((ohlcvPoint.closePrice - ohlcvBasePrice)/ohlcvBasePrice * 100).toFixed(4);
-                        timeSeries[i] = ohlcvPoint;
+                        timeSeries[i].pctChange = ohlcvPoint.pctChange;
+                        timeSeries[i].openPrice = ohlcvPoint.openPrice;
+                        timeSeries[i].highPrice = ohlcvPoint.highPrice;
+                        timeSeries[i].lowPrice = ohlcvPoint.lowPrice;
+                        timeSeries[i].closePrice = ohlcvPoint.closePrice;
+                        timeSeries[i].volume = ohlcvPoint.volume;
                         prevOhlcvPoint = ohlcvPoint;
                         ohlcvPos ++;
                         continue;
                     }
                 }
                 if(prevOhlcvPoint) {
-                    timeSeries[i] = prevOhlcvPoint;
+                    timeSeries[i].pctChange = prevOhlcvPoint.pctChange;
+                    timeSeries[i].openPrice = prevOhlcvPoint.openPrice;
+                    timeSeries[i].highPrice = prevOhlcvPoint.highPrice;
+                    timeSeries[i].lowPrice = prevOhlcvPoint.lowPrice;
+                    timeSeries[i].closePrice = prevOhlcvPoint.closePrice;
+                    timeSeries[i].volume = prevOhlcvPoint.volume;
                 }
             }
             return timeSeries;
