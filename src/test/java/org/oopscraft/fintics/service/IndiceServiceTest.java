@@ -9,6 +9,7 @@ import org.oopscraft.fintics.FinticsConfiguration;
 import org.oopscraft.fintics.model.IndiceIndicator;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -25,7 +26,7 @@ class IndiceServiceTest extends CoreTestSupport {
     void getMarket() throws InterruptedException {
         // given
         // when
-        List<IndiceIndicator> indiceIndicators = indiceService.getIndiceIndicators();
+        List<IndiceIndicator> indiceIndicators = indiceService.getIndiceIndicators(LocalDateTime.now());
 
         // then
         assertTrue(indiceIndicators.size() > 0);

@@ -13,6 +13,7 @@ import org.oopscraft.fintics.service.TradeService;
 import org.oopscraft.fintics.thread.TradeThreadManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -22,6 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -156,18 +159,29 @@ public class TradeRestController {
 
     @GetMapping("{tradeId}/indicator")
     @PreAuthorize("@tradePermissionEvaluator.hasEditPermission(#tradeId)")
-    public ResponseEntity<TradeIndicatorResponse> getTradeIndicator(@PathVariable("tradeId") String tradeId) throws InterruptedException {
+    public ResponseEntity<TradeIndicatorResponse> getTradeIndicator(
+            @PathVariable("tradeId")
+                    String tradeId,
+            @RequestParam(value = "baseDateTime", required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+                    ZonedDateTime baseDateTime
+    ) throws InterruptedException {
         Trade trade = tradeService.getTrade(tradeId).orElseThrow();
+
+        // base date time
+        if(baseDateTime == null) {
+            baseDateTime = ZonedDateTime.now();
+        }
 
         // asset indicators
         List<AssetIndicatorResponse> assetIndicators = new ArrayList<>();
         for(TradeAsset tradeAsset : trade.getTradeAssets()) {
-            AssetIndicator assetIndicator = tradeService.getTradeAssetIndicator(tradeId, tradeAsset.getSymbol()).orElseThrow();
+            AssetIndicator assetIndicator = tradeService.getTradeAssetIndicator(tradeId, tradeAsset.getSymbol(), baseDateTime.toLocalDateTime()).orElseThrow();
             assetIndicators.add(AssetIndicatorResponse.from(assetIndicator));
         }
 
         // indice indicators
-        List<IndiceIndicatorResponse> indiceIndicators = indiceService.getIndiceIndicators().stream()
+        List<IndiceIndicatorResponse> indiceIndicators = indiceService.getIndiceIndicators(baseDateTime.toLocalDateTime()).stream()
                 .map(IndiceIndicatorResponse::from)
                 .collect(Collectors.toList());
 

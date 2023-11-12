@@ -107,18 +107,18 @@ public class TradeService {
         }
     }
 
-    public Optional<AssetIndicator> getTradeAssetIndicator(String tradeId, String symbol) throws InterruptedException {
+    public Optional<AssetIndicator> getTradeAssetIndicator(String tradeId, String symbol, LocalDateTime baseDateTime) throws InterruptedException {
         Trade trade = getTrade(tradeId).orElseThrow();
         TradeAsset tradeAsset = trade.getTradeAssets().stream()
                 .filter(e -> Objects.equals(e.getSymbol(), symbol))
                 .findFirst()
                 .orElseThrow();
 
-        LocalDateTime now = LocalDateTime.now();
-        List<Ohlcv> minuteOhlcvs = tradeAssetOhlcvRepository.findAllBySymbolAndOhlcvType(tradeId, symbol, OhlcvType.MINUTE, now.minusDays(1), now).stream()
+        List<Ohlcv> minuteOhlcvs = tradeAssetOhlcvRepository.findAllBySymbolAndOhlcvType(tradeId, symbol, OhlcvType.MINUTE, baseDateTime.minusDays(1), baseDateTime).stream()
                 .map(Ohlcv::from)
                 .collect(Collectors.toList());
-        List<Ohlcv> dailyOhlcvs = tradeAssetOhlcvRepository.findAllBySymbolAndOhlcvType(tradeId, symbol, OhlcvType.DAILY, now.minusDays(90), now).stream()
+
+        List<Ohlcv> dailyOhlcvs = tradeAssetOhlcvRepository.findAllBySymbolAndOhlcvType(tradeId, symbol, OhlcvType.DAILY, baseDateTime.minusMonths(1), baseDateTime).stream()
                 .map(Ohlcv::from)
                 .collect(Collectors.toList());
 

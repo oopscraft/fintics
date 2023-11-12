@@ -20,28 +20,26 @@ public class IndiceService {
 
     private final IndiceOhlcvRepository indiceOhlcvRepository;
 
-    public List<IndiceIndicator> getIndiceIndicators() {
+    public List<IndiceIndicator> getIndiceIndicators(LocalDateTime baseDateTime) {
         List<IndiceIndicator> indiceIndicators = new ArrayList<>();
         for(IndiceSymbol symbol : IndiceSymbol.values()) {
-            indiceIndicators.add(getIndiceIndicator(symbol).orElseThrow());
+            indiceIndicators.add(getIndiceIndicator(symbol, baseDateTime));
         }
         return indiceIndicators;
     }
 
-    public Optional<IndiceIndicator> getIndiceIndicator(IndiceSymbol symbol) {
-        LocalDateTime now = LocalDateTime.now();
-        List<Ohlcv> minuteOhlcvs = indiceOhlcvRepository.findAllBySymbolAndOhlcvType(symbol, OhlcvType.MINUTE, now.minusDays(1), now).stream()
+    public IndiceIndicator getIndiceIndicator(IndiceSymbol symbol, LocalDateTime baseDateTime) {
+        List<Ohlcv> minuteOhlcvs = indiceOhlcvRepository.findAllBySymbolAndOhlcvType(symbol, OhlcvType.MINUTE, baseDateTime.minusDays(1), baseDateTime).stream()
                 .map(Ohlcv::from)
                 .collect(Collectors.toList());
-        List<Ohlcv> dailyOhlcvs = indiceOhlcvRepository.findAllBySymbolAndOhlcvType(symbol, OhlcvType.DAILY, now.minusMonths(3), now).stream()
+        List<Ohlcv> dailyOhlcvs = indiceOhlcvRepository.findAllBySymbolAndOhlcvType(symbol, OhlcvType.DAILY, baseDateTime.minusMonths(1), baseDateTime).stream()
                 .map(Ohlcv::from)
                 .collect(Collectors.toList());
-        IndiceIndicator indiceIndicator = IndiceIndicator.builder()
+        return IndiceIndicator.builder()
                 .symbol(symbol)
                 .minuteOhlcvs(minuteOhlcvs)
                 .dailyOhlcvs(dailyOhlcvs)
                 .build();
-        return Optional.of(indiceIndicator);
     }
 
 
