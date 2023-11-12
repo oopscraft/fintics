@@ -200,9 +200,13 @@ public class TradeRestController {
                     String tradeId,
             @RequestParam(value = "symbol", required = false)
                     String symbol,
+            @RequestParam(value = "orderType", required = false)
+                    OrderType orderType,
+            @RequestParam(value = "orderResult", required = false)
+                    OrderResult orderResult,
             Pageable pageable
     ) {
-        Page<Order> orderPage = tradeService.getTradeOrders(tradeId, symbol, pageable);
+        Page<Order> orderPage = tradeService.getTradeOrders(tradeId, symbol, orderType, orderResult, pageable);
         List<OrderResponse> orderResponses = orderPage.getContent().stream()
                 .map(OrderResponse::from)
                 .collect(Collectors.toList());

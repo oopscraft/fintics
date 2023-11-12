@@ -134,8 +134,8 @@ public class TradeService {
                 .build());
     }
 
-    public Page<Order> getTradeOrders(String tradeId, String symbol, Pageable pageable) {
-        Page<OrderEntity> orderEntityPage = orderRepository.findAllByTradeIdAndSymbol(tradeId, symbol, pageable);
+    public Page<Order> getTradeOrders(String tradeId, String symbol, OrderType orderType, OrderResult orderResult, Pageable pageable) {
+        Page<OrderEntity> orderEntityPage = orderRepository.findAllByTradeId(tradeId, symbol, orderType, orderResult, pageable);
         List<Order> orders = orderEntityPage.getContent().stream()
                 .map(Order::from)
                 .collect(Collectors.toList());

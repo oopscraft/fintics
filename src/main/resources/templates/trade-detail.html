@@ -27,6 +27,8 @@
         // order
         const orderSearch = new duice.ObjectProxy({
             symbol: null,
+            orderType: null,
+            orderResult: null,
             _page: 0,
             _size: 20,
             _count: 0
@@ -491,6 +493,12 @@
             if(orderSearch.symbol) {
                 url.searchParams.append('symbol', orderSearch.symbol);
             }
+            if(orderSearch.orderType) {
+                url.searchParams.append('orderType', orderSearch.orderType);
+            }
+            if(orderSearch.orderResult) {
+                url.searchParams.append('orderResult', orderSearch.orderResult);
+            }
             url.searchParams.append('_page', orderSearch._page);
             url.searchParams.append('_size', orderSearch._size);
             _fetch(url)
@@ -604,7 +612,7 @@
     <!-- ====================================== -->
     <!-- start: tab index                       -->
     <!-- ====================================== -->
-    <div id="tabIndex">
+    <div id="tabIndex" class="flex flex-nowrap overflow-x-scroll gap-1px margin-bottom-1px">
         <button id="tradeTabButton" type="button" class="tab">
             <img class="icon" th:src="@{/static/image/icon-detail.svg}" alt="detail"/>
             <span data-th-text="#{fintics.Trade}"></span>
@@ -621,7 +629,6 @@
             <img class="icon" th:src="@{/static/image/icon-balance.svg}" alt="balance"/>
             <span data-th-text="#{fintics.Balance}"></span>
         </button>
-        <hr class="margin-1px"/>
     </div>
     <!-- ====================================== -->
     <!-- end: tab index                         -->
@@ -839,7 +846,7 @@
             <div class="grid grid-template-columns-12 margin-1em">
                 <div class="grid-column-12">
                     <h3>
-                        <img class="icon" th:src="@{/static/image/icon-indice.svg}" alt="market"/>
+                        <img class="icon" th:src="@{/static/image/icon-indice.svg}" alt="indice"/>
                         Indice Indicator
                     </h3>
                 </div>
@@ -872,15 +879,30 @@
                 <img class="icon" th:src="@{/static/image/icon-order.svg}" alt="balance"/>
                 <span data-th-text="#{fintics.Order}"></span>
             </h2>
-            <form onsubmit="return false;" class="grid grid-template-columns-12 grid-gap-1em padding-y-1em s-padding-y-0">
-                <div class="grid-column-6 s-grid-column-12">
-                    <label>
-                        <select data-duice-bind="orderSearch"
+            <form onsubmit="return false;" class="grid grid-template-columns-12 grid-gap-1em margin-x-1em">
+                <div class="grid-column-6 s-grid-column-12 grid grid-template-columns-12 grid-gap-1em">
+                    <label class="grid-column-4 s-grid-column-12">
+                        <select class="width-100"
+                                data-duice-bind="orderSearch"
                                 data-duice-property="symbol"
                                 data-duice-option="trade.tradeAssets"
                                 data-duice-option-value-property="symbol"
                                 data-duice-option-text-property="name">
-                            <option>- Select Symbol -</option>
+                            <option data-th-text="#{fintics.Asset}"></option>
+                        </select>
+                    </label>
+                    <label class="grid-column-2 s-grid-column-12">
+                        <select class="width-100" data-duice-bind="orderSearch" data-duice-property="orderType">
+                            <option data-th-text="#{fintics.Order.orderType}"></option>
+                            <option value="BUY">BUY</option>
+                            <option value="SELL">SELL</option>
+                        </select>
+                    </label>
+                    <label class="grid-column-2 s-grid-column-12">
+                        <select class="width-100" data-duice-bind="orderSearch" data-duice-property="orderResult">
+                            <option data-th-text="#{fintics.Order.orderResult}"></option>
+                            <option value="COMPLETED">COMPLETED</option>
+                            <option value="FAILED">FAILED</option>
                         </select>
                     </label>
                 </div>
@@ -895,7 +917,7 @@
                     </button>
                 </div>
             </form>
-            <table>
+            <div class="overflow-x-scroll">
                 <table class="width-100">
                     <colgroup>
                         <col style="width:7em;"/>
@@ -946,25 +968,25 @@
                     </tr>
                     </tbody>
                 </table>
-                <div class="grid grid-template-columns-12">
-                    <div class="grid-column-4 font-size-smaller">
-                        <span data-th-text="#{web.global.total}"></span>
-                        <span data-duice-bind="orderSearch" data-duice-property="_count" data-duice-format="number(0)"></span>
-                        <span data-th-text="#{web.global.rows}"></span>
-                    </div>
-                    <div class="grid-column-4 justify-self-center">
-                        <duice-pagination
-                                data-duice-bind="orderSearch"
-                                data-duice-size-property="_size"
-                                data-duice-page-property="_page"
-                                data-duice-count-property="_count"
-                                data-duice-onclick="getTradeOrders(this.dataset.page);">
-                        </duice-pagination>
-                    </div>
-                    <div class="grid-column-4">
-                    </div>
+            </div>
+            <div class="grid grid-template-columns-12 padding-1em">
+                <div class="grid-column-4 font-size-smaller">
+                    <span data-th-text="#{web.global.total}"></span>
+                    <span data-duice-bind="orderSearch" data-duice-property="_count" data-duice-format="number(0)"></span>
+                    <span data-th-text="#{web.global.rows}"></span>
                 </div>
-            </table>
+                <div class="grid-column-4 justify-self-center">
+                    <duice-pagination
+                            data-duice-bind="orderSearch"
+                            data-duice-size-property="_size"
+                            data-duice-page-property="_page"
+                            data-duice-count-property="_count"
+                            data-duice-onclick="getTradeOrders(this.dataset.page);">
+                    </duice-pagination>
+                </div>
+                <div class="grid-column-4">
+                </div>
+            </div>
         </div>
         <!-- ================================== -->
         <!-- end: order                       -->
@@ -1000,7 +1022,7 @@
                 </label>
                 <label class="grid-column-6 s-grid-column-12">
                     <span data-th-text="#{fintics.Balance.profitAmount}" class="font-weight-bold"></span>
-                    <input type="text"
+                    <input type="number"
                            data-duice-bind="balance"
                            data-duice-property="profitAmount"
                            data-duice-format="number"
@@ -1015,7 +1037,7 @@
                 </label>
                 <label class="grid-column-6 s-grid-column-12">
                     <span data-th-text="#{fintics.Balance.realizedProfitAmount}" class="font-weight-bold width-100"></span>
-                    <input type="text"
+                    <input type="number"
                            data-duice-bind="balance"
                            data-duice-property="realizedProfitAmount"
                            data-duice-format="number"
