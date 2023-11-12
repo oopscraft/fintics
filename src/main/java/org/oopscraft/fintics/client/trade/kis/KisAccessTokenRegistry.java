@@ -13,11 +13,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 @Slf4j
 public class KisAccessTokenRegistry {
 
-    private static final Set<KisAccessToken> accessTokens = new HashSet<>();
+    private static final Set<KisAccessToken> accessTokens = new CopyOnWriteArraySet<>();
 
     public synchronized static KisAccessToken getAccessToken(String apiUrl, String appKey, String appSecret) {
         KisAccessToken accessToken = accessTokens.stream()
