@@ -40,7 +40,7 @@ public class IndiceService {
         // daily ohlcv
         LocalDateTime dailyMaxDateTime = indiceOhlcvRepository.findMaxDateTimeBySymbolAndOhlcvType(symbol, OhlcvType.DAILY)
                 .orElse(LocalDateTime.now());
-        List<Ohlcv> dailyOhlcvs = indiceOhlcvRepository.findAllBySymbolAndOhlcvType(symbol, OhlcvType.DAILY, dailyMaxDateTime.minusMonths(1), dailyMaxDateTime).stream()
+        List<Ohlcv> dailyOhlcvs = indiceOhlcvRepository.findAllBySymbolAndOhlcvType(symbol, OhlcvType.DAILY, dailyMaxDateTime.minusMonths(3), dailyMaxDateTime).stream()
                 .map(Ohlcv::from)
                 .collect(Collectors.toList());
 

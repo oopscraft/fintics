@@ -169,7 +169,7 @@
                                 }
                             },
                             ticks: {
-                                stepSize: 2,
+                                stepSize: 7,
                                 font: {
                                     size: 8
                                 }
@@ -361,7 +361,7 @@
                     });
 
                     // define date from
-                    let dailyFrom = dateFns.subMonths(maxDateTime, 1);
+                    let dailyFrom = dateFns.subMonths(maxDateTime, 3);
                     let dailyTo = new Date(maxDateTime.getTime());
                     console.log("dailyFrom,dailyTo:", dailyFrom, dailyTo);
 
@@ -566,7 +566,7 @@
     <div id="tabIndex">
         <button id="tradeTabButton" type="button" class="tab">
             <img class="icon" th:src="@{/static/image/icon-detail.svg}" alt="detail"/>
-            <span data-th-text="#{fintics.Trade} + ' ' + #{web.global.detail}"></span>
+            <span data-th-text="#{fintics.Trade}"></span>
         </button>
         <button id="tradeLogTabButton" type="button" class="tab">
             <img class="icon" th:src="@{/static/image/icon-monitor.svg}" alt="log"/>
@@ -589,7 +589,7 @@
         <div id="tradeTabContent" class="border-1 padding-1em">
             <h2>
                 <img class="icon" th:src="@{/static/image/icon-detail.svg}" alt="detail"/>
-                <span data-th-text="#{fintics.Trade} + ' ' + #{web.global.detail}"></span>
+                <span data-th-text="#{fintics.Trade}"></span>
             </h2>
             <form class="grid grid-template-columns-12 grid-gap-1em grid-column-gap-2em padding-y-1em s-padding-y-0">
                 <div class="grid-column-5 s-grid-column-12 grid grid-template-columns-12 grid-gap-1em">
