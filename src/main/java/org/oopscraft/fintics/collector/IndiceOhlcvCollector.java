@@ -28,9 +28,6 @@ public class IndiceOhlcvCollector {
 
     private final IndiceOhlcvRepository indiceOhlcvRepository;
 
-    @PersistenceContext
-    private final EntityManager entityManager;
-
     @Scheduled(initialDelay = 1_000, fixedDelay = 60_000)
     @Transactional
     public void collectIndiceOhlcv() throws InterruptedException {
@@ -38,7 +35,6 @@ public class IndiceOhlcvCollector {
         for(IndiceSymbol symbol : IndiceSymbol.values()) {
             saveIndiceOhlcv(symbol);
         }
-        entityManager.clear();
     }
 
     @Transactional
@@ -46,7 +42,8 @@ public class IndiceOhlcvCollector {
         // minute
         List<Ohlcv> minuteOhlcvs = indiceClient.getMinuteOhlcvs(symbol);
         Collections.reverse(minuteOhlcvs);
-        LocalDateTime minuteLastDateTime = getLastDateTime(symbol, OhlcvType.MINUTE)
+        LocalDateTime minuteLastDateTime = indiceOhlcvRepository.findMaxDateTimeBySymbolAndOhlcvType(symbol, OhlcvType.MINUTE)
+                .orElse(LocalDateTime.of(1,1,1,0,0,0))
                 .minusMinutes(2);
         List<IndiceOhlcvEntity> minuteOhlcvEntities = minuteOhlcvs.stream()
                 .filter(ohlcv -> ohlcv.getDateTime().isAfter(minuteLastDateTime))
@@ -58,7 +55,8 @@ public class IndiceOhlcvCollector {
         // daily
         List<Ohlcv> dailyOhlcvs = indiceClient.getDailyOhlcvs(symbol);
         Collections.reverse(dailyOhlcvs);
-        LocalDateTime dailyLastDateTime = getLastDateTime(symbol, OhlcvType.DAILY)
+        LocalDateTime dailyLastDateTime = indiceOhlcvRepository.findMaxDateTimeBySymbolAndOhlcvType(symbol, OhlcvType.DAILY)
+                .orElse(LocalDateTime.of(1,1,1,0,0,0))
                 .minusDays(2);
         List<IndiceOhlcvEntity> dailyOhlcvEntities = dailyOhlcvs.stream()
                 .filter(ohlcv -> ohlcv.getDateTime().isAfter(dailyLastDateTime))
@@ -66,24 +64,6 @@ public class IndiceOhlcvCollector {
                 .map(ohlcv -> toIndiceOhlcvEntity(symbol, ohlcv))
                 .collect(Collectors.toList());
         indiceOhlcvRepository.saveAllAndFlush(dailyOhlcvEntities);
-    }
-
-    private LocalDateTime getLastDateTime(IndiceSymbol symbol, OhlcvType ohlcvType) {
-        List<IndiceOhlcvEntity> latestRow = entityManager.createQuery(
-                "select a from IndiceOhlcvEntity a " +
-                        " where a.symbol = :symbol " +
-                        " and a.ohlcvType = :ohlcvType " +
-                        " order by a.dateTime desc",
-                        IndiceOhlcvEntity.class)
-                .setParameter("symbol", symbol)
-                .setParameter("ohlcvType", ohlcvType)
-                .setMaxResults(1)
-                .getResultList();
-        if(latestRow.isEmpty()) {
-            return LocalDateTime.of(1,1,1,1,1,1);
-        }else{
-            return latestRow.get(0).getDateTime();
-        }
     }
 
     private IndiceOhlcvEntity toIndiceOhlcvEntity(IndiceSymbol symbol, Ohlcv ohlcv) {
@@ -98,7 +78,5 @@ public class IndiceOhlcvCollector {
                 .volume(ohlcv.getVolume())
                 .build();
     }
-
-
 
 }

@@ -26,9 +26,6 @@ public class TradeAssetOhlcvCollector {
 
     private final TradeAssetOhlcvRepository tradeAssetOhlcvRepository;
 
-    @PersistenceContext
-    private final EntityManager entityManager;
-
     @Scheduled(initialDelay = 1_000, fixedDelay = 60_000)
     @Transactional
     public void collectTradeAssetOhlcv() throws InterruptedException {
@@ -41,7 +38,6 @@ public class TradeAssetOhlcvCollector {
                 saveTradeAssetOhlcv(tradeClient, tradeAsset);
             });
         }
-        entityManager.clear();
     }
 
     @Transactional
@@ -50,7 +46,8 @@ public class TradeAssetOhlcvCollector {
              // minutes
              List<Ohlcv> minuteOhlcvs = tradeClient.getMinuteOhlcvs(tradeAsset);
              Collections.reverse(minuteOhlcvs);
-             LocalDateTime minuteLastDateTime = getLastDateTime(tradeAsset, OhlcvType.MINUTE)
+             LocalDateTime minuteLastDateTime = tradeAssetOhlcvRepository.findMaxDateTimeBySymbolAndOhlcvType(tradeAsset.getTradeId(), tradeAsset.getSymbol(), OhlcvType.MINUTE)
+                     .orElse(LocalDateTime.of(1,1,1,0,0,0))
                      .minusMinutes(2);
              List<TradeAssetOhlcvEntity> minuteTradeAssetOhlcvEntities = minuteOhlcvs.stream()
                      .filter(ohlcv -> ohlcv.getDateTime().isAfter(minuteLastDateTime))
@@ -62,7 +59,8 @@ public class TradeAssetOhlcvCollector {
              // daily
              List<Ohlcv> dailyOhlcvs = tradeClient.getDailyOhlcvs(tradeAsset);
              Collections.reverse(dailyOhlcvs);
-             LocalDateTime dailyLastDateTime = getLastDateTime(tradeAsset, OhlcvType.DAILY)
+             LocalDateTime dailyLastDateTime = tradeAssetOhlcvRepository.findMaxDateTimeBySymbolAndOhlcvType(tradeAsset.getTradeId(), tradeAsset.getSymbol(), OhlcvType.DAILY)
+                     .orElse(LocalDateTime.of(1,1,1,0,0,0))
                      .minusDays(2);
              List<TradeAssetOhlcvEntity> dailyOhlcvEntities = dailyOhlcvs.stream()
                      .filter(ohlcv -> ohlcv.getDateTime().isAfter(dailyLastDateTime))
@@ -71,26 +69,6 @@ public class TradeAssetOhlcvCollector {
                      .collect(Collectors.toList());
              tradeAssetOhlcvRepository.saveAllAndFlush(dailyOhlcvEntities);
          }catch(InterruptedException ignored){}
-    }
-
-    private LocalDateTime getLastDateTime(TradeAsset tradeAsset, OhlcvType ohlcvType) {
-        List<TradeAssetOhlcvEntity> latestRow = entityManager.createQuery(
-                "select a from TradeAssetOhlcvEntity a " +
-                        " where a.tradeId = :tradeId " +
-                        " and a.symbol = :symbol " +
-                        " and a.ohlcvType = :ohlcvType" +
-                        " order by a.dateTime desc",
-                        TradeAssetOhlcvEntity.class)
-                .setParameter("tradeId", tradeAsset.getTradeId())
-                .setParameter("symbol", tradeAsset.getSymbol())
-                .setParameter("ohlcvType", ohlcvType)
-                .setMaxResults(1)
-                .getResultList();
-        if(latestRow.isEmpty()) {
-            return LocalDateTime.of(1,1,1,1,1,1);
-        }else{
-            return latestRow.get(0).getDateTime();
-        }
     }
 
     private TradeAssetOhlcvEntity toTradeAssetOhlcvEntity(TradeAsset tradeAsset, Ohlcv ohlcv) {

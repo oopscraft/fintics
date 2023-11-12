@@ -169,7 +169,7 @@
                                 }
                             },
                             ticks: {
-                                stepSize: 7,
+                                stepSize: 2,
                                 font: {
                                     size: 8
                                 }
@@ -331,14 +331,34 @@
                     let assetIndicators = tradeIndicator['assetIndicators'];
                     let indiceIndicators = tradeIndicator['indiceIndicators'];
 
+                    // calculate max date time
+                    let maxDateTime = dateFns.subMonths(new Date(), 30);
+                    assetIndicators.forEach(assetIndicator => {
+                        let minuteOhlcvs = assetIndicator['minuteOhlcvs'];
+                        if(minuteOhlcvs.length > 0) {
+                            let dateTime = new Date(minuteOhlcvs[0].dateTime);
+                            if(dateTime.getTime() > maxDateTime.getTime()) {
+                                maxDateTime = new Date(dateTime.getTime());
+                            }
+                        }
+                    });
+                    indiceIndicators.forEach(indiceIndicator => {
+                        let minuteOhlcvs = indiceIndicator['minuteOhlcvs'];
+                        if(minuteOhlcvs.length > 0) {
+                            let dateTime = new Date(minuteOhlcvs[0].dateTime);
+                            if(dateTime.getTime() > maxDateTime.getTime()) {
+                                maxDateTime = new Date(dateTime.getTime());
+                            }
+                        }
+                    });
+
                     // define date from
-                    let dailyFrom = dateFns.startOfDay(new Date());
-                    dailyFrom = dateFns.subDays(dailyFrom, 90);
-                    let dailyTo = dateFns.startOfDay(new Date());
+                    let dailyFrom = dateFns.subMonths(maxDateTime, 1);
+                    let dailyTo = new Date(maxDateTime.getTime());
                     console.log("dailyFrom,dailyTo:", dailyFrom, dailyTo);
 
-                    let minuteTo = new Date();
-                    let minuteFrom = dateFns.subHours(minuteTo, 15);
+                    let minuteFrom = dateFns.subDays(maxDateTime, 1);
+                    let minuteTo = new Date(maxDateTime.getTime());
                     console.log("minuteFrom,minuteTo:", minuteFrom, minuteTo);
 
                     // asset chart

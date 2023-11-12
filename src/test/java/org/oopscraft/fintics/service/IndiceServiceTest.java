@@ -26,7 +26,7 @@ class IndiceServiceTest extends CoreTestSupport {
     void getMarket() throws InterruptedException {
         // given
         // when
-        List<IndiceIndicator> indiceIndicators = indiceService.getIndiceIndicators(LocalDateTime.now());
+        List<IndiceIndicator> indiceIndicators = indiceService.getIndiceIndicators();
 
         // then
         assertTrue(indiceIndicators.size() > 0);

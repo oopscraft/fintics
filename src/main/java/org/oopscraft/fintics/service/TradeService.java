@@ -107,18 +107,22 @@ public class TradeService {
         }
     }
 
-    public Optional<AssetIndicator> getTradeAssetIndicator(String tradeId, String symbol, LocalDateTime baseDateTime) throws InterruptedException {
+    public Optional<AssetIndicator> getTradeAssetIndicator(String tradeId, String symbol) throws InterruptedException {
         Trade trade = getTrade(tradeId).orElseThrow();
         TradeAsset tradeAsset = trade.getTradeAssets().stream()
                 .filter(e -> Objects.equals(e.getSymbol(), symbol))
                 .findFirst()
                 .orElseThrow();
 
-        List<Ohlcv> minuteOhlcvs = tradeAssetOhlcvRepository.findAllBySymbolAndOhlcvType(tradeId, symbol, OhlcvType.MINUTE, baseDateTime.minusDays(1), baseDateTime).stream()
+        LocalDateTime minuteMaxDateTime = tradeAssetOhlcvRepository.findMaxDateTimeBySymbolAndOhlcvType(tradeId, symbol, OhlcvType.MINUTE)
+                .orElse(LocalDateTime.now());
+        List<Ohlcv> minuteOhlcvs = tradeAssetOhlcvRepository.findAllBySymbolAndOhlcvType(tradeId, symbol, OhlcvType.MINUTE, minuteMaxDateTime.minusDays(1), minuteMaxDateTime).stream()
                 .map(Ohlcv::from)
                 .collect(Collectors.toList());
 
-        List<Ohlcv> dailyOhlcvs = tradeAssetOhlcvRepository.findAllBySymbolAndOhlcvType(tradeId, symbol, OhlcvType.DAILY, baseDateTime.minusMonths(1), baseDateTime).stream()
+        LocalDateTime dailyMaxDateTime = tradeAssetOhlcvRepository.findMaxDateTimeBySymbolAndOhlcvType(tradeId, symbol, OhlcvType.DAILY)
+                .orElse(LocalDateTime.now());
+        List<Ohlcv> dailyOhlcvs = tradeAssetOhlcvRepository.findAllBySymbolAndOhlcvType(tradeId, symbol, OhlcvType.DAILY, dailyMaxDateTime.minusMonths(1), dailyMaxDateTime).stream()
                 .map(Ohlcv::from)
                 .collect(Collectors.toList());
 

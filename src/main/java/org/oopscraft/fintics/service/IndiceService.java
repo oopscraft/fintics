@@ -20,21 +20,31 @@ public class IndiceService {
 
     private final IndiceOhlcvRepository indiceOhlcvRepository;
 
-    public List<IndiceIndicator> getIndiceIndicators(LocalDateTime baseDateTime) {
+    public List<IndiceIndicator> getIndiceIndicators() {
         List<IndiceIndicator> indiceIndicators = new ArrayList<>();
         for(IndiceSymbol symbol : IndiceSymbol.values()) {
-            indiceIndicators.add(getIndiceIndicator(symbol, baseDateTime));
+            indiceIndicators.add(getIndiceIndicator(symbol));
         }
         return indiceIndicators;
     }
 
-    public IndiceIndicator getIndiceIndicator(IndiceSymbol symbol, LocalDateTime baseDateTime) {
-        List<Ohlcv> minuteOhlcvs = indiceOhlcvRepository.findAllBySymbolAndOhlcvType(symbol, OhlcvType.MINUTE, baseDateTime.minusDays(1), baseDateTime).stream()
+    public IndiceIndicator getIndiceIndicator(IndiceSymbol symbol) {
+
+        // minute ohlcv
+        LocalDateTime minuteMaxDateTime = indiceOhlcvRepository.findMaxDateTimeBySymbolAndOhlcvType(symbol, OhlcvType.MINUTE)
+                .orElse(LocalDateTime.now());
+        List<Ohlcv> minuteOhlcvs = indiceOhlcvRepository.findAllBySymbolAndOhlcvType(symbol, OhlcvType.MINUTE, minuteMaxDateTime.minusDays(1), minuteMaxDateTime).stream()
                 .map(Ohlcv::from)
                 .collect(Collectors.toList());
-        List<Ohlcv> dailyOhlcvs = indiceOhlcvRepository.findAllBySymbolAndOhlcvType(symbol, OhlcvType.DAILY, baseDateTime.minusMonths(1), baseDateTime).stream()
+
+        // daily ohlcv
+        LocalDateTime dailyMaxDateTime = indiceOhlcvRepository.findMaxDateTimeBySymbolAndOhlcvType(symbol, OhlcvType.DAILY)
+                .orElse(LocalDateTime.now());
+        List<Ohlcv> dailyOhlcvs = indiceOhlcvRepository.findAllBySymbolAndOhlcvType(symbol, OhlcvType.DAILY, dailyMaxDateTime.minusMonths(1), dailyMaxDateTime).stream()
                 .map(Ohlcv::from)
                 .collect(Collectors.toList());
+
+        // return indicator
         return IndiceIndicator.builder()
                 .symbol(symbol)
                 .minuteOhlcvs(minuteOhlcvs)

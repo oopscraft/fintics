@@ -70,7 +70,7 @@ public class SimulateService {
                     .dailyOhlcvs(dailyOhlcvs)
                     .build();
 
-            List<IndiceIndicator> indiceIndicators = indiceService.getIndiceIndicators(dateTime);
+            List<IndiceIndicator> indiceIndicators = indiceService.getIndiceIndicators();
 
             TradeAssetDecider tradeAssetDecider = TradeAssetDecider.builder()
                     .holdCondition(simulate.getHoldCondition())

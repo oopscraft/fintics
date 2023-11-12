@@ -159,29 +159,18 @@ public class TradeRestController {
 
     @GetMapping("{tradeId}/indicator")
     @PreAuthorize("@tradePermissionEvaluator.hasEditPermission(#tradeId)")
-    public ResponseEntity<TradeIndicatorResponse> getTradeIndicator(
-            @PathVariable("tradeId")
-                    String tradeId,
-            @RequestParam(value = "baseDateTime", required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-                    ZonedDateTime baseDateTime
-    ) throws InterruptedException {
+    public ResponseEntity<TradeIndicatorResponse> getTradeIndicator(@PathVariable("tradeId") String tradeId) throws InterruptedException {
         Trade trade = tradeService.getTrade(tradeId).orElseThrow();
-
-        // base date time
-        if(baseDateTime == null) {
-            baseDateTime = ZonedDateTime.now();
-        }
 
         // asset indicators
         List<AssetIndicatorResponse> assetIndicators = new ArrayList<>();
         for(TradeAsset tradeAsset : trade.getTradeAssets()) {
-            AssetIndicator assetIndicator = tradeService.getTradeAssetIndicator(tradeId, tradeAsset.getSymbol(), baseDateTime.toLocalDateTime()).orElseThrow();
+            AssetIndicator assetIndicator = tradeService.getTradeAssetIndicator(tradeId, tradeAsset.getSymbol()).orElseThrow();
             assetIndicators.add(AssetIndicatorResponse.from(assetIndicator));
         }
 
         // indice indicators
-        List<IndiceIndicatorResponse> indiceIndicators = indiceService.getIndiceIndicators(baseDateTime.toLocalDateTime()).stream()
+        List<IndiceIndicatorResponse> indiceIndicators = indiceService.getIndiceIndicators().stream()
                 .map(IndiceIndicatorResponse::from)
                 .collect(Collectors.toList());
 
