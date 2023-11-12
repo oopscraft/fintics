@@ -12,9 +12,12 @@ import org.oopscraft.fintics.model.IndiceSymbol;
 import org.oopscraft.fintics.model.Ohlcv;
 import org.oopscraft.fintics.model.OhlcvType;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -31,8 +34,13 @@ import java.util.*;
 @Slf4j
 public class YahooIndiceClient extends IndiceClient {
 
+    private final static String YAHOO_INDICE_CLIENT_GET_MINUTE_OHLCVS = "YahooIndiceClient.getMinuteOhlcvs";
+
+    private final static String YAHOO_INDICE_CLIENT_GET_DAILY_OHLCVS = "YahooIndiceClient.getDailyOhlcvs";
+
     private final ObjectMapper objectMapper;
 
+    @Cacheable(cacheNames = YAHOO_INDICE_CLIENT_GET_MINUTE_OHLCVS, key="#symbol")
     @Override
     public List<Ohlcv> getMinuteOhlcvs(IndiceSymbol symbol) {
         switch(symbol) {
@@ -53,6 +61,13 @@ public class YahooIndiceClient extends IndiceClient {
         }
     }
 
+    @CacheEvict(cacheNames = YAHOO_INDICE_CLIENT_GET_MINUTE_OHLCVS, allEntries = true)
+    @Scheduled(initialDelay = 60_000, fixedDelay = 60_000)
+    public void evictMinuteOhlcvs() {
+        log.info("YahooIndiceClient.evictMinuteOhlcvs");
+    }
+
+    @Cacheable(cacheNames = YAHOO_INDICE_CLIENT_GET_DAILY_OHLCVS, key="#symbol")
     @Override
     public List<Ohlcv> getDailyOhlcvs(IndiceSymbol symbol) {
         switch(symbol) {
@@ -71,6 +86,12 @@ public class YahooIndiceClient extends IndiceClient {
             default:
                 throw new UnsupportedOperationException("not supported indice");
         }
+    }
+
+    @CacheEvict(cacheNames = YAHOO_INDICE_CLIENT_GET_DAILY_OHLCVS, allEntries = true)
+    @Scheduled(initialDelay = 60_000, fixedDelay = 60_000)
+    public void evictDailyOhlcvs() {
+        log.info("YahooIndiceClient.evictDailyOhlcvs");
     }
 
     private List<Ohlcv> getMinuteOhlcvs(String yahooSymbol) {

@@ -1,7 +1,5 @@
 package org.oopscraft.fintics.model;
 
-import lombok.Getter;
-
 public enum IndiceSymbol {
 
     NDX("Nasdaq"),
