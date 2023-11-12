@@ -195,8 +195,14 @@ public class TradeRestController {
     }
 
     @GetMapping(value = "{tradeId}/order")
-    public ResponseEntity<List<OrderResponse>> getTradeOrders(@PathVariable("tradeId")String tradeId, Pageable pageable) {
-        Page<Order> orderPage = tradeService.getTradeOrders(tradeId, pageable);
+    public ResponseEntity<List<OrderResponse>> getTradeOrders(
+            @PathVariable("tradeId")
+                    String tradeId,
+            @RequestParam(value = "symbol", required = false)
+                    String symbol,
+            Pageable pageable
+    ) {
+        Page<Order> orderPage = tradeService.getTradeOrders(tradeId, symbol, pageable);
         List<OrderResponse> orderResponses = orderPage.getContent().stream()
                 .map(OrderResponse::from)
                 .collect(Collectors.toList());

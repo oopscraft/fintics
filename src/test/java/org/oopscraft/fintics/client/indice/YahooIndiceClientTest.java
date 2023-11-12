@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.client.market;
+package org.oopscraft.fintics.client.indice;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -6,10 +6,6 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.oopscraft.arch4j.core.test.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
-import org.oopscraft.fintics.client.indice.IndiceClient;
-import org.oopscraft.fintics.client.indice.YahooIndiceClient;
-import org.oopscraft.fintics.dao.IndiceOhlcvEntity;
-import org.oopscraft.fintics.model.IndiceIndicator;
 import org.oopscraft.fintics.model.IndiceSymbol;
 import org.oopscraft.fintics.model.Ohlcv;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -20,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(classes = FinticsConfiguration.class)
 @RequiredArgsConstructor
-class YahooMarketClientTest extends CoreTestSupport {
+class YahooIndiceClientTest extends CoreTestSupport {
 
     private final ObjectMapper objectMapper;
 
