@@ -9,6 +9,7 @@ spring:
 # web
 web:
   brand: <img class="icon" src="/static/image/logo-fintics.png"/>
+  title: Fintics
   index: trade
   security-policy: ~
   locales:
