@@ -20,6 +20,7 @@
         trades.forEach(trade => {
             tradeOrdersMap.set(trade.tradeId, new duice.ArrayProxy([]));
         });
+        const tradeLogEventSourceMap = new Map();
 
         function initializeIndiceMonitor() {
             indiceDailyOhlcvsChart = createDailyOhlcvsChart('indiceDailyOhlcvsChart');
@@ -97,6 +98,8 @@
         function startTradeLogEventSource(tradeId) {
             let tradeLog = document.getElementById(`tradeLog-${tradeId}`);
             let tradeLogEventSource = new EventSource(`${_apiUrl}/v1/trade/${tradeId}/log`);
+            tradeLogEventSourceMap.set(tradeId, tradeLogEventSource);
+
             tradeLogEventSource.onopen = () => {
                 let message = 'SSE Connected.';
                 console.log(message);
@@ -382,7 +385,6 @@
             initializeIndiceMonitor();
             initializeTradeMonitors();
 
-
             // refresh
             getIndiceMonitor();
             getTradeMonitors();
@@ -390,6 +392,14 @@
                 getIndiceMonitor();
                 getTradeMonitors();
             }, 1000*60);
+        });
+
+        window.addEventListener('beforeunload', () => {
+            tradeLogEventSourceMap.forEach((eventSource) => {
+                try {
+                    eventSource.close();
+                }catch(e){}
+            });
         });
     </script>
     <style th:inline="css">
@@ -424,10 +434,10 @@
                 Indice Indicator
             </h2>
             <div class="grid grid-template-columns-12">
-                <div class="grid-column-4 s-grid-column-12" style="height:10em">
+                <div class="grid-column-4 s-grid-column-12" style="height:150px;">
                     <canvas id="indiceDailyOhlcvsChart"></canvas>
                 </div>
-                <div class="grid-column-8 s-grid-column-12" style="height:10em;">
+                <div class="grid-column-8 s-grid-column-12" style="height:150px;">
                     <canvas id="indiceMinuteOhlcvsChart"></canvas>
                 </div>
             </div>
@@ -446,14 +456,14 @@
                     <span data-th-text="${trade.name}"></span>
                 </h2>
                 <div class="grid grid-template-columns-12 grid-gap-1em">
-                    <div class="grid-column-4 s-grid-column-12" style="height:10em;">
+                    <div class="grid-column-4 s-grid-column-12" style="height:150px;">
                         <canvas th:id="'tradeAssetDailyOhlcvsChart-' + ${trade.tradeId}"></canvas>
                     </div>
-                    <div class="grid-column-8 s-grid-column-12" style="height:10em;">
+                    <div class="grid-column-8 s-grid-column-12" style="height:150px;">
                         <canvas th:id="'tradeAssetMinuteOhlcvsChart-' + ${trade.tradeId}"></canvas>
                     </div>
                     <div class="grid-column-4 s-grid-column-12">
-                        <div class="overflow-y-scroll overflow-x-scroll border-1" style="height:10em;">
+                        <div class="overflow-y-scroll overflow-x-scroll border-1" style="height:100px;">
                             <table class="width-100 font-size-smaller border-0" style="line-height:normal;">
                                 <colgroup>
                                     <col style="width:5rem;"/>
@@ -484,7 +494,7 @@
                         </div>
                     </div>
                     <div class="grid-column-8 s-grid-column-12">
-                        <textarea th:id="'tradeLog-' + ${trade.tradeId}" class="tradeLog width-100" style="height:10em;"></textarea>
+                        <textarea th:id="'tradeLog-' + ${trade.tradeId}" class="tradeLog width-100" style="height:100px;"></textarea>
                     </div>
                 </div>
             </div>

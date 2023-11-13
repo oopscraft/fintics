@@ -21,11 +21,11 @@ insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name
 insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
     ('monitor','ko','모니터');
 insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`sort`,`icon`) values
-    ('trade','Y',null,'Trade','/trade',1,'/static/image/icon-trade.svg');
+    ('trade','Y',null,'Trade','/trade',2,'/static/image/icon-trade.svg');
 insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
     ('trade','ko','트레이드');
 insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`sort`,`icon`) values
-    ('order','Y',null,'Order','/order',1,'/static/image/icon-order.svg');
+    ('order','Y',null,'Order','/order',3,'/static/image/icon-order.svg');
 insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
     ('order','ko','거래이력');
 insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`target`,`sort`,`icon`) values
