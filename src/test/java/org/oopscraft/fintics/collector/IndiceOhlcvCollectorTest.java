@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Slf4j
 class IndiceOhlcvCollectorTest extends CoreTestSupport {
 
-    private final IndiceOhlcvCollector indiceOhlcvCollector;
+    private final IndiceCollector indiceOhlcvCollector;
 
     @Disabled
     @Test

@@ -13,7 +13,6 @@ import org.oopscraft.fintics.service.TradeService;
 import org.oopscraft.fintics.thread.TradeThreadManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -23,8 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -53,7 +50,6 @@ public class TradeRestController {
     }
 
     @GetMapping("{tradeId}")
-    @PreAuthorize("@tradePermissionEvaluator.hasEditPermission(#tradeId)")
     public ResponseEntity<TradeResponse> getTrade(@PathVariable("tradeId")String tradeId) {
         TradeResponse tradeResponse = tradeService.getTrade(tradeId)
                 .map(TradeResponse::from)
@@ -102,7 +98,7 @@ public class TradeRestController {
 
     @PutMapping("{tradeId}")
     @Transactional
-    @PreAuthorize("hasAuthority('TRADE_EDIT') and @tradePermissionEvaluator.hasEditPermission(#tradeId)")
+    @PreAuthorize("hasAuthority('TRADE_EDIT')")
     public ResponseEntity<TradeResponse> modifyTrade(
             @PathVariable("tradeId")String tradeId,
             @RequestBody TradeRequest tradeRequest
@@ -142,14 +138,13 @@ public class TradeRestController {
 
     @DeleteMapping("{tradeId}")
     @Transactional
-    @PreAuthorize("hasAuthority('TRADE_EDIT') and @tradePermissionEvaluator.hasEditPermission(#tradeId)")
+    @PreAuthorize("hasAuthority('TRADE_EDIT')")
     public ResponseEntity<Void> deleteTrade(@PathVariable("tradeId")String tradeId) {
         tradeService.deleteTrade(tradeId);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("{tradeId}/balance")
-    @PreAuthorize("@tradePermissionEvaluator.hasEditPermission(#tradeId)")
     public ResponseEntity<BalanceResponse> getTradeBalance(@PathVariable("tradeId") String tradeId) throws InterruptedException {
         BalanceResponse balanceResponse = tradeService.getTradeBalance(tradeId)
                 .map(BalanceResponse::from)
@@ -158,33 +153,17 @@ public class TradeRestController {
     }
 
     @GetMapping("{tradeId}/indicator")
-    @PreAuthorize("@tradePermissionEvaluator.hasEditPermission(#tradeId)")
-    public ResponseEntity<TradeIndicatorResponse> getTradeIndicator(@PathVariable("tradeId") String tradeId) throws InterruptedException {
+    public ResponseEntity<List<AssetIndicatorResponse>> getTradeAssetIndicators(@PathVariable("tradeId") String tradeId) throws InterruptedException {
         Trade trade = tradeService.getTrade(tradeId).orElseThrow();
-
-        // asset indicators
-        List<AssetIndicatorResponse> assetIndicators = new ArrayList<>();
+        List<AssetIndicatorResponse> tradeAssetIndicatorResponses = new ArrayList<>();
         for(TradeAsset tradeAsset : trade.getTradeAssets()) {
             AssetIndicator assetIndicator = tradeService.getTradeAssetIndicator(tradeId, tradeAsset.getSymbol()).orElseThrow();
-            assetIndicators.add(AssetIndicatorResponse.from(assetIndicator));
+            tradeAssetIndicatorResponses.add(AssetIndicatorResponse.from(assetIndicator));
         }
-
-        // indice indicators
-        List<IndiceIndicatorResponse> indiceIndicators = indiceService.getIndiceIndicators().stream()
-                .map(IndiceIndicatorResponse::from)
-                .collect(Collectors.toList());
-
-        // response
-        TradeIndicatorResponse tradeIndicator = TradeIndicatorResponse.builder()
-                .assetIndicators(assetIndicators)
-                .indiceIndicators(indiceIndicators)
-                .build();
-        return ResponseEntity.ok(tradeIndicator);
+        return ResponseEntity.ok(tradeAssetIndicatorResponses);
     }
 
-
     @GetMapping(value = "{tradeId}/log", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    @PreAuthorize("@tradePermissionEvaluator.hasEditPermission(#tradeId)")
     public SseEmitter getTradeLog(@PathVariable("tradeId")String tradeId) {
         SseLogAppender sseLogAppender = tradeThreadManager.getSseLogAppender(tradeId).orElseThrow();
         SseEmitter sseEmitter = new SseEmitter(60_000L);
@@ -195,18 +174,8 @@ public class TradeRestController {
     }
 
     @GetMapping(value = "{tradeId}/order")
-    public ResponseEntity<List<OrderResponse>> getTradeOrders(
-            @PathVariable("tradeId")
-                    String tradeId,
-            @RequestParam(value = "symbol", required = false)
-                    String symbol,
-            @RequestParam(value = "orderType", required = false)
-                    OrderType orderType,
-            @RequestParam(value = "orderResult", required = false)
-                    OrderResult orderResult,
-            Pageable pageable
-    ) {
-        Page<Order> orderPage = tradeService.getTradeOrders(tradeId, symbol, orderType, orderResult, pageable);
+    public ResponseEntity<List<OrderResponse>> getTradeOrders(@PathVariable("tradeId") String tradeId, Pageable pageable) {
+        Page<Order> orderPage = tradeService.getTradeOrders(tradeId, pageable);
         List<OrderResponse> orderResponses = orderPage.getContent().stream()
                 .map(OrderResponse::from)
                 .collect(Collectors.toList());

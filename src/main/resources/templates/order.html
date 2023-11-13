@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="_web.html">
+<th:block layout:fragment="_content">
+    <script th:inline="javascript">
+        const orderSearch = new duice.ObjectProxy({
+            tradeId: null,
+            orderType: null,
+            orderResult: null,
+            _page: 0,
+            _size: 20,
+            _count: 0
+        });
+        const orders = new duice.ArrayProxy([]);
+
+        function getOrders(page) {
+            if(page) {
+                orderSearch._page = page;
+            }
+            let url = new URL(`${_apiUrl}/v1/order`, document.location.origin);
+            if(orderSearch.tradeId) {
+                url.searchParams.append('tradeId', orderSearch.tradeId);
+            }
+            if(orderSearch.orderType) {
+                url.searchParams.append('orderType', orderSearch.orderType);
+            }
+            if(orderSearch.orderResult) {
+                url.searchParams.append('orderResult', orderSearch.orderResult);
+            }
+            url.searchParams.append('_page', orderSearch._page);
+            url.searchParams.append('_size', orderSearch._size);
+            _fetch(url)
+                .then(response => {
+                    orderSearch._count = _parseTotalCount(response);
+                    return response.json();
+                })
+                .then(data => {
+                    duice.ArrayProxy.assign(orders, data);
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            getOrders();
+        });
+
+    </script>
+    <style th:inline="css">
+    </style>
+
+    <!-- ====================================== -->
+    <!-- start: title                           -->
+    <!-- ====================================== -->
+    <h1 id="title">
+        <img class="icon" th:src="@{/static/image/icon-order.svg}" alt="order"/>
+        <span data-th-text="#{fintics.Order}"></span>
+    </h1>
+    <!-- ====================================== -->
+    <!-- end: title                             -->
+    <!-- ====================================== -->
+
+    <!-- ================================== -->
+    <!-- start: order                       -->
+    <!-- ================================== -->
+    <div class="border-1 padding-1em" style="min-height:400px;">
+        <form onsubmit="return false;" class="grid grid-template-columns-12 grid-gap-1em margin-x-1em">
+            <div class="grid-column-6 s-grid-column-12 grid grid-template-columns-12 grid-gap-1em">
+                <label class="grid-column-4 s-grid-column-12">
+                    <select class="width-100" data-duice-bind="orderSearch" data-duice-property="tradeId">
+                        <option data-th-text="#{fintics.Trade}"></option>
+                    </select>
+                </label>
+                <label class="grid-column-2 s-grid-column-12">
+                    <select class="width-100" data-duice-bind="orderSearch" data-duice-property="orderType">
+                        <option data-th-text="#{fintics.Order.orderType}"></option>
+                        <option value="BUY">BUY</option>
+                        <option value="SELL">SELL</option>
+                    </select>
+                </label>
+                <label class="grid-column-2 s-grid-column-12">
+                    <select class="width-100" data-duice-bind="orderSearch" data-duice-property="orderResult">
+                        <option data-th-text="#{fintics.Order.orderResult}"></option>
+                        <option value="COMPLETED">COMPLETED</option>
+                        <option value="FAILED">FAILED</option>
+                    </select>
+                </label>
+            </div>
+            <div class="grid-column-6 s-grid-column-12 justify-self-end">
+                <button type="submit" onclick="getTradeOrders();">
+                    <img class="icon" th:src="@{/static/image/icon-search.svg}" alt="search"/>
+                    <span data-th-text="#{web.global.search}">Search</span>
+                </button>
+                <button type="button" onclick="resetTradeOrders();">
+                    <img class="icon" th:src="@{/static/image/icon-reset.svg}" alt="reset"/>
+                    <span data-th-text="#{web.global.reset}">Reset</span>
+                </button>
+            </div>
+        </form>
+        <div class="overflow-x-scroll">
+            <table class="width-100">
+                <colgroup>
+                    <col style="width:7em;"/>
+                    <col style="width:12em;"/>
+                    <col style="width:10em;"/>
+                    <col/>
+                    <col/>
+                    <col/>
+                    <col/>
+                </colgroup>
+                <thead>
+                <tr>
+                    <th data-th-text="#{web.global.no}" class="text-align-center"></th>
+                    <th data-th-text="#{fintics.Order.orderAt}"></th>
+                    <th data-th-text="#{fintics.Order.orderType}"></th>
+                    <th data-th-text="#{fintics.Order.name}"></th>
+                    <th data-th-text="#{fintics.Order.quantity}"></th>
+                    <th data-th-text="#{fintics.Order.orderResult}"></th>
+                    <th data-th-text="#{fintics.Order.errorMessage}"></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr data-duice-bind="orders" data-duice-loop="order,status">
+                    <td class="text-align-center">
+                        <span data-duice-bind="status" data-duice-property="count"></span>
+                    </td>
+                    <td>
+                        <span data-duice-bind="order" data-duice-property="orderAt" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></span>
+                    </td>
+                    <td>
+                        <span data-duice-bind="order" data-duice-property="orderType" class="font-weight-bold"></span>
+                    </td>
+                    <td>
+                        <span data-duice-bind="order" data-duice-property="name"></span>
+                    </td>
+                    <td>
+                        <span data-duice-bind="order" data-duice-property="quantity" data-duice-format="number"></span>
+                    </td>
+                    <td>
+                        <span data-duice-bind="order" data-duice-property="orderResult"></span>
+                    </td>
+                    <td>
+                        <span data-duice-bind="order" data-duice-property="errorMessage"></span>
+                    </td>
+                </tr>
+                <tr data-duice-bind="orders" data-duice-execute="if(orders.length === 0) this.hidden=false;" hidden>
+                    <td colspan="100%" class="text-align-center">No Data</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="grid grid-template-columns-12 padding-1em">
+            <div class="grid-column-4 font-size-smaller">
+                <span data-th-text="#{web.global.total}"></span>
+                <span data-duice-bind="orderSearch" data-duice-property="_count" data-duice-format="number(0)"></span>
+                <span data-th-text="#{web.global.rows}"></span>
+            </div>
+            <div class="grid-column-4 justify-self-center">
+                <duice-pagination
+                        data-duice-bind="orderSearch"
+                        data-duice-size-property="_size"
+                        data-duice-page-property="_page"
+                        data-duice-count-property="_count"
+                        data-duice-onclick="getTradeOrders(this.dataset.page);">
+                </duice-pagination>
+            </div>
+            <div class="grid-column-4">
+            </div>
+        </div>
+    </div>
+    <!-- ================================== -->
+    <!-- end: order                       -->
+    <!-- ================================== -->
+
+</th:block>

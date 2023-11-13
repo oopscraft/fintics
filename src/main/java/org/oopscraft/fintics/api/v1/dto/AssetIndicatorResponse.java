@@ -1,14 +1,8 @@
 package org.oopscraft.fintics.api.v1.dto;
 
-import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
-import net.bytebuddy.implementation.bind.annotation.Super;
 import org.oopscraft.fintics.model.AssetIndicator;
-import org.oopscraft.fintics.model.Ohlcv;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @SuperBuilder
 @Getter

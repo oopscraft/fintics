@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Slf4j
 class TradeAssetOhlcvCollectorTest extends CoreTestSupport {
 
-    private final TradeAssetOhlcvCollector tradeAssetOhlcvCollector;
+    private final TradeCollector tradeAssetOhlcvCollector;
 
     @Disabled
     @Test

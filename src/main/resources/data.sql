@@ -5,17 +5,29 @@ delete from `core_git`;
 delete from `core_alarm`;
 
 -- core_authority
+insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('MONITOR','Y','Monitor Access Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('TRADE','Y','Trade Access Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('TRADE_EDIT','Y','Trade Edit Authority');
+insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('ORDER','Y','Order Access Authority');
 
 -- core_role_authority
+insert into `core_role_authority` (`role_id`,`authority_id`) values ('USER', 'MONITOR');
 insert into `core_role_authority` (`role_id`,`authority_id`) values ('USER', 'TRADE');
+insert into `core_role_authority` (`role_id`,`authority_id`) values ('USER', 'ORDER');
 
 -- core_menu
+insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`sort`,`icon`) values
+    ('monitor','Y',null,'Monitor','/monitor',1,'/static/image/icon-monitor.svg');
+insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
+    ('monitor','ko','모니터');
 insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`sort`,`icon`) values
     ('trade','Y',null,'Trade','/trade',1,'/static/image/icon-trade.svg');
 insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
     ('trade','ko','트레이드');
+insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`sort`,`icon`) values
+    ('order','Y',null,'Order','/order',1,'/static/image/icon-order.svg');
+insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
+    ('order','ko','거래이력');
 insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`target`,`sort`,`icon`) values
     ('admin','N',null,'Admin','/admin','_blank',99,'/static/image/icon-admin.svg');
 insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values

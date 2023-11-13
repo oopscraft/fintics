@@ -107,7 +107,16 @@ public class TradeService {
         }
     }
 
-    public Optional<AssetIndicator> getTradeAssetIndicator(String tradeId, String symbol) throws InterruptedException {
+    public List<AssetIndicator> getTradeAssetIndicators(String tradeId) {
+        Trade trade = getTrade(tradeId).orElseThrow();
+        List<TradeAsset> tradeAssets = trade.getTradeAssets();
+        return tradeAssets.stream()
+                .map(tradeAsset ->
+                    getTradeAssetIndicator(tradeAsset.getTradeId(), tradeAsset.getSymbol()).orElseThrow())
+                .collect(Collectors.toList());
+    }
+
+    public Optional<AssetIndicator> getTradeAssetIndicator(String tradeId, String symbol) {
         Trade trade = getTrade(tradeId).orElseThrow();
         TradeAsset tradeAsset = trade.getTradeAssets().stream()
                 .filter(e -> Objects.equals(e.getSymbol(), symbol))
@@ -134,8 +143,11 @@ public class TradeService {
                 .build());
     }
 
-    public Page<Order> getTradeOrders(String tradeId, String symbol, OrderType orderType, OrderResult orderResult, Pageable pageable) {
-        Page<OrderEntity> orderEntityPage = orderRepository.findAllByTradeId(tradeId, symbol, orderType, orderResult, pageable);
+    public Page<Order> getTradeOrders(String tradeId, Pageable pageable) {
+        OrderSearch orderSearch = OrderSearch.builder()
+                .tradeId(tradeId)
+                .build();
+        Page<OrderEntity> orderEntityPage = orderRepository.findAll(orderSearch, pageable);
         List<Order> orders = orderEntityPage.getContent().stream()
                 .map(Order::from)
                 .collect(Collectors.toList());

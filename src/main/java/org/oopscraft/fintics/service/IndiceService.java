@@ -2,14 +2,12 @@ package org.oopscraft.fintics.service;
 
 import lombok.RequiredArgsConstructor;
 import org.oopscraft.fintics.dao.IndiceOhlcvRepository;
-import org.oopscraft.fintics.model.IndiceIndicator;
-import org.oopscraft.fintics.model.IndiceSymbol;
-import org.oopscraft.fintics.model.Ohlcv;
-import org.oopscraft.fintics.model.OhlcvType;
+import org.oopscraft.fintics.model.*;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -20,16 +18,24 @@ public class IndiceService {
 
     private final IndiceOhlcvRepository indiceOhlcvRepository;
 
+    public List<Indice> getIndices() {
+        return Arrays.stream(IndiceSymbol.values())
+                .map(Indice::from)
+                .collect(Collectors.toList());
+    }
+
+    public Optional<Indice> getIndice(IndiceSymbol symbol) {
+        return Optional.ofNullable(Indice.from(symbol));
+    }
     public List<IndiceIndicator> getIndiceIndicators() {
         List<IndiceIndicator> indiceIndicators = new ArrayList<>();
         for(IndiceSymbol symbol : IndiceSymbol.values()) {
-            indiceIndicators.add(getIndiceIndicator(symbol));
+            indiceIndicators.add(getIndiceIndicator(symbol).orElseThrow());
         }
         return indiceIndicators;
     }
 
-    public IndiceIndicator getIndiceIndicator(IndiceSymbol symbol) {
-
+    public Optional<IndiceIndicator> getIndiceIndicator(IndiceSymbol symbol) {
         // minute ohlcv
         LocalDateTime minuteMaxDateTime = indiceOhlcvRepository.findMaxDateTimeBySymbolAndOhlcvType(symbol, OhlcvType.MINUTE)
                 .orElse(LocalDateTime.now());
@@ -45,12 +51,11 @@ public class IndiceService {
                 .collect(Collectors.toList());
 
         // return indicator
-        return IndiceIndicator.builder()
+        return Optional.of(IndiceIndicator.builder()
                 .symbol(symbol)
                 .minuteOhlcvs(minuteOhlcvs)
                 .dailyOhlcvs(dailyOhlcvs)
-                .build();
+                .build());
     }
-
 
 }
