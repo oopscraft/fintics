@@ -11,6 +11,7 @@ import org.oopscraft.fintics.model.OrderType;
 import org.oopscraft.fintics.service.OrderService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -29,7 +30,11 @@ public class OrderRestController {
     private final OrderService orderService;
 
     @GetMapping
-    public ResponseEntity<List<OrderResponse>> getTradeOrders(OrderSearch orderSearch, Pageable pageable) {
+    public ResponseEntity<List<OrderResponse>> getTradeOrders(
+            OrderSearch orderSearch,
+            @PageableDefault
+                    Pageable pageable
+    ) {
         Page<Order> orderPage = orderService.getOrders(orderSearch, pageable);
         List<OrderResponse> orderResponses = orderPage.getContent().stream()
                 .map(OrderResponse::from)

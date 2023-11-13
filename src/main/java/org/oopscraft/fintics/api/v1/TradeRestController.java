@@ -178,7 +178,7 @@ public class TradeRestController {
     public ResponseEntity<List<OrderResponse>> getTradeOrders(
             @PathVariable("tradeId")
                     String tradeId,
-            @PageableDefault(size = 30)
+            @PageableDefault
                     Pageable pageable
     ) {
         Page<Order> orderPage = tradeService.getTradeOrders(tradeId, pageable);
