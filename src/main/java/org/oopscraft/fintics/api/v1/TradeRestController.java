@@ -13,6 +13,7 @@ import org.oopscraft.fintics.service.TradeService;
 import org.oopscraft.fintics.thread.TradeThreadManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -174,7 +175,12 @@ public class TradeRestController {
     }
 
     @GetMapping(value = "{tradeId}/order")
-    public ResponseEntity<List<OrderResponse>> getTradeOrders(@PathVariable("tradeId") String tradeId, Pageable pageable) {
+    public ResponseEntity<List<OrderResponse>> getTradeOrders(
+            @PathVariable("tradeId")
+                    String tradeId,
+            @PageableDefault(size = 30)
+                    Pageable pageable
+    ) {
         Page<Order> orderPage = tradeService.getTradeOrders(tradeId, pageable);
         List<OrderResponse> orderResponses = orderPage.getContent().stream()
                 .map(OrderResponse::from)
