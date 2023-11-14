@@ -8,6 +8,7 @@ import org.oopscraft.arch4j.web.support.PageableUtils;
 import org.oopscraft.arch4j.web.support.SseLogAppender;
 import org.oopscraft.fintics.api.v1.dto.*;
 import org.oopscraft.fintics.model.*;
+import org.oopscraft.fintics.service.AssetService;
 import org.oopscraft.fintics.service.IndiceService;
 import org.oopscraft.fintics.service.TradeService;
 import org.oopscraft.fintics.thread.TradeThreadManager;
@@ -41,6 +42,8 @@ public class TradeRestController {
     private final ObjectMapper objectMapper;
 
     private final IndiceService indiceService;
+
+    private final AssetService assetService;
 
     @GetMapping
     public ResponseEntity<List<TradeResponse>> getTrades() {
@@ -185,6 +188,14 @@ public class TradeRestController {
         List<OrderResponse> orderResponses = orderPage.getContent().stream()
                 .map(OrderResponse::from)
                 .collect(Collectors.toList());
+
+        // set trade name
+        orderResponses.forEach(orderResponse -> {
+            orderResponse.setTradeName(tradeService.getTrade(orderResponse.getTradeId())
+                    .map(Trade::getName)
+                    .orElse(""));
+        });
+
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_RANGE, PageableUtils.toContentRange("order", pageable, orderPage.getTotalElements()))
                 .body(orderResponses);

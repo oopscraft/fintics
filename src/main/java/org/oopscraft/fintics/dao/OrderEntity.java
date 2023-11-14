@@ -5,8 +5,10 @@ import lombok.experimental.SuperBuilder;
 import org.oopscraft.arch4j.core.data.SystemFieldEntity;
 import org.oopscraft.fintics.model.OrderKind;
 import org.oopscraft.fintics.model.OrderResult;
+import org.oopscraft.fintics.model.OrderType;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -39,11 +41,17 @@ public class OrderEntity extends SystemFieldEntity {
     @Column(name = "symbol", length = 32)
     private String symbol;
 
-    @Column(name = "name")
-    private String name;
+    @Column(name = "asset_name")
+    private String assetName;
+
+    @Column(name = "order_type")
+    private OrderType orderType;
 
     @Column(name = "quantity")
     private Integer quantity;
+
+    @Column(name = "price")
+    private BigDecimal price;
 
     @Column(name = "order_result")
     private OrderResult orderResult;

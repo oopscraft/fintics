@@ -252,7 +252,7 @@ public class TradeRunnable implements Runnable {
             errorMessage = e.getMessage();
             throw e;
         } finally {
-            saveTradeOrder(OrderKind.BUY, tradeId, tradeAsset.getSymbol(), tradeAsset.getName(), quantity, orderResult, errorMessage);
+            saveTradeOrder(OrderKind.BUY, tradeId, tradeAsset.getSymbol(), tradeAsset.getName(), orderType, quantity, price, orderResult, errorMessage);
         }
     }
 
@@ -275,22 +275,23 @@ public class TradeRunnable implements Runnable {
             errorMessage = e.getMessage();
             throw e;
         } finally {
-            saveTradeOrder(OrderKind.SELL, tradeId, balanceAsset.getSymbol(), balanceAsset.getName(), quantity, orderResult, errorMessage);
+            saveTradeOrder(OrderKind.SELL, tradeId, balanceAsset.getSymbol(), balanceAsset.getName(), orderType, quantity, price, orderResult, errorMessage);
         }
     }
 
-    private void saveTradeOrder(OrderKind orderType, String tradeId, String symbol, String name, Integer quantity, OrderResult orderResult, String errorMessage) {
+    private void saveTradeOrder(OrderKind orderKind, String tradeId, String symbol, String assetName, OrderType orderType, Integer quantity, BigDecimal price, OrderResult orderResult, String errorMessage) {
         DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager, transactionDefinition);
         transactionTemplate.executeWithoutResult(transactionStatus -> {
             orderRepository.saveAndFlush(OrderEntity.builder()
                     .orderId(IdGenerator.uuid())
                     .orderAt(LocalDateTime.now())
-                    .orderKind(orderType)
+                    .orderKind(orderKind)
                     .tradeId(tradeId)
                     .symbol(symbol)
-                    .name(name)
+                    .orderType(orderType)
                     .quantity(quantity)
+                    .price(price)
                     .orderResult(orderResult)
                     .errorMessage(errorMessage)
                     .build());

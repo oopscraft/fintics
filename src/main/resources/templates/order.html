@@ -24,7 +24,7 @@
                 url.searchParams.append('tradeId', orderSearch.tradeId);
             }
             if(orderSearch.orderKind) {
-                url.searchParams.append('orderKind', orderSearch.orderType);
+                url.searchParams.append('orderKind', orderSearch.orderKind);
             }
             if(orderSearch.orderResult) {
                 url.searchParams.append('orderResult', orderSearch.orderResult);
@@ -107,14 +107,20 @@
                     <col/>
                     <col/>
                     <col/>
+                    <col/>
+                    <col/>
+                    <col/>
                 </colgroup>
                 <thead>
                 <tr>
                     <th data-th-text="#{web.global.no}" class="text-align-center"></th>
                     <th data-th-text="#{fintics.Order.orderAt}"></th>
                     <th data-th-text="#{fintics.Order.orderKind}"></th>
-                    <th data-th-text="#{fintics.Order.name}"></th>
+                    <th data-th-text="#{fintics.Trade.name}"></th>
+                    <th data-th-text="#{fintics.Asset.name}"></th>
+                    <th data-th-text="#{fintics.Order.orderType}"></th>
                     <th data-th-text="#{fintics.Order.quantity}"></th>
+                    <th data-th-text="#{fintics.Order.price}"></th>
                     <th data-th-text="#{fintics.Order.orderResult}"></th>
                     <th data-th-text="#{fintics.Order.errorMessage}"></th>
                 </tr>
@@ -131,10 +137,19 @@
                         <span data-duice-bind="order" data-duice-property="orderKind" class="font-weight-bold"></span>
                     </td>
                     <td>
-                        <span data-duice-bind="order" data-duice-property="name"></span>
+                        <span data-duice-bind="order" data-duice-property="tradeName"></span>
+                    </td>
+                    <td>
+                        <span data-duice-bind="order" data-duice-property="assetName"></span>
+                    </td>
+                    <td>
+                        <span data-duice-bind="order" data-duice-property="orderType"></span>
                     </td>
                     <td>
                         <span data-duice-bind="order" data-duice-property="quantity" data-duice-format="number"></span>
+                    </td>
+                    <td>
+                        <span data-duice-bind="order" data-duice-property="price" data-duice-format="number"></span>
                     </td>
                     <td>
                         <span data-duice-bind="order" data-duice-property="orderResult"></span>

@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 import org.oopscraft.fintics.dao.OrderEntity;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Builder
@@ -20,25 +21,31 @@ public class Order {
 
     private String symbol;
 
-    private String name;
+    private String assetName;
+
+    private OrderType orderType;
 
     private Integer quantity;
+
+    private BigDecimal price;
 
     private OrderResult orderResult;
 
     private String errorMessage;
 
-    public static Order from(OrderEntity OrderEntity) {
+    public static Order from(OrderEntity orderEntity) {
         return Order.builder()
-                .orderId(OrderEntity.getOrderId())
-                .orderAt(OrderEntity.getOrderAt())
-                .orderKind(OrderEntity.getOrderKind())
-                .tradeId(OrderEntity.getTradeId())
-                .symbol(OrderEntity.getSymbol())
-                .name(OrderEntity.getName())
-                .quantity(OrderEntity.getQuantity())
-                .orderResult(OrderEntity.getOrderResult())
-                .errorMessage(OrderEntity.getErrorMessage())
+                .orderId(orderEntity.getOrderId())
+                .orderAt(orderEntity.getOrderAt())
+                .orderKind(orderEntity.getOrderKind())
+                .tradeId(orderEntity.getTradeId())
+                .symbol(orderEntity.getSymbol())
+                .assetName(orderEntity.getAssetName())
+                .orderType(orderEntity.getOrderType())
+                .quantity(orderEntity.getQuantity())
+                .price(orderEntity.getPrice())
+                .orderResult(orderEntity.getOrderResult())
+                .errorMessage(orderEntity.getErrorMessage())
                 .build();
     }
 
