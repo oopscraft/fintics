@@ -1,8 +1,6 @@
 package org.oopscraft.fintics.dao;
 
-import org.oopscraft.fintics.model.OrderResult;
 import org.oopscraft.fintics.model.OrderSearch;
-import org.oopscraft.fintics.model.OrderType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -10,8 +8,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -27,9 +23,9 @@ public interface OrderRepository extends JpaRepository<OrderEntity, String>, Jpa
             specification = specification.and((root, query, criteriaBuilder) ->
                     criteriaBuilder.equal(root.get(OrderEntity_.SYMBOL), orderSearch.getSymbol()));
         }
-        if(orderSearch.getOrderType() != null) {
+        if(orderSearch.getOrderKind() != null) {
             specification = specification.and((root, query, criteriaBuilder) ->
-                    criteriaBuilder.equal(root.get(OrderEntity_.ORDER_TYPE), orderSearch.getOrderType()));
+                    criteriaBuilder.equal(root.get(OrderEntity_.ORDER_KIND), orderSearch.getOrderKind()));
         }
         if(orderSearch.getOrderResult() != null) {
             specification = specification.and((root, query, criteriaBuilder) ->

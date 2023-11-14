@@ -7,7 +7,7 @@
     <script th:inline="javascript">
         const orderSearch = new duice.ObjectProxy({
             tradeId: null,
-            orderType: null,
+            orderKind: null,
             orderResult: null,
             _page: 0,
             _size: 20,
@@ -23,8 +23,8 @@
             if(orderSearch.tradeId) {
                 url.searchParams.append('tradeId', orderSearch.tradeId);
             }
-            if(orderSearch.orderType) {
-                url.searchParams.append('orderType', orderSearch.orderType);
+            if(orderSearch.orderKind) {
+                url.searchParams.append('orderKind', orderSearch.orderType);
             }
             if(orderSearch.orderResult) {
                 url.searchParams.append('orderResult', orderSearch.orderResult);
@@ -73,7 +73,7 @@
                 </label>
                 <label class="grid-column-2 s-grid-column-12">
                     <select class="width-100" data-duice-bind="orderSearch" data-duice-property="orderType">
-                        <option data-th-text="#{fintics.Order.orderType}"></option>
+                        <option data-th-text="#{fintics.Order.orderKind}"></option>
                         <option value="BUY">BUY</option>
                         <option value="SELL">SELL</option>
                     </select>
@@ -112,7 +112,7 @@
                 <tr>
                     <th data-th-text="#{web.global.no}" class="text-align-center"></th>
                     <th data-th-text="#{fintics.Order.orderAt}"></th>
-                    <th data-th-text="#{fintics.Order.orderType}"></th>
+                    <th data-th-text="#{fintics.Order.orderKind}"></th>
                     <th data-th-text="#{fintics.Order.name}"></th>
                     <th data-th-text="#{fintics.Order.quantity}"></th>
                     <th data-th-text="#{fintics.Order.orderResult}"></th>
@@ -128,7 +128,7 @@
                         <span data-duice-bind="order" data-duice-property="orderAt" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></span>
                     </td>
                     <td>
-                        <span data-duice-bind="order" data-duice-property="orderType" class="font-weight-bold"></span>
+                        <span data-duice-bind="order" data-duice-property="orderKind" class="font-weight-bold"></span>
                     </td>
                     <td>
                         <span data-duice-bind="order" data-duice-property="name"></span>

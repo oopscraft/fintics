@@ -418,7 +418,7 @@ public class KisTradeClient extends TradeClient {
     }
 
     @Override
-    public void buyAsset(TradeAsset tradeAsset, int quantity) throws InterruptedException {
+    public void buyAsset(TradeAsset tradeAsset, OrderType orderType, Integer quantity, BigDecimal price) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
@@ -451,7 +451,7 @@ public class KisTradeClient extends TradeClient {
     }
 
     @Override
-    public void sellAsset(BalanceAsset balanceAsset, int quantity) throws InterruptedException {
+    public void sellAsset(BalanceAsset balanceAsset, OrderType orderType, Integer quantity, BigDecimal price) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();

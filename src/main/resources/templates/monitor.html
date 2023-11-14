@@ -437,7 +437,7 @@
                                 <thead>
                                 <tr>
                                     <th data-th-text="#{fintics.Order.orderAt}"></th>
-                                    <th data-th-text="#{fintics.Order.orderType}"></th>
+                                    <th data-th-text="#{fintics.Order.orderKind}"></th>
                                     <th data-th-text="#{fintics.Order.name}"></th>
                                     <th data-th-text="#{fintics.Order.quantity}"></th>
                                     <th data-th-text="#{fintics.Order.orderResult}"></th>
@@ -446,7 +446,7 @@
                                 <tbody>
                                 <tr th:data-duice-bind="'tradeOrdersMap.get(\'' + ${trade.tradeId} + '\')'" data-duice-loop="order,status" class="font-size-smaller">
                                     <td data-duice-bind="order" data-duice-property="orderAt" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
-                                    <td data-duice-bind="order" data-duice-property="orderType"></td>
+                                    <td data-duice-bind="order" data-duice-property="orderKind"></td>
                                     <td data-duice-bind="order" data-duice-property="name"></td>
                                     <td data-duice-bind="order" data-duice-property="quantity"></td>
                                     <td data-duice-bind="order" data-duice-property="orderResult"></td>

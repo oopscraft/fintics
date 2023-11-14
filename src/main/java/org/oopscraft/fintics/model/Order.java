@@ -14,7 +14,7 @@ public class Order {
 
     private LocalDateTime orderAt;
 
-    private OrderType orderType;
+    private OrderKind orderKind;
 
     private String tradeId;
 
@@ -32,7 +32,7 @@ public class Order {
         return Order.builder()
                 .orderId(OrderEntity.getOrderId())
                 .orderAt(OrderEntity.getOrderAt())
-                .orderType(OrderEntity.getOrderType())
+                .orderKind(OrderEntity.getOrderKind())
                 .tradeId(OrderEntity.getTradeId())
                 .symbol(OrderEntity.getSymbol())
                 .name(OrderEntity.getName())

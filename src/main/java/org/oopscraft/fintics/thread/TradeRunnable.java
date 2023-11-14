@@ -194,7 +194,7 @@ public class TradeRunnable implements Runnable {
                                 .divide(askPrice, 0, RoundingMode.FLOOR)
                                 .intValue();
                         log.info("Buy asset: {}", tradeAsset.getName());
-                        buyTradeAsset(trade, tradeAsset, quantity);
+                        buyTradeAsset(trade, tradeAsset, OrderType.MARKET, quantity, null);
                     }
                 }
 
@@ -204,7 +204,7 @@ public class TradeRunnable implements Runnable {
                         BalanceAsset balanceAsset = balance.getBalanceAsset(tradeAsset.getSymbol()).orElseThrow();
                         Integer orderableQuantity = balanceAsset.getOrderableQuantity();
                         log.info("Sell asset: {}", tradeAsset.getName());
-                        sellBalanceAsset(trade, balanceAsset, orderableQuantity);
+                        sellBalanceAsset(trade, balanceAsset, OrderType.MARKET, orderableQuantity, null);
                     }
                 }
             }
@@ -233,12 +233,12 @@ public class TradeRunnable implements Runnable {
         }
     }
 
-    private void buyTradeAsset(Trade trade, TradeAsset tradeAsset, Integer quantity) throws InterruptedException {
+    private void buyTradeAsset(Trade trade, TradeAsset tradeAsset, OrderType orderType, Integer quantity, BigDecimal price) throws InterruptedException {
         OrderResult orderResult = null;
         String errorMessage = null;
         try {
             TradeClient tradeClient = TradeClientFactory.getClient(trade);
-            tradeClient.buyAsset(tradeAsset, quantity);
+            tradeClient.buyAsset(tradeAsset, orderType, quantity, price);
             if (trade.isAlarmOnOrder()) {
                 if (trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
                     String subject = String.format("[%s]", trade.getName());
@@ -252,16 +252,16 @@ public class TradeRunnable implements Runnable {
             errorMessage = e.getMessage();
             throw e;
         } finally {
-            saveTradeOrder(OrderType.BUY, tradeId, tradeAsset.getSymbol(), tradeAsset.getName(), quantity, orderResult, errorMessage);
+            saveTradeOrder(OrderKind.BUY, tradeId, tradeAsset.getSymbol(), tradeAsset.getName(), quantity, orderResult, errorMessage);
         }
     }
 
-    private void sellBalanceAsset(Trade trade, BalanceAsset balanceAsset, Integer quantity) throws InterruptedException {
+    private void sellBalanceAsset(Trade trade, BalanceAsset balanceAsset, OrderType orderType, Integer quantity, BigDecimal price) throws InterruptedException {
         OrderResult orderResult = null;
         String errorMessage = null;
         try {
             TradeClient tradeClient = TradeClientFactory.getClient(trade);
-            tradeClient.sellAsset(balanceAsset, quantity);
+            tradeClient.sellAsset(balanceAsset, orderType, quantity, price);
             if (trade.isAlarmOnOrder()) {
                 if (trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
                     String subject = String.format("[%s]", trade.getName());
@@ -275,18 +275,18 @@ public class TradeRunnable implements Runnable {
             errorMessage = e.getMessage();
             throw e;
         } finally {
-            saveTradeOrder(OrderType.SELL, tradeId, balanceAsset.getSymbol(), balanceAsset.getName(), quantity, orderResult, errorMessage);
+            saveTradeOrder(OrderKind.SELL, tradeId, balanceAsset.getSymbol(), balanceAsset.getName(), quantity, orderResult, errorMessage);
         }
     }
 
-    private void saveTradeOrder(OrderType orderType, String tradeId, String symbol, String name, Integer quantity, OrderResult orderResult, String errorMessage) {
+    private void saveTradeOrder(OrderKind orderType, String tradeId, String symbol, String name, Integer quantity, OrderResult orderResult, String errorMessage) {
         DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager, transactionDefinition);
         transactionTemplate.executeWithoutResult(transactionStatus -> {
             orderRepository.saveAndFlush(OrderEntity.builder()
                     .orderId(IdGenerator.uuid())
                     .orderAt(LocalDateTime.now())
-                    .orderType(orderType)
+                    .orderKind(orderType)
                     .tradeId(tradeId)
                     .symbol(symbol)
                     .name(name)

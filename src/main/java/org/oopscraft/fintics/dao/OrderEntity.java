@@ -3,8 +3,8 @@ package org.oopscraft.fintics.dao;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.arch4j.core.data.SystemFieldEntity;
+import org.oopscraft.fintics.model.OrderKind;
 import org.oopscraft.fintics.model.OrderResult;
-import org.oopscraft.fintics.model.OrderType;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -30,8 +30,8 @@ public class OrderEntity extends SystemFieldEntity {
     @Column(name = "order_at")
     private LocalDateTime orderAt;
 
-    @Column(name = "order_type", length = 32)
-    private OrderType orderType;
+    @Column(name = "order_kind", length = 8)
+    private OrderKind orderKind;
 
     @Column(name = "trade_id", length = 32)
     private String tradeId;

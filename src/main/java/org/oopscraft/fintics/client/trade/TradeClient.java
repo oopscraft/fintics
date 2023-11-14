@@ -3,6 +3,7 @@ package org.oopscraft.fintics.client.trade;
 import lombok.Getter;
 import org.oopscraft.fintics.model.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Properties;
 
@@ -23,8 +24,8 @@ public abstract class TradeClient {
 
     public abstract Balance getBalance() throws InterruptedException;
 
-    public abstract void buyAsset(TradeAsset tradeAsset, int quantity) throws InterruptedException;
+    public abstract void buyAsset(TradeAsset tradeAsset, OrderType orderType, Integer quantity, BigDecimal price) throws InterruptedException;
 
-    public abstract void sellAsset(BalanceAsset balanceAsset, int quantity) throws InterruptedException;
+    public abstract void sellAsset(BalanceAsset balanceAsset, OrderType orderType, Integer quantity, BigDecimal price) throws InterruptedException;
 
 }

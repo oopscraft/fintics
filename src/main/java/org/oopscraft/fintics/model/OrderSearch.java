@@ -12,7 +12,7 @@ public class OrderSearch {
 
     private String symbol;
 
-    private OrderType orderType;
+    private OrderKind orderKind;
 
     private OrderResult orderResult;
 

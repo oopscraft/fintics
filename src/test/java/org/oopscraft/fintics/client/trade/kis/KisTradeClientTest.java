@@ -106,7 +106,7 @@ class KisTradeClientTest extends CoreTestSupport {
                 .build();
 
         // when
-        getKisClient().buyAsset(tradeAsset, 1);
+        getKisClient().buyAsset(tradeAsset, OrderType.MARKET, 1, null);
     }
 
     @Disabled
@@ -120,7 +120,7 @@ class KisTradeClientTest extends CoreTestSupport {
                 .build();
 
         // when
-        getKisClient().buyAsset(tradeAsset, 1);
+        getKisClient().buyAsset(tradeAsset, OrderType.MARKET, 1, null);
     }
 
     @Disabled
@@ -134,7 +134,7 @@ class KisTradeClientTest extends CoreTestSupport {
                 .build();
 
         // when
-        getKisClient().sellAsset(balanceAsset, 1);
+        getKisClient().sellAsset(balanceAsset, OrderType.MARKET, 1, null);
     }
 
     @Disabled
@@ -148,7 +148,7 @@ class KisTradeClientTest extends CoreTestSupport {
                 .build();
 
         // when
-        getKisClient().sellAsset(balanceAsset, 1);
+        getKisClient().sellAsset(balanceAsset, OrderType.MARKET, 1, null);
     }
 
 
