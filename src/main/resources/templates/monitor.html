@@ -37,12 +37,11 @@
                     return Promise.all(responses.map(
                         response => response.json()));
                 }).then(indiceIndicators => {
-                    let now = new Date();
-
                     // define date from
-                    let dailyFrom = dateFns.subMonths(now, 3);
+                    let now = new Date();
+                    let dailyFrom = dateFns.subDays(now, 30);
                     let dailyTo = new Date(now.getTime());
-                    let minuteFrom = dateFns.subDays(now, 1);
+                    let minuteFrom = dateFns.subHours(now, 12);
                     let minuteTo = new Date(now.getTime());
 
                     // indice chart
@@ -137,35 +136,28 @@
             _fetch(indicatorUrl)
                 .then(response => response.json())
                 .then(assetIndicators => {
-
-                    // calculate max date time
-                    let maxDateTime = dateFns.subMonths(new Date(), 30);
-                    assetIndicators.forEach(assetIndicator => {
-                        let minuteOhlcvs = assetIndicator['minuteOhlcvs'];
-                        if(minuteOhlcvs.length > 0) {
-                            let dateTime = new Date(minuteOhlcvs[0].dateTime);
-                            if(dateTime.getTime() > maxDateTime.getTime()) {
-                                maxDateTime = new Date(dateTime.getTime());
-                            }
-                        }
-                    });
-
                     // define date from
-                    let dailyFrom = dateFns.subMonths(maxDateTime, 3);
-                    let dailyTo = new Date(maxDateTime.getTime());
-
-                    let minuteFrom = dateFns.subDays(maxDateTime, 1);
-                    let minuteTo = new Date(maxDateTime.getTime());
+                    let now = new Date();
+                    let dailyFrom = dateFns.subDays(now, 30);
+                    let dailyTo = new Date(now.getTime());
+                    let minuteFrom = dateFns.subHours(now, 12);
+                    let minuteTo = new Date(now.getTime());
 
                     // asset chart
                     let dailyOhlcvsChart = tradeAssetDailyOhlcvsChartMap.get(tradeId);
                     let minuteOhlcvsChart = tradeAssetMinuteOhlcvsChartMap.get(tradeId);
+
+                    dailyOhlcvsChart.options.scales.x.min = dailyFrom;
+                    dailyOhlcvsChart.options.scales.x.max = dailyTo;
+                    minuteOhlcvsChart.options.scales.x.min = minuteFrom;
+                    minuteOhlcvsChart.options.scales.x.max = minuteTo;
+
                     dailyOhlcvsChart.data.datasets.length = 0;
                     minuteOhlcvsChart.data.datasets.length = 0;
                     assetIndicators.forEach(assetIndicator => {
                         // daily
                         let dailyOhlcvs = assetIndicator['dailyOhlcvs'];
-                        let dailyTimeSeries = createTimeSeries(dailyFrom, dailyTo, dailyOhlcvs, 60000*60*24);
+                        let dailyTimeSeries = createTimeSeries(dailyFrom, dailyTo, dailyOhlcvs);
                         let dailyDataset = {
                             label: assetIndicator.name,
                             data: dailyTimeSeries,
@@ -176,7 +168,7 @@
 
                         // minute
                         let minuteOhlcvs = assetIndicator['minuteOhlcvs'];
-                        let minuteTimeSeries = createTimeSeries(minuteFrom, minuteTo, minuteOhlcvs, 60000);
+                        let minuteTimeSeries = createTimeSeries(minuteFrom, minuteTo, minuteOhlcvs);
                         let minuteDataset = {
                             label: assetIndicator.name,
                             data: minuteTimeSeries,
@@ -220,7 +212,7 @@
                                 }
                             },
                             ticks: {
-                                stepSize: 7,
+                                stepSize: 3,
                                 font: {
                                     size: 8
                                 }
@@ -285,7 +277,7 @@
                                 }
                             },
                             ticks: {
-                                stepSize: 2,
+                                stepSize: 1,
                                 font: {
                                     size: 8
                                 }
@@ -327,57 +319,24 @@
             });
         }
 
-        function createTimeSeries(dateFrom, dateTo, ohlcvs, interval) {
-            let timeSeries = [];
-            let dateFromMillis = dateFrom.getTime();
-            let dateToMillis = dateTo.getTime();
-            for(let millis = dateFromMillis; millis <= dateToMillis; millis += interval) {
-                timeSeries.push({
-                    dateTime: new Date(millis),
-                    pctChange: 0.0,
-                    openPrice: 0,
-                    highPrice: 0,
-                    lowPrice: 0,
-                    closePrice: 0
-                });
-            }
-
+        function createTimeSeries(dateFrom, dateTo, ohlcvs) {
             let ohlcvSeries = JSON.parse(JSON.stringify(ohlcvs)).reverse();
-            ohlcvSeries.forEach((ohlcv) => ohlcv.dateTime = new Date(ohlcv.dateTime));
-            let ohlcvPos = Math.max(0, ohlcvSeries.findIndex((ohlcv) => {
-                return ohlcv.dateTime.getTime() >= timeSeries[0].dateTime.getTime();
-            }));
-            let ohlcvBasePrice = ohlcvSeries.length > 0 ? ohlcvSeries[ohlcvPos].openPrice : 0.0;
-            let prevOhlcvPoint;
-            for(let i = 0, length = timeSeries.length; i < length; i ++) {
-                let timePoint = timeSeries[i];
-                let timeRangeFromMillis = timePoint.dateTime.getTime();
-                let timeRangeToMillis = timeRangeFromMillis + (interval - 1);
-                if(ohlcvPos < ohlcvSeries.length) {
-                    let ohlcvPoint = ohlcvSeries[ohlcvPos];
-                    let ohlcvDateTimeMillis = ohlcvPoint.dateTime.getTime();
-                    if(timeRangeFromMillis <= ohlcvDateTimeMillis && ohlcvDateTimeMillis < timeRangeToMillis) {
-                        ohlcvPoint.pctChange = Number((ohlcvPoint.closePrice - ohlcvBasePrice)/ohlcvBasePrice * 100).toFixed(4);
-                        timeSeries[i].pctChange = ohlcvPoint.pctChange;
-                        timeSeries[i].openPrice = ohlcvPoint.openPrice;
-                        timeSeries[i].highPrice = ohlcvPoint.highPrice;
-                        timeSeries[i].lowPrice = ohlcvPoint.lowPrice;
-                        timeSeries[i].closePrice = ohlcvPoint.closePrice;
-                        timeSeries[i].volume = ohlcvPoint.volume;
-                        prevOhlcvPoint = ohlcvPoint;
-                        ohlcvPos ++;
-                        continue;
-                    }
+            let timeSeries = [];
+            ohlcvSeries.forEach(ohlcvPoint => {
+                let dateTime = new Date(ohlcvPoint.dateTime);
+                if(dateFrom.getTime() <= dateTime.getTime() && dateTime.getTime() <= dateTo.getTime()) {
+                    timeSeries.push(ohlcvPoint);
                 }
-                if(prevOhlcvPoint) {
-                    timeSeries[i].pctChange = prevOhlcvPoint.pctChange;
-                    timeSeries[i].openPrice = prevOhlcvPoint.openPrice;
-                    timeSeries[i].highPrice = prevOhlcvPoint.highPrice;
-                    timeSeries[i].lowPrice = prevOhlcvPoint.lowPrice;
-                    timeSeries[i].closePrice = prevOhlcvPoint.closePrice;
-                    timeSeries[i].volume = prevOhlcvPoint.volume;
+            });
+
+            // fill pct change
+            let basePrice;
+            timeSeries.forEach(ohlcv => {
+                if(!basePrice) {
+                    basePrice = ohlcv.openPrice;
                 }
-            }
+                ohlcv.pctChange = Number((ohlcv.closePrice - basePrice)/basePrice * 100).toFixed(4);
+            });
             return timeSeries;
         }
 
@@ -431,9 +390,9 @@
         <div class="border-1 padding-1em">
             <h2>
                 <img class="icon" th:src="@{/static/image/icon-indice.svg}" alt="indice"/>
-                Indice Indicator
+                <span data-th-text="#{fintics.Indice}"></span>
             </h2>
-            <div class="grid grid-template-columns-12">
+            <div class="grid grid-template-columns-12 padding-1em">
                 <div class="grid-column-4 s-grid-column-12" style="height:150px;">
                     <canvas id="indiceDailyOhlcvsChart"></canvas>
                 </div>
@@ -449,12 +408,15 @@
         <!-- ================================== -->
         <!-- start: trade                       -->
         <!-- ================================== -->
-        <div class="grid grid-template-columns-12 grid-gap-1px">
-            <div th:each="trade : ${trades}" class="grid-column-12 border-1 padding-1em">
-                <h2>
-                    <img class="icon" th:src="@{/static/image/icon-trade.svg}" alt="indice"/>
+        <div class="grid grid-template-columns-12 grid-gap-1px border-1 padding-1em">
+            <h2 class="grid-column-12">
+                <img class="icon" th:src="@{/static/image/icon-trade.svg}" alt="trade"/>
+                <span data-th-text="#{fintics.Trade}"></span>
+            </h2>
+            <div th:each="trade : ${trades}" class="grid-column-12 padding-1em">
+                <h3>
                     <span data-th-text="${trade.name}"></span>
-                </h2>
+                </h3>
                 <div class="grid grid-template-columns-12 grid-gap-1em">
                     <div class="grid-column-4 s-grid-column-12" style="height:150px;">
                         <canvas th:id="'tradeAssetDailyOhlcvsChart-' + ${trade.tradeId}"></canvas>
@@ -482,7 +444,7 @@
                                 </tr>
                                 </thead>
                                 <tbody>
-                                <tr th:data-duice-bind="'tradeOrdersMap.get(\'' + ${trade.tradeId} + '\')'" data-duice-loop="order,status">
+                                <tr th:data-duice-bind="'tradeOrdersMap.get(\'' + ${trade.tradeId} + '\')'" data-duice-loop="order,status" class="font-size-smaller">
                                     <td data-duice-bind="order" data-duice-property="orderAt" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
                                     <td data-duice-bind="order" data-duice-property="orderType"></td>
                                     <td data-duice-bind="order" data-duice-property="name"></td>
@@ -504,8 +466,5 @@
         <!-- ================================== -->
 
     </div>
-
-
-
 
 </th:block>
