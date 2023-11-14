@@ -1,5 +1,10 @@
+import java.time.LocalTime;
+
 Boolean hold;
 int period = 10;
+
+// logging
+log.info("minuteOhlcv:{}", assetIndicator.getMinuteOhlcv());
 
 // EMA
 def assetEmas = assetIndicator.getMinuteEmas(60);
@@ -25,21 +30,24 @@ log.info("assetDmiMdiAverage:{}", assetDmiMdiAverage);
 
 // Kospi
 def kospiIndicator = indiceIndicators['KOSPI'];
+def kospiDateTime = kospiIndicator.getMinuteDateTime();
 def kospiEmas = kospiIndicator.getMinuteEmas(60);
 def kospiEmaSlope = tool.slope(kospiEmas, period);
-log.info("kospiEmaSlope:{}", kospiEmaSlope);
+log.info("kospiEmaSlope[{}]:{}", kospiDateTime, kospiEmaSlope);
 
 // USD/KRW
 def usdKrwIndicator = indiceIndicators['USD_KRW'];
+def usdKrwDateTime = usdKrwIndicator.getMinuteDateTime();
 def usdKrwEmas = usdKrwIndicator.getMinuteEmas(60);
 def usdKrwEmaSlope = tool.slope(usdKrwEmas, period);
-log.info("usdKrwEmaSlope:{}", usdKrwEmaSlope);
+log.info("usdKrwEmaSlope[{}]:{}", usdKrwDateTime, usdKrwEmaSlope);
 
 // Nasdaq Future
 def ndxFutureIndicator = indiceIndicators['NDX_FUTURE'];
+def ndxFutureDateTime = ndxFutureIndicator.getMinuteDateTime();
 def ndxFutureEmas = ndxFutureIndicator.getMinuteEmas(60);
 def ndxFutureEmaSlope = tool.slope(ndxFutureEmas, period);
-log.info("ndxFutureEmaSlope:{}", ndxFutureEmaSlope);
+log.info("ndxFutureEmaSlope[{}]:{}", ndxFutureDateTime, ndxFutureEmaSlope);
 
 // 매수조건(인버스)
 if(assetEmaSlope > 0) {
@@ -91,6 +99,11 @@ if(assetEmaSlope < 0) {
     if(sellVotes.average() > 30) {
         hold = false;
     }
+}
+
+// 장종료전 모두 청산(보유하지 않음)
+if(dateTime.toLocalTime().isAfter(LocalTime.of(15,15))) {
+    hold = false;
 }
 
 // 결과반환

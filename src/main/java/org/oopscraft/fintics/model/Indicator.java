@@ -57,6 +57,14 @@ public abstract class Indicator {
         return getDateTimes(this.dailyOhlcvs);
     }
 
+    public LocalDateTime getMinuteDateTime() {
+        return this.minuteOhlcvs.isEmpty() ? null : this.minuteOhlcvs.get(0).getDateTime();
+    }
+
+    public LocalDateTime getDailyDateTime() {
+        return this.dailyOhlcvs.isEmpty() ? null : this.dailyOhlcvs.get(0).getDateTime();
+    }
+
     private List<BigDecimal> getPrices(List<Ohlcv> ohlcvs) {
         return ohlcvs.stream()
                 .map(Ohlcv::getClosePrice)
