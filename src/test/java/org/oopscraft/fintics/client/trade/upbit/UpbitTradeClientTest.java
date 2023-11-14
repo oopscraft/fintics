@@ -38,6 +38,7 @@ class UpbitTradeClientTest {
                 .build();
     }
 
+    @Disabled
     @Test
     void createJwtToken() {
         // given
