@@ -94,11 +94,11 @@ public class YahooIndiceClient extends IndiceClient {
     }
 
     private List<Ohlcv> getMinuteOhlcvs(String yahooSymbol) {
-        return getOhlcvs(yahooSymbol, OhlcvType.MINUTE, LocalDateTime.now().minusWeeks(1), LocalDateTime.now(), 60*24*3);    // 3 days
+        return getOhlcvs(yahooSymbol, OhlcvType.MINUTE, LocalDateTime.now().minusDays(3), LocalDateTime.now(), 60*24*3);    // 3 days
     }
 
     private List<Ohlcv> getDailyOhlcvs(String yahooSymbol) {
-        return getOhlcvs(yahooSymbol, OhlcvType.DAILY, LocalDateTime.now().minusMonths(3), LocalDateTime.now(), 30*2);
+        return getOhlcvs(yahooSymbol, OhlcvType.DAILY, LocalDateTime.now().minusMonths(2), LocalDateTime.now(), 30*2);
     }
 
     private List<Ohlcv> getOhlcvs(String symbol, OhlcvType ohlcvType, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo, Integer limit) {
@@ -172,7 +172,12 @@ public class YahooIndiceClient extends IndiceClient {
                     .build();
             ohlcvs.add(ohlcv);
         }
-        Collections.reverse(ohlcvs);
+
+        // sort by dateTime(sometimes response is not ordered)
+        ohlcvs.sort(Comparator
+                .comparing(Ohlcv::getDateTime)
+                .reversed());
+
         return ohlcvs.subList(0, Math.min(limit, ohlcvs.size()));
     }
 

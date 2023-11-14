@@ -25,7 +25,7 @@ class YahooIndiceClientTest extends CoreTestSupport {
     void getMinuteOhlcvs() throws InterruptedException {
         // given
         // when
-        IndiceClient indiceClient = new YahooIndiceClient(objectMapper);
+        YahooIndiceClient indiceClient = new YahooIndiceClient(objectMapper);
         List<Ohlcv> minuteOhlcvs = indiceClient.getMinuteOhlcvs(IndiceSymbol.NDX);
 
         // then
@@ -37,7 +37,7 @@ class YahooIndiceClientTest extends CoreTestSupport {
     void getDailyOhlcvs() throws InterruptedException {
         // given
         // when
-        IndiceClient indiceClient = new YahooIndiceClient(objectMapper);
+        YahooIndiceClient indiceClient = new YahooIndiceClient(objectMapper);
         List<Ohlcv> dailyOhlcvs = indiceClient.getDailyOhlcvs(IndiceSymbol.NDX);
 
         // then

@@ -1,7 +1,7 @@
 import java.time.LocalTime;
 
 Boolean hold;
-int period = 10;
+int period = 3;
 
 // logging
 log.info("minuteOhlcv:{}", assetIndicator.getMinuteOhlcv());
