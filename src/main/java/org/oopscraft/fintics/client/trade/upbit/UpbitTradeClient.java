@@ -6,24 +6,18 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.util.EntityUtils;
 import org.oopscraft.arch4j.core.data.IdGenerator;
 import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
 import org.oopscraft.arch4j.core.support.ValueMap;
 import org.oopscraft.fintics.client.trade.TradeClient;
 import org.oopscraft.fintics.model.*;
-import org.springframework.http.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.RequestEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
@@ -51,6 +45,10 @@ public class UpbitTradeClient extends TradeClient {
         this.accessKey = properties.getProperty("accessKey");
         this.secretKey = properties.getProperty("secretKey");
         this.objectMapper = new ObjectMapper();
+    }
+
+    private synchronized static void sleep() throws InterruptedException {
+        Thread.sleep(300);
     }
 
     HttpHeaders createHeaders(String queryString) {
@@ -96,6 +94,7 @@ public class UpbitTradeClient extends TradeClient {
                 .get(url + "?" + queryString)
                 .headers(createHeaders(queryString))
                 .build();
+        sleep();
         ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
         JsonNode rootNode;
         try {
@@ -138,6 +137,7 @@ public class UpbitTradeClient extends TradeClient {
                 .headers(createHeaders(queryString))
                 .build();
 
+        sleep();
         ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
         List<ValueMap> rows;
         try {
@@ -176,6 +176,7 @@ public class UpbitTradeClient extends TradeClient {
                 .headers(createHeaders(null))
                 .build();
 
+        sleep();
         ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
 
         List<ValueMap> rows;
@@ -218,7 +219,7 @@ public class UpbitTradeClient extends TradeClient {
     }
 
     @Override
-    public void buyAsset(TradeAsset tradeAsset, OrderType orderType, BigDecimal quantity, BigDecimal price) {
+    public void buyAsset(TradeAsset tradeAsset, OrderType orderType, BigDecimal quantity, BigDecimal price) throws InterruptedException {
         BigDecimal orderPrice = price.multiply(quantity)
                 .setScale(2, RoundingMode.HALF_UP);
         order(tradeAsset.getSymbol(), "bid", "price", orderPrice, null);
@@ -229,7 +230,7 @@ public class UpbitTradeClient extends TradeClient {
         order(balanceAsset.getSymbol(), "ask", "market", null, quantity);
     }
 
-    private void order(String market, String side, String ordType, BigDecimal price, BigDecimal volume) {
+    private void order(String market, String side, String ordType, BigDecimal price, BigDecimal volume) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
@@ -269,6 +270,9 @@ public class UpbitTradeClient extends TradeClient {
                 .headers(createHeaders(queryString))
                 .header("Content-Type", "application/json")
                 .body(payload);
+
+
+        sleep();
         ResponseEntity<ValueMap> responseEntity = restTemplate.exchange(requestEntity, ValueMap.class);
         log.info("{}",responseEntity.getBody());
     }
