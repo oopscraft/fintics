@@ -21,6 +21,7 @@ public class TradeAssetOhlcvEntity extends OhlcvEntity {
     public static class Pk implements Serializable {
         private String tradeId;
         private String symbol;
+        private OhlcvType ohlcvType;
         private LocalDateTime dateTime;
     }
 

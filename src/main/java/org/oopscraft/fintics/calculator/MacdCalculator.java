@@ -62,7 +62,7 @@ public class MacdCalculator {
         List<Macd> macds = new ArrayList<>();
         for(int i = 0; i < values.size(); i ++ ) {
             Macd macd = Macd.builder()
-                    .macd(values.get(i))
+                    .value(values.get(i))
                     .signal(signals.get(i))
                     .oscillator(oscillators.get(i))
                     .build();

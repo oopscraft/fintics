@@ -3,6 +3,7 @@ package org.oopscraft.fintics.dao;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.fintics.model.IndiceSymbol;
+import org.oopscraft.fintics.model.OhlcvType;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -20,6 +21,7 @@ public class IndiceOhlcvEntity extends OhlcvEntity {
 
     public static class Pk implements Serializable {
         private IndiceSymbol symbol;
+        private OhlcvType ohlcvType;
         private LocalDateTime dateTime;
     }
 

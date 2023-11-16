@@ -11,7 +11,7 @@ import java.math.RoundingMode;
 public class Macd {
 
     @Builder.Default
-    private BigDecimal macd = BigDecimal.ZERO;
+    private BigDecimal value = BigDecimal.ZERO;
 
     @Builder.Default
     private BigDecimal signal = BigDecimal.ZERO;
@@ -20,7 +20,7 @@ public class Macd {
     private BigDecimal oscillator = BigDecimal.ZERO;
 
     public Macd setScale(int scale, RoundingMode roundingMode) {
-        macd = macd.setScale(scale, roundingMode);
+        value = value.setScale(scale, roundingMode);
         signal = signal.setScale(scale, roundingMode);
         oscillator = oscillator.setScale(scale, roundingMode);
         return this;

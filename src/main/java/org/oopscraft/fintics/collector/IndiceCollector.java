@@ -26,8 +26,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class IndiceCollector {
 
-    @Value("${fintics.collector.indice-collector.ohlcv-retention-day:1}")
-    private Integer ohlcvRetentionDay = 1;
+    @Value("${fintics.collector.indice-collector.ohlcv-retention-months:1}")
+    private Integer ohlcvRetentionMonths = 1;
 
     private final IndiceClient indiceClient;
 
@@ -80,8 +80,7 @@ public class IndiceCollector {
         indiceOhlcvRepository.saveAllAndFlush(dailyOhlcvEntities);
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public IndiceOhlcvEntity toIndiceOhlcvEntity(IndiceSymbol symbol, Ohlcv ohlcv) {
+    private IndiceOhlcvEntity toIndiceOhlcvEntity(IndiceSymbol symbol, Ohlcv ohlcv) {
         return IndiceOhlcvEntity.builder()
                 .symbol(symbol)
                 .dateTime(ohlcv.getDateTime())
@@ -94,14 +93,15 @@ public class IndiceCollector {
                 .build();
     }
 
-    private void deletePastRetentionOhlcv(IndiceSymbol symbol) {
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void deletePastRetentionOhlcv(IndiceSymbol symbol) {
         entityManager.createQuery(
-                "delete" +
-                        " from IndiceOhlcvEntity" +
-                        " where symbol = :symbol " +
-                        " and dateTime < :expiredDateTime")
+                        "delete" +
+                                " from IndiceOhlcvEntity" +
+                                " where symbol = :symbol " +
+                                " and dateTime < :expiredDateTime")
                 .setParameter("symbol", symbol)
-                .setParameter("expiredDateTime", LocalDateTime.now().minusDays(ohlcvRetentionDay))
+                .setParameter("expiredDateTime", LocalDateTime.now().minusMonths(ohlcvRetentionMonths))
                 .executeUpdate();
         entityManager.flush();
         entityManager.clear();

@@ -19,11 +19,13 @@ import java.time.LocalDateTime;
 public class OhlcvEntity extends SystemFieldEntity {
 
     @Id
+    @Column(name = "ohlcv_type", length = 32)
+    @Enumerated(EnumType.STRING)
+    private OhlcvType ohlcvType;
+
+    @Id
     @Column(name = "date_time")
     private LocalDateTime dateTime;
-
-    @Column(name = "ohlcv_type", length = 32)
-    private OhlcvType ohlcvType;
 
     @Column(name = "open_price")
     private BigDecimal openPrice;

@@ -43,7 +43,7 @@ public class AssetIndicatorTest {
                                 .closePrice(new BigDecimal(record.get("close").replaceAll(",","")))
                                 .build());
                         inputMacds.add(Macd.builder()
-                                .macd(new BigDecimal(record.get("MACD").replaceAll(",","")))
+                                .value(new BigDecimal(record.get("MACD").replaceAll(",","")))
                                 .signal(new BigDecimal(record.get("MACD-Signal").replaceAll(",","")))
                                 .oscillator(new BigDecimal(record.get("MACD-Oscillator").replaceAll(",","")))
                                 .build());

@@ -15,8 +15,11 @@ import org.oopscraft.fintics.model.TradeAsset;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -31,8 +34,8 @@ import java.util.stream.Collectors;
 @Transactional
 public class TradeCollector {
 
-    @Value("${fintics.collector.trade-collector.ohlcv-retention-day:1}")
-    private Integer ohlcvRetentionDay = 1;
+    @Value("${fintics.collector.trade-collector.ohlcv-retention-months:1}")
+    private Integer ohlcvRetentionMonths = 1;
 
     private final TradeRepository tradeRepository;
 
@@ -41,12 +44,15 @@ public class TradeCollector {
     @PersistenceContext
     private final EntityManager entityManager;
 
+    private final PlatformTransactionManager transactionManager;
+
     @Scheduled(initialDelay = 1_000, fixedDelay = 60_000)
     @Transactional
     public void collectTradeAssetOhlcv() {
         log.info("Start collect trade asset ohlcv.");
         List<TradeEntity> tradeEntities = tradeRepository.findAll();
         for(TradeEntity tradeEntity : tradeEntities) {
+            TransactionStatus transactionStatus = null;
             try {
                 Trade trade = Trade.from(tradeEntity);
                 TradeClient tradeClient = TradeClientFactory.getClient(trade);
@@ -89,11 +95,12 @@ public class TradeCollector {
                      .map(ohlcv -> toTradeAssetOhlcvEntity(tradeAsset, ohlcv))
                      .collect(Collectors.toList());
              tradeAssetOhlcvRepository.saveAllAndFlush(dailyOhlcvEntities);
-         }catch(InterruptedException ignored){}
+         }catch(InterruptedException e){
+             log.warn(e.getMessage());
+         }
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public TradeAssetOhlcvEntity toTradeAssetOhlcvEntity(TradeAsset tradeAsset, Ohlcv ohlcv) {
+    private TradeAssetOhlcvEntity toTradeAssetOhlcvEntity(TradeAsset tradeAsset, Ohlcv ohlcv) {
         return TradeAssetOhlcvEntity.builder()
                 .tradeId(tradeAsset.getTradeId())
                 .symbol(tradeAsset.getSymbol())
@@ -107,7 +114,8 @@ public class TradeCollector {
                 .build();
     }
 
-    private void deletePastRetentionOhlcv(TradeAsset tradeAsset) {
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void deletePastRetentionOhlcv(TradeAsset tradeAsset) {
         entityManager.createQuery(
                         "delete" +
                                 " from TradeAssetOhlcvEntity" +
@@ -116,7 +124,7 @@ public class TradeCollector {
                                 " and dateTime < :expiredDateTime")
                 .setParameter("tradeId", tradeAsset.getTradeId())
                 .setParameter("symbol", tradeAsset.getSymbol())
-                .setParameter("expiredDateTime", LocalDateTime.now().minusDays(ohlcvRetentionDay))
+                .setParameter("expiredDateTime", LocalDateTime.now().minusMonths(ohlcvRetentionMonths))
                 .executeUpdate();
         entityManager.flush();
         entityManager.clear();

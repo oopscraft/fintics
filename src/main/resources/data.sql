@@ -273,7 +273,7 @@ insert into `fintics_trade_asset`
 -- fintics_trade: 업비트 API(장시간 외 트레이드 테스트용)
 insert into `fintics_trade`
 (`trade_id`,`name`,`enabled`,`interval`,`start_at`,`end_at`,`client_type`,`client_properties`,`alarm_id`,`hold_condition`) values
-    ('81c6a451d6da49449faa2b5b7e66041b','코인놀이방','N','30','00:00','23:59',
+    ('81c6a451d6da49449faa2b5b7e66041b','코인놀이방(24시간 테스트용)','N','30','00:00','23:59',
      'org.oopscraft.fintics.client.trade.upbit.UpbitTradeClient','accessKey=[발급 accessKey]
 secretKey=[발급 secretKey]',null,'
 Boolean hold;
