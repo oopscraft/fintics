@@ -31,9 +31,6 @@
                 .then(response => response.json())
                 .then(data => {
                     duice.ObjectProxy.assign(trade, data);
-                    if(trade.clientType && trade.clientProperties) {
-                        getTradeBalance(data.tradeId);
-                    }
                 });
         }
 
@@ -126,20 +123,6 @@
                 .then(data => {
                     duice.ObjectProxy.assign(balance, data);
                 });
-        }
-
-        function refreshTradeBalance() {
-            if(!trade._new && trade.tradeId) {
-                let url = new URL(`${_apiUrl}/v1/trade/${trade.tradeId}/balance`, document.location.origin);
-                _fetch(url, {}, true)
-                    .then(async response => {
-                        if(response.ok) {
-                            let data = await response.json();
-                            duice.ObjectProxy.clear(balance);
-                            duice.ObjectProxy.assign(balance, data);
-                        }
-                    });
-            }
         }
 
         document.addEventListener('DOMContentLoaded', () => {

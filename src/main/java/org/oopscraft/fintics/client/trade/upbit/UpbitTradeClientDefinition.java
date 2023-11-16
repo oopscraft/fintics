@@ -12,7 +12,7 @@ public class UpbitTradeClientDefinition implements TradeClientDefinition {
 
     @Override
     public Class<? extends TradeClient> getType() {
-        return KisTradeClient.class;
+        return UpbitTradeClient.class;
     }
 
     @Override
