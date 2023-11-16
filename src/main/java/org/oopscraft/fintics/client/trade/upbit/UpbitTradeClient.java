@@ -152,7 +152,7 @@ public class UpbitTradeClient extends TradeClient {
                             DateTimeFormatter.ISO_LOCAL_DATE_TIME
                     );
                     return Ohlcv.builder()
-                            .ohlcvType(OhlcvType.MINUTE)
+                            .ohlcvType(ohlcvType)
                             .dateTime(dateTime)
                             .openPrice(row.getNumber("opening_price"))
                             .highPrice(row.getNumber("high_price"))
