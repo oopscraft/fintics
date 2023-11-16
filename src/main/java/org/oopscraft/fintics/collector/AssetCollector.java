@@ -63,7 +63,7 @@ public class AssetCollector {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    void collectStockAssets(int limit, LocalDateTime collectedAt) throws InterruptedException {
+    public void collectStockAssets(int limit, LocalDateTime collectedAt) throws InterruptedException {
         List<Asset> stockAssets = assetClient.getStockAssets(0, limit);
         List<AssetEntity> stockAssetEntities = stockAssets.stream()
                 .map(asset -> AssetEntity.builder()
@@ -77,7 +77,7 @@ public class AssetCollector {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    void collectEtfAssets(int limit, LocalDateTime collectedAt) throws InterruptedException {
+    public void collectEtfAssets(int limit, LocalDateTime collectedAt) throws InterruptedException {
         List<Asset> etfAssets = assetClient.getEtfAssets(0, limit);
         List<AssetEntity> etfAssetEntities = etfAssets.stream()
                 .map(asset -> AssetEntity.builder()

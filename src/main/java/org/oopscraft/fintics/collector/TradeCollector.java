@@ -4,12 +4,22 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.fintics.client.trade.TradeClient;
 import org.oopscraft.fintics.client.trade.TradeClientFactory;
-import org.oopscraft.fintics.dao.*;
-import org.oopscraft.fintics.model.*;
+import org.oopscraft.fintics.dao.TradeAssetOhlcvEntity;
+import org.oopscraft.fintics.dao.TradeAssetOhlcvRepository;
+import org.oopscraft.fintics.dao.TradeEntity;
+import org.oopscraft.fintics.dao.TradeRepository;
+import org.oopscraft.fintics.model.Ohlcv;
+import org.oopscraft.fintics.model.OhlcvType;
+import org.oopscraft.fintics.model.Trade;
+import org.oopscraft.fintics.model.TradeAsset;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -18,27 +28,40 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class TradeCollector {
+
+    @Value("${fintics.collector.trade-collector.ohlcv-retention-day:1}")
+    private Integer ohlcvRetentionDay = 1;
 
     private final TradeRepository tradeRepository;
 
     private final TradeAssetOhlcvRepository tradeAssetOhlcvRepository;
 
+    @PersistenceContext
+    private final EntityManager entityManager;
+
     @Scheduled(initialDelay = 1_000, fixedDelay = 60_000)
     @Transactional
-    public void collectTradeAssetOhlcv() throws InterruptedException {
+    public void collectTradeAssetOhlcv() {
         log.info("Start collect trade asset ohlcv.");
         List<TradeEntity> tradeEntities = tradeRepository.findAll();
         for(TradeEntity tradeEntity : tradeEntities) {
-            Trade trade = Trade.from(tradeEntity);
-            TradeClient tradeClient = TradeClientFactory.getClient(trade);
-            trade.getTradeAssets().forEach(tradeAsset -> {
-                saveTradeAssetOhlcv(tradeClient, tradeAsset);
-            });
+            try {
+                Trade trade = Trade.from(tradeEntity);
+                TradeClient tradeClient = TradeClientFactory.getClient(trade);
+                trade.getTradeAssets().forEach(tradeAsset -> {
+                    saveTradeAssetOhlcv(tradeClient, tradeAsset);
+                    deletePastRetentionOhlcv(tradeAsset);
+                });
+            }catch(Throwable e){
+                log.warn(e.getMessage());
+            }
         }
+        log.info("End collect trade asset ohlcv");
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void saveTradeAssetOhlcv(TradeClient tradeClient, TradeAsset tradeAsset) {
          try {
              // minutes
@@ -69,7 +92,8 @@ public class TradeCollector {
          }catch(InterruptedException ignored){}
     }
 
-    private TradeAssetOhlcvEntity toTradeAssetOhlcvEntity(TradeAsset tradeAsset, Ohlcv ohlcv) {
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public TradeAssetOhlcvEntity toTradeAssetOhlcvEntity(TradeAsset tradeAsset, Ohlcv ohlcv) {
         return TradeAssetOhlcvEntity.builder()
                 .tradeId(tradeAsset.getTradeId())
                 .symbol(tradeAsset.getSymbol())
@@ -83,5 +107,19 @@ public class TradeCollector {
                 .build();
     }
 
+    private void deletePastRetentionOhlcv(TradeAsset tradeAsset) {
+        entityManager.createQuery(
+                        "delete" +
+                                " from TradeAssetOhlcvEntity" +
+                                " where tradeId = :tradeId " +
+                                " and symbol = :symbol " +
+                                " and dateTime < :expiredDateTime")
+                .setParameter("tradeId", tradeAsset.getTradeId())
+                .setParameter("symbol", tradeAsset.getSymbol())
+                .setParameter("expiredDateTime", LocalDateTime.now().minusDays(ohlcvRetentionDay))
+                .executeUpdate();
+        entityManager.flush();
+        entityManager.clear();
+    }
 
 }

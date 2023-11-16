@@ -70,7 +70,7 @@ public class TradeEntity extends SystemFieldEntity {
     @Convert(converter = BooleanToYNConverter.class)
     private boolean publicEnabled;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "trade_id", updatable = false)
     @Builder.Default
     @Setter(AccessLevel.NONE)

@@ -8,10 +8,14 @@ import org.oopscraft.fintics.dao.IndiceOhlcvRepository;
 import org.oopscraft.fintics.model.IndiceSymbol;
 import org.oopscraft.fintics.model.Ohlcv;
 import org.oopscraft.fintics.model.OhlcvType;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -22,20 +26,32 @@ import java.util.stream.Collectors;
 @Slf4j
 public class IndiceCollector {
 
+    @Value("${fintics.collector.indice-collector.ohlcv-retention-day:1}")
+    private Integer ohlcvRetentionDay = 1;
+
     private final IndiceClient indiceClient;
 
     private final IndiceOhlcvRepository indiceOhlcvRepository;
+
+    @PersistenceContext
+    private final EntityManager entityManager;
 
     @Scheduled(initialDelay = 1_000, fixedDelay = 60_000)
     @Transactional
     public void collectIndiceOhlcv() throws InterruptedException {
         log.info("Start collect indice ohlcv.");
         for(IndiceSymbol symbol : IndiceSymbol.values()) {
-            saveIndiceOhlcv(symbol);
+            try {
+                saveIndiceOhlcv(symbol);
+                deletePastRetentionOhlcv(symbol);
+            }catch(Throwable e){
+                log.warn(e.getMessage());
+            }
         }
+        log.info("End collect indice ohlcv");
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void saveIndiceOhlcv(IndiceSymbol symbol) {
         // minute
         List<Ohlcv> minuteOhlcvs = indiceClient.getMinuteOhlcvs(symbol);
@@ -64,7 +80,8 @@ public class IndiceCollector {
         indiceOhlcvRepository.saveAllAndFlush(dailyOhlcvEntities);
     }
 
-    private IndiceOhlcvEntity toIndiceOhlcvEntity(IndiceSymbol symbol, Ohlcv ohlcv) {
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public IndiceOhlcvEntity toIndiceOhlcvEntity(IndiceSymbol symbol, Ohlcv ohlcv) {
         return IndiceOhlcvEntity.builder()
                 .symbol(symbol)
                 .dateTime(ohlcv.getDateTime())
@@ -75,6 +92,19 @@ public class IndiceCollector {
                 .closePrice(ohlcv.getClosePrice())
                 .volume(ohlcv.getVolume())
                 .build();
+    }
+
+    private void deletePastRetentionOhlcv(IndiceSymbol symbol) {
+        entityManager.createQuery(
+                "delete" +
+                        " from IndiceOhlcvEntity" +
+                        " where symbol = :symbol " +
+                        " and dateTime < :expiredDateTime")
+                .setParameter("symbol", symbol)
+                .setParameter("expiredDateTime", LocalDateTime.now().minusDays(ohlcvRetentionDay))
+                .executeUpdate();
+        entityManager.flush();
+        entityManager.clear();
     }
 
 }

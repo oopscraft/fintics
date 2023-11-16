@@ -4,6 +4,7 @@ import lombok.*;
 import org.oopscraft.arch4j.core.security.SecurityUtils;
 import org.oopscraft.fintics.dao.TradeEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalTime;
 import java.util.ArrayList;

@@ -26,3 +26,7 @@ fintics:
   collector:
     asset-collector:
       limit: 100
+    indice-collector:
+      ohlcv-retention-day: 1
+    trade-collector:
+      ohlcv-retention-day: 1
