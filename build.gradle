@@ -76,6 +76,9 @@ dependencies {
     annotationProcessor group: 'com.querydsl', name: 'querydsl-apt', classifier: 'jpa'
     annotationProcessor 'org.hibernate:hibernate-jpamodelgen'
 
+    // https://mvnrepository.com/artifact/com.google.code.gson/gson
+    implementation 'com.google.code.gson:gson:2.10.1'
+
 }
 
 test {

@@ -1,7 +1,7 @@
 import java.time.LocalTime;
 
 Boolean hold;
-int period = 3;
+int period = 5;
 
 // price
 log.info("assetOhlcv: {}", assetIndicator.getMinuteOhlcv());
@@ -11,12 +11,19 @@ def assetPriceSlope = tool.slope(assetPrices, period);
 log.info("assetPriceAverage: {}", assetPriceAverage);
 log.info("assetPriceSlop: {}", assetPriceSlope);
 
-// EMA
-def assetEmas = assetIndicator.getMinuteEmas(60);
-def assetEmaAverage = tool.average(assetEmas, period);
-def assetEmaSlope = tool.slope(assetEmas, period);
-log.info("assetEmaAverage: {}", assetEmaAverage);
-log.info("assetEmaSlope: {}", assetEmaSlope);
+// Short EMA
+def assetShortEmas = assetIndicator.getMinuteEmas(10);
+def assetShortEmaAverage = tool.average(assetShortEmas, period);
+def assetShortEmaSlope = tool.slope(assetShortEmas, period);
+log.info("assetShortEmaAverage: {}", assetShortEmaAverage);
+log.info("assetShortEmaSlope: {}", assetShortEmaSlope);
+
+// Long EMA
+def assetLongEmas = assetIndicator.getMinuteEmas(60);
+def assetLongEmaAverage = tool.average(assetLongEmas, period);
+def assetLongEmaSlope = tool.slope(assetLongEmas, period);
+log.info("assetLongEmaAverage: {}", assetLongEmaAverage);
+log.info("assetLongEmaSlope: {}", assetLongEmaSlope);
 
 // MACD
 def assetMacds = assetIndicator.getMinuteMacds(60, 120, 40);
@@ -73,20 +80,21 @@ def ndxFutureEmaSlope = tool.slope(ndxFutureEmas, period);
 log.info("ndxFutureEmaSlope: {}", ndxFutureEmaSlope);
 
 // 매수조건
-if(assetPriceAverage > assetEmaAverage) {
-    log.info("assetPriceAverage[{}] > assetEmaAverage[{}]", assetPriceAverage, assetEmaAverage);
+if(assetShortEmaAverage > assetLongEmaAverage) {
     def buyVotes = [];
 
-    // 대상종목 상승시 매수
-    buyVotes.add(assetPriceAverage > assetEmaAverage ? 100 : 0);
-    buyVotes.add(assetEmaSlope > 0 ? 100 : 0);
-    buyVotes.add(assetMacdOscillatorAverage > 0 ? 100 : 0);
+    // 대상종목 보조지표 확인
+    buyVotes.add(assetPriceSlope > 0 ? 100 : 0);
+    buyVotes.add(assetShortEmaSlope > 0 ? 100 : 0);
+    buyVotes.add(assetLongEmaSlope > 0 ? 100 : 0);
+    buyVotes.add(assetPriceAverage > assetShortEmaAverage ? 100 : 0);
+    buyVotes.add(assetShortEmaAverage > assetLongEmaAverage ? 100 : 0);
     buyVotes.add(assetMacdOscillatorSlope > 0 ? 100 : 0);
-    buyVotes.add(assetRsiAverage > 50 ? 100 : 0);
+    buyVotes.add(assetMacdOscillatorAverage > 0 ? 100 : 0);
     buyVotes.add(assetRsiSlope > 0 ? 100 : 0);
-    buyVotes.add(assetRsiAverage < 30 && assetRsiSlope > 0 ? 100 : 0);
-    buyVotes.add(assetDmiPdiAverage > assetDmiMdiAverage ? 100 : 0);
+    buyVotes.add(assetRsiAverage > 50 ? 100 : 0);
     buyVotes.add(assetDmiPdiSlope > assetDmiMdiSlop ? 100 : 0);
+    buyVotes.add(assetDmiPdiAverage > assetDmiMdiAverage ? 100 : 0);
     buyVotes.add(assetDmiAdxAverage > 20 ? 100 : 0);
     buyVotes.add(assetDmiAdxSlope > 0 ? 100 : 0);
 
@@ -107,13 +115,15 @@ if(assetPriceAverage > assetEmaAverage) {
 }
 
 // 매도조건
-if(assetPriceAverage < assetEmaAverage) {
-    log.info("assetPriceAverage[{}] < assetEmaAverage[{}]", assetPriceAverage, assetEmaAverage);
+if(assetShortEmaAverage < assetLongEmaAverage) {
     def sellVotes = [];
 
     // 대상종목 하락시 매도
-    sellVotes.add(assetPriceAverage < assetEmaAverage ? 100 : 0);
-    sellVotes.add(assetEmaSlope < 0 ? 100 : 0);
+    sellVotes.add(assetPriceSlope < 0 ? 100 : 0);
+    sellVotes.add(assetShortEmaSlope < 0 ? 100 : 0);
+    sellVotes.add(assetLongEmaSlope < 0 ? 100 : 0);
+    sellVotes.add(assetShortEmaAverage < assetLongEmaAverage ? 100 : 0);
+    sellVotes.add(assetLongEmaSlope < 0 ? 100 : 0);
     sellVotes.add(assetMacdOscillatorAverage < 0 ? 100 : 0);
     sellVotes.add(assetMacdOscillatorSlope < 0 ? 100 : 0);
     sellVotes.add(assetRsiAverage < 50 ? 100 : 0);

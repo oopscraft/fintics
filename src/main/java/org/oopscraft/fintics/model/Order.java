@@ -25,7 +25,7 @@ public class Order {
 
     private OrderType orderType;
 
-    private Integer quantity;
+    private BigDecimal quantity;
 
     private BigDecimal price;
 

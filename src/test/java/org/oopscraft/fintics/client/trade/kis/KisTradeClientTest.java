@@ -12,6 +12,7 @@ import org.oopscraft.fintics.dao.TradeEntity;
 import org.oopscraft.fintics.model.*;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -106,7 +107,7 @@ class KisTradeClientTest extends CoreTestSupport {
                 .build();
 
         // when
-        getKisClient().buyAsset(tradeAsset, OrderType.MARKET, 1, null);
+        getKisClient().buyAsset(tradeAsset, OrderType.MARKET, BigDecimal.valueOf(1), null);
     }
 
     @Disabled
@@ -120,7 +121,7 @@ class KisTradeClientTest extends CoreTestSupport {
                 .build();
 
         // when
-        getKisClient().buyAsset(tradeAsset, OrderType.MARKET, 1, null);
+        getKisClient().buyAsset(tradeAsset, OrderType.MARKET, BigDecimal.valueOf(1), null);
     }
 
     @Disabled
@@ -134,7 +135,7 @@ class KisTradeClientTest extends CoreTestSupport {
                 .build();
 
         // when
-        getKisClient().sellAsset(balanceAsset, OrderType.MARKET, 1, null);
+        getKisClient().sellAsset(balanceAsset, OrderType.MARKET, BigDecimal.valueOf(1), null);
     }
 
     @Disabled
@@ -148,7 +149,7 @@ class KisTradeClientTest extends CoreTestSupport {
                 .build();
 
         // when
-        getKisClient().sellAsset(balanceAsset, OrderType.MARKET, 1, null);
+        getKisClient().sellAsset(balanceAsset, OrderType.MARKET, BigDecimal.valueOf(1), null);
     }
 
 

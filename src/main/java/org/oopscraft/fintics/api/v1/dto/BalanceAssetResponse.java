@@ -17,9 +17,9 @@ public class BalanceAssetResponse {
 
     private String name;
 
-    private Integer quantity;
+    private BigDecimal quantity;
 
-    private Integer orderableQuantity;
+    private BigDecimal orderableQuantity;
 
     private BigDecimal purchaseAmount;
 

@@ -24,8 +24,8 @@ public abstract class TradeClient {
 
     public abstract Balance getBalance() throws InterruptedException;
 
-    public abstract void buyAsset(TradeAsset tradeAsset, OrderType orderType, Integer quantity, BigDecimal price) throws InterruptedException;
+    public abstract void buyAsset(TradeAsset tradeAsset, OrderType orderType, BigDecimal quantity, BigDecimal price) throws InterruptedException;
 
-    public abstract void sellAsset(BalanceAsset balanceAsset, OrderType orderType, Integer quantity, BigDecimal price) throws InterruptedException;
+    public abstract void sellAsset(BalanceAsset balanceAsset, OrderType orderType, BigDecimal quantity, BigDecimal price) throws InterruptedException;
 
 }

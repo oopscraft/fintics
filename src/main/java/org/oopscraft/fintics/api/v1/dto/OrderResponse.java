@@ -32,7 +32,7 @@ public class OrderResponse {
 
     private OrderType orderType;
 
-    private Integer quantity;
+    private BigDecimal quantity;
 
     private BigDecimal price;
 

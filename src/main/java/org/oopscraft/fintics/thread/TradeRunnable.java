@@ -190,11 +190,10 @@ public class TradeRunnable implements Runnable {
                                 .multiply(tradeAsset.getHoldRatio())
                                 .setScale(2, RoundingMode.HALF_UP);
                         BigDecimal askPrice = orderBook.getAskPrice();
-                        int quantity = buyAmount
-                                .divide(askPrice, 0, RoundingMode.FLOOR)
-                                .intValue();
+                        BigDecimal quantity = buyAmount
+                                .divide(askPrice, MathContext.DECIMAL32);
                         log.info("Buy asset: {}", tradeAsset.getName());
-                        buyTradeAsset(trade, tradeAsset, OrderType.MARKET, quantity, null);
+                        buyTradeAsset(trade, tradeAsset, OrderType.MARKET, quantity, orderBook.getAskPrice());
                     }
                 }
 
@@ -202,9 +201,9 @@ public class TradeRunnable implements Runnable {
                 else if (holdConditionResult.equals(Boolean.FALSE)) {
                     if (balance.hasBalanceAsset(tradeAsset.getSymbol())) {
                         BalanceAsset balanceAsset = balance.getBalanceAsset(tradeAsset.getSymbol()).orElseThrow();
-                        Integer orderableQuantity = balanceAsset.getOrderableQuantity();
+                        BigDecimal orderableQuantity = balanceAsset.getOrderableQuantity();
                         log.info("Sell asset: {}", tradeAsset.getName());
-                        sellBalanceAsset(trade, balanceAsset, OrderType.MARKET, orderableQuantity, null);
+                        sellBalanceAsset(trade, balanceAsset, OrderType.MARKET, orderableQuantity, orderBook.getBidPrice());
                     }
                 }
             }
@@ -233,7 +232,7 @@ public class TradeRunnable implements Runnable {
         }
     }
 
-    private void buyTradeAsset(Trade trade, TradeAsset tradeAsset, OrderType orderType, Integer quantity, BigDecimal price) throws InterruptedException {
+    private void buyTradeAsset(Trade trade, TradeAsset tradeAsset, OrderType orderType, BigDecimal quantity, BigDecimal price) throws InterruptedException {
         OrderResult orderResult = null;
         String errorMessage = null;
         try {
@@ -242,7 +241,7 @@ public class TradeRunnable implements Runnable {
             if (trade.isAlarmOnOrder()) {
                 if (trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
                     String subject = String.format("[%s]", trade.getName());
-                    String content = String.format("[%s] Buy %d", tradeAsset.getName(), quantity);
+                    String content = String.format("[%s] Buy %s", tradeAsset.getName(), quantity);
                     alarmService.sendAlarm(trade.getAlarmId(), subject, content);
                 }
             }
@@ -256,7 +255,7 @@ public class TradeRunnable implements Runnable {
         }
     }
 
-    private void sellBalanceAsset(Trade trade, BalanceAsset balanceAsset, OrderType orderType, Integer quantity, BigDecimal price) throws InterruptedException {
+    private void sellBalanceAsset(Trade trade, BalanceAsset balanceAsset, OrderType orderType, BigDecimal quantity, BigDecimal price) throws InterruptedException {
         OrderResult orderResult = null;
         String errorMessage = null;
         try {
@@ -265,7 +264,7 @@ public class TradeRunnable implements Runnable {
             if (trade.isAlarmOnOrder()) {
                 if (trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
                     String subject = String.format("[%s]", trade.getName());
-                    String content = String.format("[%s] Sell %d", balanceAsset.getName(), quantity);
+                    String content = String.format("[%s] Sell %s", balanceAsset.getName(), quantity);
                     alarmService.sendAlarm(trade.getAlarmId(), subject, content);
                 }
             }
@@ -279,7 +278,7 @@ public class TradeRunnable implements Runnable {
         }
     }
 
-    private void saveTradeOrder(OrderKind orderKind, String tradeId, String symbol, String assetName, OrderType orderType, Integer quantity, BigDecimal price, OrderResult orderResult, String errorMessage) {
+    private void saveTradeOrder(OrderKind orderKind, String tradeId, String symbol, String assetName, OrderType orderType, BigDecimal quantity, BigDecimal price, OrderResult orderResult, String errorMessage) {
         DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager, transactionDefinition);
         transactionTemplate.executeWithoutResult(transactionStatus -> {

@@ -3,11 +3,9 @@ package org.oopscraft.fintics.client.trade.upbit;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.oopscraft.fintics.model.Asset;
-import org.oopscraft.fintics.model.Ohlcv;
-import org.oopscraft.fintics.model.OrderType;
-import org.oopscraft.fintics.model.TradeAsset;
+import org.oopscraft.fintics.model.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -33,25 +31,22 @@ class UpbitTradeClientTest {
 
     Asset getTestAsset() {
         return Asset.builder()
-                .symbol("XRP/KRW")
+                .symbol("KRW-XRP")
                 .name("Ripple")
                 .build();
     }
 
     @Disabled
     @Test
-    void createJwtToken() {
+    void getOrderBook() throws Exception {
         // given
+        Asset asset = getTestAsset();
+
         // when
-        String jwtToken = getUpbitTradeClient().createJwtToken(null);
+        OrderBook orderBook = getUpbitTradeClient().getOrderBook(asset);
 
         // then
-        log.info("jwtToken:{}", jwtToken);
-    }
-
-    @Disabled
-    @Test
-    void getOrderBook() {
+        log.info("orderBook:{}", orderBook);
     }
 
     @Disabled
@@ -83,7 +78,11 @@ class UpbitTradeClientTest {
     @Disabled
     @Test
     void getBalance() throws Exception {
-
+        // given
+        // when
+        Balance balance = getUpbitTradeClient().getBalance();
+        // then
+        log.info("balance: {}", balance);
     }
 
     @Disabled
@@ -97,13 +96,24 @@ class UpbitTradeClientTest {
                         .build())
                 .orElseThrow();
         // when
-        getUpbitTradeClient().buyAsset(tradeAsset, OrderType.MARKET, 1, null);
+        getUpbitTradeClient().buyAsset(tradeAsset, OrderType.MARKET, BigDecimal.valueOf(6), BigDecimal.valueOf(840));
         // then
     }
 
     @Disabled
     @Test
-    void sellAsset() {
+    void sellAsset() throws Exception {
+        // given
+        BalanceAsset balanceAsset = Optional.of(getTestAsset())
+                .map(asset -> BalanceAsset.builder()
+                        .symbol(asset.getSymbol())
+                        .name(asset.getName())
+                        .build())
+                .orElseThrow();
+        // when
+        getUpbitTradeClient().sellAsset(balanceAsset, OrderType.MARKET, BigDecimal.valueOf(5.9), BigDecimal.valueOf(850));
+        // then
+
     }
 
 }

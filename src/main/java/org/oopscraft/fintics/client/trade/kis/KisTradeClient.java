@@ -20,10 +20,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -347,13 +344,13 @@ public class KisTradeClient extends TradeClient {
                         .accountNo(accountNo)
                         .symbol(row.getString("pdno"))
                         .name(row.getString("prdt_name"))
-                        .quantity(row.getNumber("hldg_qty").intValue())
-                        .orderableQuantity(row.getNumber("ord_psbl_qty").intValue())
+                        .quantity(row.getNumber("hldg_qty"))
+                        .orderableQuantity(row.getNumber("ord_psbl_qty"))
                         .purchaseAmount(row.getNumber("pchs_amt"))
                         .valuationAmount(row.getNumber("evlu_amt"))
                         .profitAmount(row.getNumber("evlu_pfls_amt"))
                         .build())
-                .filter(balanceAsset -> balanceAsset.getQuantity() > 0)
+                .filter(balanceAsset -> balanceAsset.getQuantity().intValue() > 0)
                 .collect(Collectors.toList());
         balance.setBalanceAssets(balanceAssets);
 
@@ -418,7 +415,7 @@ public class KisTradeClient extends TradeClient {
     }
 
     @Override
-    public void buyAsset(TradeAsset tradeAsset, OrderType orderType, Integer quantity, BigDecimal price) throws InterruptedException {
+    public void buyAsset(TradeAsset tradeAsset, OrderType orderType, BigDecimal quantity, BigDecimal price) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
@@ -431,7 +428,7 @@ public class KisTradeClient extends TradeClient {
             put("ACNT_PRDT_CD", accountNo.split("-")[1]);
             put("PDNO", tradeAsset.getSymbol());
             put("ORD_DVSN", "01");
-            put("ORD_QTY", String.valueOf(quantity));
+            put("ORD_QTY", String.valueOf(quantity.intValue()));
             put("ORD_UNPR", "0");
         }};
         RequestEntity<ValueMap> requestEntity = RequestEntity
@@ -451,7 +448,7 @@ public class KisTradeClient extends TradeClient {
     }
 
     @Override
-    public void sellAsset(BalanceAsset balanceAsset, OrderType orderType, Integer quantity, BigDecimal price) throws InterruptedException {
+    public void sellAsset(BalanceAsset balanceAsset, OrderType orderType, BigDecimal quantity, BigDecimal price) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
@@ -464,7 +461,7 @@ public class KisTradeClient extends TradeClient {
             put("ACNT_PRDT_CD", accountNo.split("-")[1]);
             put("PDNO", balanceAsset.getSymbol());
             put("ORD_DVSN", "01");
-            put("ORD_QTY", String.valueOf(quantity));
+            put("ORD_QTY", String.valueOf(quantity.intValue()));
             put("ORD_UNPR", "0");
         }};
         RequestEntity<ValueMap> requestEntity = RequestEntity

@@ -18,9 +18,9 @@ public class BalanceAsset {
 
     private AssetType type;
 
-    private Integer quantity;
+    private BigDecimal quantity;
 
-    private Integer orderableQuantity;
+    private BigDecimal orderableQuantity;
 
     private BigDecimal purchaseAmount;
 

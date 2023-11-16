@@ -48,7 +48,7 @@ public class OrderEntity extends SystemFieldEntity {
     private OrderType orderType;
 
     @Column(name = "quantity")
-    private Integer quantity;
+    private BigDecimal quantity;
 
     @Column(name = "price")
     private BigDecimal price;

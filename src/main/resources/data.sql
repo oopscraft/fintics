@@ -270,6 +270,108 @@ insert into `fintics_trade_asset`
 (`trade_id`,`symbol`,`name`,`type`, `enabled`, `hold_ratio`) values
     ('7af6bc641eef4254b12dd9fa1d43384d','251340','KODEX 코스닥150선물인버스','ETF','Y','40');
 
+-- fintics_trade: 업비트 API(장시간 외 트레이드 테스트용)
+insert into `fintics_trade`
+(`trade_id`,`name`,`enabled`,`interval`,`start_at`,`end_at`,`client_type`,`client_properties`,`alarm_id`,`hold_condition`) values
+    ('81c6a451d6da49449faa2b5b7e66041b','코인놀이','N','30','00:00','23:59',
+     'org.oopscraft.fintics.client.trade.upbit.UpbitTradeClient','accessKey=[발급 accessKey]
+secretKey=[발급 secretKey]',null,'
+Boolean hold;
+int period = 3;
+
+// price
+log.info("assetOhlcv: {}", assetIndicator.getMinuteOhlcv());
+def assetPrices = assetIndicator.getMinutePrices();
+def assetPriceAverage = tool.average(assetPrices, period);
+def assetPriceSlope = tool.slope(assetPrices, period);
+log.info("assetPriceAverage: {}", assetPriceAverage);
+log.info("assetPriceSlop: {}", assetPriceSlope);
+
+// Short EMA
+def assetShortEmas = assetIndicator.getMinuteEmas(10);
+def assetShortEmaAverage = tool.average(assetShortEmas, period);
+def assetShortEmaSlope = tool.slope(assetShortEmas, period);
+log.info("assetShortEmaAverage: {}", assetShortEmaAverage);
+log.info("assetShortEmaSlope: {}", assetShortEmaSlope);
+
+// Long EMA
+def assetLongEmas = assetIndicator.getMinuteEmas(60);
+def assetLongEmaAverage = tool.average(assetLongEmas, period);
+def assetLongEmaSlope = tool.slope(assetLongEmas, period);
+log.info("assetLongEmaAverage: {}", assetLongEmaAverage);
+log.info("assetLongEmaSlope: {}", assetLongEmaSlope);
+
+// MACD
+def assetMacds = assetIndicator.getMinuteMacds(60, 120, 40);
+def assetMacdOscillators = assetMacds.collect{it.oscillator};
+def assetMacdOscillatorAverage = tool.average(assetMacdOscillators, period);
+def assetMacdOscillatorSlope = tool.slope(assetMacdOscillators, period);
+log.info("assetMacdOscillatorAverage: {}", assetMacdOscillatorAverage);
+log.info("assetMacdOscillatorSlope: {}", assetMacdOscillatorSlope);
+
+// RSI
+def assetRsis = assetIndicator.getMinuteRsis(60);
+def assetRsiAverage = tool.average(assetRsis, period);
+def assetRsiSlope = tool.slope(assetRsis, period);
+log.info("assetRsiAverage: {}", assetRsiAverage);
+log.info("assetRsiSlope: {}", assetRsiSlope);
+
+// DMI
+def assetDmis = assetIndicator.getMinuteDmis(60);
+def assetDmiPdis = assetDmis.collect{it.pdi};
+def assetDmiPdiAverage = tool.average(assetDmiPdis, period);
+def assetDmiPdiSlope = tool.slope(assetDmiPdis, period);
+def assetDmiMdis = assetDmis.collect{it.mdi}
+def assetDmiMdiAverage = tool.average(assetDmiMdis, period);
+def assetDmiMdiSlop = tool.slope(assetDmiMdis, period);
+def assetDmiAdxs = assetDmis.collect{it.adx};
+def assetDmiAdxAverage = tool.average(assetDmiAdxs, period);
+def assetDmiAdxSlope = tool.average(assetDmiAdxs, period);
+log.info("assetDmiPdiAverage: {}", assetDmiPdiAverage);
+log.info("assetDmiPdiSlope: {}", assetDmiPdiSlope);
+log.info("assetDmiMdiAverage: {}", assetDmiMdiAverage);
+log.info("assetDmiMdiSlope: {}", assetDmiMdiSlop);
+log.info("assetDmiAdxAverage: {}", assetDmiAdxAverage);
+log.info("assetDmiAdxSlope: {}", assetDmiAdxSlope);
+
+// 매수조건
+if(assetShortEmaAverage > assetLongEmaAverage) {
+    def buyVotes = [];
+
+    // 대상종목 보조지표 확인
+    buyVotes.add(assetShortEmaAverage > assetLongEmaAverage ? 100 : 0);
+
+    // 매수여부 결과
+    log.info("buyVotes[{}] - {}", buyVotes.average(), buyVotes);
+    if(buyVotes.average() > 70) {
+        hold = true;
+    }
+}
+
+// 매도조건
+if(assetShortEmaAverage < assetLongEmaAverage) {
+    def sellVotes = [];
+
+    // 대상종목 하락시 매도
+    sellVotes.add(assetShortEmaAverage < assetLongEmaAverage ? 100 : 0);
+
+    // 매도여부 결과
+    log.info("sellVotes[{}] - {}", sellVotes.average(), sellVotes);
+    if(sellVotes.average() > 30) {
+        hold = false;
+    }
+}
+
+// 결과반환
+return hold;
+');
+insert into `fintics_trade_asset`
+(`trade_id`,`symbol`,`name`,`type`, `enabled`, `hold_ratio`) values
+    ('81c6a451d6da49449faa2b5b7e66041b','KRW-XRP','Ripple','UPBIT','N','10');
+insert into `fintics_trade_asset`
+(`trade_id`,`symbol`,`name`,`type`, `enabled`, `hold_ratio`) values
+    ('81c6a451d6da49449faa2b5b7e66041b','KRW-ETC','Ethereum Classic','UPBIT','N','10');
+
 -- fintics_order
 INSERT INTO fintics_order
 (order_id, order_at, order_kind, trade_id, symbol, asset_name, quantity, order_result, error_message)
