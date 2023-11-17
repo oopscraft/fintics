@@ -353,6 +353,10 @@
             return timeSeries;
         }
 
+        function openTradeDetail(tradeId) {
+            _openLink(`${_rootUrl}/trade/trade-detail?tradeId=${tradeId}`, '_blank');
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             initializeIndiceMonitor();
             initializeTradeMonitors();
@@ -428,7 +432,13 @@
             </h2>
             <div th:each="trade : ${trades}" class="grid-column-12 padding-1em s-padding-0">
                 <h3>
-                    <span data-th-text="${trade.name}"></span>
+                    <a href="#" th:data-trade-id="${trade.tradeId}"
+                       onclick="openTradeDetail(this.dataset.tradeId);">
+                        <small>
+                            <img class="icon link" th:src="@{/static/image/icon-open.svg}" alt="trade-detail"/>
+                        </small>
+                        <span data-th-text="${trade.name}"></span>
+                    </a>
                 </h3>
                 <div class="grid grid-template-columns-12 grid-gap-1em">
                     <div class="grid-column-4 s-grid-column-12" style="height:150px;">

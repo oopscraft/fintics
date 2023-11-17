@@ -14,6 +14,7 @@
             _count: 0
         });
         const orders = new duice.ArrayProxy([]);
+        const trades = new duice.ArrayProxy([]);
 
         function getOrders(page) {
             if(page) {
@@ -41,8 +42,23 @@
                 });
         }
 
+        function resetOrders() {
+            duice.ObjectProxy.reset(orderSearch);
+            getOrders();
+        }
+
+        function getTrades() {
+            let url = new URL(`${_apiUrl}/v1/trade`, document.location.origin);
+            _fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    duice.ArrayProxy.assign(trades, data);
+                });
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             getOrders();
+            getTrades();
         });
 
     </script>
@@ -66,32 +82,37 @@
     <div class="border-1 padding-1em" style="min-height:400px;">
         <form onsubmit="return false;" class="grid grid-template-columns-12 grid-gap-1em margin-x-1em">
             <div class="grid-column-6 s-grid-column-12 grid grid-template-columns-12 grid-gap-1em">
-                <label class="grid-column-4 s-grid-column-12">
-                    <select class="width-100" data-duice-bind="orderSearch" data-duice-property="tradeId">
-                        <option data-th-text="#{fintics.Trade}"></option>
+                <label class="grid-column-6 s-grid-column-12">
+                    <select class="width-100"
+                            data-duice-bind="orderSearch"
+                            data-duice-property="tradeId"
+                            data-duice-option="trades"
+                            data-duice-option-value-property="tradeId"
+                            data-duice-option-text-property="name">
+                        <option value="" data-th-text="'- ' + #{fintics.Trade} + ' -'"></option>
                     </select>
                 </label>
-                <label class="grid-column-2 s-grid-column-12">
-                    <select class="width-100" data-duice-bind="orderSearch" data-duice-property="orderType">
-                        <option data-th-text="#{fintics.Order.orderKind}"></option>
+                <label class="grid-column-3 s-grid-column-12">
+                    <select class="width-100" data-duice-bind="orderSearch" data-duice-property="orderKind">
+                        <option value="" data-th-text="'- ' + #{fintics.Order.orderKind} + ' -'"></option>
                         <option value="BUY">BUY</option>
                         <option value="SELL">SELL</option>
                     </select>
                 </label>
-                <label class="grid-column-2 s-grid-column-12">
+                <label class="grid-column-3 s-grid-column-12">
                     <select class="width-100" data-duice-bind="orderSearch" data-duice-property="orderResult">
-                        <option data-th-text="#{fintics.Order.orderResult}"></option>
+                        <option value="" data-th-text="'- ' + #{fintics.Order.orderResult} + ' -'"></option>
                         <option value="COMPLETED">COMPLETED</option>
                         <option value="FAILED">FAILED</option>
                     </select>
                 </label>
             </div>
             <div class="grid-column-6 s-grid-column-12 justify-self-end">
-                <button type="submit" onclick="getTradeOrders();">
+                <button type="submit" onclick="getOrders();">
                     <img class="icon" th:src="@{/static/image/icon-search.svg}" alt="search"/>
                     <span data-th-text="#{web.global.search}">Search</span>
                 </button>
-                <button type="button" onclick="resetTradeOrders();">
+                <button type="button" onclick="resetOrders();">
                     <img class="icon" th:src="@{/static/image/icon-reset.svg}" alt="reset"/>
                     <span data-th-text="#{web.global.reset}">Reset</span>
                 </button>
@@ -176,7 +197,7 @@
                         data-duice-size-property="_size"
                         data-duice-page-property="_page"
                         data-duice-count-property="_count"
-                        data-duice-onclick="getTradeOrders(this.dataset.page);">
+                        data-duice-onclick="getOrders(this.dataset.page);">
                 </duice-pagination>
             </div>
             <div class="grid-column-4">

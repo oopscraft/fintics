@@ -91,8 +91,11 @@ def ndxFutureEmaSlope = tool.slope(ndxFutureEmas, period);
 log.info("ndxFutureEmaSlope: {}", ndxFutureEmaSlope);
  */
 
+// logging
+log.info("[{}] priceAverage:{}, shortEmaAverage:{}, longEmaAverage:{}", assetIndicator.getName(), priceAverage, shortEmaAverage, longEmaAverage);
+
 // 매수조건
-if(priceAverage > shortEmaAverage && shortEmaAverage > longEmaAverage) {
+if(priceSlope > 0 && priceAverage > shortEmaAverage) {
     def buyVotes = [];
 
     // 대상종목 보조지표 확인
@@ -128,11 +131,8 @@ if(priceAverage > shortEmaAverage && shortEmaAverage > longEmaAverage) {
     }
 }
 
-// logging
-log.info("[{}] priceAverage:{}, shortEmaAverage:{}, longEmaAverage:{}", assetIndicator.getName(), priceAverage, shortEmaAverage, longEmaAverage);
-
 // 매도조건
-if(priceAverage < shortEmaAverage && shortEmaAverage < longEmaAverage) {
+if(priceSlope < 0 && priceAverage < shortEmaAverage) {
     def sellVotes = [];
 
     // 대상종목 하락시 매도

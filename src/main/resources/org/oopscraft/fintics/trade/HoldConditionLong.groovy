@@ -92,10 +92,11 @@ log.info("ndxFutureEmaSlope: {}", ndxFutureEmaSlope);
  */
 
 // logging
-log.info("[{}] priceAverage:{}, shortEmaAverage:{}, longEmaAverage:{}", assetIndicator.getName(), priceAverage, shortEmaAverage, longEmaAverage);
+log.info("[{}] price:{}/{}, shortEma:{}/{}, long:{}/{}", assetIndicator.getName(), priceSlope, priceAverage, shortEmaSlope, shortEmaAverage, longEmaSlope, longEmaAverage);
 
 // 매수조건
-if(priceAverage > shortEmaAverage && shortEmaAverage > longEmaAverage) {
+if(priceSlope > 0 && shortEmaSlope > 0 && longEmaSlope > 0
+&& priceAverage > shortEmaAverage && shortEmaAverage > longEmaAverage) {
     def buyVotes = [];
 
     // 대상종목 보조지표 확인
@@ -125,14 +126,15 @@ if(priceAverage > shortEmaAverage && shortEmaAverage > longEmaAverage) {
     */
 
     // 매수여부 결과
-    log.info("buyVotes[{}] - {}", buyVotes.average(), buyVotes);
-    if(buyVotes.average() > 70) {
+    log.info("buyVotes[{}] - {}/{}", assetIndicator.getName(), buyVotes.average(), buyVotes);
+    if(buyVotes.average() > 50) {
         hold = true;
     }
 }
 
 // 매도조건
-if(priceAverage < shortEmaAverage && shortEmaAverage < longEmaAverage) {
+if(priceSlope < 0 || shortEmaSlope < 0 || longEmaSlope > 0
+|| priceAverage < shortEmaAverage || shortEmaAverage < longEmaAverage) {
     def sellVotes = [];
 
     // 대상종목 하락시 매도
@@ -162,8 +164,8 @@ if(priceAverage < shortEmaAverage && shortEmaAverage < longEmaAverage) {
      */
 
     // 매도여부 결과
-    log.info("sellVotes[{}] - {}", sellVotes.average(), sellVotes);
-    if(sellVotes.average() > 30) {
+    log.info("sellVotes[{}] - {}/{}", assetIndicator.getName(), sellVotes.average(), sellVotes);
+    if(sellVotes.average() > 50) {
         hold = false;
     }
 }
