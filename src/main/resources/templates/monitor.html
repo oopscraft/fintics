@@ -405,7 +405,7 @@
                 <img class="icon" th:src="@{/static/image/icon-indice.svg}" alt="indice"/>
                 <span data-th-text="#{fintics.Indice}"></span>
             </h2>
-            <div class="grid grid-template-columns-12 padding-1em">
+            <div class="grid grid-template-columns-12 padding-1em s-padding-0">
                 <div class="grid-column-4 s-grid-column-12" style="height:150px;">
                     <canvas id="indiceDailyOhlcvsChart"></canvas>
                 </div>
@@ -426,7 +426,7 @@
                 <img class="icon" th:src="@{/static/image/icon-trade.svg}" alt="trade"/>
                 <span data-th-text="#{fintics.Trade}"></span>
             </h2>
-            <div th:each="trade : ${trades}" class="grid-column-12 padding-1em">
+            <div th:each="trade : ${trades}" class="grid-column-12 padding-1em s-padding-0">
                 <h3>
                     <span data-th-text="${trade.name}"></span>
                 </h3>
