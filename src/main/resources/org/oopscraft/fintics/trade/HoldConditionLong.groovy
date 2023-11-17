@@ -133,8 +133,8 @@ if(priceSlope > 0 && shortEmaSlope > 0 && longEmaSlope > 0
 }
 
 // 매도조건
-if(priceSlope < 0 || shortEmaSlope < 0 || longEmaSlope > 0
-|| priceAverage < shortEmaAverage || shortEmaAverage < longEmaAverage) {
+if(priceSlope < 0 && shortEmaSlope < 0 && longEmaSlope > 0
+&& priceAverage < shortEmaAverage && shortEmaAverage < longEmaAverage) {
     def sellVotes = [];
 
     // 대상종목 하락시 매도
