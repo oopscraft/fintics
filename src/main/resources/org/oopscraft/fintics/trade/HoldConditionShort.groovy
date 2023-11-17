@@ -1,7 +1,7 @@
 import java.time.LocalTime;
 
 Boolean hold;
-int period = 10;
+int period = 5;
 
 // price
 log.info("ohlcv: {}", assetIndicator.getMinuteOhlcv());
@@ -12,7 +12,7 @@ log.info("priceAverage: {}", priceAverage);
 log.info("priceSlop: {}", priceSlope);
 
 // Short EMA
-def shortEmas = assetIndicator.getMinuteEmas(20);
+def shortEmas = assetIndicator.getMinuteEmas(10);
 def shortEmaAverage = tool.average(shortEmas, period);
 def shortEmaSlope = tool.slope(shortEmas, period);
 log.info("shortEmaAverage: {}", shortEmaAverage);
@@ -68,6 +68,7 @@ log.info("dmiMdiSlope: {}", dmiMdiSlop);
 log.info("dmiAdxAverage: {}", dmiAdxAverage);
 log.info("dmiAdxSlope: {}", dmiAdxSlope);
 
+/*
 // Kospi
 def kospiIndicator = indiceIndicators['KOSPI'];
 log.info("kospiOhlcv: {}", kospiIndicator.getMinuteOhlcv());
@@ -88,14 +89,17 @@ log.info("ndxFutureOhlcv: {}", ndxFutureIndicator.getMinuteOhlcv());
 def ndxFutureEmas = ndxFutureIndicator.getMinuteEmas(60);
 def ndxFutureEmaSlope = tool.slope(ndxFutureEmas, period);
 log.info("ndxFutureEmaSlope: {}", ndxFutureEmaSlope);
+ */
 
 // 매수조건
-if(shortEmaSlope > 0 && shortEmaAverage > longEmaAverage) {
+if(priceAverage > shortEmaAverage && shortEmaAverage > longEmaAverage) {
     def buyVotes = [];
 
     // 대상종목 보조지표 확인
+    buyVotes.add(priceSlope > 0 ? 100 : 0);
     buyVotes.add(shortEmaSlope > 0 ? 100 : 0);
     buyVotes.add(longEmaSlope > 0 ? 100 : 0);
+    buyVotes.add(priceAverage > shortEmaAverage ? 100 : 0);
     buyVotes.add(shortEmaAverage > longEmaAverage ? 100 : 0);
     buyVotes.add(macdValueAverage > 0 ? 100 : 0);
     buyVotes.add(macdValueAverage > macdSignalAverage ? 100 : 0);
@@ -106,6 +110,7 @@ if(shortEmaSlope > 0 && shortEmaAverage > longEmaAverage) {
     buyVotes.add(dmiAdxAverage > 20 ? 100 : 0);
     buyVotes.add(dmiAdxSlope > 0 ? 100 : 0);
 
+    /*
     // 코스피 하락시 매수(인버스)
     buyVotes.add(kospiEmaSlope < 0 ? 100 : 0);
 
@@ -114,6 +119,7 @@ if(shortEmaSlope > 0 && shortEmaAverage > longEmaAverage) {
 
     // 나스닥선물 하락시 매수(인버스)
     buyVotes.add(ndxFutureEmaSlope < 0 ? 100 : 0);
+     */
 
     // 매수여부 결과
     log.info("buyVotes[{}] - {}", buyVotes.average(), buyVotes);
@@ -122,13 +128,18 @@ if(shortEmaSlope > 0 && shortEmaAverage > longEmaAverage) {
     }
 }
 
+// logging
+log.info("[{}] priceAverage:{}, shortEmaAverage:{}, longEmaAverage:{}", assetIndicator.getName(), priceAverage, shortEmaAverage, longEmaAverage);
+
 // 매도조건
-if(shortEmaSlope < 0 && shortEmaAverage < longEmaAverage) {
+if(priceAverage < shortEmaAverage && shortEmaAverage < longEmaAverage) {
     def sellVotes = [];
 
     // 대상종목 하락시 매도
+    sellVotes.add(priceSlope < 0 ? 100 : 0);
     sellVotes.add(shortEmaSlope < 0 ? 100 : 0);
     sellVotes.add(longEmaSlope < 0 ? 100 : 0);
+    sellVotes.add(priceAverage < shortEmaAverage ? 100 : 0);
     sellVotes.add(shortEmaAverage < longEmaAverage ? 100 : 0);
     sellVotes.add(macdValueAverage < 0 ? 100 : 0);
     sellVotes.add(macdValueAverage < macdSignalAverage ? 100 : 0);
@@ -139,6 +150,7 @@ if(shortEmaSlope < 0 && shortEmaAverage < longEmaAverage) {
     sellVotes.add(dmiAdxAverage < 20 ? 100 : 0);
     sellVotes.add(dmiAdxSlope < 0 ? 100 : 0);
 
+    /*
     // 코스피 상승시 매도(인버스)
     sellVotes.add(kospiEmaSlope > 0 ? 100 : 0);
 
@@ -147,6 +159,7 @@ if(shortEmaSlope < 0 && shortEmaAverage < longEmaAverage) {
 
     // 나스닥선물 상승시 매도(인버스)
     sellVotes.add(ndxFutureEmaSlope > 0 ? 100 : 0);
+     */
 
     // 매도여부 결과
     log.info("sellVotes[{}] - {}", sellVotes.average(), sellVotes);
@@ -155,10 +168,12 @@ if(shortEmaSlope < 0 && shortEmaAverage < longEmaAverage) {
     }
 }
 
+/*
 // 장종료전 모두 청산(보유하지 않음)
 if(dateTime.toLocalTime().isAfter(LocalTime.of(15,15))) {
     hold = false;
 }
+ */
 
 // 결과반환
 return hold;

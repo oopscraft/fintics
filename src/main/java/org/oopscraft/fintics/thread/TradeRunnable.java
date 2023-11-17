@@ -165,6 +165,7 @@ public class TradeRunnable implements Runnable {
                 // indicator
                 AssetIndicator assetIndicator = AssetIndicator.builder()
                         .symbol(tradeAsset.getSymbol())
+                        .name(tradeAsset.getName())
                         .minuteOhlcvs(tradeClient.getMinuteOhlcvs(tradeAsset))
                         .dailyOhlcvs(tradeClient.getDailyOhlcvs(tradeAsset))
                         .build();
