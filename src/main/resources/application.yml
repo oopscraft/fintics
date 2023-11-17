@@ -4,7 +4,8 @@ spring:
     cache: false
   datasource:
     hikari:
-      connection-test-query: select 1 from dual
+      minimum-idle: 10
+      maximum-pool-size: 30
 
 # web
 web:
