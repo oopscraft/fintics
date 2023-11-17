@@ -67,8 +67,7 @@ public class TradeCollector {
         log.info("End collect trade asset ohlcv");
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void saveTradeAssetOhlcv(TradeClient tradeClient, TradeAsset tradeAsset) {
+    private void saveTradeAssetOhlcv(TradeClient tradeClient, TradeAsset tradeAsset) {
          try {
              // minutes
              List<Ohlcv> minuteOhlcvs = tradeClient.getMinuteOhlcvs(tradeAsset);
@@ -114,8 +113,7 @@ public class TradeCollector {
                 .build();
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void deletePastRetentionOhlcv(TradeAsset tradeAsset) {
+    private void deletePastRetentionOhlcv(TradeAsset tradeAsset) {
         entityManager.createQuery(
                         "delete" +
                                 " from TradeAssetOhlcvEntity" +

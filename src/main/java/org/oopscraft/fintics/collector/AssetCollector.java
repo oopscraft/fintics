@@ -62,8 +62,7 @@ public class AssetCollector {
         log.info("End collect assets.");
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void collectStockAssets(int limit, LocalDateTime collectedAt) throws InterruptedException {
+    private void collectStockAssets(int limit, LocalDateTime collectedAt) throws InterruptedException {
         List<Asset> stockAssets = assetClient.getStockAssets(0, limit);
         List<AssetEntity> stockAssetEntities = stockAssets.stream()
                 .map(asset -> AssetEntity.builder()
@@ -76,8 +75,7 @@ public class AssetCollector {
         assetRepository.saveAllAndFlush(stockAssetEntities);
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void collectEtfAssets(int limit, LocalDateTime collectedAt) throws InterruptedException {
+    private void collectEtfAssets(int limit, LocalDateTime collectedAt) throws InterruptedException {
         List<Asset> etfAssets = assetClient.getEtfAssets(0, limit);
         List<AssetEntity> etfAssetEntities = etfAssets.stream()
                 .map(asset -> AssetEntity.builder()

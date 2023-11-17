@@ -93,6 +93,9 @@ public class TradeRunnable implements Runnable {
                 // execute trade
                 executeTrade();
 
+                // end transaction
+                transactionManager.commit(transactionStatus);
+
                 // wait interval
                 log.info("Waiting interval: {} seconds", interval);
                 Thread.sleep(interval * 1_000);
@@ -104,7 +107,10 @@ public class TradeRunnable implements Runnable {
                 log.error(e.getMessage(), e);
             } finally {
                 if(transactionStatus != null) {
-                    transactionManager.commit(transactionStatus);
+                    if(!transactionStatus.isCompleted()) {
+                        transactionStatus.setRollbackOnly();
+                        transactionManager.commit(transactionStatus);
+                    }
                 }
             }
         }
@@ -212,6 +218,7 @@ public class TradeRunnable implements Runnable {
         } catch (Throwable e) {
             log.error(e.getMessage(), e);
             sendErrorAlarmIfEnabled(trade, e);
+            throw e;
         }
     }
 

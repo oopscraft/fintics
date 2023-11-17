@@ -51,8 +51,7 @@ public class IndiceCollector {
         log.info("End collect indice ohlcv");
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void saveIndiceOhlcv(IndiceSymbol symbol) {
+    private void saveIndiceOhlcv(IndiceSymbol symbol) {
         // minute
         List<Ohlcv> minuteOhlcvs = indiceClient.getMinuteOhlcvs(symbol);
         Collections.reverse(minuteOhlcvs);
@@ -93,8 +92,7 @@ public class IndiceCollector {
                 .build();
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void deletePastRetentionOhlcv(IndiceSymbol symbol) {
+    private void deletePastRetentionOhlcv(IndiceSymbol symbol) {
         entityManager.createQuery(
                         "delete" +
                                 " from IndiceOhlcvEntity" +
