@@ -199,13 +199,22 @@ public class UpbitTradeClient extends TradeClient {
             String unitCurrency = row.getString("unit_currency");
             String symbol = String.format("%s-%s", unitCurrency, currency);
             BigDecimal balance = row.getNumber("balance");
+            BigDecimal averageBuyPrice = row.getNumber("avg_buy_price");
             totalAmount = totalAmount.add(balance);
-            balanceAssets.add(BalanceAsset.builder()
-                    .symbol(symbol)
-                    .name(symbol)
-                    .quantity(balance)
-                    .orderableQuantity(balance)
-                    .build());
+            if(currency.equals(unitCurrency)) {
+                cacheAmount = cacheAmount.add(balance);
+            }else{
+                BigDecimal assetPurchaseAmount = averageBuyPrice.multiply(balance)
+                        .setScale(0, RoundingMode.HALF_UP);
+                purchaseAmount = purchaseAmount.add(assetPurchaseAmount);
+                balanceAssets.add(BalanceAsset.builder()
+                        .symbol(symbol)
+                        .name(symbol)
+                        .quantity(balance)
+                        .orderableQuantity(balance)
+                        .purchaseAmount(purchaseAmount)
+                        .build());
+            }
         }
         return Balance.builder()
                 .totalAmount(totalAmount)

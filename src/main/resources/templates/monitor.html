@@ -16,6 +16,12 @@
 
         const tradeAssetDailyOhlcvsChartMap = new Map();
         const tradeAssetMinuteOhlcvsChartMap = new Map();
+        const tradeBalanceMap = new Map();
+        trades.forEach(trade => {
+            tradeBalanceMap.set(trade.tradeId, new duice.ObjectProxy({
+                balanceAssets: new duice.ArrayProxy([])
+            }));
+        });
         const tradeOrdersMap = new Map();
         trades.forEach(trade => {
             tradeOrdersMap.set(trade.tradeId, new duice.ArrayProxy([]));
@@ -179,6 +185,13 @@
                     });
                     dailyOhlcvsChart.update();
                     minuteOhlcvsChart.update();
+                });
+
+            let balanceUrl = new URL(`${_apiUrl}/v1/trade/${tradeId}/balance`, document.location.origin);
+            _fetch(balanceUrl, {}, true)
+                .then(response => response.json())
+                .then(balance => {
+                    duice.ObjectProxy.assign(tradeBalanceMap.get(tradeId), balance);
                 });
 
             let orderUrl = new URL(`${_apiUrl}/v1/trade/${tradeId}/order`, document.location.origin);
@@ -426,7 +439,7 @@
                     </div>
                     <div class="grid-column-4 s-grid-column-12">
                         <div class="overflow-y-scroll overflow-x-scroll border-1" style="height:100px;">
-                            <table class="width-100 font-size-smaller border-0" style="line-height:normal;">
+                            <table class="width-100 font-size-smaller border-0 height-100" style="line-height:normal;">
                                 <colgroup>
                                     <col style="width:5rem;"/>
                                     <col style="width:3em;"/>
@@ -436,27 +449,48 @@
                                 </colgroup>
                                 <thead>
                                 <tr>
-                                    <th data-th-text="#{fintics.Order.orderAt}"></th>
-                                    <th data-th-text="#{fintics.Order.orderKind}"></th>
-                                    <th data-th-text="#{fintics.Asset.name}"></th>
-                                    <th data-th-text="#{fintics.Order.quantity}"></th>
-                                    <th data-th-text="#{fintics.Order.orderResult}"></th>
+                                    <th data-th-text="#{fintics.BalanceAsset.symbol}"></th>
+                                    <th data-th-text="#{fintics.BalanceAsset.name}"></th>
+                                    <th data-th-text="#{fintics.BalanceAsset.quantity}" class="text-align-right"></th>
+                                    <th data-th-text="#{fintics.BalanceAsset.purchaseAmount}" class="text-align-right"></th>
+                                    <th data-th-text="#{fintics.BalanceAsset.valuationAmount}" class="text-align-right"></th>
+                                    <th data-th-text="#{fintics.BalanceAsset.profitAmount}" class="text-align-right"></th>
                                 </tr>
                                 </thead>
                                 <tbody>
-                                <tr th:data-duice-bind="'tradeOrdersMap.get(\'' + ${trade.tradeId} + '\')'" data-duice-loop="order,status" class="font-size-smaller">
-                                    <td data-duice-bind="order" data-duice-property="orderAt" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
-                                    <td data-duice-bind="order" data-duice-property="orderKind"></td>
-                                    <td data-duice-bind="order" data-duice-property="assetName"></td>
-                                    <td data-duice-bind="order" data-duice-property="quantity"></td>
-                                    <td data-duice-bind="order" data-duice-property="orderResult"></td>
+                                <tr th:data-duice-bind="'tradeBalanceMap.get(\'' + ${trade.tradeId} + '\').balanceAssets'" data-duice-loop="balanceAsset,status" class="font-size-smaller">
+                                    <td data-duice-bind="balanceAsset" data-duice-property="symbol"></td>
+                                    <td data-duice-bind="balanceAsset" data-duice-property="name"></td>
+                                    <td data-duice-bind="balanceAsset" data-duice-property="quantity" data-duice-format="number" class="text-align-right"></td>
+                                    <td data-duice-bind="balanceAsset" data-duice-property="purchaseAmount" data-duice-format="number" class="text-align-right"></td>
+                                    <td data-duice-bind="balanceAsset" data-duice-property="valuationAmount" data-duice-format="number" class="text-align-right"></td>
+                                    <td data-duice-bind="balanceAsset" data-duice-property="profitAmount" data-duice-format="number" class="text-align-right"></td>
+                                </tr>
+                                <tr th:data-duice-bind="'tradeBalanceMap.get(\'' + ${trade.tradeId} + '\').balanceAssets'"
+                                    th:data-duice-execute="'if(tradeBalanceMap.get(\'' + ${trade.tradeId} + '\').balanceAssets.length === 0) this.hidden=false;'" hidden>
+                                    <td colspan="100%" class="text-align-center">No Data</td>
                                 </tr>
                                 </tbody>
+                                <tfoot>
+                                <tr>
+                                    <td colspan="100%" class="text-align-right">
+                                        <span data-th-text="#{fintics.Balance.profitAmount}" class="font-weight-bold"></span>
+                                        <span th:data-duice-bind="'tradeBalanceMap.get(\'' + ${trade.tradeId} + '\')'"
+                                              data-duice-property="profitAmount"
+                                              data-duice-format="number"></span>
+                                        <small>|</small>
+                                        <span data-th-text="#{fintics.Balance.realizedProfitAmount}" class="font-weight-bold"></span>
+                                        <span th:data-duice-bind="'tradeBalanceMap.get(\'' + ${trade.tradeId} + '\')'"
+                                              data-duice-property="realizedProfitAmount"
+                                              data-duice-format="number"></span>
+                                    </td>
+                                </tr>
+                                </tfoot>
                             </table>
                         </div>
                     </div>
-                    <div class="grid-column-8 s-grid-column-12">
-                        <textarea th:id="'tradeLog-' + ${trade.tradeId}" class="tradeLog width-100" style="height:100px;"></textarea>
+                    <div class="grid-column-8 s-grid-column-12" style="height:100px;">
+                        <textarea th:id="'tradeLog-' + ${trade.tradeId}" class="tradeLog width-100 height-100"></textarea>
                     </div>
                 </div>
             </div>
