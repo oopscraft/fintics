@@ -79,6 +79,20 @@ public abstract class Indicator {
         return getPrices(this.dailyOhlcvs);
     }
 
+    private List<BigDecimal> getVolumes(List<Ohlcv> ohlcvs) {
+        return ohlcvs.stream()
+                .map(Ohlcv::getVolume)
+                .collect(Collectors.toList());
+    }
+
+    public List<BigDecimal> getMinuteVolumes() {
+        return getVolumes(this.minuteOhlcvs);
+    }
+
+    public List<BigDecimal> getDailyVolumes() {
+        return getVolumes(this.dailyOhlcvs);
+    }
+
     private List<BigDecimal> getSmas(List<BigDecimal> prices, int period) {
         List<BigDecimal> series = reverse(prices);
         List<BigDecimal> smas = SmaCalculator.of(series, period).calculate().stream()

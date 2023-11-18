@@ -1,18 +1,23 @@
 import java.time.LocalTime;
 
 Boolean hold;
-int period = 5;
+int period = 10;
 
-// price
+// price and volume
 log.info("ohlcv: {}", assetIndicator.getMinuteOhlcv());
 def prices = assetIndicator.getMinutePrices();
 def priceAverage = tool.average(prices, period);
 def priceSlope = tool.slope(prices, period);
+def volumes = assetIndicator.getMinuteVolumes();
+def volumeAverage = tool.average(volumes, period);
+def volumeSlope = tool.slope(volumes, period);
 log.info("priceAverage: {}", priceAverage);
-log.info("priceSlop: {}", priceSlope);
+log.info("priceSlope: {}", priceSlope);
+log.info("volumeAverage: {}", volumeAverage);
+log.info("volumeSlope: {}", volumeSlope);
 
 // Short EMA
-def shortEmas = assetIndicator.getMinuteEmas(10);
+def shortEmas = assetIndicator.getMinuteEmas(20);
 def shortEmaAverage = tool.average(shortEmas, period);
 def shortEmaSlope = tool.slope(shortEmas, period);
 log.info("shortEmaAverage: {}", shortEmaAverage);
@@ -57,14 +62,14 @@ def dmiPdiAverage = tool.average(dmiPdis, period);
 def dmiPdiSlope = tool.slope(dmiPdis, period);
 def dmiMdis = dmis.collect{it.mdi}
 def dmiMdiAverage = tool.average(dmiMdis, period);
-def dmiMdiSlop = tool.slope(dmiMdis, period);
+def dmiMdiSlope = tool.slope(dmiMdis, period);
 def dmiAdxs = dmis.collect{it.adx};
 def dmiAdxAverage = tool.average(dmiAdxs, period);
 def dmiAdxSlope = tool.average(dmiAdxs, period);
 log.info("dmiPdiAverage: {}", dmiPdiAverage);
 log.info("dmiPdiSlope: {}", dmiPdiSlope);
 log.info("dmiMdiAverage: {}", dmiMdiAverage);
-log.info("dmiMdiSlope: {}", dmiMdiSlop);
+log.info("dmiMdiSlope: {}", dmiMdiSlope);
 log.info("dmiAdxAverage: {}", dmiAdxAverage);
 log.info("dmiAdxSlope: {}", dmiAdxSlope);
 
@@ -96,23 +101,19 @@ log.info("[{}] price:{}/{}, shortEma:{}/{}, long:{}/{}", assetIndicator.getName(
 
 // 매수조건
 if(priceAverage > shortEmaAverage && shortEmaAverage > longEmaAverage
-&& priceSlope > 0 && shortEmaSlope > 0 && longEmaSlope > 0) {
+&& volumeSlope > 0
+) {
     def buyVotes = [];
 
-    // 대상종목 보조지표 확인
-    buyVotes.add(priceSlope > 0 ? 100 : 0);
-    buyVotes.add(shortEmaSlope > 0 ? 100 : 0);
-    buyVotes.add(longEmaSlope > 0 ? 100 : 0);
-    buyVotes.add(priceAverage > shortEmaAverage ? 100 : 0);
-    buyVotes.add(shortEmaAverage > longEmaAverage ? 100 : 0);
+    // 대상종목 보조지표 매수 조건
     buyVotes.add(macdValueAverage > 0 ? 100 : 0);
     buyVotes.add(macdValueAverage > macdSignalAverage ? 100 : 0);
-    buyVotes.add(rsiAverage > 50 ? 100 : 0);
+    buyVotes.add(macdOscillatorAverage > 0 ? 100 : 0);
     buyVotes.add(rsiSlope > 0 ? 100 : 0);
-    buyVotes.add(dmiPdiSlope > dmiMdiSlop ? 100 : 0);
+    buyVotes.add(rsiAverage > 50 ? 100 : 0);
     buyVotes.add(dmiPdiAverage > dmiMdiAverage ? 100 : 0);
+    buyVotes.add(dmiPdiSlope > 0 && dmiMdiSlope < 0 ? 100 : 0);
     buyVotes.add(dmiAdxAverage > 20 ? 100 : 0);
-    buyVotes.add(dmiAdxSlope > 0 ? 100 : 0);
 
     /*
     // 코스피 하락시 매수(인버스)
@@ -133,23 +134,20 @@ if(priceAverage > shortEmaAverage && shortEmaAverage > longEmaAverage
 }
 
 // 매도조건
-if(priceAverage < shortEmaAverage && shortEmaAverage < longEmaAverage) {
+if(priceAverage < shortEmaAverage && shortEmaAverage < longEmaAverage
+&& volumeSlope > 0
+) {
     def sellVotes = [];
 
-    // 대상종목 하락시 매도
-    sellVotes.add(priceSlope < 0 ? 100 : 0);
-    sellVotes.add(shortEmaSlope < 0 ? 100 : 0);
-    sellVotes.add(longEmaSlope < 0 ? 100 : 0);
-    sellVotes.add(priceAverage < shortEmaAverage ? 100 : 0);
-    sellVotes.add(shortEmaAverage < longEmaAverage ? 100 : 0);
+    // 대상종목 보조지표 매도 조건
     sellVotes.add(macdValueAverage < 0 ? 100 : 0);
     sellVotes.add(macdValueAverage < macdSignalAverage ? 100 : 0);
-    sellVotes.add(rsiAverage < 50 ? 100 : 0);
+    sellVotes.add(macdOscillatorAverage < 0 ? 100 : 0);
     sellVotes.add(rsiSlope < 0 ? 100 : 0);
-    sellVotes.add(dmiPdiSlope < dmiMdiSlop ? 100 : 0);
+    sellVotes.add(rsiAverage < 50 ? 100 : 0);
     sellVotes.add(dmiPdiAverage < dmiMdiAverage ? 100 : 0);
+    sellVotes.add(dmiPdiSlope < 0 && dmiMdiSlope > 0 ? 100 : 0);
     sellVotes.add(dmiAdxAverage < 20 ? 100 : 0);
-    sellVotes.add(dmiAdxSlope < 0 ? 100 : 0);
 
     /*
     // 코스피 하락시 매도
