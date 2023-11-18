@@ -1,34 +1,23 @@
 import java.time.LocalTime;
 
 Boolean hold;
-int period = 10;
+int period = 3;
 
 // price and volume
 log.info("ohlcv: {}", assetIndicator.getMinuteOhlcv());
 def prices = assetIndicator.getMinutePrices();
+def priceZScore = tool.zScore(prices, 10);
 def priceAverage = tool.average(prices, period);
 def priceSlope = tool.slope(prices, period);
 def volumes = assetIndicator.getMinuteVolumes();
+def volumeZScore = tool.zScore(volumes, 10);
 def volumeAverage = tool.average(volumes, period);
 def volumeSlope = tool.slope(volumes, period);
-log.info("priceAverage: {}", priceAverage);
-log.info("priceSlope: {}", priceSlope);
-log.info("volumeAverage: {}", volumeAverage);
-log.info("volumeSlope: {}", volumeSlope);
 
-// Short EMA
-def shortEmas = assetIndicator.getMinuteEmas(20);
-def shortEmaAverage = tool.average(shortEmas, period);
-def shortEmaSlope = tool.slope(shortEmas, period);
-log.info("shortEmaAverage: {}", shortEmaAverage);
-log.info("shortEmaSlope: {}", shortEmaSlope);
-
-// Long EMA
-def longEmas = assetIndicator.getMinuteEmas(60);
-def longEmaAverage = tool.average(longEmas, period);
-def longEmaSlope = tool.slope(longEmas, period);
-log.info("longEmaAverage: {}", longEmaAverage);
-log.info("longEmaSlope: {}", longEmaSlope);
+// EMA
+def emas = assetIndicator.getMinuteEmas(10);
+def emaAverage = tool.average(emas, period);
+def emaSlope = tool.slope(emas, period);
 
 // MACD
 def macds = assetIndicator.getMinuteMacds(12, 26, 9);
@@ -41,19 +30,11 @@ def macdSignalSlope = tool.slope(macdSignals, period);
 def macdOscillators = macds.collect{it.oscillator};
 def macdOscillatorAverage = tool.average(macdOscillators, period);
 def macdOscillatorSlope = tool.slope(macdOscillators, period);
-log.info("maceValueAverage: {}", macdValueAverage);
-log.info("macdValueSlope: {}", macdValueSlope);
-log.info("macdSignalAverage: {}", macdSignalAverage);
-log.info("macdSignalSlope: {}", macdSignalSlope);
-log.info("macdOscillatorAverage: {}", macdOscillatorAverage);
-log.info("macdOscillatorSlope: {}", macdOscillatorSlope);
 
 // RSI
 def rsis = assetIndicator.getMinuteRsis(14);
 def rsiAverage = tool.average(rsis, period);
 def rsiSlope = tool.slope(rsis, period);
-log.info("rsiAverage: {}", rsiAverage);
-log.info("rsiSlope: {}", rsiSlope);
 
 // DMI
 def dmis = assetIndicator.getMinuteDmis(14);
@@ -66,12 +47,6 @@ def dmiMdiSlope = tool.slope(dmiMdis, period);
 def dmiAdxs = dmis.collect{it.adx};
 def dmiAdxAverage = tool.average(dmiAdxs, period);
 def dmiAdxSlope = tool.average(dmiAdxs, period);
-log.info("dmiPdiAverage: {}", dmiPdiAverage);
-log.info("dmiPdiSlope: {}", dmiPdiSlope);
-log.info("dmiMdiAverage: {}", dmiMdiAverage);
-log.info("dmiMdiSlope: {}", dmiMdiSlope);
-log.info("dmiAdxAverage: {}", dmiAdxAverage);
-log.info("dmiAdxSlope: {}", dmiAdxSlope);
 
 /*
 // Kospi
@@ -96,24 +71,48 @@ def ndxFutureEmaSlope = tool.slope(ndxFutureEmas, period);
 log.info("ndxFutureEmaSlope: {}", ndxFutureEmaSlope);
  */
 
+
+def printInfo = {
+    log.info("priceZScore: {}", priceZScore);
+    log.info("priceAverage: {}", priceAverage);
+    log.info("priceSlope: {}", priceSlope);
+    log.info("volumeZScore: {}", volumeZScore);
+    log.info("volumeAverage: {}", volumeAverage);
+    log.info("volumeSlope: {}", volumeSlope);
+    log.info("shortEmaAverage: {}", emaAverage);
+    log.info("shortEmaSlope: {}", emaSlope);
+    log.info("maceValueAverage: {}", macdValueAverage);
+    log.info("macdValueSlope: {}", macdValueSlope);
+    log.info("macdSignalAverage: {}", macdSignalAverage);
+    log.info("macdSignalSlope: {}", macdSignalSlope);
+    log.info("macdOscillatorAverage: {}", macdOscillatorAverage);
+    log.info("macdOscillatorSlope: {}", macdOscillatorSlope);
+    log.info("rsiAverage: {}", rsiAverage);
+    log.info("rsiSlope: {}", rsiSlope);
+    log.info("dmiPdiAverage: {}", dmiPdiAverage);
+    log.info("dmiPdiSlope: {}", dmiPdiSlope);
+    log.info("dmiMdiAverage: {}", dmiMdiAverage);
+    log.info("dmiMdiSlope: {}", dmiMdiSlope);
+    log.info("dmiAdxAverage: {}", dmiAdxAverage);
+    log.info("dmiAdxSlope: {}", dmiAdxSlope);
+}
+
 // logging
-log.info("[{}] price:{}/{}, shortEma:{}/{}, long:{}/{}", assetIndicator.getName(), priceSlope, priceAverage, shortEmaSlope, shortEmaAverage, longEmaSlope, longEmaAverage);
+log.info("[{}] priceZScore:{}, volumeZScore:{}", assetIndicator.getName(), priceZScore, volumeZScore);
 
 // 매수조건
-if(priceAverage > shortEmaAverage && shortEmaAverage > longEmaAverage
-&& volumeSlope > 0
+if((priceZScore > 1.0 && volumeZScore > 1.0)
+&& (priceSlope > 0 && priceAverage > emaAverage)
 ) {
     def buyVotes = [];
 
     // 대상종목 보조지표 매수 조건
+    buyVotes.add(macdValueSlope > 0 ? 100 : 0);
     buyVotes.add(macdValueAverage > 0 ? 100 : 0);
     buyVotes.add(macdValueAverage > macdSignalAverage ? 100 : 0);
     buyVotes.add(macdOscillatorAverage > 0 ? 100 : 0);
     buyVotes.add(rsiSlope > 0 ? 100 : 0);
     buyVotes.add(rsiAverage > 50 ? 100 : 0);
-    buyVotes.add(dmiPdiAverage > dmiMdiAverage ? 100 : 0);
-    buyVotes.add(dmiPdiSlope > 0 && dmiMdiSlope < 0 ? 100 : 0);
-    buyVotes.add(dmiAdxAverage > 20 ? 100 : 0);
 
     /*
     // 코스피 하락시 매수(인버스)
@@ -134,20 +133,18 @@ if(priceAverage > shortEmaAverage && shortEmaAverage > longEmaAverage
 }
 
 // 매도조건
-if(priceAverage < shortEmaAverage && shortEmaAverage < longEmaAverage
-&& volumeSlope > 0
+if((priceZScore < -1.0 && volumeZScore > 1.0)
+&& (priceSlope < 0 && priceAverage < emaAverage)
 ) {
     def sellVotes = [];
 
     // 대상종목 보조지표 매도 조건
+    sellVotes.add(macdValueSlope < 0 ? 100 : 0);
     sellVotes.add(macdValueAverage < 0 ? 100 : 0);
     sellVotes.add(macdValueAverage < macdSignalAverage ? 100 : 0);
     sellVotes.add(macdOscillatorAverage < 0 ? 100 : 0);
     sellVotes.add(rsiSlope < 0 ? 100 : 0);
     sellVotes.add(rsiAverage < 50 ? 100 : 0);
-    sellVotes.add(dmiPdiAverage < dmiMdiAverage ? 100 : 0);
-    sellVotes.add(dmiPdiSlope < 0 && dmiMdiSlope > 0 ? 100 : 0);
-    sellVotes.add(dmiAdxAverage < 20 ? 100 : 0);
 
     /*
     // 코스피 하락시 매도
