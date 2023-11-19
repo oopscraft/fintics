@@ -117,11 +117,17 @@ public class DmiCalculator {
     }
 
     private BigDecimal calculatePdi(BigDecimal pdm, BigDecimal tr) {
+        if(tr.compareTo(BigDecimal.ZERO) == 0) {
+            return BigDecimal.ZERO;
+        }
         return pdm.divide(tr, mathContext)
                 .multiply(BigDecimal.valueOf(100));
     }
 
     public BigDecimal calculateMdi(BigDecimal mdm, BigDecimal tr) {
+        if(tr.compareTo(BigDecimal.ZERO) == 0) {
+            return BigDecimal.ZERO;
+        }
         return mdm.divide(tr, mathContext)
                 .multiply(BigDecimal.valueOf(100));
     }

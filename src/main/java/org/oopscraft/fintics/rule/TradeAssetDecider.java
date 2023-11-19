@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.thread;
+package org.oopscraft.fintics.rule;
 
 import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;
@@ -46,7 +46,7 @@ public class TradeAssetDecider {
         binding.setVariable("dateTime", dateTime);
         binding.setVariable("assetIndicator", assetIndicator);
         binding.setVariable("indiceIndicators", indiceIndicators);
-        binding.setVariable("tool", new Tool());
+        binding.setVariable("tool", new Tools());
         GroovyShell groovyShell = new GroovyShell(groovyClassLoader, binding);
 
         if(holdCondition == null || holdCondition.isBlank()) {
