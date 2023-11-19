@@ -34,6 +34,8 @@ def dmis = tool.dmi(ohlcvs, 14);
 def dmiPdi = dmis[0].pdi;
 def dmiMdi = dmis[0].mdi;
 def dmiAdx = dmis[0].adx;
+def dmiPdiSlope = tool.slope(dmis.collect{it.pdi}[0..2]);
+def dmiMdiSlope = tool.slope(dmis.collect{it.mdi}[0..2]);
 
 /*
 // Kospi
@@ -77,21 +79,26 @@ def printTaInfo = {
     log.info("dmiPdi:{}", dmiPdi);
     log.info("dmiMdi:{}", dmiMdi);
     log.info("dmiAdx:{}", dmiAdx);
+    log.info("dmiPdiSlope:{}", dmiPdiSlope);
+    log.info("dmiMdiSlope:{}", dmiMdiSlope);
 }
 
 printTaInfo();
 
 // buy condition
-if(priceZScore > 1 && volumeZScore > 1) {
-    log.info("######### buy votes ##########");
+if(priceZScore > 1) {
     def buyVotes = [];
 
     // technical analysis
     buyVotes.add(price > ema ? 100 : 0);
     buyVotes.add(macdValue > 0 ? 100 : 0);
     buyVotes.add(macdValue > macdSignal ? 100 : 0);
-    buyVotes.add(rsiSlope > 0 ? 100 : 0);
+    buyVotes.add(macdValueSlope > 0 ? 100 : 0);
     buyVotes.add(rsi > 50 ? 100 : 0);
+    buyVotes.add(rsiSlope > 0 ? 100 : 0);
+    buyVotes.add(dmiPdi > dmiMdi ? 100 : 0);
+    buyVotes.add(dmiPdiSlope > 0 ? 100 : 0);
+    buyVotes.add(dmiMdiSlope < 0 ? 100 : 0);
 
     /*
     // 코스피 하락시 매수(인버스)
@@ -112,16 +119,19 @@ if(priceZScore > 1 && volumeZScore > 1) {
 }
 
 // sell condition
-if(priceZScore < -1 && volumeZScore > 1) {
-    log.info("######### sell votes ##########");
+if(priceZScore < -1 && volumeZScore > 2) {
     def sellVotes = [];
 
     // technical analysis
     sellVotes.add(price < ema ? 100 : 0);
     sellVotes.add(macdValue < 0 ? 100 : 0);
     sellVotes.add(macdValue < macdSignal ? 100 : 0);
-    sellVotes.add(rsiSlope < 0 ? 100 : 0);
+    sellVotes.add(macdValueSlope < 0 ? 100 : 0);
     sellVotes.add(rsi < 50 ? 100 : 0);
+    sellVotes.add(rsiSlope < 0 ? 100 : 0);
+    sellVotes.add(dmiPdi < dmiMdi ? 100 : 0);
+    sellVotes.add(dmiPdiSlope < 0 ? 100 : 0);
+    sellVotes.add(dmiMdiSlope > 0 ? 100 : 0);
 
     /*
     // 코스피 하락시 매도

@@ -65,7 +65,7 @@ public class Tool {
 
         // average
         return sum.divide(BigDecimal.valueOf(series.size()), MathContext.DECIMAL32)
-                .setScale(2, RoundingMode.HALF_UP);
+                .setScale(4, RoundingMode.HALF_UP);
     }
 
     public BigDecimal average(List<BigDecimal> values) {
