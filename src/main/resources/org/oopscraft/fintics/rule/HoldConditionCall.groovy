@@ -3,19 +3,19 @@ import java.time.LocalTime;
 Boolean hold;
 
 // OHLCV
-def ohlcvs = tool.resample(assetIndicator.getMinuteOhlcvs(), 5, 'ohlcv');
+def ohlcvs = tool.resample(assetIndicator.getMinuteOhlcvs(), 10, 'ohlcv');
 def ohlcv = ohlcvs.get(0);
 log.info("[{}] ohlcv:{}", assetIndicator.getName(), ohlcv);
 
-// price, volume
+// price
 def prices = ohlcvs.collect{it.closePrice};
 def price = prices[0];
-def volumes = ohlcvs.collect{it.volume};
-def volume = volumes[0];
+def priceSlope = tool.slope(prices[0..2]);
 
 // EMA
 def emas = tool.ema(ohlcvs, 12);
 def ema = emas.get(0);
+def emaSlope = tool.slope(emas[0..2]);
 
 // MACD
 def macds = tool.macd(ohlcvs, 12, 16, 9);
@@ -37,60 +37,69 @@ def dmiAdx = dmis[0].adx;
 def dmiPdiSlope = tool.slope(dmis.collect{it.pdi}[0..2]);
 def dmiMdiSlope = tool.slope(dmis.collect{it.mdi}[0..2]);
 
-/*
 // Kospi
 def kospiIndicator = indiceIndicators['KOSPI'];
-log.info("kospiOhlcv: {}", kospiIndicator.getMinuteOhlcv());
-def kospiEmas = kospiIndicator.getMinuteEmas(60);
-def kospiEmaSlope = tool.slope(kospiEmas, period);
-log.info("kospiEmaSlope: {}", kospiEmaSlope);
+def kospiOhlcvs = tool.resample(kospiIndicator.getMinuteOhlcvs(), 30, 'ohlcv');
+log.info("kospiOhlcv: {}", kospiOhlcvs[0]);
+def kospiPrices = kospiOhlcvs.collect{it.closePrice};
+def kospiPrice = kospiPrices[0];
+def kospiPriceZScore = tool.zScore(kospiPrices[0..9], kospiPrice);
 
-// USD/KRW
+//  USD/KRW
 def usdKrwIndicator = indiceIndicators['USD_KRW'];
-log.info("usdKrwOhlcv: {}", usdKrwIndicator.getMinuteOhlcv());
-def usdKrwEmas = usdKrwIndicator.getMinuteEmas(60);
-def usdKrwEmaSlope = tool.slope(usdKrwEmas, period);
-log.info("usdKrwEmaSlope: {}", usdKrwEmaSlope);
+def usdKrwOhlcvs = tool.resample(usdKrwIndicator.getMinuteOhlcvs(), 30, 'ohlcv');
+log.info("usdKrwOhlcv: {}", usdKrwOhlcvs[0]);
+def usdKrwPrices = usdKrwOhlcvs.collect{it.closePrice};
+def usdKrwPrice = usdKrwPrices[0];
+def usdKrwPriceZScore = tool.zScore(usdKrwPrices[0..9], usdKrwPrice);
 
 // Nasdaq Future
 def ndxFutureIndicator = indiceIndicators['NDX_FUTURE'];
-log.info("ndxFutureOhlcv: {}", ndxFutureIndicator.getMinuteOhlcv());
-def ndxFutureEmas = ndxFutureIndicator.getMinuteEmas(60);
-def ndxFutureEmaSlope = tool.slope(ndxFutureEmas, period);
-log.info("ndxFutureEmaSlope: {}", ndxFutureEmaSlope);
-*/
+def ndxFutureOhlcvs = tool.resample(ndxFutureIndicator.getMinuteOhlcvs(), 30, 'ohlcv');
+log.info("ndxFutureOhlcv: {}", ndxFutureOhlcvs[0]);
+def ndxFuturePrices = ndxFutureOhlcvs.collect{it.closePrice};
+def ndxFuturePrice = ndxFuturePrices[0];
+def ndxFuturePriceZScore = tool.zScore(ndxFuturePrices[0..9], ndxFuturePrice);
 
 // z-score
-def priceZScore = tool.zScore(prices, price);
-def volumeZScore = tool.zScore(volumes, volume);
-log.info("[{}] priceZScore:{}, volumeZScore:{}", assetIndicator.getName(), priceZScore, volumeZScore);
+def priceZScore = tool.zScore(prices[0..9], price);
+log.info("[{}] priceZScore:{}, price:{}, ema:{}", assetIndicator.getName(), priceZScore, price, ema);
 
 def printTaInfo = {
-    log.info("[{}] Technical Analysis", assetIndicator.getName());
-    log.info("price:{}", price);
-    log.info("volume:{}", volume);
-    log.info("ema:{}", ema);
-    log.info("macdValue:{}", macdValue);
-    log.info("macdSignal:{}", macdSignal);
-    log.info("macdValueSlope:{}", macdValueSlope);
-    log.info("macdSignalSlope:{}", macdSignalSlope);
-    log.info("rsi:{}", rsi);
-    log.info("rsiSlope:{}", rsiSlope);
-    log.info("dmiPdi:{}", dmiPdi);
-    log.info("dmiMdi:{}", dmiMdi);
-    log.info("dmiAdx:{}", dmiAdx);
-    log.info("dmiPdiSlope:{}", dmiPdiSlope);
-    log.info("dmiMdiSlope:{}", dmiMdiSlope);
+    log.info("---------------------------------------------");
+    log.info("- [Technical Analysis]");
+    log.info("- symbol:{}", assetIndicator.getSymbol());
+    log.info("- name:{}", assetIndicator.getName());
+    log.info("- priceZSCore:{}", priceZScore);
+    log.info("- price:{}", price);
+    log.info("- ema:{}", ema);
+    log.info("- emaSlope:{}", emaSlope);
+    log.info("- macdValue:{}", macdValue);
+    log.info("- macdSignal:{}", macdSignal);
+    log.info("- macdValueSlope:{}", macdValueSlope);
+    log.info("- macdSignalSlope:{}", macdSignalSlope);
+    log.info("- rsi:{}", rsi);
+    log.info("- rsiSlope:{}", rsiSlope);
+    log.info("- dmiPdi:{}", dmiPdi);
+    log.info("- dmiMdi:{}", dmiMdi);
+    log.info("- dmiAdx:{}", dmiAdx);
+    log.info("- dmiPdiSlope:{}", dmiPdiSlope);
+    log.info("- dmiMdiSlope:{}", dmiMdiSlope);
+    log.info("- kospiPriceZScore: {}", kospiPriceZScore);
+    log.info("- usdKrwPriceZScore: {}", usdKrwPriceZScore);
+    log.info("- ndxFuturePriceZScore: {}", ndxFuturePriceZScore);
+    log.info("---------------------------------------------");
 }
 
-printTaInfo();
-
 // buy condition
-if(priceZScore > 1) {
+if(priceZScore > 1.5 && price > ema) {
+    printTaInfo();
     def buyVotes = [];
 
     // technical analysis
     buyVotes.add(price > ema ? 100 : 0);
+    buyVotes.add(priceSlope > 0 ? 100 : 0);
+    buyVotes.add(emaSlope > 0 ? 100 : 0);
     buyVotes.add(macdValue > 0 ? 100 : 0);
     buyVotes.add(macdValue > macdSignal ? 100 : 0);
     buyVotes.add(macdValueSlope > 0 ? 100 : 0);
@@ -100,30 +109,31 @@ if(priceZScore > 1) {
     buyVotes.add(dmiPdiSlope > 0 ? 100 : 0);
     buyVotes.add(dmiMdiSlope < 0 ? 100 : 0);
 
-    /*
-    // 코스피 하락시 매수(인버스)
-    buyVotes.add(kospiEmaSlope < 0 ? 100 : 0);
+    // 코스피 상승시 매수
+    buyVotes.add(kospiPriceZScore > 0.0 ? 100 : 0);
 
     // 달러환율 하락시 매수
-    buyVotes.add(usdKrwEmaSlope < 0 ? 100 : 0);
+    buyVotes.add(usdKrwPriceZScore < 0.0 ? 100 : 0);
 
     // 나스닥선물 상승시 매수
-    buyVotes.add(ndxFutureEmaSlope > 0 ? 100 : 0);
-    */
+    buyVotes.add(ndxFuturePriceZScore > 0.0 ? 100 : 0);
 
     // buy result
     log.info("buyVotes[{}] - {}/{}", assetIndicator.getName(), buyVotes.average(), buyVotes);
-    if(buyVotes.average() > 50) {
+    if(buyVotes.average() > 80) {
         hold = true;
     }
 }
 
 // sell condition
-if(priceZScore < -1 && volumeZScore > 2) {
+if(priceZScore < -1.5 && price < ema) {
+    printTaInfo();
     def sellVotes = [];
 
     // technical analysis
     sellVotes.add(price < ema ? 100 : 0);
+    sellVotes.add(priceSlope < 0 ? 100 : 0);
+    sellVotes.add(emaSlope < 0 ? 100 : 0);
     sellVotes.add(macdValue < 0 ? 100 : 0);
     sellVotes.add(macdValue < macdSignal ? 100 : 0);
     sellVotes.add(macdValueSlope < 0 ? 100 : 0);
@@ -133,21 +143,29 @@ if(priceZScore < -1 && volumeZScore > 2) {
     sellVotes.add(dmiPdiSlope < 0 ? 100 : 0);
     sellVotes.add(dmiMdiSlope > 0 ? 100 : 0);
 
-    /*
     // 코스피 하락시 매도
-    sellVotes.add(kospiEmaSlope < 0 ? 100 : 0);
+    sellVotes.add(kospiPriceZScore < 0.0 ? 100 : 0);
 
     // 달러환율 상승시 매도
-    sellVotes.add(usdKrwEmaSlope > 0 ? 100 : 0);
+    sellVotes.add(usdKrwPriceZScore > 0 ? 100 : 0);
 
     // 나스닥선물 하락시 매도
-    sellVotes.add(ndxFutureEmaSlope < 0 ? 100 : 0);
-    */
+    sellVotes.add(ndxFuturePriceZScore < 0.0 ? 100 : 0);
 
     // buy result
     log.info("sellVotes[{}] - {}/{}", assetIndicator.getName(), sellVotes.average(), sellVotes);
-    if(sellVotes.average() > 50) {
-        hold = true;
+    if(sellVotes.average() > 80) {
+        hold = false;
+    }
+}
+
+// 장종료 전 보유여부 체크
+if(dateTime.toLocalTime().isAfter(LocalTime.of(15,15))) {
+    if(kospiPriceZScore < 0.0
+    && usdKrwPriceZScore > 0.0
+    && ndxFuturePriceZScore < 0.0
+    ) {
+        hold = false;
     }
 }
 

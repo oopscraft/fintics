@@ -68,6 +68,12 @@ public class Tool {
                 .setScale(4, RoundingMode.HALF_UP);
     }
 
+    public BigDecimal sum(List<BigDecimal> values) {
+        return values.stream()
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .setScale(4, RoundingMode.HALF_UP);
+    }
+
     public BigDecimal average(List<BigDecimal> values) {
         if(values.isEmpty()) {
             return BigDecimal.ZERO;
@@ -77,7 +83,7 @@ public class Tool {
             sum = sum.add(values.get(i));
         }
         return sum.divide(BigDecimal.valueOf(values.size()), MathContext.DECIMAL32)
-                .setScale(2, RoundingMode.HALF_UP);
+                .setScale(4, RoundingMode.HALF_UP);
     }
 
     public List<BigDecimal> sma(List<Ohlcv> ohlcvs, int period) {
