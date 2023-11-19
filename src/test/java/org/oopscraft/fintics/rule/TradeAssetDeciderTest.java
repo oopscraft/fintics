@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +37,33 @@ class TradeAssetDeciderTest {
     }
 
     List<IndiceIndicator> getTestIndiceIndicators() {
-        return new ArrayList<IndiceIndicator>();
+        List<IndiceIndicator> indiceIndicators = new ArrayList<>();
+        for(IndiceSymbol symbol : IndiceSymbol.values()) {
+            indiceIndicators.add(IndiceIndicator.builder()
+                    .symbol(symbol)
+                    .minuteOhlcvs(new ArrayList<Ohlcv>(){{
+                        add(Ohlcv.builder()
+                                .dateTime(LocalDateTime.now())
+                                .openPrice(BigDecimal.TEN)
+                                .highPrice(BigDecimal.TEN)
+                                .lowPrice(BigDecimal.TEN)
+                                .closePrice(BigDecimal.TEN)
+                                .volume(BigDecimal.TEN)
+                                .build());
+                    }})
+                    .dailyOhlcvs(new ArrayList<Ohlcv>(){{
+                        add(Ohlcv.builder()
+                                .dateTime(LocalDate.now().atTime(0,0,0))
+                                .openPrice(BigDecimal.TEN)
+                                .highPrice(BigDecimal.TEN)
+                                .lowPrice(BigDecimal.TEN)
+                                .closePrice(BigDecimal.TEN)
+                                .volume(BigDecimal.TEN)
+                                .build());
+                    }})
+                    .build());
+        }
+        return indiceIndicators;
     }
 
     String loadGroovyFileAsString(String fileName) {

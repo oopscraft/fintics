@@ -4,65 +4,65 @@ Boolean hold;
 
 // OHLCV
 def ohlcvs = tool.resample(assetIndicator.getMinuteOhlcvs(), 10, 'ohlcv');
-def ohlcv = ohlcvs.get(0);
+def ohlcv = ohlcvs.first();
 log.info("[{}] ohlcv:{}", assetIndicator.getName(), ohlcv);
 
 // price
 def prices = ohlcvs.collect{it.closePrice};
-def price = prices[0];
-def priceSlope = tool.slope(prices[0..2]);
+def price = prices.first();
+def priceSlope = tool.slope(prices.take(3));
 
 // EMA
 def emas = tool.ema(ohlcvs, 12);
-def ema = emas.get(0);
-def emaSlope = tool.slope(emas[0..2]);
+def ema = emas.first();
+def emaSlope = tool.slope(emas.take(3));
 
 // MACD
 def macds = tool.macd(ohlcvs, 12, 16, 9);
-def macdValue = macds[0].value;
-def macdSignal = macds[0].signal;
-def macdValueSlope = tool.slope(macds.collect{it.value}[0..2]);
-def macdSignalSlope = tool.slope(macds.collect{it.signal}[0..2]);
+def macdValue = macds.first().value;
+def macdSignal = macds.first().signal;
+def macdValueSlope = tool.slope(macds.collect{it.value}.take(3));
+def macdSignalSlope = tool.slope(macds.collect{it.signal}.take(3));
 
 // RSI
 def rsis = tool.rsi(ohlcvs, 14);
-def rsi = rsis[0];
-def rsiSlope = tool.slope(rsis[0..2]);
+def rsi = rsis.first();
+def rsiSlope = tool.slope(rsis.take(3));
 
 // DMI
 def dmis = tool.dmi(ohlcvs, 14);
-def dmiPdi = dmis[0].pdi;
-def dmiMdi = dmis[0].mdi;
-def dmiAdx = dmis[0].adx;
-def dmiPdiSlope = tool.slope(dmis.collect{it.pdi}[0..2]);
-def dmiMdiSlope = tool.slope(dmis.collect{it.mdi}[0..2]);
+def dmiPdi = dmis.first().pdi;
+def dmiMdi = dmis.first().mdi;
+def dmiAdx = dmis.first().adx;
+def dmiPdiSlope = tool.slope(dmis.collect{it.pdi}.take(3));
+def dmiMdiSlope = tool.slope(dmis.collect{it.mdi}.take(3));
 
 // Kospi
 def kospiIndicator = indiceIndicators['KOSPI'];
 def kospiOhlcvs = tool.resample(kospiIndicator.getMinuteOhlcvs(), 30, 'ohlcv');
-log.info("kospiOhlcv: {}", kospiOhlcvs[0]);
+log.info("kospiOhlcv: {}", kospiOhlcvs.first());
 def kospiPrices = kospiOhlcvs.collect{it.closePrice};
-def kospiPrice = kospiPrices[0];
-def kospiPriceZScore = tool.zScore(kospiPrices[0..9], kospiPrice);
+def kospiPrice = kospiPrices.first();
+def kospiPriceZScore = tool.zScore(kospiPrices.take(10), kospiPrice);
 
 //  USD/KRW
 def usdKrwIndicator = indiceIndicators['USD_KRW'];
 def usdKrwOhlcvs = tool.resample(usdKrwIndicator.getMinuteOhlcvs(), 30, 'ohlcv');
-log.info("usdKrwOhlcv: {}", usdKrwOhlcvs[0]);
+log.info("usdKrwOhlcv: {}", usdKrwOhlcvs.first());
 def usdKrwPrices = usdKrwOhlcvs.collect{it.closePrice};
-def usdKrwPrice = usdKrwPrices[0];
-def usdKrwPriceZScore = tool.zScore(usdKrwPrices[0..9], usdKrwPrice);
+def usdKrwPrice = usdKrwPrices.first();
+def usdKrwPriceZScore = tool.zScore(usdKrwPrices.take(10), usdKrwPrice);
 
 // Nasdaq Future
 def ndxFutureIndicator = indiceIndicators['NDX_FUTURE'];
 def ndxFutureOhlcvs = tool.resample(ndxFutureIndicator.getMinuteOhlcvs(), 30, 'ohlcv');
-log.info("ndxFutureOhlcv: {}", ndxFutureOhlcvs[0]);
+log.info("ndxFutureOhlcv: {}", ndxFutureOhlcvs.first());
 def ndxFuturePrices = ndxFutureOhlcvs.collect{it.closePrice};
-def ndxFuturePrice = ndxFuturePrices[0];
-def ndxFuturePriceZScore = tool.zScore(ndxFuturePrices[0..9], ndxFuturePrice);
+def ndxFuturePrice = ndxFuturePrices.first();
+def ndxFuturePriceZScore = tool.zScore(ndxFuturePrices.take(10), ndxFuturePrice);
 
 // z-score
-def priceZScore = tool.zScore(prices[0..9], price);
+def priceZScore = tool.zScore(prices.take(10), price);
 log.info("[{}] priceZScore:{}, price:{}, ema:{}", assetIndicator.getName(), priceZScore, price, ema);
 
 def printTaInfo = {
