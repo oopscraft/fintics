@@ -83,6 +83,7 @@ printTaInfo();
 
 // buy condition
 if(priceZScore > 1 && volumeZScore > 1) {
+    log.info("######### buy votes ##########");
     def buyVotes = [];
 
     // technical analysis
@@ -112,6 +113,7 @@ if(priceZScore > 1 && volumeZScore > 1) {
 
 // sell condition
 if(priceZScore < -1 && volumeZScore > 1) {
+    log.info("######### sell votes ##########");
     def sellVotes = [];
 
     // technical analysis

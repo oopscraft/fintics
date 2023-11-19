@@ -2,6 +2,7 @@ package org.oopscraft.fintics.model;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import net.bytebuddy.implementation.bind.annotation.Super;
 import org.oopscraft.fintics.dao.OhlcvEntity;
 import org.oopscraft.fintics.dao.TradeAssetOhlcvEntity;
 
@@ -9,7 +10,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Ohlcv {

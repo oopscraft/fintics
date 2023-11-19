@@ -11,7 +11,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Tools {
+public class Tool {
 
     public List<Ohlcv> resample(List<Ohlcv> ohlcvs, int period, String type) {
         // TODO

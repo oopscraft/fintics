@@ -156,7 +156,7 @@ public class UpbitTradeClient extends TradeClient {
                             .dateTime(dateTime)
                             .openPrice(row.getNumber("opening_price"))
                             .highPrice(row.getNumber("high_price"))
-                            .lowPrice(row.getNumber("row_price"))
+                            .lowPrice(row.getNumber("low_price"))
                             .closePrice(row.getNumber("trade_price"))
                             .volume(row.getNumber("candle_acc_trade_volume"))
                             .build();

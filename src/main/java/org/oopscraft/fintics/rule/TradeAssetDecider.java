@@ -46,7 +46,7 @@ public class TradeAssetDecider {
         binding.setVariable("dateTime", dateTime);
         binding.setVariable("assetIndicator", assetIndicator);
         binding.setVariable("indiceIndicators", indiceIndicators);
-        binding.setVariable("tool", new Tools());
+        binding.setVariable("tool", new Tool());
         GroovyShell groovyShell = new GroovyShell(groovyClassLoader, binding);
 
         if(holdCondition == null || holdCondition.isBlank()) {
