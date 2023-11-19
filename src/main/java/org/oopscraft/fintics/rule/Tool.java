@@ -2,10 +2,12 @@ package org.oopscraft.fintics.rule;
 
 import org.oopscraft.fintics.calculator.*;
 import org.oopscraft.fintics.model.Ohlcv;
+import org.oopscraft.fintics.model.OhlcvType;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -13,9 +15,60 @@ import java.util.stream.Collectors;
 
 public class Tool {
 
-    public List<Ohlcv> resample(List<Ohlcv> ohlcvs, int period, String type) {
-        // TODO
-        return ohlcvs;
+    public List<Ohlcv> resample(List<Ohlcv> ohlcvs, int period) {
+        if (ohlcvs.isEmpty() || period <= 0) {
+            return Collections.emptyList();
+        }
+
+        List<Ohlcv> resampledOhlcvs = new ArrayList<>();
+        int dataSize = ohlcvs.size();
+        int currentIndex = 0;
+
+        while (currentIndex < dataSize) {
+            int endIndex = Math.min(currentIndex + period, dataSize);
+            List<Ohlcv> subList = ohlcvs.subList(currentIndex, endIndex);
+            Ohlcv resampledData = createResampledOhlcv(subList);
+            resampledOhlcvs.add(resampledData);
+            currentIndex += period;
+        }
+
+        return resampledOhlcvs;
+    }
+
+    private Ohlcv createResampledOhlcv(List<Ohlcv> ohlcvs) {
+        BigDecimal sumOpenPrice = BigDecimal.ZERO;
+        BigDecimal sumHighPrice = BigDecimal.ZERO;
+        BigDecimal sumLowPrice = BigDecimal.ZERO;
+        BigDecimal sumClosePrice = BigDecimal.ZERO;
+        BigDecimal sumVolume = BigDecimal.ZERO;
+
+        for(Ohlcv ohlcv : ohlcvs) {
+            sumOpenPrice = sumOpenPrice.add(ohlcv.getOpenPrice());
+            sumHighPrice = sumHighPrice.add(ohlcv.getHighPrice());
+            sumLowPrice = sumLowPrice.add(ohlcv.getLowPrice());
+            sumVolume = sumVolume.add(ohlcv.getVolume());
+        }
+
+        BigDecimal size = BigDecimal.valueOf(ohlcvs.size());
+        OhlcvType ohlcvType = ohlcvs.get(ohlcvs.size()-1).getOhlcvType();
+        LocalDateTime dateTime = ohlcvs.get(ohlcvs.size()-1).getDateTime();
+        BigDecimal openPrice = sumOpenPrice.divide(size, MathContext.DECIMAL32)
+                .setScale(sumOpenPrice.scale(), RoundingMode.HALF_UP);
+        BigDecimal highPrice = sumHighPrice.divide(size, MathContext.DECIMAL32)
+                .setScale(sumHighPrice.scale(), RoundingMode.HALF_UP);
+        BigDecimal lowPrice = sumLowPrice.divide(size, MathContext.DECIMAL32)
+                .setScale(sumLowPrice.scale(), RoundingMode.HALF_UP);
+        BigDecimal closePrice = sumClosePrice.divide(size, MathContext.DECIMAL32)
+                .setScale(sumClosePrice.scale(), RoundingMode.HALF_UP);
+        return Ohlcv.builder()
+                .ohlcvType(ohlcvType)
+                .dateTime(dateTime)
+                .openPrice(openPrice)
+                .highPrice(highPrice)
+                .lowPrice(lowPrice)
+                .closePrice(closePrice)
+                .volume(sumVolume)
+                .build();
     }
 
     public BigDecimal zScore(List<BigDecimal> sampleValues, BigDecimal testValue) {

@@ -1,5 +1,6 @@
 package org.oopscraft.fintics.rule;
 
+import groovy.lang.IntRange;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
@@ -11,14 +12,17 @@ import org.junit.jupiter.api.Test;
 import org.oopscraft.fintics.calculator.Dmi;
 import org.oopscraft.fintics.calculator.Macd;
 import org.oopscraft.fintics.model.Ohlcv;
+import org.oopscraft.fintics.model.OhlcvType;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -71,6 +75,38 @@ public class ToolTest {
         }
         return rows;
     }
+
+    @Test
+    void resample() {
+        // given
+        int size = 10;
+        LocalDateTime now = LocalDateTime.now();
+        List<Ohlcv> ohlcvs = IntStream.rangeClosed(1, 25)
+                .mapToObj(i -> Ohlcv.builder()
+                        .ohlcvType(OhlcvType.MINUTE)
+                        .dateTime(now.minusMinutes(i))
+                        .openPrice(BigDecimal.valueOf(100 + i))
+                        .highPrice(BigDecimal.valueOf(100 + i))
+                        .lowPrice(BigDecimal.valueOf(100 + i))
+                        .closePrice(BigDecimal.valueOf(100 + i))
+                        .volume(BigDecimal.TEN)
+                        .build())
+                .collect(Collectors.toList());
+
+        // when
+        Tool tool = new Tool();
+        List<Ohlcv> resampledOhlcvs = tool.resample(ohlcvs, size);
+
+        // then
+        log.info("== resampledOhlcvs:{}", resampledOhlcvs);
+        assertEquals(Math.round(IntStream.rangeClosed(101,110).average().orElse(0.0)), resampledOhlcvs.get(0).getOpenPrice().doubleValue());
+        assertEquals(Math.round(IntStream.rangeClosed(111,120).average().orElse(0.0)), resampledOhlcvs.get(1).getOpenPrice().doubleValue());
+        assertEquals(Math.round(IntStream.rangeClosed(121,125).average().orElse(0.0)), resampledOhlcvs.get(2).getOpenPrice().doubleValue());
+        assertEquals(100, resampledOhlcvs.get(0).getVolume().doubleValue());
+        assertEquals(100, resampledOhlcvs.get(1).getVolume().doubleValue());
+        assertEquals(50, resampledOhlcvs.get(2).getVolume().doubleValue());
+    }
+
 
     @Test
     void zScoreNormal() {

@@ -3,7 +3,7 @@ import java.time.LocalTime;
 Boolean hold;
 
 // OHLCV
-def ohlcvs = tool.resample(assetIndicator.getMinuteOhlcvs(), 10, 'ohlcv');
+def ohlcvs = tool.resample(assetIndicator.getMinuteOhlcvs(), 5);
 def ohlcv = ohlcvs.first();
 log.info("[{}] ohlcv:{}", assetIndicator.getName(), ohlcv);
 
@@ -39,7 +39,7 @@ def dmiMdiSlope = tool.slope(dmis.collect{it.mdi}.take(3));
 
 // Kospi
 def kospiIndicator = indiceIndicators['KOSPI'];
-def kospiOhlcvs = tool.resample(kospiIndicator.getMinuteOhlcvs(), 30, 'ohlcv');
+def kospiOhlcvs = tool.resample(kospiIndicator.getMinuteOhlcvs(), 30);
 log.info("kospiOhlcv: {}", kospiOhlcvs.first());
 def kospiPrices = kospiOhlcvs.collect{it.closePrice};
 def kospiPrice = kospiPrices.first();
@@ -47,7 +47,7 @@ def kospiPriceZScore = tool.zScore(kospiPrices.take(10), kospiPrice);
 
 //  USD/KRW
 def usdKrwIndicator = indiceIndicators['USD_KRW'];
-def usdKrwOhlcvs = tool.resample(usdKrwIndicator.getMinuteOhlcvs(), 30, 'ohlcv');
+def usdKrwOhlcvs = tool.resample(usdKrwIndicator.getMinuteOhlcvs(), 30);
 log.info("usdKrwOhlcv: {}", usdKrwOhlcvs.first());
 def usdKrwPrices = usdKrwOhlcvs.collect{it.closePrice};
 def usdKrwPrice = usdKrwPrices.first();
@@ -55,7 +55,7 @@ def usdKrwPriceZScore = tool.zScore(usdKrwPrices.take(10), usdKrwPrice);
 
 // Nasdaq Future
 def ndxFutureIndicator = indiceIndicators['NDX_FUTURE'];
-def ndxFutureOhlcvs = tool.resample(ndxFutureIndicator.getMinuteOhlcvs(), 30, 'ohlcv');
+def ndxFutureOhlcvs = tool.resample(ndxFutureIndicator.getMinuteOhlcvs(), 30);
 log.info("ndxFutureOhlcv: {}", ndxFutureOhlcvs.first());
 def ndxFuturePrices = ndxFutureOhlcvs.collect{it.closePrice};
 def ndxFuturePrice = ndxFuturePrices.first();
