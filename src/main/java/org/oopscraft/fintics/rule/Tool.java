@@ -46,6 +46,7 @@ public class Tool {
             sumOpenPrice = sumOpenPrice.add(ohlcv.getOpenPrice());
             sumHighPrice = sumHighPrice.add(ohlcv.getHighPrice());
             sumLowPrice = sumLowPrice.add(ohlcv.getLowPrice());
+            sumClosePrice = sumClosePrice.add(ohlcv.getClosePrice());
             sumVolume = sumVolume.add(ohlcv.getVolume());
         }
 
