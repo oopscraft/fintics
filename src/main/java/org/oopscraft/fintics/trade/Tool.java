@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.rule;
+package org.oopscraft.fintics.trade;
 
 import org.oopscraft.fintics.calculator.*;
 import org.oopscraft.fintics.model.Ohlcv;
@@ -72,73 +72,105 @@ public class Tool {
                 .build();
     }
 
-    public BigDecimal zScore(List<BigDecimal> sampleValues, BigDecimal testValue) {
-        if(sampleValues.isEmpty()) {
-            return BigDecimal.ZERO;
-        }
-        List<BigDecimal> series = new ArrayList<>(sampleValues);
-        Collections.reverse(series);
-
-        BigDecimal mean = series.stream()
-                .reduce(BigDecimal.ZERO, BigDecimal::add)
-                .divide(BigDecimal.valueOf(series.size()), MathContext.DECIMAL32);
-
-        BigDecimal sumSquaredDeviations = series.stream()
-                .map(x -> x.subtract(mean).pow(2))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        BigDecimal variance = sumSquaredDeviations
-                .divide(BigDecimal.valueOf(series.size()), MathContext.DECIMAL32);
-        BigDecimal standardDeviation = BigDecimal.valueOf(Math.sqrt(variance.doubleValue()));
-
-        if(standardDeviation.compareTo(BigDecimal.ZERO) == 0) {
-            return BigDecimal.ZERO;
-        }
-
-        return testValue
-                .subtract(mean)
-                .divide(standardDeviation, MathContext.DECIMAL32)
-                .setScale(4, RoundingMode.HALF_UP);
-    }
-
-    public BigDecimal slope(List<BigDecimal> values) {
-        List<BigDecimal> series = new ArrayList<>(values);
-        Collections.reverse(series);
-
-        // check empty
-        if(series.isEmpty()) {
-            return BigDecimal.ZERO;
-        }
-
-        // sum
-        BigDecimal sum = BigDecimal.ZERO;
-        for (int i = 0; i < series.size(); i++) {
-            BigDecimal change = series.get(i)
-                    .subtract(series.get(Math.max(i-1,0)));
-            sum = sum.add(change);
-        }
-
-        // average
-        return sum.divide(BigDecimal.valueOf(series.size()), MathContext.DECIMAL32)
-                .setScale(4, RoundingMode.HALF_UP);
-    }
-
     public BigDecimal sum(List<BigDecimal> values) {
         return values.stream()
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
                 .setScale(4, RoundingMode.HALF_UP);
     }
 
-    public BigDecimal average(List<BigDecimal> values) {
+    public BigDecimal mean(List<BigDecimal> values) {
         if(values.isEmpty()) {
             return BigDecimal.ZERO;
         }
-        BigDecimal sum = BigDecimal.ZERO;
-        for(int i = 0, size = values.size(); i < size; i ++ ) {
-            sum = sum.add(values.get(i));
-        }
-        return sum.divide(BigDecimal.valueOf(values.size()), MathContext.DECIMAL32)
+        List<BigDecimal> series = new ArrayList<>(values);
+        return series.stream()
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .divide(BigDecimal.valueOf(series.size()), MathContext.DECIMAL32)
                 .setScale(4, RoundingMode.HALF_UP);
+    }
+
+    public BigDecimal median(List<BigDecimal> values) {
+        if(values.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+        List<BigDecimal> sortedValues = new ArrayList<>(values);
+        Collections.sort(sortedValues);
+        int size = sortedValues.size();
+        if (size % 2 == 1) {
+            return sortedValues.get(size / 2);
+        } else {
+            BigDecimal leftMiddle = sortedValues.get(size / 2 - 1);
+            BigDecimal rightMiddle = sortedValues.get(size / 2);
+            return leftMiddle.add(rightMiddle)
+                    .divide(BigDecimal.valueOf(2), MathContext.DECIMAL32)
+                    .setScale(4, RoundingMode.HALF_UP);
+        }
+    }
+
+    public BigDecimal std(List<BigDecimal> values) {
+        if(values.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+        List<BigDecimal> series = new ArrayList<>(values);
+        Collections.reverse(series);
+        BigDecimal mean = series.stream()
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .divide(BigDecimal.valueOf(series.size()), MathContext.DECIMAL32);
+        BigDecimal sumSquaredDeviations = series.stream()
+                .map(x -> x.subtract(mean).pow(2))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal variance = sumSquaredDeviations
+                .divide(BigDecimal.valueOf(series.size()), MathContext.DECIMAL32);
+        BigDecimal standardDeviation = BigDecimal.valueOf(Math.sqrt(variance.doubleValue()));
+        return standardDeviation.setScale(4, RoundingMode.HALF_UP);
+    }
+
+    public List<BigDecimal> pctChange(List<BigDecimal> values) {
+        if(values.isEmpty()) {
+            return new ArrayList<>();
+        }
+        List<BigDecimal> series = new ArrayList<>(values);
+        Collections.reverse(series);
+        List<BigDecimal> pctChanges = new ArrayList<>();
+        for (int i = 0; i < series.size(); i++) {
+            if(i == 0) {
+                pctChanges.add(BigDecimal.ZERO);
+                continue;
+            }
+            BigDecimal current = series.get(i);
+            BigDecimal previous = series.get(i - 1);
+            BigDecimal pctChange = current.subtract(previous)
+                    .divide(previous, MathContext.DECIMAL32)
+                    .setScale(4, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100));
+            pctChanges.add(pctChange);
+        }
+        return pctChanges;
+    }
+
+    public List<BigDecimal> zScore(List<BigDecimal> values) {
+        if(values.isEmpty()) {
+            return new ArrayList<BigDecimal>();
+        }
+        List<BigDecimal> series = new ArrayList<>(values);
+        Collections.reverse(series);
+
+        BigDecimal mean = mean(series);
+        BigDecimal std = std(series);
+
+        List<BigDecimal> zScores = new ArrayList();
+        for(BigDecimal value : values) {
+            if(std.compareTo(BigDecimal.ZERO) == 0) {
+                zScores.add(BigDecimal.ZERO);
+                continue;
+            }
+            BigDecimal zScore = value
+                    .subtract(mean)
+                    .divide(std, MathContext.DECIMAL32)
+                    .setScale(4, RoundingMode.HALF_UP);
+            zScores.add(zScore);
+        }
+        return zScores;
     }
 
     public List<BigDecimal> sma(List<Ohlcv> ohlcvs, int period) {
@@ -227,6 +259,58 @@ public class Tool {
 
 
 
+    @Deprecated
+    public BigDecimal zScore(List<BigDecimal> sampleValues, BigDecimal testValue) {
+        if(sampleValues.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+        List<BigDecimal> series = new ArrayList<>(sampleValues);
+        Collections.reverse(series);
+
+        BigDecimal mean = series.stream()
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .divide(BigDecimal.valueOf(series.size()), MathContext.DECIMAL32);
+
+        BigDecimal sumSquaredDeviations = series.stream()
+                .map(x -> x.subtract(mean).pow(2))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal variance = sumSquaredDeviations
+                .divide(BigDecimal.valueOf(series.size()), MathContext.DECIMAL32);
+        BigDecimal standardDeviation = BigDecimal.valueOf(Math.sqrt(variance.doubleValue()));
+
+        if(standardDeviation.compareTo(BigDecimal.ZERO) == 0) {
+            return BigDecimal.ZERO;
+        }
+
+        return testValue
+                .subtract(mean)
+                .divide(standardDeviation, MathContext.DECIMAL32)
+                .setScale(4, RoundingMode.HALF_UP);
+    }
+
+    @Deprecated
+    public BigDecimal slope(List<BigDecimal> values) {
+        List<BigDecimal> series = new ArrayList<>(values);
+        Collections.reverse(series);
+
+        // check empty
+        if(series.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+
+        // sum
+        BigDecimal sum = BigDecimal.ZERO;
+        for (int i = 0; i < series.size(); i++) {
+            BigDecimal change = series.get(i)
+                    .subtract(series.get(Math.max(i-1,0)));
+            sum = sum.add(change);
+        }
+
+        // average
+        return sum.divide(BigDecimal.valueOf(series.size()), MathContext.DECIMAL32)
+                .setScale(4, RoundingMode.HALF_UP);
+    }
 
 
 

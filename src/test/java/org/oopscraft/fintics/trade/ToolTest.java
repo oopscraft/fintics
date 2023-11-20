@@ -1,6 +1,5 @@
-package org.oopscraft.fintics.rule;
+package org.oopscraft.fintics.trade;
 
-import groovy.lang.IntRange;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
@@ -41,7 +40,7 @@ public class ToolTest {
     }
 
     private List<FileOhlcv> loadTestOhlcvFile() {
-        String filePath = "org/oopscraft/fintics/rule/ToolTest.tsv";
+        String filePath = "org/oopscraft/fintics/trade/ToolTest.tsv";
         CSVFormat format = CSVFormat.Builder.create()
                 .setDelimiter("\t")
                 .setHeader("time","open","high","low","close","MACD","MACD-Signal","MACD-Oscillator", "RSI", "RSI-Signal", "ADX", "PDI", "MDI")
@@ -166,7 +165,7 @@ public class ToolTest {
 
         // when
         Tool tool = new Tool();
-        BigDecimal average = tool.average(values);
+        BigDecimal average = tool.mean(values);
 
         // then
         assertEquals(15, average.doubleValue(), 0.01);

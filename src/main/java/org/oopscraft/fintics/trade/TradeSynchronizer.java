@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.thread;
+package org.oopscraft.fintics.trade;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

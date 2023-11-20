@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.thread;
+package org.oopscraft.fintics.trade;
 
 import ch.qos.logback.classic.Logger;
 import lombok.Builder;
@@ -15,7 +15,6 @@ import org.oopscraft.fintics.dao.OrderEntity;
 import org.oopscraft.fintics.dao.OrderRepository;
 import org.oopscraft.fintics.dao.TradeRepository;
 import org.oopscraft.fintics.model.*;
-import org.oopscraft.fintics.rule.TradeAssetDecider;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.PlatformTransactionManager;

@@ -11,7 +11,7 @@ import org.oopscraft.fintics.model.*;
 import org.oopscraft.fintics.service.AssetService;
 import org.oopscraft.fintics.service.IndiceService;
 import org.oopscraft.fintics.service.TradeService;
-import org.oopscraft.fintics.thread.TradeThreadManager;
+import org.oopscraft.fintics.trade.TradeThreadManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;

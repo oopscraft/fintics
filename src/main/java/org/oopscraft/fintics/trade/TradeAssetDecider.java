@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.rule;
+package org.oopscraft.fintics.trade;
 
 import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;

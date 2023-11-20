@@ -1,11 +1,11 @@
-package org.oopscraft.fintics.rule;
+package org.oopscraft.fintics.trade;
 
 import com.github.javaparser.utils.LineSeparator;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
 import org.oopscraft.fintics.model.*;
-import org.oopscraft.fintics.rule.TradeAssetDecider;
+import org.oopscraft.fintics.trade.TradeAssetDecider;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -67,7 +67,7 @@ class TradeAssetDeciderTest {
     }
 
     String loadGroovyFileAsString(String fileName) {
-        String filePath = "org/oopscraft/fintics/rule/" + fileName;
+        String filePath = "org/oopscraft/fintics/trade/" + fileName;
         StringBuilder stringBuilder = new StringBuilder();
         try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(filePath)) {
             IOUtils.readLines(inputStream, StandardCharsets.UTF_8).forEach(line -> {
