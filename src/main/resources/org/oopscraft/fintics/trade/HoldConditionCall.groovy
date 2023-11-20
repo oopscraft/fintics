@@ -31,7 +31,7 @@ log.info("== [{}] price:{}({}%), shortMa:{}({}%), longMa:{}({}%)",
 
 // z-score
 def pricePctChangeZScore = tool.zScore(tool.pctChange(prices).take(10)).first();
-log.info("== [{}] pricePctChangeZScore:{}", pricePctChangeZScore);
+log.info("== [{}] pricePctChangeZScore:{}", name, pricePctChangeZScore);
 
 // buy
 if(pricePctChangeZScore > 1

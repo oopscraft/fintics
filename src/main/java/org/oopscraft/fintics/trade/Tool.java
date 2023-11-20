@@ -132,13 +132,18 @@ public class Tool {
         List<BigDecimal> series = new ArrayList<>(values);
         Collections.reverse(series);
         List<BigDecimal> pctChanges = new ArrayList<>();
-        for (int i = 0; i < series.size(); i++) {
-            if(i == 0) {
-                pctChanges.add(BigDecimal.ZERO);
-                continue;
-            }
+        pctChanges.add(BigDecimal.ZERO);
+        for (int i = 1; i < series.size(); i++) {
             BigDecimal current = series.get(i);
             BigDecimal previous = series.get(i - 1);
+            if(previous.compareTo(BigDecimal.ZERO) == 0) {
+                if(current.compareTo(BigDecimal.ZERO) == 0) {
+                    pctChanges.add(BigDecimal.ZERO);
+                }else{
+                    pctChanges.add(BigDecimal.valueOf(100));
+                }
+                continue;
+            }
             BigDecimal pctChange = current.subtract(previous)
                     .divide(previous, MathContext.DECIMAL32)
                     .setScale(4, RoundingMode.HALF_UP)
