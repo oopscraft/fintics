@@ -30,11 +30,11 @@ log.info("== [{}] price:{}({}%), shortMa:{}({}%), longMa:{}({}%)",
         name, price, pricePctChange, shortMa, shortMaPctChange, longMa, longMaPctChange);
 
 // z-score
-def pricePctChangeZScore = tool.zScore(tool.pctChange(prices).take(10)).first();
-log.info("== [{}] pricePctChangeZScore:{}", name, pricePctChangeZScore);
+def priceZScore = tool.zScore(prices.take(10)).first();
+log.info("== [{}] priceZScore:{}", name, priceZScore);
 
 // buy
-if(pricePctChangeZScore > 1
+if(priceZScore > 1
 && (price > shortMa && shortMa > longMa)
 && (pricePctChange > 0 && shortMaPctChange > 0 && longMaPctChange > 0)
 ){
@@ -42,7 +42,7 @@ if(pricePctChangeZScore > 1
 }
 
 // sell
-if(pricePctChangeZScore < -1
+if(priceZScore < -1
 && (price < shortMa)
 && (pricePctChange < shortMaPctChange)
 ){

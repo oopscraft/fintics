@@ -131,6 +131,7 @@ public class Tool {
         }
         List<BigDecimal> series = new ArrayList<>(values);
         Collections.reverse(series);
+
         List<BigDecimal> pctChanges = new ArrayList<>();
         pctChanges.add(BigDecimal.ZERO);
         for (int i = 1; i < series.size(); i++) {
@@ -150,6 +151,8 @@ public class Tool {
                     .multiply(BigDecimal.valueOf(100));
             pctChanges.add(pctChange);
         }
+
+        Collections.reverse(pctChanges);
         return pctChanges;
     }
 
@@ -175,6 +178,8 @@ public class Tool {
                     .setScale(4, RoundingMode.HALF_UP);
             zScores.add(zScore);
         }
+
+        Collections.reverse(zScores);
         return zScores;
     }
 
