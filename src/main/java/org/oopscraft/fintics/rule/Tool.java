@@ -97,7 +97,8 @@ public class Tool {
 
         return testValue
                 .subtract(mean)
-                .divide(standardDeviation, MathContext.DECIMAL32);
+                .divide(standardDeviation, MathContext.DECIMAL32)
+                .setScale(4, RoundingMode.HALF_UP);
     }
 
     public BigDecimal slope(List<BigDecimal> values) {
