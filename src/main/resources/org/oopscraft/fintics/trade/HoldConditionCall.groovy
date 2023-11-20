@@ -13,38 +13,32 @@ log.info("[{}] ohlcv:{}", assetIndicator.getName(), ohlcv);
 // price
 def prices = ohlcvs.collect{it.closePrice};
 def price = prices.first();
-def pricePctChange = tool.pctChange(prices).first();
+def pricePctChange = tool.mean(tool.pctChange(prices).take(10));
 
 // shortMa
 def shortMas = tool.ema(ohlcvs, 20);
 def shortMa = shortMas.first();
-def shortMaPctChange = tool.pctChange(shortMas).first();
+def shortMaPctChange = tool.mean(tool.pctChange(shortMas).take(10));
 
 // longMa
 def longMas = tool.ema(ohlcvs, 60);
 def longMa = longMas.first();
-def longMaPctChange = tool.pctChange(longMas).first();
+def longMaPctChange = tool.mean(tool.pctChange(longMas).take(10));
 
 // logging
 log.info("== [{}] price:{}({}%), shortMa:{}({}%), longMa:{}({}%)",
         name, price, pricePctChange, shortMa, shortMaPctChange, longMa, longMaPctChange);
 
-// z-score
-def priceZScore = tool.zScore(prices.take(10)).first();
-log.info("== [{}] priceZScore:{}", name, priceZScore);
-
 // buy
-if(priceZScore > 1
-&& (price > shortMa && shortMa > longMa)
-&& (pricePctChange > 0 && shortMaPctChange > 0 && longMaPctChange > 0)
+if((price > shortMa && shortMa > longMa)
+&& (pricePctChange > 0.01 && shortMaPctChange > 0.01 && longMaPctChange > 0.01)
 ){
     hold = true;
 }
 
 // sell
-if(priceZScore < -1
-&& (price < shortMa)
-&& (pricePctChange < shortMaPctChange)
+if((price < shortMa)
+&& (pricePctChange < -0.01 && shortMaPctChange < -0.01)
 ){
     hold = false;
 }
