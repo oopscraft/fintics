@@ -89,6 +89,18 @@ public class Tool {
                 .setScale(4, RoundingMode.HALF_UP);
     }
 
+    public BigDecimal min(List<BigDecimal> values) {
+        return values.stream()
+                .min(BigDecimal::compareTo)
+                .orElse(BigDecimal.ZERO);
+    }
+
+    public BigDecimal max(List<BigDecimal> values) {
+        return values.stream()
+                .max(BigDecimal::compareTo)
+                .orElse(BigDecimal.ZERO);
+    }
+
     public BigDecimal median(List<BigDecimal> values) {
         if(values.isEmpty()) {
             return BigDecimal.ZERO;
