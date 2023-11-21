@@ -36,6 +36,14 @@ class TradeAssetDeciderTest {
                 .build();
     }
 
+    OrderBook getTestOrderBook() {
+        return OrderBook.builder()
+                .price(BigDecimal.valueOf(10000))
+                .bidPrice(BigDecimal.valueOf(9990))
+                .askPrice(BigDecimal.valueOf(10010))
+                .build();
+    }
+
     List<IndiceIndicator> getTestIndiceIndicators() {
         List<IndiceIndicator> indiceIndicators = new ArrayList<>();
         for(IndiceSymbol symbol : IndiceSymbol.values()) {
@@ -117,6 +125,7 @@ class TradeAssetDeciderTest {
         // given
         Trade trade = getTestTrade();
         TradeAsset tradeAsset = getTestTradeAsset();
+        OrderBook orderBook = getTestOrderBook();
         List<IndiceIndicator> indiceIndicators = getTestIndiceIndicators();
         AssetIndicator assetIndicator = getTestAssetIndicator(tradeAsset);
         trade.setHoldCondition("return true;");
@@ -126,6 +135,7 @@ class TradeAssetDeciderTest {
                 .holdCondition(trade.getHoldCondition())
                 .logger(log)
                 .dateTime(LocalDateTime.now())
+                .orderBook(orderBook)
                 .assetIndicator(assetIndicator)
                 .indiceIndicators(indiceIndicators)
                 .build();
@@ -143,7 +153,7 @@ class TradeAssetDeciderTest {
         TradeAsset tradeAsset = getTestTradeAsset();
         List<IndiceIndicator> indiceIndicators = getTestIndiceIndicators();
         AssetIndicator assetIndicator = getTestAssetIndicator(tradeAsset);
-        String holdCondition = loadGroovyFileAsString("HoldConditionCall.groovy");
+        String holdCondition = loadGroovyFileAsString("HoldCondition.KospiCall.groovy");
         trade.setHoldCondition(holdCondition);
 
         // when

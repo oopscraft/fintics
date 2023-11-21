@@ -6,6 +6,7 @@ import groovy.lang.GroovyShell;
 import lombok.Builder;
 import org.oopscraft.fintics.model.AssetIndicator;
 import org.oopscraft.fintics.model.IndiceIndicator;
+import org.oopscraft.fintics.model.OrderBook;
 import org.slf4j.Logger;
 
 import java.time.Duration;
@@ -23,15 +24,18 @@ public class TradeAssetDecider {
 
     private final LocalDateTime dateTime;
 
+    private final OrderBook orderBook;
+
     private final AssetIndicator assetIndicator;
 
     private final Map<String, IndiceIndicator> indiceIndicators;
 
     @Builder
-    protected TradeAssetDecider(String holdCondition, Logger logger, LocalDateTime dateTime, AssetIndicator assetIndicator, List<IndiceIndicator> indiceIndicators) {
+    protected TradeAssetDecider(String holdCondition, Logger logger, LocalDateTime dateTime, OrderBook orderBook, AssetIndicator assetIndicator, List<IndiceIndicator> indiceIndicators) {
         this.holdCondition = holdCondition;
         this.logger = logger;
         this.dateTime = dateTime;
+        this.orderBook = orderBook;
         this.assetIndicator = assetIndicator;
         this.indiceIndicators = indiceIndicators.stream()
                 .collect(Collectors.toMap(indiceIndicator ->
@@ -44,6 +48,7 @@ public class TradeAssetDecider {
         Binding binding = new Binding();
         binding.setVariable("log", logger);
         binding.setVariable("dateTime", dateTime);
+        binding.setVariable("orderBook", orderBook);
         binding.setVariable("assetIndicator", assetIndicator);
         binding.setVariable("indiceIndicators", indiceIndicators);
         binding.setVariable("tool", new Tool());

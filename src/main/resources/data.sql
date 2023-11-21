@@ -367,22 +367,19 @@ return hold;
 ');
 insert into `fintics_trade_asset`
 (`trade_id`,`symbol`,`name`,`type`, `enabled`, `hold_ratio`) values
-    ('81c6a451d6da49449faa2b5b7e66041b','KRW-XRP','Ripple','UPBIT','N','10');
+    ('81c6a451d6da49449faa2b5b7e66041b','KRW-BTC','Bitcoin','UPBIT','N','20');
+insert into `fintics_trade_asset`
+(`trade_id`,`symbol`,`name`,`type`, `enabled`, `hold_ratio`) values
+    ('81c6a451d6da49449faa2b5b7e66041b','KRW-ETH','Ethereum','UPBIT','N','20');
 insert into `fintics_trade_asset`
 (`trade_id`,`symbol`,`name`,`type`, `enabled`, `hold_ratio`) values
     ('81c6a451d6da49449faa2b5b7e66041b','KRW-GAS','GAS','UPBIT','N','10');
-insert into `fintics_trade_asset`
-(`trade_id`,`symbol`,`name`,`type`, `enabled`, `hold_ratio`) values
-    ('81c6a451d6da49449faa2b5b7e66041b','KRW-AERGO','Aergo','UPBIT','N','10');
 insert into `fintics_trade_asset`
 (`trade_id`,`symbol`,`name`,`type`, `enabled`, `hold_ratio`) values
     ('81c6a451d6da49449faa2b5b7e66041b','KRW-AVAX','Avalanche','UPBIT','N','10');
 insert into `fintics_trade_asset`
 (`trade_id`,`symbol`,`name`,`type`, `enabled`, `hold_ratio`) values
     ('81c6a451d6da49449faa2b5b7e66041b','KRW-SOL','Solana','UPBIT','N','10');
-insert into `fintics_trade_asset`
-(`trade_id`,`symbol`,`name`,`type`, `enabled`, `hold_ratio`) values
-    ('81c6a451d6da49449faa2b5b7e66041b','KRW-SEI','Sei','UPBIT','N','10');
 insert into `fintics_trade_asset`
 (`trade_id`,`symbol`,`name`,`type`, `enabled`, `hold_ratio`) values
     ('81c6a451d6da49449faa2b5b7e66041b','KRW-ZRX','0x Protocol','UPBIT','N','10');

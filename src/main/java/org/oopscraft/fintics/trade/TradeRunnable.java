@@ -178,6 +178,7 @@ public class TradeRunnable implements Runnable {
                         .holdCondition(trade.getHoldCondition())
                         .logger(log)
                         .dateTime(dateTime)
+                        .orderBook(orderBook)
                         .assetIndicator(assetIndicator)
                         .indiceIndicators(indiceIndicators)
                         .build();

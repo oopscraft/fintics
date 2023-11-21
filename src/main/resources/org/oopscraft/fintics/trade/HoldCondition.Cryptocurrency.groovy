@@ -1,5 +1,3 @@
-import java.time.LocalTime;
-
 Boolean hold;
 
 // info
@@ -43,20 +41,47 @@ log.info("== [{}] macd:{}", name, macd);
 log.info("== [{}] rsi:{}", name, rsi);
 log.info("== [{}] dmi:{}", name, dmi);
 
-// buy
+// TODO 이상 거래 탐지
+
+
+// 매수 여부 판단
 if((price > shortMa && shortMa > longMa)
 && (pricePctChange > 0.0 && shortMaPctChange > 0.0 && longMaPctChange > 0.0)
 ){
     log.info("== [{}] buy vote.", name);
-    hold = true;
+    def buyVotes = [];
+
+    // technical analysis
+    buyVotes.add(macd.value > 0 ? 100 : 0);
+    buyVotes.add(macd.value > macd.signal ? 100 : 0);
+    buyVotes.add(rsi > 50 ? 100 : 0);
+    buyVotes.add(dmi.pdi > dmi.mdi ? 100 : 0);
+
+    // buy result
+    log.info("== [{}] buyVotes[{}]:{}", name, buyVotes.average(), buyVotes);
+    if(buyVotes.average() > 70) {
+        hold = true;
+    }
 }
 
-// sell
+// 매도 여부 판단
 if((price < longMa)
 && (pricePctChange < 0.0)
 ){
     log.info("== [{}] sell vote.", name);
-    hold = false;
+    def sellVotes = [];
+
+    // technical analysis
+    sellVotes.add(macd.value < 0 ? 100 : 0);
+    sellVotes.add(macd.value < macd.signal ? 100 : 0);
+    sellVotes.add(rsi < 50 ? 100 : 0);
+    sellVotes.add(dmi.pdi < dmi.mdi ? 100 : 0);
+
+    // sell result
+    log.info("== [{}] sellVotes[{}]:{}", name, sellVotes.average(), sellVotes);
+    if(sellVotes.average() > 30) {
+        hold = false;
+    }
 }
 
 // return

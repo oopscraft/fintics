@@ -106,58 +106,9 @@ public class ToolTest {
         assertEquals(50, resampledOhlcvs.get(2).getVolume().doubleValue());
     }
 
-
-    @Test
-    void zScoreNormal() {
-        // given
-        List<BigDecimal> values = Stream.of(10040, 10020, 10030, 9990, 10020, 10030, 10070, 10100, 10090, 10080, 10100, 10000)
-                .map(BigDecimal::valueOf)
-                .toList();
-
-        // when
-        Tool tool = new Tool();
-        BigDecimal zScore = tool.zScore(values, BigDecimal.valueOf(10040));
-
-        // then
-        log.info("zScore:{}", zScore.doubleValue());
-        assertTrue(zScore.doubleValue() <= 1);
-    }
-
-    @Test
-    void zScoreOutlier() {
-        // given
-        List<BigDecimal> values = Stream.of(10100, 10020, 10030, 9990, 10020, 10030, 10070, 10100, 10090, 10080, 10100, 10000)
-                .map(BigDecimal::valueOf)
-                .toList();
-
-        // when
-        Tool tool = new Tool();
-        BigDecimal zScore = tool.zScore(values, BigDecimal.valueOf(10110));
-
-        // then
-        log.info("zScore:{}", zScore.doubleValue());
-        assertTrue(zScore.doubleValue() > 1);
-    }
-
-    @Test
-    void slope() {
-        // given
-        List<BigDecimal> values = Stream.of(20,10)
-                .map(BigDecimal::valueOf)
-                .toList();
-
-        // when
-        Tool tool = new Tool();
-        BigDecimal slope = tool.slope(values);
-
-        // then
-        log.info("== slope:{}", slope);
-        assertTrue(slope.doubleValue() > 1);
-    }
-
     @Test
     @Order(1)
-    void average() {
+    void mean() {
         // given
         List<BigDecimal> values = Stream.of(10,20)
                 .map(BigDecimal::valueOf)

@@ -74,8 +74,7 @@ public class Tool {
 
     public BigDecimal sum(List<BigDecimal> values) {
         return values.stream()
-                .reduce(BigDecimal.ZERO, BigDecimal::add)
-                .setScale(4, RoundingMode.HALF_UP);
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     public BigDecimal mean(List<BigDecimal> values) {
@@ -85,8 +84,7 @@ public class Tool {
         List<BigDecimal> series = new ArrayList<>(values);
         return series.stream()
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
-                .divide(BigDecimal.valueOf(series.size()), MathContext.DECIMAL32)
-                .setScale(4, RoundingMode.HALF_UP);
+                .divide(BigDecimal.valueOf(series.size()), MathContext.DECIMAL32);
     }
 
     public BigDecimal min(List<BigDecimal> values) {
@@ -114,8 +112,7 @@ public class Tool {
             BigDecimal leftMiddle = sortedValues.get(size / 2 - 1);
             BigDecimal rightMiddle = sortedValues.get(size / 2);
             return leftMiddle.add(rightMiddle)
-                    .divide(BigDecimal.valueOf(2), MathContext.DECIMAL32)
-                    .setScale(4, RoundingMode.HALF_UP);
+                    .divide(BigDecimal.valueOf(2), MathContext.DECIMAL32);
         }
     }
 
@@ -133,8 +130,7 @@ public class Tool {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         BigDecimal variance = sumSquaredDeviations
                 .divide(BigDecimal.valueOf(series.size()), MathContext.DECIMAL32);
-        BigDecimal standardDeviation = BigDecimal.valueOf(Math.sqrt(variance.doubleValue()));
-        return standardDeviation.setScale(4, RoundingMode.HALF_UP);
+        return BigDecimal.valueOf(Math.sqrt(variance.doubleValue()));
     }
 
     public List<BigDecimal> pctChange(List<BigDecimal> values) {
@@ -159,7 +155,6 @@ public class Tool {
             }
             BigDecimal pctChange = current.subtract(previous)
                     .divide(previous, MathContext.DECIMAL32)
-                    .setScale(4, RoundingMode.HALF_UP)
                     .multiply(BigDecimal.valueOf(100));
             pctChanges.add(pctChange);
         }
@@ -178,7 +173,7 @@ public class Tool {
         BigDecimal mean = mean(series);
         BigDecimal std = std(series);
 
-        List<BigDecimal> zScores = new ArrayList();
+        List<BigDecimal> zScores = new ArrayList<>();
         for(BigDecimal value : values) {
             if(std.compareTo(BigDecimal.ZERO) == 0) {
                 zScores.add(BigDecimal.ZERO);
@@ -186,8 +181,7 @@ public class Tool {
             }
             BigDecimal zScore = value
                     .subtract(mean)
-                    .divide(std, MathContext.DECIMAL32)
-                    .setScale(4, RoundingMode.HALF_UP);
+                    .divide(std, MathContext.DECIMAL32);
             zScores.add(zScore);
         }
 
@@ -266,77 +260,5 @@ public class Tool {
 
         return dmis;
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    @Deprecated
-    public BigDecimal zScore(List<BigDecimal> sampleValues, BigDecimal testValue) {
-        if(sampleValues.isEmpty()) {
-            return BigDecimal.ZERO;
-        }
-        List<BigDecimal> series = new ArrayList<>(sampleValues);
-        Collections.reverse(series);
-
-        BigDecimal mean = series.stream()
-                .reduce(BigDecimal.ZERO, BigDecimal::add)
-                .divide(BigDecimal.valueOf(series.size()), MathContext.DECIMAL32);
-
-        BigDecimal sumSquaredDeviations = series.stream()
-                .map(x -> x.subtract(mean).pow(2))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        BigDecimal variance = sumSquaredDeviations
-                .divide(BigDecimal.valueOf(series.size()), MathContext.DECIMAL32);
-        BigDecimal standardDeviation = BigDecimal.valueOf(Math.sqrt(variance.doubleValue()));
-
-        if(standardDeviation.compareTo(BigDecimal.ZERO) == 0) {
-            return BigDecimal.ZERO;
-        }
-
-        return testValue
-                .subtract(mean)
-                .divide(standardDeviation, MathContext.DECIMAL32)
-                .setScale(4, RoundingMode.HALF_UP);
-    }
-
-    @Deprecated
-    public BigDecimal slope(List<BigDecimal> values) {
-        List<BigDecimal> series = new ArrayList<>(values);
-        Collections.reverse(series);
-
-        // check empty
-        if(series.isEmpty()) {
-            return BigDecimal.ZERO;
-        }
-
-        // sum
-        BigDecimal sum = BigDecimal.ZERO;
-        for (int i = 0; i < series.size(); i++) {
-            BigDecimal change = series.get(i)
-                    .subtract(series.get(Math.max(i-1,0)));
-            sum = sum.add(change);
-        }
-
-        // average
-        return sum.divide(BigDecimal.valueOf(series.size()), MathContext.DECIMAL32)
-                .setScale(4, RoundingMode.HALF_UP);
-    }
-
-
-
-
-
 
 }
