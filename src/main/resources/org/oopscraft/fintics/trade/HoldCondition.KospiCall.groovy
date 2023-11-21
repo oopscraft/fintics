@@ -13,12 +13,12 @@ def price = prices.first();
 def pricePctChange = tool.mean(tool.pctChange(prices).take(10));
 
 // shortMa
-def shortMas = tool.ema(ohlcvs, 20);
+def shortMas = tool.sma(ohlcvs, 20);
 def shortMa = shortMas.first();
 def shortMaPctChange = tool.mean(tool.pctChange(shortMas).take(10));
 
 // longMa
-def longMas = tool.ema(ohlcvs, 60);
+def longMas = tool.sma(ohlcvs, 60);
 def longMa = longMas.first();
 def longMaPctChange = tool.mean(tool.pctChange(longMas).take(10));
 
