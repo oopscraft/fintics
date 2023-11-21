@@ -35,6 +35,7 @@ def dmis = tool.dmi(ohlcvs, 14);
 def dmi = dmis.first();
 
 // logging
+log.info("== [{}] orderBook:{}", name, orderBook);
 log.info("== [{}] ohlcv:{}", name, ohlcv);
 log.info("== [{}] price:{}({}%), shortMa:{}({}%), longMa:{}({}%)", name, price, pricePctChange, shortMa, shortMaPctChange, longMa, longMaPctChange);
 log.info("== [{}] macd:{}", name, macd);

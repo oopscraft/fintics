@@ -50,6 +50,7 @@ def ndxFutureOhlcvs = tool.resample(ndxFutureIndicator.getMinuteOhlcvs(), 10);
 def ndxFutureMacd = tool.macd(ndxFutureOhlcvs, 12, 16, 9).first();
 
 // logging
+log.info("== [{}] orderBook:{}", name, orderBook);
 log.info("== [{}] ohlcv:{}", name, ohlcv);
 log.info("== [{}] price:{}({}%), shortMa:{}({}%), longMa:{}({}%)", name, price, pricePctChange, shortMa, shortMaPctChange, longMa, longMaPctChange);
 log.info("== [{}] macd:{}", name, macd);
