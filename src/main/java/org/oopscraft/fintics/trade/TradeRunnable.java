@@ -83,7 +83,9 @@ public class TradeRunnable implements Runnable {
         while(!Thread.currentThread().isInterrupted() && !interrupted) {
             TransactionStatus transactionStatus = null;
             try {
-                Thread.sleep(3_000);
+                // wait interval
+                log.info("Waiting interval: {} seconds", interval);
+                Thread.sleep(interval * 1_000);
 
                 // start transaction
                 DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition();
@@ -95,10 +97,6 @@ public class TradeRunnable implements Runnable {
 
                 // end transaction
                 transactionManager.commit(transactionStatus);
-
-                // wait interval
-                log.info("Waiting interval: {} seconds", interval);
-                Thread.sleep(interval * 1_000);
 
             } catch (InterruptedException e) {
                 log.warn("TradeRunnable is interrupted.");
