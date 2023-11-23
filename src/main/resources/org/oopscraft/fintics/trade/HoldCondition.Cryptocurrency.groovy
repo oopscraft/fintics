@@ -97,7 +97,7 @@ if(pricePctChange > 0.0) {
 
 // 매도 여부 판단
 if(pricePctChange < 0.0) {
-    if(holdVoteResult < 50) {
+    if(holdVoteResult < 20) {
         hold = false;
     }
 }
