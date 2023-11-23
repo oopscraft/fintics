@@ -1,3 +1,5 @@
+import java.time.LocalTime
+
 Boolean hold;
 
 // info
@@ -127,6 +129,18 @@ if((price < shortMa || shortMa < longMa)
     if(sellVotes.average() > 70) {
         hold = false;
     }
+}
+
+// 장종료 전 처리 - 15:00 부터는 매수는 하지 않음
+if(dateTime.toLocalTime().isAfter(LocalTime.of(15,0))) {
+    if(hold) {
+        hold = false;
+    }
+}
+
+// 장종료 전 처리 - 15:15 이후는 모두 매도(보유 하지 않음)
+if(dateTime.toLocalTime().isAfter(LocalTime.of(15, 15))) {
+    hold = false;
 }
 
 // return

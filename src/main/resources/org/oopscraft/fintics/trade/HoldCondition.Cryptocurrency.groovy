@@ -34,6 +34,26 @@ def rsi = rsis.first();
 def dmis = tool.dmi(ohlcvs, 14);
 def dmi = dmis.first();
 
+// obv
+def obvs = tool.obv(ohlcvs);
+def obv = obvs.first();
+def obvPctChange = tool.sum(tool.pctChange(obvs).take(5));
+
+// hold votes
+def holdVotes = [];
+holdVotes.add(pricePctChange > 0.0 ? 100 : 0);
+holdVotes.add(price > shortMa ? 100 : 0);
+holdVotes.add(price > longMa ? 100 : 0);
+holdVotes.add(shortMa > longMa ? 100 : 0);
+holdVotes.add(shortMaPctChange > 0.0 ? 100 : 0);
+holdVotes.add(longMaPctChange > 0.0 ? 100 : 0);
+holdVotes.add(macd.value > 0 ? 100 : 0);
+holdVotes.add(macd.oscillator > 0 ? 100 : 0);
+holdVotes.add(rsi > 50 ? 100 : 0);
+holdVotes.add(dmi.pdi > dmi.mdi ? 100 : 0);
+holdVotes.add(dmi.pdi - dmi.mdi > 10 && dmi.adx > 25 ? 100 : 0);
+holdVotes.add(obvPctChange > 0.0 ? 100 : 0);
+
 // logging
 log.info("== [{}] orderBook:{}", name, orderBook);
 log.info("== [{}] ohlcv:{}", name, ohlcv);
@@ -43,57 +63,21 @@ log.info("== [{}] longMa:{}({}%)", name, longMa, longMaPctChange);
 log.info("== [{}] macd:{}", name, macd);
 log.info("== [{}] rsi:{}", name, rsi);
 log.info("== [{}] dmi:{}", name, dmi);
+log.info("== [{}] obv:{}({}%)", name, obv, obvPctChange);
+log.info("== [{}] holdVotes[{}]:{}", name, holdVotes.average(), holdVotes);
 
 // TODO 이상 거래 탐지
 
 // 매수 여부 판단
-if((price > shortMa && shortMa > longMa)
-&& (pricePctChange > 0.0 && shortMaPctChange > 0.0 && longMaPctChange > 0.0)
-){
-    log.info("== [{}] buy vote.", name);
-    def buyVotes = [];
-
-    // technical analysis
-    buyVotes.add(price > shortMa ? 100 : 0);
-    buyVotes.add(price > longMa ? 100 : 0);
-    buyVotes.add(shortMa > longMa ? 100 : 0);
-    buyVotes.add(shortMaPctChange > 0.0 ? 100 : 0);
-    buyVotes.add(longMaPctChange > 0.0 ? 100 : 0);
-    buyVotes.add(macd.value > 0 ? 100 : 0);
-    buyVotes.add(macd.oscillator > 0 ? 100 : 0);
-    buyVotes.add(rsi > 50 ? 100 : 0);
-    buyVotes.add(dmi.pdi > dmi.mdi ? 100 : 0);
-    buyVotes.add(dmi.pdi - dmi.mdi > 10 && dmi.adx > 25 ? 100 : 0);
-
-    // buy result
-    log.info("== [{}] buyVotes[{}]:{}", name, buyVotes.average(), buyVotes);
-    if(buyVotes.average() > 70) {
+if(pricePctChange > 0.0) {
+    if(holdVotes.average() > 70) {
         hold = true;
     }
 }
 
 // 매도 여부 판단
-if((price < shortMa || shortMa < longMa)
-|| (pricePctChange < 0.0 || shortMaPctChange < 0.0 || longMaPctChange < 0.0)
-){
-    log.info("== [{}] sell vote.", name);
-    def sellVotes = [];
-
-    // technical analysis
-    sellVotes.add(price < shortMa ? 100 : 0);
-    sellVotes.add(price < longMa ? 100 : 0);
-    sellVotes.add(shortMa < longMa ? 100 : 0);
-    sellVotes.add(shortMaPctChange < 0.0 ? 100 : 0);
-    sellVotes.add(longMaPctChange < 0.0 ? 100 : 0);
-    sellVotes.add(macd.value < 0 ? 100 : 0);
-    sellVotes.add(macd.oscillator < 0 ? 100 : 0);
-    sellVotes.add(rsi < 50 ? 100 : 0);
-    sellVotes.add(dmi.mdi > dmi.pdi ? 100 : 0);
-    sellVotes.add(dmi.mdi - dmi.pdi > 10 && dmi.adx > 25 ? 100 : 0);
-
-    // sell result
-    log.info("== [{}] sellVotes[{}]:{}", name, sellVotes.average(), sellVotes);
-    if(sellVotes.average() > 70) {
+if(pricePctChange < 0.0) {
+    if(holdVotes.average() < 30) {
         hold = false;
     }
 }

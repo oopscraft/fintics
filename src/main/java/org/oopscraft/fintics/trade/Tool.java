@@ -261,4 +261,12 @@ public class Tool {
         return dmis;
     }
 
+    public List<BigDecimal> obv(List<Ohlcv> ohlcvs) {
+        List<Ohlcv> series = new ArrayList<>(ohlcvs);
+        Collections.reverse(series);
+        List<BigDecimal> obvs = ObvCalculator.of(series).calculate();
+        Collections.reverse(obvs);
+        return obvs;
+    }
+
 }
