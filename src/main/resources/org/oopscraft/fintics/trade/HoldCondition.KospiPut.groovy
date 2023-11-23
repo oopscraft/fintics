@@ -5,7 +5,7 @@ Boolean hold;
 // info
 def name = assetIndicator.getName();
 
-// OHLCV
+// OHLCV(기본 1분 데이터)
 def ohlcvs = tool.resample(assetIndicator.getMinuteOhlcvs(), 1);
 def ohlcv = ohlcvs.first();
 
@@ -13,6 +13,11 @@ def ohlcv = ohlcvs.first();
 def prices = ohlcvs.collect{it.closePrice};
 def price = prices.first();
 def pricePctChange = tool.sum(tool.pctChange(prices).take(5));
+
+// volume
+def volumes = ohlcvs.collect{it.volume};
+def volume = volumes.first();
+def volumePctChange = tool.sum(tool.pctChange(volumes).take(5));
 
 // shortMa
 def shortMas = tool.ema(ohlcvs, 20);
@@ -27,14 +32,23 @@ def longMaPctChange = tool.sum(tool.pctChange(longMas).take(5));
 // macd
 def macds = tool.macd(ohlcvs, 12, 26, 9);
 def macd = macds.first();
+def macdValuePctChange = tool.sum(tool.pctChange(macds.collect{it.value}).take(5));
 
 // rsi
 def rsis = tool.rsi(ohlcvs, 14);
 def rsi = rsis.first();
+def rsiPctChange = tool.sum(tool.pctChange(rsis).take(5));
 
 // dmi
 def dmis = tool.dmi(ohlcvs, 14);
 def dmi = dmis.first();
+def dmiPdiPctChange = tool.sum(tool.pctChange(dmis.collect{it.pdi}).take(5));
+def dmiMdiPctChange = tool.sum(tool.pctChange(dmis.collect{it.mdi}).take(5));
+
+// obv
+def obvs = tool.obv(ohlcvs);
+def obv = obvs.first();
+def obvPctChange = tool.sum(tool.pctChange(obvs).take(5));
 
 // kospi indice
 def kospiIndicator = indiceIndicators['KOSPI'];
@@ -51,82 +65,84 @@ def ndxFutureIndicator = indiceIndicators['NDX_FUTURE'];
 def ndxFutureOhlcvs = tool.resample(ndxFutureIndicator.getMinuteOhlcvs(), 10);
 def ndxFutureMacd = tool.macd(ndxFutureOhlcvs, 12, 16, 9).first();
 
-// logging
-log.info("== [{}] orderBook:{}", name, orderBook);
-log.info("== [{}] ohlcv:{}", name, ohlcv);
-log.info("== [{}] price:{}({}%)", name, price, pricePctChange);
-log.info("== [{}] shortMa:{}({}%)", name, shortMa, shortMaPctChange);
-log.info("== [{}] longMa:{}({}%)", name, longMa, longMaPctChange);
-log.info("== [{}] macd:{}", name, macd);
-log.info("== [{}] rsi:{}", name, rsi);
-log.info("== [{}] dmi:{}", name, dmi);
-log.info("== [{}] kospiOhlcv:{}", kospiOhlcvs.first());
-log.info("== [{}] kospiMacd:{}", kospiMacd);
-log.info("== [{}] usdKrwOhlcv:{}", usdKrwOhlcvs.first());
-log.info("== [{}] usdKrwMacd:{}", usdKrwMacd);
-log.info("== [{}] ndxFutureOhlcv:{}", ndxFutureOhlcvs.first());
-log.info("== [{}] ndxFutureMacd:{}", ndxFutureMacd);
+// hold vote
+def holdVote = [:];
+holdVote.pricePctChange = (pricePctChange > 0.0 ? 100 : 0);
+holdVote.priceShortMa = (price > shortMa ? 100 : 0);
+holdVote.priceLongMa = (price > longMa ? 100 : 0);
+holdVote.shortMaLongMa = (shortMa > longMa ? 100 : 0);
+holdVote.shortMaPctChange = (shortMaPctChange > 0.0 ? 100 : 0);
+holdVote.longMaPctChange = (longMaPctChange > 0.0 ? 100 : 0);
+holdVote.macdValue = (macd.value > 0 ? 100 : 0);
+holdVote.macdOscillator = (macd.oscillator > 0 ? 100 : 0);
+holdVote.macdValuePctChange = (macdValuePctChange > 0 ? 100 : 0);
+holdVote.rsi = (rsi > 50 ? 100 : 0);
+holdVote.rsiPctChange = (rsiPctChange > 0.0 ? 100 : 0);
+holdVote.dmiPdi = (dmi.pdi > dmi.mdi ? 100 : 0);
+holdVote.dmiPdiPctChange = (dmiPdiPctChange > 0.0 ? 100 : 0);
+holdVote.dmiMdiPctChange = (dmiMdiPctChange < 0.0 ? 100 : 0);
+holdVote.dmiAdx = (dmi.adx > 20 && dmi.pdi - dmi.mdi > 10 ? 100 : 0);
+holdVote.obvPctChage = (obvPctChange > 0.0 ? 100 : 0);
 
-// TODO 이상 거래 탐지
+// hold vote - indice
+holdVote.kospiMacdValue = (kospiMacd.value < 0 ? 100 : 0);          // kospi 지수 하락 시 매수 (인버스)
+holdVote.usdKrwMacdValue = (usdKrwMacd.value > 0 ? 100 : 0);        // 달러 환율 상승 시 매수 (인버스)
+holdVote.ndxFutureMacdValue = (ndxFutureMacd.value < 0 ? 100 : 0);  // 나스닥 선물 하락 시 매수 (인버스)
+
+// hold vote result
+def holdVoteResult = holdVote.values()
+        .toList()
+        .average();
+
+// logging
+log.info("[{}] orderBook:{}", name, orderBook);
+log.info("[{}] ohlcv:{}", name, ohlcv);
+log.info("[{}] price:{}({}%)", name, price, pricePctChange);
+log.info("[{}] volume:{}({}%)", name, volume, volumePctChange);
+log.info("[{}] shortMa:{}({}%)", name, shortMa, shortMaPctChange);
+log.info("[{}] longMa:{}({}%)", name, longMa, longMaPctChange);
+log.info("[{}] macd:{}", name, macd);
+log.info("[{}] rsi:{}", name, rsi);
+log.info("[{}] dmi:{}", name, dmi);
+log.info("[{}] obv:{}({}%)", name, obv, obvPctChange);
+log.info("[{}] kospiOhlcv:{}", kospiOhlcvs.first());
+log.info("[{}] kospiMacd:{}", kospiMacd);
+log.info("[{}] usdKrwOhlcv:{}", usdKrwOhlcvs.first());
+log.info("[{}] usdKrwMacd:{}", usdKrwMacd);
+log.info("[{}] ndxFutureOhlcv:{}", ndxFutureOhlcvs.first());
+log.info("[{}] ndxFutureMacd:{}", ndxFutureMacd);
+holdVote.each { key, value -> {
+    log.info("[{}] holdVote[{}]:{}", name, key, value);
+}};
+log.info("[{}] holdVoteResult:{}", name, holdVoteResult);
 
 // 매수 여부 판단
-if((price > shortMa && shortMa > longMa)
-&& (pricePctChange > 0.0 && shortMaPctChange > 0.0 && longMaPctChange > 0.0)
-){
-    log.info("== [{}] buy vote.", name);
-    def buyVotes = [];
-
-    // technical analysis
-    buyVotes.add(price > shortMa ? 100 : 0);
-    buyVotes.add(price > longMa ? 100 : 0);
-    buyVotes.add(shortMa > longMa ? 100 : 0);
-    buyVotes.add(shortMaPctChange > 0.0 ? 100 : 0);
-    buyVotes.add(longMaPctChange > 0.0 ? 100 : 0);
-    buyVotes.add(macd.value > 0 ? 100 : 0);
-    buyVotes.add(macd.oscillator > 0 ? 100 : 0);
-    buyVotes.add(rsi > 50 ? 100 : 0);
-    buyVotes.add(dmi.pdi > dmi.mdi ? 100 : 0);
-    buyVotes.add(dmi.pdi - dmi.mdi > 10 && dmi.adx > 25 ? 100 : 0);
-
-    // indice (인버스)
-    buyVotes.add(kospiMacd.value < 0 ? 100 : 0);
-    buyVotes.add(usdKrwMacd.value > 0 ? 100 : 0);
-    buyVotes.add(ndxFutureMacd.value < 0 ? 100 : 0);
-
-    // buy result
-    log.info("== [{}] buyVotes[{}]:{}", name, buyVotes.average(), buyVotes);
-    if(buyVotes.average() > 70) {
+if(pricePctChange > 0.0) {
+    if(holdVoteResult > 80) {
         hold = true;
     }
 }
 
 // 매도 여부 판단
-if((price < shortMa || shortMa < longMa)
-|| (pricePctChange < 0.0 || shortMaPctChange < 0.0 || longMaPctChange < 0.0)
-){
-    log.info("== [{}] sell vote.", name);
-    def sellVotes = [];
+if(pricePctChange < 0.0) {
+    if(holdVoteResult < 50) {
+        hold = false;
+    }
+}
 
-    // technical analysis
-    sellVotes.add(price < shortMa ? 100 : 0);
-    sellVotes.add(price < longMa ? 100 : 0);
-    sellVotes.add(shortMa < longMa ? 100 : 0);
-    sellVotes.add(shortMaPctChange < 0.0 ? 100 : 0);
-    sellVotes.add(longMaPctChange < 0.0 ? 100 : 0);
-    sellVotes.add(macd.value < 0 ? 100 : 0);
-    sellVotes.add(macd.oscillator < 0 ? 100 : 0);
-    sellVotes.add(rsi < 50 ? 100 : 0);
-    sellVotes.add(dmi.mdi > dmi.pdi ? 100 : 0);
-    sellVotes.add(dmi.mdi - dmi.pdi > 10 && dmi.adx > 25 ? 100 : 0);
-
-    // indice (인버스)
-    sellVotes.add(kospiMacd.value > 0 ? 100 : 0);
-    sellVotes.add(usdKrwMacd.value < 0 ? 100 : 0);
-    sellVotes.add(ndxFutureMacd.value > 0 ? 100 : 0);
-
-    // sell result
-    log.info("== [{}] sellVotes[{}]:{}", name, sellVotes.average(), sellVotes);
-    if(sellVotes.average() > 70) {
+// [이상 거래 확인]
+// 괴리율이 비정상 적으로 급상승 시 추가 처리(급등 매수 방지, 횡보 매수 방지)
+if(hold) {
+    def priceShortMaDiff = (price - shortMa).abs();
+    def shortMaLongMaDiff = (shortMa - longMa).abs();
+    // 2배 이상 이면 현재 포지션 유지
+    if(priceShortMaDiff > shortMaLongMaDiff * 2) {
+        log.warn("[{}] priceShortMaDiff > shortMaLongMaDiff(x2) : {} > {}", name, priceShortMaDiff, shortMaLongMaDiff);
+        hold = null;
+    }
+    // 4배 이상 이면 일단 매도(오버 슈팅 난거면 이후 정상화 되면 다시 매수됨)
+    else if(priceShortMaDiff > shortMaLongMaDiff * 4) {
+        log.warn("[{}] priceShortMaDiff > shortMaLongMaDiff(x4) : {} > {}", name, priceShortMaDiff, shortMaLongMaDiff);
         hold = false;
     }
 }
@@ -144,5 +160,5 @@ if(dateTime.toLocalTime().isAfter(LocalTime.of(15, 15))) {
 }
 
 // return
-log.info("== [{}] hold:{}", name, hold);
+log.info("[{}] hold:{}", name, hold);
 return hold;
