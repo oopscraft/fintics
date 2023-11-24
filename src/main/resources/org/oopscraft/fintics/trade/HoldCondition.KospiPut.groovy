@@ -20,12 +20,12 @@ def volume = volumes.first();
 def volumePctChange = tool.sum(tool.pctChange(volumes).take(5));
 
 // shortMa
-def shortMas = tool.ema(ohlcvs, 20);
+def shortMas = tool.ema(ohlcvs, 10);
 def shortMa = shortMas.first();
 def shortMaPctChange = tool.sum(tool.pctChange(shortMas).take(5));
 
 // longMa
-def longMas = tool.ema(ohlcvs, 60);
+def longMas = tool.ema(ohlcvs, 30);
 def longMa = longMas.first();
 def longMaPctChange = tool.sum(tool.pctChange(longMas).take(5));
 
@@ -126,23 +126,6 @@ if(pricePctChange > 0.0) {
 // 매도 여부 판단
 if(pricePctChange < 0.0) {
     if(holdVoteResult < 20) {
-        hold = false;
-    }
-}
-
-// [이상 거래 확인]
-// 괴리율이 비정상 적으로 급상승 시 추가 처리(급등 매수 방지, 횡보 매수 방지)
-if(hold) {
-    def priceShortMaDiff = (price - shortMa).abs();
-    def shortMaLongMaDiff = (shortMa - longMa).abs();
-    // 2배 이상 이면 현재 포지션 유지
-    if(priceShortMaDiff > shortMaLongMaDiff * 2) {
-        log.warn("[{}] priceShortMaDiff > shortMaLongMaDiff(x2) : {} > {}", name, priceShortMaDiff, shortMaLongMaDiff);
-        hold = null;
-    }
-    // 4배 이상 이면 일단 매도(오버 슈팅 난거면 이후 정상화 되면 다시 매수됨)
-    else if(priceShortMaDiff > shortMaLongMaDiff * 4) {
-        log.warn("[{}] priceShortMaDiff > shortMaLongMaDiff(x4) : {} > {}", name, priceShortMaDiff, shortMaLongMaDiff);
         hold = false;
     }
 }
