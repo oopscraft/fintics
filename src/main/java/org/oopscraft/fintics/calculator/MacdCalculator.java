@@ -1,56 +1,53 @@
 package org.oopscraft.fintics.calculator;
 
+import org.oopscraft.fintics.model.Ohlcv;
+
 import java.math.BigDecimal;
-import java.math.MathContext;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MacdCalculator {
+public class MacdCalculator extends Calculator<MacdContext, Macd> {
 
-    private final List<BigDecimal> series;
-
-    private final int shortPeriod;
-
-    private final int longPeriod;
-
-    private final int signalPeriod;
-
-    private final MathContext mathContext;
-
-    public static MacdCalculator of(List<BigDecimal> series, int shortPeriod, int longPeriod, int signalPeriod) {
-        return of(series, shortPeriod, longPeriod, signalPeriod, new MathContext(4, RoundingMode.HALF_UP));
+    public MacdCalculator(MacdContext context) {
+        super(context);
     }
 
-    public static MacdCalculator of(List<BigDecimal> series, int shortPeriod, int longPeriod, int signalPeriod, MathContext mathContext) {
-        return new MacdCalculator(series, shortPeriod, longPeriod, signalPeriod, mathContext);
-    }
+    @Override
+    public List<Macd> calculate(List<Ohlcv> series) {
+        List<BigDecimal> closePrices = series.stream()
+                .map(Ohlcv::getClosePrice)
+                .toList();
 
-    public MacdCalculator(List<BigDecimal> series, int shortPeriod, int longPeriod, int signalPeriod, MathContext mathContext) {
-        this.series = series;
-        this.shortPeriod = shortPeriod;
-        this.longPeriod = longPeriod;
-        this.signalPeriod = signalPeriod;
-        this.mathContext = mathContext;
-    }
-
-    public List<Macd> calculate() {
         List<BigDecimal> values = new ArrayList<>();
         List<BigDecimal> oscillators = new ArrayList<>();
 
         // Calculate MACD line
-        List<BigDecimal> shortTermEma = EmaCalculator.of(series, shortPeriod, mathContext)
-                .calculate();
-        List<BigDecimal> longTermEma = EmaCalculator.of(series, longPeriod, mathContext)
-                .calculate();
-        for (int i = 0; i < longTermEma.size(); i++) {
-            BigDecimal macd = shortTermEma.get(i).subtract(longTermEma.get(i));
-            values.add(macd);
+        List<BigDecimal> shortTermEmas = emas(closePrices, getContext().getShortPeriod());
+//        List<Ema> shortTermEma = new EmaCalculator(EmaContext.builder()
+//                .period(getContext().getShortPeriod())
+//                .mathContext(getContext().getMathContext())
+//                .build())
+//                .calculate(series);
+
+        List<BigDecimal> longTermEmas = emas(closePrices, getContext().getLongPeriod());
+//        List<Ema> longTermEma = new EmaCalculator(EmaContext.builder()
+//                .period(getContext().getLongPeriod())
+//                .mathContext(getContext().getMathContext())
+//                .build())
+//                .calculate(series);
+
+        for (int i = 0; i < longTermEmas.size(); i++) {
+            BigDecimal value = shortTermEmas.get(i).subtract(longTermEmas.get(i));
+            values.add(value);
         }
 
         // ine using MACD line
-        List<BigDecimal> signals = new ArrayList<>(EmaCalculator.of(values, signalPeriod, mathContext)
-                .calculate());
+        List<BigDecimal> signals = emas(values, getContext().getSignalPeriod());
+//        List<Ema> signals = new EmaCalculator(EmaContext.builder()
+//                .period(getContext().getSignalPeriod())
+//                .mathContext(getContext().getMathContext())
+//                .build())
+//                .calculate(values);
 
         // oscillator
         for (int i = 0; i < values.size(); i++) {

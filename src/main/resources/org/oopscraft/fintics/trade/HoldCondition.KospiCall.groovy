@@ -6,44 +6,44 @@ Boolean hold;
 def name = assetIndicator.getName();
 
 // OHLCV(기본 1분 데이터)
-def ohlcvs = tool.resample(assetIndicator.getMinuteOhlcvs(), 1);
+def ohlcvs = tool.resample(assetIndicator.getMinuteOhlcvs(), 3);
 def ohlcv = ohlcvs.first();
 
 // price
 def prices = ohlcvs.collect{it.closePrice};
 def price = prices.first();
-def pricePctChange = tool.sum(tool.pctChange(prices).take(5));
+def pricePctChange = tool.sum(tool.pctChange(prices).take(3));
 
 // volume
 def volumes = ohlcvs.collect{it.volume};
 def volume = volumes.first();
-def volumePctChange = tool.sum(tool.pctChange(volumes).take(5));
+def volumePctChange = tool.sum(tool.pctChange(volumes).take(3));
 
 // shortMa
-def shortMas = tool.ema(ohlcvs, 10);
+def shortMas = tool.emas(ohlcvs, 10);
 def shortMa = shortMas.first();
-def shortMaPctChange = tool.sum(tool.pctChange(shortMas).take(5));
+def shortMaPctChange = tool.sum(tool.pctChange(shortMas).take(3));
 
 // longMa
-def longMas = tool.ema(ohlcvs, 30);
+def longMas = tool.emas(ohlcvs, 30);
 def longMa = longMas.first();
-def longMaPctChange = tool.sum(tool.pctChange(longMas).take(5));
+def longMaPctChange = tool.sum(tool.pctChange(longMas).take(3));
 
 // macd
 def macds = tool.macd(ohlcvs, 12, 26, 9);
 def macd = macds.first();
-def macdValuePctChange = tool.sum(tool.pctChange(macds.collect{it.value}).take(5));
+def macdValuePctChange = tool.sum(tool.pctChange(macds.collect{it.value}).take(3));
 
 // rsi
 def rsis = tool.rsi(ohlcvs, 14);
 def rsi = rsis.first();
-def rsiPctChange = tool.sum(tool.pctChange(rsis).take(5));
+def rsiPctChange = tool.sum(tool.pctChange(rsis).take(3));
 
 // dmi
 def dmis = tool.dmi(ohlcvs, 14);
 def dmi = dmis.first();
-def dmiPdiPctChange = tool.sum(tool.pctChange(dmis.collect{it.pdi}).take(5));
-def dmiMdiPctChange = tool.sum(tool.pctChange(dmis.collect{it.mdi}).take(5));
+def dmiPdiPctChange = tool.sum(tool.pctChange(dmis.collect{it.pdi}).take(3));
+def dmiMdiPctChange = tool.sum(tool.pctChange(dmis.collect{it.mdi}).take(3));
 
 // obv
 def obvs = tool.obv(ohlcvs);
@@ -74,14 +74,14 @@ holdVote.shortMaLongMa = (shortMa > longMa ? 100 : 0);
 holdVote.shortMaPctChange = (shortMaPctChange > 0.0 ? 100 : 0);
 holdVote.longMaPctChange = (longMaPctChange > 0.0 ? 100 : 0);
 holdVote.macdValue = (macd.value > 0 ? 100 : 0);
-holdVote.macdOscillator = (macd.oscillator > 0 ? 100 : 0);
 holdVote.macdValuePctChange = (macdValuePctChange > 0 ? 100 : 0);
+holdVote.macdOscillator = (macd.oscillator > 0 ? 100 : 0);
 holdVote.rsi = (rsi > 50 ? 100 : 0);
 holdVote.rsiPctChange = (rsiPctChange > 0.0 ? 100 : 0);
 holdVote.dmiPdi = (dmi.pdi > dmi.mdi ? 100 : 0);
 holdVote.dmiPdiPctChange = (dmiPdiPctChange > 0.0 ? 100 : 0);
 holdVote.dmiMdiPctChange = (dmiMdiPctChange < 0.0 ? 100 : 0);
-holdVote.dmiAdx = (dmi.adx > 20 && dmi.pdi - dmi.mdi > 10 ? 100 : 0);
+holdVote.dmiAdx = (dmi.adx > 25 && dmi.pdi - dmi.mdi > 10 ? 100 : 0);
 holdVote.obvPctChage = (obvPctChange > 0.0 ? 100 : 0);
 
 // hold vote - indice
@@ -118,14 +118,14 @@ log.info("[{}] holdVoteResult:{}", name, holdVoteResult);
 
 // 매수 여부 판단
 if(pricePctChange > 0.0) {
-    if(holdVoteResult > 80) {
+    if(holdVoteResult > 70) {
         hold = true;
     }
 }
 
 // 매도 여부 판단
 if(pricePctChange < 0.0) {
-    if(holdVoteResult < 20) {
+    if(holdVoteResult < 30) {
         hold = false;
     }
 }

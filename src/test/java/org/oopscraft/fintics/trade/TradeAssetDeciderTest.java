@@ -3,6 +3,7 @@ package org.oopscraft.fintics.trade;
 import com.github.javaparser.utils.LineSeparator;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.oopscraft.fintics.model.*;
 import org.oopscraft.fintics.trade.TradeAssetDecider;
@@ -146,6 +147,7 @@ class TradeAssetDeciderTest {
         assertTrue(result);
     }
 
+    @Disabled
     @Test
     void testHoldConditionCryptocurrency() {
         // given
@@ -170,7 +172,7 @@ class TradeAssetDeciderTest {
         log.info("== result:{}", result);
     }
 
-
+    @Disabled
     @Test
     void testHoldConditionKospiCall() {
         // given

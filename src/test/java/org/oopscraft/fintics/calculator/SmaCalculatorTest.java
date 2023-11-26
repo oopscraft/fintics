@@ -3,6 +3,10 @@ package org.oopscraft.fintics.calculator;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.oopscraft.fintics.calculator.Sma;
+import org.oopscraft.fintics.calculator.SmaCalculator;
+import org.oopscraft.fintics.calculator.SmaContext;
+import org.oopscraft.fintics.model.Ohlcv;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -15,14 +19,14 @@ public class SmaCalculatorTest {
     @Order(1)
     void test1() {
         // given
-        List<BigDecimal> series = new ArrayList<>(){{
-            add(BigDecimal.valueOf(100));
-            add(BigDecimal.valueOf(200));
-            add(BigDecimal.valueOf(300));
+        List<Ohlcv> ohlcvs = new ArrayList<>(){{
+            add(Ohlcv.builder().closePrice(BigDecimal.valueOf(100)).build());
+            add(Ohlcv.builder().closePrice(BigDecimal.valueOf(200)).build());
+            add(Ohlcv.builder().closePrice(BigDecimal.valueOf(300)).build());
         }};
 
         // when
-        List<BigDecimal> smas = SmaCalculator.of(series, 3).calculate();
+        List<Sma> smas = new SmaCalculator(SmaContext.of(3)).calculate(ohlcvs);
 
         // then
         smas.forEach(sma -> log.debug("{}", sma));

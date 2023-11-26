@@ -2,9 +2,7 @@ package org.oopscraft.fintics.model;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import net.bytebuddy.implementation.bind.annotation.Super;
 import org.oopscraft.fintics.dao.OhlcvEntity;
-import org.oopscraft.fintics.dao.TradeAssetOhlcvEntity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -19,15 +17,31 @@ public class Ohlcv {
 
     private LocalDateTime dateTime;
 
-    private BigDecimal openPrice;
+    @Builder.Default
+    private BigDecimal openPrice = BigDecimal.ZERO;
 
-    private BigDecimal highPrice;
+    @Builder.Default
+    private BigDecimal highPrice = BigDecimal.ZERO;
 
-    private BigDecimal lowPrice;
+    @Builder.Default
+    private BigDecimal lowPrice = BigDecimal.ZERO;
 
-    private BigDecimal closePrice;
+    @Builder.Default
+    private BigDecimal closePrice = BigDecimal.ZERO;
 
-    private BigDecimal volume;
+    @Builder.Default
+    private BigDecimal volume = BigDecimal.ZERO;
+
+    public static Ohlcv of(LocalDateTime dateTime, double openPrice, double highPrice, double lowPrice, double closePrice, double volume) {
+        return Ohlcv.builder()
+                .dateTime(dateTime)
+                .openPrice(BigDecimal.valueOf(openPrice))
+                .highPrice(BigDecimal.valueOf(highPrice))
+                .lowPrice(BigDecimal.valueOf(lowPrice))
+                .closePrice(BigDecimal.valueOf(closePrice))
+                .volume(BigDecimal.valueOf(volume))
+                .build();
+    }
 
     public static Ohlcv from(OhlcvEntity OhlcvEntity) {
         return Ohlcv.builder()

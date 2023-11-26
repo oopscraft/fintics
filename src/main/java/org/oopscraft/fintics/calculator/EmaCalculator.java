@@ -1,50 +1,30 @@
 package org.oopscraft.fintics.calculator;
 
+import org.oopscraft.fintics.model.Ohlcv;
+
 import java.math.BigDecimal;
-import java.math.MathContext;
-import java.math.RoundingMode;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class EmaCalculator {
+public class EmaCalculator extends Calculator<EmaContext, Ema> {
 
-    private final List<BigDecimal> series;
-
-    private final int period;
-
-    private final MathContext mathContext;
-
-    public static EmaCalculator of(List<BigDecimal> series, int period) {
-        return new EmaCalculator(series, period, new MathContext(4, RoundingMode.HALF_UP));
+    public EmaCalculator(EmaContext context) {
+        super(context);
     }
 
-    public static EmaCalculator of(List<BigDecimal> series, int period, MathContext mathContext) {
-        return new EmaCalculator(series, period, mathContext);
-    }
+    @Override
+    public List<Ema> calculate(List<Ohlcv> series) {
+        List<BigDecimal> closePrices = series.stream()
+                .map(Ohlcv::getClosePrice)
+                .toList();
 
-    public EmaCalculator(List<BigDecimal> series, int period, MathContext mathContext) {
-        this.series = series;
-        this.period = period;
-        this.mathContext = mathContext;
-    }
+        List<BigDecimal> emaValues = this.emas(closePrices, getContext().getPeriod());
 
-    public List<BigDecimal> calculate() {
-        List<BigDecimal> emas = new ArrayList<>();
-
-        BigDecimal multiplier = BigDecimal.valueOf(2.0)
-                .divide(BigDecimal.valueOf(period + 1), mathContext);
-
-        BigDecimal ema = series.isEmpty() ? BigDecimal.ZERO : series.get(0);
-        emas.add(ema);
-        for (int i = 1; i < series.size(); i++) {
-            BigDecimal emaDiff = series.get(i).subtract(ema);
-            ema = emaDiff
-                    .multiply(multiplier)
-                    .add(ema);
-            emas.add(ema);
-        }
-
-        return emas;
+        return emaValues.stream()
+                .map(emaValue -> Ema.builder()
+                        .value(emaValue)
+                        .build())
+                .collect(Collectors.toList());
     }
 
 }

@@ -1,29 +1,40 @@
-package org.oopscraft.fintics.calculator;
-
-import org.oopscraft.fintics.model.Ohlcv;
+package org.oopscraft.fintics.calculator._legacy;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DmiCalculator extends Calculator<DmiContext, Dmi> {
+public class DmiCalculator {
 
-    public DmiCalculator(DmiContext context) {
-        super(context);
+    private final List<BigDecimal> highSeries;
+
+    private final List<BigDecimal> lowSeries;
+
+    private final List<BigDecimal> closeSeries;
+
+    private final int period;
+
+    private final MathContext mathContext;
+
+    public static DmiCalculator of(List<BigDecimal> highSeries, List<BigDecimal> lowSeries, List<BigDecimal> closeSeries, int period) {
+        return of(highSeries, lowSeries, closeSeries, period, new MathContext(4, RoundingMode.HALF_UP));
     }
 
-    @Override
-    public List<Dmi> calculate(List<Ohlcv> series) {
-        List<BigDecimal> highSeries = series.stream()
-                .map(Ohlcv::getHighPrice)
-                .toList();
-        List<BigDecimal> lowSeries = series.stream()
-                .map(Ohlcv::getLowPrice)
-                .toList();
-        List<BigDecimal> closeSeries = series.stream()
-                .map(Ohlcv::getClosePrice)
-                .toList();
+    public static DmiCalculator of(List<BigDecimal> highSeries, List<BigDecimal> lowSeries, List<BigDecimal> closeSeries, int period, MathContext mathContext) {
+        return new DmiCalculator(highSeries, lowSeries, closeSeries, period, mathContext);
+    }
 
+    public DmiCalculator(List<BigDecimal> highSeries, List<BigDecimal> lowSeries, List<BigDecimal> closeSeries, int period, MathContext mathContext) {
+        this.highSeries = highSeries;
+        this.lowSeries = lowSeries;
+        this.closeSeries = closeSeries;
+        this.period = period;
+        this.mathContext = mathContext;
+    }
+
+    public List<Dmi> calculate() {
         List<BigDecimal> pdms = new ArrayList<>();
         List<BigDecimal> mdms = new ArrayList<>();
         List<BigDecimal> trs = new ArrayList<>();
@@ -44,19 +55,9 @@ public class DmiCalculator extends Calculator<DmiContext, Dmi> {
         }
 
         // average
-//        EmaCalculator emaCalculator = new EmaCalculator(EmaContext.of(getContext().getPeriod(), getContext().getMathContext()));
-//        pdms = emaCalculator.calculate(pdms).stream()
-//                .map(Ema::getValue)
-//                .toList();
-        pdms = emas(pdms, getContext().getPeriod());
-//        mdms = emaCalculator.calculate(mdms).stream()
-//                .map(Ema::getValue)
-//                .toList();
-        mdms = emas(mdms, getContext().getPeriod());
-//        trs = emaCalculator.calculate(trs).stream()
-//                .map(Ema::getValue)
-//                .toList();
-        trs = emas(trs, getContext().getPeriod());
+        pdms = EmaCalculatorLegacy.of(pdms, period, mathContext).calculate();
+        mdms = EmaCalculatorLegacy.of(mdms, period, mathContext).calculate();
+        trs = EmaCalculatorLegacy.of(trs, period, mathContext).calculate();
 
         List<BigDecimal> pdis = new ArrayList<>();
         List<BigDecimal> mdis = new ArrayList<>();
@@ -73,14 +74,11 @@ public class DmiCalculator extends Calculator<DmiContext, Dmi> {
         }
 
         // average
-//        dxs = emaCalculator.calculate(dxs).stream()
-//                .map(Ema::getValue)
-//                .toList();
-        dxs = emas(dxs, getContext().getPeriod());
+        dxs = EmaCalculatorLegacy.of(dxs, period, mathContext).calculate();
 
         // dmi
         List<Dmi> dmis = new ArrayList<>();
-        for(int i = 0, size = series.size(); i < size; i ++) {
+        for(int i = 0; i < highSeries.size(); i ++) {
             Dmi dmi = Dmi.builder()
                     .adx(dxs.get(i))
                     .pdi(pdis.get(i))
@@ -90,8 +88,6 @@ public class DmiCalculator extends Calculator<DmiContext, Dmi> {
         }
         return dmis;
     }
-
-
 
     private BigDecimal calculatePdm(BigDecimal high, BigDecimal low, BigDecimal previousHigh, BigDecimal previousLow) {
         BigDecimal upMove = high.subtract(previousHigh);
@@ -124,7 +120,7 @@ public class DmiCalculator extends Calculator<DmiContext, Dmi> {
         if(tr.compareTo(BigDecimal.ZERO) == 0) {
             return BigDecimal.ZERO;
         }
-        return pdm.divide(tr, getContext().getMathContext())
+        return pdm.divide(tr, mathContext)
                 .multiply(BigDecimal.valueOf(100));
     }
 
@@ -132,7 +128,7 @@ public class DmiCalculator extends Calculator<DmiContext, Dmi> {
         if(tr.compareTo(BigDecimal.ZERO) == 0) {
             return BigDecimal.ZERO;
         }
-        return mdm.divide(tr, getContext().getMathContext())
+        return mdm.divide(tr, mathContext)
                 .multiply(BigDecimal.valueOf(100));
     }
 
@@ -141,9 +137,8 @@ public class DmiCalculator extends Calculator<DmiContext, Dmi> {
             return BigDecimal.ZERO;
         }
         return pdi.subtract(mdi).abs()
-                .divide(pdi.add(mdi), getContext().getMathContext())
+                .divide(pdi.add(mdi), mathContext)
                 .multiply(BigDecimal.valueOf(100));
     }
-
 
 }

@@ -1,22 +1,35 @@
-package org.oopscraft.fintics.calculator;
-
-import org.oopscraft.fintics.model.Ohlcv;
+package org.oopscraft.fintics.calculator._legacy;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-public class RsiCalculator extends Calculator<RsiContext, Rsi> {
+public class RsiCalculator {
 
-    public RsiCalculator(RsiContext context) {
-        super(context);
+    private final List<BigDecimal> series;
+
+    private final int period;
+
+    private final MathContext mathContext;
+
+    public static RsiCalculator of(List<BigDecimal> series, int period) {
+        return of(series, period, new MathContext(4, RoundingMode.HALF_UP));
     }
 
-    @Override
-    public List<Rsi> calculate(List<Ohlcv> series) {
+    public static RsiCalculator of(List<BigDecimal> series, int period, MathContext mathContext) {
+        return new RsiCalculator(series, period, mathContext);
+    }
+
+    public RsiCalculator(List<BigDecimal> series, int period, MathContext mathContext) {
+        this.series = series;
+        this.period = period;
+        this.mathContext = mathContext;
+    }
+
+    public List<BigDecimal> calculate() {
+
         // price changes
         List<BigDecimal> priceChanges = new ArrayList<>();
         for (int i = 0; i < series.size(); i++) {
@@ -24,8 +37,8 @@ public class RsiCalculator extends Calculator<RsiContext, Rsi> {
                 priceChanges.add(BigDecimal.ZERO);
                 continue;
             }
-            BigDecimal priceChange = series.get(i).getClosePrice()
-                    .subtract(series.get(i - 1).getClosePrice());
+            BigDecimal priceChange = series.get(i)
+                    .subtract(series.get(i - 1));
             priceChanges.add(priceChange);
         }
 
@@ -45,21 +58,21 @@ public class RsiCalculator extends Calculator<RsiContext, Rsi> {
             }
         }
 
-        List<BigDecimal> rsiValues = new ArrayList<>();
+        List<BigDecimal> rsis = new ArrayList<>();
         for (int i = 0; i < series.size(); i++) {
             // period data of gain/loss
             List<BigDecimal> periodGains = gains.subList(
-                    Math.max(i - getContext().getPeriod() + 1,0),
-                    i + 1
+                Math.max(i - period + 1,0),
+                i + 1
             );
             List<BigDecimal> periodLosses = losses.subList(
-                    Math.max(i - getContext().getPeriod() + 1,0),
-                    i + 1
+                Math.max(i - period + 1,0),
+                i + 1
             );
 
             // 기간(period)+1 이전 평균은 정확한 기간평균이 아님으로 중립(50.00)으로 설정
-            if(i < getContext().getPeriod() + 1) {
-                rsiValues.add(BigDecimal.valueOf(50.00));
+            if(i < period + 1) {
+                rsis.add(BigDecimal.valueOf(50.00));
                 continue;
             }
 
@@ -69,9 +82,9 @@ public class RsiCalculator extends Calculator<RsiContext, Rsi> {
 
             if(avgLoss.compareTo(BigDecimal.ZERO) == 0) {
                 if(avgGain.compareTo(BigDecimal.ZERO) == 0) {
-                    rsiValues.add(BigDecimal.ZERO);
+                    rsis.add(BigDecimal.ZERO);
                 }else{
-                    rsiValues.add(BigDecimal.valueOf(100.0));
+                    rsis.add(BigDecimal.valueOf(100.0));
                 }
                 continue;
             }
@@ -82,18 +95,14 @@ public class RsiCalculator extends Calculator<RsiContext, Rsi> {
                     .setScale(5, RoundingMode.HALF_UP);
 
             // Calculate RSI
-            BigDecimal rsiValue = rs
+            BigDecimal rsi = rs
                     .divide(rs.add(BigDecimal.valueOf(1)), MathContext.DECIMAL32)
                     .multiply(BigDecimal.valueOf(100))
                     .setScale(2, RoundingMode.HALF_UP);
-            rsiValues.add(rsiValue);
+            rsis.add(rsi);
         }
 
-        return rsiValues.stream()
-                .map(rsiValue -> Rsi.builder()
-                        .value(rsiValue)
-                        .build())
-                .collect(Collectors.toList());
+        return rsis;
     }
 
     private static BigDecimal getAverage(List<BigDecimal> values) {

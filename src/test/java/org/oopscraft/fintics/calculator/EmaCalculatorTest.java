@@ -2,12 +2,13 @@ package org.oopscraft.fintics.calculator;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
+import org.oopscraft.fintics.calculator.Ema;
+import org.oopscraft.fintics.calculator.EmaCalculator;
+import org.oopscraft.fintics.calculator.EmaContext;
+import org.oopscraft.fintics.model.Ohlcv;
 
 import java.math.BigDecimal;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
@@ -16,15 +17,16 @@ class EmaCalculatorTest {
     @Test
     void calculate() {
         // given
-        List<BigDecimal> series = new ArrayList<>();
+        List<Ohlcv> series = new ArrayList<>();
         for(int i = 0; i < 500; i ++) {
-            series.add(BigDecimal.valueOf(Math.random() * (12000-1000) + 1000));
+            series.add(Ohlcv.builder()
+                    .closePrice(BigDecimal.valueOf(Math.random() * (12000-1000) + 1000))
+                    .build());
         }
 
         // when
-        Instant start = Instant.now();
-        List<BigDecimal> emas = EmaCalculator.of(series, 60).calculate();
-        log.info("Duration:{}", Duration.between(start, Instant.now()));
+        List<Ema> emas = new EmaCalculator(EmaContext.of(10))
+                .calculate(series);
 
         // then
         emas.forEach(ema -> log.debug("{}", ema));

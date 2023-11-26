@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.calculator;
+package org.oopscraft.fintics.calculator._legacy;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -10,7 +10,7 @@ import java.math.RoundingMode;
 @Builder
 @Getter
 @ToString
-public class Macd implements CalculateResult {
+public class Macd {
 
     @Builder.Default
     private BigDecimal value = BigDecimal.ZERO;
