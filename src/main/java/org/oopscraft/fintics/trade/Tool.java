@@ -4,20 +4,13 @@ import com.mitchtalmadge.asciidata.graph.ASCIIGraph;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class Tool {
-
-    public String plot(List<BigDecimal> values) {
-        List<BigDecimal> series = new ArrayList<>(values);
-        Collections.reverse(series);
-        double[] doubles = series.stream()
-                .mapToDouble(BigDecimal::doubleValue)
-                .toArray();
-        return ASCIIGraph.fromSeries(doubles).withNumRows(10).plot();
-    }
 
     public List<BigDecimal> pctChanges(List<BigDecimal> values) {
         if(values.isEmpty()) {
@@ -47,6 +40,32 @@ public class Tool {
 
         Collections.reverse(pctChanges);
         return pctChanges;
+    }
+
+    public List<BigDecimal> zScores(List<BigDecimal> values) {
+        if(values.isEmpty()) {
+            return new ArrayList<BigDecimal>();
+        }
+        List<BigDecimal> series = new ArrayList<>(values);
+        Collections.reverse(series);
+
+        BigDecimal mean = mean(series);
+        BigDecimal std = std(series);
+
+        List<BigDecimal> zScores = new ArrayList<>();
+        for(BigDecimal value : values) {
+            if(std.compareTo(BigDecimal.ZERO) == 0) {
+                zScores.add(BigDecimal.ZERO);
+                continue;
+            }
+            BigDecimal zScore = value
+                    .subtract(mean)
+                    .divide(std, MathContext.DECIMAL32);
+            zScores.add(zScore);
+        }
+
+        Collections.reverse(zScores);
+        return zScores;
     }
 
     public BigDecimal sum(List<BigDecimal> values) {
@@ -110,169 +129,35 @@ public class Tool {
         return BigDecimal.valueOf(Math.sqrt(variance.doubleValue()));
     }
 
-    public List<BigDecimal> zScores(List<BigDecimal> values) {
-        if(values.isEmpty()) {
-            return new ArrayList<BigDecimal>();
-        }
-        List<BigDecimal> series = new ArrayList<>(values);
-        Collections.reverse(series);
+    /**
+     * creates simple ascii line chart
+     * @param title chart title
+     * @param values data point
+     * @return ascii chart data
+     */
+    public Supplier<String> graph(String title, List<BigDecimal> values) {
+        return new Supplier<String>() {
+            public String get() {
+                // make series
+                List<BigDecimal> series = new ArrayList<>(values);
+                Collections.reverse(series);
 
-        BigDecimal mean = mean(series);
-        BigDecimal std = std(series);
+                // data to double array
+                double[] doubles = series.stream()
+                        .mapToDouble(BigDecimal::doubleValue)
+                        .toArray();
 
-        List<BigDecimal> zScores = new ArrayList<>();
-        for(BigDecimal value : values) {
-            if(std.compareTo(BigDecimal.ZERO) == 0) {
-                zScores.add(BigDecimal.ZERO);
-                continue;
+                // create ascii graph
+                String graph = ASCIIGraph.fromSeries(doubles).withNumRows(10).plot();
+                return String.format("\n%s\n%s", title, graph);
             }
-            BigDecimal zScore = value
-                    .subtract(mean)
-                    .divide(std, MathContext.DECIMAL32);
-            zScores.add(zScore);
-        }
 
-        Collections.reverse(zScores);
-        return zScores;
+            @Override
+            public String toString() {
+                return get();
+            }
+        };
     }
-
-
-    //    public List<Ohlcv> resample(List<Ohlcv> ohlcvs, int period) {
-//        if (ohlcvs.isEmpty() || period <= 0) {
-//            return Collections.emptyList();
-//        }
-//
-//        List<Ohlcv> resampledOhlcvs = new ArrayList<>();
-//        int dataSize = ohlcvs.size();
-//        int currentIndex = 0;
-//
-//        while (currentIndex < dataSize) {
-//            int endIndex = Math.min(currentIndex + period, dataSize);
-//            List<Ohlcv> subList = ohlcvs.subList(currentIndex, endIndex);
-//            Ohlcv resampledData = createResampledOhlcv(subList);
-//            resampledOhlcvs.add(resampledData);
-//            currentIndex += period;
-//        }
-//
-//        return resampledOhlcvs;
-//    }
-//
-//    private Ohlcv createResampledOhlcv(List<Ohlcv> ohlcvs) {
-//        BigDecimal sumOpenPrice = BigDecimal.ZERO;
-//        BigDecimal sumHighPrice = BigDecimal.ZERO;
-//        BigDecimal sumLowPrice = BigDecimal.ZERO;
-//        BigDecimal sumClosePrice = BigDecimal.ZERO;
-//        BigDecimal sumVolume = BigDecimal.ZERO;
-//
-//        for(Ohlcv ohlcv : ohlcvs) {
-//            sumOpenPrice = sumOpenPrice.add(ohlcv.getOpenPrice());
-//            sumHighPrice = sumHighPrice.add(ohlcv.getHighPrice());
-//            sumLowPrice = sumLowPrice.add(ohlcv.getLowPrice());
-//            sumClosePrice = sumClosePrice.add(ohlcv.getClosePrice());
-//            sumVolume = sumVolume.add(ohlcv.getVolume());
-//        }
-//
-//        BigDecimal size = BigDecimal.valueOf(ohlcvs.size());
-//        OhlcvType ohlcvType = ohlcvs.get(ohlcvs.size()-1).getOhlcvType();
-//        LocalDateTime dateTime = ohlcvs.get(ohlcvs.size()-1).getDateTime();
-//        BigDecimal openPrice = sumOpenPrice.divide(size, MathContext.DECIMAL32)
-//                .setScale(sumOpenPrice.scale(), RoundingMode.HALF_UP);
-//        BigDecimal highPrice = sumHighPrice.divide(size, MathContext.DECIMAL32)
-//                .setScale(sumHighPrice.scale(), RoundingMode.HALF_UP);
-//        BigDecimal lowPrice = sumLowPrice.divide(size, MathContext.DECIMAL32)
-//                .setScale(sumLowPrice.scale(), RoundingMode.HALF_UP);
-//        BigDecimal closePrice = sumClosePrice.divide(size, MathContext.DECIMAL32)
-//                .setScale(sumClosePrice.scale(), RoundingMode.HALF_UP);
-//        return Ohlcv.builder()
-//                .ohlcvType(ohlcvType)
-//                .dateTime(dateTime)
-//                .openPrice(openPrice)
-//                .highPrice(highPrice)
-//                .lowPrice(lowPrice)
-//                .closePrice(closePrice)
-//                .volume(sumVolume)
-//                .build();
-//    }
-
-//    public List<BigDecimal> sma(List<Ohlcv> ohlcvs, int period) {
-//        List<BigDecimal> prices = ohlcvs.stream()
-//                .map(Ohlcv::getClosePrice)
-//                .collect(Collectors.toList());
-//        Collections.reverse(prices);
-//        List<BigDecimal> smas = new SmaCalculator(SmaContext.of(period)).calculate(prices).stream()
-//                .map(e -> e.getValue().setScale(2, RoundingMode.HALF_UP))
-//                .collect(Collectors.toList());
-//        Collections.reverse(smas);
-//        return smas;
-//    }
-//
-//    public List<BigDecimal> ema(List<Ohlcv> ohlcvs, int period) {
-//        List<BigDecimal> prices = ohlcvs.stream()
-//                .map(Ohlcv::getClosePrice)
-//                .collect(Collectors.toList());
-//        Collections.reverse(prices);
-//        List<BigDecimal> emas = EmaCalculatorLegacy.of(prices, period).calculate().stream()
-//                .map(e -> e.setScale(2, RoundingMode.HALF_UP))
-//                .collect(Collectors.toList());
-//        Collections.reverse(emas);
-//        return emas;
-//    }
-//
-//    public List<Macd> macd(List<Ohlcv> ohlcvs, int shortPeriod, int longPeriod, int signalPeriod) {
-//        List<BigDecimal> prices = ohlcvs.stream()
-//                .map(Ohlcv::getClosePrice)
-//                .collect(Collectors.toList());
-//        Collections.reverse(prices);
-//        List<Macd> macds =  MacdCalculator.of(prices, shortPeriod, longPeriod, signalPeriod).calculate().stream()
-//                .map(e -> e.setScale(2, RoundingMode.HALF_UP))
-//                .collect(Collectors.toList());
-//        Collections.reverse(macds);
-//        return macds;
-//    }
-//
-//    public List<BigDecimal> rsi(List<Ohlcv> ohlcvs, int period) {
-//        List<BigDecimal> prices = ohlcvs.stream()
-//                .map(Ohlcv::getClosePrice)
-//                .collect(Collectors.toList());
-//        Collections.reverse(prices);
-//        List<BigDecimal> rsis =  RsiCalculator.of(prices, period).calculate().stream()
-//                .map(e -> e.setScale(2, RoundingMode.HALF_UP))
-//                .collect(Collectors.toList());
-//        Collections.reverse(rsis);
-//        return rsis;
-//    }
-//
-//    public List<Dmi> dmi(List<Ohlcv> ohlcvs, int period) {
-//        List<BigDecimal> highSeries = ohlcvs.stream()
-//                .map(Ohlcv::getHighPrice)
-//                .collect(Collectors.toList());
-//        Collections.reverse(highSeries);
-//
-//        List<BigDecimal> lowSeries = ohlcvs.stream()
-//                .map(Ohlcv::getLowPrice)
-//                .collect(Collectors.toList());
-//        Collections.reverse(lowSeries);
-//
-//        List<BigDecimal> closeSeries = ohlcvs.stream()
-//                .map(Ohlcv::getClosePrice)
-//                .collect(Collectors.toList());
-//        Collections.reverse(closeSeries);
-//
-//        List<Dmi> dmis = DmiCalculator.of(highSeries, lowSeries, closeSeries, period).calculate().stream()
-//                .map(e -> e.setScale(2, RoundingMode.HALF_UP))
-//                .collect(Collectors.toList());
-//        Collections.reverse(dmis);
-//
-//        return dmis;
-//    }
-//
-//    public List<BigDecimal> obv(List<Ohlcv> ohlcvs) {
-//        List<Ohlcv> series = new ArrayList<>(ohlcvs);
-//        Collections.reverse(series);
-//        List<BigDecimal> obvs = ObvCalculator.of(series).calculate();
-//        Collections.reverse(obvs);
-//        return obvs;
-//    }
 
 
 }

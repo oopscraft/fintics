@@ -23,18 +23,7 @@ public class MacdCalculator extends Calculator<MacdContext, Macd> {
 
         // Calculate MACD line
         List<BigDecimal> shortTermEmas = emas(closePrices, getContext().getShortPeriod());
-//        List<Ema> shortTermEma = new EmaCalculator(EmaContext.builder()
-//                .period(getContext().getShortPeriod())
-//                .mathContext(getContext().getMathContext())
-//                .build())
-//                .calculate(series);
-
         List<BigDecimal> longTermEmas = emas(closePrices, getContext().getLongPeriod());
-//        List<Ema> longTermEma = new EmaCalculator(EmaContext.builder()
-//                .period(getContext().getLongPeriod())
-//                .mathContext(getContext().getMathContext())
-//                .build())
-//                .calculate(series);
 
         for (int i = 0; i < longTermEmas.size(); i++) {
             BigDecimal value = shortTermEmas.get(i).subtract(longTermEmas.get(i));
@@ -43,11 +32,6 @@ public class MacdCalculator extends Calculator<MacdContext, Macd> {
 
         // ine using MACD line
         List<BigDecimal> signals = emas(values, getContext().getSignalPeriod());
-//        List<Ema> signals = new EmaCalculator(EmaContext.builder()
-//                .period(getContext().getSignalPeriod())
-//                .mathContext(getContext().getMathContext())
-//                .build())
-//                .calculate(values);
 
         // oscillator
         for (int i = 0; i < values.size(); i++) {

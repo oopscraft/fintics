@@ -44,18 +44,8 @@ public class DmiCalculator extends Calculator<DmiContext, Dmi> {
         }
 
         // average
-//        EmaCalculator emaCalculator = new EmaCalculator(EmaContext.of(getContext().getPeriod(), getContext().getMathContext()));
-//        pdms = emaCalculator.calculate(pdms).stream()
-//                .map(Ema::getValue)
-//                .toList();
         pdms = emas(pdms, getContext().getPeriod());
-//        mdms = emaCalculator.calculate(mdms).stream()
-//                .map(Ema::getValue)
-//                .toList();
         mdms = emas(mdms, getContext().getPeriod());
-//        trs = emaCalculator.calculate(trs).stream()
-//                .map(Ema::getValue)
-//                .toList();
         trs = emas(trs, getContext().getPeriod());
 
         List<BigDecimal> pdis = new ArrayList<>();
@@ -73,9 +63,6 @@ public class DmiCalculator extends Calculator<DmiContext, Dmi> {
         }
 
         // average
-//        dxs = emaCalculator.calculate(dxs).stream()
-//                .map(Ema::getValue)
-//                .toList();
         dxs = emas(dxs, getContext().getPeriod());
 
         // dmi
@@ -90,8 +77,6 @@ public class DmiCalculator extends Calculator<DmiContext, Dmi> {
         }
         return dmis;
     }
-
-
 
     private BigDecimal calculatePdm(BigDecimal high, BigDecimal low, BigDecimal previousHigh, BigDecimal previousLow) {
         BigDecimal upMove = high.subtract(previousHigh);

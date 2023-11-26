@@ -1,147 +1,183 @@
-import java.time.LocalTime
+import org.oopscraft.fintics.calculator.AdContext
+import org.oopscraft.fintics.calculator.DmiContext
+import org.oopscraft.fintics.calculator.ObvContext
+import org.oopscraft.fintics.calculator.WvadContext
+import org.oopscraft.fintics.model.Indicator
+import org.oopscraft.fintics.model.OhlcvType
+import org.oopscraft.fintics.calculator.MacdContext
+import org.oopscraft.fintics.calculator.RsiContext
+import org.oopscraft.fintics.calculator.SmaContext
 
-Boolean hold;
 
-// info
-def name = assetIndicator.getName();
+def getHoldVoteBy(Indicator indicator, OhlcvType ohlcvType, int period) {
+    // info
+    def name = indicator.getName() + ':' + ohlcvType + ':' + period;
 
-// OHLCV(기본 1분 데이터)
-def ohlcvs = tool.resample(assetIndicator.getMinuteOhlcvs(), 3);
-def ohlcv = ohlcvs.first();
+    // price, volume
+    def ohlcvs = indicator.resample(ohlcvType, period);
+    def ohlcv = ohlcvs.first();
+    def prices = ohlcvs.collect{it.closePrice};
+    def price = prices.first();
+    def pricePctChange = tool.sum(tool.pctChanges(prices).take(3));
+    def volumes = ohlcvs.collect{it.volume};
+    def volume = volumes.first();
+    def volumePctChange = tool.sum(tool.pctChanges(volumes).take(3));
+    log.debug("[{}] ohlcv: {}", name, ohlcv);
+    log.debug("[{}] price: {}({}%)", name, price, pricePctChange);
+    log.debug("[{}] volume: {}({}%)", name, volume, volumePctChange);
+    log.debug("[{}] {}", name, tool.graph("Prices", prices));
+    log.debug("[{}] {}", name, tool.graph("Volumes", volumes));
 
-// price
-def prices = ohlcvs.collect{it.closePrice};
-def price = prices.first();
-def pricePctChange = tool.sum(tool.pctChange(prices).take(3));
+    // priceMa
+    def priceMas = indicator.calculate(ohlcvType, period, SmaContext.DEFAULT);
+    def priceMa = priceMas.first();
+    def priceMaValues = priceMas.collect{it.value};
+    def priceMaValue = priceMaValues.first();
+    def priceMaValuePctChange = tool.sum(tool.pctChanges(priceMaValues).take(3));
+    log.debug("[{}] priceMa: {}", name, priceMa);
+    log.debug("[{}] priceMaValue: {}({}%)", name, priceMaValue, priceMaValuePctChange);
+    log.debug("[{}] {}", name, tool.graph("PriceMaValues", priceMaValues));
 
-// volume
-def volumes = ohlcvs.collect{it.volume};
-def volume = volumes.first();
-def volumePctChange = tool.sum(tool.pctChange(volumes).take(3));
+    // macd
+    def macds = indicator.calculate(ohlcvType, period, MacdContext.DEFAULT);
+    def macd = macds.first();
+    def macdValues = macds.collect{it.value};
+    def macdValue = macdValues.first();
+    def macdValuePctChange = tool.mean(tool.pctChanges(macdValues).take(3));
+    def macdOscillators = macds.collect{it.oscillator};
+    def macdOscillator = macdOscillators.first();
+    def macdOscillatorPctChange = tool.sum(tool.pctChanges(macdOscillators).take(3));
+    log.debug("[{}] macd: {}", name, macd);
+    log.debug("[{}] macdValue: {}({}%)", name, macdValue, macdValuePctChange);
+    log.debug("[{}] macdOscillator: {}({}%)", name, macdOscillator, macdOscillatorPctChange);
+    log.debug("[{}] {}", name, tool.graph("MacdValues", macdValues));
 
-// shortMa
-def shortMas = tool.emas(ohlcvs, 10);
-def shortMa = shortMas.first();
-def shortMaPctChange = tool.sum(tool.pctChange(shortMas).take(3));
+    // rsi
+    def rsis = indicator.calculate(ohlcvType, period, RsiContext.DEFAULT);
+    def rsi = rsis.first();
+    def rsiValues = rsis.collect{it.value};
+    def rsiValue = rsiValues.first();
+    def rsiValuePctChange = tool.sum(tool.pctChanges(rsiValues).take(3));
+    log.debug("[{}] rsi: {}", name, rsi);
+    log.debug("[{}] rsiValue: {}({}%)", name, rsiValue, rsiValuePctChange);
+    log.debug("[{}] {}", name, tool.graph("RsiValues", rsiValues));
 
-// longMa
-def longMas = tool.emas(ohlcvs, 30);
-def longMa = longMas.first();
-def longMaPctChange = tool.sum(tool.pctChange(longMas).take(3));
+    // dmi
+    def dmis = indicator.calculate(ohlcvType, period, DmiContext.DEFAULT);
+    def dmi = dmis.first();
+    def dmiPdis = dmis.collect{it.pdi};
+    def dmiPdi = dmiPdis.first();
+    def dmiPdiPctChange = tool.sum(tool.pctChanges(dmiPdis).take(3));
+    def dmiMdis = dmis.collect{it.mdi};
+    def dmiMdi = dmiMdis.first();
+    def dmiMdiPctChange = tool.sum(tool.pctChanges(dmiMdis).take(3));
+    def dmiAdxs = dmis.collect{it.adx};
+    def dmiAdx = dmiAdxs.first();
+    def dmiAdxPctChange = tool.sum(tool.pctChanges(dmiAdxs).take(3));
+    log.debug("[{}] dmi: {}", name, dmi);
+    log.debug("[{}] dmiPdiValue: {}({}%)", name, dmiPdi, dmiPdiPctChange);
+    log.debug("[{}] dmiMidValue: {}({}%)", name, dmiMdi, dmiMdiPctChange);
+    log.debug("[{}] dmiAdxValue: {}({}%)", name, dmiAdx, dmiAdxPctChange);
+    log.debug("[{}] {}", name, tool.graph("DMI Pdi", dmiPdis));
+    log.debug("[{}] {}", name, tool.graph("DMI Mdi", dmiMdis));
 
-// macd
-def macds = tool.macd(ohlcvs, 12, 26, 9);
-def macd = macds.first();
-def macdValuePctChange = tool.sum(tool.pctChange(macds.collect{it.value}).take(3));
+    // obv
+    def obvs = indicator.calculate(ohlcvType, period, ObvContext.DEFAULT);
+    def obv = obvs.first();
+    def obvValues = obvs.collect{it.value};
+    def obvValue = obvValues.first();
+    def obvValuePctChange = tool.sum(tool.pctChanges(obvValues).take(3));
+    log.debug("[{}] obv:{}", name, obv);
+    log.debug("[{}] obvValue: {}({}%)", name, obvValue, obvValuePctChange);
+    log.debug("[{}] {}", name, tool.graph("OBV Values", obvValues));
 
-// rsi
-def rsis = tool.rsi(ohlcvs, 14);
-def rsi = rsis.first();
-def rsiPctChange = tool.sum(tool.pctChange(rsis).take(3));
+    // ad
+    def ads = indicator.calculate(ohlcvType, period, AdContext.DEFAULT);
+    def ad = ads.first();
+    def adValues = ads.collect{it.value};
+    def adValue = adValues.first();
+    def adValuePctChange = tool.sum(tool.pctChanges(adValues).take(3));
+    log.debug("[{}] ad: {}", name, ad);
+    log.debug("[{}] adValue: {}({}%)", name, adValue, adValuePctChange);
+    log.debug("[{}] {}", name, tool.graph("AD Values", adValues));
 
-// dmi
-def dmis = tool.dmi(ohlcvs, 14);
-def dmi = dmis.first();
-def dmiPdiPctChange = tool.sum(tool.pctChange(dmis.collect{it.pdi}).take(3));
-def dmiMdiPctChange = tool.sum(tool.pctChange(dmis.collect{it.mdi}).take(3));
+    // wvad
+    def wvads = indicator.calculate(ohlcvType, period, WvadContext.DEFAULT);
+    def wvad = wvads.first();
+    def wvadValues = wvads.collect{it.value};
+    def wvadValue = wvads.first();
+    def wvadValuePctChange = tool.sum(tool.pctChanges(wvadValues).take(3));
+    log.debug("[{}] wvad: {}", name, wvad);
+    log.debug("[{}] wvadValue: {}({}%)", name, wvadValue, wvadValuePctChange);
+    log.debug("[{}] {}", name, tool.graph("WVAD Values", wvadValues));
 
-// obv
-def obvs = tool.obv(ohlcvs);
-def obv = obvs.first();
-def obvPctChange = tool.sum(tool.pctChange(obvs).take(5));
+    // vote
+    def vote = [:];
+    vote.priceUp = (pricePctChange > 0.0 ? 100 : 0);
+    vote.priceVolumeUp = (pricePctChange > 0.0 && volumePctChange > 0.0 ? 100 : 0);
+    vote.priceOverPriceMa = (price > priceMaValue ? 100 : 0);
+    vote.priceMaUp = (priceMaValuePctChange > 0.0 ? 100 : 0);
+    vote.macdValue = (macdValue > 0 ? 100 : 0);
+    vote.macdValueUp = (macdValuePctChange > 0.0 ? 100 : 0);
+    vote.macdOscillator = (macdOscillator > 0 ? 100 : 0);
+    vote.macdOscillatorPctChange = (macdOscillatorPctChange > 0.0 ? 100 : 0);
+    vote.rsiOver50 = (rsiValue > 50 ? 100 : 0);
+    vote.rsiUp = (rsiValuePctChange > 0.0 ? 100 :0);
+    vote.dmiPdiOverMdi = (dmiPdi > dmiMdi ? 100 : 0);
+    vote.dmiPdiUp = (dmiPdiPctChange > 0.0 ? 100 : 0);
+    vote.dmiMdiDown = (dmiMdiPctChange < 0.0 ? 100 : 0);
+    vote.dmiPdiAdxUp = (dmiPdiPctChange > 0.0 && dmiAdxPctChange > 0.0 ? 100 : 0);
+    vote.obvValueUp = (obvValuePctChange > 0.0 ? 100 : 0);
+    vote.adValueUp = (adValuePctChange > 0.0 ? 100 : 0);
+    vote.wvadValueUp = (wvadValuePctChange > 0.0 ? 100 : 0);
 
-// kospi indice
-def kospiIndicator = indiceIndicators['KOSPI'];
-def kospiOhlcvs = tool.resample(kospiIndicator.getMinuteOhlcvs(), 10);
-def kospiMacd = tool.macd(kospiOhlcvs, 12, 16, 9).first();
-
-// USD/KRW
-def usdKrwIndicator = indiceIndicators['USD_KRW'];
-def usdKrwOhlcvs = tool.resample(usdKrwIndicator.getMinuteOhlcvs(), 10);
-def usdKrwMacd = tool.macd(usdKrwOhlcvs, 12, 16, 9).first();
-
-// Nasdaq future
-def ndxFutureIndicator = indiceIndicators['NDX_FUTURE'];
-def ndxFutureOhlcvs = tool.resample(ndxFutureIndicator.getMinuteOhlcvs(), 10);
-def ndxFutureMacd = tool.macd(ndxFutureOhlcvs, 12, 16, 9).first();
-
-// hold vote
-def holdVote = [:];
-holdVote.pricePctChange = (pricePctChange > 0.0 ? 100 : 0);
-holdVote.priceShortMa = (price > shortMa ? 100 : 0);
-holdVote.priceLongMa = (price > longMa ? 100 : 0);
-holdVote.shortMaLongMa = (shortMa > longMa ? 100 : 0);
-holdVote.shortMaPctChange = (shortMaPctChange > 0.0 ? 100 : 0);
-holdVote.longMaPctChange = (longMaPctChange > 0.0 ? 100 : 0);
-holdVote.macdValue = (macd.value > 0 ? 100 : 0);
-holdVote.macdValuePctChange = (macdValuePctChange > 0 ? 100 : 0);
-holdVote.macdOscillator = (macd.oscillator > 0 ? 100 : 0);
-holdVote.rsi = (rsi > 50 ? 100 : 0);
-holdVote.rsiPctChange = (rsiPctChange > 0.0 ? 100 : 0);
-holdVote.dmiPdi = (dmi.pdi > dmi.mdi ? 100 : 0);
-holdVote.dmiPdiPctChange = (dmiPdiPctChange > 0.0 ? 100 : 0);
-holdVote.dmiMdiPctChange = (dmiMdiPctChange < 0.0 ? 100 : 0);
-holdVote.dmiAdx = (dmi.adx > 25 && dmi.pdi - dmi.mdi > 10 ? 100 : 0);
-holdVote.obvPctChage = (obvPctChange > 0.0 ? 100 : 0);
-
-// hold vote - indice
-holdVote.kospiMacdValue = (kospiMacd.value > 0 ? 100 : 0);          // kospi 지수 상승 시 매수
-holdVote.usdKrwMacdValue = (usdKrwMacd.value < 0 ? 100 : 0);        // 달러 환율 하락 시 매수
-holdVote.ndxFutureMacdValue = (ndxFutureMacd.value > 0 ? 100 : 0);  // 나스닥 선물 상승 시 매수
-
-// hold vote result
-def holdVoteResult = holdVote.values()
-        .toList()
-        .average();
-
-// logging
-log.info("[{}] orderBook:{}", name, orderBook);
-log.info("[{}] ohlcv:{}", name, ohlcv);
-log.info("[{}] price:{}({}%)", name, price, pricePctChange);
-log.info("[{}] volume:{}({}%)", name, volume, volumePctChange);
-log.info("[{}] shortMa:{}({}%)", name, shortMa, shortMaPctChange);
-log.info("[{}] longMa:{}({}%)", name, longMa, longMaPctChange);
-log.info("[{}] macd:{}", name, macd);
-log.info("[{}] rsi:{}", name, rsi);
-log.info("[{}] dmi:{}", name, dmi);
-log.info("[{}] obv:{}({}%)", name, obv, obvPctChange);
-log.info("[{}] kospiOhlcv:{}", kospiOhlcvs.first());
-log.info("[{}] kospiMacd:{}", kospiMacd);
-log.info("[{}] usdKrwOhlcv:{}", usdKrwOhlcvs.first());
-log.info("[{}] usdKrwMacd:{}", usdKrwMacd);
-log.info("[{}] ndxFutureOhlcv:{}", ndxFutureOhlcvs.first());
-log.info("[{}] ndxFutureMacd:{}", ndxFutureMacd);
-holdVote.each { key, value -> {
-    log.info("[{}] holdVote[{}]:{}", name, key, value);
-}};
-log.info("[{}] holdVoteResult:{}", name, holdVoteResult);
-
-// 매수 여부 판단
-if(pricePctChange > 0.0) {
-    if(holdVoteResult > 70) {
-        hold = true;
-    }
+    // return
+    return vote;
 }
 
-// 매도 여부 판단
-if(pricePctChange < 0.0) {
-    if(holdVoteResult < 30) {
-        hold = false;
-    }
+// defines
+def assetName = assetIndicator.getName();
+def holdVotes = [];
+
+// minute 1
+def holdVoteByMinute1 = getHoldVoteBy(assetIndicator, OhlcvType.MINUTE, 1);
+holdVotes.addAll(holdVoteByMinute1.values());
+log.debug("[{}] holdVoteByMinute1: {}", assetName, holdVoteByMinute1);
+log.info("[{}] holdVoteByMinute1Average: {}", assetName, holdVoteByMinute1.values().average());
+
+// minute 10
+def holdVoteByMinute10 = getHoldVoteBy(assetIndicator, OhlcvType.MINUTE, 10);
+holdVotes.addAll(holdVoteByMinute10.values());
+log.debug("[{}] holdVoteByMinute10: {}", assetName, holdVoteByMinute10);
+log.info("[{}] holdVoteByMinute10Average: {}", assetName, holdVoteByMinute10.values().average());
+
+// minute 30
+def holdVoteByMinute30 = getHoldVoteBy(assetIndicator, OhlcvType.MINUTE, 30);
+holdVotes.addAll(holdVoteByMinute30.values());
+log.debug("[{}] holdVoteByMinute30: {}", assetName, holdVoteByMinute30);
+log.info("[{}] holdVoteByMinute30Average: {}", assetName, holdVoteByMinute30.values().average());
+
+// minute 60
+def holdVoteByMinute60 = getHoldVoteBy(assetIndicator, OhlcvType.MINUTE, 60);
+holdVotes.addAll(holdVoteByMinute60.values());
+log.debug("[{}] holdVoteByMinute60: {}", assetName, holdVoteByMinute60);
+log.info("[{}] holdVoteByMinute60Average: {}", assetName, holdVoteByMinute60.values().average());
+
+// decide hold
+def hold = null;
+def holdVotesAverage = holdVotes.average();
+log.debug("[{}] holdVotes: {}", assetName, holdVotes);
+log.info("[{}] holdVotesAverage: {}", assetName, holdVotesAverage);
+
+// buy
+if(holdVotesAverage > 70) {
+    hold = true;
 }
 
-// 장종료 전 처리 - 15:00 부터는 매수는 하지 않음
-if(dateTime.toLocalTime().isAfter(LocalTime.of(15,0))) {
-    if(hold) {
-        hold = false;
-    }
-}
-
-// 장종료 전 처리 - 15:15 이후는 모두 매도(보유 하지 않음)
-if(dateTime.toLocalTime().isAfter(LocalTime.of(15, 15))) {
+// sell
+if(holdVotesAverage < 50) {
     hold = false;
 }
 
 // return
-log.info("[{}] hold:{}", name, hold);
 return hold;
