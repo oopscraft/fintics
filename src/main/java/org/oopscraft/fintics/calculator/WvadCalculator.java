@@ -15,7 +15,7 @@ public class WvadCalculator extends Calculator<WvadContext, Wvad> {
 
     @Override
     public List<Wvad> calculate(List<Ohlcv> series) {
-        List<BigDecimal> wvadValues = new ArrayList<BigDecimal>();
+        List<BigDecimal> wvadValues = new ArrayList<>();
         BigDecimal wvadValue = BigDecimal.ZERO;
         for (int i = 0; i < series.size(); i++) {
             Ohlcv ohlcv = series.get(i);
