@@ -1,27 +1,23 @@
 package org.oopscraft.fintics.trade;
 
-import org.oopscraft.fintics.calculator._legacy.Dmi;
-import org.oopscraft.fintics.calculator._legacy.DmiCalculator;
-import org.oopscraft.fintics.calculator._legacy.EmaCalculatorLegacy;
-import org.oopscraft.fintics.calculator._legacy.Macd;
-import org.oopscraft.fintics.calculator._legacy.MacdCalculator;
-import org.oopscraft.fintics.calculator._legacy.ObvCalculator;
-import org.oopscraft.fintics.calculator._legacy.RsiCalculator;
-import org.oopscraft.fintics.calculator.SmaCalculator;
-import org.oopscraft.fintics.calculator.SmaContext;
-import org.oopscraft.fintics.model.Ohlcv;
-import org.oopscraft.fintics.model.OhlcvType;
+import com.mitchtalmadge.asciidata.graph.ASCIIGraph;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.math.RoundingMode;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class Tool {
+
+    public String plot(List<BigDecimal> values) {
+        List<BigDecimal> series = new ArrayList<>(values);
+        Collections.reverse(series);
+        double[] doubles = series.stream()
+                .mapToDouble(BigDecimal::doubleValue)
+                .toArray();
+        return ASCIIGraph.fromSeries(doubles).withNumRows(10).plot();
+    }
 
     public List<BigDecimal> pctChanges(List<BigDecimal> values) {
         if(values.isEmpty()) {

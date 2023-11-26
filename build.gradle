@@ -76,6 +76,9 @@ dependencies {
     annotationProcessor group: 'com.querydsl', name: 'querydsl-apt', classifier: 'jpa'
     annotationProcessor 'org.hibernate:hibernate-jpamodelgen'
 
+    // https://mvnrepository.com/artifact/com.mitchtalmadge/ascii-data
+    implementation 'com.mitchtalmadge:ascii-data:1.4.0'
+
 }
 
 test {

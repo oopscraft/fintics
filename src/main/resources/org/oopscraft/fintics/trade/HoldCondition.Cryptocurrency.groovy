@@ -19,10 +19,10 @@ def getHoldVoteBy(Indicator indicator, OhlcvType ohlcvType, int period) {
     def ohlcv = ohlcvs.first();
     def prices = ohlcvs.collect{it.closePrice};
     def price = prices.first();
-    def pricePctChange = tool.pctChanges(prices).first();
+    def pricePctChange = tool.sum(tool.pctChanges(prices.take(3)));;
     def volumes = ohlcvs.collect{it.volume};
     def volume = volumes.first();
-    def volumePctChange = tool.pctChanges(volumes).first();
+    def volumePctChange = tool.sum(tool.pctChanges(volumes.take(3)));
     log.debug("[{}] ohlcv: {}", name, ohlcv);
     log.debug("[{}] price: {}({}%)", name, price, pricePctChange);
     log.debug("[{}] volume: {}({}%)", name, volume, volumePctChange);
@@ -108,23 +108,38 @@ def getHoldVoteBy(Indicator indicator, OhlcvType ohlcvType, int period) {
     return vote;
 }
 
+// defines
 def assetName = assetIndicator.getName();
-def holdVoteByMinute1 = getHoldVoteBy(assetIndicator, OhlcvType.MINUTE, 1);
-log.info("[{}] holdVoteByMinute1: {}", assetName, holdVoteByMinute1);
-def holdVoteByMinute10 = getHoldVoteBy(assetIndicator, OhlcvType.MINUTE, 10);
-log.info("[{}] holdVoteByMinute10: {}", assetName, holdVoteByMinute10);
-def holdVoteByMinute30 = getHoldVoteBy(assetIndicator, OhlcvType.MINUTE, 30);
-log.info("[{}] holdVoteByMinute30: {}", assetName, holdVoteByMinute30);
-
 def holdVotes = [];
+
+// minute 1
+def holdVoteByMinute1 = getHoldVoteBy(assetIndicator, OhlcvType.MINUTE, 1);
 holdVotes.addAll(holdVoteByMinute1.values());
+log.debug("[{}] holdVoteByMinute1: {}", assetName, holdVoteByMinute1);
+log.info("[{}] holdVoteByMinute1Average: {}", assetName, holdVoteByMinute1.values().average());
+
+// minute 10
+def holdVoteByMinute10 = getHoldVoteBy(assetIndicator, OhlcvType.MINUTE, 10);
 holdVotes.addAll(holdVoteByMinute10.values());
+log.debug("[{}] holdVoteByMinute10: {}", assetName, holdVoteByMinute10);
+log.info("[{}] holdVoteByMinute10Average: {}", assetName, holdVoteByMinute10.values().average());
+
+// minute 30
+def holdVoteByMinute30 = getHoldVoteBy(assetIndicator, OhlcvType.MINUTE, 30);
 holdVotes.addAll(holdVoteByMinute30.values());
+log.debug("[{}] holdVoteByMinute30: {}", assetName, holdVoteByMinute30);
+log.info("[{}] holdVoteByMinute30Average: {}", assetName, holdVoteByMinute30.values().average());
+
+// minute 60
+def holdVoteByMinute60 = getHoldVoteBy(assetIndicator, OhlcvType.MINUTE, 60);
+holdVotes.addAll(holdVoteByMinute60.values());
+log.debug("[{}] holdVoteByMinute60: {}", assetName, holdVoteByMinute60);
+log.info("[{}] holdVoteByMinute60Average: {}", assetName, holdVoteByMinute60.values().average());
 
 // decide hold
 def hold = null;
 def holdVotesAverage = holdVotes.average();
-log.info("[{}] holdVotes: {}", assetName, holdVotes);
+log.debug("[{}] holdVotes: {}", assetName, holdVotes);
 log.info("[{}] holdVotesAverage: {}", assetName, holdVotesAverage);
 
 // buy
@@ -139,132 +154,3 @@ if(holdVotesAverage < 50) {
 
 // return
 return hold;
-
-
-
-/
-//// macd
-//def macds = assetIndicator.calculate(OhlcvType.MINUTE, 1, MacdContext.DEFAULT);
-//def macd = macds.first();
-//def macdValuePctChange = tool.pctChanges(macds.collect{it.value}).first();
-//
-//// rsi
-//def rsis = assetIndicator.calculate(OhlcvType.MINUTE, 1, RsiContext.DEFAULT);
-//def rsi = rsis.first();
-//def rsiValuePctChange = tool.pctChanges(rsis.collect{it.value}).first();
-
-
-
-//// OHLCV(기본 1분 데이터)
-//def ohlcvs = tool.resample(assetIndicator.getMinuteOhlcvs(), 5);
-//def ohlcv = ohlcvs.first();
-//
-//// price
-//def prices = ohlcvs.collect{it.closePrice};
-//def price = prices.first();
-//def pricePctChange = tool.sum(tool.pctChange(prices).take(3));
-//
-//// volume
-//def volumes = ohlcvs.collect{it.volume};
-//def volume = volumes.first();
-//def volumePctChange = tool.sum(tool.pctChange(volumes).take(3));
-//
-//// shortMa
-//def shortMas = tool.sma(ohlcvs, 10);
-//def shortMa = shortMas.first();
-//def shortMaPctChange = tool.sum(tool.pctChange(shortMas).take(3));
-//
-//// longMa
-//def longMas = tool.sma(ohlcvs, 30);
-//def longMa = longMas.first();
-//def longMaPctChange = tool.sum(tool.pctChange(longMas).take(3));
-//
-//// macd
-//def macds = tool.macd(ohlcvs, 12, 26, 9);
-//def macd = macds.first();
-//def macdValuePctChange = tool.sum(tool.pctChange(macds.collect{it.value}).take(3));
-//
-//// rsi
-//def rsis = tool.rsi(ohlcvs, 14);
-//def rsi = rsis.first();
-//def rsiPctChange = tool.sum(tool.pctChange(rsis).take(3));
-//
-//// dmi
-//def dmis = tool.dmi(ohlcvs, 14);
-//def dmi = dmis.first();
-//def dmiPdiPctChange = tool.sum(tool.pctChange(dmis.collect{it.pdi}).take(3));
-//def dmiMdiPctChange = tool.sum(tool.pctChange(dmis.collect{it.mdi}).take(3));
-//
-////def DMIS = assetIndicator.getDmi(OhlcvType.MINUTE, 14);
-////def RSIS = assetIndicator.getRsi(OhlcvType.MINUTE, 15);
-////def TEST = assetIndicator.getOhlcvs(OhlcvType.MINUTE, 3);
-////assetIndicator.calculate(OhlcvType.MINUTE, CalculatorType.MACD(12,30,12)).collect{it.value};
-//def smas = assetIndicator.calculate(OhlcvType.MINUTE, 10, SmaContext.DEFAULT);
-//log.debug("== sma:{}", smas);
-//
-//log.debug("===== {}", OhlcvType.MINUTE);
-//
-//// obv
-//def obvs = tool.obv(ohlcvs);
-//def obv = obvs.first();
-//def obvPctChange = tool.sum(tool.pctChange(obvs).take(3));
-//
-//// hold vote
-//def holdVote = [:];
-//holdVote.pricePctChange = (pricePctChange > 0.0 ? 100 : 0);
-//holdVote.priceVolumePctChange = (pricePctChange > 0.0 && volumePctChange > 0.0 ? 100 : 0);
-//holdVote.priceShortMa = (price > shortMa ? 100 : 0);
-//holdVote.priceLongMa = (price > longMa ? 100 : 0);
-//holdVote.shortMaLongMa = (shortMa > longMa ? 100 : 0);
-//holdVote.shortMaPctChange = (shortMaPctChange > 0.0 ? 100 : 0);
-//holdVote.longMaPctChange = (longMaPctChange > 0.0 ? 100 : 0);
-//holdVote.macdValue = (macd.value > 0 ? 100 : 0);
-//holdVote.macdValuePctChange = (macdValuePctChange > 0 ? 100 : 0);
-//holdVote.macdOscillator = (macd.oscillator > 0 ? 100 : 0);
-//holdVote.rsi = (rsi > 50 ? 100 : 0);
-//holdVote.rsiPctChange = (rsiPctChange > 0.0 ? 100 : 0);
-//holdVote.dmiPdi = (dmi.pdi > dmi.mdi ? 100 : 0);
-//holdVote.dmiPdiPctChange = (dmiPdiPctChange > 0.0 ? 100 : 0);
-//holdVote.dmiMdiPctChange = (dmiMdiPctChange < 0.0 ? 100 : 0);
-//holdVote.dmiAdx = (dmi.adx > 25 && dmi.pdi - dmi.mdi > 10 ? 100 : 0);
-//holdVote.obv = (obv > 0 ? 100 : 0);
-//holdVote.obvPctChage = (obvPctChange > 0.0 ? 100 : 0);
-//
-//// hold vote result
-//def holdVoteResult = holdVote.values()
-//        .toList()
-//        .average();
-//
-//// logging
-//log.debug("[{}] orderBook:{}", name, orderBook);
-//log.debug("[{}] ohlcv:{}", name, ohlcv);
-//log.debug("[{}] price:{}({}%)", name, price, pricePctChange);
-//log.debug("[{}] volume:{}({}%)", name, volume, volumePctChange);
-//log.debug("[{}] shortMa:{}({}%)", name, shortMa, shortMaPctChange);
-//log.debug("[{}] longMa:{}({}%)", name, longMa, longMaPctChange);
-//log.debug("[{}] macd:{}", name, macd);
-//log.debug("[{}] rsi:{}", name, rsi);
-//log.debug("[{}] dmi:{}", name, dmi);
-//log.debug("[{}] obv:{}({}%)", name, obv, obvPctChange);
-//holdVote.each { key, value -> {
-//    log.debug("[{}] holdVote[{}]:{}", name, key, value);
-//}};
-//log.debug("[{}] holdVoteResult:{}", name, holdVoteResult);
-//
-//// 매수 여부 판단
-//if(pricePctChange > 0.0) {
-//    if(holdVoteResult > 80) {
-//        hold = true;
-//    }
-//}
-//
-//// 매도 여부 판단
-//if(pricePctChange < 0.0) {
-//    if(holdVoteResult < 50) {
-//        hold = false;
-//    }
-//}
-//
-//// return
-//log.debug("[{}] hold:{}", name, hold);
-//return hold;

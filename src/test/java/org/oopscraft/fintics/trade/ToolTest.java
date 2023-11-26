@@ -1,5 +1,6 @@
 package org.oopscraft.fintics.trade;
 
+import com.mitchtalmadge.asciidata.graph.ASCIIGraph;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
@@ -38,6 +39,21 @@ public class ToolTest {
         private BigDecimal rsi;
         private Dmi dmi;
     }
+
+    @Test
+    void testChart() {
+        // given
+        List<BigDecimal> rows = new ArrayList<>();
+        for(int i = 0; i < 100; i ++) {
+            rows.add(BigDecimal.valueOf(100*i));
+        }
+
+        // when
+        Tool tool = new Tool();
+        log.info(tool.plot(rows));
+    }
+
+
 //
 //    private List<FileOhlcv> loadTestOhlcvFile() {
 //        String filePath = "org/oopscraft/fintics/trade/ToolTest.tsv";
@@ -181,6 +197,7 @@ public class ToolTest {
 //            }
 //        }
 //    }
+
 
 
 }
