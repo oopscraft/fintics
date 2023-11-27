@@ -9,7 +9,7 @@ import org.oopscraft.fintics.calculator.RsiContext
 import org.oopscraft.fintics.calculator.SmaContext
 
 
-def getHoldVoteBy(Indicator indicator, OhlcvType ohlcvType, int period) {
+def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     // info
     def name = indicator.getName() + ':' + ohlcvType + ':' + period;
 
@@ -111,28 +111,28 @@ def getHoldVoteBy(Indicator indicator, OhlcvType ohlcvType, int period) {
     log.debug("[{}] wvadValue: {}({}%)", name, wvadValue, wvadValuePctChange);
     log.debug("[{}] {}", name, tool.graph("WVAD Values", wvadValues));
 
-    // vote
-    def vote = [:];
-    vote.priceUp = (pricePctChange > 0.0 ? 100 : 0);
-    vote.priceVolumeUp = (pricePctChange > 0.0 && volumePctChange > 0.0 ? 100 : 0);
-    vote.priceOverPriceMa = (price > priceMaValue ? 100 : 0);
-    vote.priceMaUp = (priceMaValuePctChange > 0.0 ? 100 : 0);
-    vote.macdValue = (macdValue > 0 ? 100 : 0);
-    vote.macdValueUp = (macdValuePctChange > 0.0 ? 100 : 0);
-    vote.macdOscillator = (macdOscillator > 0 ? 100 : 0);
-    vote.macdOscillatorPctChange = (macdOscillatorPctChange > 0.0 ? 100 : 0);
-    vote.rsiOver50 = (rsiValue > 50 ? 100 : 0);
-    vote.rsiUp = (rsiValuePctChange > 0.0 ? 100 :0);
-    vote.dmiPdiOverMdi = (dmiPdi > dmiMdi ? 100 : 0);
-    vote.dmiPdiUp = (dmiPdiPctChange > 0.0 ? 100 : 0);
-    vote.dmiMdiDown = (dmiMdiPctChange < 0.0 ? 100 : 0);
-    vote.dmiPdiAdxUp = (dmiPdiPctChange > 0.0 && dmiAdxPctChange > 0.0 ? 100 : 0);
-    vote.obvValueUp = (obvValuePctChange > 0.0 ? 100 : 0);
-    vote.adValueUp = (adValuePctChange > 0.0 ? 100 : 0);
-    vote.wvadValueUp = (wvadValuePctChange > 0.0 ? 100 : 0);
+    // result
+    def result = [:];
+    result.priceUp = (pricePctChange > 0.0 ? 100 : 0);
+    result.priceVolumeUp = (pricePctChange > 0.0 && volumePctChange > 0.0 ? 100 : 0);
+    result.priceOverPriceMa = (price > priceMaValue ? 100 : 0);
+    result.priceMaUp = (priceMaValuePctChange > 0.0 ? 100 : 0);
+    result.macdValue = (macdValue > 0 ? 100 : 0);
+    result.macdValueUp = (macdValuePctChange > 0.0 ? 100 : 0);
+    result.macdOscillator = (macdOscillator > 0 ? 100 : 0);
+    result.macdOscillatorPctChange = (macdOscillatorPctChange > 0.0 ? 100 : 0);
+    result.rsiOver50 = (rsiValue > 50 ? 100 : 0);
+    result.rsiUp = (rsiValuePctChange > 0.0 ? 100 :0);
+    result.dmiPdiOverMdi = (dmiPdi > dmiMdi ? 100 : 0);
+    result.dmiPdiUp = (dmiPdiPctChange > 0.0 ? 100 : 0);
+    result.dmiMdiDown = (dmiMdiPctChange < 0.0 ? 100 : 0);
+    result.dmiPdiAdxUp = (dmiPdiPctChange > 0.0 && dmiAdxPctChange > 0.0 ? 100 : 0);
+    result.obvValueUp = (obvValuePctChange > 0.0 ? 100 : 0);
+    result.adValueUp = (adValuePctChange > 0.0 ? 100 : 0);
+    result.wvadValueUp = (wvadValuePctChange > 0.0 ? 100 : 0);
 
     // return
-    return vote;
+    return result;
 }
 
 // defines
@@ -140,34 +140,52 @@ def assetName = tradeAssetIndicator.getName();
 def holdVotes = [];
 
 // minute 1
-def holdVoteByMinute1 = getHoldVoteBy(tradeAssetIndicator, OhlcvType.MINUTE, 1);
-holdVotes.addAll(holdVoteByMinute1.values());
-log.debug("[{}] holdVoteByMinute1: {}", assetName, holdVoteByMinute1);
-log.info("[{}] holdVoteByMinute1Average: {}", assetName, holdVoteByMinute1.values().average());
+def resultOfMinute1 = analyze(tradeAssetIndicator, OhlcvType.MINUTE, 1);
+holdVotes.addAll(resultOfMinute1.values());
+log.debug("[{}] resultOfMinute1: {}", assetName, resultOfMinute1);
+log.info("[{}] resultOfMinute1Average: {}", assetName, resultOfMinute1.values().average());
 
 // minute 5
-def holdVoteByMinute5 = getHoldVoteBy(tradeAssetIndicator, OhlcvType.MINUTE, 5);
-holdVotes.addAll(holdVoteByMinute5.values());
-log.debug("[{}] holdVoteByMinute5: {}", assetName, holdVoteByMinute5);
-log.info("[{}] holdVoteByMinute5Average: {}", assetName, holdVoteByMinute5.values().average());
+def resultOfMinute5 = analyze(tradeAssetIndicator, OhlcvType.MINUTE, 5);
+holdVotes.addAll(resultOfMinute5.values());
+log.debug("[{}] resultOfMinute5: {}", assetName, resultOfMinute5);
+log.info("[{}] resultOfMinute5Average: {}", assetName, resultOfMinute5.values().average());
 
 // minute 10
-def holdVoteByMinute10 = getHoldVoteBy(tradeAssetIndicator, OhlcvType.MINUTE, 10);
-holdVotes.addAll(holdVoteByMinute10.values());
-log.debug("[{}] holdVoteByMinute10: {}", assetName, holdVoteByMinute10);
-log.info("[{}] holdVoteByMinute10Average: {}", assetName, holdVoteByMinute10.values().average());
+def resultOfMinute10 = analyze(tradeAssetIndicator, OhlcvType.MINUTE, 10);
+holdVotes.addAll(resultOfMinute10.values());
+log.debug("[{}] resultOfMinute10: {}", assetName, resultOfMinute10);
+log.info("[{}] resultOfMinute10Average: {}", assetName, resultOfMinute10.values().average());
 
 // minute 15
-def holdVoteByMinute15 = getHoldVoteBy(tradeAssetIndicator, OhlcvType.MINUTE, 15);
-holdVotes.addAll(holdVoteByMinute15.values());
-log.debug("[{}] holdVoteByMinute15: {}", assetName, holdVoteByMinute15);
-log.info("[{}] holdVoteByMinute15Average: {}", assetName, holdVoteByMinute15.values().average());
+def resultOfMinute15 = analyze(tradeAssetIndicator, OhlcvType.MINUTE, 15);
+holdVotes.addAll(resultOfMinute15.values());
+log.debug("[{}] resultOfMinute15: {}", assetName, resultOfMinute15);
+log.info("[{}] resultOfMinute15Average: {}", assetName, resultOfMinute15.values().average());
 
 // minute 30
-def holdVoteByMinute30 = getHoldVoteBy(tradeAssetIndicator, OhlcvType.MINUTE, 30);
-holdVotes.addAll(holdVoteByMinute30.values());
-log.debug("[{}] holdVoteByMinute30: {}", assetName, holdVoteByMinute30);
-log.info("[{}] holdVoteByMinute30Average: {}", assetName, holdVoteByMinute30.values().average());
+def resultOfMinute30 = analyze(tradeAssetIndicator, OhlcvType.MINUTE, 30);
+holdVotes.addAll(resultOfMinute30.values());
+log.debug("[{}] resultOfMinute30: {}", assetName, resultOfMinute30);
+log.info("[{}] resultOfMinute30Average: {}", assetName, resultOfMinute30.values().average());
+
+// Kospi (코스피 지수 하락 시 매수)
+def resultOfKospi = analyze(indiceIndicators['KOSPI'], OhlcvType.MINUTE, 30);
+holdVotes.addAll(resultOfKospi.values().collect{100 - (it as Number)});
+log.debug("[{}] resultOfKospi: {}", assetName, resultOfKospi);
+log.info("[{}] resultOfKospiAverage: {}", assetName, resultOfKospi.values().average());
+
+// USD/KRW (환율 상승 시 매수)
+def resultOfUsdKrw = analyze(indiceIndicators['USD_KRW'], OhlcvType.MINUTE, 30);
+holdVotes.addAll(resultOfUsdKrw.values());
+log.debug("[{}] resultOfUsdKrw: {}", assetName, resultOfUsdKrw);
+log.info("[{}] resultOfUsdKrw: {}", assetName, resultOfUsdKrw.values().average());
+
+// Nasdaq Future (나스닥 선물 하락 시 매수)
+def resultOfNdxFuture = analyze(indiceIndicators['NDX_FUTURE'], OhlcvType.MINUTE, 30);
+holdVotes.addAll(resultOfNdxFuture.values().collect{100 - (it as Number)});
+log.debug("[{}] resultOfNdxFuture: {}", assetName, resultOfNdxFuture);
+log.info("[{}] resultOfNdxFuture: {}", assetName, resultOfNdxFuture.values().average());
 
 // decide hold
 def hold = null;
