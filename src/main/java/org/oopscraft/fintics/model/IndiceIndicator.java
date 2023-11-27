@@ -9,4 +9,8 @@ public class IndiceIndicator extends Indicator {
 
     private final IndiceSymbol symbol;
 
+    String getName() {
+        return symbol.getValue();
+    }
+
 }

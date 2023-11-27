@@ -169,6 +169,36 @@ holdVotes.addAll(holdVoteByMinute30.values());
 log.debug("[{}] holdVoteByMinute30: {}", assetName, holdVoteByMinute30);
 log.info("[{}] holdVoteByMinute30Average: {}", assetName, holdVoteByMinute30.values().average());
 
+// kospi
+def holdVoteByKospi = getHoldVoteBy(indiceIndicators['KOSPI'], OhlcvType.MINUTE, 30);
+holdVotes.addAll(holdVoteByKospi);
+log.debug("[{}] holdVoteByKospi: {}", assetName, holdVoteByKospi);
+log.info("[{}] holdVoteByKospiAverage: {}", assetName, holdVoteByKospi.values().average());
+
+// USD/KRW
+def holdVoteByUsdKrw = getHoldVoteBy(indiceIndicators['USD_KRW'], OhlcvType.MINUTE, 30);
+holdVotes.addAll(holdVoteByUsdKrw);
+log.debug("[{}] holdVoteByUsdKrw: {}", assetName, holdVoteByUsdKrw);
+log.info("[{}] holdVoteByUsdKrw: {}", assetName, holdVoteByUsdKrw.values().average());
+
+
+//def kospiIndicator = indiceIndicators['KOSPI'];
+//def kospiOhlcvs = tool.resample(kospiIndicator.getMinuteOhlcvs(), 10);
+//def kospiMacd = tool.macd(kospiOhlcvs, 12, 16, 9).first();
+//
+//// USD/KRW
+//def usdKrwIndicator = indiceIndicators['USD_KRW'];
+//def usdKrwOhlcvs = tool.resample(usdKrwIndicator.getMinuteOhlcvs(), 10);
+//def usdKrwMacd = tool.macd(usdKrwOhlcvs, 12, 16, 9).first();
+//
+//// Nasdaq future
+//def ndxFutureIndicator = indiceIndicators['NDX_FUTURE'];
+//def ndxFutureOhlcvs = tool.resample(ndxFutureIndicator.getMinuteOhlcvs(), 10);
+//def ndxFutureMacd = tool.macd(ndxFutureOhlcvs, 12, 16, 9).first();
+
+
+
+
 // decide hold
 def hold = null;
 def holdVotesAverage = holdVotes.average();
