@@ -26,7 +26,7 @@ public class TradeAssetDecider {
 
     private final OrderBook orderBook;
 
-    private final TradeAssetIndicator assetIndicator;
+    private final TradeAssetIndicator tradeAssetIndicator;
 
     private final Map<String, IndiceIndicator> indiceIndicators;
 
@@ -36,7 +36,7 @@ public class TradeAssetDecider {
         this.logger = logger;
         this.dateTime = dateTime;
         this.orderBook = orderBook;
-        this.assetIndicator = assetIndicator;
+        this.tradeAssetIndicator = assetIndicator;
         this.indiceIndicators = indiceIndicators.stream()
                 .collect(Collectors.toMap(indiceIndicator ->
                         indiceIndicator.getSymbol().name(), indiceIndicator -> indiceIndicator));
@@ -49,7 +49,7 @@ public class TradeAssetDecider {
         binding.setVariable("log", logger);
         binding.setVariable("dateTime", dateTime);
         binding.setVariable("orderBook", orderBook);
-        binding.setVariable("assetIndicator", assetIndicator);
+        binding.setVariable("tradeAssetIndicator", tradeAssetIndicator);
         binding.setVariable("indiceIndicators", indiceIndicators);
         binding.setVariable("tool", new Tool());
         GroovyShell groovyShell = new GroovyShell(groovyClassLoader, binding);
