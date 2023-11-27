@@ -51,11 +51,11 @@ accountNo=ENC(BCcz1quNQASvnQ4/ME2CSOiufCl6GfxN)
 
 ');
 insert into `fintics_trade_asset`
-(`trade_id`,`symbol`,`name`,`type`, `enabled`, `hold_ratio`) values
-    ('06c228451ce0400fa57bb36f0568d7cb','122630','KODEX 레버리지','ETF','N','50');
+(`trade_id`,`symbol`,`name`, `enabled`, `hold_ratio`) values
+    ('06c228451ce0400fa57bb36f0568d7cb','122630','KODEX 레버리지','N','50');
 insert into `fintics_trade_asset`
-(`trade_id`,`symbol`,`name`,`type`, `enabled`, `hold_ratio`) values
-    ('06c228451ce0400fa57bb36f0568d7cb','229200','KODEX 코스닥150','ETF','Y','50');
+(`trade_id`,`symbol`,`name`, `enabled`, `hold_ratio`) values
+    ('06c228451ce0400fa57bb36f0568d7cb','229200','KODEX 코스닥150','Y','50');
 
 -- fintics_trade: 한국투자증권 모의투자 - 지수ETF(인버스)
 insert into `fintics_trade`
@@ -70,11 +70,11 @@ accountNo=ENC(BCcz1quNQASvnQ4/ME2CSOiufCl6GfxN)
 
 ');
 insert into `fintics_trade_asset`
-(`trade_id`,`symbol`,`name`,`type`, `enabled`, `hold_ratio`) values
-    ('7af6bc641eef4254b12dd9fa1d43384d','252670','KODEX 200선물인버스2X','ETF','N','40');
+(`trade_id`,`symbol`,`name`, `enabled`, `hold_ratio`) values
+    ('7af6bc641eef4254b12dd9fa1d43384d','252670','KODEX 200선물인버스2X','N','40');
 insert into `fintics_trade_asset`
-(`trade_id`,`symbol`,`name`,`type`, `enabled`, `hold_ratio`) values
-    ('7af6bc641eef4254b12dd9fa1d43384d','251340','KODEX 코스닥150선물인버스','ETF','Y','40');
+(`trade_id`,`symbol`,`name`, `enabled`, `hold_ratio`) values
+    ('7af6bc641eef4254b12dd9fa1d43384d','251340','KODEX 코스닥150선물인버스','Y','40');
 
 -- fintics_trade: 업비트 API(장시간 외 트레이드 테스트용)
 insert into `fintics_trade`
@@ -85,23 +85,23 @@ secretKey=[발급 secretKey]',null,'
 
 ');
 insert into `fintics_trade_asset`
-(`trade_id`,`symbol`,`name`,`type`, `enabled`, `hold_ratio`) values
-    ('81c6a451d6da49449faa2b5b7e66041b','KRW-BTC','Bitcoin','UPBIT','N','20');
+(`trade_id`,`symbol`,`name`,`enabled`, `hold_ratio`) values
+    ('81c6a451d6da49449faa2b5b7e66041b','KRW-BTC','Bitcoin','N','20');
 insert into `fintics_trade_asset`
-(`trade_id`,`symbol`,`name`,`type`, `enabled`, `hold_ratio`) values
-    ('81c6a451d6da49449faa2b5b7e66041b','KRW-ETH','Ethereum','UPBIT','N','20');
+(`trade_id`,`symbol`,`name`,`enabled`, `hold_ratio`) values
+    ('81c6a451d6da49449faa2b5b7e66041b','KRW-ETH','Ethereum','N','20');
 insert into `fintics_trade_asset`
-(`trade_id`,`symbol`,`name`,`type`, `enabled`, `hold_ratio`) values
-    ('81c6a451d6da49449faa2b5b7e66041b','KRW-GAS','GAS','UPBIT','N','10');
+(`trade_id`,`symbol`,`name`,`enabled`, `hold_ratio`) values
+    ('81c6a451d6da49449faa2b5b7e66041b','KRW-GAS','GAS','N','10');
 insert into `fintics_trade_asset`
-(`trade_id`,`symbol`,`name`,`type`, `enabled`, `hold_ratio`) values
-    ('81c6a451d6da49449faa2b5b7e66041b','KRW-AVAX','Avalanche','UPBIT','N','10');
+(`trade_id`,`symbol`,`name`,`enabled`, `hold_ratio`) values
+    ('81c6a451d6da49449faa2b5b7e66041b','KRW-AVAX','Avalanche','N','10');
 insert into `fintics_trade_asset`
-(`trade_id`,`symbol`,`name`,`type`, `enabled`, `hold_ratio`) values
-    ('81c6a451d6da49449faa2b5b7e66041b','KRW-SOL','Solana','UPBIT','N','10');
+(`trade_id`,`symbol`,`name`,`enabled`, `hold_ratio`) values
+    ('81c6a451d6da49449faa2b5b7e66041b','KRW-SOL','Solana','N','10');
 insert into `fintics_trade_asset`
-(`trade_id`,`symbol`,`name`,`type`, `enabled`, `hold_ratio`) values
-    ('81c6a451d6da49449faa2b5b7e66041b','KRW-SBD','SteemDollars','UPBIT','N','10');
+(`trade_id`,`symbol`,`name`,`enabled`, `hold_ratio`) values
+    ('81c6a451d6da49449faa2b5b7e66041b','KRW-SBD','SteemDollars','N','10');
 
 -- fintics_order
 INSERT INTO fintics_order

@@ -6,7 +6,6 @@ import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.oopscraft.fintics.model.*;
-import org.oopscraft.fintics.trade.TradeAssetDecider;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -88,8 +87,8 @@ class TradeAssetDeciderTest {
         return stringBuilder.toString();
     }
 
-    AssetIndicator getTestAssetIndicator(TradeAsset tradeAsset) {
-        return AssetIndicator.builder()
+    TradeAssetIndicator getTestAssetIndicator(TradeAsset tradeAsset) {
+        return TradeAssetIndicator.builder()
                 .symbol(tradeAsset.getSymbol())
                 .name(tradeAsset.getName())
                 .minuteOhlcvs(IntStream.range(1,501)
@@ -128,7 +127,7 @@ class TradeAssetDeciderTest {
         TradeAsset tradeAsset = getTestTradeAsset();
         OrderBook orderBook = getTestOrderBook();
         List<IndiceIndicator> indiceIndicators = getTestIndiceIndicators();
-        AssetIndicator assetIndicator = getTestAssetIndicator(tradeAsset);
+        TradeAssetIndicator assetIndicator = getTestAssetIndicator(tradeAsset);
         trade.setHoldCondition("return true;");
 
         // when
@@ -154,7 +153,7 @@ class TradeAssetDeciderTest {
         Trade trade = getTestTrade();
         TradeAsset tradeAsset = getTestTradeAsset();
         List<IndiceIndicator> indiceIndicators = getTestIndiceIndicators();
-        AssetIndicator assetIndicator = getTestAssetIndicator(tradeAsset);
+        TradeAssetIndicator assetIndicator = getTestAssetIndicator(tradeAsset);
         String holdCondition = loadGroovyFileAsString("HoldCondition.Cryptocurrency.groovy");
         trade.setHoldCondition(holdCondition);
 
@@ -179,7 +178,7 @@ class TradeAssetDeciderTest {
         Trade trade = getTestTrade();
         TradeAsset tradeAsset = getTestTradeAsset();
         List<IndiceIndicator> indiceIndicators = getTestIndiceIndicators();
-        AssetIndicator assetIndicator = getTestAssetIndicator(tradeAsset);
+        TradeAssetIndicator assetIndicator = getTestAssetIndicator(tradeAsset);
         String holdCondition = loadGroovyFileAsString("HoldCondition.KospiCall.groovy");
         trade.setHoldCondition(holdCondition);
 

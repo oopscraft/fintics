@@ -15,11 +15,7 @@ import org.oopscraft.fintics.model.TradeAsset;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -44,15 +40,12 @@ public class TradeCollector {
     @PersistenceContext
     private final EntityManager entityManager;
 
-    private final PlatformTransactionManager transactionManager;
-
     @Scheduled(initialDelay = 1_000, fixedDelay = 60_000)
     @Transactional
     public void collectTradeAssetOhlcv() {
         log.info("Start collect trade asset ohlcv.");
         List<TradeEntity> tradeEntities = tradeRepository.findAll();
         for(TradeEntity tradeEntity : tradeEntities) {
-            TransactionStatus transactionStatus = null;
             try {
                 Trade trade = Trade.from(tradeEntity);
                 TradeClient tradeClient = TradeClientFactory.getClient(trade);

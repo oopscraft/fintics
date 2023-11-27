@@ -42,22 +42,14 @@ public class YahooIndiceClient extends IndiceClient {
     @Cacheable(cacheNames = YAHOO_INDICE_CLIENT_GET_MINUTE_OHLCVS, key="#symbol")
     @Override
     public List<Ohlcv> getMinuteOhlcvs(IndiceSymbol symbol) {
-        switch(symbol) {
-            case NDX:
-                return getMinuteOhlcvs("^NDX");
-            case NDX_FUTURE:
-                return getMinuteOhlcvs("NQ=F");
-            case SPX:
-                return getMinuteOhlcvs("^GSPC");
-            case SPX_FUTURE:
-                return getMinuteOhlcvs("ES=F");
-            case KOSPI:
-                return getMinuteOhlcvs("^KS11");
-            case USD_KRW:
-                return getMinuteOhlcvs("KRW=X");
-            default:
-                throw new UnsupportedOperationException("not supported indice");
-        }
+        return switch (symbol) {
+            case NDX -> getMinuteOhlcvs("^NDX");
+            case NDX_FUTURE -> getMinuteOhlcvs("NQ=F");
+            case SPX -> getMinuteOhlcvs("^GSPC");
+            case SPX_FUTURE -> getMinuteOhlcvs("ES=F");
+            case KOSPI -> getMinuteOhlcvs("^KS11");
+            case USD_KRW -> getMinuteOhlcvs("KRW=X");
+        };
     }
 
     @CacheEvict(cacheNames = YAHOO_INDICE_CLIENT_GET_MINUTE_OHLCVS, allEntries = true)
@@ -69,22 +61,14 @@ public class YahooIndiceClient extends IndiceClient {
     @Cacheable(cacheNames = YAHOO_INDICE_CLIENT_GET_DAILY_OHLCVS, key="#symbol")
     @Override
     public List<Ohlcv> getDailyOhlcvs(IndiceSymbol symbol) {
-        switch(symbol) {
-            case NDX:
-                return getDailyOhlcvs("^NDX");
-            case NDX_FUTURE:
-                return getDailyOhlcvs("NQ=F");
-            case SPX:
-                return getDailyOhlcvs("^GSPC");
-            case SPX_FUTURE:
-                return getDailyOhlcvs("ES=F");
-            case KOSPI:
-                return getDailyOhlcvs("^KS11");
-            case USD_KRW:
-                return getDailyOhlcvs("KRW=X");
-            default:
-                throw new UnsupportedOperationException("not supported indice");
-        }
+        return switch (symbol) {
+            case NDX -> getDailyOhlcvs("^NDX");
+            case NDX_FUTURE -> getDailyOhlcvs("NQ=F");
+            case SPX -> getDailyOhlcvs("^GSPC");
+            case SPX_FUTURE -> getDailyOhlcvs("ES=F");
+            case KOSPI -> getDailyOhlcvs("^KS11");
+            case USD_KRW -> getDailyOhlcvs("KRW=X");
+        };
     }
 
     @CacheEvict(cacheNames = YAHOO_INDICE_CLIENT_GET_DAILY_OHLCVS, allEntries = true)

@@ -161,7 +161,7 @@ public class TradeRunnable implements Runnable {
                 log.info("Check asset - [{}]", tradeAsset.getName());
 
                 // indicator
-                AssetIndicator assetIndicator = AssetIndicator.builder()
+                TradeAssetIndicator assetIndicator = TradeAssetIndicator.builder()
                         .symbol(tradeAsset.getSymbol())
                         .name(tradeAsset.getName())
                         .minuteOhlcvs(tradeClient.getMinuteOhlcvs(tradeAsset))
@@ -295,6 +295,7 @@ public class TradeRunnable implements Runnable {
                     .orderKind(orderKind)
                     .tradeId(tradeId)
                     .symbol(symbol)
+                    .assetName(assetName)
                     .orderType(orderType)
                     .quantity(quantity)
                     .price(price)

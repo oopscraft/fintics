@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -52,7 +53,6 @@ public class UpbitTradeClient extends TradeClient {
     }
 
     HttpHeaders createHeaders(String queryString) {
-
         // check null
         if(queryString == null) {
             queryString = "";
@@ -62,7 +62,7 @@ public class UpbitTradeClient extends TradeClient {
         String queryHash;
         try {
             MessageDigest md = MessageDigest.getInstance(QUERY_HASH_ALGORITHM);
-            md.update(queryString.getBytes("UTF-8"));
+            md.update(queryString.getBytes(StandardCharsets.UTF_8));
             queryHash = String.format("%0128x", new BigInteger(1, md.digest()));
         } catch(Throwable e) {
             throw new RuntimeException(e);
@@ -84,12 +84,12 @@ public class UpbitTradeClient extends TradeClient {
     }
 
     @Override
-    public OrderBook getOrderBook(Asset asset) throws InterruptedException {
+    public OrderBook getOrderBook(TradeAsset tradeAsset) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
         String url = API_URL + "/v1/orderbook";
-        String queryString = "markets=" + asset.getSymbol();
+        String queryString = "markets=" + tradeAsset.getSymbol();
         RequestEntity<Void> requestEntity = RequestEntity
                 .get(url + "?" + queryString)
                 .headers(createHeaders(queryString))
@@ -112,16 +112,16 @@ public class UpbitTradeClient extends TradeClient {
     }
 
     @Override
-    public List<Ohlcv> getMinuteOhlcvs(Asset asset) throws InterruptedException {
-        return getOhlcvs(asset, OhlcvType.MINUTE);
+    public List<Ohlcv> getMinuteOhlcvs(TradeAsset tradeAsset) throws InterruptedException {
+        return getOhlcvs(tradeAsset, OhlcvType.MINUTE);
     }
 
     @Override
-    public List<Ohlcv> getDailyOhlcvs(Asset asset) throws InterruptedException {
-        return getOhlcvs(asset, OhlcvType.DAILY);
+    public List<Ohlcv> getDailyOhlcvs(TradeAsset tradeAsset) throws InterruptedException {
+        return getOhlcvs(tradeAsset, OhlcvType.DAILY);
     }
 
-    private List<Ohlcv> getOhlcvs(Asset asset, OhlcvType ohlcvType) throws InterruptedException {
+    private List<Ohlcv> getOhlcvs(TradeAsset tradeAsset, OhlcvType ohlcvType) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
@@ -131,7 +131,7 @@ public class UpbitTradeClient extends TradeClient {
             case DAILY -> url += "days";
             default -> throw new RuntimeException("invalid OhlcvType");
         }
-        String queryString = "market=" + asset.getSymbol() + "&count=200";
+        String queryString = "market=" + tradeAsset.getSymbol() + "&count=200";
         RequestEntity<Void> requestEntity = RequestEntity
                 .get(url + "?" + queryString)
                 .headers(createHeaders(queryString))
@@ -266,7 +266,7 @@ public class UpbitTradeClient extends TradeClient {
         String queryString = String.join("&", queryElements.toArray(new String[0]));
 
         // payload
-        String payload = null;
+        String payload;
         try {
             payload = objectMapper.writeValueAsString(payloadMap);
         } catch (JsonProcessingException e) {

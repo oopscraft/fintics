@@ -2,10 +2,8 @@ package org.oopscraft.fintics.dao;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.annotations.Where;
 import org.oopscraft.arch4j.core.data.SystemFieldEntity;
 import org.oopscraft.arch4j.core.data.converter.BooleanToYNConverter;
-import org.oopscraft.arch4j.core.security.SecurityPolicy;
 
 import javax.persistence.*;
 import java.time.LocalTime;
@@ -65,10 +63,6 @@ public class TradeEntity extends SystemFieldEntity {
 
     @Column(name = "user_id", length = 32)
     private String userId;
-
-    @Column(name = "public_enabled", length = 1)
-    @Convert(converter = BooleanToYNConverter.class)
-    private boolean publicEnabled;
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "trade_id", updatable = false)

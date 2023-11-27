@@ -1,7 +1,6 @@
 package org.oopscraft.fintics.api.v1.dto;
 
 import lombok.*;
-import org.oopscraft.fintics.model.AssetType;
 import org.oopscraft.fintics.model.TradeAsset;
 
 import java.math.BigDecimal;
@@ -18,8 +17,6 @@ public class TradeAssetResponse {
 
     private String name;
 
-    private AssetType type;
-
     private boolean enabled;
 
     private BigDecimal holdRatio;
@@ -29,7 +26,6 @@ public class TradeAssetResponse {
                 .tradeId(tradeAsset.getTradeId())
                 .symbol(tradeAsset.getSymbol())
                 .name(tradeAsset.getName())
-                .type(tradeAsset.getType())
                 .enabled(tradeAsset.isEnabled())
                 .holdRatio(tradeAsset.getHoldRatio())
                 .build();

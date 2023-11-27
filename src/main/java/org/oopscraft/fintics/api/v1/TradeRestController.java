@@ -1,15 +1,15 @@
 package org.oopscraft.fintics.api.v1;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.security.SecurityUtils;
 import org.oopscraft.arch4j.web.support.PageableUtils;
 import org.oopscraft.arch4j.web.support.SseLogAppender;
 import org.oopscraft.fintics.api.v1.dto.*;
-import org.oopscraft.fintics.model.*;
-import org.oopscraft.fintics.service.AssetService;
-import org.oopscraft.fintics.service.IndiceService;
+import org.oopscraft.fintics.model.Order;
+import org.oopscraft.fintics.model.Trade;
+import org.oopscraft.fintics.model.TradeAsset;
+import org.oopscraft.fintics.model.TradeAssetIndicator;
 import org.oopscraft.fintics.service.TradeService;
 import org.oopscraft.fintics.trade.TradeThreadManager;
 import org.springframework.data.domain.Page;
@@ -38,12 +38,6 @@ public class TradeRestController {
     private final TradeService tradeService;
 
     private final TradeThreadManager tradeThreadManager;
-
-    private final ObjectMapper objectMapper;
-
-    private final IndiceService indiceService;
-
-    private final AssetService assetService;
 
     @GetMapping
     public ResponseEntity<List<TradeResponse>> getTrades() {
@@ -79,7 +73,6 @@ public class TradeRestController {
                 .alarmOnError(tradeRequest.isAlarmOnError())
                 .alarmOnOrder(tradeRequest.isAlarmOnOrder())
                 .userId(SecurityUtils.getCurrentUserId())
-                .publicEnabled(tradeRequest.isPublicEnabled())
                 .build();
 
         List<TradeAsset> tradeAssets = tradeRequest.getTradeAssets().stream()
@@ -88,7 +81,6 @@ public class TradeRestController {
                                 .tradeId(tradeAssetRequest.getTradeId())
                                 .symbol(tradeAssetRequest.getSymbol())
                                 .name(tradeAssetRequest.getName())
-                                .type(tradeAssetRequest.getType())
                                 .enabled(tradeAssetRequest.isEnabled())
                                 .holdRatio(tradeAssetRequest.getHoldRatio())
                                 .build())
@@ -119,7 +111,6 @@ public class TradeRestController {
         trade.setAlarmId(tradeRequest.getAlarmId());
         trade.setAlarmOnError(tradeRequest.isAlarmOnError());
         trade.setAlarmOnOrder(tradeRequest.isAlarmOnOrder());
-        trade.setPublicEnabled(tradeRequest.isPublicEnabled());
 
         List<TradeAsset> tradeAssets = tradeRequest.getTradeAssets().stream()
                 .map(tradeAssetRequest ->
@@ -127,7 +118,6 @@ public class TradeRestController {
                                 .tradeId(tradeAssetRequest.getTradeId())
                                 .symbol(tradeAssetRequest.getSymbol())
                                 .name(tradeAssetRequest.getName())
-                                .type(tradeAssetRequest.getType())
                                 .enabled(tradeAssetRequest.isEnabled())
                                 .holdRatio(tradeAssetRequest.getHoldRatio())
                                 .build())
@@ -157,12 +147,12 @@ public class TradeRestController {
     }
 
     @GetMapping("{tradeId}/indicator")
-    public ResponseEntity<List<AssetIndicatorResponse>> getTradeAssetIndicators(@PathVariable("tradeId") String tradeId) throws InterruptedException {
+    public ResponseEntity<List<TradeAssetIndicatorResponse>> getTradeAssetIndicators(@PathVariable("tradeId") String tradeId) {
         Trade trade = tradeService.getTrade(tradeId).orElseThrow();
-        List<AssetIndicatorResponse> tradeAssetIndicatorResponses = new ArrayList<>();
+        List<TradeAssetIndicatorResponse> tradeAssetIndicatorResponses = new ArrayList<>();
         for(TradeAsset tradeAsset : trade.getTradeAssets()) {
-            AssetIndicator assetIndicator = tradeService.getTradeAssetIndicator(tradeId, tradeAsset.getSymbol()).orElseThrow();
-            tradeAssetIndicatorResponses.add(AssetIndicatorResponse.from(assetIndicator));
+            TradeAssetIndicator tradeAssetIndicator = tradeService.getTradeAssetIndicator(tradeId, tradeAsset.getSymbol()).orElseThrow();
+            tradeAssetIndicatorResponses.add(TradeAssetIndicatorResponse.from(tradeAssetIndicator));
         }
         return ResponseEntity.ok(tradeAssetIndicatorResponses);
     }
@@ -190,11 +180,10 @@ public class TradeRestController {
                 .collect(Collectors.toList());
 
         // set trade name
-        orderResponses.forEach(orderResponse -> {
-            orderResponse.setTradeName(tradeService.getTrade(orderResponse.getTradeId())
-                    .map(Trade::getName)
-                    .orElse(""));
-        });
+        orderResponses.forEach(orderResponse ->
+                orderResponse.setTradeName(tradeService.getTrade(orderResponse.getTradeId())
+                        .map(Trade::getName)
+                        .orElse("")));
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_RANGE, PageableUtils.toContentRange("order", pageable, orderPage.getTotalElements()))

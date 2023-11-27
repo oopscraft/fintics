@@ -11,7 +11,6 @@ import org.oopscraft.fintics.model.OhlcvType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
@@ -38,7 +37,7 @@ public class IndiceCollector {
 
     @Scheduled(initialDelay = 1_000, fixedDelay = 60_000)
     @Transactional
-    public void collectIndiceOhlcv() throws InterruptedException {
+    public void collectIndiceOhlcv() {
         log.info("Start collect indice ohlcv.");
         for(IndiceSymbol symbol : IndiceSymbol.values()) {
             try {

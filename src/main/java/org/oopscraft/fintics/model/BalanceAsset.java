@@ -16,8 +16,6 @@ public class BalanceAsset {
 
     private String name;
 
-    private AssetType type;
-
     private BigDecimal quantity;
 
     private BigDecimal orderableQuantity;

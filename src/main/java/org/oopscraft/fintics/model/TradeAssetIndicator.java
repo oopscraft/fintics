@@ -5,12 +5,10 @@ import lombok.experimental.SuperBuilder;
 
 @SuperBuilder
 @Getter
-public class AssetIndicator extends Indicator {
+public class TradeAssetIndicator extends Indicator {
 
     private final String symbol;
 
     private final String name;
-
-    private final AssetType type;
 
 }

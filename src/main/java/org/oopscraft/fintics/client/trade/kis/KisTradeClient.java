@@ -63,7 +63,7 @@ public class KisTradeClient extends TradeClient {
     }
 
     @Override
-    public OrderBook getOrderBook(Asset asset) throws InterruptedException {
+    public OrderBook getOrderBook(TradeAsset tradeAsset) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
@@ -71,15 +71,7 @@ public class KisTradeClient extends TradeClient {
         HttpHeaders headers = createHeaders();
         headers.add("tr_id", "FHKST01010200");
         String fidCondMrktDivCode = "J";
-        String fidInputIscd;
-        switch(asset.getType()) {
-            case STOCK:
-            case ETF:
-                fidInputIscd = asset.getSymbol();
-                break;
-            default:
-                throw new RuntimeException("invalid asset type - " + asset.getType());
-        }
+        String fidInputIscd = tradeAsset.getSymbol();
         url = UriComponentsBuilder.fromUriString(url)
                 .queryParam("FID_COND_MRKT_DIV_CODE", fidCondMrktDivCode)
                 .queryParam("FID_INPUT_ISCD", fidInputIscd)
@@ -119,22 +111,14 @@ public class KisTradeClient extends TradeClient {
     }
 
     @Override
-    public List<Ohlcv> getMinuteOhlcvs(Asset asset) throws InterruptedException {
+    public List<Ohlcv> getMinuteOhlcvs(TradeAsset tradeAsset) throws InterruptedException {
         List<Ohlcv> minuteOhlcvs = new ArrayList<>();
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
         String fidEtcClsCode = "";
         String fidCondMrktDivCode = "J";
-        String fidInputIscd;
-        switch(asset.getType()) {
-            case STOCK:
-            case ETF:
-                fidInputIscd = asset.getSymbol();
-                break;
-            default:
-                throw new RuntimeException("invalid asset type - " + asset.getType());
-        }
+        String fidInputIscd = tradeAsset.getSymbol();
         LocalTime nowTime = LocalTime.now();
         LocalTime closeTime = LocalTime.of(15,30);
         LocalTime fidInputHour1Time = (nowTime.isAfter(closeTime) ? closeTime : nowTime);
@@ -215,20 +199,12 @@ public class KisTradeClient extends TradeClient {
     }
 
     @Override
-    public List<Ohlcv> getDailyOhlcvs(Asset asset) throws InterruptedException {
+    public List<Ohlcv> getDailyOhlcvs(TradeAsset tradeAsset) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
         String fidCondMrktDivCode = "J";
-        String fidInputIscd;
-        switch(asset.getType()) {
-            case STOCK:
-            case ETF:
-                fidInputIscd = asset.getSymbol();
-                break;
-            default:
-                throw new RuntimeException("invalid asset type - " + asset.getType());
-        }
+        String fidInputIscd = tradeAsset.getSymbol();
 
         String url = apiUrl + "/uapi/domestic-stock/v1/quotations/inquire-daily-price";
         HttpHeaders headers = createHeaders();

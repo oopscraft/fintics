@@ -1,7 +1,6 @@
 package org.oopscraft.fintics.api.v1.dto;
 
 import lombok.*;
-import org.oopscraft.fintics.model.AssetType;
 
 import java.math.BigDecimal;
 
@@ -16,8 +15,6 @@ public class TradeAssetRequest {
     private String symbol;
 
     private String name;
-
-    private AssetType type;
 
     private boolean enabled;
 

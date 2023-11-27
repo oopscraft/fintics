@@ -38,7 +38,6 @@ class KisTradeClientTest extends CoreTestSupport {
         // given
         TradeAsset tradeAsset = TradeAsset.builder()
                 .symbol("005930")
-                .type(AssetType.STOCK)
                 .build();
 
         // when
@@ -57,7 +56,6 @@ class KisTradeClientTest extends CoreTestSupport {
         // given
         TradeAsset tradeAsset = TradeAsset.builder()
                 .symbol("005930")
-                .type(AssetType.STOCK)
                 .build();
 
         // when
@@ -74,7 +72,6 @@ class KisTradeClientTest extends CoreTestSupport {
         // given
         TradeAsset tradeAsset = TradeAsset.builder()
                 .symbol("005930")
-                .type(AssetType.STOCK)
                 .build();
 
         // when
@@ -103,7 +100,6 @@ class KisTradeClientTest extends CoreTestSupport {
         // given
         TradeAsset tradeAsset = TradeAsset.builder()
                 .symbol("005930")           // Samsung Electronic
-                .type(AssetType.STOCK)
                 .build();
 
         // when
@@ -117,7 +113,6 @@ class KisTradeClientTest extends CoreTestSupport {
         // given
         TradeAsset tradeAsset = TradeAsset.builder()
                 .symbol("005930")           // KODEX 200
-                .type(AssetType.ETF)
                 .build();
 
         // when
@@ -131,7 +126,6 @@ class KisTradeClientTest extends CoreTestSupport {
         // given
         BalanceAsset balanceAsset = BalanceAsset.builder()
                 .symbol("005930")           // Samsung Electronic
-                .type(AssetType.STOCK)
                 .build();
 
         // when
@@ -145,7 +139,6 @@ class KisTradeClientTest extends CoreTestSupport {
         // given
         BalanceAsset balanceAsset = BalanceAsset.builder()
                 .symbol("005930")           // KODEX 200
-                .type(AssetType.ETF)
                 .build();
 
         // when

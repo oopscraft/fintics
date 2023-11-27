@@ -35,19 +35,12 @@
         }
 
         async function addTradeAsset() {
-            let disabledSymbols = [];
-            trade.tradeAssets.forEach(tradeAsset => {
-                disabledSymbols.push(tradeAsset.symbol);
-            });
-            let selectedAssets = await assetSelect.open(disabledSymbols);
-            selectedAssets.forEach(asset => {
-                trade.tradeAssets.push({
-                    symbol: asset.symbol,
-                    name: asset.name,
-                    type: asset.type,
-                    enabled: true,
-                    holdRatio: 0
-                });
+            let asset = await assetAdd.open();
+            trade.tradeAssets.push({
+                symbol: asset.symbol,
+                name: asset.name,
+                enabled: false,
+                holdRatio: 0
             });
         }
 
@@ -145,14 +138,6 @@
         });
     </script>
     <style th:inline="css">
-        #tradeLog {
-            padding-top: 0.5em;
-            min-height: 15rem;
-            line-height: 1.2em;
-            background-color: black;
-            color: white;
-            font-family: monospace;
-        }
     </style>
 
     <!-- ====================================== -->
@@ -195,158 +180,144 @@
                 <span data-th-text="#{fintics.Trade}"></span>
             </h2>
             <form class="grid grid-template-columns-12 grid-gap-1em grid-column-gap-2em padding-y-1em s-padding-y-0">
-                <div class="grid-column-5 s-grid-column-12 grid grid-template-columns-12 grid-gap-1em">
-                    <label class="grid-column-12">
-                        <span data-th-text="#{fintics.Trade.name}" class="font-weight-bold tag-required"></span>
-                        <input type="text" data-duice-bind="trade" data-duice-property="name"
-                               class="width-100 font-weight-bold"/>
+                <label class="grid-column-12">
+                    <span data-th-text="#{fintics.Trade.name}" class="font-weight-bold tag-required"></span>
+                    <input type="text" data-duice-bind="trade" data-duice-property="name"
+                           class="width-100 font-weight-bold"/>
+                </label>
+                <label class="grid-column-6">
+                    <span data-th-text="#{fintics.Trade.enabled}" class="font-weight-bold tag-required"></span>
+                    <br/>
+                    <input type="checkbox" data-duice-bind="trade" data-duice-property="enabled"/>
+                </label>
+                <label class="grid-column-6">
+                    <span data-th-text="#{fintics.Trade.interval}" class="font-weight-bold tag-required"></span>
+                    <input type="number" data-duice-bind="trade" data-duice-property="interval" class="width-100"/>
+                </label>
+                <label class="grid-column-6">
+                    <span data-th-text="#{fintics.Trade.startAt}" class="font-weight-bold"></span>
+                    <input type="time" data-duice-bind="trade" data-duice-property="startAt" class="width-100"/>
+                </label>
+                <label class="grid-column-6">
+                    <span data-th-text="#{fintics.Trade.endAt}" class="font-weight-bold"></span>
+                    <input type="time" data-duice-bind="trade" data-duice-property="endAt" class="width-100"/>
+                </label>
+                <label class="grid-column-12">
+                    <span data-th-text="#{fintics.Trade.alarmId}" class="font-weight-bold width-100"></span>
+                    <select data-duice-bind="trade"
+                            data-duice-property="alarmId"
+                            data-duice-option="alarms"
+                            data-duice-option-value-property="alarmId"
+                            data-duice-option-text-property="alarmName"
+                            class="width-100">
+                        <option data-th-text="'- '+#{web.global.select}+' -'"></option>
+                    </select>
+                </label>
+                <div class="grid-column-12">
+                    <label>
+                        <input type="checkbox" data-duice-bind="trade" data-duice-property="alarmOnError"/>
+                        <span data-th-text="#{fintics.Trade.alarmOnError}" class="font-weight-bold"></span>
                     </label>
-                    <label class="grid-column-6">
-                        <span data-th-text="#{fintics.Trade.enabled}" class="font-weight-bold tag-required"></span>
-                        <br/>
-                        <input type="checkbox" data-duice-bind="trade" data-duice-property="enabled"/>
-                    </label>
-                    <label class="grid-column-6">
-                        <span data-th-text="#{fintics.Trade.interval}" class="font-weight-bold tag-required"></span>
-                        <input type="number" data-duice-bind="trade" data-duice-property="interval" class="width-100"/>
-                    </label>
-                    <label class="grid-column-6">
-                        <span data-th-text="#{fintics.Trade.startAt}" class="font-weight-bold"></span>
-                        <input type="time" data-duice-bind="trade" data-duice-property="startAt" class="width-100"/>
-                    </label>
-                    <label class="grid-column-6">
-                        <span data-th-text="#{fintics.Trade.endAt}" class="font-weight-bold"></span>
-                        <input type="time" data-duice-bind="trade" data-duice-property="endAt" class="width-100"/>
-                    </label>
-                    <label class="grid-column-12">
-                        <span data-th-text="#{fintics.Trade.clientType}" class="font-weight-bold width-100"></span>
-                        <select data-duice-bind="trade"
-                                data-duice-property="clientType"
-                                data-duice-option="clientDefinitions"
-                                data-duice-option-value-property="type"
-                                data-duice-option-text-property="name"
-                                data-duice-execute="
-                                this.addEventListener('change',() => {
-                                    trade.clientProperties = clientDefinitions.find(item => item.type === this.value)?.propertiesTemplate;
-                                });
-                                "
-                                class="width-100">
-                            <option data-th-text="'- '+#{web.global.select}+' -'"></option>
-                        </select>
-                    </label>
-                    <label class="grid-column-12">
-                        <span data-th-text="#{fintics.Trade.clientProperties}"
-                              class="font-weight-bold width-100"></span>
-                        <textarea data-duice-bind="trade" data-duice-property="clientProperties" rows="5"
-                                  class="border-1 width-100" style="font-family:monospace; line-height:1.2em;"></textarea>
-                    </label>
-                    <label class="grid-column-12">
-                        <span data-th-text="#{fintics.Trade.alarmId}" class="font-weight-bold width-100"></span>
-                        <select data-duice-bind="trade"
-                                data-duice-property="alarmId"
-                                data-duice-option="alarms"
-                                data-duice-option-value-property="alarmId"
-                                data-duice-option-text-property="alarmName"
-                                class="width-100">
-                            <option data-th-text="'- '+#{web.global.select}+' -'"></option>
-                        </select>
-                    </label>
-                    <div class="grid-column-12">
-                        <label>
-                            <input type="checkbox" data-duice-bind="trade" data-duice-property="alarmOnError"/>
-                            <span data-th-text="#{fintics.Trade.alarmOnError}" class="font-weight-bold"></span>
-                        </label>
-                        &nbsp;
-                        <label>
-                            <input type="checkbox" data-duice-bind="trade" data-duice-property="alarmOnOrder"/>
-                            <span data-th-text="#{fintics.Trade.alarmOnOrder}" class="font-weight-bold"></span>
-                        </label>
-                    </div>
-                    <label class="grid-column-6">
-                        <span data-th-text="#{fintics.Trade.publicEnabled}" class="font-weight-bold"></span>
-                        <br/>
-                        <input type="checkbox" data-duice-bind="trade" data-duice-property="publicEnabled"/>
+                    &nbsp;
+                    <label>
+                        <input type="checkbox" data-duice-bind="trade" data-duice-property="alarmOnOrder"/>
+                        <span data-th-text="#{fintics.Trade.alarmOnOrder}" class="font-weight-bold"></span>
                     </label>
                 </div>
-                <div class="grid-column-7 s-grid-column-12 grid grid-template-columns-12 grid-gap-1em">
-                    <label class="grid-column-12">
-                        <span data-th-text="#{fintics.Trade.holdCondition}" class="font-weight-bold width-100"></span>
-                        <small class="font-weight-bold">(Groovy Script)</small>
-                        <textarea data-duice-bind="trade" data-duice-property="holdCondition" rows="30" class="border-1 width-100"
-                                  style="font-family:monospace; line-height:1.2em;"></textarea>
-                    </label>
-                    <div class="grid-column-12">
-                        <span data-th-text="#{fintics.TradeAsset}" class="font-weight-bold width-100"></span>
-                        <div class="overflow-y-scroll border-1" style="max-height:400px;">
-                            <table class="width-100 border-0">
-                                <colgroup>
-                                    <col style="width:4em;"/>
-                                    <col/>
-                                    <col/>
-                                    <col/>
-                                    <col/>
-                                    <col/>
-                                    <col style="width:3em;"/>
-                                </colgroup>
-                                <thead>
-                                <tr>
-                                    <th data-th-text="#{web.global.no}" class="text-align-center"></th>
-                                    <th data-th-text="#{fintics.Asset.symbol}"></th>
-                                    <th data-th-text="#{fintics.Asset.name}"></th>
-                                    <th data-th-text="#{fintics.Asset.type}"></th>
-                                    <th data-th-text="#{fintics.TradeAsset.enabled}" class="text-align-center"></th>
-                                    <th data-th-text="#{fintics.TradeAsset.holdRatio}" class="text-align-center"></th>
-                                    <th class="text-align-right">
-                                        <button type="button" class="small" onclick="addTradeAsset();">
-                                            <img class="icon" th:src="@{/static/image/icon-add.svg}" alt="add"/>
-                                        </button>
-                                    </th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr data-duice-bind="trade.tradeAssets" data-duice-loop="tradeAsset,status">
-                                    <td class="text-align-center">
-                                    <span data-duice-bind="status" data-duice-property="count"
-                                          class="text-align-center"></span>
-                                    </td>
-                                    <td>
-                                        <span data-duice-bind="tradeAsset" data-duice-property="symbol"></span>
-                                    </td>
-                                    <td>
-                                        <span data-duice-bind="tradeAsset" data-duice-property="name"></span>
-                                    </td>
-                                    <td>
-                                        <span data-duice-bind="tradeAsset" data-duice-property="type"></span>
-                                    </td>
-                                    <td class="text-align-center">
-                                        <label>
-                                            <input type="checkbox" data-duice-bind="tradeAsset"
-                                                   data-duice-property="enabled"/>
-                                        </label>
-                                    </td>
-                                    <td class="text-align-center">
-                                        <label>
-                                            <input type="number" data-duice-bind="tradeAsset"
-                                                   data-duice-property="holdRatio" class="width-50"/>
-                                            %
-                                        </label>
-                                    </td>
-                                    <td class="text-align-right">
-                                        <button type="button" class="small"
-                                                data-duice-bind="tradeAsset"
-                                                data-duice-execute="this.dataset.index=status.index;"
-                                                onclick="removeTradeAsset(this.dataset.index);">
-                                            <img class="icon" th:src="@{/static/image/icon-remove.svg}" alt="remove"/>
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr data-duice-bind="trade.tradeAssets"
-                                    data-duice-execute="if(trade.tradeAssets.length === 0) this.hidden=false;" hidden>
-                                    <td colspan="100%" class="text-align-center">No Data</td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                <label class="grid-column-12">
+                    <span data-th-text="#{fintics.Trade.clientType}" class="font-weight-bold width-100"></span>
+                    <select data-duice-bind="trade"
+                            data-duice-property="clientType"
+                            data-duice-option="clientDefinitions"
+                            data-duice-option-value-property="type"
+                            data-duice-option-text-property="name"
+                            data-duice-execute="
+                            this.addEventListener('change',() => {
+                                trade.clientProperties = clientDefinitions.find(item => item.type === this.value)?.propertiesTemplate;
+                            });
+                            "
+                            class="width-100">
+                        <option data-th-text="'- '+#{web.global.select}+' -'"></option>
+                    </select>
+                </label>
+                <label class="grid-column-12">
+                    <span data-th-text="#{fintics.Trade.clientProperties}"
+                          class="font-weight-bold width-100"></span>
+                    <textarea data-duice-bind="trade" data-duice-property="clientProperties" rows="5"
+                              class="border-1 width-100" style="font-family:monospace; line-height:1.2em;"></textarea>
+                </label>
+                <label class="grid-column-12">
+                    <span data-th-text="#{fintics.Trade.holdCondition}" class="font-weight-bold width-100"></span>
+                    <small class="font-weight-bold">(Groovy Script)</small>
+                    <textarea data-duice-bind="trade" data-duice-property="holdCondition" rows="30" class="border-1 width-100"
+                              style="font-family:monospace; line-height:1.2em;"></textarea>
+                </label>
+                <div class="grid-column-12">
+                    <span data-th-text="#{fintics.TradeAsset}" class="font-weight-bold width-100"></span>
+                    <div class="overflow-y-scroll border-1" style="max-height:400px;">
+                        <table class="width-100 border-0">
+                            <colgroup>
+                                <col style="width:5em;"/>
+                                <col/>
+                                <col/>
+                                <col style="width:10em;"/>
+                                <col style="width:10em;"/>
+                                <col style="width:3em;"/>
+                            </colgroup>
+                            <thead>
+                            <tr>
+                                <th data-th-text="#{web.global.no}" class="text-align-center"></th>
+                                <th data-th-text="#{fintics.Asset.symbol}"></th>
+                                <th data-th-text="#{fintics.Asset.name}"></th>
+                                <th data-th-text="#{fintics.TradeAsset.enabled}" class="text-align-center"></th>
+                                <th data-th-text="#{fintics.TradeAsset.holdRatio}" class="text-align-center"></th>
+                                <th class="text-align-right">
+                                    <button type="button" class="small" onclick="addTradeAsset();">
+                                        <img class="icon" th:src="@{/static/image/icon-add.svg}" alt="add"/>
+                                    </button>
+                                </th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr data-duice-bind="trade.tradeAssets" data-duice-loop="tradeAsset,status">
+                                <td class="text-align-center">
+                                <span data-duice-bind="status" data-duice-property="count"
+                                      class="text-align-center"></span>
+                                </td>
+                                <td>
+                                    <span data-duice-bind="tradeAsset" data-duice-property="symbol"></span>
+                                </td>
+                                <td>
+                                    <span data-duice-bind="tradeAsset" data-duice-property="name"></span>
+                                </td>
+                                <td class="text-align-center">
+                                    <label>
+                                        <input type="checkbox" data-duice-bind="tradeAsset"
+                                               data-duice-property="enabled"/>
+                                    </label>
+                                </td>
+                                <td class="text-align-center">
+                                    <label>
+                                        <input type="number" data-duice-bind="tradeAsset"
+                                               data-duice-property="holdRatio" class="width-50"/>
+                                        %
+                                    </label>
+                                </td>
+                                <td class="text-align-right">
+                                    <button type="button" class="small"
+                                            data-duice-bind="tradeAsset"
+                                            data-duice-execute="this.dataset.index=status.index;"
+                                            onclick="removeTradeAsset(this.dataset.index);">
+                                        <img class="icon" th:src="@{/static/image/icon-remove.svg}" alt="remove"/>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr data-duice-bind="trade.tradeAssets"
+                                data-duice-execute="if(trade.tradeAssets.length === 0) this.hidden=false;" hidden>
+                                <td colspan="100%" class="text-align-center">No Data</td>
+                            </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
                 <div class="grid-column-12 justify-self-end">
@@ -512,249 +483,56 @@
     </div>
 
     <!-- ====================================== -->
-    <!-- start: asset-select                    -->
+    <!-- start: asset-add                       -->
     <!-- ====================================== -->
-    <dialog id="assetSelect">
+    <dialog id="assetAdd">
         <style th:inline="css">
-            #assetSelect {
-                width: 700px;
+            #assetAdd {
+                width: 500px;
                 padding: 1.5rem;
             }
         </style>
         <script th:inline="javascript">
-            const assetSelect = {
-                dialog: new duice.dialog.Dialog(document.getElementById('assetSelect')),
-                alreadySelectedSymbols : null,
-                assetSearch: new duice.ObjectProxy({
-                    key: 'name',
-                    value: null,
-                    _page: 0,
-                    _size: 5,
-                    _count: 0
+            const assetAdd = {
+                dialog: new duice.dialog.Dialog(document.getElementById('assetAdd')),
+                asset: new duice.ObjectProxy({
+                    symbol: null,
+                    name: null
                 }),
-                assets: new duice.ArrayProxy([]),
-                selectedAssets: new duice.ArrayProxy([]),
-
-                open: async function(alreadySelectedSymbols) {
-                    if(alreadySelectedSymbols) {
-                        this.alreadySelectedSymbols = alreadySelectedSymbols;
-                    }else{
-                        this.alreadySelectedSymbols = [];
-                    }
-                    duice.ArrayProxy.clear(this.selectedAssets);
-                    this.getAssets(0);
+                open: function() {
+                    duice.ObjectProxy.clear(this.asset);
                     return this.dialog.open();
                 },
-
-                getAssets: function(page) {
-                    if(page) {
-                        this.assetSearch._page = page;
-                    }
-                    let url = new URL(`${_apiUrl}/v1/asset`, document.location.origin);
-                    if(this.assetSearch.key && this.assetSearch.value) {
-                        url.searchParams.append(this.assetSearch.key, this.assetSearch.value);
-                    }
-                    url.searchParams.append('_page', this.assetSearch._page);
-                    url.searchParams.append('_size', this.assetSearch._size);
-                    _fetch(url)
-                        .then(response => {
-                            this.assetSearch._count = _parseTotalCount(response);
-                            return response.json();
-                        })
-                        .then(data => {
-                            duice.ArrayProxy.clear(this.assets);
-                            duice.ArrayProxy.assign(this.assets, data);
-                            // check already selected
-                            this.assets.forEach(asset => {
-                                if(this.alreadySelectedSymbols.includes(asset.symbol)){
-                                    asset['_selected'] = true;
-                                }
-                                this.selectedAssets.forEach(element => {
-                                    if(element.symbol === asset.symbol) {
-                                        asset['_selected'] = true;
-                                    }
-                                });
-                            });
-                        });
-                },
-
-                resetAssets: function() {
-                    duice.ObjectProxy.reset(this.assetSearch);
-                    this.getAssets();
-                },
-
-                selectAsset: function(index) {
-                    let asset = JSON.parse(JSON.stringify(this.assets[index]));
-                    this.selectedAssets.push(asset);
-                    this.assets.forEach(element => {
-                        if(element.symbol === asset.symbol) {
-                            element['_selected'] = true;
-                            return false;
-                        }
-                    });
-                },
-
-                deselectAsset: async function(index) {
-                    let asset = this.selectedAssets[index];
-                    this.selectedAssets.splice(index, 1);
-                    this.assets.forEach(element => {
-                        if(element.symbol === asset.symbol) {
-                            element['_selected'] = false;
-                            return false;
-                        }
-                    });
-                },
-
                 confirm: function() {
-                    this.dialog.resolve(this.selectedAssets);
+                    this.dialog.resolve(this.asset);
                 }
             }
         </script>
         <div class="grid grid-gap-1em">
             <h2>
                 <img class="icon" th:src="@{/static/image/icon-asset.svg}" alt="asset"/>
-                <span data-th-text="#{fintics.Asset} + ' ' + #{web.global.select}"></span>
+                <span data-th-text="#{fintics.TradeAsset}"></span>
             </h2>
             <form onsubmit="return false;" class="grid grid-template-columns-12 grid-gap-1em">
-                <label class="grid-column-2 s-grid-column-4">
-                    <select class="width-100" data-duice-bind="assetSelect.assetSearch" data-duice-property="key">
-                        <option value="name" th:text="#{fintics.Asset.name}"></option>
-                        <option value="symbol" th:text="#{fintics.Asset.symbol}"></option>
-                    </select>
+                <label class="grid-column-12">
+                    <span th:text="#{fintics.TradeAsset.symbol}" class="font-weight-bold tag-required"></span>
+                    <input class="width-100" type="text" data-duice-bind="assetAdd.asset" data-duice-property="symbol"/>
                 </label>
-                <label class="grid-column-4 s-grid-column-8">
-                    <input class="width-100" type="text" data-duice-bind="assetSelect.assetSearch" data-duice-property="value"/>
+                <label class="grid-column-12">
+                    <span th:text="#{fintics.TradeAsset.name}" class="font-weight-bold tag-required"></span>
+                    <input class="width-100" type="text" data-duice-bind="assetAdd.asset" data-duice-property="name"/>
                 </label>
-                <div class="grid-column-6 s-grid-column-12 justify-self-end">
-                    <button onclick="assetSelect.getAssets();">
-                        <img class="icon" th:src="@{/static/image/icon-search.svg}" alt="search"/>
-                        <span data-th-text="#{web.global.search}">Search</span>
-                    </button>
-                    <button onclick="assetSelect.resetAssets();">
-                        <img class="icon" th:src="@{/static/image/icon-reset.svg}" alt="reset"/>
-                        <span data-th-text="#{web.global.reset}">Reset</span>
-                    </button>
-                </div>
             </form>
-            <div class="overflow-x-scroll">
-                <table class="width-100">
-                    <colgroup>
-                        <col style="width:3em;"/>
-                        <col/>
-                        <col/>
-                        <col/>
-                    </colgroup>
-                    <thead>
-                    <tr>
-                        <th class="text-align-center">-</th>
-                        <th data-th-text="#{fintics.Asset.symbol}"></th>
-                        <th data-th-text="#{fintics.Asset.name}"></th>
-                        <th data-th-text="#{fintics.Asset.type}"></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr data-duice-bind="assetSelect.assets" data-duice-loop="asset,status">
-                        <td class="text-align-center">
-                            <button type="button" class="small"
-                                    data-duice-bind="asset"
-                                    data-duice-execute="
-                        this.dataset.index = status.index;
-                        if(asset._selected) {
-                            this.disabled = true;
-                        }"
-                                    onclick="assetSelect.selectAsset(this.dataset.index);">
-                                <img class="icon" th:src="@{/static/image/icon-add.svg}" alt="add"/>
-                            </button>
-                        </td>
-                        <td>
-                            <span data-duice-bind="asset"
-                                  data-duice-property="symbol"
-                                  class="font-weight-bold"></span>
-                        </td>
-                        <td>
-                            <span data-duice-bind="asset" data-duice-property="name"></span>
-                        </td>
-                        <td>
-                            <span data-duice-bind="asset" data-duice-property="type"></span>
-                        </td>
-                    </tr>
-                    <tr data-duice-bind="assetSelect.assets"
-                        data-duice-execute="if(assetSelect.assets.length === 0) this.hidden=false;" hidden>
-                        <td colspan="100%" class="text-align-center font-size-smaller">No Data</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="grid grid-template-columns-3">
-                <div class="grid-column-1 flex font-size-smaller">
-                    <span data-th-text="#{web.global.total}"></span>
-                    &nbsp;
-                    <span data-duice-bind="assetSelect.assetSearch" data-duice-property="_count" data-duice-format="number(0)"></span>
-                    &nbsp;
-                    <span data-th-text="#{web.global.rows}"></span>
-                </div>
-                <div class="grid-column-1 flex justify-content-center">
-                    <duice-pagination
-                            data-duice-bind="assetSelect.assetSearch"
-                            data-duice-size-property="_size"
-                            data-duice-page-property="_page"
-                            data-duice-count-property="_count"
-                            data-duice-onclick="assetSelect.getAssets(this.dataset.page);">
-                    </duice-pagination>
-                </div>
-                <div class="grid-column-1"></div>
-            </div>
-            <div class="overflow-x-scroll">
-                <table class="width-100">
-                    <colgroup>
-                        <col style="width:3em;"/>
-                        <col/>
-                        <col/>
-                        <col/>
-                    </colgroup>
-                    <thead>
-                    <tr>
-                        <th class="text-align-center">-</th>
-                        <th data-th-text="#{fintics.Asset.symbol}"></th>
-                        <th data-th-text="#{fintics.Asset.name}"></th>
-                        <th data-th-text="#{fintics.Asset.type}"></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr data-duice-bind="assetSelect.selectedAssets" data-duice-loop="asset,status">
-                        <td class="text-align-center">
-                            <button data-duice-bind="asset" class="small"
-                                    data-duice-execute="this.dataset.index = status.index;"
-                                    onclick="assetSelect.deselectAsset(this.dataset.index);">
-                                <img class="icon" th:src="@{/static/image/icon-remove.svg}" alt="remove"/>
-                            </button>
-                        </td>
-                        <td>
-                        <span data-duice-bind="asset"
-                              data-duice-property="symbol"
-                              class="font-weight-bold"></span>
-                        </td>
-                        <td>
-                            <span data-duice-bind="asset" data-duice-property="name"></span>
-                        </td>
-                        <td>
-                            <span data-duice-bind="asset" data-duice-property="type"></span>
-                        </td>
-                    </tr>
-                    <tr data-duice-bind="assetSelect.selectedAssets"
-                        data-duice-execute="if(assetSelect.selectedAssets.length === 0) this.hidden=false;" hidden>
-                        <td colspan="100%" class="text-align-center font-size-smaller">No Data</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
             <div class="flex justify-content-flex-end">
-                <button onclick="assetSelect.confirm();">
+                <button onclick="assetAdd.confirm();">
                     <img class="icon" th:src="@{/static/image/icon-confirm.svg}" alt="confirm"/>
                     <span data-th-text="#{web.global.confirm}"></span>
                 </button>
             </div>
         </div>
     </dialog>
+    <!-- ====================================== -->
+    <!-- end: asset-add                         -->
+    <!-- ====================================== -->
 
 </th:block>

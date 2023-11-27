@@ -4,7 +4,6 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.arch4j.core.data.SystemFieldEntity;
 import org.oopscraft.arch4j.core.data.converter.BooleanToYNConverter;
-import org.oopscraft.fintics.model.AssetType;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -35,9 +34,6 @@ public class TradeAssetEntity extends SystemFieldEntity {
 
     @Column(name = "name")
     private String name;
-
-    @Column(name = "type", length = 32)
-    AssetType type;
 
     @Column(name = "enabled", length = 1)
     @Convert(converter = BooleanToYNConverter.class)

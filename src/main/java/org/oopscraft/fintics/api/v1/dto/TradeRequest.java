@@ -1,10 +1,7 @@
 package org.oopscraft.fintics.api.v1.dto;
 
 import lombok.*;
-import org.oopscraft.arch4j.core.role.Role;
-import org.oopscraft.arch4j.core.security.SecurityPolicy;
 
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;

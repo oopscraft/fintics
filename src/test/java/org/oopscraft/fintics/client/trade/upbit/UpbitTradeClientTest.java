@@ -29,8 +29,8 @@ class UpbitTradeClientTest {
         return new UpbitTradeClient(properties);
     }
 
-    Asset getTestAsset() {
-        return Asset.builder()
+    TradeAsset getTestTradeAsset() {
+        return TradeAsset.builder()
                 .symbol("KRW-XRP")
                 .name("Ripple")
                 .build();
@@ -40,10 +40,10 @@ class UpbitTradeClientTest {
     @Test
     void getOrderBook() throws Exception {
         // given
-        Asset asset = getTestAsset();
+        TradeAsset tradeAsset = getTestTradeAsset();
 
         // when
-        OrderBook orderBook = getUpbitTradeClient().getOrderBook(asset);
+        OrderBook orderBook = getUpbitTradeClient().getOrderBook(tradeAsset);
 
         // then
         log.info("orderBook:{}", orderBook);
@@ -53,10 +53,10 @@ class UpbitTradeClientTest {
     @Test
     void getMinuteOhlcvs() throws Exception {
         // given
-        Asset asset = getTestAsset();
+        TradeAsset tradeAsset = getTestTradeAsset();
 
         // when
-        List<Ohlcv> minuteOhlcvs = getUpbitTradeClient().getMinuteOhlcvs(asset);
+        List<Ohlcv> minuteOhlcvs = getUpbitTradeClient().getMinuteOhlcvs(tradeAsset);
 
         // then
         log.info("minuteOhlcvs:{}", minuteOhlcvs);
@@ -66,10 +66,10 @@ class UpbitTradeClientTest {
     @Test
     void getDailyOhlcvs() throws Exception {
         // given
-        Asset asset = getTestAsset();
+        TradeAsset tradeAsset = getTestTradeAsset();
 
         // when
-        List<Ohlcv> dailyOhlcvs = getUpbitTradeClient().getDailyOhlcvs(asset);
+        List<Ohlcv> dailyOhlcvs = getUpbitTradeClient().getDailyOhlcvs(tradeAsset);
 
         // then
         log.info("dailyOhlcvs:{}", dailyOhlcvs);
@@ -89,7 +89,7 @@ class UpbitTradeClientTest {
     @Test
     void buyAsset() throws Exception {
         // given
-        TradeAsset tradeAsset = Optional.of(getTestAsset())
+        TradeAsset tradeAsset = Optional.of(getTestTradeAsset())
                 .map(asset -> TradeAsset.builder()
                         .symbol(asset.getSymbol())
                         .name(asset.getName())
@@ -104,7 +104,7 @@ class UpbitTradeClientTest {
     @Test
     void sellAsset() throws Exception {
         // given
-        BalanceAsset balanceAsset = Optional.of(getTestAsset())
+        BalanceAsset balanceAsset = Optional.of(getTestTradeAsset())
                 .map(asset -> BalanceAsset.builder()
                         .symbol(asset.getSymbol())
                         .name(asset.getName())

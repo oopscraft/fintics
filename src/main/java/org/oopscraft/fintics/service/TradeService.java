@@ -25,8 +25,6 @@ import java.util.stream.Collectors;
 @Slf4j
 public class TradeService {
 
-    private static final String CACHE_TRADE_ASSET_INDICATOR = "TradeService.getTradeAssetIndicator";
-
     private final TradeRepository tradeRepository;
 
     private final TradeAssetOhlcvRepository tradeAssetOhlcvRepository;
@@ -69,7 +67,6 @@ public class TradeService {
         tradeEntity.setAlarmId(trade.getAlarmId());
         tradeEntity.setAlarmOnError(trade.isAlarmOnError());
         tradeEntity.setAlarmOnOrder(trade.isAlarmOnOrder());
-        tradeEntity.setPublicEnabled(trade.isPublicEnabled());
 
         // trade asset
         tradeEntity.getTradeAssetEntities().clear();
@@ -79,7 +76,6 @@ public class TradeService {
                                 .tradeId(tradeEntity.getTradeId())
                                 .symbol(tradeAsset.getSymbol())
                                 .name(tradeAsset.getName())
-                                .type(tradeAsset.getType())
                                 .enabled(tradeAsset.isEnabled())
                                 .holdRatio(tradeAsset.getHoldRatio())
                                 .build())
@@ -107,16 +103,7 @@ public class TradeService {
         }
     }
 
-    public List<AssetIndicator> getTradeAssetIndicators(String tradeId) {
-        Trade trade = getTrade(tradeId).orElseThrow();
-        List<TradeAsset> tradeAssets = trade.getTradeAssets();
-        return tradeAssets.stream()
-                .map(tradeAsset ->
-                    getTradeAssetIndicator(tradeAsset.getTradeId(), tradeAsset.getSymbol()).orElseThrow())
-                .collect(Collectors.toList());
-    }
-
-    public Optional<AssetIndicator> getTradeAssetIndicator(String tradeId, String symbol) {
+    public Optional<TradeAssetIndicator> getTradeAssetIndicator(String tradeId, String symbol) {
         Trade trade = getTrade(tradeId).orElseThrow();
         TradeAsset tradeAsset = trade.getTradeAssets().stream()
                 .filter(e -> Objects.equals(e.getSymbol(), symbol))
@@ -135,7 +122,7 @@ public class TradeService {
                 .map(Ohlcv::from)
                 .collect(Collectors.toList());
 
-        return Optional.ofNullable(AssetIndicator.builder()
+        return Optional.ofNullable(TradeAssetIndicator.builder()
                 .symbol(tradeAsset.getSymbol())
                 .name(tradeAsset.getName())
                 .minuteOhlcvs(minuteOhlcvs)

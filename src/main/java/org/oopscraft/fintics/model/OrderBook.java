@@ -1,8 +1,6 @@
 package org.oopscraft.fintics.model;
 
 import lombok.*;
-import lombok.experimental.SuperBuilder;
-import net.bytebuddy.implementation.bind.annotation.Super;
 
 import java.math.BigDecimal;
 

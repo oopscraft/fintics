@@ -6,7 +6,6 @@ import org.oopscraft.arch4j.core.data.SystemFieldEntity;
 import org.oopscraft.fintics.model.OhlcvType;
 
 import javax.persistence.*;
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
