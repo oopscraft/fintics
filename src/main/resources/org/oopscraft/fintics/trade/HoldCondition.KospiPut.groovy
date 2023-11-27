@@ -170,19 +170,19 @@ log.debug("[{}] resultOfMinute30: {}", assetName, resultOfMinute30);
 log.info("[{}] resultOfMinute30Average: {}", assetName, resultOfMinute30.values().average());
 
 // Kospi (코스피 지수 하락 시 매수)
-def resultOfKospi = analyze(indiceIndicators['KOSPI'], OhlcvType.MINUTE, 30);
+def resultOfKospi = analyze(indiceIndicators['KOSPI'], OhlcvType.MINUTE, 10);
 holdVotes.addAll(resultOfKospi.values().collect{100 - (it as Number)});
 log.debug("[{}] resultOfKospi: {}", assetName, resultOfKospi);
 log.info("[{}] resultOfKospiAverage: {}", assetName, resultOfKospi.values().average());
 
 // USD/KRW (환율 상승 시 매수)
-def resultOfUsdKrw = analyze(indiceIndicators['USD_KRW'], OhlcvType.MINUTE, 30);
+def resultOfUsdKrw = analyze(indiceIndicators['USD_KRW'], OhlcvType.MINUTE, 10);
 holdVotes.addAll(resultOfUsdKrw.values());
 log.debug("[{}] resultOfUsdKrw: {}", assetName, resultOfUsdKrw);
 log.info("[{}] resultOfUsdKrw: {}", assetName, resultOfUsdKrw.values().average());
 
 // Nasdaq Future (나스닥 선물 하락 시 매수)
-def resultOfNdxFuture = analyze(indiceIndicators['NDX_FUTURE'], OhlcvType.MINUTE, 30);
+def resultOfNdxFuture = analyze(indiceIndicators['NDX_FUTURE'], OhlcvType.MINUTE, 10);
 holdVotes.addAll(resultOfNdxFuture.values().collect{100 - (it as Number)});
 log.debug("[{}] resultOfNdxFuture: {}", assetName, resultOfNdxFuture);
 log.info("[{}] resultOfNdxFuture: {}", assetName, resultOfNdxFuture.values().average());
