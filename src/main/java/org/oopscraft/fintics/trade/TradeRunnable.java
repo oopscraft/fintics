@@ -11,9 +11,7 @@ import org.oopscraft.arch4j.web.support.SseLogAppender;
 import org.oopscraft.fintics.client.indice.IndiceClient;
 import org.oopscraft.fintics.client.trade.TradeClient;
 import org.oopscraft.fintics.client.trade.TradeClientFactory;
-import org.oopscraft.fintics.dao.OrderEntity;
-import org.oopscraft.fintics.dao.OrderRepository;
-import org.oopscraft.fintics.dao.TradeRepository;
+import org.oopscraft.fintics.dao.*;
 import org.oopscraft.fintics.model.*;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -30,6 +28,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class TradeRunnable implements Runnable {
 
@@ -50,6 +49,10 @@ public class TradeRunnable implements Runnable {
 
     private final TradeRepository tradeRepository;
 
+    private final IndiceOhlcvRepository indiceOhlcvRepository;
+
+    private final TradeAssetOhlcvRepository tradeAssetOhlcvRepository;
+
     private final OrderRepository orderRepository;
 
     private final Logger log;
@@ -69,6 +72,8 @@ public class TradeRunnable implements Runnable {
         this.alarmService = applicationContext.getBean(AlarmService.class);
         this.indiceClient = applicationContext.getBean(IndiceClient.class);
         this.tradeRepository = applicationContext.getBean(TradeRepository.class);
+        this.indiceOhlcvRepository = applicationContext.getBean(IndiceOhlcvRepository.class);
+        this.tradeAssetOhlcvRepository = applicationContext.getBean(TradeAssetOhlcvRepository.class);
         this.orderRepository = applicationContext.getBean(OrderRepository.class);
 
         // add log appender
@@ -138,10 +143,25 @@ public class TradeRunnable implements Runnable {
             // indice indicators
             List<IndiceIndicator> indiceIndicators = new ArrayList<>();
             for(IndiceSymbol symbol : IndiceSymbol.values()) {
+                indiceClient.getMinuteOhlcvs(symbol);
+
+                // minute ohlcvs
+                List<Ohlcv> minuteOhlcvs = indiceClient.getMinuteOhlcvs(symbol);
+                LocalDateTime lastMinute = minuteOhlcvs.get(minuteOhlcvs.size()-1).getDateTime();
+                List<Ohlcv> previousMinuteOhlcvs = getIndiceOhlcvs(symbol, OhlcvType.MINUTE, lastMinute.minusMinutes(360), lastMinute.minusMinutes(1));
+                minuteOhlcvs.addAll(previousMinuteOhlcvs);
+
+                // daily ohlcvs
+                List<Ohlcv> dailyOhlcvs = indiceClient.getDailyOhlcvs(symbol);
+                LocalDateTime lastDay = dailyOhlcvs.get(dailyOhlcvs.size()-1).getDateTime();
+                List<Ohlcv> previousDailyOhlcvs = getIndiceOhlcvs(symbol, OhlcvType.DAILY, lastDay.minusDays(180), lastDay.minusDays(1));
+                dailyOhlcvs.addAll(previousDailyOhlcvs);
+
+                // add indicator
                 indiceIndicators.add(IndiceIndicator.builder()
                         .symbol(symbol)
-                        .minuteOhlcvs(indiceClient.getMinuteOhlcvs(symbol))
-                        .dailyOhlcvs(indiceClient.getDailyOhlcvs(symbol))
+                        .minuteOhlcvs(minuteOhlcvs)
+                        .dailyOhlcvs(dailyOhlcvs)
                         .build());
             }
 
@@ -161,11 +181,21 @@ public class TradeRunnable implements Runnable {
                 log.info("Check asset - [{}]", tradeAsset.getName());
 
                 // indicator
+                List<Ohlcv> minuteOhlcvs = tradeClient.getMinuteOhlcvs(tradeAsset);
+                LocalDateTime lastMinute = minuteOhlcvs.get(minuteOhlcvs.size()-1).getDateTime();
+                List<Ohlcv> previousMinuteOhlcvs = getTradeAssetOhlcvs(tradeAsset, OhlcvType.MINUTE, lastMinute.minusMinutes(360), lastMinute.minusMinutes(1));
+                minuteOhlcvs.addAll(previousMinuteOhlcvs);
+
+                List<Ohlcv> dailyOhlcvs = tradeClient.getDailyOhlcvs(tradeAsset);
+                LocalDateTime lastDay = dailyOhlcvs.get(dailyOhlcvs.size()-1).getDateTime();
+                List<Ohlcv> previousDailyOhlcvs = getTradeAssetOhlcvs(tradeAsset, OhlcvType.DAILY, lastDay.minusDays(180), lastDay.minusDays(1));
+                dailyOhlcvs.addAll(previousDailyOhlcvs);
+
                 TradeAssetIndicator assetIndicator = TradeAssetIndicator.builder()
                         .symbol(tradeAsset.getSymbol())
                         .name(tradeAsset.getName())
-                        .minuteOhlcvs(tradeClient.getMinuteOhlcvs(tradeAsset))
-                        .dailyOhlcvs(tradeClient.getDailyOhlcvs(tradeAsset))
+                        .minuteOhlcvs(minuteOhlcvs)
+                        .dailyOhlcvs(dailyOhlcvs)
                         .build();
 
                 // order book
@@ -227,6 +257,20 @@ public class TradeRunnable implements Runnable {
             return false;
         }
         return time.isAfter(trade.getStartAt()) && time.isBefore(trade.getEndAt());
+    }
+
+    private List<Ohlcv> getIndiceOhlcvs(IndiceSymbol symbol, OhlcvType ohlcvType, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo) {
+        List<IndiceOhlcvEntity> indiceOhlcvEntities = indiceOhlcvRepository.findAllBySymbolAndOhlcvType(symbol, ohlcvType, dateTimeFrom, dateTimeTo);
+        return indiceOhlcvEntities.stream()
+                .map(Ohlcv::from)
+                .collect(Collectors.toList());
+    }
+
+    private List<Ohlcv> getTradeAssetOhlcvs(TradeAsset tradeAsset, OhlcvType ohlcvType, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo) {
+        List<TradeAssetOhlcvEntity> tradeAssetOhlcvEntities = tradeAssetOhlcvRepository.findAllBySymbolAndOhlcvType(tradeAsset.getTradeId(), tradeAsset.getSymbol(), ohlcvType, dateTimeFrom, dateTimeTo);
+        return tradeAssetOhlcvEntities.stream()
+                .map(Ohlcv::from)
+                .collect(Collectors.toList());
     }
 
     private void sendErrorAlarmIfEnabled(Trade trade, Throwable t) throws InterruptedException {

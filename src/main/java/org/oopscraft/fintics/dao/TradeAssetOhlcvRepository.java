@@ -27,5 +27,4 @@ public interface TradeAssetOhlcvRepository extends JpaRepository<TradeAssetOhlcv
             " order by a.dateTime desc")
     List<TradeAssetOhlcvEntity> findAllBySymbolAndOhlcvType(@Param("tradeId")String tradeId, @Param("symbol")String symbol, @Param("ohlcvType")OhlcvType ohlcvType, @Param("dateTimeFrom")LocalDateTime dateTimeFrom, @Param("dateTimeTo")LocalDateTime dateTimeTo);
 
-
 }
