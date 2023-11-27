@@ -149,14 +149,12 @@ public class TradeRunnable implements Runnable {
                 List<Ohlcv> minuteOhlcvs = indiceClient.getMinuteOhlcvs(symbol);
                 LocalDateTime lastMinute = minuteOhlcvs.get(minuteOhlcvs.size()-1).getDateTime();
                 List<Ohlcv> previousMinuteOhlcvs = getIndiceOhlcvs(symbol, OhlcvType.MINUTE, lastMinute.minusMinutes(360), lastMinute.minusMinutes(1));
-                log.info("== previousMinuteOhlcvs:{}", previousMinuteOhlcvs);
                 minuteOhlcvs.addAll(previousMinuteOhlcvs);
 
                 // daily ohlcvs
                 List<Ohlcv> dailyOhlcvs = indiceClient.getDailyOhlcvs(symbol);
                 LocalDateTime lastDay = dailyOhlcvs.get(dailyOhlcvs.size()-1).getDateTime();
                 List<Ohlcv> previousDailyOhlcvs = getIndiceOhlcvs(symbol, OhlcvType.DAILY, lastDay.minusDays(180), lastDay.minusDays(1));
-                log.info("== previousDailyOhlcvs:{}", previousDailyOhlcvs);
                 dailyOhlcvs.addAll(previousDailyOhlcvs);
 
                 // add indicator
@@ -186,13 +184,11 @@ public class TradeRunnable implements Runnable {
                 List<Ohlcv> minuteOhlcvs = tradeClient.getMinuteOhlcvs(tradeAsset);
                 LocalDateTime lastMinute = minuteOhlcvs.get(minuteOhlcvs.size()-1).getDateTime();
                 List<Ohlcv> previousMinuteOhlcvs = getTradeAssetOhlcvs(tradeAsset, OhlcvType.MINUTE, lastMinute.minusMinutes(360), lastMinute.minusMinutes(1));
-                log.info("== previousMinuteOhlcvs:{}", previousMinuteOhlcvs);
                 minuteOhlcvs.addAll(previousMinuteOhlcvs);
 
                 List<Ohlcv> dailyOhlcvs = tradeClient.getDailyOhlcvs(tradeAsset);
                 LocalDateTime lastDay = dailyOhlcvs.get(dailyOhlcvs.size()-1).getDateTime();
                 List<Ohlcv> previousDailyOhlcvs = getTradeAssetOhlcvs(tradeAsset, OhlcvType.DAILY, lastDay.minusDays(180), lastDay.minusDays(1));
-                log.info("== previousDailyOhlcvs:{}", previousDailyOhlcvs);
                 dailyOhlcvs.addAll(previousDailyOhlcvs);
 
                 TradeAssetIndicator assetIndicator = TradeAssetIndicator.builder()
