@@ -2,7 +2,6 @@ package org.oopscraft.fintics.calculator;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
-import org.oopscraft.fintics.calculator._legacy.ObvCalculator;
 import org.oopscraft.fintics.model.Ohlcv;
 
 import java.math.BigDecimal;
@@ -35,11 +34,11 @@ public class ObvCalculatorTest extends AbstractCalculatorTest {
         Collections.reverse(ohlcvs);
 
         // when
-        List<BigDecimal> obvs = ObvCalculator.of(ohlcvs).calculate();
+        List<Obv> obvs = new ObvCalculator(ObvContext.DEFAULT).calculate(ohlcvs);
 
         // then
         for(int i = 0, size = obvs.size(); i < size; i ++) {
-            BigDecimal obv = obvs.get(i);
+            Obv obv = obvs.get(i);
             Ohlcv ohlcv = ohlcvs.get(i);
             Map<String,String> inputRow = inputRows.get(i);
             BigDecimal originClosePrice = new BigDecimal(inputRow.get("close").replaceAll(",",""));
@@ -48,8 +47,8 @@ public class ObvCalculatorTest extends AbstractCalculatorTest {
 
             log.info("[{}] {},{},{} / {},{},{}", i,
                     originClosePrice, originVolume, originObv,
-                    ohlcv.getClosePrice(), ohlcv.getVolume(), obv);
-            assertEquals(originObv, obv);
+                    ohlcv.getClosePrice(), ohlcv.getVolume(), obv.getValue());
+            assertEquals(originObv, obv.getValue());
         }
 
     }

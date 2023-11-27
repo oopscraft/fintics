@@ -5,28 +5,14 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
-import org.oopscraft.fintics.calculator._legacy.Dmi;
-import org.oopscraft.fintics.calculator._legacy.Macd;
 import org.oopscraft.fintics.model.Ohlcv;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 @Slf4j
 public class ToolTest {
-
-    @SuperBuilder
-    @Setter
-    @Getter
-    public static class FileOhlcv extends Ohlcv {
-        private Macd macd;
-        private BigDecimal rsi;
-        private Dmi dmi;
-    }
 
     @Test
     void testChart() {

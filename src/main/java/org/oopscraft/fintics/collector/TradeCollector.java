@@ -73,7 +73,7 @@ public class TradeCollector {
              List<Ohlcv> minuteOhlcvs = tradeClient.getMinuteOhlcvs(tradeAsset);
              Collections.reverse(minuteOhlcvs);
              LocalDateTime minuteLastDateTime = tradeAssetOhlcvRepository.findMaxDateTimeBySymbolAndOhlcvType(tradeAsset.getTradeId(), tradeAsset.getSymbol(), OhlcvType.MINUTE)
-                     .orElse(LocalDateTime.of(1,1,1,0,0,0))
+                     .orElse(getExpiredDateTime())
                      .minusMinutes(2);
              List<TradeAssetOhlcvEntity> minuteTradeAssetOhlcvEntities = minuteOhlcvs.stream()
                      .filter(ohlcv -> ohlcv.getDateTime().isAfter(minuteLastDateTime))
@@ -86,7 +86,7 @@ public class TradeCollector {
              List<Ohlcv> dailyOhlcvs = tradeClient.getDailyOhlcvs(tradeAsset);
              Collections.reverse(dailyOhlcvs);
              LocalDateTime dailyLastDateTime = tradeAssetOhlcvRepository.findMaxDateTimeBySymbolAndOhlcvType(tradeAsset.getTradeId(), tradeAsset.getSymbol(), OhlcvType.DAILY)
-                     .orElse(LocalDateTime.of(1,1,1,0,0,0))
+                     .orElse(getExpiredDateTime())
                      .minusDays(2);
              List<TradeAssetOhlcvEntity> dailyOhlcvEntities = dailyOhlcvs.stream()
                      .filter(ohlcv -> ohlcv.getDateTime().isAfter(dailyLastDateTime))
@@ -113,6 +113,10 @@ public class TradeCollector {
                 .build();
     }
 
+    private LocalDateTime getExpiredDateTime() {
+        return LocalDateTime.now().minusMonths(ohlcvRetentionMonths);
+    }
+
     private void deletePastRetentionOhlcv(TradeAsset tradeAsset) {
         entityManager.createQuery(
                         "delete" +
@@ -122,7 +126,7 @@ public class TradeCollector {
                                 " and dateTime < :expiredDateTime")
                 .setParameter("tradeId", tradeAsset.getTradeId())
                 .setParameter("symbol", tradeAsset.getSymbol())
-                .setParameter("expiredDateTime", LocalDateTime.now().minusMonths(ohlcvRetentionMonths))
+                .setParameter("expiredDateTime", getExpiredDateTime())
                 .executeUpdate();
         entityManager.flush();
         entityManager.clear();

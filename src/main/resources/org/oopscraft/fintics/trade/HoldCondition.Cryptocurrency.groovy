@@ -145,23 +145,29 @@ holdVotes.addAll(holdVoteByMinute1.values());
 log.debug("[{}] holdVoteByMinute1: {}", assetName, holdVoteByMinute1);
 log.info("[{}] holdVoteByMinute1Average: {}", assetName, holdVoteByMinute1.values().average());
 
+// minute 5
+def holdVoteByMinute5 = getHoldVoteBy(assetIndicator, OhlcvType.MINUTE, 5);
+holdVotes.addAll(holdVoteByMinute5.values());
+log.debug("[{}] holdVoteByMinute5: {}", assetName, holdVoteByMinute5);
+log.info("[{}] holdVoteByMinute5Average: {}", assetName, holdVoteByMinute5.values().average());
+
 // minute 10
 def holdVoteByMinute10 = getHoldVoteBy(assetIndicator, OhlcvType.MINUTE, 10);
 holdVotes.addAll(holdVoteByMinute10.values());
 log.debug("[{}] holdVoteByMinute10: {}", assetName, holdVoteByMinute10);
 log.info("[{}] holdVoteByMinute10Average: {}", assetName, holdVoteByMinute10.values().average());
 
+// minute 15
+def holdVoteByMinute15 = getHoldVoteBy(assetIndicator, OhlcvType.MINUTE, 15);
+holdVotes.addAll(holdVoteByMinute15.values());
+log.debug("[{}] holdVoteByMinute15: {}", assetName, holdVoteByMinute15);
+log.info("[{}] holdVoteByMinute15Average: {}", assetName, holdVoteByMinute15.values().average());
+
 // minute 30
 def holdVoteByMinute30 = getHoldVoteBy(assetIndicator, OhlcvType.MINUTE, 30);
 holdVotes.addAll(holdVoteByMinute30.values());
 log.debug("[{}] holdVoteByMinute30: {}", assetName, holdVoteByMinute30);
 log.info("[{}] holdVoteByMinute30Average: {}", assetName, holdVoteByMinute30.values().average());
-
-// minute 60
-def holdVoteByMinute60 = getHoldVoteBy(assetIndicator, OhlcvType.MINUTE, 60);
-holdVotes.addAll(holdVoteByMinute60.values());
-log.debug("[{}] holdVoteByMinute60: {}", assetName, holdVoteByMinute60);
-log.info("[{}] holdVoteByMinute60Average: {}", assetName, holdVoteByMinute60.values().average());
 
 // decide hold
 def hold = null;
