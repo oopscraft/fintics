@@ -28,7 +28,7 @@ import java.time.ZoneId;
 import java.util.*;
 
 @Component
-@ConditionalOnProperty(prefix = "fintics.client.market", name = "class-name", havingValue="org.oopscraft.fintics.client.market.YahooMarketClient")
+@ConditionalOnProperty(prefix = "fintics.client.indice", name = "class-name", havingValue="org.oopscraft.fintics.client.indice.YahooIndiceClient")
 @RequiredArgsConstructor
 @Slf4j
 public class YahooIndiceClient extends IndiceClient {

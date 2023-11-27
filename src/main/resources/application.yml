@@ -16,13 +16,9 @@ web:
 # fintics
 fintics:
   client:
-    asset:
-      class-name: org.oopscraft.fintics.client.asset.SeibroAssetClient
-    market:
-      class-name: org.oopscraft.fintics.client.market.YahooMarketClient
+    indice:
+      class-name: org.oopscraft.fintics.client.indice.YahooIndiceClient
   collector:
-    asset-collector:
-      limit: 100
     indice-collector:
       ohlcv-retention-months: 1
     trade-collector:
