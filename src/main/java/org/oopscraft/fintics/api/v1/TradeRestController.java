@@ -6,12 +6,12 @@ import org.oopscraft.arch4j.core.security.SecurityUtils;
 import org.oopscraft.arch4j.web.support.PageableUtils;
 import org.oopscraft.arch4j.web.support.SseLogAppender;
 import org.oopscraft.fintics.api.v1.dto.*;
-import org.oopscraft.fintics.model.Order;
-import org.oopscraft.fintics.model.Trade;
-import org.oopscraft.fintics.model.TradeAsset;
-import org.oopscraft.fintics.model.TradeAssetIndicator;
+import org.oopscraft.fintics.model.*;
 import org.oopscraft.fintics.service.TradeService;
 import org.oopscraft.fintics.trade.TradeThreadManager;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -19,6 +19,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -35,9 +36,13 @@ import java.util.stream.Collectors;
 @Slf4j
 public class TradeRestController {
 
+    private final static String TRADE_REST_CONTROLLER_GET_TRADE_ASSET_INDICATORS = "TradeRestController.getTradeAssetIndicator";
+
     private final TradeService tradeService;
 
     private final TradeThreadManager tradeThreadManager;
+
+    private final CacheManager cacheManager;
 
     @GetMapping
     public ResponseEntity<List<TradeResponse>> getTrades() {
@@ -146,6 +151,7 @@ public class TradeRestController {
         return ResponseEntity.ok(balanceResponse);
     }
 
+    @Cacheable(cacheNames = TRADE_REST_CONTROLLER_GET_TRADE_ASSET_INDICATORS, key = "#tradeId")
     @GetMapping("{tradeId}/indicator")
     public ResponseEntity<List<TradeAssetIndicatorResponse>> getTradeAssetIndicators(@PathVariable("tradeId") String tradeId) {
         Trade trade = tradeService.getTrade(tradeId).orElseThrow();
@@ -157,6 +163,18 @@ public class TradeRestController {
         return ResponseEntity.ok(tradeAssetIndicatorResponses);
     }
 
+    @Scheduled(initialDelay = 60_000, fixedDelay = 60_000)
+    public void cacheTradeAssetIndicators() {
+        log.info("TradeRestController.cacheTradeAssetIndicators");
+        Cache cache = cacheManager.getCache(TRADE_REST_CONTROLLER_GET_TRADE_ASSET_INDICATORS);
+        if(cache != null) {
+            tradeService.getTrades().forEach(trade -> {
+                String tradeId = trade.getTradeId();
+                cache.put(tradeId, getTradeAssetIndicators(tradeId));
+            });
+        }
+    }
+
     @GetMapping(value = "{tradeId}/log", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter getTradeLog(@PathVariable("tradeId")String tradeId) {
         SseLogAppender sseLogAppender = tradeThreadManager.getSseLogAppender(tradeId).orElseThrow();
@@ -165,29 +183,6 @@ public class TradeRestController {
         sseEmitter.onCompletion(() -> sseLogAppender.removeSseEmitter(sseEmitter));
         sseEmitter.onTimeout(() -> sseLogAppender.removeSseEmitter(sseEmitter));
         return sseEmitter;
-    }
-
-    @GetMapping(value = "{tradeId}/order")
-    public ResponseEntity<List<OrderResponse>> getTradeOrders(
-            @PathVariable("tradeId")
-                    String tradeId,
-            @PageableDefault
-                    Pageable pageable
-    ) {
-        Page<Order> orderPage = tradeService.getTradeOrders(tradeId, pageable);
-        List<OrderResponse> orderResponses = orderPage.getContent().stream()
-                .map(OrderResponse::from)
-                .collect(Collectors.toList());
-
-        // set trade name
-        orderResponses.forEach(orderResponse ->
-                orderResponse.setTradeName(tradeService.getTrade(orderResponse.getTradeId())
-                        .map(Trade::getName)
-                        .orElse("")));
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_RANGE, PageableUtils.toContentRange("order", pageable, orderPage.getTotalElements()))
-                .body(orderResponses);
     }
 
 }

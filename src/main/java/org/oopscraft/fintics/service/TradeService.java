@@ -130,16 +130,4 @@ public class TradeService {
                 .build());
     }
 
-    public Page<Order> getTradeOrders(String tradeId, Pageable pageable) {
-        OrderSearch orderSearch = OrderSearch.builder()
-                .tradeId(tradeId)
-                .build();
-        Page<OrderEntity> orderEntityPage = orderRepository.findAll(orderSearch, pageable);
-        List<Order> orders = orderEntityPage.getContent().stream()
-                .map(Order::from)
-                .collect(Collectors.toList());
-        long total = orderEntityPage.getTotalElements();
-        return new PageImpl<>(orders, pageable, total);
-    }
-
 }

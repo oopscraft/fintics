@@ -196,13 +196,6 @@
                 .then(balance => {
                     duice.ObjectProxy.assign(tradeBalanceMap.get(tradeId), balance);
                 });
-
-            let orderUrl = new URL(`${_apiUrl}/v1/trade/${tradeId}/order`, document.location.origin);
-            _fetch(orderUrl)
-                .then(response => response.json())
-                .then(orders => {
-                    duice.ArrayProxy.assign(tradeOrdersMap.get(tradeId), orders);
-                });
         }
 
         function createDailyOhlcvsChart(elementId) {

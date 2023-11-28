@@ -57,7 +57,7 @@ public class IndiceRestController {
 
     @Scheduled(initialDelay = 60_000, fixedDelay = 60_000)
     public void cacheIndiceIndicator() {
-        log.info("IndiceRestController.evictIndiceIndicator");
+        log.info("IndiceRestController.cacheIndiceIndicator");
         Cache cache = cacheManager.getCache(INDICE_REST_CONTROLLER_GET_INDICE_INDICATOR);
         if(cache != null) {
             indiceService.getIndices().forEach(indice -> {
