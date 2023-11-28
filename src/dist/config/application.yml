@@ -15,6 +15,7 @@ spring:
       password: fintics
       minimum-idle: 30
       maximum-pool-size: 30
+      leakDetectionThreshold: 10000
   mail:
     host: smtp.gmail.com
     port: 587
