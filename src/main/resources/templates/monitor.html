@@ -34,15 +34,12 @@
         }
 
         function getIndiceMonitor() {
-            const promises = indices.map(indice => {
+            indices.forEach(indice => {
                 let url = new URL(`${_apiUrl}/v1/indice/${indice.symbol}/indicator`, document.location.origin);
-                return _fetch(url);
-            });
-            Promise.all(promises)
-                .then(responses => {
-                    return Promise.all(responses.map(
-                        response => response.json()));
-                }).then(indiceIndicators => {
+                _fetch(url)
+                .then(response => {
+                    return response.json();
+                }).then(indiceIndicator => {
                     // define date from
                     let now = new Date();
                     let dailyFrom = dateFns.subDays(now, 30);
@@ -53,34 +50,33 @@
                     // indice chart
                     indiceDailyOhlcvsChart.data.datasets.length = 0;
                     indiceMinuteOhlcvsChart.data.datasets.length = 0;
-                    for(let i = 0; i < indiceIndicators.length; i ++) {
-                        let indiceIndicator = indiceIndicators[i];
 
-                        // daily
-                        let dailyOhlcvs = indiceIndicator['dailyOhlcvs'];
-                        let dailyTimeSeries = createTimeSeries(dailyFrom, dailyTo, dailyOhlcvs, 60000*60*24);
-                        let dailyDataset = {
-                            label: indiceIndicator.name,
-                            data: dailyTimeSeries,
-                            borderWidth: 1,
-                            pointStyle: false
-                        };
-                        indiceDailyOhlcvsChart.data.datasets.push(dailyDataset);
+                    // daily
+                    let dailyOhlcvs = indiceIndicator['dailyOhlcvs'];
+                    let dailyTimeSeries = createTimeSeries(dailyFrom, dailyTo, dailyOhlcvs, 60000 * 60 * 24);
+                    let dailyDataset = {
+                        label: indiceIndicator.name,
+                        data: dailyTimeSeries,
+                        borderWidth: 1,
+                        pointStyle: false
+                    };
+                    indiceDailyOhlcvsChart.data.datasets.push(dailyDataset);
 
-                        // minute
-                        let minuteOhlcvs = indiceIndicator['minuteOhlcvs'];
-                        let minuteTimeSeries = createTimeSeries(minuteFrom, minuteTo, minuteOhlcvs, 60000);
-                        let minuteDataset = {
-                            label: indiceIndicator.name,
-                            data: minuteTimeSeries,
-                            borderWidth: 1,
-                            pointStyle: false
-                        };
-                        indiceMinuteOhlcvsChart.data.datasets.push(minuteDataset);
-                    }
+                    // minute
+                    let minuteOhlcvs = indiceIndicator['minuteOhlcvs'];
+                    let minuteTimeSeries = createTimeSeries(minuteFrom, minuteTo, minuteOhlcvs, 60000);
+                    let minuteDataset = {
+                        label: indiceIndicator.name,
+                        data: minuteTimeSeries,
+                        borderWidth: 1,
+                        pointStyle: false
+                    };
+
+                    indiceMinuteOhlcvsChart.data.datasets.push(minuteDataset);
                     indiceDailyOhlcvsChart.update();
                     indiceMinuteOhlcvsChart.update();
                 });
+            });
         }
 
         function initializeTradeMonitors() {
@@ -114,6 +110,9 @@
             tradeLogEventSource.onmessage = (event) => {
                 let message = event.data;
                 console.log(message);
+                if(tradeLog.value.length > 1024 * 1024) {
+                    tradeLog.value = '';
+                }
                 tradeLog.value += message + '\n';
                 tradeLog.scrollTop = tradeLog.scrollHeight;
             };
@@ -448,7 +447,7 @@
                         <canvas th:id="'tradeAssetMinuteOhlcvsChart-' + ${trade.tradeId}"></canvas>
                     </div>
                     <div class="grid-column-4 s-grid-column-12">
-                        <div class="overflow-y-auto overflow-x-auto border-top-1" style="height:200px;">
+                        <div class="overflow-y-auto overflow-x-auto border-top-1" style="max-height:200px;">
                             <table class="width-100 font-size-smaller border-0" style="line-height:normal;">
                                 <colgroup>
                                     <col style="width:5rem;"/>

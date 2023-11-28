@@ -1,11 +1,15 @@
 package org.oopscraft.fintics.api.v1;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.fintics.api.v1.dto.IndiceIndicatorResponse;
 import org.oopscraft.fintics.api.v1.dto.IndiceResponse;
 import org.oopscraft.fintics.model.IndiceSymbol;
 import org.oopscraft.fintics.service.IndiceService;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,7 +20,10 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/v1/indice")
 @RequiredArgsConstructor
+@Slf4j
 public class IndiceRestController {
+
+    private final static String INDICE_REST_CONTROLLER_GET_INDICE_INDICATOR = "IndiceRestController.getIndiceIndicator";
 
     private final IndiceService indiceService;
 
@@ -36,12 +43,19 @@ public class IndiceRestController {
         return ResponseEntity.ok(indiceResponse);
     }
 
+    @Cacheable(cacheNames = INDICE_REST_CONTROLLER_GET_INDICE_INDICATOR, key = "#symbol")
     @RequestMapping("{symbol}/indicator")
     public ResponseEntity<IndiceIndicatorResponse> getIndiceIndicator(@PathVariable("symbol")IndiceSymbol symbol) {
         IndiceIndicatorResponse indiceIndicatorResponse = indiceService.getIndiceIndicator(symbol)
                 .map(IndiceIndicatorResponse::from)
                 .orElseThrow();
         return ResponseEntity.ok(indiceIndicatorResponse);
+    }
+
+    @CacheEvict(cacheNames = INDICE_REST_CONTROLLER_GET_INDICE_INDICATOR, allEntries = true)
+    @Scheduled(initialDelay = 60_000, fixedDelay = 60_000)
+    public void evictIndiceIndicator() {
+        log.info("IndiceRestController.evictIndiceIndicator");
     }
 
 }

@@ -2,6 +2,9 @@
 spring:
   thymeleaf:
     cache: false
+  datasource:
+    hikari:
+      leakDetectionThreshold: 60000
 
 # web
 web:
