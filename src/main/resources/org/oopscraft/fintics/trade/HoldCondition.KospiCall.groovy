@@ -1,3 +1,4 @@
+import java.time.LocalTime
 import org.oopscraft.fintics.calculator.AdContext
 import org.oopscraft.fintics.calculator.DmiContext
 import org.oopscraft.fintics.calculator.ObvContext
@@ -169,23 +170,49 @@ holdVotes.addAll(resultOfMinute30.values());
 log.debug("[{}] resultOfMinute30: {}", assetName, resultOfMinute30);
 log.info("[{}] resultOfMinute30Average: {}", assetName, resultOfMinute30.values().average());
 
-// Kospi (코스피 지수 상승 시 매수)
-def resultOfKospi = analyze(indiceIndicators['KOSPI'], OhlcvType.MINUTE, 10);
-holdVotes.addAll(resultOfKospi.values());
-log.debug("[{}] resultOfKospi: {}", assetName, resultOfKospi);
-log.info("[{}] resultOfKospiAverage: {}", assetName, resultOfKospi.values().average());
+// Kospi minute 10 (코스피 지수 상승 시 매수)
+def resultOfKospiMinute10 = analyze(indiceIndicators['KOSPI'], OhlcvType.MINUTE, 10);
+holdVotes.addAll(resultOfKospiMinute10.values());
+log.debug("[{}] resultOfKospiMinute10: {}", assetName, resultOfKospiMinute10);
+log.info("[{}] resultOfKospiMinute10Average: {}", assetName, resultOfKospiMinute10.values().average());
 
-// USD/KRW (환율 하락 시 매수)
-def resultOfUsdKrw = analyze(indiceIndicators['USD_KRW'], OhlcvType.MINUTE, 10);
-holdVotes.addAll(resultOfUsdKrw.values().collect{100 - (it as Number)});
-log.debug("[{}] resultOfUsdKrw: {}", assetName, resultOfUsdKrw);
-log.info("[{}] resultOfUsdKrw: {}", assetName, resultOfUsdKrw.values().average());
+// USD/KRW minute 10 (환율 하락 시 매수)
+def resultOfUsdKrwMinute10 = analyze(indiceIndicators['USD_KRW'], OhlcvType.MINUTE, 10);
+holdVotes.addAll(resultOfUsdKrwMinute10.values().collect{100 - (it as Number)});
+log.debug("[{}] resultOfUsdKrwMinute10: {}", assetName, resultOfUsdKrwMinute10);
+log.info("[{}] resultOfUsdKrwMinute10Average: {}", assetName, resultOfUsdKrwMinute10.values().average());
 
-// Nasdaq Future (나스닥 선물 상승 시 매수)
-def resultOfNdxFuture = analyze(indiceIndicators['NDX_FUTURE'], OhlcvType.MINUTE, 10);
-holdVotes.addAll(resultOfNdxFuture.values());
-log.debug("[{}] resultOfNdxFuture: {}", assetName, resultOfNdxFuture);
-log.info("[{}] resultOfNdxFuture: {}", assetName, resultOfNdxFuture.values().average());
+// Nasdaq Future minute 10 (나스닥 선물 상승 시 매수)
+def resultOfNdxFutureMinute10 = analyze(indiceIndicators['NDX_FUTURE'], OhlcvType.MINUTE, 10);
+holdVotes.addAll(resultOfNdxFutureMinute10.values());
+log.debug("[{}] resultOfNdxFutureMinute10: {}", assetName, resultOfNdxFutureMinute10);
+log.info("[{}] resultOfNdxFutureMinute10Average: {}", assetName, resultOfNdxFutureMinute10.values().average());
+
+// 장시작 후 초반 추가 Factor (10:00 이전)
+if(dateTime.toLocalTime().isBefore(LocalTime.of(10,0))) {
+
+    // 야간 미국 Nasdaq Factor 추가
+    def resultOfNdxMinute10 = analyze(indiceIndicators['NDX'], OhlcvType.MINUTE, 10);
+    holdVotes.addAll(resultOfNdxMinute10.values());
+    log.debug("[{}] resultOfNdxMinute10: {}", assetName, resultOfNdxMinute10);
+    log.info("[{}] resultOfNdxMinute10Average: {}", assetName, resultOfNdxMinute10.values().average());
+}
+
+// 장종료 전 추가 Factor (15:00 이후)
+if(dateTime.toLocalTime().isAfter(LocalTime.of(15, 00))) {
+
+    // Asset Daily Factor 추가
+    def resultOfDaily1 = analyze(tradeAssetIndicator, OhlcvType.DAILY, 1);
+    holdVotes.addAll(resultOfDaily1.values());
+    log.debug("[{}] resultOfDaily1: {}", assetName, resultOfDaily1);
+    log.info("[{}] resultOfDaily1Average: {}", assetName, resultOfDaily1.values().average());
+
+    // Nasdaq Daily Factor 추가
+    def resultOfNdxDaily1 = analyze(indiceIndicators['NDX'], OhlcvType.DAILY,  1);
+    holdVotes.addAll(resultOfNdxDaily1.values());
+    log.debug("[{}] resultOfNdxDaily1: {}", assetName, resultOfNdxDaily1);
+    log.info("[{}] resultOfNdxDaily1Average: {}", assetName, resultOfNdxDaily1.values().average());
+}
 
 // decide hold
 def hold = null;

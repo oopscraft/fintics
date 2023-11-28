@@ -196,4 +196,30 @@ class TradeAssetDeciderTest {
         log.info("== result:{}", result);
     }
 
+    @Disabled
+    @Test
+    void testHoldConditionKospiPut() {
+        // given
+        Trade trade = getTestTrade();
+        TradeAsset tradeAsset = getTestTradeAsset();
+        List<IndiceIndicator> indiceIndicators = getTestIndiceIndicators();
+        TradeAssetIndicator assetIndicator = getTestAssetIndicator(tradeAsset);
+        String holdCondition = loadGroovyFileAsString("HoldCondition.KospiPut.groovy");
+        trade.setHoldCondition(holdCondition);
+
+        // when
+        TradeAssetDecider tradeAssetDecider = TradeAssetDecider.builder()
+                .holdCondition(trade.getHoldCondition())
+                .logger(log)
+                .dateTime(LocalDateTime.now())
+                .assetIndicator(assetIndicator)
+                .indiceIndicators(indiceIndicators)
+                .build();
+        Boolean result = tradeAssetDecider.execute();
+
+        // then
+        log.info("== result:{}", result);
+    }
+
+
 }
