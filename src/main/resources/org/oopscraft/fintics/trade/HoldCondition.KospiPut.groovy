@@ -121,7 +121,7 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     result.macdValue = (macdValue > 0 ? 100 : 0);
     result.macdValueUp = (macdValuePctChange > 0.0 ? 100 : 0);
     result.macdOscillator = (macdOscillator > 0 ? 100 : 0);
-    result.macdOscillatorPctChange = (macdOscillatorPctChange > 0.0 ? 100 : 0);
+    result.macdOscillatorUp = (macdOscillatorPctChange > 0.0 ? 100 : 0);
     result.rsiOver50 = (rsiValue > 50 ? 100 : 0);
     result.rsiUp = (rsiValuePctChange > 0.0 ? 100 :0);
     result.dmiPdiOverMdi = (dmiPdi > dmiMdi ? 100 : 0);
