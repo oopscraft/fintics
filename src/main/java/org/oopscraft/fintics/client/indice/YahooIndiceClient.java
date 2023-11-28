@@ -25,6 +25,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Component
@@ -132,11 +133,19 @@ public class YahooIndiceClient extends IndiceClient {
         List<BigDecimal> closes = objectMapper.convertValue(quoteNode.path("close"), new TypeReference<>(){});
         List<BigDecimal> volumes = objectMapper.convertValue(quoteNode.path("volume"), new TypeReference<>(){});
 
-        List<Ohlcv> ohlcvs = new ArrayList<>();
+        // duplicated data retrieved.
+        Map<LocalDateTime, Ohlcv> ohlcvMap = new LinkedHashMap<>();
         for(int i = 0; i < timestamps.size(); i ++) {
             LocalDateTime dateTime = Instant.ofEpochSecond(timestamps.get(i))
                     .atZone(ZoneId.systemDefault())
                     .toLocalDateTime();
+
+            // truncates dateTime
+            switch(ohlcvType) {
+                case MINUTE -> dateTime = dateTime.truncatedTo(ChronoUnit.MINUTES);
+                case DAILY -> dateTime = dateTime.truncatedTo(ChronoUnit.DAYS);
+            }
+
             BigDecimal openPrice = opens.get(i);
             if(openPrice == null) {     // sometimes open price is null (data error)
                 continue;
@@ -154,8 +163,9 @@ public class YahooIndiceClient extends IndiceClient {
                     .closePrice(closePrice)
                     .volume(volume)
                     .build();
-            ohlcvs.add(ohlcv);
+            ohlcvMap.put(dateTime, ohlcv);
         }
+        List<Ohlcv> ohlcvs = new ArrayList<>(ohlcvMap.values());
 
         // sort by dateTime(sometimes response is not ordered)
         ohlcvs.sort(Comparator
