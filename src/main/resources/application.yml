@@ -4,7 +4,7 @@ spring:
     cache: false
   datasource:
     hikari:
-      leakDetectionThreshold: 60000
+      leakDetectionThreshold: 180000
 
 # web
 web:
