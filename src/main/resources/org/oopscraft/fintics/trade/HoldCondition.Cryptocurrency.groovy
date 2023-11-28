@@ -115,15 +115,15 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     def result = [:];
     result.priceUp = (pricePctChange > 0.0 ? 100 : 0);
     result.priceVolumeUp = (pricePctChange > 0.0 && volumePctChange > 0.0 ? 100 : 0);
-    //result.priceOverPriceMa = (price > priceMaValue ? 100 : 0);
+    result.priceOverPriceMa = (price > priceMaValue ? 100 : 0);
     result.priceMaUp = (priceMaValuePctChange > 0.0 ? 100 : 0);
-    //result.macdValue = (macdValue > 0 ? 100 : 0);
+    result.macdValue = (macdValue > 0 ? 100 : 0);
     result.macdValueUp = (macdValuePctChange > 0.0 ? 100 : 0);
-    //result.macdOscillator = (macdOscillator > 0 ? 100 : 0);
+    result.macdOscillator = (macdOscillator > 0 ? 100 : 0);
     result.macdOscillatorUp = (macdOscillatorPctChange > 0.0 ? 100 : 0);
-    //result.rsiOver50 = (rsiValue > 50 ? 100 : 0);
+    result.rsiOver50 = (rsiValue > 50 ? 100 : 0);
     result.rsiUp = (rsiValuePctChange > 0.0 ? 100 :0);
-    //result.dmiPdiOverMdi = (dmiPdi > dmiMdi ? 100 : 0);
+    result.dmiPdiOverMdi = (dmiPdi > dmiMdi ? 100 : 0);
     result.dmiPdiUp = (dmiPdiPctChange > 0.0 ? 100 : 0);
     result.dmiMdiDown = (dmiMdiPctChange < 0.0 ? 100 : 0);
     result.dmiPdiAdxUp = (dmiPdiPctChange > 0.0 && dmiAdxPctChange > 0.0 ? 100 : 0);
@@ -145,35 +145,29 @@ holdVotes.addAll(resultOfMinute1.values());
 log.debug("[{}] resultOfMinute1: {}", assetName, resultOfMinute1);
 log.info("[{}] resultOfMinute1Average: {}", assetName, resultOfMinute1.values().average());
 
-// minute 3
-def resultOfMinute3 = analyze(tradeAssetIndicator, OhlcvType.MINUTE, 3);
-holdVotes.addAll(resultOfMinute3.values());
-log.debug("[{}] resultOfMinute3: {}", assetName, resultOfMinute3);
-log.info("[{}] resultOfMinute3Average: {}", assetName, resultOfMinute3.values().average());
-
 // minute 5
 def resultOfMinute5 = analyze(tradeAssetIndicator, OhlcvType.MINUTE, 5);
 holdVotes.addAll(resultOfMinute5.values());
 log.debug("[{}] resultOfMinute5: {}", assetName, resultOfMinute5);
 log.info("[{}] resultOfMinute5Average: {}", assetName, resultOfMinute5.values().average());
 
-//// minute 10
-//def resultOfMinute10 = analyze(tradeAssetIndicator, OhlcvType.MINUTE, 10);
-//holdVotes.addAll(resultOfMinute10.values());
-//log.debug("[{}] resultOfMinute10: {}", assetName, resultOfMinute10);
-//log.info("[{}] resultOfMinute10Average: {}", assetName, resultOfMinute10.values().average());
+// minute 10
+def resultOfMinute10 = analyze(tradeAssetIndicator, OhlcvType.MINUTE, 10);
+holdVotes.addAll(resultOfMinute10.values());
+log.debug("[{}] resultOfMinute10: {}", assetName, resultOfMinute10);
+log.info("[{}] resultOfMinute10Average: {}", assetName, resultOfMinute10.values().average());
 
-//// minute 15
-//def resultOfMinute15 = analyze(tradeAssetIndicator, OhlcvType.MINUTE, 15);
-//holdVotes.addAll(resultOfMinute15.values());
-//log.debug("[{}] resultOfMinute15: {}", assetName, resultOfMinute15);
-//log.info("[{}] resultOfMinute15Average: {}", assetName, resultOfMinute15.values().average());
-//
-//// minute 30
-//def resultOfMinute30 = analyze(tradeAssetIndicator, OhlcvType.MINUTE, 30);
-//holdVotes.addAll(resultOfMinute30.values());
-//log.debug("[{}] resultOfMinute30: {}", assetName, resultOfMinute30);
-//log.info("[{}] resultOfMinute30Average: {}", assetName, resultOfMinute30.values().average());
+// minute 15
+def resultOfMinute15 = analyze(tradeAssetIndicator, OhlcvType.MINUTE, 15);
+holdVotes.addAll(resultOfMinute15.values());
+log.debug("[{}] resultOfMinute15: {}", assetName, resultOfMinute15);
+log.info("[{}] resultOfMinute15Average: {}", assetName, resultOfMinute15.values().average());
+
+// minute 30
+def resultOfMinute30 = analyze(tradeAssetIndicator, OhlcvType.MINUTE, 30);
+holdVotes.addAll(resultOfMinute30.values());
+log.debug("[{}] resultOfMinute30: {}", assetName, resultOfMinute30);
+log.info("[{}] resultOfMinute30Average: {}", assetName, resultOfMinute30.values().average());
 
 // decide hold
 def hold = null;
