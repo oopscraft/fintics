@@ -142,6 +142,12 @@ holdVotes.addAll(resultOfMinute10.values())
 log.debug("[{}] resultOfMinute10: {}", assetName, resultOfMinute10)
 log.info("[{}] resultOfMinute10Average: {}", assetName, resultOfMinute10.values().average())
 
+// minute 30
+def resultOfMinute30 = analyze(tradeAssetIndicator, OhlcvType.MINUTE, 30)
+holdVotes.addAll(resultOfMinute30.values())
+log.debug("[{}] resultOfMinute30: {}", assetName, resultOfMinute30)
+log.info("[{}] resultOfMinute30Average: {}", assetName, resultOfMinute30.values().average())
+
 // decide hold
 def hold = null
 def holdVotesAverage = holdVotes.average()
