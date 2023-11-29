@@ -40,7 +40,6 @@ public class YahooIndiceClient extends IndiceClient {
 
     private final ObjectMapper objectMapper;
 
-    @Cacheable(cacheNames = YAHOO_INDICE_CLIENT_GET_MINUTE_OHLCVS, key="#symbol")
     @Override
     public List<Ohlcv> getMinuteOhlcvs(IndiceSymbol symbol) {
         return switch (symbol) {
@@ -53,13 +52,6 @@ public class YahooIndiceClient extends IndiceClient {
         };
     }
 
-    @CacheEvict(cacheNames = YAHOO_INDICE_CLIENT_GET_MINUTE_OHLCVS, allEntries = true)
-    @Scheduled(initialDelay = 60_000, fixedDelay = 60_000)
-    public void evictMinuteOhlcvs() {
-        log.info("YahooIndiceClient.evictMinuteOhlcvs");
-    }
-
-    @Cacheable(cacheNames = YAHOO_INDICE_CLIENT_GET_DAILY_OHLCVS, key="#symbol")
     @Override
     public List<Ohlcv> getDailyOhlcvs(IndiceSymbol symbol) {
         return switch (symbol) {
@@ -70,12 +62,6 @@ public class YahooIndiceClient extends IndiceClient {
             case KOSPI -> getDailyOhlcvs("^KS11");
             case USD_KRW -> getDailyOhlcvs("KRW=X");
         };
-    }
-
-    @CacheEvict(cacheNames = YAHOO_INDICE_CLIENT_GET_DAILY_OHLCVS, allEntries = true)
-    @Scheduled(initialDelay = 60_000, fixedDelay = 60_000)
-    public void evictDailyOhlcvs() {
-        log.info("YahooIndiceClient.evictDailyOhlcvs");
     }
 
     private List<Ohlcv> getMinuteOhlcvs(String yahooSymbol) {

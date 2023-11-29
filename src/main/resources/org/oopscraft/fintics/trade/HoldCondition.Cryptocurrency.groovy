@@ -144,7 +144,6 @@ log.info("[{}] resultOfMinute10Average: {}", assetName, resultOfMinute10.values(
 
 // decide hold
 def hold = null
-
 def holdVotesAverage = holdVotes.average()
 log.debug("[{}] holdVotes: {}", assetName, holdVotes)
 log.info("[{}] holdVotesAverage: {}", assetName, holdVotesAverage)

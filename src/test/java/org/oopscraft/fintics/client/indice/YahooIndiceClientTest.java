@@ -26,7 +26,7 @@ class YahooIndiceClientTest extends CoreTestSupport {
         // given
         // when
         YahooIndiceClient indiceClient = new YahooIndiceClient(objectMapper);
-        List<Ohlcv> minuteOhlcvs = indiceClient.getMinuteOhlcvs(IndiceSymbol.NDX);
+        List<Ohlcv> minuteOhlcvs = indiceClient.getMinuteOhlcvs(IndiceSymbol.NDX_FUTURE);
 
         // then
         assertTrue(minuteOhlcvs.size() > 0);
@@ -38,7 +38,7 @@ class YahooIndiceClientTest extends CoreTestSupport {
         // given
         // when
         YahooIndiceClient indiceClient = new YahooIndiceClient(objectMapper);
-        List<Ohlcv> dailyOhlcvs = indiceClient.getDailyOhlcvs(IndiceSymbol.NDX);
+        List<Ohlcv> dailyOhlcvs = indiceClient.getDailyOhlcvs(IndiceSymbol.NDX_FUTURE);
 
         // then
         assertTrue(dailyOhlcvs.size() > 0);

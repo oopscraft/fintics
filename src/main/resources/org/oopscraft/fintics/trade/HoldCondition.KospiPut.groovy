@@ -11,115 +11,106 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     def name = indicator.getName() + ':' + ohlcvType + ':' + period
 
     // shortMa
-    def shortMas = indicator.calculate(ohlcvType, period, SmaContext.of(10))
+    def shortMas = indicator.calculate(ohlcvType, period, EmaContext.of(10))
     def shortMa = shortMas.first()
     def shortMaValues = shortMas.collect{it.value}
     def shortMaValue = shortMaValues.first()
-    def shortMaValuePctChange = tool.sum(tool.pctChanges(shortMaValues).take(3))
+    def shortMaValueSlope = tool.slope(shortMaValues.take(3))
     log.debug("[{}] shortMa: {}", name, shortMa)
-    log.debug("[{}] shortMaValue: {}({}%)", name, shortMaValue, shortMaValuePctChange)
-    log.debug("[{}] {}", name, tool.graph("PriceMaValues", shortMaValues))
+    log.debug("[{}] shortMaValue(Slope): {}({})", name, shortMaValue, shortMaValueSlope)
 
     // longMa
-    def longMas = indicator.calculate(ohlcvType, period, SmaContext.of(30))
+    def longMas = indicator.calculate(ohlcvType, period, EmaContext.of(30))
     def longMa = longMas.first()
     def longMaValues = longMas.collect{it.value}
     def longMaValue = longMaValues.first()
-    def longMaValuePctChange = tool.sum(tool.pctChanges(longMaValues).take(3))
+    def longMaValueSlope = tool.slope(longMaValues.take(3))
     log.debug("[{}] longMa: {}", name, longMa)
-    log.debug("[{}] longMaValue: {}({}%)", name, longMaValue, longMaValuePctChange)
-    log.debug("[{}] {}", name, tool.graph("LongMaValues", longMaValues))
+    log.debug("[{}] longMaValue(Slope): {}({})", name, longMaValue, longMaValueSlope)
 
     // macd
     def macds = indicator.calculate(ohlcvType, period, MacdContext.DEFAULT)
     def macd = macds.first()
     def macdValues = macds.collect{it.value}
     def macdValue = macdValues.first()
-    def macdValuePctChange = tool.mean(tool.pctChanges(macdValues).take(3))
+    def macdValueSlope = tool.slope(macdValues.take(3))
     def macdOscillators = macds.collect{it.oscillator}
     def macdOscillator = macdOscillators.first()
-    def macdOscillatorPctChange = tool.sum(tool.pctChanges(macdOscillators).take(3))
+    def macdOscillatorSlope = tool.slope(macdOscillators.take(3))
     log.debug("[{}] macd: {}", name, macd)
-    log.debug("[{}] macdValue: {}({}%)", name, macdValue, macdValuePctChange)
-    log.debug("[{}] macdOscillator: {}({}%)", name, macdOscillator, macdOscillatorPctChange)
-    log.debug("[{}] {}", name, tool.graph("MacdValues", macdValues))
+    log.debug("[{}] macdValue(Slope): {}({})", name, macdValue, macdValueSlope)
+    log.debug("[{}] macdOscillator(Slope): {}({})", name, macdOscillator, macdOscillatorSlope)
 
     // rsi
     def rsis = indicator.calculate(ohlcvType, period, RsiContext.DEFAULT)
     def rsi = rsis.first()
     def rsiValues = rsis.collect{it.value}
     def rsiValue = rsiValues.first()
-    def rsiValuePctChange = tool.sum(tool.pctChanges(rsiValues).take(3))
+    def rsiValueSlope = tool.slope(rsiValues.take(3))
     log.debug("[{}] rsi: {}", name, rsi)
-    log.debug("[{}] rsiValue: {}({}%)", name, rsiValue, rsiValuePctChange)
-    log.debug("[{}] {}", name, tool.graph("RsiValues", rsiValues))
+    log.debug("[{}] rsiValue(Slope): {}({}%)", name, rsiValue, rsiValueSlope)
 
     // dmi
     def dmis = indicator.calculate(ohlcvType, period, DmiContext.DEFAULT);
     def dmi = dmis.first();
-    def dmiPdis = dmis.collect{it.pdi};
+    def dmiPdis = dmis.collect{it.pdi}
     def dmiPdi = dmiPdis.first();
-    def dmiPdiPctChange = tool.sum(tool.pctChanges(dmiPdis).take(3));
-    def dmiMdis = dmis.collect{it.mdi};
+    def dmiPdiSlope = tool.slope(dmiPdis.take(3))
+    def dmiMdis = dmis.collect{it.mdi}
     def dmiMdi = dmiMdis.first();
-    def dmiMdiPctChange = tool.sum(tool.pctChanges(dmiMdis).take(3));
-    def dmiAdxs = dmis.collect{it.adx};
-    def dmiAdx = dmiAdxs.first();
-    def dmiAdxPctChange = tool.sum(tool.pctChanges(dmiAdxs).take(3));
-    log.debug("[{}] dmi: {}", name, dmi);
-    log.debug("[{}] dmiPdiValue: {}({}%)", name, dmiPdi, dmiPdiPctChange);
-    log.debug("[{}] dmiMidValue: {}({}%)", name, dmiMdi, dmiMdiPctChange);
-    log.debug("[{}] dmiAdxValue: {}({}%)", name, dmiAdx, dmiAdxPctChange);
-    log.debug("[{}] {}", name, tool.graph("DMI Pdi", dmiPdis));
-    log.debug("[{}] {}", name, tool.graph("DMI Mdi", dmiMdis));
+    def dmiMdiSlope = tool.slope(dmiMdis.take(3))
+    def dmiAdxs = dmis.collect{it.adx}
+    def dmiAdx = dmiAdxs.first()
+    def dmiAdxSlope = tool.slope(dmiAdxs.take(3))
+    log.debug("[{}] dmi: {}", name, dmi)
+    log.debug("[{}] dmiPdi(Slope): {}({})", name, dmiPdi, dmiPdiSlope)
+    log.debug("[{}] dmiMid(Slope): {}({})", name, dmiMdi, dmiMdiSlope)
+    log.debug("[{}] dmiAdx(Slope): {}({})", name, dmiAdx, dmiAdxSlope)
 
     // obv
     def obvs = indicator.calculate(ohlcvType, period, ObvContext.DEFAULT)
     def obv = obvs.first()
     def obvValues = obvs.collect{it.value}
     def obvValue = obvValues.first()
-    def obvValuePctChange = tool.sum(tool.pctChanges(obvValues).take(3))
+    def obvValueSlope = tool.slope(obvValues.take(3))
     log.debug("[{}] obv:{}", name, obv)
-    log.debug("[{}] obvValue: {}({}%)", name, obvValue, obvValuePctChange)
-    log.debug("[{}] {}", name, tool.graph("OBV Values", obvValues))
+    log.debug("[{}] obvValue(Slope): {}({})", name, obvValue, obvValueSlope)
 
     // ad
     def ads = indicator.calculate(ohlcvType, period, AdContext.DEFAULT)
     def ad = ads.first()
     def adValues = ads.collect{it.value}
     def adValue = adValues.first()
-    def adValuePctChange = tool.sum(tool.pctChanges(adValues).take(3))
+    def adValueSlope = tool.slope(adValues.take(3))
     log.debug("[{}] ad: {}", name, ad)
-    log.debug("[{}] adValue: {}({}%)", name, adValue, adValuePctChange)
-    log.debug("[{}] {}", name, tool.graph("AD Values", adValues))
+    log.debug("[{}] adValue(Slope): {}({})", name, adValue, adValueSlope)
 
     // wvad
     def wvads = indicator.calculate(ohlcvType, period, WvadContext.DEFAULT)
     def wvad = wvads.first()
     def wvadValues = wvads.collect{it.value}
     def wvadValue = wvads.first()
-    def wvadValuePctChange = tool.sum(tool.pctChanges(wvadValues).take(3))
+    def wvadValueSlope = tool.slope(wvadValues.take(3))
     log.debug("[{}] wvad: {}", name, wvad)
-    log.debug("[{}] wvadValue: {}({}%)", name, wvadValue, wvadValuePctChange)
-    log.debug("[{}] {}", name, tool.graph("WVAD Values", wvadValues))
+    log.debug("[{}] wvadValue(Slope): {}({})", name, wvadValue, wvadValueSlope)
 
     // result
     def result = [:]
-    result.shortMaValueUp = (shortMaValuePctChange > 0.0 ? 100 : 0)
-    result.longMaValueUp = (longMaValuePctChange > 0.0 ? 100 : 0)
+    result.shortMaValueUp = (shortMaValueSlope > 0.0 ? 100 : 0)
+    result.longMaValueUp = (longMaValueSlope > 0.0 ? 100 : 0)
     result.shortMaValueOverLongMaValue = (shortMaValue > longMaValue ? 100 : 0)
     result.macdValue = (macdValue > 0 ? 100 : 0)
-    result.macdValueUp = (macdValuePctChange > 0.0 ? 100 : 0)
+    result.macdValueUp = (macdValueSlope > 0.0 ? 100 : 0)
     result.macdOscillator = (macdOscillator > 0 ? 100 : 0)
-    result.macdOscillatorUp = (macdOscillatorPctChange > 0.0 ? 100 : 0)
+    result.macdOscillatorUp = (macdOscillatorSlope > 0.0 ? 100 : 0)
     result.rsiValue = (rsiValue > 50 ? 100 : 0)
-    result.rsiValueUp = (rsiValuePctChange > 0.0 ? 100 :0)
+    result.rsiValueUp = (rsiValueSlope > 0.0 ? 100 :0)
     result.dmiPdiOverMdi = (dmiPdi > dmiMdi ? 100 : 0)
-    result.dmiPdiUp = (dmiPdiPctChange > 0.0 ? 100 : 0)
-    result.dmiMdiDown = (dmiMdiPctChange < 0.0 ? 100 : 0)
-    result.obvValueUp = (obvValuePctChange > 0.0 ? 100 : 0)
-    result.adValueUp = (adValuePctChange > 0.0 ? 100 : 0)
-    result.wvadValueUp = (wvadValuePctChange > 0.0 ? 100 : 0)
+    result.dmiPdiUp = (dmiPdiSlope > 0.0 ? 100 : 0)
+    result.dmiMdiDown = (dmiMdiSlope < 0.0 ? 100 : 0)
+    result.obvValueUp = (obvValueSlope > 0.0 ? 100 : 0)
+    result.adValueUp = (adValueSlope > 0.0 ? 100 : 0)
+    result.wvadValueUp = (wvadValueSlope > 0.0 ? 100 : 0)
 
     // return
     return result
@@ -147,17 +138,23 @@ holdVotes.addAll(resultOfMinute5.values())
 log.debug("[{}] resultOfMinute5: {}", assetName, resultOfMinute5)
 log.info("[{}] resultOfMinute5Average: {}", assetName, resultOfMinute5.values().average())
 
-// USD/KRW minute 3 (환율 상승 시 매수)
-def resultOfUsdKrwMinute3 = analyze(indiceIndicators['USD_KRW'], OhlcvType.MINUTE, 3)
-holdVotes.addAll(resultOfUsdKrwMinute3.values())
-log.debug("[{}] resultOfUsdKrwMinute3: {}", assetName, resultOfUsdKrwMinute3)
-log.info("[{}] resultOfUsdKrwMinute3Average: {}", assetName, resultOfUsdKrwMinute3.values().average())
+// minute 10
+def resultOfMinute10 = analyze(tradeAssetIndicator, OhlcvType.MINUTE, 10)
+holdVotes.addAll(resultOfMinute10.values())
+log.debug("[{}] resultOfMinute10: {}", assetName, resultOfMinute10)
+log.info("[{}] resultOfMinute10Average: {}", assetName, resultOfMinute10.values().average())
 
-// Nasdaq Future minute 3 (나스닥 선물 하락 시 매수)
-def resultOfNdxFutureMinute3 = analyze(indiceIndicators['NDX_FUTURE'], OhlcvType.MINUTE, 3)
-holdVotes.addAll(resultOfNdxFutureMinute3.values().collect{100 - (it as Number)})
-log.debug("[{}] resultOfNdxFutureMinute3: {}", assetName, resultOfNdxFutureMinute3)
-log.info("[{}] resultOfNdxFutureMinute3Average: {}", assetName, resultOfNdxFutureMinute3.values().average())
+// USD/KRW minute (환율 상승 시 매수)
+def resultOfUsdKrw = analyze(indiceIndicators['USD_KRW'], OhlcvType.MINUTE, 10)
+holdVotes.addAll(resultOfUsdKrw.values())
+log.debug("[{}] resultOfUsdKrw: {}", assetName, resultOfUsdKrw)
+log.info("[{}] resultOfUsdKrwAverage: {}", assetName, resultOfUsdKrw.values().average())
+
+// Nasdaq Future (나스닥 선물 하락 시 매수)
+def resultOfNdxFuture = analyze(indiceIndicators['NDX_FUTURE'], OhlcvType.MINUTE, 10)
+holdVotes.addAll(resultOfNdxFuture.values().collect{100 - (it as Number)})
+log.debug("[{}] resultOfNdxFuture: {}", assetName, resultOfNdxFuture)
+log.info("[{}] resultOfNdxFutureAverage: {}", assetName, resultOfNdxFuture.values().average())
 
 // decide hold
 def hold = null
@@ -166,7 +163,7 @@ log.debug("[{}] holdVotes: {}", assetName, holdVotes)
 log.info("[{}] holdVotesAverage: {}", assetName, holdVotesAverage)
 
 // buy
-if(holdVotesAverage > 70) {
+if(holdVotesAverage > 75) {
     hold = true
 }
 
