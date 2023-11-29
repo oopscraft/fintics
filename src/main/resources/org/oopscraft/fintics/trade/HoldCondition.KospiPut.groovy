@@ -11,7 +11,7 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     def name = indicator.getName() + ':' + ohlcvType + ':' + period
 
     // shortMa
-    def shortMas = indicator.calculate(ohlcvType, period, EmaContext.of(10))
+    def shortMas = indicator.calculate(ohlcvType, period, SmaContext.of(10))
     def shortMa = shortMas.first()
     def shortMaValues = shortMas.collect{it.value}
     def shortMaValue = shortMaValues.first()
@@ -21,7 +21,7 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     log.debug("[{}] {}", name, tool.graph("PriceMaValues", shortMaValues))
 
     // longMa
-    def longMas = indicator.calculate(ohlcvType, period, EmaContext.of(30))
+    def longMas = indicator.calculate(ohlcvType, period, SmaContext.of(30))
     def longMa = longMas.first()
     def longMaValues = longMas.collect{it.value}
     def longMaValue = longMaValues.first()
@@ -171,7 +171,7 @@ if(holdVotesAverage > 70) {
 }
 
 // sell
-if(holdVotesAverage < 55) {
+if(holdVotesAverage < 50) {
     hold = false
 }
 

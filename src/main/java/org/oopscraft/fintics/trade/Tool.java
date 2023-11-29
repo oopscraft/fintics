@@ -4,6 +4,7 @@ import com.mitchtalmadge.asciidata.graph.ASCIIGraph;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -11,60 +12,26 @@ import java.util.function.Supplier;
 
 public class Tool {
 
-    public List<BigDecimal> pctChanges(List<BigDecimal> values) {
-        if(values.isEmpty()) {
-            return new ArrayList<>();
-        }
+    public BigDecimal slope(List<BigDecimal> values) {
         List<BigDecimal> series = new ArrayList<>(values);
         Collections.reverse(series);
 
-        List<BigDecimal> pctChanges = new ArrayList<>();
-        pctChanges.add(BigDecimal.ZERO);
-        for (int i = 1; i < series.size(); i++) {
-            BigDecimal current = series.get(i);
-            BigDecimal previous = series.get(i - 1);
-            if(previous.compareTo(BigDecimal.ZERO) == 0) {
-                if(current.compareTo(BigDecimal.ZERO) == 0) {
-                    pctChanges.add(BigDecimal.ZERO);
-                }else{
-                    pctChanges.add(BigDecimal.valueOf(100));
-                }
-                continue;
-            }
-            BigDecimal pctChange = current.subtract(previous)
-                    .divide(previous, MathContext.DECIMAL32)
-                    .multiply(BigDecimal.valueOf(100));
-            pctChanges.add(pctChange);
+        // check empty
+        if(series.isEmpty()) {
+            return BigDecimal.ZERO;
         }
 
-        Collections.reverse(pctChanges);
-        return pctChanges;
-    }
-
-    public List<BigDecimal> zScores(List<BigDecimal> values) {
-        if(values.isEmpty()) {
-            return new ArrayList<BigDecimal>();
-        }
-        List<BigDecimal> series = new ArrayList<>(values);
-        Collections.reverse(series);
-
-        BigDecimal mean = mean(series);
-        BigDecimal std = std(series);
-
-        List<BigDecimal> zScores = new ArrayList<>();
-        for(BigDecimal value : values) {
-            if(std.compareTo(BigDecimal.ZERO) == 0) {
-                zScores.add(BigDecimal.ZERO);
-                continue;
-            }
-            BigDecimal zScore = value
-                    .subtract(mean)
-                    .divide(std, MathContext.DECIMAL32);
-            zScores.add(zScore);
+        // sum
+        BigDecimal sum = BigDecimal.ZERO;
+        for (int i = 0; i < series.size(); i++) {
+            BigDecimal change = series.get(i)
+                    .subtract(series.get(Math.max(i-1,0)));
+            sum = sum.add(change);
         }
 
-        Collections.reverse(zScores);
-        return zScores;
+        // average
+        return sum.divide(BigDecimal.valueOf(series.size()), MathContext.DECIMAL32)
+                .setScale(2, RoundingMode.HALF_UP);
     }
 
     public BigDecimal sum(List<BigDecimal> values) {
