@@ -12,26 +12,39 @@ import java.util.function.Supplier;
 
 public class Tool {
 
-    public BigDecimal slope(List<BigDecimal> values) {
+    public List<BigDecimal> pctChanges(List<BigDecimal> values) {
+        if(values.isEmpty()) {
+            return new ArrayList<>();
+        }
         List<BigDecimal> series = new ArrayList<>(values);
         Collections.reverse(series);
 
-        // check empty
-        if(series.isEmpty()) {
-            return BigDecimal.ZERO;
+        List<BigDecimal> pctChanges = new ArrayList<>();
+        pctChanges.add(BigDecimal.ZERO);
+        for (int i = 1; i < series.size(); i++) {
+            BigDecimal current = series.get(i);
+            BigDecimal previous = series.get(i - 1);
+            if(previous.compareTo(BigDecimal.ZERO) == 0) {
+                if(current.compareTo(BigDecimal.ZERO) == 0) {
+                    pctChanges.add(BigDecimal.ZERO);
+                }else{
+                    pctChanges.add(BigDecimal.valueOf(100));
+                }
+                continue;
+            }
+            BigDecimal pctChange = current.subtract(previous)
+                    .divide(previous, MathContext.DECIMAL32)
+                    .multiply(BigDecimal.valueOf(100));
+            pctChanges.add(pctChange);
         }
 
-        // sum
-        BigDecimal sum = BigDecimal.ZERO;
-        for (int i = 0; i < series.size(); i++) {
-            BigDecimal change = series.get(i)
-                    .subtract(series.get(Math.max(i-1,0)));
-            sum = sum.add(change);
-        }
+        Collections.reverse(pctChanges);
+        return pctChanges;
+    }
 
-        // average
-        return sum.divide(BigDecimal.valueOf(series.size()), MathContext.DECIMAL32)
-                .setScale(2, RoundingMode.HALF_UP);
+    public BigDecimal pctChange(List<BigDecimal> values) {
+        List<BigDecimal> pctChanges = pctChanges(values);
+        return sum(pctChanges);
     }
 
     public BigDecimal sum(List<BigDecimal> values) {

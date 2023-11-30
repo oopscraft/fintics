@@ -7,108 +7,109 @@ import org.oopscraft.fintics.model.OhlcvType
 def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     // info
     def name = indicator.getName() + ':' + ohlcvType + ':' + period
+    def changeDetectPeriod = 5;
 
     // shortMa
     def shortMas = indicator.calculate(ohlcvType, period, EmaContext.of(10))
     def shortMa = shortMas.first()
     def shortMaValues = shortMas.collect{it.value}
     def shortMaValue = shortMaValues.first()
-    def shortMaValueSlope = tool.slope(shortMaValues.take(3))
+    def shortMaPctChange = tool.pctChange(shortMaValues.take(changeDetectPeriod))
     log.debug("[{}] shortMa: {}", name, shortMa)
-    log.debug("[{}] shortMaValue(Slope): {}({})", name, shortMaValue, shortMaValueSlope)
+    log.debug("[{}] shortMaValue(PctChange): {}({}%)", name, shortMaValue, shortMaPctChange)
 
     // longMa
     def longMas = indicator.calculate(ohlcvType, period, EmaContext.of(30))
     def longMa = longMas.first()
     def longMaValues = longMas.collect{it.value}
     def longMaValue = longMaValues.first()
-    def longMaValueSlope = tool.slope(longMaValues.take(3))
+    def longMaValuePctChange = tool.pctChange(longMaValues.take(changeDetectPeriod))
     log.debug("[{}] longMa: {}", name, longMa)
-    log.debug("[{}] longMaValue(Slope): {}({})", name, longMaValue, longMaValueSlope)
+    log.debug("[{}] longMaValue(PctChange): {}({}%)", name, longMaValue, longMaValuePctChange)
 
     // macd
     def macds = indicator.calculate(ohlcvType, period, MacdContext.DEFAULT)
     def macd = macds.first()
     def macdValues = macds.collect{it.value}
     def macdValue = macdValues.first()
-    def macdValueSlope = tool.slope(macdValues.take(3))
+    def macdValuePctChange = tool.pctChange(macdValues.take(changeDetectPeriod))
     def macdOscillators = macds.collect{it.oscillator}
     def macdOscillator = macdOscillators.first()
-    def macdOscillatorSlope = tool.slope(macdOscillators.take(3))
+    def macdOscillatorPctChange = tool.pctChange(macdOscillators.take(10))
     log.debug("[{}] macd: {}", name, macd)
-    log.debug("[{}] macdValue(Slope): {}({})", name, macdValue, macdValueSlope)
-    log.debug("[{}] macdOscillator(Slope): {}({})", name, macdOscillator, macdOscillatorSlope)
+    log.debug("[{}] macdValue(PctChange): {}({}%)", name, macdValue, macdValuePctChange)
+    log.debug("[{}] macdOscillator(PctChange): {}({}%)", name, macdOscillator, macdOscillatorPctChange)
 
     // rsi
     def rsis = indicator.calculate(ohlcvType, period, RsiContext.DEFAULT)
     def rsi = rsis.first()
     def rsiValues = rsis.collect{it.value}
     def rsiValue = rsiValues.first()
-    def rsiValueSlope = tool.slope(rsiValues.take(3))
+    def rsiValuePctChange = tool.pctChange(rsiValues.take(changeDetectPeriod))
     log.debug("[{}] rsi: {}", name, rsi)
-    log.debug("[{}] rsiValue(Slope): {}({}%)", name, rsiValue, rsiValueSlope)
+    log.debug("[{}] rsiValue(PctChange): {}({}%)", name, rsiValue, rsiValuePctChange)
 
     // dmi
     def dmis = indicator.calculate(ohlcvType, period, DmiContext.DEFAULT);
     def dmi = dmis.first();
     def dmiPdis = dmis.collect{it.pdi}
     def dmiPdi = dmiPdis.first();
-    def dmiPdiSlope = tool.slope(dmiPdis.take(3))
+    def dmiPdiPctChange = tool.pctChange(dmiPdis.take(changeDetectPeriod))
     def dmiMdis = dmis.collect{it.mdi}
     def dmiMdi = dmiMdis.first();
-    def dmiMdiSlope = tool.slope(dmiMdis.take(3))
+    def dmiMdiPctChange = tool.pctChange(dmiMdis.take(changeDetectPeriod))
     def dmiAdxs = dmis.collect{it.adx}
     def dmiAdx = dmiAdxs.first()
-    def dmiAdxSlope = tool.slope(dmiAdxs.take(3))
+    def dmiAdxPctChange = tool.pctChange(dmiAdxs.take(changeDetectPeriod))
     log.debug("[{}] dmi: {}", name, dmi)
-    log.debug("[{}] dmiPdi(Slope): {}({})", name, dmiPdi, dmiPdiSlope)
-    log.debug("[{}] dmiMid(Slope): {}({})", name, dmiMdi, dmiMdiSlope)
-    log.debug("[{}] dmiAdx(Slope): {}({})", name, dmiAdx, dmiAdxSlope)
+    log.debug("[{}] dmiPdi(PctChange): {}({}%)", name, dmiPdi, dmiPdiPctChange)
+    log.debug("[{}] dmiMid(PctChange): {}({}%)", name, dmiMdi, dmiMdiPctChange)
+    log.debug("[{}] dmiAdx(PctChange): {}({}%)", name, dmiAdx, dmiAdxPctChange)
 
     // obv
     def obvs = indicator.calculate(ohlcvType, period, ObvContext.DEFAULT)
     def obv = obvs.first()
     def obvValues = obvs.collect{it.value}
     def obvValue = obvValues.first()
-    def obvValueSlope = tool.slope(obvValues.take(3))
+    def obvValuePctChange = tool.pctChange(obvValues.take(changeDetectPeriod))
     log.debug("[{}] obv:{}", name, obv)
-    log.debug("[{}] obvValue(Slope): {}({})", name, obvValue, obvValueSlope)
+    log.debug("[{}] obvValue(PctChange): {}({}%)", name, obvValue, obvValuePctChange)
 
     // ad
     def ads = indicator.calculate(ohlcvType, period, AdContext.DEFAULT)
     def ad = ads.first()
     def adValues = ads.collect{it.value}
     def adValue = adValues.first()
-    def adValueSlope = tool.slope(adValues.take(3))
+    def adValuePctChange = tool.pctChange(adValues.take(changeDetectPeriod))
     log.debug("[{}] ad: {}", name, ad)
-    log.debug("[{}] adValue(Slope): {}({})", name, adValue, adValueSlope)
+    log.debug("[{}] adValue(PctChange): {}({}%)", name, adValue, adValuePctChange)
 
     // wvad
     def wvads = indicator.calculate(ohlcvType, period, WvadContext.DEFAULT)
     def wvad = wvads.first()
     def wvadValues = wvads.collect{it.value}
     def wvadValue = wvads.first()
-    def wvadValueSlope = tool.slope(wvadValues.take(3))
+    def wvadValuePctChange = tool.pctChange(wvadValues.take(changeDetectPeriod))
     log.debug("[{}] wvad: {}", name, wvad)
-    log.debug("[{}] wvadValue(Slope): {}({})", name, wvadValue, wvadValueSlope)
+    log.debug("[{}] wvadValue(PctChange): {}({}%)", name, wvadValue, wvadValuePctChange)
 
     // result
     def result = [:]
-    result.shortMaValueUp = (shortMaValueSlope > 0.0 ? 100 : 0)
-    result.longMaValueUp = (longMaValueSlope > 0.0 ? 100 : 0)
+    result.shortMaValueUp = (shortMaPctChange > 0.0 ? 100 : 0)
+    result.longMaValueUp = (longMaValuePctChange > 0.0 ? 100 : 0)
     result.shortMaValueOverLongMaValue = (shortMaValue > longMaValue ? 100 : 0)
     result.macdValue = (macdValue > 0 ? 100 : 0)
-    result.macdValueUp = (macdValueSlope > 0.0 ? 100 : 0)
+    result.macdValueUp = (macdValuePctChange > 0.0 ? 100 : 0)
     result.macdOscillator = (macdOscillator > 0 ? 100 : 0)
-    result.macdOscillatorUp = (macdOscillatorSlope > 0.0 ? 100 : 0)
+    result.macdOscillatorUp = (macdOscillatorPctChange > 0.0 ? 100 : 0)
     result.rsiValue = (rsiValue > 50 ? 100 : 0)
-    result.rsiValueUp = (rsiValueSlope > 0.0 ? 100 :0)
+    result.rsiValueUp = (rsiValuePctChange > 0.0 ? 100 :0)
     result.dmiPdiOverMdi = (dmiPdi > dmiMdi ? 100 : 0)
-    result.dmiPdiUp = (dmiPdiSlope > 0.0 ? 100 : 0)
-    result.dmiMdiDown = (dmiMdiSlope < 0.0 ? 100 : 0)
-    result.obvValueUp = (obvValueSlope > 0.0 ? 100 : 0)
-    result.adValueUp = (adValueSlope > 0.0 ? 100 : 0)
-    result.wvadValueUp = (wvadValueSlope > 0.0 ? 100 : 0)
+    result.dmiPdiUp = (dmiPdiPctChange > 0.0 ? 100 : 0)
+    result.dmiMdiDown = (dmiMdiPctChange < 0.0 ? 100 : 0)
+    result.obvValueUp = (obvValuePctChange > 0.0 ? 100 : 0)
+    result.adValueUp = (adValuePctChange > 0.0 ? 100 : 0)
+    result.wvadValueUp = (wvadValuePctChange > 0.0 ? 100 : 0)
 
     // return
     return result
