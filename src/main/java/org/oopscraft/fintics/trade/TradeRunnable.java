@@ -264,7 +264,7 @@ public class TradeRunnable implements Runnable {
                         OhlcvType.MINUTE,
                         lastDateTime.minusWeeks(1),
                         lastDateTime.minusMinutes(1),
-                        PageRequest.of(0, 360)
+                        PageRequest.of(0, 1000)
                 ).stream()
                 .map(Ohlcv::from)
                 .collect(Collectors.toList());
@@ -296,7 +296,7 @@ public class TradeRunnable implements Runnable {
                         OhlcvType.MINUTE,
                         lastDateTime.minusWeeks(1),
                         lastDateTime.minusMinutes(1),
-                        PageRequest.of(0, 360))
+                        PageRequest.of(0, 1000))
                 .stream()
                 .map(Ohlcv::from)
                 .collect(Collectors.toList());

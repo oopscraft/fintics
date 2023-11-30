@@ -7,7 +7,6 @@ import org.oopscraft.fintics.model.OhlcvType
 def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     // info
     def name = indicator.getName() + ':' + ohlcvType + ':' + period
-    def changeDetectPeriod = 5;
 
     // shortMa
     def shortMas = indicator.calculate(ohlcvType, period, EmaContext.of(10))

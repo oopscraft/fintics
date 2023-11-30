@@ -4,114 +4,83 @@ import org.oopscraft.fintics.calculator.*
 import org.oopscraft.fintics.model.Indicator
 import org.oopscraft.fintics.model.OhlcvType
 
-import java.time.LocalTime
-
 def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     // info
     def name = indicator.getName() + ':' + ohlcvType + ':' + period
-    def changeDetectPeriod = 5;
 
     // shortMa
     def shortMas = indicator.calculate(ohlcvType, period, EmaContext.of(10))
     def shortMa = shortMas.first()
     def shortMaValues = shortMas.collect{it.value}
     def shortMaValue = shortMaValues.first()
-    def shortMaPctChange = tool.pctChange(shortMaValues.take(changeDetectPeriod))
     log.debug("[{}] shortMa: {}", name, shortMa)
-    log.debug("[{}] shortMaValue(PctChange): {}({}%)", name, shortMaValue, shortMaPctChange)
 
     // longMa
     def longMas = indicator.calculate(ohlcvType, period, EmaContext.of(30))
     def longMa = longMas.first()
     def longMaValues = longMas.collect{it.value}
     def longMaValue = longMaValues.first()
-    def longMaValuePctChange = tool.pctChange(longMaValues.take(changeDetectPeriod))
     log.debug("[{}] longMa: {}", name, longMa)
-    log.debug("[{}] longMaValue(PctChange): {}({}%)", name, longMaValue, longMaValuePctChange)
 
     // macd
     def macds = indicator.calculate(ohlcvType, period, MacdContext.DEFAULT)
     def macd = macds.first()
     def macdValues = macds.collect{it.value}
     def macdValue = macdValues.first()
-    def macdValuePctChange = tool.pctChange(macdValues.take(changeDetectPeriod))
     def macdOscillators = macds.collect{it.oscillator}
     def macdOscillator = macdOscillators.first()
-    def macdOscillatorPctChange = tool.pctChange(macdOscillators.take(10))
     log.debug("[{}] macd: {}", name, macd)
-    log.debug("[{}] macdValue(PctChange): {}({}%)", name, macdValue, macdValuePctChange)
-    log.debug("[{}] macdOscillator(PctChange): {}({}%)", name, macdOscillator, macdOscillatorPctChange)
 
     // rsi
     def rsis = indicator.calculate(ohlcvType, period, RsiContext.DEFAULT)
     def rsi = rsis.first()
     def rsiValues = rsis.collect{it.value}
     def rsiValue = rsiValues.first()
-    def rsiValuePctChange = tool.pctChange(rsiValues.take(changeDetectPeriod))
+    def rsiSignals = rsis.collect{it.signal}
+    def rsiSignal = rsiSignals.first()
     log.debug("[{}] rsi: {}", name, rsi)
-    log.debug("[{}] rsiValue(PctChange): {}({}%)", name, rsiValue, rsiValuePctChange)
 
     // dmi
     def dmis = indicator.calculate(ohlcvType, period, DmiContext.DEFAULT);
     def dmi = dmis.first();
     def dmiPdis = dmis.collect{it.pdi}
     def dmiPdi = dmiPdis.first();
-    def dmiPdiPctChange = tool.pctChange(dmiPdis.take(changeDetectPeriod))
     def dmiMdis = dmis.collect{it.mdi}
     def dmiMdi = dmiMdis.first();
-    def dmiMdiPctChange = tool.pctChange(dmiMdis.take(changeDetectPeriod))
     def dmiAdxs = dmis.collect{it.adx}
     def dmiAdx = dmiAdxs.first()
-    def dmiAdxPctChange = tool.pctChange(dmiAdxs.take(changeDetectPeriod))
     log.debug("[{}] dmi: {}", name, dmi)
-    log.debug("[{}] dmiPdi(PctChange): {}({}%)", name, dmiPdi, dmiPdiPctChange)
-    log.debug("[{}] dmiMid(PctChange): {}({}%)", name, dmiMdi, dmiMdiPctChange)
-    log.debug("[{}] dmiAdx(PctChange): {}({}%)", name, dmiAdx, dmiAdxPctChange)
 
     // obv
     def obvs = indicator.calculate(ohlcvType, period, ObvContext.DEFAULT)
     def obv = obvs.first()
     def obvValues = obvs.collect{it.value}
     def obvValue = obvValues.first()
-    def obvValuePctChange = tool.pctChange(obvValues.take(changeDetectPeriod))
+    def obvSignals = obv.collect{it.signal}
+    def obvSignal = obvSignals.first();
     log.debug("[{}] obv:{}", name, obv)
-    log.debug("[{}] obvValue(PctChange): {}({}%)", name, obvValue, obvValuePctChange)
 
-    // ad
-    def ads = indicator.calculate(ohlcvType, period, CoContext.DEFAULT)
-    def ad = ads.first()
-    def adValues = ads.collect{it.value}
-    def adValue = adValues.first()
-    def adValuePctChange = tool.pctChange(adValues.take(changeDetectPeriod))
-    log.debug("[{}] ad: {}", name, ad)
-    log.debug("[{}] adValue(PctChange): {}({}%)", name, adValue, adValuePctChange)
-
-    // wvad
-    def wvads = indicator.calculate(ohlcvType, period, WvadContext.DEFAULT)
-    def wvad = wvads.first()
-    def wvadValues = wvads.collect{it.value}
-    def wvadValue = wvads.first()
-    def wvadValuePctChange = tool.pctChange(wvadValues.take(changeDetectPeriod))
-    log.debug("[{}] wvad: {}", name, wvad)
-    log.debug("[{}] wvadValue(PctChange): {}({}%)", name, wvadValue, wvadValuePctChange)
+    // co
+    def cos = indicator.calculate(ohlcvType, period, CoContext.DEFAULT)
+    def co = cos.first()
+    def coValues = cos.collect{it.value}
+    def coValue = coValues.first()
+    def coSignals = cos.collect{it.signal}
+    def coSignal = coSignals.first()
+    log.debug("[{}] co: {}", name, co)
 
     // result
     def result = [:]
-    result.shortMaValueUp = (shortMaPctChange > 0.0 ? 100 : 0)
-    result.longMaValueUp = (longMaValuePctChange > 0.0 ? 100 : 0)
     result.shortMaValueOverLongMaValue = (shortMaValue > longMaValue ? 100 : 0)
     result.macdValue = (macdValue > 0 ? 100 : 0)
-    result.macdValueUp = (macdValuePctChange > 0.0 ? 100 : 0)
     result.macdOscillator = (macdOscillator > 0 ? 100 : 0)
-    result.macdOscillatorUp = (macdOscillatorPctChange > 0.0 ? 100 : 0)
     result.rsiValue = (rsiValue > 50 ? 100 : 0)
-    result.rsiValueUp = (rsiValuePctChange > 0.0 ? 100 :0)
+    result.rsiValueOverSignal = (rsiValue > rsiSignal ? 100 : 0)
     result.dmiPdiOverMdi = (dmiPdi > dmiMdi ? 100 : 0)
-    result.dmiPdiUp = (dmiPdiPctChange > 0.0 ? 100 : 0)
-    result.dmiMdiDown = (dmiMdiPctChange < 0.0 ? 100 : 0)
-    result.obvValueUp = (obvValuePctChange > 0.0 ? 100 : 0)
-    result.adValueUp = (adValuePctChange > 0.0 ? 100 : 0)
-    result.wvadValueUp = (wvadValuePctChange > 0.0 ? 100 : 0)
+    result.dmiAdx = (dmiPdi > dmiMdi && dmiAdx > 25 ? 100 : 0)
+    result.obvValueOverSignal = (obvValue > obvSignal ? 100 : 0)
+    result.coValue = (coValue > 0 ? 100 : 0)
+    result.coValueOverSignal = (coValue > coSignal ? 100 : 0)
 
     // return
     return result
@@ -170,11 +139,6 @@ if(holdVotesAverage > 75) {
 
 // sell
 if(holdVotesAverage < 50) {
-    hold = false
-}
-
-// 장종료 전 매도 (보유 하지 않음)
-if(dateTime.toLocalTime().isAfter(LocalTime.of(15, 15))) {
     hold = false
 }
 
