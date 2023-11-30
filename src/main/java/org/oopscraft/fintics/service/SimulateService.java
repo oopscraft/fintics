@@ -8,16 +8,47 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@Deprecated
 public class SimulateService {
 
     private final IndiceService indiceService;
 
-    public Simulate simulate(Simulate simulate) throws InterruptedException {
+    public Simulate simulate(Simulate simulate) {
 
+        Trade trade = simulate.getTrade();
+        LocalDateTime startAt = simulate.getStartAt();
+        LocalDateTime endAt = simulate.getEndAt();
+        int interval = trade.getInterval();
+
+        LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(startAt.toInstant(ZoneOffset.UTC).toEpochMilli()), ZoneId.systemDefault());
+        while(dateTime.isAfter(endAt)) {
+            dateTime = dateTime.plusSeconds(interval);
+
+        }
+
+
+
+        return null;
+    }
+
+
+
+
+
+
+
+
+
+
+//        public Simulate simulate(Simulate simulate) throws InterruptedException {
 //        LocalTime startAt = simulate.getStartAt();
 //        LocalTime endAt = simulate.getEndAt();
 //        List<Ohlcv> minuteOhlcvs = simulate.getMinuteOhlcvs();
@@ -117,8 +148,8 @@ public class SimulateService {
 //        log.info("#".repeat(80));
 //
 //        simulate.setHoldConditionResults(holdConditionResults);
-        return simulate;
-    }
+//        return simulate;
+//    }
 
     private Double calculateFee(Double price, Double feeRate) {
         double fee = BigDecimal.valueOf(price)

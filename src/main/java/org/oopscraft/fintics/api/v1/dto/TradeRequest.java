@@ -36,8 +36,6 @@ public class TradeRequest {
 
     private boolean alarmOnOrder;
 
-    private boolean publicEnabled;
-
     @Builder.Default
     private List<TradeAssetResponse> tradeAssets = new ArrayList<>();
 

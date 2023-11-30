@@ -31,12 +31,12 @@ public class TradeAssetDecider {
     private final Map<String, IndiceIndicator> indiceIndicators;
 
     @Builder
-    protected TradeAssetDecider(String holdCondition, Logger logger, LocalDateTime dateTime, OrderBook orderBook, TradeAssetIndicator assetIndicator, List<IndiceIndicator> indiceIndicators) {
+    protected TradeAssetDecider(String holdCondition, Logger logger, LocalDateTime dateTime, OrderBook orderBook, TradeAssetIndicator tradeAssetIndicator, List<IndiceIndicator> indiceIndicators) {
         this.holdCondition = holdCondition;
         this.logger = logger;
         this.dateTime = dateTime;
         this.orderBook = orderBook;
-        this.tradeAssetIndicator = assetIndicator;
+        this.tradeAssetIndicator = tradeAssetIndicator;
         this.indiceIndicators = indiceIndicators.stream()
                 .collect(Collectors.toMap(indiceIndicator ->
                         indiceIndicator.getSymbol().name(), indiceIndicator -> indiceIndicator));

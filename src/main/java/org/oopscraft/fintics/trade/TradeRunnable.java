@@ -188,7 +188,7 @@ public class TradeRunnable implements Runnable {
                 List<Ohlcv> previousDailyOhlcvs = getPreviousTradeAssetDailyOhlcvs(tradeAsset, dailyOhlcvs);
                 dailyOhlcvs.addAll(previousDailyOhlcvs);
 
-                TradeAssetIndicator assetIndicator = TradeAssetIndicator.builder()
+                TradeAssetIndicator tradeAssetIndicator = TradeAssetIndicator.builder()
                         .symbol(tradeAsset.getSymbol())
                         .name(tradeAsset.getName())
                         .minuteOhlcvs(minuteOhlcvs)
@@ -204,7 +204,7 @@ public class TradeRunnable implements Runnable {
                         .logger(log)
                         .dateTime(dateTime)
                         .orderBook(orderBook)
-                        .assetIndicator(assetIndicator)
+                        .tradeAssetIndicator(tradeAssetIndicator)
                         .indiceIndicators(indiceIndicators)
                         .build();
                 Boolean holdConditionResult = tradeAssetDecider.execute();

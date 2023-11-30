@@ -136,7 +136,7 @@ class TradeAssetDeciderTest {
                 .logger(log)
                 .dateTime(LocalDateTime.now())
                 .orderBook(orderBook)
-                .assetIndicator(assetIndicator)
+                .tradeAssetIndicator(assetIndicator)
                 .indiceIndicators(indiceIndicators)
                 .build();
         Boolean result = tradeAssetDecider.execute();
@@ -162,7 +162,7 @@ class TradeAssetDeciderTest {
                 .holdCondition(trade.getHoldCondition())
                 .logger(log)
                 .dateTime(LocalDateTime.now())
-                .assetIndicator(assetIndicator)
+                .tradeAssetIndicator(assetIndicator)
                 .indiceIndicators(indiceIndicators)
                 .build();
         Boolean result = tradeAssetDecider.execute();
@@ -187,7 +187,7 @@ class TradeAssetDeciderTest {
                 .holdCondition(trade.getHoldCondition())
                 .logger(log)
                 .dateTime(LocalDateTime.now())
-                .assetIndicator(assetIndicator)
+                .tradeAssetIndicator(assetIndicator)
                 .indiceIndicators(indiceIndicators)
                 .build();
         Boolean result = tradeAssetDecider.execute();
@@ -212,7 +212,7 @@ class TradeAssetDeciderTest {
                 .holdCondition(trade.getHoldCondition())
                 .logger(log)
                 .dateTime(LocalDateTime.now())
-                .assetIndicator(assetIndicator)
+                .tradeAssetIndicator(assetIndicator)
                 .indiceIndicators(indiceIndicators)
                 .build();
         Boolean result = tradeAssetDecider.execute();

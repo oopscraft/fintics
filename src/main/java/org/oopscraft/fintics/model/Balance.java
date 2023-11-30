@@ -43,4 +43,12 @@ public class Balance {
                 .findFirst();
     }
 
+    public void addBalanceAsset(BalanceAsset balanceAsset) {
+        this.balanceAssets.add(balanceAsset);
+    }
+
+    public void removeBalanceAsset(BalanceAsset balanceAsset) {
+        this.balanceAssets.remove(balanceAsset);
+    }
+
 }
