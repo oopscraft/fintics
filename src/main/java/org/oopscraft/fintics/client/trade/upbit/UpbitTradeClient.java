@@ -186,7 +186,6 @@ public class UpbitTradeClient extends TradeClient {
             throw new RuntimeException(e);
         }
 
-
         BigDecimal totalAmount = BigDecimal.ZERO;
         BigDecimal cacheAmount = BigDecimal.ZERO;
         BigDecimal purchaseAmount = BigDecimal.ZERO;
@@ -279,7 +278,6 @@ public class UpbitTradeClient extends TradeClient {
                 .headers(createHeaders(queryString))
                 .header("Content-Type", "application/json")
                 .body(payload);
-
 
         sleep();
         ResponseEntity<ValueMap> responseEntity = restTemplate.exchange(requestEntity, ValueMap.class);

@@ -14,4 +14,6 @@ public class Obv implements CalculateResult {
 
     private final BigDecimal value;
 
+    private final BigDecimal signal;
+
 }

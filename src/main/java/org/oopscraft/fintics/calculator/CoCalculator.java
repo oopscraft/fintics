@@ -3,21 +3,21 @@ package org.oopscraft.fintics.calculator;
 import org.oopscraft.fintics.model.Ohlcv;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class AdCalculator extends Calculator<AdContext, Ad> {
+public class CoCalculator extends Calculator<CoContext, Co> {
 
-    public AdCalculator(AdContext context) {
+    public CoCalculator(CoContext context) {
         super(context);
     }
 
     @Override
-    public List<Ad> calculate(List<Ohlcv> series) {
-        List<BigDecimal> adValues = new ArrayList<BigDecimal>();
+    public List<Co> calculate(List<Ohlcv> series) {
+        // ad values
+        List<BigDecimal> adValues = new ArrayList<>();
         BigDecimal adValue = BigDecimal.ZERO;
         for (int i = 0; i < series.size(); i++) {
             Ohlcv ohlcv = series.get(i);
@@ -35,11 +35,29 @@ public class AdCalculator extends Calculator<AdContext, Ad> {
             adValue = adValue.add(mfVolume);
             adValues.add(new BigDecimal(adValue.unscaledValue(), adValue.scale()));
         }
-        return adValues.stream()
-                .map(value -> Ad.builder()
-                        .value(value)
-                        .build())
-                .collect(Collectors.toList());
+
+        // values
+        List<BigDecimal> shortEmas = emas(adValues, getContext().getShortPeriod());
+        List<BigDecimal> longEmas = emas(adValues, getContext().getLongPeriod());
+        List<BigDecimal> values = new ArrayList<>();
+        for(int i = 0; i < shortEmas.size(); i ++) {
+            BigDecimal value = shortEmas.get(i).subtract(longEmas.get(i));
+            values.add(value);
+        }
+
+        // signal
+        List<BigDecimal> signals = emas(values, getContext().getSignalPeriod());
+
+        // chaikin's oscillator
+        List<Co> cos = new ArrayList<>();
+        for(int i = 0; i < values.size(); i ++) {
+            Co co = Co.builder()
+                    .value(values.get(i).setScale(2, RoundingMode.HALF_UP))
+                    .signal(signals.get(i).setScale(2, RoundingMode.HALF_UP))
+                    .build();
+            cos.add(co);
+        }
+        return cos;
     }
 
 }

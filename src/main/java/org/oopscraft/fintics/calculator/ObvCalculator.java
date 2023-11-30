@@ -3,6 +3,7 @@ package org.oopscraft.fintics.calculator;
 import org.oopscraft.fintics.model.Ohlcv;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -15,6 +16,7 @@ public class ObvCalculator extends Calculator<ObvContext, Obv> {
 
     @Override
     public List<Obv> calculate(List<Ohlcv> series) {
+        // values
         List<BigDecimal> obvValues = new ArrayList<>();
         obvValues.add(BigDecimal.ZERO);
         BigDecimal obvValue = BigDecimal.ZERO;
@@ -30,11 +32,22 @@ public class ObvCalculator extends Calculator<ObvContext, Obv> {
             }
             obvValues.add(new BigDecimal(obvValue.unscaledValue(), obvValue.scale()));
         }
-        return obvValues.stream()
-                .map(value -> Obv.builder()
-                        .value(value)
-                        .build())
+
+        // signal
+        List<BigDecimal> signals = emas(obvValues, getContext().getSignalPeriod()).stream()
+                .map(value -> value.setScale(0, RoundingMode.HALF_UP))
                 .collect(Collectors.toList());
+
+        // obv
+        List<Obv> obvs = new ArrayList<>();
+        for(int i = 0; i < obvValues.size(); i ++) {
+            Obv obv = Obv.builder()
+                    .value(obvValues.get(i))
+                    .signal(signals.get(i))
+                    .build();
+            obvs.add(obv);
+        }
+        return obvs;
     }
 
 

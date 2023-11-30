@@ -89,11 +89,21 @@ public class RsiCalculator extends Calculator<RsiContext, Rsi> {
             rsiValues.add(rsiValue);
         }
 
-        return rsiValues.stream()
-                .map(rsiValue -> Rsi.builder()
-                        .value(rsiValue)
-                        .build())
+        // signals
+        List<BigDecimal> signals = emas(rsiValues, getContext().getSignalPeriod()).stream()
+                .map(value -> value.setScale(2, RoundingMode.HALF_UP))
                 .collect(Collectors.toList());
+
+        // rsi
+        List<Rsi> rsis = new ArrayList<>();
+        for(int i = 0; i < rsiValues.size(); i ++ ) {
+            Rsi rsi = Rsi.builder()
+                    .value(rsiValues.get(i))
+                    .signal(signals.get(i))
+                    .build();
+            rsis.add(rsi);
+        }
+        return rsis;
     }
 
     private static BigDecimal getAverage(List<BigDecimal> values) {

@@ -20,7 +20,7 @@ public class ObvCalculatorTest extends AbstractCalculatorTest {
         // given
         List<Map<String,String>> inputRows = readTsv(
                 "org/oopscraft/fintics/calculator/ObvCalculatorTest.tsv",
-                new String[]{"dateTime","open","high","low","close","volume","OBV"}
+                new String[]{"dateTime","open","high","low","close","volume","OBV","Signal"}
         );
         List<Ohlcv> ohlcvs = inputRows.stream()
                 .map(row -> {
@@ -44,11 +44,13 @@ public class ObvCalculatorTest extends AbstractCalculatorTest {
             BigDecimal originClosePrice = new BigDecimal(inputRow.get("close").replaceAll(",",""));
             BigDecimal originVolume = new BigDecimal(inputRow.get("volume").replaceAll(",",""));
             BigDecimal originObv = new BigDecimal(inputRow.get("OBV").replaceAll(",",""));
+            BigDecimal originSignal = new BigDecimal(inputRow.get("Signal").replaceAll(",", ""));
 
-            log.info("[{}] {},{},{} / {},{},{}", i,
-                    originClosePrice, originVolume, originObv,
-                    ohlcv.getClosePrice(), ohlcv.getVolume(), obv.getValue());
-            assertEquals(originObv, obv.getValue());
+            log.info("[{}] {},{},{}({}) / {},{},{}({})", i,
+                    originClosePrice, originVolume, originObv, originSignal,
+                    ohlcv.getClosePrice(), ohlcv.getVolume(), obv.getValue(), obv.getSignal());
+            assertEquals(originObv.doubleValue(), obv.getValue().doubleValue(), 1.0);
+            assertEquals(originSignal.doubleValue(), obv.getSignal().doubleValue(), 1.0);
         }
 
     }

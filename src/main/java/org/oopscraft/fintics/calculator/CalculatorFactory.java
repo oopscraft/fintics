@@ -14,8 +14,7 @@ public class CalculatorFactory {
         put(RsiContext.class, RsiCalculator.class);
         put(DmiContext.class, DmiCalculator.class);
         put(ObvContext.class, ObvCalculator.class);
-        put(AdContext.class, AdCalculator.class);
-        put(WvadContext.class, WvadCalculator.class);
+        put(CoContext.class, CoCalculator.class);
     }};
 
     public static <C extends CalculateContext, R extends CalculateResult, T extends Calculator<C,R>> T getCalculator(C context) {

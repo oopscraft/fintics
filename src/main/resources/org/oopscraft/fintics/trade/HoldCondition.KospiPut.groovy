@@ -78,7 +78,7 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     log.debug("[{}] obvValue(PctChange): {}({}%)", name, obvValue, obvValuePctChange)
 
     // ad
-    def ads = indicator.calculate(ohlcvType, period, AdContext.DEFAULT)
+    def ads = indicator.calculate(ohlcvType, period, CoContext.DEFAULT)
     def ad = ads.first()
     def adValues = ads.collect{it.value}
     def adValue = adValues.first()

@@ -9,8 +9,10 @@ import java.math.BigDecimal;
 @Builder
 @Getter
 @ToString
-public class Ad implements CalculateResult {
+public class Co implements CalculateResult {
 
     private final BigDecimal value;
+
+    private final BigDecimal signal;
 
 }
