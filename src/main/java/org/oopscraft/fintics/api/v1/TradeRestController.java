@@ -3,7 +3,6 @@ package org.oopscraft.fintics.api.v1;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.security.SecurityUtils;
-import org.oopscraft.arch4j.web.support.PageableUtils;
 import org.oopscraft.arch4j.web.support.SseLogAppender;
 import org.oopscraft.fintics.api.v1.dto.*;
 import org.oopscraft.fintics.model.*;
@@ -12,10 +11,6 @@ import org.oopscraft.fintics.trade.TradeThreadManager;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -157,7 +152,7 @@ public class TradeRestController {
         Trade trade = tradeService.getTrade(tradeId).orElseThrow();
         List<TradeAssetIndicatorResponse> tradeAssetIndicatorResponses = new ArrayList<>();
         for(TradeAsset tradeAsset : trade.getTradeAssets()) {
-            TradeAssetIndicator tradeAssetIndicator = tradeService.getTradeAssetIndicator(tradeId, tradeAsset.getSymbol()).orElseThrow();
+            Indicator tradeAssetIndicator = tradeService.getTradeAssetIndicator(tradeId, tradeAsset.getSymbol()).orElseThrow();
             tradeAssetIndicatorResponses.add(TradeAssetIndicatorResponse.from(tradeAssetIndicator));
         }
         return ResponseEntity.ok(tradeAssetIndicatorResponses);

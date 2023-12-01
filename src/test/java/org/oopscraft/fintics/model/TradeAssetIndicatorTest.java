@@ -18,12 +18,12 @@ public class TradeAssetIndicatorTest {
 
     @Test
     void calculate() {
-        TradeAssetIndicator indicator = TradeAssetIndicator.builder()
-                .minuteOhlcvs(new ArrayList<TradeAssetOhlcv>(){{
-                    add(TradeAssetOhlcv.builder()
+        Indicator indicator = Indicator.builder()
+                .minuteOhlcvs(new ArrayList<Ohlcv>(){{
+                    add(Ohlcv.builder()
                             .closePrice(BigDecimal.ONE)
                             .build());
-                    add(TradeAssetOhlcv.builder()
+                    add(Ohlcv.builder()
                             .closePrice(BigDecimal.TEN)
                             .build());
                 }})
@@ -37,22 +37,22 @@ public class TradeAssetIndicatorTest {
     void resample() {
         // given
         LocalDateTime now = LocalDateTime.now();
-        List<TradeAssetOhlcv> minuteOhlcvs = new ArrayList<>(){{
-            add(TradeAssetOhlcv.of(now.minusMinutes(1), 1000, 1100, 900, 1050, 100));
-            add(TradeAssetOhlcv.of(now.minusMinutes(2), 1060, 1200, 1030, 1040, 200));
-            add(TradeAssetOhlcv.of(now.minusMinutes(3), 1050, 1400, 800, 900, 300));
+        List<Ohlcv> minuteOhlcvs = new ArrayList<>(){{
+            add(Ohlcv.of(now.minusMinutes(1), 1000, 1100, 900, 1050, 100));
+            add(Ohlcv.of(now.minusMinutes(2), 1060, 1200, 1030, 1040, 200));
+            add(Ohlcv.of(now.minusMinutes(3), 1050, 1400, 800, 900, 300));
         }};
 
         // when
-        TradeAssetIndicator indicator = TradeAssetIndicator.builder()
+        Indicator indicator = Indicator.builder()
                 .minuteOhlcvs(minuteOhlcvs)
                 .build();
-        List<TradeAssetOhlcv> resampleOhlcvs = indicator.resample(OhlcvType.MINUTE, 3);
+        List<Ohlcv> resampleOhlcvs = indicator.resample(OhlcvType.MINUTE, 3);
 
         // then
         log.info("resampleOhlcvs:{}", resampleOhlcvs);
         assertTrue(resampleOhlcvs.size() == 1);
-        TradeAssetOhlcv ohlcv = resampleOhlcvs.get(0);
+        Ohlcv ohlcv = resampleOhlcvs.get(0);
         assertTrue(ohlcv.getOpenPrice().longValue() == 1050);
         assertTrue(ohlcv.getHighPrice().longValue() == 1400);
         assertTrue(ohlcv.getLowPrice().longValue() == 800);
@@ -64,21 +64,21 @@ public class TradeAssetIndicatorTest {
     void resampleUnderPeriod() {
         // given
         LocalDateTime now = LocalDateTime.now();
-        List<TradeAssetOhlcv> minuteOhlcvs = new ArrayList<>(){{
-            add(TradeAssetOhlcv.of(now.minusMinutes(1), 1000, 1100, 900, 1050, 100));
-            add(TradeAssetOhlcv.of(now.minusMinutes(2), 1060, 1200, 1030, 1040, 200));
+        List<Ohlcv> minuteOhlcvs = new ArrayList<>(){{
+            add(Ohlcv.of(now.minusMinutes(1), 1000, 1100, 900, 1050, 100));
+            add(Ohlcv.of(now.minusMinutes(2), 1060, 1200, 1030, 1040, 200));
         }};
 
         // when
-        TradeAssetIndicator indicator = TradeAssetIndicator.builder()
+        Indicator indicator = Indicator.builder()
                 .minuteOhlcvs(minuteOhlcvs)
                 .build();
-        List<TradeAssetOhlcv> resampleOhlcvs = indicator.resample(OhlcvType.MINUTE, 3);
+        List<Ohlcv> resampleOhlcvs = indicator.resample(OhlcvType.MINUTE, 3);
 
         // then
         log.info("resampleOhlcvs:{}", resampleOhlcvs);
         assertTrue(resampleOhlcvs.size() == 1);
-        TradeAssetOhlcv ohlcv = resampleOhlcvs.get(0);
+        Ohlcv ohlcv = resampleOhlcvs.get(0);
         assertTrue(ohlcv.getOpenPrice().longValue() == 1060);
         assertTrue(ohlcv.getHighPrice().longValue() == 1200);
         assertTrue(ohlcv.getLowPrice().longValue() == 900);
@@ -90,30 +90,30 @@ public class TradeAssetIndicatorTest {
     void resampleOverPeriod() {
         // given
         LocalDateTime now = LocalDateTime.now();
-        List<TradeAssetOhlcv> minuteOhlcvs = new ArrayList<>(){{
-            add(TradeAssetOhlcv.of(now.minusMinutes(1), 1000, 1100, 900, 1050, 100));
-            add(TradeAssetOhlcv.of(now.minusMinutes(2), 1060, 1200, 1030, 1040, 200));
-            add(TradeAssetOhlcv.of(now.minusMinutes(3), 1050, 1400, 800, 900, 300));
-            add(TradeAssetOhlcv.of(now.minusMinutes(4), 1010, 1300, 1000, 1050, 200));
-            add(TradeAssetOhlcv.of(now.minusMinutes(5), 990, 1100, 980, 1000, 100));
+        List<Ohlcv> minuteOhlcvs = new ArrayList<>(){{
+            add(Ohlcv.of(now.minusMinutes(1), 1000, 1100, 900, 1050, 100));
+            add(Ohlcv.of(now.minusMinutes(2), 1060, 1200, 1030, 1040, 200));
+            add(Ohlcv.of(now.minusMinutes(3), 1050, 1400, 800, 900, 300));
+            add(Ohlcv.of(now.minusMinutes(4), 1010, 1300, 1000, 1050, 200));
+            add(Ohlcv.of(now.minusMinutes(5), 990, 1100, 980, 1000, 100));
         }};
 
         // when
-        TradeAssetIndicator indicator = TradeAssetIndicator.builder()
+        Indicator indicator = Indicator.builder()
                 .minuteOhlcvs(minuteOhlcvs)
                 .build();
-        List<TradeAssetOhlcv> resampleOhlcvs = indicator.resample(OhlcvType.MINUTE, 3);
+        List<Ohlcv> resampleOhlcvs = indicator.resample(OhlcvType.MINUTE, 3);
 
         // then
         log.info("resampleOhlcvs:{}", resampleOhlcvs);
         assertTrue(resampleOhlcvs.size() == 2);
-        TradeAssetOhlcv ohlcv1 = resampleOhlcvs.get(0);
+        Ohlcv ohlcv1 = resampleOhlcvs.get(0);
         assertTrue(ohlcv1.getOpenPrice().longValue() == 1050);
         assertTrue(ohlcv1.getHighPrice().longValue() == 1400);
         assertTrue(ohlcv1.getLowPrice().longValue() == 800);
         assertTrue(ohlcv1.getClosePrice().longValue() == 1050);
         assertTrue(ohlcv1.getVolume().longValue() == 600);
-        TradeAssetOhlcv ohlcv2 = resampleOhlcvs.get(1);
+        Ohlcv ohlcv2 = resampleOhlcvs.get(1);
         assertTrue(ohlcv2.getOpenPrice().longValue() == 990);
         assertTrue(ohlcv2.getHighPrice().longValue() == 1300);
         assertTrue(ohlcv2.getLowPrice().longValue() == 980);

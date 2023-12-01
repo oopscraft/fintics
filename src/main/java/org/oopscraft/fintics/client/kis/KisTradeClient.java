@@ -111,8 +111,8 @@ public class KisTradeClient extends TradeClient {
     }
 
     @Override
-    public List<TradeAssetOhlcv> getMinuteOhlcvs(TradeAsset tradeAsset) throws InterruptedException {
-        List<TradeAssetOhlcv> minuteOhlcvs = new ArrayList<>();
+    public List<Ohlcv> getMinuteOhlcvs(TradeAsset tradeAsset) throws InterruptedException {
+        List<Ohlcv> minuteOhlcvs = new ArrayList<>();
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
@@ -158,7 +158,7 @@ public class KisTradeClient extends TradeClient {
 
             List<ValueMap> output2 = objectMapper.convertValue(rootNode.path("output2"), new TypeReference<>(){});
 
-            List<TradeAssetOhlcv> minuteOhlcvsPage = output2.stream()
+            List<Ohlcv> minuteOhlcvsPage = output2.stream()
                     .map(row -> {
                         LocalDateTime dateTime = LocalDateTime.parse(
                                 row.getString("stck_bsop_date") + row.getString("stck_cntg_hour"),
@@ -169,7 +169,7 @@ public class KisTradeClient extends TradeClient {
                         BigDecimal lowPrice = row.getNumber("stck_lwpr");
                         BigDecimal closePrice = row.getNumber("stck_prpr");
                         BigDecimal volume = row.getNumber("cntg_vol");
-                        return TradeAssetOhlcv.builder()
+                        return Ohlcv.builder()
                                 .ohlcvType(OhlcvType.MINUTE)
                                 .dateTime(dateTime)
                                 .openPrice(openPrice)
@@ -199,7 +199,7 @@ public class KisTradeClient extends TradeClient {
     }
 
     @Override
-    public List<TradeAssetOhlcv> getDailyOhlcvs(TradeAsset tradeAsset) throws InterruptedException {
+    public List<Ohlcv> getDailyOhlcvs(TradeAsset tradeAsset) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
@@ -245,7 +245,7 @@ public class KisTradeClient extends TradeClient {
                     BigDecimal lowPrice = row.getNumber("stck_lwpr");
                     BigDecimal closePrice = row.getNumber("stck_clpr");
                     BigDecimal volume = row.getNumber("acml_vol");
-                    return TradeAssetOhlcv.builder()
+                    return Ohlcv.builder()
                             .ohlcvType(OhlcvType.DAILY)
                             .dateTime(dateTime)
                             .openPrice(openPrice)

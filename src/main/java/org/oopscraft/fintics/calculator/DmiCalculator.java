@@ -1,6 +1,6 @@
 package org.oopscraft.fintics.calculator;
 
-import org.oopscraft.fintics.model.TradeAssetOhlcv;
+import org.oopscraft.fintics.model.Ohlcv;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -13,15 +13,15 @@ public class DmiCalculator extends Calculator<DmiContext, Dmi> {
     }
 
     @Override
-    public List<Dmi> calculate(List<TradeAssetOhlcv> series) {
+    public List<Dmi> calculate(List<Ohlcv> series) {
         List<BigDecimal> highSeries = series.stream()
-                .map(TradeAssetOhlcv::getHighPrice)
+                .map(Ohlcv::getHighPrice)
                 .toList();
         List<BigDecimal> lowSeries = series.stream()
-                .map(TradeAssetOhlcv::getLowPrice)
+                .map(Ohlcv::getLowPrice)
                 .toList();
         List<BigDecimal> closeSeries = series.stream()
-                .map(TradeAssetOhlcv::getClosePrice)
+                .map(Ohlcv::getClosePrice)
                 .toList();
 
         List<BigDecimal> pdms = new ArrayList<>();

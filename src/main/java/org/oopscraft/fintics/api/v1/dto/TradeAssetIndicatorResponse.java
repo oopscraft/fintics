@@ -3,8 +3,8 @@ package org.oopscraft.fintics.api.v1.dto;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
-import org.oopscraft.fintics.model.TradeAssetIndicator;
-import org.oopscraft.fintics.model.TradeAssetOhlcv;
+import org.oopscraft.fintics.model.Indicator;
+import org.oopscraft.fintics.model.Ohlcv;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,12 +18,12 @@ public class TradeAssetIndicatorResponse {
     private final String name;
 
     @Builder.Default
-    private List<TradeAssetOhlcv> minuteOhlcvs = new ArrayList<>();
+    private List<Ohlcv> minuteOhlcvs = new ArrayList<>();
 
     @Builder.Default
-    private List<TradeAssetOhlcv> dailyOhlcvs = new ArrayList<>();
+    private List<Ohlcv> dailyOhlcvs = new ArrayList<>();
 
-    public static TradeAssetIndicatorResponse from(TradeAssetIndicator tradeAssetIndicator) {
+    public static TradeAssetIndicatorResponse from(Indicator tradeAssetIndicator) {
         return TradeAssetIndicatorResponse.builder()
                 .symbol(tradeAssetIndicator.getSymbol())
                 .name(tradeAssetIndicator.getName())

@@ -1,6 +1,6 @@
 package org.oopscraft.fintics.calculator;
 
-import org.oopscraft.fintics.model.TradeAssetOhlcv;
+import org.oopscraft.fintics.model.Ohlcv;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -15,14 +15,14 @@ public class ObvCalculator extends Calculator<ObvContext, Obv> {
     }
 
     @Override
-    public List<Obv> calculate(List<TradeAssetOhlcv> series) {
+    public List<Obv> calculate(List<Ohlcv> series) {
         // values
         List<BigDecimal> obvValues = new ArrayList<>();
         obvValues.add(BigDecimal.ZERO);
         BigDecimal obvValue = BigDecimal.ZERO;
         for(int i = 1, size = series.size(); i < size; i ++) {
-            TradeAssetOhlcv prevOhlcv = series.get(i-1);
-            TradeAssetOhlcv currentOhlcv = series.get(i);
+            Ohlcv prevOhlcv = series.get(i-1);
+            Ohlcv currentOhlcv = series.get(i);
             BigDecimal volume = currentOhlcv.getVolume();
             BigDecimal priceDiff = currentOhlcv.getClosePrice().subtract(prevOhlcv.getClosePrice());
             if(priceDiff.compareTo(BigDecimal.ZERO) > 0) {

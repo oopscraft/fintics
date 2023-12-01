@@ -2,7 +2,7 @@ package org.oopscraft.fintics.calculator;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
-import org.oopscraft.fintics.model.TradeAssetOhlcv;
+import org.oopscraft.fintics.model.Ohlcv;
 
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -39,7 +39,7 @@ public abstract class AbstractCalculatorTest {
         return list;
     }
 
-    protected final List<TradeAssetOhlcv> convertOhlcvs(List<Map<String,String>> rows, String dateTimeNameAndPattern, String openPriceName, String highPriceName, String lowPriceName, String closePriceName, String volumeName) {
+    protected final List<Ohlcv> convertOhlcvs(List<Map<String,String>> rows, String dateTimeNameAndPattern, String openPriceName, String highPriceName, String lowPriceName, String closePriceName, String volumeName) {
         String dateTimeName = null;
         String dateTimePattern = null;
         if(dateTimeNameAndPattern != null && dateTimeNameAndPattern.contains("^")) {
@@ -59,7 +59,7 @@ public abstract class AbstractCalculatorTest {
                             dateTime = LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
                         } catch (ParseException ignored) {}
                     }
-                    return TradeAssetOhlcv.builder()
+                    return Ohlcv.builder()
                             .dateTime(dateTime)
                             .openPrice(new BigDecimal(row.get(openPriceName).replaceAll(",","")))
                             .highPrice(new BigDecimal(row.get(highPriceName).replaceAll(",","")))

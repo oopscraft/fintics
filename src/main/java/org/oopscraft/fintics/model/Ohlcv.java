@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class TradeAssetOhlcv {
+public class Ohlcv {
 
     private OhlcvType ohlcvType;
 
@@ -32,8 +32,8 @@ public class TradeAssetOhlcv {
     @Builder.Default
     private BigDecimal volume = BigDecimal.ZERO;
 
-    public static TradeAssetOhlcv of(LocalDateTime dateTime, double openPrice, double highPrice, double lowPrice, double closePrice, double volume) {
-        return TradeAssetOhlcv.builder()
+    public static Ohlcv of(LocalDateTime dateTime, double openPrice, double highPrice, double lowPrice, double closePrice, double volume) {
+        return Ohlcv.builder()
                 .dateTime(dateTime)
                 .openPrice(BigDecimal.valueOf(openPrice))
                 .highPrice(BigDecimal.valueOf(highPrice))
@@ -43,8 +43,8 @@ public class TradeAssetOhlcv {
                 .build();
     }
 
-    public static TradeAssetOhlcv from(TradeAssetOhlcvEntity tradeAssetOhlcvEntity) {
-        return TradeAssetOhlcv.builder()
+    public static Ohlcv from(TradeAssetOhlcvEntity tradeAssetOhlcvEntity) {
+        return Ohlcv.builder()
                 .ohlcvType(tradeAssetOhlcvEntity.getOhlcvType())
                 .dateTime(tradeAssetOhlcvEntity.getDateTime())
                 .openPrice(tradeAssetOhlcvEntity.getOpenPrice())

@@ -101,7 +101,7 @@ public class TradeService {
         }
     }
 
-    public Optional<TradeAssetIndicator> getTradeAssetIndicator(String tradeId, String symbol) {
+    public Optional<Indicator> getTradeAssetIndicator(String tradeId, String symbol) {
         Trade trade = getTrade(tradeId).orElseThrow();
         TradeAsset tradeAsset = trade.getTradeAssets().stream()
                 .filter(e -> Objects.equals(e.getSymbol(), symbol))
@@ -110,17 +110,17 @@ public class TradeService {
 
         LocalDateTime minuteMaxDateTime = tradeAssetOhlcvRepository.findMaxDateTimeBySymbolAndOhlcvType(tradeId, symbol, OhlcvType.MINUTE)
                 .orElse(LocalDateTime.now());
-        List<TradeAssetOhlcv> minuteOhlcvs = tradeAssetOhlcvRepository.findAllBySymbolAndOhlcvType(tradeId, symbol, OhlcvType.MINUTE, minuteMaxDateTime.minusDays(1), minuteMaxDateTime, Pageable.unpaged()).stream()
-                .map(TradeAssetOhlcv::from)
+        List<Ohlcv> minuteOhlcvs = tradeAssetOhlcvRepository.findAllBySymbolAndOhlcvType(tradeId, symbol, OhlcvType.MINUTE, minuteMaxDateTime.minusDays(1), minuteMaxDateTime, Pageable.unpaged()).stream()
+                .map(Ohlcv::from)
                 .collect(Collectors.toList());
 
         LocalDateTime dailyMaxDateTime = tradeAssetOhlcvRepository.findMaxDateTimeBySymbolAndOhlcvType(tradeId, symbol, OhlcvType.DAILY)
                 .orElse(LocalDateTime.now());
-        List<TradeAssetOhlcv> dailyOhlcvs = tradeAssetOhlcvRepository.findAllBySymbolAndOhlcvType(tradeId, symbol, OhlcvType.DAILY, dailyMaxDateTime.minusMonths(1), dailyMaxDateTime, Pageable.unpaged()).stream()
-                .map(TradeAssetOhlcv::from)
+        List<Ohlcv> dailyOhlcvs = tradeAssetOhlcvRepository.findAllBySymbolAndOhlcvType(tradeId, symbol, OhlcvType.DAILY, dailyMaxDateTime.minusMonths(1), dailyMaxDateTime, Pageable.unpaged()).stream()
+                .map(Ohlcv::from)
                 .collect(Collectors.toList());
 
-        return Optional.ofNullable(TradeAssetIndicator.builder()
+        return Optional.ofNullable(Indicator.builder()
                 .symbol(tradeAsset.getSymbol())
                 .name(tradeAsset.getName())
                 .minuteOhlcvs(minuteOhlcvs)

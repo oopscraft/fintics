@@ -3,7 +3,6 @@ package org.oopscraft.fintics.trade;
 import com.github.javaparser.utils.LineSeparator;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.oopscraft.fintics.model.*;
 
@@ -54,14 +53,14 @@ class TradeAssetDeciderTest {
         return stringBuilder.toString();
     }
 
-    TradeAssetIndicator getTestAssetIndicator(TradeAsset tradeAsset) {
-        return TradeAssetIndicator.builder()
+    Indicator getTestAssetIndicator(TradeAsset tradeAsset) {
+        return Indicator.builder()
                 .symbol(tradeAsset.getSymbol())
                 .name(tradeAsset.getName())
                 .minuteOhlcvs(IntStream.range(1,501)
                         .mapToObj(i -> {
                             BigDecimal price = BigDecimal.valueOf(1000 - (i*10));
-                            return TradeAssetOhlcv.builder()
+                            return Ohlcv.builder()
                                     .dateTime(LocalDateTime.now().minusMinutes(i))
                                     .openPrice(price)
                                     .highPrice(price)
@@ -74,7 +73,7 @@ class TradeAssetDeciderTest {
                 .dailyOhlcvs(IntStream.range(1,301)
                         .mapToObj(i -> {
                             BigDecimal price = BigDecimal.valueOf(1000 - (i*10));
-                            return TradeAssetOhlcv.builder()
+                            return Ohlcv.builder()
                                     .dateTime(LocalDateTime.now().minusDays(i))
                                     .openPrice(price)
                                     .highPrice(price)
@@ -93,7 +92,7 @@ class TradeAssetDeciderTest {
         Trade trade = getTestTrade();
         TradeAsset tradeAsset = getTestTradeAsset();
         OrderBook orderBook = getTestOrderBook();
-        TradeAssetIndicator assetIndicator = getTestAssetIndicator(tradeAsset);
+        Indicator assetIndicator = getTestAssetIndicator(tradeAsset);
         trade.setHoldCondition("return true;");
 
         // when
@@ -102,7 +101,7 @@ class TradeAssetDeciderTest {
                 .logger(log)
                 .dateTime(LocalDateTime.now())
                 .orderBook(orderBook)
-                .tradeAssetIndicator(assetIndicator)
+                .indicator(assetIndicator)
                 .build();
         Boolean result = tradeAssetDecider.execute();
 
@@ -116,7 +115,7 @@ class TradeAssetDeciderTest {
         // given
         Trade trade = getTestTrade();
         TradeAsset tradeAsset = getTestTradeAsset();
-        TradeAssetIndicator assetIndicator = getTestAssetIndicator(tradeAsset);
+        Indicator assetIndicator = getTestAssetIndicator(tradeAsset);
         String holdCondition = loadGroovyFileAsString("HoldCondition.Cryptocurrency.groovy");
         trade.setHoldCondition(holdCondition);
 
@@ -125,7 +124,7 @@ class TradeAssetDeciderTest {
                 .holdCondition(trade.getHoldCondition())
                 .logger(log)
                 .dateTime(LocalDateTime.now())
-                .tradeAssetIndicator(assetIndicator)
+                .indicator(assetIndicator)
                 .build();
         Boolean result = tradeAssetDecider.execute();
 
@@ -138,7 +137,7 @@ class TradeAssetDeciderTest {
         // given
         Trade trade = getTestTrade();
         TradeAsset tradeAsset = getTestTradeAsset();
-        TradeAssetIndicator assetIndicator = getTestAssetIndicator(tradeAsset);
+        Indicator assetIndicator = getTestAssetIndicator(tradeAsset);
         String holdCondition = loadGroovyFileAsString("HoldCondition.KospiCall.groovy");
         trade.setHoldCondition(holdCondition);
 
@@ -147,7 +146,7 @@ class TradeAssetDeciderTest {
                 .holdCondition(trade.getHoldCondition())
                 .logger(log)
                 .dateTime(LocalDateTime.now())
-                .tradeAssetIndicator(assetIndicator)
+                .indicator(assetIndicator)
                 .build();
         Boolean result = tradeAssetDecider.execute();
 
@@ -160,7 +159,7 @@ class TradeAssetDeciderTest {
         // given
         Trade trade = getTestTrade();
         TradeAsset tradeAsset = getTestTradeAsset();
-        TradeAssetIndicator assetIndicator = getTestAssetIndicator(tradeAsset);
+        Indicator assetIndicator = getTestAssetIndicator(tradeAsset);
         String holdCondition = loadGroovyFileAsString("HoldCondition.KospiPut.groovy");
         trade.setHoldCondition(holdCondition);
 
@@ -169,7 +168,7 @@ class TradeAssetDeciderTest {
                 .holdCondition(trade.getHoldCondition())
                 .logger(log)
                 .dateTime(LocalDateTime.now())
-                .tradeAssetIndicator(assetIndicator)
+                .indicator(assetIndicator)
                 .build();
         Boolean result = tradeAssetDecider.execute();
 

@@ -1,6 +1,6 @@
 package org.oopscraft.fintics.calculator;
 
-import org.oopscraft.fintics.model.TradeAssetOhlcv;
+import org.oopscraft.fintics.model.Ohlcv;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -13,9 +13,9 @@ public class MacdCalculator extends Calculator<MacdContext, Macd> {
     }
 
     @Override
-    public List<Macd> calculate(List<TradeAssetOhlcv> series) {
+    public List<Macd> calculate(List<Ohlcv> series) {
         List<BigDecimal> closePrices = series.stream()
-                .map(TradeAssetOhlcv::getClosePrice)
+                .map(Ohlcv::getClosePrice)
                 .toList();
 
         List<BigDecimal> values = new ArrayList<>();

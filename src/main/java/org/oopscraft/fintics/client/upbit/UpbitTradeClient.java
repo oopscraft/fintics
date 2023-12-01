@@ -112,16 +112,16 @@ public class UpbitTradeClient extends TradeClient {
     }
 
     @Override
-    public List<TradeAssetOhlcv> getMinuteOhlcvs(TradeAsset tradeAsset) throws InterruptedException {
+    public List<Ohlcv> getMinuteOhlcvs(TradeAsset tradeAsset) throws InterruptedException {
         return getOhlcvs(tradeAsset, OhlcvType.MINUTE);
     }
 
     @Override
-    public List<TradeAssetOhlcv> getDailyOhlcvs(TradeAsset tradeAsset) throws InterruptedException {
+    public List<Ohlcv> getDailyOhlcvs(TradeAsset tradeAsset) throws InterruptedException {
         return getOhlcvs(tradeAsset, OhlcvType.DAILY);
     }
 
-    private List<TradeAssetOhlcv> getOhlcvs(TradeAsset tradeAsset, OhlcvType ohlcvType) throws InterruptedException {
+    private List<Ohlcv> getOhlcvs(TradeAsset tradeAsset, OhlcvType ohlcvType) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
@@ -151,7 +151,7 @@ public class UpbitTradeClient extends TradeClient {
                             row.getString("candle_date_time_kst"),
                             DateTimeFormatter.ISO_LOCAL_DATE_TIME
                     );
-                    return TradeAssetOhlcv.builder()
+                    return Ohlcv.builder()
                             .ohlcvType(ohlcvType)
                             .dateTime(dateTime)
                             .openPrice(row.getNumber("opening_price"))

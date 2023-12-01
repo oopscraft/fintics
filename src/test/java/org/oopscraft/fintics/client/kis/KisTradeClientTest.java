@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 import org.oopscraft.arch4j.core.test.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
 import org.oopscraft.fintics.client.TradeClientFactory;
-import org.oopscraft.fintics.client.kis.KisTradeClient;
 import org.oopscraft.fintics.dao.TradeEntity;
 import org.oopscraft.fintics.model.*;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -60,7 +59,7 @@ class KisTradeClientTest extends CoreTestSupport {
                 .build();
 
         // when
-        List<TradeAssetOhlcv> minuteOhlcvs = getKisClient().getMinuteOhlcvs(tradeAsset);
+        List<Ohlcv> minuteOhlcvs = getKisClient().getMinuteOhlcvs(tradeAsset);
 
         // then
         assertNotNull(minuteOhlcvs);
@@ -76,7 +75,7 @@ class KisTradeClientTest extends CoreTestSupport {
                 .build();
 
         // when
-        List<TradeAssetOhlcv> dailyOhlcvs = getKisClient().getDailyOhlcvs(tradeAsset);
+        List<Ohlcv> dailyOhlcvs = getKisClient().getDailyOhlcvs(tradeAsset);
 
         // then
         assertNotNull(dailyOhlcvs);

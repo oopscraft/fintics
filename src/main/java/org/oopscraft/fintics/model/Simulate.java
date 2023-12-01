@@ -4,24 +4,34 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Builder
 @Getter
-@Deprecated
 public class Simulate {
 
-    private Trade trade;
+    private String holdCondition;
 
-    private LocalDateTime startAt;
+    private Integer interval;
 
-    private LocalDateTime endAt;
+    private LocalTime startAt;
+
+    private LocalTime endAt;
+
+    @Builder.Default
+    private List<Ohlcv> minuteOhlcvs = new ArrayList<>();
+
+    @Builder.Default
+    private List<Ohlcv> dailyOhlcvs = new ArrayList<>();
 
     private Double feeRate;
 
     private Double bidAskSpread;
+
+    @Builder.Default
+    @Setter
+    private List<Boolean> holdConditionResults = new ArrayList<>();
 
 }

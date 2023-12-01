@@ -2,7 +2,7 @@ package org.oopscraft.fintics.calculator;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
-import org.oopscraft.fintics.model.TradeAssetOhlcv;
+import org.oopscraft.fintics.model.Ohlcv;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -14,9 +14,9 @@ class EmaCalculatorTest {
     @Test
     void calculate() {
         // given
-        List<TradeAssetOhlcv> series = new ArrayList<>();
+        List<Ohlcv> series = new ArrayList<>();
         for(int i = 0; i < 500; i ++) {
-            series.add(TradeAssetOhlcv.builder()
+            series.add(Ohlcv.builder()
                     .closePrice(BigDecimal.valueOf(Math.random() * (12000-1000) + 1000))
                     .build());
         }

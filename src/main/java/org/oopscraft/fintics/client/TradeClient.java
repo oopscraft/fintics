@@ -18,9 +18,9 @@ public abstract class TradeClient {
 
     public abstract OrderBook getOrderBook(TradeAsset tradeAsset) throws InterruptedException;
 
-    public abstract List<TradeAssetOhlcv> getMinuteOhlcvs(TradeAsset tradeAsset) throws InterruptedException;
+    public abstract List<Ohlcv> getMinuteOhlcvs(TradeAsset tradeAsset) throws InterruptedException;
 
-    public abstract List<TradeAssetOhlcv> getDailyOhlcvs(TradeAsset asset) throws InterruptedException;
+    public abstract List<Ohlcv> getDailyOhlcvs(TradeAsset asset) throws InterruptedException;
 
     public abstract Balance getBalance() throws InterruptedException;
 

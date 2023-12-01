@@ -3,7 +3,6 @@ package org.oopscraft.fintics.client.upbit;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.oopscraft.fintics.client.upbit.UpbitTradeClient;
 import org.oopscraft.fintics.model.*;
 
 import java.math.BigDecimal;
@@ -57,7 +56,7 @@ class UpbitTradeClientTest {
         TradeAsset tradeAsset = getTestTradeAsset();
 
         // when
-        List<TradeAssetOhlcv> minuteOhlcvs = getUpbitTradeClient().getMinuteOhlcvs(tradeAsset);
+        List<Ohlcv> minuteOhlcvs = getUpbitTradeClient().getMinuteOhlcvs(tradeAsset);
 
         // then
         log.info("minuteOhlcvs:{}", minuteOhlcvs);
@@ -70,7 +69,7 @@ class UpbitTradeClientTest {
         TradeAsset tradeAsset = getTestTradeAsset();
 
         // when
-        List<TradeAssetOhlcv> dailyOhlcvs = getUpbitTradeClient().getDailyOhlcvs(tradeAsset);
+        List<Ohlcv> dailyOhlcvs = getUpbitTradeClient().getDailyOhlcvs(tradeAsset);
 
         // then
         log.info("dailyOhlcvs:{}", dailyOhlcvs);

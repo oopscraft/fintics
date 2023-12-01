@@ -16,7 +16,7 @@ import java.util.List;
 
 @SuperBuilder
 @Getter
-public class TradeAssetIndicator {
+public class Indicator {
 
     private final String symbol;
 
@@ -24,13 +24,13 @@ public class TradeAssetIndicator {
 
     @Builder.Default
     @Getter
-    private final List<TradeAssetOhlcv> minuteOhlcvs = new ArrayList<>();
+    private final List<Ohlcv> minuteOhlcvs = new ArrayList<>();
 
     @Builder.Default
     @Getter
-    private final List<TradeAssetOhlcv> dailyOhlcvs = new ArrayList<>();
+    private final List<Ohlcv> dailyOhlcvs = new ArrayList<>();
 
-    public List<TradeAssetOhlcv> resample(OhlcvType ohlcvType, int period) {
+    public List<Ohlcv> resample(OhlcvType ohlcvType, int period) {
         switch(ohlcvType) {
             case MINUTE -> {
                 return resampleOhlcvs(minuteOhlcvs, period);
@@ -42,19 +42,19 @@ public class TradeAssetIndicator {
         }
     }
 
-    private List<TradeAssetOhlcv> resampleOhlcvs(List<TradeAssetOhlcv> ohlcvs, int period) {
+    private List<Ohlcv> resampleOhlcvs(List<Ohlcv> ohlcvs, int period) {
         if (ohlcvs.isEmpty() || period <= 0) {
             return Collections.emptyList();
         }
 
-        List<TradeAssetOhlcv> resampledOhlcvs = new ArrayList<>();
+        List<Ohlcv> resampledOhlcvs = new ArrayList<>();
         int dataSize = ohlcvs.size();
         int currentIndex = 0;
 
         while (currentIndex < dataSize) {
             int endIndex = Math.min(currentIndex + period, dataSize);
-            List<TradeAssetOhlcv> subList = ohlcvs.subList(currentIndex, endIndex);
-            TradeAssetOhlcv resampledData = createResampledOhlcv(subList);
+            List<Ohlcv> subList = ohlcvs.subList(currentIndex, endIndex);
+            Ohlcv resampledData = createResampledOhlcv(subList);
             resampledOhlcvs.add(resampledData);
             currentIndex += period;
         }
@@ -62,8 +62,8 @@ public class TradeAssetIndicator {
         return resampledOhlcvs;
     }
 
-    private TradeAssetOhlcv createResampledOhlcv(List<TradeAssetOhlcv> ohlcvs) {
-        List<TradeAssetOhlcv> series = new ArrayList<>(ohlcvs);
+    private Ohlcv createResampledOhlcv(List<Ohlcv> ohlcvs) {
+        List<Ohlcv> series = new ArrayList<>(ohlcvs);
         Collections.reverse(series);
 
         OhlcvType ohlcvType = null;
@@ -75,7 +75,7 @@ public class TradeAssetIndicator {
         BigDecimal volume = BigDecimal.ZERO;
 
         for(int i = 0; i < series.size(); i ++ ) {
-            TradeAssetOhlcv ohlcv = series.get(i);
+            Ohlcv ohlcv = series.get(i);
             if(i == 0) {
                 ohlcvType = ohlcv.getOhlcvType();
                 dateTime = ohlcv.getDateTime();
@@ -97,7 +97,7 @@ public class TradeAssetIndicator {
             }
         }
 
-        return TradeAssetOhlcv.builder()
+        return Ohlcv.builder()
                 .ohlcvType(ohlcvType)
                 .dateTime(dateTime)
                 .openPrice(openPrice)
@@ -109,7 +109,7 @@ public class TradeAssetIndicator {
     }
 
     public <C extends CalculateContext, R extends CalculateResult> List<R> calculate(OhlcvType ohlcvType, int period, C context) {
-        List<TradeAssetOhlcv> ohlcvs = resample(ohlcvType, period);
+        List<Ohlcv> ohlcvs = resample(ohlcvType, period);
         Collections.reverse(ohlcvs);
 
         // calculate

@@ -2,7 +2,7 @@ package org.oopscraft.fintics.calculator;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
-import org.oopscraft.fintics.model.TradeAssetOhlcv;
+import org.oopscraft.fintics.model.Ohlcv;
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -21,7 +21,7 @@ class MacdCalculatorTest extends AbstractCalculatorTest {
                 "org/oopscraft/fintics/calculator/MacdCalculatorTest.tsv",
                 new String[]{"time","open","high","low","close","5","10","20","60","120","MACD","Signal","MACD-Oscillator"}
         );
-        List<TradeAssetOhlcv> ohlcvs = convertOhlcvs(rows, "time:MM/dd,HH:mm", "open", "high", "low", "close", null);
+        List<Ohlcv> ohlcvs = convertOhlcvs(rows, "time:MM/dd,HH:mm", "open", "high", "low", "close", null);
         Collections.reverse(rows);
         Collections.reverse(ohlcvs);
 
@@ -31,7 +31,7 @@ class MacdCalculatorTest extends AbstractCalculatorTest {
         // then
         for(int i = 0; i < ohlcvs.size(); i ++) {
             Map<String,String> row = rows.get(i);
-            TradeAssetOhlcv ohlcv = ohlcvs.get(i);
+            Ohlcv ohlcv = ohlcvs.get(i);
             Macd macd = macds.get(i);
             log.debug("[{}] {}/{}/{}, {}/{}/{}", i,
                     row.get("MACD"), row.get("Signal"), row.get("MACD-Oscillator"),

@@ -8,7 +8,7 @@ import org.oopscraft.fintics.dao.TradeAssetOhlcvEntity;
 import org.oopscraft.fintics.dao.TradeAssetOhlcvRepository;
 import org.oopscraft.fintics.dao.TradeEntity;
 import org.oopscraft.fintics.dao.TradeRepository;
-import org.oopscraft.fintics.model.TradeAssetOhlcv;
+import org.oopscraft.fintics.model.Ohlcv;
 import org.oopscraft.fintics.model.OhlcvType;
 import org.oopscraft.fintics.model.Trade;
 import org.oopscraft.fintics.model.TradeAsset;
@@ -62,7 +62,7 @@ public class TradeCollector {
 
     private void saveTradeAssetOhlcv(TradeClient tradeClient, TradeAsset tradeAsset) throws InterruptedException {
          // minutes
-         List<TradeAssetOhlcv> minuteOhlcvs = tradeClient.getMinuteOhlcvs(tradeAsset);
+         List<Ohlcv> minuteOhlcvs = tradeClient.getMinuteOhlcvs(tradeAsset);
          Collections.reverse(minuteOhlcvs);
          LocalDateTime minuteLastDateTime = tradeAssetOhlcvRepository.findMaxDateTimeBySymbolAndOhlcvType(tradeAsset.getTradeId(), tradeAsset.getSymbol(), OhlcvType.MINUTE)
                  .orElse(getExpiredDateTime())
@@ -75,7 +75,7 @@ public class TradeCollector {
          tradeAssetOhlcvRepository.saveAllAndFlush(minuteTradeAssetOhlcvEntities);
 
          // daily
-         List<TradeAssetOhlcv> dailyOhlcvs = tradeClient.getDailyOhlcvs(tradeAsset);
+         List<Ohlcv> dailyOhlcvs = tradeClient.getDailyOhlcvs(tradeAsset);
          Collections.reverse(dailyOhlcvs);
          LocalDateTime dailyLastDateTime = tradeAssetOhlcvRepository.findMaxDateTimeBySymbolAndOhlcvType(tradeAsset.getTradeId(), tradeAsset.getSymbol(), OhlcvType.DAILY)
                  .orElse(getExpiredDateTime())
@@ -88,7 +88,7 @@ public class TradeCollector {
          tradeAssetOhlcvRepository.saveAllAndFlush(dailyOhlcvEntities);
     }
 
-    private TradeAssetOhlcvEntity toTradeAssetOhlcvEntity(TradeAsset tradeAsset, TradeAssetOhlcv ohlcv) {
+    private TradeAssetOhlcvEntity toTradeAssetOhlcvEntity(TradeAsset tradeAsset, Ohlcv ohlcv) {
         return TradeAssetOhlcvEntity.builder()
                 .tradeId(tradeAsset.getTradeId())
                 .symbol(tradeAsset.getSymbol())

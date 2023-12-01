@@ -6,24 +6,24 @@ import org.oopscraft.fintics.model.*
 
 def analyze(OhlcvType ohlcvType, int period) {
     // info
-    def name = tradeAssetIndicator.getName() + ':' + ohlcvType + ':' + period
+    def name = indicator.getName() + ':' + ohlcvType + ':' + period
 
     // shortMa
-    def shortMas = tradeAssetIndicator.calculate(ohlcvType, period, EmaContext.of(10))
+    def shortMas = indicator.calculate(ohlcvType, period, EmaContext.of(10))
     def shortMa = shortMas.first()
     def shortMaValues = shortMas.collect{it.value}
     def shortMaValue = shortMaValues.first()
     log.debug("[{}] shortMa: {}", name, shortMa)
 
     // longMa
-    def longMas = tradeAssetIndicator.calculate(ohlcvType, period, EmaContext.of(30))
+    def longMas = indicator.calculate(ohlcvType, period, EmaContext.of(30))
     def longMa = longMas.first()
     def longMaValues = longMas.collect{it.value}
     def longMaValue = longMaValues.first()
     log.debug("[{}] longMa: {}", name, longMa)
 
     // macd
-    def macds = tradeAssetIndicator.calculate(ohlcvType, period, MacdContext.DEFAULT)
+    def macds = indicator.calculate(ohlcvType, period, MacdContext.DEFAULT)
     def macd = macds.first()
     def macdValues = macds.collect{it.value}
     def macdValue = macdValues.first()
@@ -32,7 +32,7 @@ def analyze(OhlcvType ohlcvType, int period) {
     log.debug("[{}] macd: {}", name, macd)
 
     // rsi
-    def rsis = tradeAssetIndicator.calculate(ohlcvType, period, RsiContext.DEFAULT)
+    def rsis = indicator.calculate(ohlcvType, period, RsiContext.DEFAULT)
     def rsi = rsis.first()
     def rsiValues = rsis.collect{it.value}
     def rsiValue = rsiValues.first()
@@ -41,7 +41,7 @@ def analyze(OhlcvType ohlcvType, int period) {
     log.debug("[{}] rsi: {}", name, rsi)
 
     // dmi
-    def dmis = tradeAssetIndicator.calculate(ohlcvType, period, DmiContext.DEFAULT);
+    def dmis = indicator.calculate(ohlcvType, period, DmiContext.DEFAULT);
     def dmi = dmis.first();
     def dmiPdis = dmis.collect{it.pdi}
     def dmiPdi = dmiPdis.first();
@@ -52,7 +52,7 @@ def analyze(OhlcvType ohlcvType, int period) {
     log.debug("[{}] dmi: {}", name, dmi)
 
     // obv
-    def obvs = tradeAssetIndicator.calculate(ohlcvType, period, ObvContext.DEFAULT)
+    def obvs = indicator.calculate(ohlcvType, period, ObvContext.DEFAULT)
     def obv = obvs.first()
     def obvValues = obvs.collect{it.value}
     def obvValue = obvValues.first()
@@ -61,7 +61,7 @@ def analyze(OhlcvType ohlcvType, int period) {
     log.debug("[{}] obv:{}", name, obv)
 
     // co
-    def cos = tradeAssetIndicator.calculate(ohlcvType, period, CoContext.DEFAULT)
+    def cos = indicator.calculate(ohlcvType, period, CoContext.DEFAULT)
     def co = cos.first()
     def coValues = cos.collect{it.value}
     def coValue = coValues.first()
@@ -87,7 +87,7 @@ def analyze(OhlcvType ohlcvType, int period) {
 }
 
 // defines
-def assetName = tradeAssetIndicator.getName()
+def assetName = indicator.getName()
 def holdVotes = []
 
 // minute 1

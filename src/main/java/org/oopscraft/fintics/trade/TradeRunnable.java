@@ -149,15 +149,15 @@ public class TradeRunnable implements Runnable {
                 log.info("Check asset - [{}]", tradeAsset.getName());
 
                 // indicator
-                List<TradeAssetOhlcv> minuteOhlcvs = tradeClient.getMinuteOhlcvs(tradeAsset);
-                List<TradeAssetOhlcv> previousMinuteOhlcvs = getPreviousTradeAssetMinuteOhlcvs(tradeAsset, minuteOhlcvs);
+                List<Ohlcv> minuteOhlcvs = tradeClient.getMinuteOhlcvs(tradeAsset);
+                List<Ohlcv> previousMinuteOhlcvs = getPreviousMinuteOhlcvs(tradeAsset, minuteOhlcvs);
                 minuteOhlcvs.addAll(previousMinuteOhlcvs);
 
-                List<TradeAssetOhlcv> dailyOhlcvs = tradeClient.getDailyOhlcvs(tradeAsset);
-                List<TradeAssetOhlcv> previousDailyOhlcvs = getPreviousTradeAssetDailyOhlcvs(tradeAsset, dailyOhlcvs);
+                List<Ohlcv> dailyOhlcvs = tradeClient.getDailyOhlcvs(tradeAsset);
+                List<Ohlcv> previousDailyOhlcvs = getPreviousDailyOhlcvs(tradeAsset, dailyOhlcvs);
                 dailyOhlcvs.addAll(previousDailyOhlcvs);
 
-                TradeAssetIndicator tradeAssetIndicator = TradeAssetIndicator.builder()
+                Indicator indicator = Indicator.builder()
                         .symbol(tradeAsset.getSymbol())
                         .name(tradeAsset.getName())
                         .minuteOhlcvs(minuteOhlcvs)
@@ -173,7 +173,7 @@ public class TradeRunnable implements Runnable {
                         .logger(log)
                         .dateTime(dateTime)
                         .orderBook(orderBook)
-                        .tradeAssetIndicator(tradeAssetIndicator)
+                        .indicator(indicator)
                         .build();
                 Boolean holdConditionResult = tradeAssetDecider.execute();
                 log.info("holdConditionResult: {}", holdConditionResult);
@@ -224,7 +224,7 @@ public class TradeRunnable implements Runnable {
         return time.isAfter(trade.getStartAt()) && time.isBefore(trade.getEndAt());
     }
 
-    private List<TradeAssetOhlcv> getPreviousTradeAssetMinuteOhlcvs(TradeAsset tradeAsset, List<TradeAssetOhlcv> ohlcvs) {
+    private List<Ohlcv> getPreviousMinuteOhlcvs(TradeAsset tradeAsset, List<Ohlcv> ohlcvs) {
         LocalDateTime lastDateTime = !ohlcvs.isEmpty()
                 ? ohlcvs.get(ohlcvs.size()-1).getDateTime()
                 : LocalDateTime.now();
@@ -236,11 +236,11 @@ public class TradeRunnable implements Runnable {
                         lastDateTime.minusMinutes(1),
                         PageRequest.of(0, 1000))
                 .stream()
-                .map(TradeAssetOhlcv::from)
+                .map(Ohlcv::from)
                 .collect(Collectors.toList());
     }
 
-    private List<TradeAssetOhlcv> getPreviousTradeAssetDailyOhlcvs(TradeAsset tradeAsset, List<TradeAssetOhlcv> ohlcvs) {
+    private List<Ohlcv> getPreviousDailyOhlcvs(TradeAsset tradeAsset, List<Ohlcv> ohlcvs) {
         LocalDateTime lastDateTime = !ohlcvs.isEmpty()
                 ? ohlcvs.get(ohlcvs.size()-1).getDateTime()
                 : LocalDateTime.now();
@@ -252,7 +252,7 @@ public class TradeRunnable implements Runnable {
                         lastDateTime.minusDays(1),
                         PageRequest.of(0, 360)
                 ).stream()
-                .map(TradeAssetOhlcv::from)
+                .map(Ohlcv::from)
                 .collect(Collectors.toList());
     }
 

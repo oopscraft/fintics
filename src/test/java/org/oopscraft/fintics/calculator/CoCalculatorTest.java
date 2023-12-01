@@ -2,7 +2,7 @@ package org.oopscraft.fintics.calculator;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
-import org.oopscraft.fintics.model.TradeAssetOhlcv;
+import org.oopscraft.fintics.model.Ohlcv;
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -22,9 +22,9 @@ public class CoCalculatorTest extends AbstractCalculatorTest {
                 "org/oopscraft/fintics/calculator/CoCalculatorTest.tsv",
                 new String[]{"dateTime","open","high","low","close","volume","CO","Signal"}
         );
-        List<TradeAssetOhlcv> ohlcvs = inputRows.stream()
+        List<Ohlcv> ohlcvs = inputRows.stream()
                 .map(row -> {
-                    return TradeAssetOhlcv.builder()
+                    return Ohlcv.builder()
                             .openPrice(new BigDecimal(row.get("open").replaceAll(",","")))
                             .highPrice(new BigDecimal(row.get("high").replaceAll(",", "")))
                             .lowPrice(new BigDecimal(row.get("low").replaceAll(",","")))
@@ -43,7 +43,7 @@ public class CoCalculatorTest extends AbstractCalculatorTest {
         // then
         for(int i = 0, size = cos.size(); i < size; i ++) {
             Co co = cos.get(i);
-            TradeAssetOhlcv ohlcv = ohlcvs.get(i);
+            Ohlcv ohlcv = ohlcvs.get(i);
             Map<String,String> inputRow = inputRows.get(i);
             BigDecimal originOpenPrice = new BigDecimal(inputRow.get("open").replaceAll(",",""));
             BigDecimal originHighPrice = new BigDecimal(inputRow.get("high").replaceAll(",",""));
