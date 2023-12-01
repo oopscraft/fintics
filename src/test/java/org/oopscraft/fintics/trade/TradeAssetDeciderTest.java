@@ -111,7 +111,6 @@ class TradeAssetDeciderTest {
         assertTrue(result);
     }
 
-    @Disabled
     @Test
     void testHoldConditionCryptocurrency() {
         // given
@@ -134,7 +133,6 @@ class TradeAssetDeciderTest {
         log.info("== result:{}", result);
     }
 
-    @Disabled
     @Test
     void testHoldConditionKospiCall() {
         // given
@@ -157,7 +155,6 @@ class TradeAssetDeciderTest {
         log.info("== result:{}", result);
     }
 
-    @Disabled
     @Test
     void testHoldConditionKospiPut() {
         // given

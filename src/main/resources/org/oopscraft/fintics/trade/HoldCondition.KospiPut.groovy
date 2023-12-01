@@ -2,31 +2,30 @@ package org.oopscraft.fintics.trade
 
 import java.time.LocalTime
 import org.oopscraft.fintics.calculator.*
-import org.oopscraft.fintics.model.Indicator
-import org.oopscraft.fintics.model.OhlcvType
+import org.oopscraft.fintics.model.*
 
 import java.time.LocalTime
 
-def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
+def analyze(OhlcvType ohlcvType, int period) {
     // info
-    def name = indicator.getName() + ':' + ohlcvType + ':' + period
+    def name = tradeAssetIndicator.getName() + ':' + ohlcvType + ':' + period
 
     // shortMa
-    def shortMas = indicator.calculate(ohlcvType, period, EmaContext.of(10))
+    def shortMas = tradeAssetIndicator.calculate(ohlcvType, period, EmaContext.of(10))
     def shortMa = shortMas.first()
     def shortMaValues = shortMas.collect{it.value}
     def shortMaValue = shortMaValues.first()
     log.debug("[{}] shortMa: {}", name, shortMa)
 
     // longMa
-    def longMas = indicator.calculate(ohlcvType, period, EmaContext.of(30))
+    def longMas = tradeAssetIndicator.calculate(ohlcvType, period, EmaContext.of(30))
     def longMa = longMas.first()
     def longMaValues = longMas.collect{it.value}
     def longMaValue = longMaValues.first()
     log.debug("[{}] longMa: {}", name, longMa)
 
     // macd
-    def macds = indicator.calculate(ohlcvType, period, MacdContext.DEFAULT)
+    def macds = tradeAssetIndicator.calculate(ohlcvType, period, MacdContext.DEFAULT)
     def macd = macds.first()
     def macdValues = macds.collect{it.value}
     def macdValue = macdValues.first()
@@ -35,7 +34,7 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     log.debug("[{}] macd: {}", name, macd)
 
     // rsi
-    def rsis = indicator.calculate(ohlcvType, period, RsiContext.DEFAULT)
+    def rsis = tradeAssetIndicator.calculate(ohlcvType, period, RsiContext.DEFAULT)
     def rsi = rsis.first()
     def rsiValues = rsis.collect{it.value}
     def rsiValue = rsiValues.first()
@@ -44,7 +43,7 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     log.debug("[{}] rsi: {}", name, rsi)
 
     // dmi
-    def dmis = indicator.calculate(ohlcvType, period, DmiContext.DEFAULT);
+    def dmis = tradeAssetIndicator.calculate(ohlcvType, period, DmiContext.DEFAULT);
     def dmi = dmis.first();
     def dmiPdis = dmis.collect{it.pdi}
     def dmiPdi = dmiPdis.first();
@@ -55,7 +54,7 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     log.debug("[{}] dmi: {}", name, dmi)
 
     // obv
-    def obvs = indicator.calculate(ohlcvType, period, ObvContext.DEFAULT)
+    def obvs = tradeAssetIndicator.calculate(ohlcvType, period, ObvContext.DEFAULT)
     def obv = obvs.first()
     def obvValues = obvs.collect{it.value}
     def obvValue = obvValues.first()
@@ -64,7 +63,7 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     log.debug("[{}] obv:{}", name, obv)
 
     // co
-    def cos = indicator.calculate(ohlcvType, period, CoContext.DEFAULT)
+    def cos = tradeAssetIndicator.calculate(ohlcvType, period, CoContext.DEFAULT)
     def co = cos.first()
     def coValues = cos.collect{it.value}
     def coValue = coValues.first()
@@ -94,19 +93,19 @@ def assetName = tradeAssetIndicator.getName()
 def holdVotes = []
 
 // minute 1
-def resultOfMinute1 = analyze(tradeAssetIndicator, OhlcvType.MINUTE, 1)
+def resultOfMinute1 = analyze(OhlcvType.MINUTE, 1)
 holdVotes.addAll(resultOfMinute1.values())
 log.debug("[{}] resultOfMinute1: {}", assetName, resultOfMinute1)
 log.info("[{}] resultOfMinute1Average: {}", assetName, resultOfMinute1.values().average())
 
 // minute 3
-def resultOfMinute3 = analyze(tradeAssetIndicator, OhlcvType.MINUTE, 3)
+def resultOfMinute3 = analyze(OhlcvType.MINUTE, 3)
 holdVotes.addAll(resultOfMinute3.values())
 log.debug("[{}] resultOfMinute3: {}", assetName, resultOfMinute3)
 log.info("[{}] resultOfMinute3Average: {}", assetName, resultOfMinute3.values().average())
 
 // minute 5
-def resultOfMinute5 = analyze(tradeAssetIndicator, OhlcvType.MINUTE, 5)
+def resultOfMinute5 = analyze(OhlcvType.MINUTE, 5)
 holdVotes.addAll(resultOfMinute5.values())
 log.debug("[{}] resultOfMinute5: {}", assetName, resultOfMinute5)
 log.info("[{}] resultOfMinute5Average: {}", assetName, resultOfMinute5.values().average())

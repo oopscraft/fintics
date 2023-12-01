@@ -88,7 +88,7 @@
                     let now = new Date();
                     let dailyFrom = dateFns.subDays(now, 30);
                     let dailyTo = new Date(now.getTime());
-                    let minuteFrom = dateFns.subHours(now, 8);
+                    let minuteFrom = dateFns.subHours(now, 12);
                     let minuteTo = new Date(now.getTime());
 
                     // asset chart
@@ -337,7 +337,7 @@
         <!-- ================================== -->
         <!-- start: trade                       -->
         <!-- ================================== -->
-        <div th:each="trade : ${trades}" class="grid-column-12 border-1 padding-1em s-padding-0">
+        <div th:each="trade : ${trades}" class="grid-column-12 border-1 padding-1em">
             <h2>
                 <img class="icon" th:src="@{/static/image/icon-trade.svg}" alt="trade"/>
                 <span data-th-text="${trade.name}"></span>
@@ -348,11 +348,11 @@
                 </a>
             </h2>
             <div class="grid grid-template-columns-12 grid-gap-1em">
-                <div class="grid-column-4">
-                    <div class="grid-column-4 s-grid-column-12" style="height:150px;">
+                <div class="grid-column-5 s-grid-column-12">
+                    <div style="height:150px;">
                         <canvas th:id="'tradeAssetDailyOhlcvsChart-' + ${trade.tradeId}"></canvas>
                     </div>
-                    <div class="grid-column-8 s-grid-column-12" style="height:150px;">
+                    <div style="height:150px;">
                         <canvas th:id="'tradeAssetMinuteOhlcvsChart-' + ${trade.tradeId}"></canvas>
                     </div>
                     <div class="overflow-y-auto overflow-x-auto border-top-1" style="max-height:200px;">
@@ -406,7 +406,7 @@
                         </table>
                     </div>
                 </div>
-                <div class="grid-column-8 s-grid-column-12">
+                <div class="grid-column-7 s-grid-column-12" style="min-height:200px;">
                     <textarea th:id="'tradeLog-' + ${trade.tradeId}" class="tradeLog width-100 height-100"></textarea>
                 </div>
             </div>
