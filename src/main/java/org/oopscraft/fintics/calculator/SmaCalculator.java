@@ -1,9 +1,8 @@
 package org.oopscraft.fintics.calculator;
 
-import org.oopscraft.fintics.model.Ohlcv;
+import org.oopscraft.fintics.model.TradeAssetOhlcv;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -14,9 +13,9 @@ public class SmaCalculator extends Calculator<SmaContext, Sma> {
     }
 
     @Override
-    public List<Sma> calculate(List<Ohlcv> series) {
+    public List<Sma> calculate(List<TradeAssetOhlcv> series) {
         List<BigDecimal> closePrices = series.stream()
-                .map(Ohlcv::getClosePrice)
+                .map(TradeAssetOhlcv::getClosePrice)
                 .toList();
 
         return smas(closePrices, getContext().getPeriod()).stream()

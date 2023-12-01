@@ -3,11 +3,7 @@ package org.oopscraft.fintics.calculator;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.oopscraft.fintics.calculator.AbstractCalculatorTest;
-import org.oopscraft.fintics.calculator.Dmi;
-import org.oopscraft.fintics.calculator.DmiCalculator;
-import org.oopscraft.fintics.calculator.DmiContext;
-import org.oopscraft.fintics.model.Ohlcv;
+import org.oopscraft.fintics.model.TradeAssetOhlcv;
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -24,7 +20,7 @@ class DmiCalculatorTest extends AbstractCalculatorTest {
         List<Map<String,String>> rows = readTsv(
                 "org/oopscraft/fintics/calculator/" + fileName,
                 new String[]{"time","open","high","low","close","adx","pdi","mdi"});
-        List<Ohlcv> ohlcvs = convertOhlcvs(rows, "time^MM/dd,HH:mm", "open", "high", "low", "close", "volume");
+        List<TradeAssetOhlcv> ohlcvs = convertOhlcvs(rows, "time^MM/dd,HH:mm", "open", "high", "low", "close", "volume");
         Collections.reverse(rows);
         Collections.reverse(ohlcvs);
 
@@ -34,7 +30,7 @@ class DmiCalculatorTest extends AbstractCalculatorTest {
         // then
         for(int i = 0; i < dmis.size(); i ++) {
             Map<String,String> row  = rows.get(i);
-            Ohlcv ohlcv = ohlcvs.get(i);
+            TradeAssetOhlcv ohlcv = ohlcvs.get(i);
             Dmi dmi = dmis.get(i);
             log.info("[{}][{}|{}|{}|{}] {}\t{}\t{} | {}\t{}\t{}",
                     i, row.get("time"), row.get("high"), row.get("low"), row.get("close"),

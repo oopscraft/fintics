@@ -2,15 +2,10 @@ package org.oopscraft.fintics.calculator;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
-import org.oopscraft.fintics.model.Ohlcv;
+import org.oopscraft.fintics.model.TradeAssetOhlcv;
 
 import java.math.BigDecimal;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -25,7 +20,7 @@ class RsiCalculatorTest extends AbstractCalculatorTest {
         String filePath = "org/oopscraft/fintics/calculator/RsiCalculatorTest.tsv";
         String[] columnNames = new String[]{"time","open","high","low","close","5","10","20","60","120","RSI","Signal"};
         List<Map<String,String>> rows = readTsv(filePath, columnNames);
-        List<Ohlcv> ohlcvs = convertOhlcvs(rows, "time^MM/dd,HH:mm","open","high","low","close",null);
+        List<TradeAssetOhlcv> ohlcvs = convertOhlcvs(rows, "time^MM/dd,HH:mm","open","high","low","close",null);
         Collections.reverse(rows);
         Collections.reverse(ohlcvs);
 
@@ -35,7 +30,7 @@ class RsiCalculatorTest extends AbstractCalculatorTest {
         // then
         for(int i = 0; i < rows.size(); i ++) {
             Map<String,String> row = rows.get(i);
-            Ohlcv ohlcv = ohlcvs.get(i);
+            TradeAssetOhlcv ohlcv = ohlcvs.get(i);
             BigDecimal originRsi = new BigDecimal(row.get("RSI").replaceAll("[,%]",""));
             BigDecimal originRsiSignal = new BigDecimal(row.get("Signal").replaceAll("[,%]", ""));
             Rsi rsi = rsis.get(i);

@@ -19,8 +19,6 @@ import java.time.ZoneOffset;
 @Deprecated
 public class SimulateService {
 
-    private final IndiceService indiceService;
-
     public Simulate simulate(Simulate simulate) {
 
         Trade trade = simulate.getTrade();

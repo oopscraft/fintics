@@ -1,15 +1,10 @@
 package org.oopscraft.fintics.calculator;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
 import org.junit.jupiter.api.Test;
-import org.oopscraft.fintics.model.Ohlcv;
+import org.oopscraft.fintics.model.TradeAssetOhlcv;
 
-import java.io.InputStream;
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +21,7 @@ class MacdCalculatorTest extends AbstractCalculatorTest {
                 "org/oopscraft/fintics/calculator/MacdCalculatorTest.tsv",
                 new String[]{"time","open","high","low","close","5","10","20","60","120","MACD","Signal","MACD-Oscillator"}
         );
-        List<Ohlcv> ohlcvs = convertOhlcvs(rows, "time:MM/dd,HH:mm", "open", "high", "low", "close", null);
+        List<TradeAssetOhlcv> ohlcvs = convertOhlcvs(rows, "time:MM/dd,HH:mm", "open", "high", "low", "close", null);
         Collections.reverse(rows);
         Collections.reverse(ohlcvs);
 
@@ -36,7 +31,7 @@ class MacdCalculatorTest extends AbstractCalculatorTest {
         // then
         for(int i = 0; i < ohlcvs.size(); i ++) {
             Map<String,String> row = rows.get(i);
-            Ohlcv ohlcv = ohlcvs.get(i);
+            TradeAssetOhlcv ohlcv = ohlcvs.get(i);
             Macd macd = macds.get(i);
             log.debug("[{}] {}/{}/{}, {}/{}/{}", i,
                     row.get("MACD"), row.get("Signal"), row.get("MACD-Oscillator"),

@@ -108,12 +108,6 @@ holdVotes.addAll(resultOfMinute5.values())
 log.debug("[{}] resultOfMinute5: {}", assetName, resultOfMinute5)
 log.info("[{}] resultOfMinute5Average: {}", assetName, resultOfMinute5.values().average())
 
-// minute 10
-def resultOfMinute10 = analyze(tradeAssetIndicator, OhlcvType.MINUTE, 10)
-holdVotes.addAll(resultOfMinute10.values())
-log.debug("[{}] resultOfMinute10: {}", assetName, resultOfMinute10)
-log.info("[{}] resultOfMinute10Average: {}", assetName, resultOfMinute10.values().average())
-
 // decide hold
 def hold = null
 def holdVotesAverage = holdVotes.average()
@@ -121,12 +115,12 @@ log.debug("[{}] holdVotes: {}", assetName, holdVotes)
 log.info("[{}] holdVotesAverage: {}", assetName, holdVotesAverage)
 
 // buy
-if(holdVotesAverage > 75) {
+if(holdVotesAverage > 80) {
     hold = true
 }
 
 // sell
-if(holdVotesAverage < 50) {
+if(holdVotesAverage < 60) {
     hold = false
 }
 

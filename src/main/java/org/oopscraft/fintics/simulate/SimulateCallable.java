@@ -1,14 +1,10 @@
 package org.oopscraft.fintics.simulate;
 
-import lombok.Builder;
 import org.oopscraft.arch4j.core.data.IdGenerator;
-import org.oopscraft.fintics.dao.IndiceOhlcvRepository;
-import org.oopscraft.fintics.dao.QTradeAssetEntity;
 import org.oopscraft.fintics.dao.TradeAssetOhlcvRepository;
 import org.oopscraft.fintics.model.*;
 import org.oopscraft.fintics.trade.TradeAssetDecider;
 import org.springframework.context.ApplicationContext;
-import org.springframework.data.domain.PageRequest;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -20,19 +16,15 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.stream.Collectors;
 
 public class SimulateCallable implements Callable<Simulate> {
 
     private final Simulate simulate;
 
-    private final IndiceOhlcvRepository indiceOhlcvRepository;
-
     private final TradeAssetOhlcvRepository tradeAssetOhlcvRepository;
 
     public SimulateCallable(Simulate simulate, ApplicationContext applicationContext) {
         this.simulate = simulate;
-        this.indiceOhlcvRepository = applicationContext.getBean(IndiceOhlcvRepository.class);
         this.tradeAssetOhlcvRepository = applicationContext.getBean(TradeAssetOhlcvRepository.class);
     }
 
@@ -48,27 +40,10 @@ public class SimulateCallable implements Callable<Simulate> {
         while(dateTime.isAfter(endAt)) {
             dateTime = dateTime.plusSeconds(interval);
 
-            List<IndiceIndicator> indiceIndicators = new ArrayList<>();
-            for(IndiceSymbol symbol : IndiceSymbol.values()) {
-                List<Ohlcv> dailyOhlcvs = indiceOhlcvRepository.findAllBySymbolAndOhlcvType(symbol, OhlcvType.DAILY, dateTime.minusMonths(3), dateTime, PageRequest.of(0,1000)).stream()
-                        .map(Ohlcv::from)
-                        .collect(Collectors.toList());
-                List<Ohlcv> minuteOhlcvs = indiceOhlcvRepository.findAllBySymbolAndOhlcvType(symbol, OhlcvType.MINUTE, dateTime.minusWeeks(1), dateTime, PageRequest.of(0, 1000)).stream()
-                        .map(Ohlcv::from)
-                        .collect(Collectors.toList());
-                IndiceIndicator indiceIndicator = IndiceIndicator.builder()
-                        .symbol(symbol)
-                        .dailyOhlcvs(dailyOhlcvs)
-                        .minuteOhlcvs(minuteOhlcvs)
-                        .build();
-                indiceIndicators.add(indiceIndicator);
-            }
-            // TODO
-
             for(TradeAsset tradeAsset : trade.getTradeAssets()) {
 
-                List<Ohlcv> minuteOhlcvs = new ArrayList<>();
-                List<Ohlcv> dailyOhlcvs = new ArrayList<>();
+                List<TradeAssetOhlcv> minuteOhlcvs = new ArrayList<>();
+                List<TradeAssetOhlcv> dailyOhlcvs = new ArrayList<>();
 
                 OrderBook orderBook = OrderBook.builder()
                         .build();
@@ -80,7 +55,6 @@ public class SimulateCallable implements Callable<Simulate> {
 
                 TradeAssetDecider tradeAssetDecider = TradeAssetDecider.builder()
                         .dateTime(dateTime)
-                        .indiceIndicators(indiceIndicators)
                         .tradeAssetIndicator(tradeAssetIndicator)
                         .build();
 

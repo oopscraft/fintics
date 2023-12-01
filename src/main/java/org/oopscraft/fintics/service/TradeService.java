@@ -4,12 +4,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.data.IdGenerator;
 import org.oopscraft.arch4j.core.data.pbe.PbePropertiesUtil;
-import org.oopscraft.fintics.client.trade.TradeClient;
-import org.oopscraft.fintics.client.trade.TradeClientFactory;
+import org.oopscraft.fintics.client.TradeClient;
+import org.oopscraft.fintics.client.TradeClientFactory;
 import org.oopscraft.fintics.dao.*;
 import org.oopscraft.fintics.model.*;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -112,14 +110,14 @@ public class TradeService {
 
         LocalDateTime minuteMaxDateTime = tradeAssetOhlcvRepository.findMaxDateTimeBySymbolAndOhlcvType(tradeId, symbol, OhlcvType.MINUTE)
                 .orElse(LocalDateTime.now());
-        List<Ohlcv> minuteOhlcvs = tradeAssetOhlcvRepository.findAllBySymbolAndOhlcvType(tradeId, symbol, OhlcvType.MINUTE, minuteMaxDateTime.minusDays(1), minuteMaxDateTime, Pageable.unpaged()).stream()
-                .map(Ohlcv::from)
+        List<TradeAssetOhlcv> minuteOhlcvs = tradeAssetOhlcvRepository.findAllBySymbolAndOhlcvType(tradeId, symbol, OhlcvType.MINUTE, minuteMaxDateTime.minusDays(1), minuteMaxDateTime, Pageable.unpaged()).stream()
+                .map(TradeAssetOhlcv::from)
                 .collect(Collectors.toList());
 
         LocalDateTime dailyMaxDateTime = tradeAssetOhlcvRepository.findMaxDateTimeBySymbolAndOhlcvType(tradeId, symbol, OhlcvType.DAILY)
                 .orElse(LocalDateTime.now());
-        List<Ohlcv> dailyOhlcvs = tradeAssetOhlcvRepository.findAllBySymbolAndOhlcvType(tradeId, symbol, OhlcvType.DAILY, dailyMaxDateTime.minusMonths(1), dailyMaxDateTime, Pageable.unpaged()).stream()
-                .map(Ohlcv::from)
+        List<TradeAssetOhlcv> dailyOhlcvs = tradeAssetOhlcvRepository.findAllBySymbolAndOhlcvType(tradeId, symbol, OhlcvType.DAILY, dailyMaxDateTime.minusMonths(1), dailyMaxDateTime, Pageable.unpaged()).stream()
+                .map(TradeAssetOhlcv::from)
                 .collect(Collectors.toList());
 
         return Optional.ofNullable(TradeAssetIndicator.builder()

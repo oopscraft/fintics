@@ -11,10 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -44,36 +41,6 @@ class TradeAssetDeciderTest {
                 .build();
     }
 
-    List<IndiceIndicator> getTestIndiceIndicators() {
-        List<IndiceIndicator> indiceIndicators = new ArrayList<>();
-        for(IndiceSymbol symbol : IndiceSymbol.values()) {
-            indiceIndicators.add(IndiceIndicator.builder()
-                    .symbol(symbol)
-                    .minuteOhlcvs(new ArrayList<Ohlcv>(){{
-                        add(Ohlcv.builder()
-                                .dateTime(LocalDateTime.now())
-                                .openPrice(BigDecimal.TEN)
-                                .highPrice(BigDecimal.TEN)
-                                .lowPrice(BigDecimal.TEN)
-                                .closePrice(BigDecimal.TEN)
-                                .volume(BigDecimal.TEN)
-                                .build());
-                    }})
-                    .dailyOhlcvs(new ArrayList<Ohlcv>(){{
-                        add(Ohlcv.builder()
-                                .dateTime(LocalDate.now().atTime(0,0,0))
-                                .openPrice(BigDecimal.TEN)
-                                .highPrice(BigDecimal.TEN)
-                                .lowPrice(BigDecimal.TEN)
-                                .closePrice(BigDecimal.TEN)
-                                .volume(BigDecimal.TEN)
-                                .build());
-                    }})
-                    .build());
-        }
-        return indiceIndicators;
-    }
-
     String loadGroovyFileAsString(String fileName) {
         String filePath = "org/oopscraft/fintics/trade/" + fileName;
         StringBuilder stringBuilder = new StringBuilder();
@@ -94,7 +61,7 @@ class TradeAssetDeciderTest {
                 .minuteOhlcvs(IntStream.range(1,501)
                         .mapToObj(i -> {
                             BigDecimal price = BigDecimal.valueOf(1000 - (i*10));
-                            return Ohlcv.builder()
+                            return TradeAssetOhlcv.builder()
                                     .dateTime(LocalDateTime.now().minusMinutes(i))
                                     .openPrice(price)
                                     .highPrice(price)
@@ -107,7 +74,7 @@ class TradeAssetDeciderTest {
                 .dailyOhlcvs(IntStream.range(1,301)
                         .mapToObj(i -> {
                             BigDecimal price = BigDecimal.valueOf(1000 - (i*10));
-                            return Ohlcv.builder()
+                            return TradeAssetOhlcv.builder()
                                     .dateTime(LocalDateTime.now().minusDays(i))
                                     .openPrice(price)
                                     .highPrice(price)
@@ -126,7 +93,6 @@ class TradeAssetDeciderTest {
         Trade trade = getTestTrade();
         TradeAsset tradeAsset = getTestTradeAsset();
         OrderBook orderBook = getTestOrderBook();
-        List<IndiceIndicator> indiceIndicators = getTestIndiceIndicators();
         TradeAssetIndicator assetIndicator = getTestAssetIndicator(tradeAsset);
         trade.setHoldCondition("return true;");
 
@@ -137,7 +103,6 @@ class TradeAssetDeciderTest {
                 .dateTime(LocalDateTime.now())
                 .orderBook(orderBook)
                 .tradeAssetIndicator(assetIndicator)
-                .indiceIndicators(indiceIndicators)
                 .build();
         Boolean result = tradeAssetDecider.execute();
 
@@ -152,7 +117,6 @@ class TradeAssetDeciderTest {
         // given
         Trade trade = getTestTrade();
         TradeAsset tradeAsset = getTestTradeAsset();
-        List<IndiceIndicator> indiceIndicators = getTestIndiceIndicators();
         TradeAssetIndicator assetIndicator = getTestAssetIndicator(tradeAsset);
         String holdCondition = loadGroovyFileAsString("HoldCondition.Cryptocurrency.groovy");
         trade.setHoldCondition(holdCondition);
@@ -163,7 +127,6 @@ class TradeAssetDeciderTest {
                 .logger(log)
                 .dateTime(LocalDateTime.now())
                 .tradeAssetIndicator(assetIndicator)
-                .indiceIndicators(indiceIndicators)
                 .build();
         Boolean result = tradeAssetDecider.execute();
 
@@ -177,7 +140,6 @@ class TradeAssetDeciderTest {
         // given
         Trade trade = getTestTrade();
         TradeAsset tradeAsset = getTestTradeAsset();
-        List<IndiceIndicator> indiceIndicators = getTestIndiceIndicators();
         TradeAssetIndicator assetIndicator = getTestAssetIndicator(tradeAsset);
         String holdCondition = loadGroovyFileAsString("HoldCondition.KospiCall.groovy");
         trade.setHoldCondition(holdCondition);
@@ -188,7 +150,6 @@ class TradeAssetDeciderTest {
                 .logger(log)
                 .dateTime(LocalDateTime.now())
                 .tradeAssetIndicator(assetIndicator)
-                .indiceIndicators(indiceIndicators)
                 .build();
         Boolean result = tradeAssetDecider.execute();
 
@@ -202,7 +163,6 @@ class TradeAssetDeciderTest {
         // given
         Trade trade = getTestTrade();
         TradeAsset tradeAsset = getTestTradeAsset();
-        List<IndiceIndicator> indiceIndicators = getTestIndiceIndicators();
         TradeAssetIndicator assetIndicator = getTestAssetIndicator(tradeAsset);
         String holdCondition = loadGroovyFileAsString("HoldCondition.KospiPut.groovy");
         trade.setHoldCondition(holdCondition);
@@ -213,7 +173,6 @@ class TradeAssetDeciderTest {
                 .logger(log)
                 .dateTime(LocalDateTime.now())
                 .tradeAssetIndicator(assetIndicator)
-                .indiceIndicators(indiceIndicators)
                 .build();
         Boolean result = tradeAssetDecider.execute();
 

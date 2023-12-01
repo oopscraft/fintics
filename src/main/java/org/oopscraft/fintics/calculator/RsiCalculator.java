@@ -1,6 +1,6 @@
 package org.oopscraft.fintics.calculator;
 
-import org.oopscraft.fintics.model.Ohlcv;
+import org.oopscraft.fintics.model.TradeAssetOhlcv;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -16,7 +16,7 @@ public class RsiCalculator extends Calculator<RsiContext, Rsi> {
     }
 
     @Override
-    public List<Rsi> calculate(List<Ohlcv> series) {
+    public List<Rsi> calculate(List<TradeAssetOhlcv> series) {
         // price changes
         List<BigDecimal> priceChanges = new ArrayList<>();
         for (int i = 0; i < series.size(); i++) {

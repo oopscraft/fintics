@@ -1,8 +1,11 @@
 package org.oopscraft.fintics.trade
 
+import java.time.LocalTime
 import org.oopscraft.fintics.calculator.*
 import org.oopscraft.fintics.model.Indicator
 import org.oopscraft.fintics.model.OhlcvType
+
+import java.time.LocalTime
 
 def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     // info
@@ -108,24 +111,6 @@ holdVotes.addAll(resultOfMinute5.values())
 log.debug("[{}] resultOfMinute5: {}", assetName, resultOfMinute5)
 log.info("[{}] resultOfMinute5Average: {}", assetName, resultOfMinute5.values().average())
 
-// minute 10
-def resultOfMinute10 = analyze(tradeAssetIndicator, OhlcvType.MINUTE, 10)
-holdVotes.addAll(resultOfMinute10.values())
-log.debug("[{}] resultOfMinute10: {}", assetName, resultOfMinute10)
-log.info("[{}] resultOfMinute10Average: {}", assetName, resultOfMinute10.values().average())
-
-// USD/KRW (환율 상승 시 매수)
-def resultOfUsdKrw = analyze(indiceIndicators['USD_KRW'], OhlcvType.MINUTE, 10)
-holdVotes.addAll(resultOfUsdKrw.values())
-log.debug("[{}] resultOfUsdKrw: {}", assetName, resultOfUsdKrw)
-log.info("[{}] resultOfUsdKrwAverage: {}", assetName, resultOfUsdKrw.values().average())
-
-// Nasdaq Future (나스닥 선물 하락 시 매수)
-def resultOfNdxFuture = analyze(indiceIndicators['NDX_FUTURE'], OhlcvType.MINUTE, 10)
-holdVotes.addAll(resultOfNdxFuture.values().collect{100 - (it as Number)})
-log.debug("[{}] resultOfNdxFuture: {}", assetName, resultOfNdxFuture)
-log.info("[{}] resultOfNdxFutureAverage: {}", assetName, resultOfNdxFuture.values().average())
-
 // decide hold
 def hold = null
 def holdVotesAverage = holdVotes.average()
@@ -133,12 +118,17 @@ log.debug("[{}] holdVotes: {}", assetName, holdVotes)
 log.info("[{}] holdVotesAverage: {}", assetName, holdVotesAverage)
 
 // buy
-if(holdVotesAverage > 75) {
+if(holdVotesAverage > 80) {
     hold = true
 }
 
 // sell
-if(holdVotesAverage < 50) {
+if(holdVotesAverage < 60) {
+    hold = false
+}
+
+// 장종료 전 매도 (보유 하지 않음)
+if(dateTime.toLocalTime().isAfter(LocalTime.of(15, 15))) {
     hold = false
 }
 

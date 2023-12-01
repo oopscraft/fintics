@@ -2,7 +2,7 @@ package org.oopscraft.fintics.calculator;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
-import org.oopscraft.fintics.model.Ohlcv;
+import org.oopscraft.fintics.model.TradeAssetOhlcv;
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -22,9 +22,9 @@ public class ObvCalculatorTest extends AbstractCalculatorTest {
                 "org/oopscraft/fintics/calculator/ObvCalculatorTest.tsv",
                 new String[]{"dateTime","open","high","low","close","volume","OBV","Signal"}
         );
-        List<Ohlcv> ohlcvs = inputRows.stream()
+        List<TradeAssetOhlcv> ohlcvs = inputRows.stream()
                 .map(row -> {
-                    return Ohlcv.builder()
+                    return TradeAssetOhlcv.builder()
                             .closePrice(new BigDecimal(row.get("close").replaceAll(",","")))
                             .volume(new BigDecimal(row.get("volume").replaceAll(",","")))
                             .build();
@@ -39,7 +39,7 @@ public class ObvCalculatorTest extends AbstractCalculatorTest {
         // then
         for(int i = 0, size = obvs.size(); i < size; i ++) {
             Obv obv = obvs.get(i);
-            Ohlcv ohlcv = ohlcvs.get(i);
+            TradeAssetOhlcv ohlcv = ohlcvs.get(i);
             Map<String,String> inputRow = inputRows.get(i);
             BigDecimal originClosePrice = new BigDecimal(inputRow.get("close").replaceAll(",",""));
             BigDecimal originVolume = new BigDecimal(inputRow.get("volume").replaceAll(",",""));

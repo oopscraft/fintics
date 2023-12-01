@@ -1,7 +1,7 @@
 package org.oopscraft.fintics.calculator;
 
 import lombok.Getter;
-import org.oopscraft.fintics.model.Ohlcv;
+import org.oopscraft.fintics.model.TradeAssetOhlcv;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -16,7 +16,7 @@ public abstract class Calculator<C extends CalculateContext, R extends Calculate
         this.context = context;
     }
 
-    public abstract List<R> calculate(List<Ohlcv> series);
+    public abstract List<R> calculate(List<TradeAssetOhlcv> series);
 
     protected final List<BigDecimal> emas(List<BigDecimal> series, int period) {
         List<BigDecimal> emas = new ArrayList<>();
