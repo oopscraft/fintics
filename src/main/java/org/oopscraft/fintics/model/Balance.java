@@ -16,17 +16,23 @@ public class Balance {
 
     private String accountNo;
 
-    private BigDecimal totalAmount;
+    @Builder.Default
+    private BigDecimal totalAmount = BigDecimal.ZERO;
 
-    private BigDecimal cashAmount;
+    @Builder.Default
+    private BigDecimal cashAmount = BigDecimal.ZERO;
 
-    private BigDecimal purchaseAmount;
+    @Builder.Default
+    private BigDecimal purchaseAmount = BigDecimal.ZERO;
 
-    private BigDecimal valuationAmount;
+    @Builder.Default
+    private BigDecimal valuationAmount = BigDecimal.ZERO;
 
-    private BigDecimal profitAmount;
+    @Builder.Default
+    private BigDecimal profitAmount = BigDecimal.ZERO;
 
-    private BigDecimal realizedProfitAmount;
+    @Builder.Default
+    private BigDecimal realizedProfitAmount = BigDecimal.ZERO;
 
     @Builder.Default
     private List<BalanceAsset> balanceAssets = new ArrayList<>();

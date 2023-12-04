@@ -2,6 +2,7 @@ package org.oopscraft.fintics.model;
 
 import lombok.Builder;
 import lombok.Getter;
+import lombok.ToString;
 import org.oopscraft.fintics.dao.OrderEntity;
 
 import java.math.BigDecimal;
@@ -9,6 +10,7 @@ import java.time.LocalDateTime;
 
 @Builder
 @Getter
+@ToString
 public class Order {
 
     private String orderId;

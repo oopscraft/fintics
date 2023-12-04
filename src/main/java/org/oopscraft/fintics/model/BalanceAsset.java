@@ -20,6 +20,8 @@ public class BalanceAsset {
 
     private BigDecimal orderableQuantity;
 
+    private BigDecimal purchasePrice;
+
     private BigDecimal purchaseAmount;
 
     private BigDecimal valuationAmount;

@@ -2,6 +2,7 @@ package org.oopscraft.fintics.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.oopscraft.arch4j.core.data.IdGenerator;
 import org.oopscraft.fintics.model.*;
 import org.oopscraft.fintics.trade.TradeAssetDecider;
 import org.springframework.stereotype.Service;
@@ -12,46 +13,49 @@ import java.math.RoundingMode;
 import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class SimulateService {
 
-    public Simulate simulate(Simulate simulate) throws InterruptedException {
+    public Simulate simulate(Simulate simulate) {
+        String holdCondition = simulate.getHoldCondition();
         LocalTime startAt = simulate.getStartAt();
         LocalTime endAt = simulate.getEndAt();
         List<Ohlcv> minuteOhlcvs = simulate.getMinuteOhlcvs();
         List<Ohlcv> dailyOhlcvs = simulate.getDailyOhlcvs();
         Double feeRate = simulate.getFeeRate();
         Double bidAskSpread = simulate.getBidAskSpread();
-        List<Boolean> holdConditionResults = new ArrayList<>();
+        LocalDateTime dateTimeFrom = simulate.getDateTimeFrom();
+        LocalDateTime dateTimeTo = simulate.getDateTimeTo();
+        BigDecimal investAmount = simulate.getInvestAmount();
+        Balance balance = simulate.getBalance();
+        List<Order> orders = simulate.getOrders();
 
-        int tradeCount = 0;
-        boolean hold = false;
-        double buyPrice = 0;
-        double profit = 0;
-
-
-        for(int i = minuteOhlcvs.size()-1; i >= 0; i --) {
-            Ohlcv ohlcv = minuteOhlcvs.get(i);
-            LocalDateTime dateTime = ohlcv.getDateTime();
+        balance.setTotalAmount(investAmount);
+        for(LocalDateTime dateTime = dateTimeFrom.plusMinutes(1); dateTime.isBefore(dateTimeTo); dateTime = dateTime.plusMinutes(1)) {
+            // check startAt, endAt time
             LocalTime time = dateTime.toLocalTime();
-            log.info("dateTime:{}", dateTime);
             if(startAt != null && endAt != null) {
                 if(time.isBefore(startAt) || time.isAfter(endAt)) {
                     continue;
                 }
             }
+            log.debug("== dateTime:{}", dateTime);
 
-            int fromIndex = i;
-            int toIndex = minuteOhlcvs.size();
-            List<Ohlcv> currentMinuteOhlcvs = minuteOhlcvs.subList(fromIndex, toIndex);
+            List<Ohlcv> currentMinuteOhlcvs = subtractCurrentMinuteOhlcvs(minuteOhlcvs, dateTime);
+            log.debug("currentMinuteOhlcv:{}", currentMinuteOhlcvs.size());
+
+            List<Ohlcv> currentDailyOhlcvs = subtractCurrentDailyOhlcvs(dailyOhlcvs, dateTime);
+            log.debug("currentDailyOhlcv:{}", currentDailyOhlcvs);
+
+            BigDecimal closePrice = currentMinuteOhlcvs.get(0).getClosePrice();
 
             Trade trade = Trade.builder()
                     .tradeId("simulate")
                     .holdCondition(simulate.getHoldCondition())
-                    .interval(simulate.getInterval())
                     .build();
 
             TradeAsset tradeAsset = TradeAsset.builder()
@@ -63,60 +67,109 @@ public class SimulateService {
                     .symbol(tradeAsset.getSymbol())
                     .name(tradeAsset.getName())
                     .minuteOhlcvs(currentMinuteOhlcvs)
-                    .dailyOhlcvs(dailyOhlcvs)
+                    .dailyOhlcvs(currentDailyOhlcvs)
                     .build();
 
             TradeAssetDecider tradeAssetDecider = TradeAssetDecider.builder()
-                    .holdCondition(simulate.getHoldCondition())
+                    .holdCondition(holdCondition)
                     .logger(log)
                     .dateTime(dateTime)
+                    .balance(balance)
                     .indicator(indicator)
                     .build();
             Boolean holdConditionResult = tradeAssetDecider.execute();
-            holdConditionResults.add(holdConditionResult);
-            log.info("[{}] holdConditionResult: {}", i, holdConditionResult);
+            log.info("[{}] holdConditionResult: {}", dateTime, holdConditionResult);
+
 
             if(holdConditionResult != null) {
                 if (holdConditionResult) {
-                    if (!hold) {
-                        tradeCount ++;
-                        log.info("=".repeat(80));
-                        log.info("== buy[{}]", currentMinuteOhlcvs.get(0).getDateTime());
-                        hold = true;
-                        buyPrice = currentMinuteOhlcvs.get(0).getClosePrice().doubleValue() + bidAskSpread;
-                        log.info("== buyPrice:{}", buyPrice);
-                        profit -= calculateFee(buyPrice, feeRate);
-                        log.info("== profit:{}", profit);
-                        log.info("=".repeat(80));
+                    if(!balance.hasBalanceAsset(tradeAsset.getSymbol())) {
+                        BigDecimal buyAmount = balance.getTotalAmount()
+                                .divide(BigDecimal.valueOf(100), MathContext.DECIMAL32)
+                                .multiply(BigDecimal.valueOf(100))
+                                .setScale(2, RoundingMode.HALF_UP);
+                        BigDecimal askPrice = closePrice
+                                .add(BigDecimal.valueOf(bidAskSpread));
+                        BigDecimal quantity = buyAmount
+                                .divide(askPrice, MathContext.DECIMAL32);
+                        BigDecimal purchaseAmount = askPrice.multiply(quantity);
+                        BalanceAsset balanceAsset = BalanceAsset.builder()
+                                .quantity(quantity)
+                                .orderableQuantity(quantity)
+                                .purchasePrice(askPrice)
+                                .purchaseAmount(purchaseAmount)
+                                .build();
+                        balance.addBalanceAsset(balanceAsset);
+
+                        // add order
+                        Order order = Order.builder()
+                                .orderId(IdGenerator.uuid())
+                                .orderAt(dateTime)
+                                .orderKind(OrderKind.BUY)
+                                .price(askPrice)
+                                .quantity(quantity)
+                                .build();
+                        orders.add(order);
                     }
                 }
                 if (!holdConditionResult) {
-                    if (hold) {
-                        tradeCount ++;
-                        log.info("=".repeat(80));
-                        log.info("== sell[{}]", currentMinuteOhlcvs.get(0).getDateTime());
-                        double sellPrice = currentMinuteOhlcvs.get(0).getClosePrice().doubleValue() - bidAskSpread;
-                        log.info("== buyPrice:{}", buyPrice);
-                        log.info("== sellPrice:{}", sellPrice);
-                        profit -= calculateFee(sellPrice, feeRate);
-                        profit += sellPrice - buyPrice;
-                        log.info("== profit:{}", profit);
-                        hold = false;
-                        buyPrice = 0;
-                        log.info("=".repeat(80));
+                    if(balance.hasBalanceAsset(tradeAsset.getSymbol())) {
+                        BalanceAsset balanceAsset = balance.getBalanceAsset(tradeAsset.getSymbol()).orElseThrow();
+                        BigDecimal bidPrice = closePrice.subtract(BigDecimal.valueOf(bidAskSpread));
+                        BigDecimal quantity = balanceAsset.getQuantity();
+                        BigDecimal purchaseAmount = balanceAsset.getPurchaseAmount();
+                        BigDecimal sellAmount = bidPrice.multiply(quantity);
+                        BigDecimal profitAmount = sellAmount.subtract(purchaseAmount);
+                        balance.setRealizedProfitAmount(balance.getRealizedProfitAmount().add(profitAmount));
+                        balance.removeBalanceAsset(balanceAsset);
+
+                        // add order
+                        Order order = Order.builder()
+                                .orderId(IdGenerator.uuid())
+                                .orderAt(dateTime)
+                                .orderKind(OrderKind.SELL)
+                                .price(bidPrice)
+                                .quantity(quantity)
+                                .build();
+                        orders.add(order);
                     }
+                }
+
+                // updates valuation amount
+                if(balance.hasBalanceAsset(tradeAsset.getSymbol())) {
+                    BalanceAsset balanceAsset = balance.getBalanceAsset(tradeAsset.getSymbol()).orElseThrow();
+                    balanceAsset.setValuationAmount(balanceAsset.getQuantity().multiply(closePrice));
+                    balance.setValuationAmount(balanceAsset.getValuationAmount());
+                }else{
+                    balance.setValuationAmount(BigDecimal.ZERO);
                 }
             }
         }
 
-        log.info("#".repeat(80));
-        log.info("== tradeCount:{}", tradeCount);
-        log.info("== profit:{}", profit);
-        log.info("#".repeat(80));
-
-        simulate.setHoldConditionResults(holdConditionResults);
+        // return
         return simulate;
     }
+
+    private List<Ohlcv> subtractCurrentMinuteOhlcvs(List<Ohlcv> minuteOhlcvs, LocalDateTime dateTime) {
+        return minuteOhlcvs.stream()
+                .filter(ohlcv ->
+                    (ohlcv.getDateTime().isEqual(dateTime) || ohlcv.getDateTime().isBefore(dateTime))
+                    && ohlcv.getDateTime().isAfter(dateTime.minusWeeks(1))
+                )
+                .limit(1000)
+                .collect(Collectors.toList());
+    }
+
+    private List<Ohlcv> subtractCurrentDailyOhlcvs(List<Ohlcv> dailyOhlcvs, LocalDateTime dateTime) {
+        return dailyOhlcvs.stream()
+                .filter(ohlcv ->
+                        (ohlcv.getDateTime().isEqual(dateTime) || ohlcv.getDateTime().isBefore(dateTime))
+                                && ohlcv.getDateTime().isAfter(dateTime.minusYears(10))
+                )
+                .limit(1000)
+                .collect(Collectors.toList());
+    }
+
 
     private Double calculateFee(Double price, Double feeRate) {
         double fee = BigDecimal.valueOf(price)
@@ -125,5 +178,6 @@ public class SimulateService {
                 .doubleValue();
         return fee;
     }
+
 
 }

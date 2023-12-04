@@ -4,6 +4,7 @@ import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyShell;
 import lombok.Builder;
+import org.oopscraft.fintics.model.Balance;
 import org.oopscraft.fintics.model.OrderBook;
 import org.oopscraft.fintics.model.Indicator;
 import org.slf4j.Logger;
@@ -22,14 +23,17 @@ public class TradeAssetDecider {
 
     private final OrderBook orderBook;
 
+    private final Balance balance;
+
     private final Indicator indicator;
 
     @Builder
-    protected TradeAssetDecider(String holdCondition, Logger logger, LocalDateTime dateTime, OrderBook orderBook, Indicator indicator) {
+    protected TradeAssetDecider(String holdCondition, Logger logger, LocalDateTime dateTime, OrderBook orderBook, Balance balance, Indicator indicator) {
         this.holdCondition = holdCondition;
         this.logger = logger;
         this.dateTime = dateTime;
         this.orderBook = orderBook;
+        this.balance = balance;
         this.indicator = indicator;
     }
 
@@ -40,6 +44,7 @@ public class TradeAssetDecider {
         binding.setVariable("log", logger);
         binding.setVariable("dateTime", dateTime);
         binding.setVariable("orderBook", orderBook);
+        binding.setVariable("balance", balance);
         binding.setVariable("indicator", indicator);
         binding.setVariable("tool", new Tool());
         GroovyShell groovyShell = new GroovyShell(groovyClassLoader, binding);

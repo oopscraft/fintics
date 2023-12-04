@@ -4,6 +4,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.awt.image.BandCombineOp;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,8 +16,6 @@ import java.util.List;
 public class Simulate {
 
     private String holdCondition;
-
-    private Integer interval;
 
     private LocalTime startAt;
 
@@ -30,8 +31,16 @@ public class Simulate {
 
     private Double bidAskSpread;
 
+    private LocalDateTime dateTimeFrom;
+
+    private LocalDateTime dateTimeTo;
+
+    private BigDecimal investAmount;
+
     @Builder.Default
-    @Setter
-    private List<Boolean> holdConditionResults = new ArrayList<>();
+    private Balance balance = new Balance();
+
+    @Builder.Default
+    private List<Order> orders = new ArrayList<>();
 
 }

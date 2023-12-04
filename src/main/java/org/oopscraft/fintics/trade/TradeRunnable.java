@@ -173,6 +173,7 @@ public class TradeRunnable implements Runnable {
                         .logger(log)
                         .dateTime(dateTime)
                         .orderBook(orderBook)
+                        .balance(balance)
                         .indicator(indicator)
                         .build();
                 Boolean holdConditionResult = tradeAssetDecider.execute();

@@ -1,0 +1,110 @@
+package org.oopscraft.fintics.trade
+
+import java.time.LocalTime
+import org.oopscraft.fintics.calculator.*
+import org.oopscraft.fintics.model.*
+
+// info
+def ohlcvType = OhlcvType.MINUTE
+def period = 10
+def name = indicator.getName()
+
+// rsi
+def rsis = indicator.calculate(ohlcvType, period, RsiContext.DEFAULT)
+def rsi = rsis.first()
+def rsiValues = rsis.collect{it.value}
+def rsiValue = rsiValues.first()
+def rsiValuePctChange = tool.pctChange(rsiValues.take(3))
+def rsiSignals = rsis.collect{it.signal}
+def rsiSignal = rsiSignals.first()
+log.debug("[{}] rsi: {}", name, rsi)
+
+// shortMa
+def shortMas = indicator.calculate(ohlcvType, period, EmaContext.of(3))
+def shortMa = shortMas.first()
+def shortMaValues = shortMas.collect{it.value}
+def shortMaValue = tool.mean(shortMaValues.take(10))
+def shortMaValuePcdChange = tool.pctChange(shortMaValues.take(10))
+log.debug("[{}] shortMa: {}", name, shortMa)
+
+// longMa
+def longMas = indicator.calculate(ohlcvType, period, EmaContext.of(60))
+def longMa = longMas.first()
+def longMaValues = longMas.collect{it.value}
+def longMaValue = tool.mean(longMaValues.take(5))
+def longMaValuePctChange = tool.pctChange(longMaValues.take(10))
+log.debug("[{}] longMa: {}", name, longMa)
+
+// macd
+def macds = indicator.calculate(ohlcvType, period, MacdContext.of(24,52,18))
+def macd = macds.first()
+def macdValues = macds.collect{it.value}
+def macdValue = tool.mean(macdValues.take(5))
+def macdValuePctChange = tool.pctChange(macdValues.take(10));
+def macdSignals = macds.collect{it.signal}
+def macdSignal = tool.mean(macdSignals.take(5))
+def macdOscillators = macds.collect{it.oscillator}
+def macdOscillator = macdOscillators.first()
+log.debug("[{}] macd: {}", name, macd)
+
+// dmi
+def dmis = indicator.calculate(ohlcvType, period, DmiContext.DEFAULT);
+def dmi = dmis.first();
+def dmiPdis = dmis.collect{it.pdi}
+def dmiPdi = dmiPdis.first();
+def dmiMdis = dmis.collect{it.mdi}
+def dmiMdi = dmiMdis.first();
+def dmiAdxs = dmis.collect{it.adx}
+def dmiAdx = dmiAdxs.first()
+log.debug("[{}] dmi: {}", name, dmi)
+
+// obv
+def obvs = indicator.calculate(ohlcvType, period, ObvContext.DEFAULT)
+def obv = obvs.first()
+def obvValues = obvs.collect{it.value}
+def obvValue = obvValues.first()
+def obvSignals = obv.collect{it.signal}
+def obvSignal = obvSignals.first();
+log.debug("[{}] obv:{}", name, obv)
+
+// co
+def cos = indicator.calculate(ohlcvType, period, CoContext.DEFAULT)
+def co = cos.first()
+def coValues = cos.collect{it.value}
+def coValue = coValues.first()
+def coValuePctChange = tool.pctChange(coValues.take(3))
+def coSignals = cos.collect{it.signal}
+def coSignal = coSignals.first()
+log.debug("[{}] co: {}", name, co)
+
+// hold
+def hold = null;
+
+// buy
+if(rsiValue < 30 && rsiValue > rsiSignal) {
+    if (coValue > 0 && coValue > coSignal) {
+        hold = true
+    }
+}
+
+// sell
+if(rsiValue > 70 && rsiValue < rsiSignal) {
+    if(coValue < 0 && coValue < coSignal) {
+        hold = false;
+    }
+}
+
+// TODO loss cut
+if(balance.hasBalanceAsset(indicator.getSymbol())) {
+    def balanceAsset = balance.getBalanceAsset(indicator.getSymbol());
+    log.info("########### balanceAsset:{}", balanceAsset);
+}
+
+
+// 장종료 전 매도 (보유 하지 않음)
+if(dateTime.toLocalTime().isAfter(LocalTime.of(15, 15))) {
+//    hold = false
+}
+
+// return
+return hold;
