@@ -7,7 +7,13 @@
     <script th:inline="javascript">
         Chart.defaults.font.size = 8;
         Chart.defaults.animation = false;
+
+        const indices = /*[[${indices}]]*/[];
         const trades = /*[[${trades}]]*/[];
+
+        let indiceDailyOhlcvsChart = null;
+        let indiceMinuteOhlcvsChart = null;
+
         const tradeAssetDailyOhlcvsChartMap = new Map();
         const tradeAssetMinuteOhlcvsChartMap = new Map();
         const tradeBalanceMap = new Map();
@@ -21,6 +27,61 @@
             tradeOrdersMap.set(trade.tradeId, new duice.ArrayProxy([]));
         });
         const tradeLogEventSourceMap = new Map();
+
+        function initializeIndiceMonitor() {
+            indiceDailyOhlcvsChart = createDailyOhlcvsChart('indiceDailyOhlcvsChart');
+            indiceMinuteOhlcvsChart = createMinuteOhlcvsChart('indiceMinuteOhlcvsChart');
+        }
+
+        function getIndiceMonitor() {
+            const promises = indices.map(async indice => {
+                let url = new URL(`${_apiUrl}/v1/indice/${indice.symbol}/indicator`, document.location.origin);
+                return await _fetch(url);
+            });
+            Promise.all(promises)
+                .then(responses => {
+                    return Promise.all(responses.map(
+                        response => response.json()));
+                }).then(indiceIndicators => {
+                    // define date from
+                    let now = new Date();
+                    let dailyFrom = dateFns.subDays(now, 30);
+                    let dailyTo = new Date(now.getTime());
+                    let minuteFrom = dateFns.subHours(now, 12);
+                    let minuteTo = new Date(now.getTime());
+
+                    // indice chart
+                    indiceDailyOhlcvsChart.data.datasets.length = 0;
+                    indiceMinuteOhlcvsChart.data.datasets.length = 0;
+                    for(let i = 0; i < indiceIndicators.length; i ++) {
+                        let indiceIndicator = indiceIndicators[i];
+
+                        // daily
+                        let dailyOhlcvs = indiceIndicator['dailyOhlcvs'];
+                        let dailyTimeSeries = createTimeSeries(dailyFrom, dailyTo, dailyOhlcvs, 60000*60*24);
+                        let dailyDataset = {
+                            label: indiceIndicator.name,
+                            data: dailyTimeSeries,
+                            borderWidth: 1,
+                            pointStyle: false
+                        };
+                        indiceDailyOhlcvsChart.data.datasets.push(dailyDataset);
+
+                        // minute
+                        let minuteOhlcvs = indiceIndicator['minuteOhlcvs'];
+                        let minuteTimeSeries = createTimeSeries(minuteFrom, minuteTo, minuteOhlcvs, 60000);
+                        let minuteDataset = {
+                            label: indiceIndicator.name,
+                            data: minuteTimeSeries,
+                            borderWidth: 1,
+                            pointStyle: false
+                        };
+                        indiceMinuteOhlcvsChart.data.datasets.push(minuteDataset);
+                    }
+                    indiceDailyOhlcvsChart.update();
+                    indiceMinuteOhlcvsChart.update();
+                });
+        }
 
         function initializeTradeMonitors() {
             trades.forEach(trade => {
@@ -293,11 +354,14 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            initializeIndiceMonitor();
             initializeTradeMonitors();
 
             // refresh
+            getIndiceMonitor();
             getTradeMonitors();
             setInterval(function() {
+                getIndiceMonitor();
                 getTradeMonitors();
             }, 1000*60);
         });
@@ -333,6 +397,26 @@
     <!-- ====================================== -->
 
     <div class="flex flex-direction-column gap-1em">
+        <!-- ================================== -->
+        <!-- start: indice                      -->
+        <!-- ================================== -->
+        <div class="border-1 padding-1em">
+            <h2>
+                <img class="icon" th:src="@{/static/image/icon-indice.svg}" alt="indice"/>
+                <span data-th-text="#{fintics.Indice}"></span>
+            </h2>
+            <div class="grid grid-template-columns-12 padding-1em s-padding-0">
+                <div class="grid-column-4 s-grid-column-12" style="height:150px;">
+                    <canvas id="indiceDailyOhlcvsChart"></canvas>
+                </div>
+                <div class="grid-column-8 s-grid-column-12" style="height:150px;">
+                    <canvas id="indiceMinuteOhlcvsChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <!-- ================================== -->
+        <!-- end: indice                        -->
+        <!-- ================================== -->
 
         <!-- ================================== -->
         <!-- start: trade                       -->

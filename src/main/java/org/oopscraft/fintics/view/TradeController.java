@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.oopscraft.arch4j.core.alarm.Alarm;
 import org.oopscraft.arch4j.core.alarm.AlarmSearch;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
-import org.oopscraft.fintics.client.TradeClientDefinitionRegistry;
+import org.oopscraft.fintics.client.trade.TradeClientDefinitionRegistry;
 import org.oopscraft.fintics.service.TradeService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;

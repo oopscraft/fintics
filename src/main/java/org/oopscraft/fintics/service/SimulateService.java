@@ -63,7 +63,7 @@ public class SimulateService {
                     .name("simulate TradeAsset")
                     .build();
 
-            Indicator indicator = Indicator.builder()
+            AssetIndicator assetIndicator = AssetIndicator.builder()
                     .symbol(tradeAsset.getSymbol())
                     .name(tradeAsset.getName())
                     .minuteOhlcvs(currentMinuteOhlcvs)
@@ -75,11 +75,11 @@ public class SimulateService {
                     .logger(log)
                     .dateTime(dateTime)
                     .balance(balance)
-                    .indicator(indicator)
+                    .indiceIndicators(new ArrayList<IndiceIndicator>())
+                    .assetIndicator(assetIndicator)
                     .build();
             Boolean holdConditionResult = tradeAssetDecider.execute();
             log.info("[{}] holdConditionResult: {}", dateTime, holdConditionResult);
-
 
             if(holdConditionResult != null) {
                 if (holdConditionResult) {

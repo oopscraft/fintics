@@ -3,6 +3,7 @@ package org.oopscraft.fintics.client.upbit;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.oopscraft.fintics.client.trade.upbit.UpbitTradeClient;
 import org.oopscraft.fintics.model.*;
 
 import java.math.BigDecimal;

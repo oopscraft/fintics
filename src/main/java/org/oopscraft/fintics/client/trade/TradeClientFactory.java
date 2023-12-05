@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.client;
+package org.oopscraft.fintics.client.trade;
 
 import org.oopscraft.arch4j.core.data.pbe.PbePropertiesUtil;
 import org.oopscraft.fintics.model.Trade;

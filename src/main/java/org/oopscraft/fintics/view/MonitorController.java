@@ -1,7 +1,9 @@
 package org.oopscraft.fintics.view;
 
 import lombok.RequiredArgsConstructor;
+import org.oopscraft.fintics.model.Indice;
 import org.oopscraft.fintics.model.Trade;
+import org.oopscraft.fintics.service.IndiceService;
 import org.oopscraft.fintics.service.TradeService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -17,11 +19,15 @@ import java.util.List;
 @PreAuthorize("hasAuthority('MONITOR')")
 public class MonitorController {
 
+    private final IndiceService indiceService;
+
     private final TradeService tradeService;
 
     @GetMapping
     public ModelAndView monitor() {
         ModelAndView modelAndView = new ModelAndView("monitor.html");
+        List<Indice> indices = indiceService.getIndices();
+        modelAndView.addObject("indices", indices);
         List<Trade> trades = tradeService.getTrades();
         modelAndView.addObject("trades", trades);
         return modelAndView;

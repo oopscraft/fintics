@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.client.upbit;
+package org.oopscraft.fintics.client.trade.upbit;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -10,7 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.data.IdGenerator;
 import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
 import org.oopscraft.arch4j.core.support.ValueMap;
-import org.oopscraft.fintics.client.TradeClient;
+import org.oopscraft.fintics.client.trade.TradeClient;
 import org.oopscraft.fintics.model.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.RequestEntity;

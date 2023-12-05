@@ -4,8 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.data.IdGenerator;
 import org.oopscraft.arch4j.core.data.pbe.PbePropertiesUtil;
-import org.oopscraft.fintics.client.TradeClient;
-import org.oopscraft.fintics.client.TradeClientFactory;
+import org.oopscraft.fintics.client.trade.TradeClient;
+import org.oopscraft.fintics.client.trade.TradeClientFactory;
 import org.oopscraft.fintics.dao.*;
 import org.oopscraft.fintics.model.*;
 import org.springframework.data.domain.Pageable;
@@ -101,7 +101,7 @@ public class TradeService {
         }
     }
 
-    public Optional<Indicator> getTradeAssetIndicator(String tradeId, String symbol) {
+    public Optional<AssetIndicator> getTradeAssetIndicator(String tradeId, String symbol) {
         Trade trade = getTrade(tradeId).orElseThrow();
         TradeAsset tradeAsset = trade.getTradeAssets().stream()
                 .filter(e -> Objects.equals(e.getSymbol(), symbol))
@@ -120,7 +120,7 @@ public class TradeService {
                 .map(Ohlcv::from)
                 .collect(Collectors.toList());
 
-        return Optional.ofNullable(Indicator.builder()
+        return Optional.ofNullable(AssetIndicator.builder()
                 .symbol(tradeAsset.getSymbol())
                 .name(tradeAsset.getName())
                 .minuteOhlcvs(minuteOhlcvs)

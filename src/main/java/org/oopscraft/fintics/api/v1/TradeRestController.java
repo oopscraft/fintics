@@ -148,12 +148,12 @@ public class TradeRestController {
 
     @Cacheable(cacheNames = TRADE_REST_CONTROLLER_GET_TRADE_ASSET_INDICATORS, key = "#tradeId")
     @GetMapping("{tradeId}/indicator")
-    public ResponseEntity<List<TradeAssetIndicatorResponse>> getTradeAssetIndicators(@PathVariable("tradeId") String tradeId) {
+    public ResponseEntity<List<AssetIndicatorResponse>> getTradeAssetIndicators(@PathVariable("tradeId") String tradeId) {
         Trade trade = tradeService.getTrade(tradeId).orElseThrow();
-        List<TradeAssetIndicatorResponse> tradeAssetIndicatorResponses = new ArrayList<>();
+        List<AssetIndicatorResponse> tradeAssetIndicatorResponses = new ArrayList<>();
         for(TradeAsset tradeAsset : trade.getTradeAssets()) {
-            Indicator tradeAssetIndicator = tradeService.getTradeAssetIndicator(tradeId, tradeAsset.getSymbol()).orElseThrow();
-            tradeAssetIndicatorResponses.add(TradeAssetIndicatorResponse.from(tradeAssetIndicator));
+            AssetIndicator assetIndicator = tradeService.getTradeAssetIndicator(tradeId, tradeAsset.getSymbol()).orElseThrow();
+            tradeAssetIndicatorResponses.add(AssetIndicatorResponse.from(assetIndicator));
         }
         return ResponseEntity.ok(tradeAssetIndicatorResponses);
     }

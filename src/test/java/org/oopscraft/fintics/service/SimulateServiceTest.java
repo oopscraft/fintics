@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 @SpringBootTest(classes = FinticsConfiguration.class)
 @RequiredArgsConstructor
 @Slf4j
-@Disabled
 class SimulateServiceTest extends CoreTestSupport {
 
     private final SimulateService simulateService;
@@ -94,11 +93,11 @@ class SimulateServiceTest extends CoreTestSupport {
         simulate.getOrders().forEach(el -> log.warn("{}", el));
     }
 
-//    @Disabled
+    @Disabled
     @Test
     void simulate_202311_KODEX레버리지() {
         simulate(
-                "org/oopscraft/fintics/trade/HoldCondition.groovy",
+                "org/oopscraft/fintics/trade/HoldCondition.KospiCall.groovy",
                 "org/oopscraft/fintics/service/SimulateServiceTest.202311.KODEX레버리지.minuteOhlcvs.tsv",
                 "org/oopscraft/fintics/service/SimulateServiceTest.202311.KODEX레버리지.dailyOhlcvs.tsv",
                 LocalDateTime.of(2023,11,21,0,0,0),
@@ -106,11 +105,11 @@ class SimulateServiceTest extends CoreTestSupport {
         );
     }
 
-//    @Disabled
+    @Disabled
     @Test
     void simulate_202311_KODEX코스닥150레버리지() {
         simulate(
-                "org/oopscraft/fintics/trade/HoldCondition.groovy",
+                "org/oopscraft/fintics/trade/HoldCondition.KospiCall.groovy",
                 "org/oopscraft/fintics/service/SimulateServiceTest.202311.KODEX코스닥150레버리지.minuteOhlcvs.tsv",
                 "org/oopscraft/fintics/service/SimulateServiceTest.202311.KODEX코스닥150레버리지.dailyOhlcvs.tsv",
                 LocalDateTime.of(2023,11,21,0,0,0),
@@ -118,11 +117,11 @@ class SimulateServiceTest extends CoreTestSupport {
         );
     }
 
-//    @Disabled
+    @Disabled
     @Test
     void simulate_202311_KODEX코스닥150선물인버스() {
         simulate(
-                "org/oopscraft/fintics/trade/HoldCondition.groovy",
+                "org/oopscraft/fintics/trade/HoldCondition.KospiPut.groovy",
                 "org/oopscraft/fintics/service/SimulateServiceTest.202311.KODEX코스닥150선물인버스.minuteOhlcvs.tsv",
                 "org/oopscraft/fintics/service/SimulateServiceTest.202311.KODEX코스닥150선물인버스.dailyOhlcvs.tsv",
                 LocalDateTime.of(2023,11,21,0,0,0),
@@ -130,11 +129,11 @@ class SimulateServiceTest extends CoreTestSupport {
         );
     }
 
-//    @Disabled
+    @Disabled
     @Test
     void simulate_202311_KODEX200선물인버스2X() {
         simulate(
-                "org/oopscraft/fintics/trade/HoldCondition.groovy",
+                "org/oopscraft/fintics/trade/HoldConditionKospiPut.groovy",
                 "org/oopscraft/fintics/service/SimulateServiceTest.202311.KODEX200선물인버스2X.minuteOhlcvs.tsv",
                 "org/oopscraft/fintics/service/SimulateServiceTest.202311.KODEX200선물인버스2X.dailyOhlcvs.tsv",
                 LocalDateTime.of(2023,11,21,0,0,0),

@@ -1,7 +1,7 @@
-package org.oopscraft.fintics.client.kis;
+package org.oopscraft.fintics.client.trade.kis;
 
-import org.oopscraft.fintics.client.TradeClient;
-import org.oopscraft.fintics.client.TradeClientDefinition;
+import org.oopscraft.fintics.client.trade.TradeClient;
+import org.oopscraft.fintics.client.trade.TradeClientDefinition;
 import org.springframework.stereotype.Component;
 
 import java.util.StringJoiner;

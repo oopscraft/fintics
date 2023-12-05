@@ -2,37 +2,32 @@ package org.oopscraft.fintics.dao;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.oopscraft.arch4j.core.data.SystemFieldEntity;
+import org.oopscraft.fintics.model.IndiceSymbol;
 import org.oopscraft.fintics.model.OhlcvType;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "fintics_trade_asset_ohlcv")
-@IdClass(TradeAssetOhlcvEntity.Pk.class)
+@Table(name = "fintics_indice_ohlcv")
+@IdClass(IndiceOhlcvEntity.Pk.class)
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class TradeAssetOhlcvEntity extends OhlcvEntity {
+public class IndiceOhlcvEntity extends OhlcvEntity {
 
     public static class Pk implements Serializable {
-        private String tradeId;
-        private String symbol;
+        private IndiceSymbol symbol;
         private OhlcvType ohlcvType;
         private LocalDateTime dateTime;
     }
 
     @Id
-    @Column(name = "trade_id", length = 32)
-    private String tradeId;
-
-    @Id
     @Column(name = "symbol", length = 32)
-    private String symbol;
+    @Enumerated(EnumType.STRING)    // @Id is converter not work
+    private IndiceSymbol symbol;
 
 }

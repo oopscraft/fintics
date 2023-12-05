@@ -3,7 +3,7 @@ package org.oopscraft.fintics.trade
 import org.oopscraft.fintics.calculator.*
 import org.oopscraft.fintics.model.*
 
-def analyze(OhlcvType ohlcvType, int period) {
+def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     // info
     def name = indicator.getName() + ':' + ohlcvType + ':' + period
 
@@ -33,14 +33,14 @@ def analyze(OhlcvType ohlcvType, int period) {
     def macdSignal = macdSignals.first()
     def macdOscillators = macds.collect{it.oscillator}
     def macdOscillator = macdOscillators.first()
-    log.info("[{}] macd: {}", name, macd)
+    log.debug("[{}] macd: {}", name, macd)
 
     // rsi
     def rsis = indicator.calculate(ohlcvType, period, RsiContext.DEFAULT)
     def rsi = rsis.first()
     def rsiValues = rsis.collect{it.value}
     def rsiValue = rsiValues.first()
-    def rsiValuePctChange = tool.pctChange(rsiValues.take(10));
+    def rsiValuePctChange = tool.pctChange(rsiValues.take(10))
     def rsiSignals = rsis.collect{it.signal}
     def rsiSignal = rsiSignals.first()
     log.debug("[{}] rsi: {}", name, rsi)
@@ -76,70 +76,52 @@ def analyze(OhlcvType ohlcvType, int period) {
 
     // result
     def result = [:]
-//    result.shortMaValuePctChange = (shortMaValuePcdChange > 0.1 ? 100 : 0)
-//    result.longMaValuePctChange = (longMaValuePctChange > 0.1 ? 100 : 0)
-//    result.shortMaValueOverLongMaValue = (shortMaValue > longMaValue ? 100 : 0)
-//    result.macdValue = (macdValue > 0 ? 100 : 0)
-//    result.macdValuePctChange = (macdValuePctChange > 0.1 ? 100 : 0)
-//    result.macdOscillator = (macdOscillator > 0 ? 100 : 0)
-//    result.rsiValue = (rsiValue > 50 ? 100 : 0)
-//    result.rsiValueOverSignal = (rsiValue > rsiSignal ? 100 : 0)
-//    result.dmiPdiOverMdi = (dmiPdi > dmiMdi ? 100 : 0)
-//    result.dmiAdx = (dmiAdx > 25 ? 100 : 0);
-//    result.dmiAdx = (dmiPdi > dmiMdi && dmiAdx > 25 ? 100 : 0)
-//    result.obvValue = (obvValue > 0 ? 100 : 0)
-//    result.obvValueOverSignal = (obvValue > obvSignal ? 100 : 0)
-//    result.coValueOverSignal = (coValue > coSignal ? 100 : 0)
-
-    // test
-//    result.test = 50
-//    if(rsiValue < 30 && rsiValuePctChange > 0.0) {
-//        result.test = 100
-//    }
-//    if(rsiValue > 70 && rsiValuePctChange < 0.0) {
-//        result.test = 0
-//    }
-
-    // test2
-    result.test = 50
-    if(rsiValue < 40 && rsiValue > rsiSignal) {
-        result.test = 100
-    }
-    if(rsiValue > 60 && rsiValue < rsiSignal) {
-        result.test = 0
-    }
+    result.shortMaValuePctChange = (shortMaValuePcdChange > 0.1 ? 100 : 0)
+    result.longMaValuePctChange = (longMaValuePctChange > 0.1 ? 100 : 0)
+    result.shortMaValueOverLongMaValue = (shortMaValue > longMaValue ? 100 : 0)
+    result.macdValue = (macdValue > 0 ? 100 : 0)
+    result.macdValuePctChange = (macdValuePctChange > 0.1 ? 100 : 0)
+    result.macdOscillator = (macdOscillator > 0 ? 100 : 0)
+    result.rsiValue = (rsiValue > 50 ? 100 : 0)
+    result.rsiValueOverSignal = (rsiValue > rsiSignal ? 100 : 0)
+    result.dmiPdiOverMdi = (dmiPdi > dmiMdi ? 100 : 0)
+    result.dmiAdx = (dmiAdx > 25 ? 100 : 0);
+    result.dmiAdx = (dmiPdi > dmiMdi && dmiAdx > 25 ? 100 : 0)
+    result.obvValue = (obvValue > 0 ? 100 : 0)
+    result.obvValueOverSignal = (obvValue > obvSignal ? 100 : 0)
+    result.coValueOverSignal = (coValue > coSignal ? 100 : 0)
 
     // return
     return result
 }
 
 // defines
-def assetName = indicator.getName()
+def assetName = assetIndicator.getName()
 def holdVotes = []
 
 // minute 1
-def resultOfMinute1 = analyze(OhlcvType.MINUTE, 1)
+def resultOfMinute1 = analyze(assetIndicator, OhlcvType.MINUTE, 1)
 holdVotes.addAll(resultOfMinute1.values())
 log.debug("[{}] resultOfMinute1: {}", assetName, resultOfMinute1)
 log.info("[{}] resultOfMinute1Average: {}", assetName, resultOfMinute1.values().average())
 
-//// minute 3
-//def resultOfMinute3 = analyze(OhlcvType.MINUTE, 3)
-//holdVotes.addAll(resultOfMinute3.values())
-//log.debug("[{}] resultOfMinute3: {}", assetName, resultOfMinute3)
-//log.info("[{}] resultOfMinute3Average: {}", assetName, resultOfMinute3.values().average())
-//
-//// minute 5
-//def resultOfMinute5 = analyze(OhlcvType.MINUTE, 5)
-//holdVotes.addAll(resultOfMinute5.values())
-//log.debug("[{}] resultOfMinute5: {}", assetName, resultOfMinute5)
-//log.info("[{}] resultOfMinute5Average: {}", assetName, resultOfMinute5.values().average())
+// minute 3
+def resultOfMinute3 = analyze(assetIndicator, OhlcvType.MINUTE, 3)
+holdVotes.addAll(resultOfMinute3.values())
+log.debug("[{}] resultOfMinute3: {}", assetName, resultOfMinute3)
+log.info("[{}] resultOfMinute3Average: {}", assetName, resultOfMinute3.values().average())
 
-//// minute 10
-//def resultOfMinute10 = analyze(OhlcvType.MINUTE, 10)
-//holdVotes.addAll(resultOfMinute10.values())
-//log.debug("[{}] resultOfMinute10: {}", assetName, resultOfMinute10)
-//log.info("[{}] resultOfMinute10Average: {}", assetName, resultOfMinute10.values().average())
+// minute 5
+def resultOfMinute5 = analyze(assetIndicator, OhlcvType.MINUTE, 5)
+holdVotes.addAll(resultOfMinute5.values())
+log.debug("[{}] resultOfMinute5: {}", assetName, resultOfMinute5)
+log.info("[{}] resultOfMinute5Average: {}", assetName, resultOfMinute5.values().average())
+
+// minute 10
+def resultOfMinute10 = analyze(assetIndicator, OhlcvType.MINUTE, 10)
+holdVotes.addAll(resultOfMinute10.values())
+log.debug("[{}] resultOfMinute10: {}", assetName, resultOfMinute10)
+log.info("[{}] resultOfMinute10Average: {}", assetName, resultOfMinute10.values().average())
 
 // decide hold
 def hold = null

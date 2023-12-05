@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.client;
+package org.oopscraft.fintics.client.trade;
 
 import org.springframework.beans.factory.Aware;
 

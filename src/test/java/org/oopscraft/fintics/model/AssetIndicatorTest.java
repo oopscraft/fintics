@@ -14,11 +14,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 @Slf4j
-public class TradeAssetIndicatorTest {
+public class AssetIndicatorTest {
 
     @Test
     void calculate() {
-        Indicator indicator = Indicator.builder()
+        AssetIndicator assetIndicator = AssetIndicator.builder()
                 .minuteOhlcvs(new ArrayList<Ohlcv>(){{
                     add(Ohlcv.builder()
                             .closePrice(BigDecimal.ONE)
@@ -29,7 +29,7 @@ public class TradeAssetIndicatorTest {
                 }})
                 .build();
 
-        List<Sma> results = indicator.calculate(OhlcvType.MINUTE, 1, SmaContext.DEFAULT);
+        List<Sma> results = assetIndicator.calculate(OhlcvType.MINUTE, 1, SmaContext.DEFAULT);
         results.forEach(sma -> log.info("{}", sma));
     }
 
@@ -44,10 +44,10 @@ public class TradeAssetIndicatorTest {
         }};
 
         // when
-        Indicator indicator = Indicator.builder()
+        AssetIndicator assetIndicator = AssetIndicator.builder()
                 .minuteOhlcvs(minuteOhlcvs)
                 .build();
-        List<Ohlcv> resampleOhlcvs = indicator.resample(OhlcvType.MINUTE, 3);
+        List<Ohlcv> resampleOhlcvs = assetIndicator.resample(OhlcvType.MINUTE, 3);
 
         // then
         log.info("resampleOhlcvs:{}", resampleOhlcvs);
@@ -70,10 +70,10 @@ public class TradeAssetIndicatorTest {
         }};
 
         // when
-        Indicator indicator = Indicator.builder()
+        AssetIndicator assetIndicator = AssetIndicator.builder()
                 .minuteOhlcvs(minuteOhlcvs)
                 .build();
-        List<Ohlcv> resampleOhlcvs = indicator.resample(OhlcvType.MINUTE, 3);
+        List<Ohlcv> resampleOhlcvs = assetIndicator.resample(OhlcvType.MINUTE, 3);
 
         // then
         log.info("resampleOhlcvs:{}", resampleOhlcvs);
@@ -99,7 +99,7 @@ public class TradeAssetIndicatorTest {
         }};
 
         // when
-        Indicator indicator = Indicator.builder()
+        AssetIndicator indicator = AssetIndicator.builder()
                 .minuteOhlcvs(minuteOhlcvs)
                 .build();
         List<Ohlcv> resampleOhlcvs = indicator.resample(OhlcvType.MINUTE, 3);
@@ -120,6 +120,5 @@ public class TradeAssetIndicatorTest {
         assertTrue(ohlcv2.getClosePrice().longValue() == 1050);
         assertTrue(ohlcv2.getVolume().longValue() == 300);
     }
-
 
 }

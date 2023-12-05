@@ -1,9 +1,9 @@
-package org.oopscraft.fintics.trade;
+package org.oopscraft.fintics.collector;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.oopscraft.fintics.client.TradeClient;
-import org.oopscraft.fintics.client.TradeClientFactory;
+import org.oopscraft.fintics.client.trade.TradeClient;
+import org.oopscraft.fintics.client.trade.TradeClientFactory;
 import org.oopscraft.fintics.dao.TradeAssetOhlcvEntity;
 import org.oopscraft.fintics.dao.TradeAssetOhlcvRepository;
 import org.oopscraft.fintics.dao.TradeEntity;

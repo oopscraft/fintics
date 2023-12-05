@@ -2,6 +2,7 @@ package org.oopscraft.fintics.model;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.oopscraft.fintics.dao.OhlcvEntity;
 import org.oopscraft.fintics.dao.TradeAssetOhlcvEntity;
 
 import java.math.BigDecimal;
@@ -43,15 +44,15 @@ public class Ohlcv {
                 .build();
     }
 
-    public static Ohlcv from(TradeAssetOhlcvEntity tradeAssetOhlcvEntity) {
+    public static Ohlcv from(OhlcvEntity ohlcvEntity) {
         return Ohlcv.builder()
-                .ohlcvType(tradeAssetOhlcvEntity.getOhlcvType())
-                .dateTime(tradeAssetOhlcvEntity.getDateTime())
-                .openPrice(tradeAssetOhlcvEntity.getOpenPrice())
-                .highPrice(tradeAssetOhlcvEntity.getHighPrice())
-                .lowPrice(tradeAssetOhlcvEntity.getLowPrice())
-                .closePrice(tradeAssetOhlcvEntity.getClosePrice())
-                .volume(tradeAssetOhlcvEntity.getVolume())
+                .ohlcvType(ohlcvEntity.getOhlcvType())
+                .dateTime(ohlcvEntity.getDateTime())
+                .openPrice(ohlcvEntity.getOpenPrice())
+                .highPrice(ohlcvEntity.getHighPrice())
+                .lowPrice(ohlcvEntity.getLowPrice())
+                .closePrice(ohlcvEntity.getClosePrice())
+                .volume(ohlcvEntity.getVolume())
                 .build();
     }
 

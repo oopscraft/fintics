@@ -16,11 +16,7 @@ import java.util.List;
 
 @SuperBuilder
 @Getter
-public class Indicator {
-
-    private final String symbol;
-
-    private final String name;
+public abstract class Indicator {
 
     @Builder.Default
     @Getter

@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.client;
+package org.oopscraft.fintics.client.trade;
 
 import lombok.Getter;
 import org.springframework.beans.BeansException;

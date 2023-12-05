@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.client.ebest;
+package org.oopscraft.fintics.client.trade.ebest;
 
 /**
  * TODO
