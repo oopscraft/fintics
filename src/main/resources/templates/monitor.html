@@ -34,53 +34,51 @@
         }
 
         function getIndiceMonitor() {
-            const promises = indices.map(async indice => {
+            // retrieves indice indicators
+            let indiceIndicators = [];
+            indices.forEach(async indice => {
                 let url = new URL(`${_apiUrl}/v1/indice/${indice.symbol}/indicator`, document.location.origin);
-                return await _fetch(url);
+                let responseJson = await (await _fetch(url)).json();
+                indiceIndicators.push(responseJson);
             });
-            Promise.all(promises)
-                .then(responses => {
-                    return Promise.all(responses.map(
-                        response => response.json()));
-                }).then(indiceIndicators => {
-                    // define date from
-                    let now = new Date();
-                    let dailyFrom = dateFns.subDays(now, 30);
-                    let dailyTo = new Date(now.getTime());
-                    let minuteFrom = dateFns.subHours(now, 12);
-                    let minuteTo = new Date(now.getTime());
 
-                    // indice chart
-                    indiceDailyOhlcvsChart.data.datasets.length = 0;
-                    indiceMinuteOhlcvsChart.data.datasets.length = 0;
-                    for(let i = 0; i < indiceIndicators.length; i ++) {
-                        let indiceIndicator = indiceIndicators[i];
+            // define date from
+            let now = new Date();
+            let dailyFrom = dateFns.subDays(now, 30);
+            let dailyTo = new Date(now.getTime());
+            let minuteFrom = dateFns.subHours(now, 12);
+            let minuteTo = new Date(now.getTime());
 
-                        // daily
-                        let dailyOhlcvs = indiceIndicator['dailyOhlcvs'];
-                        let dailyTimeSeries = createTimeSeries(dailyFrom, dailyTo, dailyOhlcvs, 60000*60*24);
-                        let dailyDataset = {
-                            label: indiceIndicator.name,
-                            data: dailyTimeSeries,
-                            borderWidth: 1,
-                            pointStyle: false
-                        };
-                        indiceDailyOhlcvsChart.data.datasets.push(dailyDataset);
+            // indice chart
+            indiceDailyOhlcvsChart.data.datasets.length = 0;
+            indiceMinuteOhlcvsChart.data.datasets.length = 0;
+            for(let i = 0; i < indiceIndicators.length; i ++) {
+                let indiceIndicator = indiceIndicators[i];
 
-                        // minute
-                        let minuteOhlcvs = indiceIndicator['minuteOhlcvs'];
-                        let minuteTimeSeries = createTimeSeries(minuteFrom, minuteTo, minuteOhlcvs, 60000);
-                        let minuteDataset = {
-                            label: indiceIndicator.name,
-                            data: minuteTimeSeries,
-                            borderWidth: 1,
-                            pointStyle: false
-                        };
-                        indiceMinuteOhlcvsChart.data.datasets.push(minuteDataset);
-                    }
-                    indiceDailyOhlcvsChart.update();
-                    indiceMinuteOhlcvsChart.update();
-                });
+                // daily
+                let dailyOhlcvs = indiceIndicator['dailyOhlcvs'];
+                let dailyTimeSeries = createTimeSeries(dailyFrom, dailyTo, dailyOhlcvs, 60000*60*24);
+                let dailyDataset = {
+                    label: indiceIndicator.name,
+                    data: dailyTimeSeries,
+                    borderWidth: 1,
+                    pointStyle: false
+                };
+                indiceDailyOhlcvsChart.data.datasets.push(dailyDataset);
+
+                // minute
+                let minuteOhlcvs = indiceIndicator['minuteOhlcvs'];
+                let minuteTimeSeries = createTimeSeries(minuteFrom, minuteTo, minuteOhlcvs, 60000);
+                let minuteDataset = {
+                    label: indiceIndicator.name,
+                    data: minuteTimeSeries,
+                    borderWidth: 1,
+                    pointStyle: false
+                };
+                indiceMinuteOhlcvsChart.data.datasets.push(minuteDataset);
+            }
+            indiceDailyOhlcvsChart.update();
+            indiceMinuteOhlcvsChart.update();
         }
 
         function initializeTradeMonitors() {
@@ -472,21 +470,6 @@
                                 <td colspan="100%" class="text-align-center">No Data</td>
                             </tr>
                             </tbody>
-                            <tfoot>
-                            <tr>
-                                <td colspan="100%" class="text-align-right">
-                                    <span data-th-text="#{fintics.Balance.profitAmount}" class="font-weight-bold"></span>
-                                    <span th:data-duice-bind="'tradeBalanceMap.get(\'' + ${trade.tradeId} + '\')'"
-                                          data-duice-property="profitAmount"
-                                          data-duice-format="number"></span>
-                                    <small>|</small>
-                                    <span data-th-text="#{fintics.Balance.realizedProfitAmount}" class="font-weight-bold"></span>
-                                    <span th:data-duice-bind="'tradeBalanceMap.get(\'' + ${trade.tradeId} + '\')'"
-                                          data-duice-property="realizedProfitAmount"
-                                          data-duice-format="number"></span>
-                                </td>
-                            </tr>
-                            </tfoot>
                         </table>
                     </div>
                 </div>
