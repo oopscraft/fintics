@@ -37,6 +37,7 @@
             // retrieves indice indicators
             let indiceIndicators = [];
             for(let i = 0; i < indices.length; i ++) {
+                let indice = indices[i];
                 let url = new URL(`${_apiUrl}/v1/indice/${indice.symbol}/indicator`, document.location.origin);
                 let responseJson = await (await _fetch(url)).json();
                 indiceIndicators.push(responseJson);
