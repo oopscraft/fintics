@@ -123,6 +123,12 @@ holdVotes.addAll(resultOfMinute10.values())
 log.debug("[{}] resultOfMinute10: {}", assetName, resultOfMinute10)
 log.info("[{}] resultOfMinute10Average: {}", assetName, resultOfMinute10.values().average())
 
+// daily
+def resultOfDaily = analyze(assetIndicator, OhlcvType.DAILY, 1)
+holdVotes.addAll(resultOfDaily.values())
+log.debug("[{}] resultOfDaily: {}", assetName, resultOfDaily)
+log.info("[{}] resultOfDailyAverage: {}", assetName, resultOfDaily.values().average())
+
 // USD/KRW (환율 상승 시 매수)
 def resultOfUsdKrw = analyze(indiceIndicators['USD_KRW'], OhlcvType.MINUTE, 10)
 holdVotes.addAll(resultOfUsdKrw.values())
@@ -142,7 +148,7 @@ log.debug("[{}] holdVotes: {}", assetName, holdVotes)
 log.info("[{}] holdVotesAverage: {}", assetName, holdVotesAverage)
 
 // buy
-if(holdVotesAverage > 90) {
+if(holdVotesAverage > 70) {
     hold = true
 }
 

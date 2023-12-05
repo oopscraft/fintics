@@ -99,18 +99,6 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
 def assetName = assetIndicator.getName()
 def holdVotes = []
 
-// minute 1
-def resultOfMinute1 = analyze(assetIndicator, OhlcvType.MINUTE, 1)
-holdVotes.addAll(resultOfMinute1.values())
-log.debug("[{}] resultOfMinute1: {}", assetName, resultOfMinute1)
-log.info("[{}] resultOfMinute1Average: {}", assetName, resultOfMinute1.values().average())
-
-// minute 3
-def resultOfMinute3 = analyze(assetIndicator, OhlcvType.MINUTE, 3)
-holdVotes.addAll(resultOfMinute3.values())
-log.debug("[{}] resultOfMinute3: {}", assetName, resultOfMinute3)
-log.info("[{}] resultOfMinute3Average: {}", assetName, resultOfMinute3.values().average())
-
 // minute 5
 def resultOfMinute5 = analyze(assetIndicator, OhlcvType.MINUTE, 5)
 holdVotes.addAll(resultOfMinute5.values())
@@ -122,6 +110,12 @@ def resultOfMinute10 = analyze(assetIndicator, OhlcvType.MINUTE, 10)
 holdVotes.addAll(resultOfMinute10.values())
 log.debug("[{}] resultOfMinute10: {}", assetName, resultOfMinute10)
 log.info("[{}] resultOfMinute10Average: {}", assetName, resultOfMinute10.values().average())
+
+// daily
+def resultOfDaily = analyze(assetIndicator, OhlcvType.DAILY, 1)
+holdVotes.addAll(resultOfDaily.values())
+log.debug("[{}] resultOfDaily: {}", assetName, resultOfDaily)
+log.info("[{}] resultOfDailyAverage: {}", assetName, resultOfDaily.values().average())
 
 // USD/KRW (환율 하락 시 매수)
 def resultOfUsdKrw = analyze(indiceIndicators['USD_KRW'], OhlcvType.MINUTE, 10)
@@ -142,7 +136,7 @@ log.debug("[{}] holdVotes: {}", assetName, holdVotes)
 log.info("[{}] holdVotesAverage: {}", assetName, holdVotesAverage)
 
 // buy
-if(holdVotesAverage > 90) {
+if(holdVotesAverage > 70) {
     hold = true
 }
 
