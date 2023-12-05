@@ -24,11 +24,11 @@ import java.util.stream.Collectors;
 @Slf4j
 public class IndiceRestController {
 
-//    private final static String INDICE_REST_CONTROLLER_GET_INDICE_INDICATOR = "IndiceRestController.getIndiceIndicator";
+    private final static String INDICE_REST_CONTROLLER_GET_INDICE_INDICATOR = "IndiceRestController.getIndiceIndicator";
 
     private final IndiceService indiceService;
 
-//    private final CacheManager cacheManager;
+    private final CacheManager cacheManager;
 
     @RequestMapping
     public ResponseEntity<List<IndiceResponse>> getIndices() {
@@ -46,7 +46,7 @@ public class IndiceRestController {
         return ResponseEntity.ok(indiceResponse);
     }
 
-//    @Cacheable(cacheNames = INDICE_REST_CONTROLLER_GET_INDICE_INDICATOR, key = "#symbol")
+    @Cacheable(cacheNames = INDICE_REST_CONTROLLER_GET_INDICE_INDICATOR, key = "#symbol")
     @RequestMapping("{symbol}/indicator")
     public ResponseEntity<IndiceIndicatorResponse> getIndiceIndicator(@PathVariable("symbol")IndiceSymbol symbol) {
         IndiceIndicatorResponse indiceIndicatorResponse = indiceService.getIndiceIndicator(symbol)
@@ -55,16 +55,16 @@ public class IndiceRestController {
         return ResponseEntity.ok(indiceIndicatorResponse);
     }
 
-//    @Scheduled(initialDelay = 60_000, fixedDelay = 60_000)
-//    public void cacheIndiceIndicator() {
-//        log.info("IndiceRestController.cacheIndiceIndicator");
-//        Cache cache = cacheManager.getCache(INDICE_REST_CONTROLLER_GET_INDICE_INDICATOR);
-//        if(cache != null) {
-//            indiceService.getIndices().forEach(indice -> {
-//                IndiceSymbol symbol = indice.getSymbol();
-//                cache.put(symbol, getIndiceIndicator(symbol));
-//            });
-//        }
-//    }
+    @Scheduled(initialDelay = 60_000, fixedDelay = 60_000)
+    public void cacheIndiceIndicator() {
+        log.info("IndiceRestController.cacheIndiceIndicator");
+        Cache cache = cacheManager.getCache(INDICE_REST_CONTROLLER_GET_INDICE_INDICATOR);
+        if(cache != null) {
+            indiceService.getIndices().forEach(indice -> {
+                IndiceSymbol symbol = indice.getSymbol();
+                cache.put(symbol, getIndiceIndicator(symbol));
+            });
+        }
+    }
 
 }

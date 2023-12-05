@@ -33,53 +33,54 @@
             indiceMinuteOhlcvsChart = createMinuteOhlcvsChart('indiceMinuteOhlcvsChart');
         }
 
-        async function getIndiceMonitor() {
-            // gets indice indicators
-            let indiceIndicators = [];
-            for(let i = 0; i < indices.length; i ++) {
-                let indice = indices[i];
+        function getIndiceMonitor() {
+            const promises = indices.map(async indice => {
                 let url = new URL(`${_apiUrl}/v1/indice/${indice.symbol}/indicator`, document.location.origin);
-                let responseJson = await (await _fetch(url)).json();
-                indiceIndicators.push(responseJson);
-            }
+                return await _fetch(url);
+            });
+            Promise.all(promises)
+                .then(responses => {
+                    return Promise.all(responses.map(
+                        response => response.json()));
+                }).then(indiceIndicators => {
+                    // define date from
+                    let now = new Date();
+                    let dailyFrom = dateFns.subDays(now, 30);
+                    let dailyTo = new Date(now.getTime());
+                    let minuteFrom = dateFns.subHours(now, 12);
+                    let minuteTo = new Date(now.getTime());
 
-            // define date from
-            let now = new Date();
-            let dailyFrom = dateFns.subDays(now, 30);
-            let dailyTo = new Date(now.getTime());
-            let minuteFrom = dateFns.subHours(now, 12);
-            let minuteTo = new Date(now.getTime());
+                    // indice chart
+                    indiceDailyOhlcvsChart.data.datasets.length = 0;
+                    indiceMinuteOhlcvsChart.data.datasets.length = 0;
+                    for(let i = 0; i < indiceIndicators.length; i ++) {
+                        let indiceIndicator = indiceIndicators[i];
 
-            // indice chart
-            indiceDailyOhlcvsChart.data.datasets.length = 0;
-            indiceMinuteOhlcvsChart.data.datasets.length = 0;
-            for(let i = 0; i < indiceIndicators.length; i ++) {
-                let indiceIndicator = indiceIndicators[i];
+                        // daily
+                        let dailyOhlcvs = indiceIndicator['dailyOhlcvs'];
+                        let dailyTimeSeries = createTimeSeries(dailyFrom, dailyTo, dailyOhlcvs, 60000*60*24);
+                        let dailyDataset = {
+                            label: indiceIndicator.name,
+                            data: dailyTimeSeries,
+                            borderWidth: 1,
+                            pointStyle: false
+                        };
+                        indiceDailyOhlcvsChart.data.datasets.push(dailyDataset);
 
-                // daily
-                let dailyOhlcvs = indiceIndicator['dailyOhlcvs'];
-                let dailyTimeSeries = createTimeSeries(dailyFrom, dailyTo, dailyOhlcvs, 60000*60*24);
-                let dailyDataset = {
-                    label: indiceIndicator.name,
-                    data: dailyTimeSeries,
-                    borderWidth: 1,
-                    pointStyle: false
-                };
-                indiceDailyOhlcvsChart.data.datasets.push(dailyDataset);
-
-                // minute
-                let minuteOhlcvs = indiceIndicator['minuteOhlcvs'];
-                let minuteTimeSeries = createTimeSeries(minuteFrom, minuteTo, minuteOhlcvs, 60000);
-                let minuteDataset = {
-                    label: indiceIndicator.name,
-                    data: minuteTimeSeries,
-                    borderWidth: 1,
-                    pointStyle: false
-                };
-                indiceMinuteOhlcvsChart.data.datasets.push(minuteDataset);
-            }
-            indiceDailyOhlcvsChart.update();
-            indiceMinuteOhlcvsChart.update();
+                        // minute
+                        let minuteOhlcvs = indiceIndicator['minuteOhlcvs'];
+                        let minuteTimeSeries = createTimeSeries(minuteFrom, minuteTo, minuteOhlcvs, 60000);
+                        let minuteDataset = {
+                            label: indiceIndicator.name,
+                            data: minuteTimeSeries,
+                            borderWidth: 1,
+                            pointStyle: false
+                        };
+                        indiceMinuteOhlcvsChart.data.datasets.push(minuteDataset);
+                    }
+                    indiceDailyOhlcvsChart.update();
+                    indiceMinuteOhlcvsChart.update();
+                });
         }
 
         function initializeTradeMonitors() {
