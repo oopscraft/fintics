@@ -99,12 +99,6 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
 def assetName = assetIndicator.getName()
 def holdVotes = []
 
-// minute 5
-def resultOfMinute5 = analyze(assetIndicator, OhlcvType.MINUTE, 5)
-holdVotes.addAll(resultOfMinute5.values())
-log.debug("[{}] resultOfMinute5: {}", assetName, resultOfMinute5)
-log.info("[{}] resultOfMinute5Average: {}", assetName, resultOfMinute5.values().average())
-
 // minute 10
 def resultOfMinute10 = analyze(assetIndicator, OhlcvType.MINUTE, 10)
 holdVotes.addAll(resultOfMinute10.values())
@@ -118,13 +112,13 @@ log.debug("[{}] resultOfDaily: {}", assetName, resultOfDaily)
 log.info("[{}] resultOfDailyAverage: {}", assetName, resultOfDaily.values().average())
 
 // USD/KRW (환율 하락 시 매수)
-def resultOfUsdKrw = analyze(indiceIndicators['USD_KRW'], OhlcvType.MINUTE, 10)
+def resultOfUsdKrw = analyze(indiceIndicators['USD_KRW'], OhlcvType.DAILY, 1)
 holdVotes.addAll(resultOfUsdKrw.values().collect{100 - (it as Number)})
 log.debug("[{}] resultOfUsdKrw: {}", assetName, resultOfUsdKrw)
 log.info("[{}] resultOfUsdKrwAverage: {}", assetName, resultOfUsdKrw.values().average())
 
 // Nasdaq Future (나스닥 선물 상승 시 매수)
-def resultOfNdxFuture = analyze(indiceIndicators['NDX_FUTURE'], OhlcvType.MINUTE, 10)
+def resultOfNdxFuture = analyze(indiceIndicators['NDX_FUTURE'], OhlcvType.DAILY, 1)
 holdVotes.addAll(resultOfNdxFuture.values())
 log.debug("[{}] resultOfNdxFuture: {}", assetName, resultOfNdxFuture)
 log.info("[{}] resultOfNdxFutureAverage: {}", assetName, resultOfNdxFuture.values().average())

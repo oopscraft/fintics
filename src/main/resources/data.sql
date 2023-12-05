@@ -90,12 +90,6 @@ insert into `fintics_trade_asset`
 insert into `fintics_trade_asset`
 (`trade_id`,`symbol`,`name`,`enabled`, `hold_ratio`) values
     ('81c6a451d6da49449faa2b5b7e66041b','KRW-ETH','Ethereum','N','20');
-insert into `fintics_trade_asset`
-(`trade_id`,`symbol`,`name`,`enabled`, `hold_ratio`) values
-    ('81c6a451d6da49449faa2b5b7e66041b','KRW-AVAX','Avalanche','N','20');
-insert into `fintics_trade_asset`
-(`trade_id`,`symbol`,`name`,`enabled`, `hold_ratio`) values
-    ('81c6a451d6da49449faa2b5b7e66041b','KRW-SOL','Solana','N','20');
 
 -- fintics_order
 INSERT INTO fintics_order
