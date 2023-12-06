@@ -13,6 +13,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,7 +32,7 @@ public class IndiceRestController {
 
     private final IndiceService indiceService;
 
-    @RequestMapping
+    @GetMapping
     public ResponseEntity<List<IndiceResponse>> getIndices() {
         List<IndiceResponse> indiceResponses = indiceService.getIndices().stream()
                 .map(IndiceResponse::from)
@@ -39,7 +40,7 @@ public class IndiceRestController {
         return ResponseEntity.ok(indiceResponses);
     }
 
-    @RequestMapping("{symbol}")
+    @GetMapping("{symbol}")
     public ResponseEntity<IndiceResponse> getIndice(@PathVariable("symbol")IndiceSymbol symbol) {
         IndiceResponse indiceResponse = indiceService.getIndice(symbol)
                 .map(IndiceResponse::from)
@@ -48,7 +49,7 @@ public class IndiceRestController {
     }
 
     @Cacheable(cacheNames = INDICE_REST_CONTROLLER_GET_INDICE_INDICATOR, key = "#symbol")
-    @RequestMapping("{symbol}/indicator")
+    @GetMapping("{symbol}/indicator")
     public ResponseEntity<IndiceIndicatorResponse> getIndiceIndicator(@PathVariable("symbol")IndiceSymbol symbol) {
         IndiceIndicatorResponse indiceIndicatorResponse = indiceService.getIndiceIndicator(symbol)
                 .map(IndiceIndicatorResponse::from)
