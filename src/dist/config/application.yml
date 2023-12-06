@@ -13,8 +13,8 @@ spring:
       jdbc-url: jdbc:mariadb://192.168.0.2:3306/fintics
       username: fintics
       password: fintics
-      minimum-idle: 30
-      maximum-pool-size: 30
+      minimum-idle: 20
+      maximum-pool-size: 20
   mail:
     host: smtp.gmail.com
     port: 587
