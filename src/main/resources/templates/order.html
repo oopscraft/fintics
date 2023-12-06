@@ -15,6 +15,7 @@
         });
         duice.ObjectProxy.onPropertyChanged(orderSearch, () => {
             console.log("===========", orderSearch);
+            orderSearch._page = 0;
             getOrders();
         });
         const orders = new duice.ArrayProxy([]);
@@ -177,12 +178,16 @@
                 <tbody>
                 <tr data-duice-bind="orders" data-duice-loop="order,status">
                     <td class="text-align-center">
-                        <span data-duice-bind="status"
+                        <span class="font-size-smaller"
+                              data-duice-bind="status"
                               data-duice-execute="this.innerHTML=orderSearch._count - (orderSearch._size*orderSearch._page + status.count) + 1;">
                         </span>
                     </td>
                     <td>
-                        <span data-duice-bind="order" data-duice-property="orderAt" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></span>
+                        <span class="font-size-smaller"
+                              data-duice-bind="order"
+                              data-duice-property="orderAt"
+                              data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></span>
                     </td>
                     <td>
                         <span data-duice-bind="order" data-duice-property="orderKind" class="orderKind"
