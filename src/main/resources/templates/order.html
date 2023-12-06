@@ -13,6 +13,10 @@
             _size: 20,
             _count: 0
         });
+        duice.ObjectProxy.onPropertyChanged(orderSearch, () => {
+            console.log("===========", orderSearch);
+            getOrders();
+        });
         const orders = new duice.ArrayProxy([]);
         const trades = new duice.ArrayProxy([]);
 
@@ -63,6 +67,36 @@
 
     </script>
     <style th:inline="css">
+        .orderKind {
+            padding: 0.25em 1em;
+            font-size: xx-small;
+            font-weight: bold;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: 0.1em;
+        }
+       .orderKind.BUY {
+            background-color: var(--web-background-color-red);
+        }
+        .orderKind.SELL {
+            background-color: var(--web-background-color-blue);
+        }
+        .orderResult {
+            padding: 0.25em 1em;
+            font-size: xx-small;
+            font-weight: bold;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: 0.1em;
+        }
+        .orderResult.COMPLETED {
+            background-color: var(--web-background-color-green);
+        }
+        .orderResult.FAILED {
+            background-color: var(--web-background-color-red);
+        }
     </style>
 
     <!-- ====================================== -->
@@ -81,8 +115,8 @@
     <!-- ================================== -->
     <div class="border-1 padding-1em" style="min-height:400px;">
         <form onsubmit="return false;" class="grid grid-template-columns-12 grid-gap-1em margin-x-1em">
-            <div class="grid-column-6 s-grid-column-12 grid grid-template-columns-12 grid-gap-1em">
-                <label class="grid-column-6 s-grid-column-12">
+            <div class="grid-column-12 s-grid-column-12 grid grid-template-columns-12 grid-gap-1em">
+                <label class="grid-column-3 s-grid-column-12">
                     <select class="width-100"
                             data-duice-bind="orderSearch"
                             data-duice-property="tradeId"
@@ -92,39 +126,34 @@
                         <option value="" data-th-text="'- ' + #{fintics.Trade} + ' -'"></option>
                     </select>
                 </label>
-                <label class="grid-column-3 s-grid-column-12">
+                <label class="grid-column-1 s-grid-column-12">
                     <select class="width-100" data-duice-bind="orderSearch" data-duice-property="orderKind">
                         <option value="" data-th-text="'- ' + #{fintics.Order.orderKind} + ' -'"></option>
                         <option value="BUY">BUY</option>
                         <option value="SELL">SELL</option>
                     </select>
                 </label>
-                <label class="grid-column-3 s-grid-column-12">
+                <label class="grid-column-1 s-grid-column-12">
                     <select class="width-100" data-duice-bind="orderSearch" data-duice-property="orderResult">
                         <option value="" data-th-text="'- ' + #{fintics.Order.orderResult} + ' -'"></option>
                         <option value="COMPLETED">COMPLETED</option>
                         <option value="FAILED">FAILED</option>
                     </select>
                 </label>
-            </div>
-            <div class="grid-column-6 s-grid-column-12 justify-self-end">
-                <button type="submit" onclick="getOrders();">
-                    <img class="icon" th:src="@{/static/image/icon-search.svg}" alt="search"/>
-                    <span data-th-text="#{web.global.search}">Search</span>
-                </button>
-                <button type="button" onclick="resetOrders();">
-                    <img class="icon" th:src="@{/static/image/icon-reset.svg}" alt="reset"/>
-                    <span data-th-text="#{web.global.reset}">Reset</span>
-                </button>
+                <div class="grid-column-1 s-grid-column-12">
+                    <button type="button" onclick="resetOrders();">
+                        <img class="icon" th:src="@{/static/image/icon-reset.svg}" alt="reset"/>
+                        <span data-th-text="#{web.global.reset}">Reset</span>
+                    </button>
+                </div>
             </div>
         </form>
         <div class="overflow-x-scroll">
             <table class="width-100">
                 <colgroup>
                     <col style="width:7em;"/>
-                    <col style="width:12em;"/>
                     <col style="width:10em;"/>
-                    <col/>
+                    <col style="width:6em;"/>
                     <col/>
                     <col/>
                     <col/>
@@ -139,7 +168,6 @@
                     <th data-th-text="#{fintics.Order.orderKind}"></th>
                     <th data-th-text="#{fintics.Trade.name}"></th>
                     <th data-th-text="#{fintics.Asset.name}"></th>
-                    <th data-th-text="#{fintics.Order.orderType}"></th>
                     <th data-th-text="#{fintics.Order.quantity}"></th>
                     <th data-th-text="#{fintics.Order.price}"></th>
                     <th data-th-text="#{fintics.Order.orderResult}"></th>
@@ -149,13 +177,17 @@
                 <tbody>
                 <tr data-duice-bind="orders" data-duice-loop="order,status">
                     <td class="text-align-center">
-                        <span data-duice-bind="status" data-duice-property="count"></span>
+                        <span data-duice-bind="status"
+                              data-duice-execute="this.innerHTML=orderSearch._count - (orderSearch._size*orderSearch._page + status.count) + 1;">
+                        </span>
                     </td>
                     <td>
                         <span data-duice-bind="order" data-duice-property="orderAt" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></span>
                     </td>
                     <td>
-                        <span data-duice-bind="order" data-duice-property="orderKind" class="font-weight-bold"></span>
+                        <span data-duice-bind="order" data-duice-property="orderKind" class="orderKind"
+                              data-duice-execute="this.classList.add(order.orderKind);">
+                        </span>
                     </td>
                     <td>
                         <span data-duice-bind="order" data-duice-property="tradeName"></span>
@@ -164,16 +196,14 @@
                         <span data-duice-bind="order" data-duice-property="assetName"></span>
                     </td>
                     <td>
-                        <span data-duice-bind="order" data-duice-property="orderType"></span>
-                    </td>
-                    <td>
                         <span data-duice-bind="order" data-duice-property="quantity" data-duice-format="number"></span>
                     </td>
                     <td>
                         <span data-duice-bind="order" data-duice-property="price" data-duice-format="number"></span>
                     </td>
                     <td>
-                        <span data-duice-bind="order" data-duice-property="orderResult"></span>
+                        <span data-duice-bind="order" data-duice-property="orderResult" class="orderResult"
+                              data-duice-execute="this.classList.add(order.orderResult);"></span>
                     </td>
                     <td>
                         <span data-duice-bind="order" data-duice-property="errorMessage"></span>
