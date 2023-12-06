@@ -1,5 +1,6 @@
 package org.oopscraft.fintics.api.v1;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.fintics.api.v1.dto.IndiceIndicatorResponse;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 @PreAuthorize("hasAuthority('INDICE')")
+@Tag(name = "indice", description = "Indice operations")
 public class IndiceRestController {
 
     private final static String INDICE_REST_CONTROLLER_GET_INDICE_INDICATOR = "IndiceRestController.getIndiceIndicator";

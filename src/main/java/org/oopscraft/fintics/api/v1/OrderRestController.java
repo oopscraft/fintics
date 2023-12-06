@@ -1,5 +1,6 @@
 package org.oopscraft.fintics.api.v1;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.web.support.PageableUtils;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/v1/order")
 @RequiredArgsConstructor
 @PreAuthorize("hasAuthority('ORDER')")
+@Tag(name = "order", description = "Order operations")
 @Slf4j
 public class OrderRestController {
 

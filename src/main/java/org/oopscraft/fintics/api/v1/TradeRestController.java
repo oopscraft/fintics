@@ -1,5 +1,6 @@
 package org.oopscraft.fintics.api.v1;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.security.SecurityUtils;
@@ -29,6 +30,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/v1/trade")
 @RequiredArgsConstructor
 @PreAuthorize("hasAuthority('TRADE')")
+@Tag(name = "trade", description = "Trade operations")
 @Slf4j
 public class TradeRestController {
 
