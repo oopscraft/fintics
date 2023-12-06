@@ -194,6 +194,15 @@
             _fetch(balanceUrl, null, true)
                 .then(response => response.json())
                 .then(balance => {
+                    // filter trade asset
+                    let trade = trades.filter(trade =>
+                        trade.tradeId === tradeId)[0];
+                    let tradeAssetSymbols = [];
+                    trade.tradeAssets?.forEach(tradeAsset =>
+                        tradeAssetSymbols.push(tradeAsset.symbol));
+                    balance.balanceAssets = balance.balanceAssets?.filter(balanceAsset =>
+                        tradeAssetSymbols.includes(balanceAsset.symbol));
+                    // assign
                     duice.ObjectProxy.assign(tradeBalanceMap.get(tradeId), balance);
                 });
         }
