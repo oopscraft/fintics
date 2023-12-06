@@ -8,9 +8,11 @@ import org.oopscraft.fintics.model.IndiceSymbol;
 import org.oopscraft.fintics.service.IndiceService;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,6 +24,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/v1/indice")
 @RequiredArgsConstructor
 @Slf4j
+@PreAuthorize("hasAuthority('INDICE')")
 public class IndiceRestController {
 
     private final static String INDICE_REST_CONTROLLER_GET_INDICE_INDICATOR = "IndiceRestController.getIndiceIndicator";
@@ -56,6 +59,7 @@ public class IndiceRestController {
     }
 
     @Scheduled(initialDelay = 60_000, fixedDelay = 60_000)
+    @PreAuthorize("permitAll()")
     public void cacheIndiceIndicator() {
         log.info("IndiceRestController.cacheIndiceIndicator");
         Cache cache = cacheManager.getCache(INDICE_REST_CONTROLLER_GET_INDICE_INDICATOR);

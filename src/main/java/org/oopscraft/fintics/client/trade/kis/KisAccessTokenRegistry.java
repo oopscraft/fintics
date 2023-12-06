@@ -19,7 +19,7 @@ public class KisAccessTokenRegistry {
 
     private static final Set<KisAccessToken> accessTokens = new CopyOnWriteArraySet<>();
 
-    public synchronized static KisAccessToken getAccessToken(String apiUrl, String appKey, String appSecret) {
+    public synchronized static KisAccessToken getAccessToken(String apiUrl, String appKey, String appSecret) throws InterruptedException {
         KisAccessToken accessToken = accessTokens.stream()
                 .filter(element ->
                         element.getApiUrl().equals(apiUrl)
@@ -36,7 +36,7 @@ public class KisAccessTokenRegistry {
         return accessToken;
     }
 
-    private synchronized static KisAccessToken refreshAccessToken(String apiUrl, String appKey, String appSecret) {
+    private synchronized static KisAccessToken refreshAccessToken(String apiUrl, String appKey, String appSecret) throws InterruptedException {
         log.info("Refresh Access Token - {}", apiUrl);
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
@@ -50,6 +50,7 @@ public class KisAccessTokenRegistry {
                 .post(apiUrl + "/oauth2/tokenP")
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(payloadMap);
+        Thread.sleep(1_000);
         ResponseEntity<ValueMap> responseEntity = restTemplate.exchange(requestEntity, ValueMap.class);
         ValueMap responseMap = responseEntity.getBody();
         String accessToken = responseMap.getString("access_token");

@@ -52,7 +52,7 @@ public class KisTradeClient extends TradeClient {
         Thread.sleep(300);
     }
 
-    HttpHeaders createHeaders() {
+    HttpHeaders createHeaders() throws InterruptedException {
         KisAccessToken accessToken = KisAccessTokenRegistry.getAccessToken(apiUrl, appKey, appSecret);
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8");

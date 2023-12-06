@@ -36,7 +36,7 @@
         function getIndiceMonitor() {
             const promises = indices.map(async indice => {
                 let url = new URL(`${_apiUrl}/v1/indice/${indice.symbol}/indicator`, document.location.origin);
-                return await _fetch(url);
+                return await _fetch(url, null, true);
             });
             Promise.all(promises)
                 .then(responses => {
@@ -141,8 +141,8 @@
         }
 
         function getTradeMonitor(tradeId) {
-            let indicatorUrl = new URL(`${_apiUrl}/v1/trade/${tradeId}/indicator`, document.location.origin);
-            _fetch(indicatorUrl)
+            let tradeAssetIndicatorUrl = new URL(`${_apiUrl}/v1/trade/${tradeId}/indicator`, document.location.origin);
+            _fetch(tradeAssetIndicatorUrl, null, true)
                 .then(response => response.json())
                 .then(assetIndicators => {
                     // define date from
@@ -191,7 +191,7 @@
                 });
 
             let balanceUrl = new URL(`${_apiUrl}/v1/trade/${tradeId}/balance`, document.location.origin);
-            _fetch(balanceUrl, {}, true)
+            _fetch(balanceUrl, null, true)
                 .then(response => response.json())
                 .then(balance => {
                     duice.ObjectProxy.assign(tradeBalanceMap.get(tradeId), balance);

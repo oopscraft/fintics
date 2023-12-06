@@ -159,6 +159,7 @@ public class TradeRestController {
     }
 
     @Scheduled(initialDelay = 60_000, fixedDelay = 60_000)
+    @PreAuthorize("permitAll()")
     public void cacheTradeAssetIndicators() {
         log.info("TradeRestController.cacheTradeAssetIndicators");
         Cache cache = cacheManager.getCache(TRADE_REST_CONTROLLER_GET_TRADE_ASSET_INDICATORS);

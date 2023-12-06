@@ -24,9 +24,9 @@ public class KisTradeClientDefinition implements TradeClientDefinition {
         StringJoiner template = new StringJoiner("\n");
         template.add("production=false");
         template.add("apiUrl=https://openapivts.koreainvestment.com:29443");
-        template.add("appKey=[발급appkey]");
-        template.add("appSecret=[발급appsecret]");
-        template.add("accountNo=[계좌번호]");
+        template.add("appKey=[Application Key]");
+        template.add("appSecret=[Application Secret]");
+        template.add("accountNo=[Account Number]");
         return template.toString();
     }
 

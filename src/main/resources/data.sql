@@ -6,12 +6,14 @@ delete from `core_alarm`;
 
 -- core_authority
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('MONITOR','Y','Monitor Access Authority');
+insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('INDICE','Y','Indice Access Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('TRADE','Y','Trade Access Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('TRADE_EDIT','Y','Trade Edit Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('ORDER','Y','Order Access Authority');
 
 -- core_role_authority
 insert into `core_role_authority` (`role_id`,`authority_id`) values ('USER', 'MONITOR');
+insert into `core_role_authority` (`role_id`,`authority_id`) values ('USER', 'INDICE');
 insert into `core_role_authority` (`role_id`,`authority_id`) values ('USER', 'TRADE');
 insert into `core_role_authority` (`role_id`,`authority_id`) values ('USER', 'ORDER');
 
@@ -36,7 +38,7 @@ insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
 -- core_alarm
 insert into `core_alarm`
     (`alarm_id`,`alarm_name`,`client_type`,`client_config`) values
-    ('fintics','Slack-Fintics','org.oopscraft.arch4j.core.alarm.client.slack.SlackAlarmClient','url=https://hooks.slack.com/services/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');
+    ('fintics','Slack-Fintics','org.oopscraft.arch4j.core.alarm.client.slack.SlackAlarmClient','url=https://hooks.slack.com/services/___');
 
 -- fintics_trade: 한국투자증권 모의투자 - 지수ETF
 insert into `fintics_trade`
@@ -44,9 +46,9 @@ insert into `fintics_trade`
     ('06c228451ce0400fa57bb36f0568d7cb','한국투자증권 모의투자 - 지수ETF','N','60','09:00','15:30',
      'org.oopscraft.fintics.client.trade.kis.KisTradeClient','production=false
 apiUrl=https://openapivts.koreainvestment.com:29443
-appKey=ENC(mqcEUDQAO57SaLBCvhoz0RpFYBXtMQG2Y+NIK2jfQZ6koEUDlYx+5W8AW+eW0KVd)
-appSecret=ENC(cPLNx3yraMH7FKXfEkcs0/r7ZrKDrW7nBgQ/NpKs3BeQGUkjDl+j8VG0FOhqly/DYwJdyZ5kpLMJ7GAGSv8vEZhUOlSPPP1lFNiVyWZKk+b9jhzyCQOcKs5c+Q5BxHI/A4Nhf4oVIEm8N8nQzVAypLIBQZHu3Re+aPRkWUbdArWaBI+RyLSlemy2ZsDCJh6+/kh8Bic1ooCit0Jx4y1mBZFohtf4zRGdafkkIDIL1OujMz5yRDqigYSNvcSAXRUX)
-accountNo=ENC(BCcz1quNQASvnQ4/ME2CSOiufCl6GfxN)
+appKey=[Application Key]
+appSecret=[Application Secret]
+accountNo=[Account Number]
 ',null,'
 
 ');
@@ -63,9 +65,9 @@ insert into `fintics_trade`
     ('7af6bc641eef4254b12dd9fa1d43384d','한국투자증권 모의투자 - 지수ETF(인버스)','N','60','09:00','15:30',
      'org.oopscraft.fintics.client.trade.kis.KisTradeClient','production=false
 apiUrl=https://openapivts.koreainvestment.com:29443
-appKey=ENC(mqcEUDQAO57SaLBCvhoz0RpFYBXtMQG2Y+NIK2jfQZ6koEUDlYx+5W8AW+eW0KVd)
-appSecret=ENC(cPLNx3yraMH7FKXfEkcs0/r7ZrKDrW7nBgQ/NpKs3BeQGUkjDl+j8VG0FOhqly/DYwJdyZ5kpLMJ7GAGSv8vEZhUOlSPPP1lFNiVyWZKk+b9jhzyCQOcKs5c+Q5BxHI/A4Nhf4oVIEm8N8nQzVAypLIBQZHu3Re+aPRkWUbdArWaBI+RyLSlemy2ZsDCJh6+/kh8Bic1ooCit0Jx4y1mBZFohtf4zRGdafkkIDIL1OujMz5yRDqigYSNvcSAXRUX)
-accountNo=ENC(BCcz1quNQASvnQ4/ME2CSOiufCl6GfxN)
+appKey=[Application Key]
+appSecret=[Application Secret]
+accountNo=[Account Number]
 ',null,'
 
 ');
@@ -80,8 +82,8 @@ insert into `fintics_trade_asset`
 insert into `fintics_trade`
 (`trade_id`,`name`,`enabled`,`interval`,`start_at`,`end_at`,`client_type`,`client_properties`,`alarm_id`,`hold_condition`) values
     ('81c6a451d6da49449faa2b5b7e66041b','코인놀이방(24시간 테스트용)','N','30','00:00','23:59',
-     'org.oopscraft.fintics.client.trade.upbit.UpbitTradeClient','accessKey=[발급 accessKey]
-secretKey=[발급 secretKey]',null,'
+     'org.oopscraft.fintics.client.trade.upbit.UpbitTradeClient','accessKey=[Access Key]
+secretKey=[Secret Key]',null,'
 
 ');
 insert into `fintics_trade_asset`

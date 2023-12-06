@@ -22,8 +22,8 @@ public class UpbitTradeClientDefinition implements TradeClientDefinition {
     @Override
     public String getPropertiesTemplate() {
         StringJoiner template = new StringJoiner("\n");
-        template.add("accessKey=[발급 accessKey]");
-        template.add("secretKey=[발급 secretKey]");
+        template.add("accessKey=[Access Key]");
+        template.add("secretKey=[Secret Key]");
         return template.toString();
     }
 
