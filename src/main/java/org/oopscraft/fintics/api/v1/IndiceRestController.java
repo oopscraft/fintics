@@ -31,8 +31,6 @@ public class IndiceRestController {
 
     private final IndiceService indiceService;
 
-    private final CacheManager cacheManager;
-
     @RequestMapping
     public ResponseEntity<List<IndiceResponse>> getIndices() {
         List<IndiceResponse> indiceResponses = indiceService.getIndices().stream()
@@ -60,15 +58,9 @@ public class IndiceRestController {
 
     @Scheduled(initialDelay = 60_000, fixedDelay = 60_000)
     @PreAuthorize("permitAll()")
-    public void cacheIndiceIndicator() {
-        log.info("IndiceRestController.cacheIndiceIndicator");
-        Cache cache = cacheManager.getCache(INDICE_REST_CONTROLLER_GET_INDICE_INDICATOR);
-        if(cache != null) {
-            indiceService.getIndices().forEach(indice -> {
-                IndiceSymbol symbol = indice.getSymbol();
-                cache.put(symbol, getIndiceIndicator(symbol));
-            });
-        }
+    @CacheEvict(cacheNames = INDICE_REST_CONTROLLER_GET_INDICE_INDICATOR, allEntries = true)
+    public void cacheEvictIndiceIndicator() {
+        log.info("IndiceRestController.cacheEvictIndiceIndicator");
     }
 
 }

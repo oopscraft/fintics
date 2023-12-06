@@ -10,6 +10,7 @@ import org.oopscraft.fintics.service.TradeService;
 import org.oopscraft.fintics.trade.TradeThreadManager;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -36,8 +37,6 @@ public class TradeRestController {
     private final TradeService tradeService;
 
     private final TradeThreadManager tradeThreadManager;
-
-    private final CacheManager cacheManager;
 
     @GetMapping
     public ResponseEntity<List<TradeResponse>> getTrades() {
@@ -160,15 +159,9 @@ public class TradeRestController {
 
     @Scheduled(initialDelay = 60_000, fixedDelay = 60_000)
     @PreAuthorize("permitAll()")
-    public void cacheTradeAssetIndicators() {
-        log.info("TradeRestController.cacheTradeAssetIndicators");
-        Cache cache = cacheManager.getCache(TRADE_REST_CONTROLLER_GET_TRADE_ASSET_INDICATORS);
-        if(cache != null) {
-            tradeService.getTrades().forEach(trade -> {
-                String tradeId = trade.getTradeId();
-                cache.put(tradeId, getTradeAssetIndicators(tradeId));
-            });
-        }
+    @CacheEvict(cacheNames = TRADE_REST_CONTROLLER_GET_TRADE_ASSET_INDICATORS, allEntries = true)
+    public void cacheEvictTradeAssetIndicators() {
+        log.info("TradeRestController.cacheEvictTradeAssetIndicators");
     }
 
     @GetMapping(value = "{tradeId}/log", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
