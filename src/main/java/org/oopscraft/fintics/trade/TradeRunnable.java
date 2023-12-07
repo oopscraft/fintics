@@ -223,7 +223,7 @@ public class TradeRunnable implements Runnable {
                                 .divide(BigDecimal.valueOf(100), MathContext.DECIMAL32)
                                 .multiply(tradeAsset.getHoldRatio())
                                 .setScale(2, RoundingMode.HALF_UP);
-                        BigDecimal price = orderBook.getAskPrice();
+                        BigDecimal price = orderBook.getPrice();
                         BigDecimal quantity = buyAmount
                                 .divide(price, MathContext.DECIMAL32);
 
@@ -247,7 +247,7 @@ public class TradeRunnable implements Runnable {
                     if (balance.hasBalanceAsset(tradeAsset.getSymbol())) {
                         // price, quantity
                         BalanceAsset balanceAsset = balance.getBalanceAsset(tradeAsset.getSymbol()).orElseThrow();
-                        BigDecimal price = orderBook.getBidPrice();
+                        BigDecimal price = orderBook.getPrice();
                         BigDecimal quantity = balanceAsset.getOrderableQuantity();
 
                         // sell

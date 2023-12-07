@@ -99,6 +99,12 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
 def assetName = assetIndicator.getName()
 def holdVotes = []
 
+// minute 1
+def resultOfMinute1 = analyze(assetIndicator, OhlcvType.MINUTE, 1)
+holdVotes.addAll(resultOfMinute1.values())
+log.debug("[{}] resultOfMinute1: {}", assetName, resultOfMinute1)
+log.info("[{}] resultOfMinute1Average: {}", assetName, resultOfMinute1.values().average())
+
 // minute 10
 def resultOfMinute10 = analyze(assetIndicator, OhlcvType.MINUTE, 10)
 holdVotes.addAll(resultOfMinute10.values())

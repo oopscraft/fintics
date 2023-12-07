@@ -32,8 +32,8 @@ class UpbitTradeClientTest {
 
     TradeAsset getTestTradeAsset() {
         return TradeAsset.builder()
-                .symbol("KRW-XRP")
-                .name("Ripple")
+                .symbol("KRW-BTC")
+                .name("Bitcoin")
                 .build();
     }
 
@@ -115,6 +115,21 @@ class UpbitTradeClientTest {
         getUpbitTradeClient().sellAsset(balanceAsset, OrderType.MARKET, BigDecimal.valueOf(5.9), BigDecimal.valueOf(850));
         // then
 
+    }
+
+    @Disabled
+    @Test
+    void buyAssetByMarketOrderType() throws Exception {
+        // given
+        TradeAsset tradeAsset = Optional.of(getTestTradeAsset())
+                .map(asset -> TradeAsset.builder()
+                        .symbol(asset.getSymbol())
+                        .name(asset.getName())
+                        .build())
+                .orElseThrow();
+        // when
+        getUpbitTradeClient().buyAsset(tradeAsset, OrderType.LIMIT, BigDecimal.valueOf(6), BigDecimal.valueOf(840));
+        // then
     }
 
 }

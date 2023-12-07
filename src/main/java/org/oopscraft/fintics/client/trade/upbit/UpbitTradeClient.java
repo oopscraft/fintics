@@ -259,10 +259,10 @@ public class UpbitTradeClient extends TradeClient {
         payloadMap.put("market", market);
         payloadMap.put("side", side);
         if(price != null) {
-            payloadMap.put("price", price.toString());
+            payloadMap.put("price", String.valueOf(price.doubleValue()));
         }
         if(volume != null) {
-            payloadMap.put("volume", volume.toString());
+            payloadMap.put("volume", String.valueOf(volume.doubleValue()));
         }
         payloadMap.put("ord_type", ordType);
         payloadMap.put("identifier", IdGenerator.uuid());
