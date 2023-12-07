@@ -117,19 +117,4 @@ class UpbitTradeClientTest {
 
     }
 
-    @Disabled
-    @Test
-    void buyAssetByMarketOrderType() throws Exception {
-        // given
-        TradeAsset tradeAsset = Optional.of(getTestTradeAsset())
-                .map(asset -> TradeAsset.builder()
-                        .symbol(asset.getSymbol())
-                        .name(asset.getName())
-                        .build())
-                .orElseThrow();
-        // when
-        getUpbitTradeClient().buyAsset(tradeAsset, OrderType.LIMIT, BigDecimal.valueOf(6), BigDecimal.valueOf(840));
-        // then
-    }
-
 }
