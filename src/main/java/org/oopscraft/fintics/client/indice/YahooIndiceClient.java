@@ -34,10 +34,6 @@ import java.util.*;
 @Slf4j
 public class YahooIndiceClient extends IndiceClient {
 
-    private final static String YAHOO_INDICE_CLIENT_GET_MINUTE_OHLCVS = "YahooIndiceClient.getMinuteOhlcvs";
-
-    private final static String YAHOO_INDICE_CLIENT_GET_DAILY_OHLCVS = "YahooIndiceClient.getDailyOhlcvs";
-
     private final ObjectMapper objectMapper;
 
     @Override

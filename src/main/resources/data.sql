@@ -42,7 +42,7 @@ insert into `core_alarm`
 
 -- fintics_trade: 한국투자증권 모의투자 - 지수ETF
 insert into `fintics_trade`
-    (`trade_id`,`name`,`enabled`,`interval`,`start_at`,`end_at`,`client_type`,`client_properties`,`alarm_id`,`hold_condition`) values
+    (`trade_id`,`name`,`enabled`,`interval`,`start_at`,`end_at`,`client_type`,`client_properties`,`alarm_id`,`hold_condition`, `order_type`) values
     ('06c228451ce0400fa57bb36f0568d7cb','한국투자증권 모의투자 - 지수ETF','N','60','09:00','15:30',
      'org.oopscraft.fintics.client.trade.kis.KisTradeClient','production=false
 apiUrl=https://openapivts.koreainvestment.com:29443
@@ -51,7 +51,7 @@ appSecret=[Application Secret]
 accountNo=[Account Number]
 ',null,'
 
-');
+','LIMIT');
 insert into `fintics_trade_asset`
 (`trade_id`,`symbol`,`name`, `enabled`, `hold_ratio`) values
     ('06c228451ce0400fa57bb36f0568d7cb','122630','KODEX 레버리지','N','50');
@@ -61,7 +61,7 @@ insert into `fintics_trade_asset`
 
 -- fintics_trade: 한국투자증권 모의투자 - 지수ETF(인버스)
 insert into `fintics_trade`
-(`trade_id`,`name`,`enabled`,`interval`,`start_at`,`end_at`,`client_type`,`client_properties`,`alarm_id`,`hold_condition`) values
+(`trade_id`,`name`,`enabled`,`interval`,`start_at`,`end_at`,`client_type`,`client_properties`,`alarm_id`,`hold_condition`,`order_type`) values
     ('7af6bc641eef4254b12dd9fa1d43384d','한국투자증권 모의투자 - 지수ETF(인버스)','N','60','09:00','15:30',
      'org.oopscraft.fintics.client.trade.kis.KisTradeClient','production=false
 apiUrl=https://openapivts.koreainvestment.com:29443
@@ -70,7 +70,7 @@ appSecret=[Application Secret]
 accountNo=[Account Number]
 ',null,'
 
-');
+','LIMIT');
 insert into `fintics_trade_asset`
 (`trade_id`,`symbol`,`name`, `enabled`, `hold_ratio`) values
     ('7af6bc641eef4254b12dd9fa1d43384d','252670','KODEX 200선물인버스2X','N','40');
@@ -80,12 +80,12 @@ insert into `fintics_trade_asset`
 
 -- fintics_trade: 업비트 API(장시간 외 트레이드 테스트용)
 insert into `fintics_trade`
-(`trade_id`,`name`,`enabled`,`interval`,`start_at`,`end_at`,`client_type`,`client_properties`,`alarm_id`,`hold_condition`) values
+(`trade_id`,`name`,`enabled`,`interval`,`start_at`,`end_at`,`client_type`,`client_properties`,`alarm_id`,`hold_condition`,`order_type`) values
     ('81c6a451d6da49449faa2b5b7e66041b','코인놀이방(24시간 테스트용)','N','30','00:00','23:59',
      'org.oopscraft.fintics.client.trade.upbit.UpbitTradeClient','accessKey=[Access Key]
 secretKey=[Secret Key]',null,'
 
-');
+','LIMIT');
 insert into `fintics_trade_asset`
 (`trade_id`,`symbol`,`name`,`enabled`, `hold_ratio`) values
     ('81c6a451d6da49449faa2b5b7e66041b','KRW-BTC','Bitcoin','N','20');

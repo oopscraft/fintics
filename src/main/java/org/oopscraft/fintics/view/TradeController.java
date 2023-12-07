@@ -5,6 +5,7 @@ import org.oopscraft.arch4j.core.alarm.Alarm;
 import org.oopscraft.arch4j.core.alarm.AlarmSearch;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
 import org.oopscraft.fintics.client.trade.TradeClientDefinitionRegistry;
+import org.oopscraft.fintics.model.OrderType;
 import org.oopscraft.fintics.service.TradeService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -38,6 +39,7 @@ public class TradeController {
         modelAndView.addObject("clientDefinitions", TradeClientDefinitionRegistry.getClientDefinitions());
         List<Alarm> alarms = alarmService.getAlarms(AlarmSearch.builder().build(), Pageable.unpaged()).getContent();
         modelAndView.addObject("alarms", alarms);
+        modelAndView.addObject("orderTypes", OrderType.values());
         return modelAndView;
     }
 

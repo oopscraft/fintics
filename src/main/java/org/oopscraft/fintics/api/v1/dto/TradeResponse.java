@@ -1,6 +1,7 @@
 package org.oopscraft.fintics.api.v1.dto;
 
 import lombok.*;
+import org.oopscraft.fintics.model.OrderType;
 import org.oopscraft.fintics.model.Trade;
 
 import java.time.LocalTime;
@@ -32,6 +33,10 @@ public class TradeResponse {
 
     private String holdCondition;
 
+    private OrderType orderType;
+
+    private String cashAssetSymbol;
+
     private String alarmId;
 
     private boolean alarmOnError;
@@ -54,6 +59,8 @@ public class TradeResponse {
                 .clientType(trade.getClientType())
                 .clientProperties(trade.getClientProperties())
                 .holdCondition(trade.getHoldCondition())
+                .orderType(trade.getOrderType())
+                .cashAssetSymbol(trade.getCashAssetSymbol())
                 .alarmId(trade.getAlarmId())
                 .alarmOnError(trade.isAlarmOnError())
                 .alarmOnOrder(trade.isAlarmOnOrder())

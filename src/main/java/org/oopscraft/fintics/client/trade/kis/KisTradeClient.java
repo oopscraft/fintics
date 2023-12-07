@@ -63,7 +63,7 @@ public class KisTradeClient extends TradeClient {
     }
 
     @Override
-    public OrderBook getOrderBook(TradeAsset tradeAsset) throws InterruptedException {
+    public OrderBook getOrderBook(Asset asset) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
@@ -71,7 +71,7 @@ public class KisTradeClient extends TradeClient {
         HttpHeaders headers = createHeaders();
         headers.add("tr_id", "FHKST01010200");
         String fidCondMrktDivCode = "J";
-        String fidInputIscd = tradeAsset.getSymbol();
+        String fidInputIscd = asset.getSymbol();
         url = UriComponentsBuilder.fromUriString(url)
                 .queryParam("FID_COND_MRKT_DIV_CODE", fidCondMrktDivCode)
                 .queryParam("FID_INPUT_ISCD", fidInputIscd)
@@ -111,14 +111,14 @@ public class KisTradeClient extends TradeClient {
     }
 
     @Override
-    public List<Ohlcv> getMinuteOhlcvs(TradeAsset tradeAsset) throws InterruptedException {
+    public List<Ohlcv> getMinuteOhlcvs(Asset asset) throws InterruptedException {
         List<Ohlcv> minuteOhlcvs = new ArrayList<>();
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
         String fidEtcClsCode = "";
         String fidCondMrktDivCode = "J";
-        String fidInputIscd = tradeAsset.getSymbol();
+        String fidInputIscd = asset.getSymbol();
         LocalTime nowTime = LocalTime.now();
         LocalTime closeTime = LocalTime.of(15,30);
         LocalTime fidInputHour1Time = (nowTime.isAfter(closeTime) ? closeTime : nowTime);
@@ -199,12 +199,12 @@ public class KisTradeClient extends TradeClient {
     }
 
     @Override
-    public List<Ohlcv> getDailyOhlcvs(TradeAsset tradeAsset) throws InterruptedException {
+    public List<Ohlcv> getDailyOhlcvs(Asset asset) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
         String fidCondMrktDivCode = "J";
-        String fidInputIscd = tradeAsset.getSymbol();
+        String fidInputIscd = asset.getSymbol();
 
         String url = apiUrl + "/uapi/domestic-stock/v1/quotations/inquire-daily-price";
         HttpHeaders headers = createHeaders();
@@ -391,7 +391,7 @@ public class KisTradeClient extends TradeClient {
     }
 
     @Override
-    public void buyAsset(TradeAsset tradeAsset, OrderType orderType, BigDecimal quantity, BigDecimal price) throws InterruptedException {
+    public void buyAsset(Asset asset, OrderType orderType, BigDecimal quantity, BigDecimal price) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
@@ -399,23 +399,43 @@ public class KisTradeClient extends TradeClient {
         HttpHeaders headers = createHeaders();
         String trId = production ? "TTTC0802U" : "VTTC0802U";
         headers.add("tr_id", trId);
-        ValueMap payloadMap = new ValueMap(){{
-            put("CANO", accountNo.split("-")[0]);
-            put("ACNT_PRDT_CD", accountNo.split("-")[1]);
-            put("PDNO", tradeAsset.getSymbol());
-            put("ORD_DVSN", "01");
-            put("ORD_QTY", String.valueOf(quantity.intValue()));
-            put("ORD_UNPR", "0");
-        }};
+
+        // order type
+        String ordDvsn = null;
+        String ordUnpr = null;
+        switch(orderType) {
+            case LIMIT -> {
+                ordDvsn = "00";
+                ordUnpr = String.valueOf(price.intValue());
+            }
+            case MARKET -> {
+                ordDvsn = "01";
+                ordUnpr = "0";
+            }
+            default -> throw new RuntimeException("invalid order type");
+        }
+
+        // request
+        ValueMap payloadMap = new ValueMap();
+        payloadMap.put("CANO", accountNo.split("-")[0]);
+        payloadMap.put("ACNT_PRDT_CD", accountNo.split("-")[1]);
+        payloadMap.put("PDNO", asset.getSymbol());
+        payloadMap.put("ORD_DVSN", ordDvsn);
+        payloadMap.put("ORD_QTY", String.valueOf(quantity.intValue()));
+        payloadMap.put("ORD_UNPR", ordUnpr);
         RequestEntity<ValueMap> requestEntity = RequestEntity
                 .post(url)
                 .headers(headers)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(payloadMap);
+
+        // exchange
         sleep();
         ResponseEntity<ValueMap> responseEntity = restTemplate.exchange(requestEntity, ValueMap.class);
         ValueMap responseMap = Optional.ofNullable(responseEntity.getBody())
                 .orElseThrow();
+
+        // response
         String rtCd = responseMap.getString("rt_cd");
         String msg1 = responseMap.getString("msg1");
         if(!"0".equals(rtCd)) {
@@ -424,7 +444,7 @@ public class KisTradeClient extends TradeClient {
     }
 
     @Override
-    public void sellAsset(BalanceAsset balanceAsset, OrderType orderType, BigDecimal quantity, BigDecimal price) throws InterruptedException {
+    public void sellAsset(Asset asset, OrderType orderType, BigDecimal quantity, BigDecimal price) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
@@ -432,23 +452,43 @@ public class KisTradeClient extends TradeClient {
         HttpHeaders headers = createHeaders();
         String trId = production ? "TTTC0801U" : "VTTC0801U";
         headers.add("tr_id", trId);
-        ValueMap payloadMap = new ValueMap(){{
-            put("CANO", accountNo.split("-")[0]);
-            put("ACNT_PRDT_CD", accountNo.split("-")[1]);
-            put("PDNO", balanceAsset.getSymbol());
-            put("ORD_DVSN", "01");
-            put("ORD_QTY", String.valueOf(quantity.intValue()));
-            put("ORD_UNPR", "0");
-        }};
+
+        // order type
+        String ordDvsn = null;
+        String ordUnpr = null;
+        switch(orderType) {
+            case LIMIT -> {
+                ordDvsn = "00";
+                ordUnpr = String.valueOf(price.intValue());
+            }
+            case MARKET -> {
+                ordDvsn = "01";
+                ordUnpr = "0";
+            }
+            default -> throw new RuntimeException("invalid order type");
+        }
+
+        // request
+        ValueMap payloadMap = new ValueMap();
+        payloadMap.put("CANO", accountNo.split("-")[0]);
+        payloadMap.put("ACNT_PRDT_CD", accountNo.split("-")[1]);
+        payloadMap.put("PDNO", asset.getSymbol());
+        payloadMap.put("ORD_DVSN", ordDvsn);
+        payloadMap.put("ORD_QTY", String.valueOf(quantity.intValue()));
+        payloadMap.put("ORD_UNPR", ordUnpr);
         RequestEntity<ValueMap> requestEntity = RequestEntity
                 .post(url)
                 .headers(headers)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(payloadMap);
+
+        // exchange
         sleep();
         ResponseEntity<ValueMap> responseEntity = restTemplate.exchange(requestEntity, ValueMap.class);
         ValueMap responseMap = Optional.ofNullable(responseEntity.getBody())
                 .orElseThrow();
+
+        // response
         String rtCd = responseMap.getString("rt_cd");
         String msg1 = responseMap.getString("msg1");
         if(!"0".equals(rtCd)) {

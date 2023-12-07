@@ -1,6 +1,7 @@
 package org.oopscraft.fintics.api.v1.dto;
 
 import lombok.*;
+import org.oopscraft.fintics.model.OrderType;
 
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -29,6 +30,10 @@ public class TradeRequest {
     private String clientProperties;
 
     private String holdCondition;
+
+    private OrderType orderType;
+
+    private String cashAssetSymbol;
 
     private String alarmId;
 

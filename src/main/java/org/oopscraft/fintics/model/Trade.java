@@ -33,6 +33,10 @@ public class Trade {
 
     private String holdCondition;
 
+    private OrderType orderType;
+
+    private String cashAssetSymbol;
+
     private String alarmId;
 
     private boolean alarmOnError;
@@ -55,6 +59,8 @@ public class Trade {
                 .clientType(tradeEntity.getClientType())
                 .clientProperties(tradeEntity.getClientProperties())
                 .holdCondition(tradeEntity.getHoldCondition())
+                .orderType(tradeEntity.getOrderType())
+                .cashAssetSymbol(tradeEntity.getCashAssetSymbol())
                 .alarmId(tradeEntity.getAlarmId())
                 .alarmOnError(tradeEntity.isAlarmOnError())
                 .alarmOnOrder(tradeEntity.isAlarmOnOrder())

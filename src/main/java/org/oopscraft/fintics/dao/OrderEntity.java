@@ -44,7 +44,7 @@ public class OrderEntity extends SystemFieldEntity {
     @Column(name = "asset_name")
     private String assetName;
 
-    @Column(name = "order_type")
+    @Column(name = "order_type", length = 16)
     private OrderType orderType;
 
     @Column(name = "quantity")

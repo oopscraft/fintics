@@ -84,12 +84,12 @@ public class UpbitTradeClient extends TradeClient {
     }
 
     @Override
-    public OrderBook getOrderBook(TradeAsset tradeAsset) throws InterruptedException {
+    public OrderBook getOrderBook(Asset asset) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
         String url = API_URL + "/v1/orderbook";
-        String queryString = "markets=" + tradeAsset.getSymbol();
+        String queryString = "markets=" + asset.getSymbol();
         RequestEntity<Void> requestEntity = RequestEntity
                 .get(url + "?" + queryString)
                 .headers(createHeaders(queryString))
@@ -112,16 +112,16 @@ public class UpbitTradeClient extends TradeClient {
     }
 
     @Override
-    public List<Ohlcv> getMinuteOhlcvs(TradeAsset tradeAsset) throws InterruptedException {
-        return getOhlcvs(tradeAsset, OhlcvType.MINUTE);
+    public List<Ohlcv> getMinuteOhlcvs(Asset asset) throws InterruptedException {
+        return getOhlcvs(asset, OhlcvType.MINUTE);
     }
 
     @Override
-    public List<Ohlcv> getDailyOhlcvs(TradeAsset tradeAsset) throws InterruptedException {
-        return getOhlcvs(tradeAsset, OhlcvType.DAILY);
+    public List<Ohlcv> getDailyOhlcvs(Asset asset) throws InterruptedException {
+        return getOhlcvs(asset, OhlcvType.DAILY);
     }
 
-    private List<Ohlcv> getOhlcvs(TradeAsset tradeAsset, OhlcvType ohlcvType) throws InterruptedException {
+    private List<Ohlcv> getOhlcvs(Asset asset, OhlcvType ohlcvType) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
@@ -131,7 +131,7 @@ public class UpbitTradeClient extends TradeClient {
             case DAILY -> url += "days";
             default -> throw new RuntimeException("invalid OhlcvType");
         }
-        String queryString = "market=" + tradeAsset.getSymbol() + "&count=200";
+        String queryString = "market=" + asset.getSymbol() + "&count=200";
         RequestEntity<Void> requestEntity = RequestEntity
                 .get(url + "?" + queryString)
                 .headers(createHeaders(queryString))
@@ -227,15 +227,25 @@ public class UpbitTradeClient extends TradeClient {
     }
 
     @Override
-    public void buyAsset(TradeAsset tradeAsset, OrderType orderType, BigDecimal quantity, BigDecimal price) throws InterruptedException {
-        BigDecimal orderPrice = price.multiply(quantity)
-                .setScale(2, RoundingMode.HALF_UP);
-        order(tradeAsset.getSymbol(), "bid", "price", orderPrice, null);
+    public void buyAsset(Asset asset, OrderType orderType, BigDecimal quantity, BigDecimal price) throws InterruptedException {
+        switch(orderType) {
+            case LIMIT -> order(asset.getSymbol(), "bid", "limit", price, quantity);
+            case MARKET -> {
+                BigDecimal orderPrice = price.multiply(quantity)
+                        .setScale(2, RoundingMode.HALF_UP);
+                order(asset.getSymbol(), "bid", "price", orderPrice, null);
+            }
+            default -> throw new RuntimeException("Invalid order type");
+        }
     }
 
     @Override
-    public void sellAsset(BalanceAsset balanceAsset, OrderType orderType, BigDecimal quantity, BigDecimal price) throws InterruptedException {
-        order(balanceAsset.getSymbol(), "ask", "market", null, quantity);
+    public void sellAsset(Asset asset, OrderType orderType, BigDecimal quantity, BigDecimal price) throws InterruptedException {
+        switch(orderType) {
+            case LIMIT -> order(asset.getSymbol(), "ask", "limit", price, quantity);
+            case MARKET -> order(asset.getSymbol(), "ask", "market", null, quantity);
+            default -> throw new RuntimeException("Invalid order type");
+        }
     }
 
     private void order(String market, String side, String ordType, BigDecimal price, BigDecimal volume) throws InterruptedException {

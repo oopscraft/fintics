@@ -7,16 +7,13 @@ import org.oopscraft.fintics.dao.TradeAssetEntity;
 import java.math.BigDecimal;
 
 @Data
-@Builder
+@EqualsAndHashCode(callSuper = true)
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class TradeAsset {
+public class TradeAsset extends Asset {
 
     private String tradeId;
-
-    private String symbol;
-
-    private String name;
 
     private boolean enabled;
 
