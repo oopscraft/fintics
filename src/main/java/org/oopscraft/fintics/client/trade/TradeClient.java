@@ -23,10 +23,10 @@ public abstract class TradeClient {
 
     public abstract Balance getBalance() throws InterruptedException;
 
-    public abstract void submitOrder(Order order) throws InterruptedException;
+    public abstract Order submitOrder(Order order) throws InterruptedException;
 
     public abstract List<Order> getWaitingOrders() throws InterruptedException;
 
-    public abstract void amendOrder(Order order) throws InterruptedException;
+    public abstract Order amendOrder(Order order) throws InterruptedException;
 
 }

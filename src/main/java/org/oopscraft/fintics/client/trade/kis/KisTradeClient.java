@@ -390,7 +390,7 @@ public class KisTradeClient extends TradeClient {
     }
 
     @Override
-    public void submitOrder(Order order) throws InterruptedException {
+    public Order submitOrder(Order order) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
@@ -447,6 +447,9 @@ public class KisTradeClient extends TradeClient {
         if(!"0".equals(rtCd)) {
             throw new RuntimeException(msg1);
         }
+
+        // return
+        return order;
     }
 
     @Override
@@ -455,7 +458,8 @@ public class KisTradeClient extends TradeClient {
     }
 
     @Override
-    public void amendOrder(Order order) throws InterruptedException {
+    public Order amendOrder(Order order) throws InterruptedException {
+        return null;
     }
 
 }

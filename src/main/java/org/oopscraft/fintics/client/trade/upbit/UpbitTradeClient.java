@@ -226,7 +226,7 @@ public class UpbitTradeClient extends TradeClient {
     }
 
     @Override
-    public void submitOrder(Order order) throws InterruptedException {
+    public Order submitOrder(Order order) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
@@ -312,16 +312,86 @@ public class UpbitTradeClient extends TradeClient {
 
         sleep();
         ResponseEntity<ValueMap> responseEntity = restTemplate.exchange(requestEntity, ValueMap.class);
-        log.info("{}",responseEntity.getBody());
+        ValueMap responseMap = responseEntity.getBody();
+        log.info("{}", responseMap);
+        if(responseMap != null) {
+            order.setClientOrderId(responseMap.getString("uuid"));
+        }
+
+        // return
+        return order;
     }
 
     @Override
     public List<Order> getWaitingOrders() throws InterruptedException {
-        return null;
+        RestTemplate restTemplate = RestTemplateBuilder.create()
+                .insecure(true)
+                .build();
+
+        String url = API_URL + "/v1/orders/";
+        String queryString = "state=wait&page=1&limit=100";
+        RequestEntity<Void> requestEntity = RequestEntity
+                .get(url + "?" + queryString)
+                .headers(createHeaders(queryString))
+                .build();
+
+        sleep();
+        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+        List<ValueMap> rows;
+        try {
+            rows = objectMapper.readValue(responseEntity.getBody(), new TypeReference<>(){});
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return rows.stream()
+                .map(row -> {
+                    OrderKind orderKind;
+                    switch(row.getString("side")) {
+                        case "bid" -> orderKind = OrderKind.BUY;
+                        case "ask" -> orderKind = OrderKind.SELL;
+                        default -> throw new RuntimeException("invalid side");
+                    }
+                    OrderType orderType;
+                    switch(row.getString("ord_type")) {
+                        case "limit" -> orderType = OrderType.LIMIT;
+                        case "market","price" -> orderType = OrderType.MARKET;
+                        default -> throw new RuntimeException("invalid ordType");
+                    }
+                    String symbol = row.getString("market");
+                    BigDecimal quantity = row.getNumber("remaining_volume");
+                    BigDecimal price = row.getNumber("price");
+                    String clientOrderId = row.getString("uuid");
+
+                    // order
+                    return Order.builder()
+                            .orderKind(orderKind)
+                            .symbol(symbol)
+                            .orderType(orderType)
+                            .quantity(quantity)
+                            .price(price)
+                            .clientOrderId(clientOrderId)
+                            .build();
+                })
+                .collect(Collectors.toList());
     }
 
     @Override
-    public void amendOrder(Order order) throws InterruptedException {
+    public Order amendOrder(Order order) throws InterruptedException {
+        // cancel
+        RestTemplate restTemplate = RestTemplateBuilder.create()
+                .insecure(true)
+                .build();
+        String url = API_URL + "/v1/order";
+        String queryString = "uuid=" + order.getClientOrderId();
+        RequestEntity<Void> requestEntity = RequestEntity
+                .delete(url + "?" + queryString)
+                .headers(createHeaders(queryString))
+                .build();
+        sleep();
+        restTemplate.exchange(requestEntity, Void.class);
+
+        // submit order
+        return submitOrder(order);
     }
 
 }

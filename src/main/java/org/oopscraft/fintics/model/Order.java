@@ -33,6 +33,8 @@ public class Order {
 
     private BigDecimal price;
 
+    private String clientOrderId;
+
     private OrderResult orderResult;
 
     private String errorMessage;

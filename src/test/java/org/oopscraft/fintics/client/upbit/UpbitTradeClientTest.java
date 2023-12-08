@@ -119,4 +119,28 @@ class UpbitTradeClientTest {
         // then
     }
 
+    @Disabled
+    @Test
+    void getWaitingOrders() throws Exception {
+        // given
+        // when
+        List<Order> orders = getUpbitTradeClient().getWaitingOrders();
+        // then
+        log.info("orders:{}", orders);
+    }
+
+    @Disabled
+    @Test
+    void amendOrder() throws Exception {
+        // given
+        List<Order> orders = getUpbitTradeClient().getWaitingOrders();
+
+        // when
+        for(Order order : orders) {
+            Order amendedOrder = getUpbitTradeClient().amendOrder(order);
+            log.debug("amendedOrder:{}", amendedOrder);
+        }
+        // then
+    }
+
 }

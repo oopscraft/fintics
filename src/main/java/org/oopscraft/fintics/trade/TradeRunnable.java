@@ -29,6 +29,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class TradeRunnable implements Runnable {
@@ -353,6 +354,7 @@ public class TradeRunnable implements Runnable {
     }
 
     private void buyTradeAsset(Trade trade, TradeAsset tradeAsset, OrderType orderType, BigDecimal quantity, BigDecimal price) throws InterruptedException {
+        TradeClient tradeClient = TradeClientFactory.getClient(trade);
         Order order = Order.builder()
                 .orderId(IdGenerator.uuid())
                 .orderAt(LocalDateTime.now())
@@ -363,8 +365,25 @@ public class TradeRunnable implements Runnable {
                 .quantity(quantity)
                 .price(price)
                 .build();
+
+        // if waiting order exists
+        Order waitingOrder = tradeClient.getWaitingOrders().stream()
+                .filter(element ->
+                        Objects.equals(element.getSymbol(), order.getSymbol())
+                                && element.getOrderKind() == order.getOrderKind())
+                .findFirst()
+                .orElse(null);
+        if(waitingOrder != null) {
+            // if limit type order, amend order
+            if(waitingOrder.getOrderType() == OrderType.LIMIT) {
+                waitingOrder.setPrice(price);
+                tradeClient.amendOrder(waitingOrder);
+            }
+            return;
+        }
+
+        // submit buy order
         try {
-            TradeClient tradeClient = TradeClientFactory.getClient(trade);
             tradeClient.submitOrder(order);
             if (trade.isAlarmOnOrder()) {
                 if (trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
@@ -384,6 +403,7 @@ public class TradeRunnable implements Runnable {
     }
 
     private void sellBalanceAsset(Trade trade, BalanceAsset balanceAsset, OrderType orderType, BigDecimal quantity, BigDecimal price) throws InterruptedException {
+        TradeClient tradeClient = TradeClientFactory.getClient(trade);
         Order order = Order.builder()
                 .orderId(IdGenerator.uuid())
                 .orderAt(LocalDateTime.now())
@@ -394,8 +414,25 @@ public class TradeRunnable implements Runnable {
                 .quantity(quantity)
                 .price(price)
                 .build();
+
+        // if waiting order exists
+        Order waitingOrder = tradeClient.getWaitingOrders().stream()
+                .filter(element ->
+                        Objects.equals(element.getSymbol(), order.getSymbol())
+                                && element.getOrderKind() == order.getOrderKind())
+                .findFirst()
+                .orElse(null);
+        if(waitingOrder != null) {
+            // if limit type order, amend order
+            if(waitingOrder.getOrderType() == OrderType.LIMIT) {
+                waitingOrder.setPrice(price);
+                tradeClient.amendOrder(waitingOrder);
+            }
+            return;
+        }
+
+        // submit sell order
         try {
-            TradeClient tradeClient = TradeClientFactory.getClient(trade);
             tradeClient.submitOrder(order);
             if (trade.isAlarmOnOrder()) {
                 if (trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
