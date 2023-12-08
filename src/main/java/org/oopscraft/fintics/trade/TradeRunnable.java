@@ -377,6 +377,7 @@ public class TradeRunnable implements Runnable {
             // if limit type order, amend order
             if(waitingOrder.getOrderType() == OrderType.LIMIT) {
                 waitingOrder.setPrice(price);
+                log.info("amend order:{}", waitingOrder);
                 tradeClient.amendOrder(waitingOrder);
             }
             return;
@@ -384,6 +385,7 @@ public class TradeRunnable implements Runnable {
 
         // submit buy order
         try {
+            log.info("submit order:{}", order);
             tradeClient.submitOrder(order);
             if (trade.isAlarmOnOrder()) {
                 if (trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
@@ -426,6 +428,7 @@ public class TradeRunnable implements Runnable {
             // if limit type order, amend order
             if(waitingOrder.getOrderType() == OrderType.LIMIT) {
                 waitingOrder.setPrice(price);
+                log.info("amend order:{}", waitingOrder);
                 tradeClient.amendOrder(waitingOrder);
             }
             return;
@@ -433,6 +436,7 @@ public class TradeRunnable implements Runnable {
 
         // submit sell order
         try {
+            log.info("submit order:{}", order);
             tradeClient.submitOrder(order);
             if (trade.isAlarmOnOrder()) {
                 if (trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
