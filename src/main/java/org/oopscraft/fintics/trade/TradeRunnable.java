@@ -8,9 +8,9 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
 import org.oopscraft.arch4j.core.data.IdGenerator;
 import org.oopscraft.arch4j.web.support.SseLogAppender;
+import org.oopscraft.fintics.client.indice.IndiceClient;
 import org.oopscraft.fintics.client.trade.TradeClient;
 import org.oopscraft.fintics.client.trade.TradeClientFactory;
-import org.oopscraft.fintics.client.indice.IndiceClient;
 import org.oopscraft.fintics.dao.*;
 import org.oopscraft.fintics.model.*;
 import org.slf4j.LoggerFactory;
@@ -353,11 +353,19 @@ public class TradeRunnable implements Runnable {
     }
 
     private void buyTradeAsset(Trade trade, TradeAsset tradeAsset, OrderType orderType, BigDecimal quantity, BigDecimal price) throws InterruptedException {
-        OrderResult orderResult = null;
-        String errorMessage = null;
+        Order order = Order.builder()
+                .orderId(IdGenerator.uuid())
+                .orderAt(LocalDateTime.now())
+                .orderKind(OrderKind.BUY)
+                .orderType(orderType)
+                .tradeId(trade.getTradeId())
+                .symbol(tradeAsset.getSymbol())
+                .quantity(quantity)
+                .price(price)
+                .build();
         try {
             TradeClient tradeClient = TradeClientFactory.getClient(trade);
-            tradeClient.buyAsset(tradeAsset, orderType, quantity, price);
+            tradeClient.submitOrder(order);
             if (trade.isAlarmOnOrder()) {
                 if (trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
                     String subject = String.format("[%s]", trade.getName());
@@ -365,22 +373,30 @@ public class TradeRunnable implements Runnable {
                     alarmService.sendAlarm(trade.getAlarmId(), subject, content);
                 }
             }
-            orderResult = OrderResult.COMPLETED;
+            order.setOrderResult(OrderResult.COMPLETED);
         } catch(Throwable e) {
-            orderResult = OrderResult.FAILED;
-            errorMessage = e.getMessage();
+            order.setOrderResult(OrderResult.FAILED);
+            order.setErrorMessage(e.getMessage());
             throw e;
         } finally {
-            saveTradeOrder(OrderKind.BUY, tradeId, tradeAsset.getSymbol(), tradeAsset.getName(), orderType, quantity, price, orderResult, errorMessage);
+            saveTradeOrder(order);
         }
     }
 
     private void sellBalanceAsset(Trade trade, BalanceAsset balanceAsset, OrderType orderType, BigDecimal quantity, BigDecimal price) throws InterruptedException {
-        OrderResult orderResult = null;
-        String errorMessage = null;
+        Order order = Order.builder()
+                .orderId(IdGenerator.uuid())
+                .orderAt(LocalDateTime.now())
+                .orderKind(OrderKind.BUY)
+                .orderType(orderType)
+                .tradeId(trade.getTradeId())
+                .symbol(balanceAsset.getSymbol())
+                .quantity(quantity)
+                .price(price)
+                .build();
         try {
             TradeClient tradeClient = TradeClientFactory.getClient(trade);
-            tradeClient.sellAsset(balanceAsset, orderType, quantity, price);
+            tradeClient.submitOrder(order);
             if (trade.isAlarmOnOrder()) {
                 if (trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
                     String subject = String.format("[%s]", trade.getName());
@@ -388,32 +404,32 @@ public class TradeRunnable implements Runnable {
                     alarmService.sendAlarm(trade.getAlarmId(), subject, content);
                 }
             }
-            orderResult = OrderResult.COMPLETED;
+            order.setOrderResult(OrderResult.COMPLETED);
         } catch(Throwable e) {
-            orderResult = OrderResult.FAILED;
-            errorMessage = e.getMessage();
+            order.setOrderResult(OrderResult.FAILED);
+            order.setErrorMessage(e.getMessage());
             throw e;
         } finally {
-            saveTradeOrder(OrderKind.SELL, tradeId, balanceAsset.getSymbol(), balanceAsset.getName(), orderType, quantity, price, orderResult, errorMessage);
+            saveTradeOrder(order);
         }
     }
 
-    private void saveTradeOrder(OrderKind orderKind, String tradeId, String symbol, String assetName, OrderType orderType, BigDecimal quantity, BigDecimal price, OrderResult orderResult, String errorMessage) {
+    private void saveTradeOrder(Order order) {
         DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager, transactionDefinition);
         transactionTemplate.executeWithoutResult(transactionStatus -> {
             orderRepository.saveAndFlush(OrderEntity.builder()
-                    .orderId(IdGenerator.uuid())
-                    .orderAt(LocalDateTime.now())
-                    .orderKind(orderKind)
-                    .tradeId(tradeId)
-                    .symbol(symbol)
-                    .assetName(assetName)
-                    .orderType(orderType)
-                    .quantity(quantity)
-                    .price(price)
-                    .orderResult(orderResult)
-                    .errorMessage(errorMessage)
+                    .orderId(order.getOrderId())
+                    .orderAt(order.getOrderAt())
+                    .orderKind(order.getOrderKind())
+                    .tradeId(order.getTradeId())
+                    .symbol(order.getSymbol())
+                    .assetName(order.getAssetName())
+                    .orderType(order.getOrderType())
+                    .quantity(order.getQuantity())
+                    .price(order.getPrice())
+                    .orderResult(order.getOrderResult())
+                    .errorMessage(order.getErrorMessage())
                     .build());
         });
     }
@@ -434,7 +450,13 @@ public class TradeRunnable implements Runnable {
 
         // sell cash asset
         if(cashAssetQuantity.compareTo(BigDecimal.ZERO) > 0) {
-            tradeClient.sellAsset(cashAsset, OrderType.MARKET, cashAssetQuantity, cashAssetPrice);
+            Order order = Order.builder()
+                    .orderKind(OrderKind.SELL)
+                    .orderType(OrderType.MARKET)
+                    .quantity(cashAssetQuantity)
+                    .price(cashAssetPrice)
+                    .build();
+            tradeClient.submitOrder(order);
         }
     }
 
@@ -454,7 +476,13 @@ public class TradeRunnable implements Runnable {
 
         // buy cash asset
         if(cashAssetQuantity.compareTo(BigDecimal.ZERO) > 0) {
-            tradeClient.buyAsset(cashAsset, OrderType.MARKET, cashAssetQuantity, cashAssetPrice);
+            Order order = Order.builder()
+                    .orderKind(OrderKind.BUY)
+                    .orderType(OrderType.MARKET)
+                    .quantity(cashAssetQuantity)
+                    .price(cashAssetPrice)
+                    .build();
+            tradeClient.submitOrder(order);
         }
     }
 

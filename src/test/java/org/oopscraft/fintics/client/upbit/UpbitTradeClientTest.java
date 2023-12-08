@@ -88,33 +88,35 @@ class UpbitTradeClientTest {
 
     @Disabled
     @Test
-    void buyAsset() throws Exception {
+    void submitOrderBuy() throws Exception {
         // given
-        TradeAsset tradeAsset = Optional.of(getTestTradeAsset())
-                .map(asset -> TradeAsset.builder()
-                        .symbol(asset.getSymbol())
-                        .name(asset.getName())
-                        .build())
-                .orElseThrow();
+        Order order = Order.builder()
+                .orderKind(OrderKind.BUY)
+                .symbol("KRW-BTC")
+                .orderType(OrderType.MARKET)
+                .quantity(BigDecimal.valueOf(6))
+                .price(BigDecimal.valueOf(840))
+                .build();
         // when
-        getUpbitTradeClient().buyAsset(tradeAsset, OrderType.MARKET, BigDecimal.valueOf(6), BigDecimal.valueOf(840));
+        getUpbitTradeClient().submitOrder(order);
         // then
     }
 
     @Disabled
     @Test
-    void sellAsset() throws Exception {
+    void submitOrderSell() throws Exception {
         // given
-        BalanceAsset balanceAsset = Optional.of(getTestTradeAsset())
-                .map(asset -> BalanceAsset.builder()
-                        .symbol(asset.getSymbol())
-                        .name(asset.getName())
-                        .build())
-                .orElseThrow();
-        // when
-        getUpbitTradeClient().sellAsset(balanceAsset, OrderType.MARKET, BigDecimal.valueOf(5.9), BigDecimal.valueOf(850));
-        // then
+        Order order = Order.builder()
+                .orderKind(OrderKind.SELL)
+                .symbol("KRW-BTC")
+                .orderType(OrderType.MARKET)
+                .quantity(BigDecimal.valueOf(0.00008556))
+                .price(null)
+                .build();
 
+        // when
+        getUpbitTradeClient().submitOrder(order);
+        // then
     }
 
 }

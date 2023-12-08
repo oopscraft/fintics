@@ -63,54 +63,6 @@ public class KisTradeClient extends TradeClient {
     }
 
     @Override
-    public OrderBook getOrderBook(Asset asset) throws InterruptedException {
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .build();
-        String url = apiUrl + "/uapi/domestic-stock/v1/quotations/inquire-asking-price-exp-ccn";
-        HttpHeaders headers = createHeaders();
-        headers.add("tr_id", "FHKST01010200");
-        String fidCondMrktDivCode = "J";
-        String fidInputIscd = asset.getSymbol();
-        url = UriComponentsBuilder.fromUriString(url)
-                .queryParam("FID_COND_MRKT_DIV_CODE", fidCondMrktDivCode)
-                .queryParam("FID_INPUT_ISCD", fidInputIscd)
-                .build()
-                .toUriString();
-        RequestEntity<Void> requestEntity = RequestEntity
-                .get(url)
-                .headers(headers)
-                .build();
-        sleep();
-        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
-        JsonNode rootNode;
-        try {
-            rootNode = objectMapper.readTree(responseEntity.getBody());
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-
-        String rtCd = objectMapper.convertValue(rootNode.path("rt_cd"), String.class);
-        String msg1 = objectMapper.convertValue(rootNode.path("msg1"), String.class);
-        if(!"0".equals(rtCd)) {
-            throw new RuntimeException(msg1);
-        }
-
-        ValueMap output1 = objectMapper.convertValue(rootNode.path("output1"), ValueMap.class);
-        ValueMap output2 = objectMapper.convertValue(rootNode.path("output2"), ValueMap.class);
-
-        BigDecimal price = output2.getNumber("stck_prpr");
-        BigDecimal bidPrice = output1.getNumber("bidp1");
-        BigDecimal askPrice = output1.getNumber("askp1");
-
-        return OrderBook.builder()
-                .price(price)
-                .bidPrice(bidPrice)
-                .askPrice(askPrice)
-                .build();
-    }
-
-    @Override
     public List<Ohlcv> getMinuteOhlcvs(Asset asset) throws InterruptedException {
         List<Ohlcv> minuteOhlcvs = new ArrayList<>();
         RestTemplate restTemplate = RestTemplateBuilder.create()
@@ -258,6 +210,53 @@ public class KisTradeClient extends TradeClient {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public OrderBook getOrderBook(Asset asset) throws InterruptedException {
+        RestTemplate restTemplate = RestTemplateBuilder.create()
+                .insecure(true)
+                .build();
+        String url = apiUrl + "/uapi/domestic-stock/v1/quotations/inquire-asking-price-exp-ccn";
+        HttpHeaders headers = createHeaders();
+        headers.add("tr_id", "FHKST01010200");
+        String fidCondMrktDivCode = "J";
+        String fidInputIscd = asset.getSymbol();
+        url = UriComponentsBuilder.fromUriString(url)
+                .queryParam("FID_COND_MRKT_DIV_CODE", fidCondMrktDivCode)
+                .queryParam("FID_INPUT_ISCD", fidInputIscd)
+                .build()
+                .toUriString();
+        RequestEntity<Void> requestEntity = RequestEntity
+                .get(url)
+                .headers(headers)
+                .build();
+        sleep();
+        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+        JsonNode rootNode;
+        try {
+            rootNode = objectMapper.readTree(responseEntity.getBody());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+        String rtCd = objectMapper.convertValue(rootNode.path("rt_cd"), String.class);
+        String msg1 = objectMapper.convertValue(rootNode.path("msg1"), String.class);
+        if(!"0".equals(rtCd)) {
+            throw new RuntimeException(msg1);
+        }
+
+        ValueMap output1 = objectMapper.convertValue(rootNode.path("output1"), ValueMap.class);
+        ValueMap output2 = objectMapper.convertValue(rootNode.path("output2"), ValueMap.class);
+
+        BigDecimal price = output2.getNumber("stck_prpr");
+        BigDecimal bidPrice = output1.getNumber("bidp1");
+        BigDecimal askPrice = output1.getNumber("askp1");
+
+        return OrderBook.builder()
+                .price(price)
+                .bidPrice(bidPrice)
+                .askPrice(askPrice)
+                .build();
+    }
 
     @Override
     public Balance getBalance() throws InterruptedException {
@@ -391,22 +390,29 @@ public class KisTradeClient extends TradeClient {
     }
 
     @Override
-    public void buyAsset(Asset asset, OrderType orderType, BigDecimal quantity, BigDecimal price) throws InterruptedException {
+    public void submitOrder(Order order) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
         String url = apiUrl + "/uapi/domestic-stock/v1/trading/order-cash";
         HttpHeaders headers = createHeaders();
-        String trId = production ? "TTTC0802U" : "VTTC0802U";
+
+        // order kind
+        String trId = null;
+        switch(order.getOrderKind()) {
+            case BUY -> trId = production ? "TTTC0802U" : "VTTC0802U";
+            case SELL -> trId = production ? "TTTC0801U" : "VTTC0801U";
+            default -> throw new RuntimeException("invalid order kind");
+        }
         headers.add("tr_id", trId);
 
         // order type
         String ordDvsn = null;
         String ordUnpr = null;
-        switch(orderType) {
+        switch(order.getOrderType()) {
             case LIMIT -> {
                 ordDvsn = "00";
-                ordUnpr = String.valueOf(price.intValue());
+                ordUnpr = String.valueOf(order.getPrice().intValue());
             }
             case MARKET -> {
                 ordDvsn = "01";
@@ -419,9 +425,9 @@ public class KisTradeClient extends TradeClient {
         ValueMap payloadMap = new ValueMap();
         payloadMap.put("CANO", accountNo.split("-")[0]);
         payloadMap.put("ACNT_PRDT_CD", accountNo.split("-")[1]);
-        payloadMap.put("PDNO", asset.getSymbol());
+        payloadMap.put("PDNO", order.getSymbol());
         payloadMap.put("ORD_DVSN", ordDvsn);
-        payloadMap.put("ORD_QTY", String.valueOf(quantity.intValue()));
+        payloadMap.put("ORD_QTY", String.valueOf(order.getQuantity().intValue()));
         payloadMap.put("ORD_UNPR", ordUnpr);
         RequestEntity<ValueMap> requestEntity = RequestEntity
                 .post(url)
@@ -444,56 +450,12 @@ public class KisTradeClient extends TradeClient {
     }
 
     @Override
-    public void sellAsset(Asset asset, OrderType orderType, BigDecimal quantity, BigDecimal price) throws InterruptedException {
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .build();
-        String url = apiUrl + "/uapi/domestic-stock/v1/trading/order-cash";
-        HttpHeaders headers = createHeaders();
-        String trId = production ? "TTTC0801U" : "VTTC0801U";
-        headers.add("tr_id", trId);
+    public List<Order> getWaitingOrders() throws InterruptedException {
+        return null;
+    }
 
-        // order type
-        String ordDvsn = null;
-        String ordUnpr = null;
-        switch(orderType) {
-            case LIMIT -> {
-                ordDvsn = "00";
-                ordUnpr = String.valueOf(price.intValue());
-            }
-            case MARKET -> {
-                ordDvsn = "01";
-                ordUnpr = "0";
-            }
-            default -> throw new RuntimeException("invalid order type");
-        }
-
-        // request
-        ValueMap payloadMap = new ValueMap();
-        payloadMap.put("CANO", accountNo.split("-")[0]);
-        payloadMap.put("ACNT_PRDT_CD", accountNo.split("-")[1]);
-        payloadMap.put("PDNO", asset.getSymbol());
-        payloadMap.put("ORD_DVSN", ordDvsn);
-        payloadMap.put("ORD_QTY", String.valueOf(quantity.intValue()));
-        payloadMap.put("ORD_UNPR", ordUnpr);
-        RequestEntity<ValueMap> requestEntity = RequestEntity
-                .post(url)
-                .headers(headers)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(payloadMap);
-
-        // exchange
-        sleep();
-        ResponseEntity<ValueMap> responseEntity = restTemplate.exchange(requestEntity, ValueMap.class);
-        ValueMap responseMap = Optional.ofNullable(responseEntity.getBody())
-                .orElseThrow();
-
-        // response
-        String rtCd = responseMap.getString("rt_cd");
-        String msg1 = responseMap.getString("msg1");
-        if(!"0".equals(rtCd)) {
-            throw new RuntimeException(msg1);
-        }
+    @Override
+    public void amendOrder(Order order) throws InterruptedException {
     }
 
 }

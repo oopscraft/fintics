@@ -164,7 +164,6 @@ public class UpbitTradeClient extends TradeClient {
                 .collect(Collectors.toList());
     }
 
-
     @Override
     public Balance getBalance() throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
@@ -227,31 +226,53 @@ public class UpbitTradeClient extends TradeClient {
     }
 
     @Override
-    public void buyAsset(Asset asset, OrderType orderType, BigDecimal quantity, BigDecimal price) throws InterruptedException {
-        switch(orderType) {
-            case LIMIT -> order(asset.getSymbol(), "bid", "limit", price, quantity);
-            case MARKET -> {
-                BigDecimal orderPrice = price.multiply(quantity)
-                        .setScale(2, RoundingMode.HALF_UP);
-                order(asset.getSymbol(), "bid", "price", orderPrice, null);
-            }
-            default -> throw new RuntimeException("Invalid order type");
-        }
-    }
-
-    @Override
-    public void sellAsset(Asset asset, OrderType orderType, BigDecimal quantity, BigDecimal price) throws InterruptedException {
-        switch(orderType) {
-            case LIMIT -> order(asset.getSymbol(), "ask", "limit", price, quantity);
-            case MARKET -> order(asset.getSymbol(), "ask", "market", null, quantity);
-            default -> throw new RuntimeException("Invalid order type");
-        }
-    }
-
-    private void order(String market, String side, String ordType, BigDecimal price, BigDecimal volume) throws InterruptedException {
+    public void submitOrder(Order order) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
+
+        // define parameters
+        String market = order.getSymbol();
+        String side;
+        String ordType;
+        BigDecimal price;
+        BigDecimal volume;
+        switch(order.getOrderKind()) {
+            case BUY -> {
+                side = "bid";
+                switch(order.getOrderType()) {
+                    case LIMIT -> {
+                        ordType = "limit";
+                        price = order.getPrice();
+                        volume = order.getQuantity();
+                    }
+                    case MARKET -> {
+                        ordType = "price";
+                        price = order.getPrice().multiply(order.getQuantity())
+                                .setScale(2, RoundingMode.HALF_UP);
+                        volume = null;
+                    }
+                    default -> throw new RuntimeException("Invalid order type");
+                }
+            }
+            case SELL -> {
+                side = "ask";
+                switch(order.getOrderType()) {
+                    case LIMIT -> {
+                        ordType = "limit";
+                        price = order.getPrice();
+                        volume = order.getQuantity();
+                    }
+                    case MARKET -> {
+                        ordType = "market";
+                        price = null;
+                        volume = order.getQuantity();
+                    }
+                    default -> throw new RuntimeException("Invalid order type");
+                }
+            }
+            default -> throw new RuntimeException("Invalid order kind");
+        }
 
         // url payload
         String url = API_URL + "/v1/orders";
@@ -292,6 +313,15 @@ public class UpbitTradeClient extends TradeClient {
         sleep();
         ResponseEntity<ValueMap> responseEntity = restTemplate.exchange(requestEntity, ValueMap.class);
         log.info("{}",responseEntity.getBody());
+    }
+
+    @Override
+    public List<Order> getWaitingOrders() throws InterruptedException {
+        return null;
+    }
+
+    @Override
+    public void amendOrder(Order order) throws InterruptedException {
     }
 
 }

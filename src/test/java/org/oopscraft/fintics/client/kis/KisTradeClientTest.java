@@ -3,7 +3,6 @@ package org.oopscraft.fintics.client.kis;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.oopscraft.arch4j.core.test.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
@@ -34,7 +33,6 @@ class KisTradeClientTest extends CoreTestSupport {
 
     @Disabled
     @Test
-    @Order(2)
     void getOrderBook() throws InterruptedException {
         // given
         TradeAsset tradeAsset = TradeAsset.builder()
@@ -52,7 +50,6 @@ class KisTradeClientTest extends CoreTestSupport {
 
     @Disabled
     @Test
-    @Order(4)
     void getMinuteOhlcvs() throws InterruptedException {
         // given
         TradeAsset tradeAsset = TradeAsset.builder()
@@ -68,7 +65,6 @@ class KisTradeClientTest extends CoreTestSupport {
 
     @Disabled
     @Test
-    @Order(4)
     void getDailyOhlcvs() throws InterruptedException {
         // given
         TradeAsset tradeAsset = TradeAsset.builder()
@@ -84,7 +80,6 @@ class KisTradeClientTest extends CoreTestSupport {
 
     @Disabled
     @Test
-    @Order(2)
     void getBalance() throws InterruptedException {
         // given
         // when
@@ -96,55 +91,62 @@ class KisTradeClientTest extends CoreTestSupport {
 
     @Disabled
     @Test
-    @Order(5)
-    void buyAssetStock() throws InterruptedException {
+    void submitOrderBuyStock() throws InterruptedException {
         // given
-        TradeAsset tradeAsset = TradeAsset.builder()
-                .symbol("005930")           // Samsung Electronic
+        Order order = Order.builder()
+                .symbol("005930")   // Samsung Electronic
+                .orderKind(OrderKind.BUY)
+                .orderType(OrderType.MARKET)
+                .quantity(BigDecimal.valueOf(1))
                 .build();
 
         // when
-        getKisClient().buyAsset(tradeAsset, OrderType.MARKET, BigDecimal.valueOf(1), null);
+        getKisClient().submitOrder(order);
     }
 
     @Disabled
     @Test
-    @Order(5)
-    void buyAssetEtf() throws InterruptedException {
+    void submitOrderBuyEtf() throws InterruptedException {
         // given
-        TradeAsset tradeAsset = TradeAsset.builder()
-                .symbol("005930")           // KODEX 200
+        Order order = Order.builder()
+                .symbol("069500")   // Kodex 200 ETF
+                .orderKind(OrderKind.BUY)
+                .orderType(OrderType.MARKET)
+                .quantity(BigDecimal.valueOf(1))
                 .build();
 
         // when
-        getKisClient().buyAsset(tradeAsset, OrderType.MARKET, BigDecimal.valueOf(1), null);
+        getKisClient().submitOrder(order);
     }
 
     @Disabled
     @Test
-    @Order(5)
-    void sellAssetStock() throws InterruptedException {
+    void submitOrderSellStock() throws InterruptedException {
         // given
-        BalanceAsset balanceAsset = BalanceAsset.builder()
-                .symbol("005930")           // Samsung Electronic
+        Order order = Order.builder()
+                .symbol("005930")   // Samsung Electronic
+                .orderKind(OrderKind.SELL)
+                .orderType(OrderType.MARKET)
+                .quantity(BigDecimal.valueOf(1))
                 .build();
 
         // when
-        getKisClient().sellAsset(balanceAsset, OrderType.MARKET, BigDecimal.valueOf(1), null);
+        getKisClient().submitOrder(order);
     }
 
     @Disabled
     @Test
-    @Order(5)
-    void sellAssetEtf() throws InterruptedException {
+    void submitOrderSellEtf() throws InterruptedException {
         // given
-        BalanceAsset balanceAsset = BalanceAsset.builder()
-                .symbol("005930")           // KODEX 200
+        Order order = Order.builder()
+                .symbol("069500")   // Kodex 200 ETF
+                .orderKind(OrderKind.SELL)
+                .orderType(OrderType.MARKET)
+                .quantity(BigDecimal.valueOf(1))
                 .build();
 
         // when
-        getKisClient().sellAsset(balanceAsset, OrderType.MARKET, BigDecimal.valueOf(1), null);
+        getKisClient().submitOrder(order);
     }
-
 
 }
