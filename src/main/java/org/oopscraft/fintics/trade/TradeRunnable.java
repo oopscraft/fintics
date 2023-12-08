@@ -387,7 +387,7 @@ public class TradeRunnable implements Runnable {
         Order order = Order.builder()
                 .orderId(IdGenerator.uuid())
                 .orderAt(LocalDateTime.now())
-                .orderKind(OrderKind.BUY)
+                .orderKind(OrderKind.SELL)
                 .orderType(orderType)
                 .tradeId(trade.getTradeId())
                 .symbol(balanceAsset.getSymbol())
