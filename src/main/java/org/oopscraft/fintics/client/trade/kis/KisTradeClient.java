@@ -454,12 +454,136 @@ public class KisTradeClient extends TradeClient {
 
     @Override
     public List<Order> getWaitingOrders() throws InterruptedException {
-        return null;
+        // 모의 투자는 지원 하지 않음
+        if(!production) {
+            return new ArrayList<>();
+        }
+
+        RestTemplate restTemplate = RestTemplateBuilder.create()
+                .insecure(true)
+                .build();
+
+        String url = apiUrl + "/uapi/domestic-stock/v1/trading/inquire-psbl-rvsecncl";
+        HttpHeaders headers = createHeaders();
+        headers.add("tr_id", "TTTC8036R");
+        url = UriComponentsBuilder.fromUriString(url)
+                .queryParam("CANO", accountNo.split("-")[0])
+                .queryParam("ACNT_PRDT_CD", accountNo.split("-")[1])
+                .queryParam("INQR_DVSN_1", "1")
+                .queryParam("INQR_DVSN_2", "0")
+                .build()
+                .toUriString();
+        RequestEntity<Void> requestEntity = RequestEntity
+                .get(url)
+                .headers(headers)
+                .build();
+
+        sleep();
+        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+        JsonNode rootNode;
+        try {
+            rootNode = objectMapper.readTree(responseEntity.getBody());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+        String rtCd = objectMapper.convertValue(rootNode.path("rt_cd"), String.class);
+        String msg1 = objectMapper.convertValue(rootNode.path("msg1"), String.class);
+        if(!"0".equals(rtCd)) {
+            throw new RuntimeException(msg1);
+        }
+
+        JsonNode outputNode = rootNode.path("output");
+        List<ValueMap> output = objectMapper.convertValue(outputNode, new TypeReference<>(){});
+
+        // return
+        return output.stream()
+                .map(row -> {
+                    OrderKind orderKind;
+                    switch (row.getString("sll_buy_dvsn_cd")) {
+                        case "01" -> orderKind = OrderKind.SELL;
+                        case "02" -> orderKind = OrderKind.BUY;
+                        default -> throw new RuntimeException("invalid sll_buy_dvsn_cd");
+                    }
+                    OrderType orderType;
+                    switch (row.getString("ord_dvsn_cd")) {
+                        case "00" -> orderType = OrderType.LIMIT;
+                        case "01" -> orderType = OrderType.MARKET;
+                        default -> orderType = null;
+                    }
+
+                    String symbol = row.getString("pdno");
+                    BigDecimal quantity = row.getNumber("psbl_qty");
+                    BigDecimal price = row.getNumber("ord_unpr");
+                    String clientOrderId = row.getString("odno");
+                    return Order.builder()
+                            .orderKind(orderKind)
+                            .symbol(symbol)
+                            .orderType(orderType)
+                            .quantity(quantity)
+                            .price(price)
+                            .clientOrderId(clientOrderId)
+                            .build();
+
+                })
+                .collect(Collectors.toList());
     }
 
     @Override
     public Order amendOrder(Order order) throws InterruptedException {
-        return null;
+        RestTemplate restTemplate = RestTemplateBuilder.create()
+                .insecure(true)
+                .build();
+        String url = apiUrl + "/uapi/domestic-stock/v1/trading/order-cash";
+        HttpHeaders headers = createHeaders();
+
+        // trId
+        String trId = (production ? "TTTC0803U" : "VTTC0803U");
+        headers.add("tr_id", trId);
+
+        // order type
+        String ordDvsn = null;
+        switch(order.getOrderType()) {
+            case LIMIT -> {
+                ordDvsn = "00";
+            }
+            case MARKET -> {
+                ordDvsn = "01";
+            }
+            default -> throw new RuntimeException("invalid order type");
+        }
+
+        // request
+        ValueMap payloadMap = new ValueMap();
+        payloadMap.put("CANO", accountNo.split("-")[0]);
+        payloadMap.put("ACNT_PRDT_CD", accountNo.split("-")[1]);
+        payloadMap.put("ORGN_ODNO", order.getClientOrderId());
+        payloadMap.put("ORD_DVSN", ordDvsn);
+        payloadMap.put("RVSE_CNCL_DVSN_CD", "01");
+        payloadMap.put("ORD_QTY", "0");
+        payloadMap.put("ORD_UNPR", order.getPrice());
+        payloadMap.put("QTY_ALL_ORD_YN", "Y");
+        RequestEntity<ValueMap> requestEntity = RequestEntity
+                .post(url)
+                .headers(headers)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(payloadMap);
+
+        // exchange
+        sleep();
+        ResponseEntity<ValueMap> responseEntity = restTemplate.exchange(requestEntity, ValueMap.class);
+        ValueMap responseMap = Optional.ofNullable(responseEntity.getBody())
+                .orElseThrow();
+
+        // response
+        String rtCd = responseMap.getString("rt_cd");
+        String msg1 = responseMap.getString("msg1");
+        if(!"0".equals(rtCd)) {
+            throw new RuntimeException(msg1);
+        }
+
+        // return
+        return order;
     }
 
 }

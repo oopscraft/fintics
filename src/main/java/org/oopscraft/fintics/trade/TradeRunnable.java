@@ -366,7 +366,7 @@ public class TradeRunnable implements Runnable {
                 .price(price)
                 .build();
 
-        // if waiting order exists
+        // check waiting order exists
         Order waitingOrder = tradeClient.getWaitingOrders().stream()
                 .filter(element ->
                         Objects.equals(element.getSymbol(), order.getSymbol())
@@ -417,7 +417,7 @@ public class TradeRunnable implements Runnable {
                 .price(price)
                 .build();
 
-        // if waiting order exists
+        // check waiting order exists
         Order waitingOrder = tradeClient.getWaitingOrders().stream()
                 .filter(element ->
                         Objects.equals(element.getSymbol(), order.getSymbol())

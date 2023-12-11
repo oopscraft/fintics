@@ -355,7 +355,7 @@ public class UpbitTradeClient extends TradeClient {
                     switch(row.getString("ord_type")) {
                         case "limit" -> orderType = OrderType.LIMIT;
                         case "market","price" -> orderType = OrderType.MARKET;
-                        default -> throw new RuntimeException("invalid ordType");
+                        default -> orderType = null;
                     }
                     String symbol = row.getString("market");
                     BigDecimal quantity = row.getNumber("remaining_volume");
