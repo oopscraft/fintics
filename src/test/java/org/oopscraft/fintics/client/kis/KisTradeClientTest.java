@@ -33,6 +33,16 @@ class KisTradeClientTest extends CoreTestSupport {
 
     @Disabled
     @Test
+    void isOpened() throws InterruptedException {
+        // given
+        // when
+        boolean opened = getKisClient().isOpened();
+        // then
+        log.info("== opened:{}", opened);
+    }
+
+    @Disabled
+    @Test
     void getOrderBook() throws InterruptedException {
         // given
         TradeAsset tradeAsset = TradeAsset.builder()

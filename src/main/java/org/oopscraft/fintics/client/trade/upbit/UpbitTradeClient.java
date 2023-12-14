@@ -48,6 +48,11 @@ public class UpbitTradeClient extends TradeClient {
         this.objectMapper = new ObjectMapper();
     }
 
+    @Override
+    public boolean isOpened() throws InterruptedException {
+        return true;
+    }
+
     private synchronized static void sleep() throws InterruptedException {
         Thread.sleep(300);
     }

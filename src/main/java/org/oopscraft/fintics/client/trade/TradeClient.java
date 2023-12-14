@@ -15,6 +15,8 @@ public abstract class TradeClient {
         this.properties = properties;
     }
 
+    public abstract boolean isOpened() throws InterruptedException;
+
     public abstract List<Ohlcv> getMinuteOhlcvs(Asset asset) throws InterruptedException;
 
     public abstract List<Ohlcv> getDailyOhlcvs(Asset asset) throws InterruptedException;

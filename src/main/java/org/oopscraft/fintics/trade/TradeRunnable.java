@@ -132,6 +132,12 @@ public class TradeRunnable implements Runnable {
             // client
             TradeClient tradeClient = TradeClientFactory.getClient(trade);
 
+            // check market opened
+            if(!tradeClient.isOpened()) {
+                log.info("Market not opened.");
+                return;
+            }
+
             // checks start,end time
             LocalDateTime dateTime = LocalDateTime.now();
             if (!isOperatingTime(trade, dateTime.toLocalTime())) {
