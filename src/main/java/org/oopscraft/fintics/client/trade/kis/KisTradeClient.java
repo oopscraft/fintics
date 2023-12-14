@@ -469,6 +469,8 @@ public class KisTradeClient extends TradeClient {
         url = UriComponentsBuilder.fromUriString(url)
                 .queryParam("CANO", accountNo.split("-")[0])
                 .queryParam("ACNT_PRDT_CD", accountNo.split("-")[1])
+                .queryParam("CTX_AREA_FK100", "")
+                .queryParam("CTX_AREA_NK100","")
                 .queryParam("INQR_DVSN_1", "1")
                 .queryParam("INQR_DVSN_2", "0")
                 .build()
