@@ -421,13 +421,16 @@ public class KisTradeClient extends TradeClient {
             default -> throw new RuntimeException("invalid order type");
         }
 
+        // quantity
+        int quantity = Math.max(order.getQuantity().intValue(),1);
+
         // request
         ValueMap payloadMap = new ValueMap();
         payloadMap.put("CANO", accountNo.split("-")[0]);
         payloadMap.put("ACNT_PRDT_CD", accountNo.split("-")[1]);
         payloadMap.put("PDNO", order.getSymbol());
         payloadMap.put("ORD_DVSN", ordDvsn);
-        payloadMap.put("ORD_QTY", String.valueOf(order.getQuantity().intValue()));
+        payloadMap.put("ORD_QTY", String.valueOf(quantity));
         payloadMap.put("ORD_UNPR", ordUnpr);
         RequestEntity<ValueMap> requestEntity = RequestEntity
                 .post(url)
