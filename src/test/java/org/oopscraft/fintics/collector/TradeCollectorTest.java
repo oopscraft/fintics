@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.trade;
+package org.oopscraft.fintics.collector;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +26,7 @@ class TradeCollectorTest extends CoreTestSupport {
     void collectAssets() throws InterruptedException {
         // given
         // when
-        tradeCollector.collectTradeAssetOhlcv();
+        tradeCollector.collect();
 
         // then
         List<TradeAssetOhlcvEntity> tradeAssetOhlcvEntities = entityManager
