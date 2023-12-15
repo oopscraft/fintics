@@ -22,6 +22,7 @@ fintics:
     indice:
       class-name: org.oopscraft.fintics.client.indice.YahooIndiceClient
   collector:
+    enabled: true
     indice-collector:
       ohlcv-retention-months: 1
     trade-collector:

@@ -33,8 +33,6 @@ public class TradeRequest {
 
     private OrderType orderType;
 
-    private String cashAssetSymbol;
-
     private String alarmId;
 
     private boolean alarmOnError;

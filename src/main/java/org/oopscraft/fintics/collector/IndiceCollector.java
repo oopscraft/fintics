@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class IndiceCollector {
+public class IndiceCollector extends AbstractCollector {
 
     @Value("${fintics.collector.indice-collector.ohlcv-retention-months:1}")
     private Integer ohlcvRetentionMonths = 1;
@@ -37,13 +37,17 @@ public class IndiceCollector {
 
     @Scheduled(initialDelay = 1_000, fixedDelay = 60_000)
     @Transactional
-    public void collectIndiceOhlcv() {
+    public void collect() {
+        if(!isEnabled()) {
+            log.info("Disabled collect indice ohlcv.");
+            return;
+        }
         log.info("Start collect indice ohlcv.");
-        for(IndiceSymbol symbol : IndiceSymbol.values()) {
+        for (IndiceSymbol symbol : IndiceSymbol.values()) {
             try {
                 saveIndiceOhlcv(symbol);
                 deletePastRetentionOhlcv(symbol);
-            }catch(Throwable e){
+            } catch (Throwable e) {
                 log.warn(e.getMessage());
             }
         }
@@ -59,7 +63,7 @@ public class IndiceCollector {
                 .minusMinutes(2);
         List<IndiceOhlcvEntity> minuteOhlcvEntities = minuteOhlcvs.stream()
                 .filter(ohlcv -> ohlcv.getDateTime().isAfter(minuteLastDateTime))
-                .limit(30)
+                .limit(10)
                 .map(ohlcv -> toIndiceOhlcvEntity(symbol, ohlcv))
                 .collect(Collectors.toList());
         indiceOhlcvRepository.saveAllAndFlush(minuteOhlcvEntities);
@@ -72,7 +76,7 @@ public class IndiceCollector {
                 .minusDays(2);
         List<IndiceOhlcvEntity> dailyOhlcvEntities = dailyOhlcvs.stream()
                 .filter(ohlcv -> ohlcv.getDateTime().isAfter(dailyLastDateTime))
-                .limit(30)
+                .limit(10)
                 .map(ohlcv -> toIndiceOhlcvEntity(symbol, ohlcv))
                 .collect(Collectors.toList());
         indiceOhlcvRepository.saveAllAndFlush(dailyOhlcvEntities);

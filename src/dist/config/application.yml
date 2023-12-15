@@ -50,6 +50,7 @@ core:
 # fintics
 fintics:
   collector:
+    enabled: true
     indice-collector:
       ohlcv-retention-months: 6
     trade-collector:

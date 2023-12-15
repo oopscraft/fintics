@@ -63,7 +63,6 @@ public class TradeService {
         }
         tradeEntity.setHoldCondition(trade.getHoldCondition());
         tradeEntity.setOrderType(trade.getOrderType());
-        tradeEntity.setCashAssetSymbol(trade.getCashAssetSymbol());
         tradeEntity.setAlarmId(trade.getAlarmId());
         tradeEntity.setAlarmOnError(trade.isAlarmOnError());
         tradeEntity.setAlarmOnOrder(trade.isAlarmOnOrder());

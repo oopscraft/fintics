@@ -35,8 +35,6 @@ public class TradeResponse {
 
     private OrderType orderType;
 
-    private String cashAssetSymbol;
-
     private String alarmId;
 
     private boolean alarmOnError;
@@ -60,7 +58,6 @@ public class TradeResponse {
                 .clientProperties(trade.getClientProperties())
                 .holdCondition(trade.getHoldCondition())
                 .orderType(trade.getOrderType())
-                .cashAssetSymbol(trade.getCashAssetSymbol())
                 .alarmId(trade.getAlarmId())
                 .alarmOnError(trade.isAlarmOnError())
                 .alarmOnOrder(trade.isAlarmOnOrder())

@@ -253,10 +253,6 @@
                         <option th:each="orderType : ${orderTypes}" th:value="${orderType}" th:text="#{'fintics.OrderType.'+${orderType}}"></option>
                     </select>
                 </label>
-                <label class="grid-column-6">
-                    <span data-th-text="#{fintics.Trade.cashAssetSymbol}" class="font-weight-bold"></span>
-                    <input type="text" data-duice-bind="trade" data-duice-property="cashAssetSymbol" class="font-weight-bold width-100"/>
-                </label>
                 <label class="grid-column-12">
                     <span data-th-text="#{fintics.Trade.holdCondition}" class="font-weight-bold width-100"></span>
                     <small class="font-weight-bold">(Groovy Script)</small>

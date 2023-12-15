@@ -234,15 +234,6 @@ public class TradeRunnable implements Runnable {
                         BigDecimal quantity = buyAmount
                                 .divide(price, MathContext.DECIMAL32);
 
-                        // withdrawal cash asset if enabled.
-                        if(trade.getCashAssetSymbol() != null) {
-                            BigDecimal insufficientAmount = buyAmount.subtract(balance.getCashAmount());
-                            if(insufficientAmount.compareTo(BigDecimal.ZERO) > 0) {
-                                withdrawalCashAsset(trade, insufficientAmount);
-                                Thread.sleep(5_000);
-                            }
-                        }
-
                         // buy
                         log.info("Buy asset: {}", tradeAsset.getName());
                         buyTradeAsset(trade, tradeAsset, trade.getOrderType(), quantity, price);
@@ -260,13 +251,6 @@ public class TradeRunnable implements Runnable {
                         // sell
                         log.info("Sell asset: {}", tradeAsset.getName());
                         sellBalanceAsset(trade, balanceAsset, trade.getOrderType(), quantity, price);
-
-                        // deposit cash asset if enabled.
-                        if(trade.getCashAssetSymbol() != null) {
-                            Thread.sleep(5_000);
-                            BigDecimal sellAmount = price.multiply(quantity);
-                            depositCashAsset(trade, sellAmount);
-                        }
                     }
                 }
             }
@@ -479,58 +463,6 @@ public class TradeRunnable implements Runnable {
                     .errorMessage(order.getErrorMessage())
                     .build());
         });
-    }
-
-    private void withdrawalCashAsset(Trade trade, BigDecimal withdrawalAmount) throws InterruptedException {
-        TradeClient tradeClient = TradeClientFactory.getClient(trade);
-        Asset cashAsset = Asset.builder()
-                .symbol(trade.getCashAssetSymbol())
-                .name("Cash Asset")
-                .build();
-
-        // calculates price and quantity of cash asset
-        OrderBook cashAssetOrderBook = tradeClient.getOrderBook(cashAsset);
-        BigDecimal cashAssetPrice = cashAssetOrderBook.getBidPrice();
-        BigDecimal cashAssetQuantity = withdrawalAmount
-                .divide(cashAssetPrice, MathContext.DECIMAL32)
-                .setScale(2, RoundingMode.CEILING);
-
-        // sell cash asset
-        if(cashAssetQuantity.compareTo(BigDecimal.ZERO) > 0) {
-            Order order = Order.builder()
-                    .orderKind(OrderKind.SELL)
-                    .orderType(OrderType.MARKET)
-                    .quantity(cashAssetQuantity)
-                    .price(cashAssetPrice)
-                    .build();
-            tradeClient.submitOrder(order);
-        }
-    }
-
-    private void depositCashAsset(Trade trade, BigDecimal depositAmount) throws InterruptedException {
-        TradeClient tradeClient = TradeClientFactory.getClient(trade);
-        Asset cashAsset = Asset.builder()
-                .symbol(trade.getCashAssetSymbol())
-                .name("Cash Asset")
-                .build();
-
-        // calculates price and quantity of cash asset
-        OrderBook cashAssetOrderBook = tradeClient.getOrderBook(cashAsset);
-        BigDecimal cashAssetPrice = cashAssetOrderBook.getBidPrice();
-        BigDecimal cashAssetQuantity = depositAmount
-                .divide(cashAssetPrice, MathContext.DECIMAL32)
-                .setScale(2, RoundingMode.CEILING);
-
-        // buy cash asset
-        if(cashAssetQuantity.compareTo(BigDecimal.ZERO) > 0) {
-            Order order = Order.builder()
-                    .orderKind(OrderKind.BUY)
-                    .orderType(OrderType.MARKET)
-                    .quantity(cashAssetQuantity)
-                    .price(cashAssetPrice)
-                    .build();
-            tradeClient.submitOrder(order);
-        }
     }
 
 }

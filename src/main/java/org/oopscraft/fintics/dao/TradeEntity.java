@@ -54,9 +54,6 @@ public class TradeEntity extends SystemFieldEntity {
     @Column(name = "order_type", length = 16)
     private OrderType orderType;
 
-    @Column(name = "cash_asset_symbol", length = 32)
-    private String cashAssetSymbol;
-
     @Column(name = "alarm_id", length = 32)
     private String alarmId;
 
