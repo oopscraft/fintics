@@ -1,6 +1,7 @@
 package org.oopscraft.fintics;
 
 import org.oopscraft.arch4j.core.support.SpringApplicationInstaller;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.FullyQualifiedAnnotationBeanNameGenerator;
@@ -23,6 +24,7 @@ public class FinticsApplication {
 
         // runs
         new SpringApplicationBuilder(FinticsApplication.class)
+                .web(WebApplicationType.SERVLET)
                 .registerShutdownHook(true)
                 .run(args);
     }
