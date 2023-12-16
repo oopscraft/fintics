@@ -4,13 +4,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.security.SecurityUtils;
-import org.oopscraft.arch4j.web.support.SseLogAppender;
-import org.oopscraft.fintics.api.v1.dto.*;
-import org.oopscraft.fintics.model.*;
+import org.oopscraft.fintics.api.v1.dto.AssetIndicatorResponse;
+import org.oopscraft.fintics.api.v1.dto.BalanceResponse;
+import org.oopscraft.fintics.api.v1.dto.TradeRequest;
+import org.oopscraft.fintics.api.v1.dto.TradeResponse;
+import org.oopscraft.fintics.model.AssetIndicator;
+import org.oopscraft.fintics.model.Trade;
+import org.oopscraft.fintics.model.TradeAsset;
 import org.oopscraft.fintics.service.TradeService;
 import org.oopscraft.fintics.trade.TradeThreadManager;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
@@ -166,16 +168,6 @@ public class TradeRestController {
     @CacheEvict(cacheNames = TRADE_REST_CONTROLLER_GET_TRADE_ASSET_INDICATORS, allEntries = true)
     public void cacheEvictTradeAssetIndicators() {
         log.info("TradeRestController.cacheEvictTradeAssetIndicators");
-    }
-
-    @GetMapping(value = "{tradeId}/log", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter getTradeLog(@PathVariable("tradeId")String tradeId) {
-        SseLogAppender sseLogAppender = tradeThreadManager.getSseLogAppender(tradeId).orElseThrow();
-        SseEmitter sseEmitter = new SseEmitter(60_000L);
-        sseLogAppender.addSseEmitter(sseEmitter);
-        sseEmitter.onCompletion(() -> sseLogAppender.removeSseEmitter(sseEmitter));
-        sseEmitter.onTimeout(() -> sseLogAppender.removeSseEmitter(sseEmitter));
-        return sseEmitter;
     }
 
 }

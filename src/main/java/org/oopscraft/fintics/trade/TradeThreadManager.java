@@ -4,7 +4,6 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.core.Context;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.oopscraft.arch4j.web.support.SseLogAppender;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextClosedEvent;
@@ -19,8 +18,6 @@ import java.util.*;
 public class TradeThreadManager implements ApplicationListener<ContextClosedEvent> {
 
     private final ThreadGroup tradeThreadGroup = new ThreadGroup("trade");
-
-    private final Map<String, SseLogAppender> sseLogAppenderMap = new HashMap<>();
 
     private final ApplicationContext applicationContext;
 
@@ -63,10 +60,6 @@ public class TradeThreadManager implements ApplicationListener<ContextClosedEven
                     try {
                         tradeThread.interrupt();
                         tradeThread.join(60_000);
-                        if(sseLogAppenderMap.containsKey(tradeId)) {
-                            sseLogAppenderMap.get(tradeId).stop();
-                            sseLogAppenderMap.remove(tradeId);
-                        }
                     } catch (InterruptedException e) {
                         log.error(e.getMessage(), e);
                         throw new RuntimeException(e);
@@ -100,13 +93,6 @@ public class TradeThreadManager implements ApplicationListener<ContextClosedEven
 
     public boolean isTradeThreadRunning(String tradeId) {
         return getTradeThread(tradeId).isPresent();
-    }
-
-    public Optional<SseLogAppender> getSseLogAppender(String tradeId) {
-        if (sseLogAppenderMap.containsKey(tradeId)) {
-            return Optional.of(sseLogAppenderMap.get(tradeId));
-        }
-        return Optional.empty();
     }
 
     @Override
