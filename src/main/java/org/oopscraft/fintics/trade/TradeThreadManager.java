@@ -8,6 +8,7 @@ import org.oopscraft.arch4j.web.support.SseLogAppender;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextClosedEvent;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -23,6 +24,8 @@ public class TradeThreadManager implements ApplicationListener<ContextClosedEven
 
     private final ApplicationContext applicationContext;
 
+    private final SimpMessagingTemplate messagingTemplate;
+
     public synchronized void startTradeThread(String tradeId, Integer interval) {
         synchronized (this) {
             log.info("Start TradeThread - {}", tradeId);
@@ -33,15 +36,11 @@ public class TradeThreadManager implements ApplicationListener<ContextClosedEven
             }
 
             // add log appender
-            if(!sseLogAppenderMap.containsKey(tradeId)) {
-                Context context = ((Logger)log).getLoggerContext();
-                SseLogAppender sseLogAppender = new SseLogAppender(context);
-                sseLogAppender.start();
-                sseLogAppenderMap.put(tradeId, sseLogAppender);
-            }
+            Context context = ((Logger)log).getLoggerContext();
+            TradeLogAppender tradeLogAppender = new TradeLogAppender(tradeId, context, messagingTemplate);
 
             // start thread
-            TradeRunnable tradeRunnable = new TradeRunnable(tradeId, interval, applicationContext, sseLogAppenderMap.get(tradeId));
+            TradeRunnable tradeRunnable = new TradeRunnable(tradeId, interval, applicationContext, tradeLogAppender);
             TradeThread tradeThread = new TradeThread(tradeThreadGroup, tradeRunnable, tradeId);
             tradeThread.setDaemon(true);
             tradeThread.start();

@@ -7,7 +7,6 @@ import lombok.Setter;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
 import org.oopscraft.arch4j.core.data.IdGenerator;
-import org.oopscraft.arch4j.web.support.SseLogAppender;
 import org.oopscraft.fintics.client.indice.IndiceClient;
 import org.oopscraft.fintics.client.trade.TradeClient;
 import org.oopscraft.fintics.client.trade.TradeClientFactory;
@@ -41,7 +40,7 @@ public class TradeRunnable implements Runnable {
     private final Integer interval;
 
     @Getter
-    private final SseLogAppender sseLogAppender;
+    private final TradeLogAppender tradeLogAppender;
 
     private final PlatformTransactionManager transactionManager;
 
@@ -64,10 +63,10 @@ public class TradeRunnable implements Runnable {
     private boolean interrupted = false;
 
     @Builder
-    public TradeRunnable(String tradeId, Integer interval, ApplicationContext applicationContext, SseLogAppender sseLogAppender) {
+    public TradeRunnable(String tradeId, Integer interval, ApplicationContext applicationContext, TradeLogAppender tradeLogAppender) {
         this.tradeId = tradeId;
         this.interval = interval;
-        this.sseLogAppender = sseLogAppender;
+        this.tradeLogAppender = tradeLogAppender;
 
         // component
         this.transactionManager = applicationContext.getBean(PlatformTransactionManager.class);
@@ -80,12 +79,12 @@ public class TradeRunnable implements Runnable {
 
         // add log appender
         log = (Logger) LoggerFactory.getLogger(tradeId);
-        log.addAppender(this.sseLogAppender);
+        log.addAppender(this.tradeLogAppender);
     }
 
     @Override
     public void run() {
-        this.sseLogAppender.start();
+        this.tradeLogAppender.start();
         log.info("Start TradeRunnable: {}", tradeId);
         while(!Thread.currentThread().isInterrupted() && !interrupted) {
             TransactionStatus transactionStatus = null;
@@ -120,7 +119,7 @@ public class TradeRunnable implements Runnable {
             }
         }
         log.info("End TradeRunnable: {}", tradeId);
-        this.sseLogAppender.stop();
+        this.tradeLogAppender.stop();
     }
 
     private void executeTrade() throws InterruptedException {
