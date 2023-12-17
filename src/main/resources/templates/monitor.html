@@ -95,43 +95,6 @@
             tradeAssetDailyOhlcvsChartMap.set(tradeId, dailyOhlcvsChart);
             let minuteOhlcvsChart = createMinuteOhlcvsChart(`tradeAssetMinuteOhlcvsChart-${tradeId}`);
             tradeAssetMinuteOhlcvsChartMap.set(tradeId, minuteOhlcvsChart);
-
-            // log event source
-            // startTradeLogEventSource(tradeId);
-        }
-
-        function startTradeLogEventSource(tradeId) {
-            let tradeLog = document.getElementById(`tradeLog-${tradeId}`);
-            let tradeLogEventSource = new EventSource(`${_apiUrl}/v1/trade/${tradeId}/log`);
-            tradeLogEventSourceMap.set(tradeId, tradeLogEventSource);
-
-            tradeLogEventSource.onopen = () => {
-                let message = 'SSE Connected.';
-                console.log(message);
-                tradeLog.value += message + '\n';
-                tradeLog.scrollTop = tradeLog.scrollHeight;
-            }
-            tradeLogEventSource.onmessage = (event) => {
-                let message = event.data;
-                console.log(message);
-                if(tradeLog.value.length > 1024 * 1024) {
-                    tradeLog.value = '';
-                }
-                tradeLog.value += message + '\n';
-                tradeLog.scrollTop = tradeLog.scrollHeight;
-            };
-            tradeLogEventSource.onerror = (event) => {
-                if (event.eventPhase === EventSource.CLOSED) {
-                    let message = 'SSE connection closed. Reconnecting...';
-                    console.log(message);
-                    tradeLog.value += message + '\n';
-                    tradeLog.scrollTop = tradeLog.scrollHeight;
-                    tradeLogEventSource.close();
-                    setTimeout(function() {
-                        startTradeLogEventSource(tradeId);
-                    }, 3000);
-                }
-            };
         }
 
         function getTradeMonitors() {
@@ -242,8 +205,7 @@
                                 font: {
                                     weight: 'bold',
                                     lineHeight: 1.2,
-                                },
-                                padding: {top: 5, left: 0, right: 0, bottom: 0}
+                                }
                             }
                         },
                         y: {
@@ -307,8 +269,7 @@
                                 font: {
                                     weight: 'bold',
                                     lineHeight: 1.2,
-                                },
-                                padding: {top: 5, left: 0, right: 0, bottom: 0}
+                                }
                             }
                         },
                         y: {
@@ -415,10 +376,10 @@
                 <span data-th-text="#{fintics.Indice}"></span>
             </h2>
             <div class="grid grid-template-columns-12 padding-1em s-padding-0">
-                <div class="grid-column-4 s-grid-column-12" style="height:150px;">
+                <div class="grid-column-5 s-grid-column-12" style="height:150px;">
                     <canvas id="indiceDailyOhlcvsChart"></canvas>
                 </div>
-                <div class="grid-column-8 s-grid-column-12" style="height:150px;">
+                <div class="grid-column-7 s-grid-column-12" style="height:150px;">
                     <canvas id="indiceMinuteOhlcvsChart"></canvas>
                 </div>
             </div>
