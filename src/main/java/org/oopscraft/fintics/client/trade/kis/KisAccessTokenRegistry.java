@@ -60,7 +60,7 @@ public class KisAccessTokenRegistry {
         ResponseEntity<ValueMap> responseEntity = restTemplate.exchange(requestEntity, ValueMap.class);
         ValueMap responseMap = responseEntity.getBody();
         String accessToken = responseMap.getString("access_token");
-        LocalDateTime expiredDateTime = LocalDateTime.now().plusHours(1);
+        LocalDateTime expiredDateTime = LocalDateTime.now().plusHours(12);
 
         return KisAccessToken.builder()
                 .apiUrl(apiUrl)
