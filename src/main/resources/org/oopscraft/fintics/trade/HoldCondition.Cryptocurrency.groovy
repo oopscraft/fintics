@@ -107,23 +107,17 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
 def assetName = assetIndicator.getName()
 def holdVotes = []
 
-// minute 1
-def resultOfMinute1 = analyze(assetIndicator, OhlcvType.MINUTE, 1)
-holdVotes.addAll(resultOfMinute1.values())
-log.debug("[{}] resultOfMinute1: {}", assetName, resultOfMinute1)
-log.info("[{}] resultOfMinute1Average: {}", assetName, resultOfMinute1.values().average())
-
-// minute 5
-def resultOfMinute5 = analyze(assetIndicator, OhlcvType.MINUTE, 5)
-holdVotes.addAll(resultOfMinute5.values())
-log.debug("[{}] resultOfMinute3: {}", assetName, resultOfMinute5)
-log.info("[{}] resultOfMinute3Average: {}", assetName, resultOfMinute5.values().average())
-
 // minute 10
 def resultOfMinute10 = analyze(assetIndicator, OhlcvType.MINUTE, 10)
 holdVotes.addAll(resultOfMinute10.values())
 log.debug("[{}] resultOfMinute10: {}", assetName, resultOfMinute10)
 log.info("[{}] resultOfMinute10Average: {}", assetName, resultOfMinute10.values().average())
+
+// daily
+def resultOfDaily = analyze(assetIndicator, OhlcvType.DAILY, 1)
+holdVotes.addAll(resultOfDaily.values())
+log.debug("[{}] resultOfDaily: {}", assetName, resultOfDaily)
+log.info("[{}] resultOfDailyAverage: {}", assetName, resultOfDaily.values().average())
 
 // decide hold
 def hold = null
