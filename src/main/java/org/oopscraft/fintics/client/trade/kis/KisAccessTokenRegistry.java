@@ -40,7 +40,7 @@ public class KisAccessTokenRegistry {
                         .apiUrl(apiUrl)
                         .appKey(appKey)
                         .appSecret(appSecret)
-                        .accessToken("TEMP_FORCE_TO_ERROR_TOKEN")
+                        .accessToken("TEMP_ERROR_TOKEN")
                         .expireDateTime(LocalDateTime.now().plusMinutes(2))     // 만료 시간 2분 후로 설정(2분후 만료 됨으로 재발급 요청됨)
                         .build();
             }
