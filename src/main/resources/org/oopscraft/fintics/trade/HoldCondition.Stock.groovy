@@ -12,7 +12,7 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     def shortMa = shortMas.first()
     def shortMaValues = shortMas.collect{it.value}
     def shortMaValue = shortMaValues.first()
-    def shortMaValuePcdChange = tool.pctChange(shortMaValues.take(3))
+    def shortMaValuePctChange = tool.pctChange(shortMaValues.take(3))
     log.debug("[{}] shortMa: {}", name, shortMa)
 
     // longMa
@@ -81,7 +81,7 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
 
     // result
     def result = [:]
-    result.shortMaValuePctChange = (shortMaValuePcdChange > 0 ? 100 : 0)
+    result.shortMaValuePctChange = (shortMaValuePctChange > 0 ? 100 : 0)
     result.longMaValuePctChange = (longMaValuePctChange > 0 ? 100 : 0)
     result.shortMaValueOverLongMaValue = (shortMaValue > longMaValue ? 100 : 0)
     result.macdValuePctChange = (macdValuePctChange > 0 ? 100 : 0)
