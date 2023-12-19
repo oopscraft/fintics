@@ -12,7 +12,7 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     def shortMa = shortMas.first()
     def shortMaValues = shortMas.collect{it.value}
     def shortMaValue = shortMaValues.first()
-    def shortMaValuePctChange = tool.pctChange(shortMaValues.take(3))
+    def shortMaValuePctChange = tool.pctChange(shortMaValues.take(5))
     log.debug("[{}] shortMa: {}", name, shortMa)
 
     // longMa
@@ -20,7 +20,7 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     def longMa = longMas.first()
     def longMaValues = longMas.collect{it.value}
     def longMaValue = longMaValues.first()
-    def longMaValuePctChange = tool.pctChange(longMaValues.take(3))
+    def longMaValuePctChange = tool.pctChange(longMaValues.take(5))
     log.debug("[{}] longMa: {}", name, longMa)
 
     // macd
@@ -28,7 +28,7 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     def macd = macds.first()
     def macdValues = macds.collect{it.value}
     def macdValue = macdValues.first()
-    def macdValuePctChange = tool.pctChange(macdValues.take(3))
+    def macdValuePctChange = tool.pctChange(macdValues.take(5))
     def macdSignals = macds.collect{it.signal}
     def macdSignal = macdSignals.first()
     def macdOscillators = macds.collect{it.oscillator}
@@ -40,7 +40,7 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     def rsi = rsis.first()
     def rsiValues = rsis.collect{it.value}
     def rsiValue = rsiValues.first()
-    def rsiValuePctChange = tool.pctChange(rsiValues.take(3))
+    def rsiValuePctChange = tool.pctChange(rsiValues.take(5))
     def rsiSignals = rsis.collect{it.signal}
     def rsiSignal = rsiSignals.first()
     log.debug("[{}] rsi: {}", name, rsi)
@@ -50,13 +50,13 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     def dmi = dmis.first()
     def dmiPdis = dmis.collect{it.pdi}
     def dmiPdi = dmiPdis.first()
-    def dmiPdiPctChange = tool.pctChange(dmiPdis.take(3))
+    def dmiPdiPctChange = tool.pctChange(dmiPdis.take(5))
     def dmiMdis = dmis.collect{it.mdi}
     def dmiMdi = dmiMdis.first()
-    def dmiMdiPctChange = tool.pctChange(dmiMdis.take(3))
+    def dmiMdiPctChange = tool.pctChange(dmiMdis.take(5))
     def dmiAdxs = dmis.collect{it.adx}
     def dmiAdx = dmiAdxs.first()
-    def dmiAdxPctChange = tool.pctChange(dmiAdxs.take(3))
+    def dmiAdxPctChange = tool.pctChange(dmiAdxs.take(5))
     log.debug("[{}] dmi: {}", name, dmi)
 
     // obv
@@ -64,7 +64,7 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     def obv = obvs.first()
     def obvValues = obvs.collect{it.value}
     def obvValue = obvValues.first()
-    def obvValuePctChange = tool.pctChange(obvValues.take(3))
+    def obvValuePctChange = tool.pctChange(obvValues.take(5))
     def obvSignals = obv.collect{it.signal}
     def obvSignal = obvSignals.first()
     log.debug("[{}] obv:{}", name, obv)
@@ -74,7 +74,7 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     def co = cos.first()
     def coValues = cos.collect{it.value}
     def coValue = coValues.first()
-    def coValuePctChange = tool.pctChange(coValues.take(3))
+    def coValuePctChange = tool.pctChange(coValues.take(5))
     def coSignals = cos.collect{it.signal}
     def coSignal = coSignals.first()
     log.debug("[{}] co: {}", name, co)
