@@ -29,14 +29,8 @@ public class KisAccessTokenRegistry {
                 .orElse(null);
 
         if(accessToken == null || accessToken.isExpired()) {
-            try {
-                accessToken = refreshAccessToken(apiUrl, appKey, appSecret);
-                accessTokens.add(accessToken);
-            }catch(Throwable e){
-                // 토큰 발급 오류 시 1분 sleep 하지 않으면 시도 자체도 카운트 됨으로 계속 오류 발생함.
-                Thread.sleep(60_000 + 10_000);
-                throw e;
-            }
+            accessToken = refreshAccessToken(apiUrl, appKey, appSecret);
+            accessTokens.add(accessToken);
         }
 
         return accessToken;
@@ -60,7 +54,10 @@ public class KisAccessTokenRegistry {
         ResponseEntity<ValueMap> responseEntity = restTemplate.exchange(requestEntity, ValueMap.class);
         ValueMap responseMap = responseEntity.getBody();
         String accessToken = responseMap.getString("access_token");
-        LocalDateTime expiredDateTime = LocalDateTime.now().plusHours(12);
+        LocalDateTime expiredDateTime = LocalDateTime.parse(
+                responseMap.getString("access_token_token_expired"),
+                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+        );
 
         return KisAccessToken.builder()
                 .apiUrl(apiUrl)
