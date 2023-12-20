@@ -351,6 +351,7 @@ public class TradeRunnable implements Runnable {
                 .orderType(orderType)
                 .tradeId(trade.getTradeId())
                 .symbol(tradeAsset.getSymbol())
+                .assetName(tradeAsset.getName())
                 .quantity(quantity)
                 .price(price)
                 .build();
@@ -402,6 +403,7 @@ public class TradeRunnable implements Runnable {
                 .orderType(orderType)
                 .tradeId(trade.getTradeId())
                 .symbol(balanceAsset.getSymbol())
+                .assetName(balanceAsset.getName())
                 .quantity(quantity)
                 .price(price)
                 .build();
