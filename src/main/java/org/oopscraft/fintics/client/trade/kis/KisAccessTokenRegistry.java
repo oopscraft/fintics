@@ -11,6 +11,8 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -18,10 +20,12 @@ import java.util.concurrent.CopyOnWriteArraySet;
 @Slf4j
 public class KisAccessTokenRegistry {
 
-    private static final Set<KisAccessToken> accessTokens = new CopyOnWriteArraySet<>();
+    private static final Set<KisAccessToken> accessTokens = Collections.synchronizedSet(new HashSet<>());
+
+    private static final Object lockObject = new Object();
 
     public synchronized static KisAccessToken getAccessToken(String apiUrl, String appKey, String appSecret) throws InterruptedException {
-        synchronized (KisAccessTokenRegistry.class) {
+        synchronized (lockObject) {
             KisAccessToken accessToken = accessTokens.stream()
                     .filter(element ->
                             element.getApiUrl().equals(apiUrl)
@@ -46,9 +50,10 @@ public class KisAccessTokenRegistry {
                             .appKey(appKey)
                             .appSecret(appSecret)
                             .accessToken("TEMP_ERROR_TOKEN")
-                            .expireDateTime(LocalDateTime.now().plusMinutes(2))     // 만료 시간 1분 후로 설정(1분후 만료 됨으로 재발급 요청됨)
+                            .expireDateTime(LocalDateTime.now().plusSeconds(60))     // 만료 시간 1분 후로 설정(1분후 만료 됨으로 재발급 요청됨)
                             .build();
                 }
+                accessTokens.remove(accessToken);
                 accessTokens.add(accessToken);
             }
 
@@ -79,9 +84,6 @@ public class KisAccessTokenRegistry {
                 responseMap.getString("access_token_token_expired"),
                 DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
         );
-
-        // for test
-        expiredDateTime = LocalDateTime.now().plusMinutes(5);
 
         log.info("expiredDateTime: {}", expiredDateTime);
         return KisAccessToken.builder()

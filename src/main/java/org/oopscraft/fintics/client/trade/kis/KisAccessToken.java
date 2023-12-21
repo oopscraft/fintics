@@ -27,7 +27,7 @@ public class KisAccessToken {
 
     public boolean isExpired() {
         return LocalDateTime.now()
-                .isAfter(expireDateTime.minusHours(1));
+                .isAfter(expireDateTime);
     }
 
 }
