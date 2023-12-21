@@ -30,20 +30,7 @@ public class KisAccessTokenRegistry {
                 .orElse(null);
 
         if(accessToken == null || accessToken.isExpired()) {
-            try {
-                accessToken = refreshAccessToken(apiUrl, appKey, appSecret);
-            } catch(Throwable e) {
-                // 토큰 발급 자체도 1분당 1회발급 제약에 걸리게 됨으로
-                // 오류 발생 시에는 1분(이상) 호출 자체를 하지 않아야 되므로
-                // TEMP_ERROR_TOKEN 으로 재발급 요청 없이 오류만 발생 하도록 처리
-                accessToken = KisAccessToken.builder()
-                        .apiUrl(apiUrl)
-                        .appKey(appKey)
-                        .appSecret(appSecret)
-                        .accessToken("TEMP_ERROR_TOKEN")
-                        .expireDateTime(LocalDateTime.now().plusMinutes(2))     // 만료 시간 2분 후로 설정(2분후 만료 됨으로 재발급 요청됨)
-                        .build();
-            }
+            accessToken = refreshAccessToken(apiUrl, appKey, appSecret);
             accessTokens.add(accessToken);
         }
 
