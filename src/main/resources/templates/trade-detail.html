@@ -256,8 +256,12 @@
                 <label class="grid-column-12">
                     <span data-th-text="#{fintics.Trade.holdCondition}" class="font-weight-bold width-100"></span>
                     <small class="font-weight-bold">(Groovy Script)</small>
-                    <textarea data-duice-bind="trade" data-duice-property="holdCondition" rows="50" class="border-1 width-100"
-                              style="font-family:monospace; line-height:1.2em;"></textarea>
+                    <duice-codemirror
+                        data-duice-bind="trade"
+                        data-duice-property="holdCondition"
+                        data-duice-mode="groovy"
+                        data-duice-theme="dracula"
+                        style="height:800px;"/>
                 </label>
                 <div class="grid-column-12">
                     <span data-th-text="#{fintics.TradeAsset}" class="font-weight-bold width-100"></span>
