@@ -20,8 +20,6 @@ public class KisAccessTokenRegistry {
 
     private static final Set<KisAccessToken> accessTokens = new CopyOnWriteArraySet<>();
 
-    private static LocalDateTime refreshAccessTokenDateTime = null;
-
     public synchronized static KisAccessToken getAccessToken(String apiUrl, String appKey, String appSecret) throws InterruptedException {
         KisAccessToken accessToken = accessTokens.stream()
                 .filter(element ->
@@ -33,25 +31,24 @@ public class KisAccessTokenRegistry {
 
         if(accessToken == null || accessToken.isExpired()) {
             // 한국 투자 증권 정책 상 1분에 1회 호출 가능함(호출 시 무조건 카운팅 됨)
-            try {
+//            try {
                 accessToken = refreshAccessToken(apiUrl, appKey, appSecret);
-            } catch(Throwable e) {
-                // 토큰 발급 자체도 1분당 1회발급 제약에 걸리게 됨으로
-                // 오류 발생 시에는 1분(이상) 호출 자체를 하지 않아야 함.
-                // Invalid 한 만료기간 1분인 TEMP_ERROR_TOKEN 을 발행 하고
-                // 1분 간은 인증 오류가 발생 하고
-                // 1분 후 만료 시 재호출 됨(그때 정상 이면 복구가 되어야 함, 그때도 장애 상태 이면 계속 반복)
-                log.error(e.getMessage(), e);
-                accessToken = KisAccessToken.builder()
-                        .apiUrl(apiUrl)
-                        .appKey(appKey)
-                        .appSecret(appSecret)
-                        .accessToken("TEMP_ERROR_TOKEN")
-                        .expireDateTime(LocalDateTime.now().plusMinutes(1))     // 만료 시간 1분 후로 설정(1분후 만료 됨으로 재발급 요청됨)
-                        .build();
-            } finally {
-                accessTokens.add(accessToken);
-            }
+//            } catch(Throwable e) {
+//                // 토큰 발급 자체도 1분당 1회발급 제약에 걸리게 됨으로
+//                // 오류 발생 시에는 1분(이상) 호출 자체를 하지 않아야 함.
+//                // Invalid 한 만료기간 1분인 TEMP_ERROR_TOKEN 을 발행 하고
+//                // 1분 간은 인증 오류가 발생 하고
+//                // 1분 후 만료 시 재호출 됨(그때 정상 이면 복구가 되어야 함, 그때도 장애 상태 이면 계속 반복)
+//                log.error("Refresh access token error: {}", e.getMessage());
+//                accessToken = KisAccessToken.builder()
+//                        .apiUrl(apiUrl)
+//                        .appKey(appKey)
+//                        .appSecret(appSecret)
+//                        .accessToken("TEMP_ERROR_TOKEN")
+//                        .expireDateTime(LocalDateTime.now().plusMinutes(1))     // 만료 시간 1분 후로 설정(1분후 만료 됨으로 재발급 요청됨)
+//                        .build();
+//            }
+            accessTokens.add(accessToken);
         }
 
         return accessToken;
