@@ -46,7 +46,7 @@ public class KisAccessTokenRegistry {
                             .appKey(appKey)
                             .appSecret(appSecret)
                             .accessToken("TEMP_ERROR_TOKEN")
-                            .expireDateTime(LocalDateTime.now().plusMinutes(1))     // 만료 시간 1분 후로 설정(1분후 만료 됨으로 재발급 요청됨)
+                            .expireDateTime(LocalDateTime.now().plusMinutes(2))     // 만료 시간 1분 후로 설정(1분후 만료 됨으로 재발급 요청됨)
                             .build();
                 }
                 accessTokens.add(accessToken);
@@ -81,7 +81,7 @@ public class KisAccessTokenRegistry {
         );
 
         // for test
-        expiredDateTime = LocalDateTime.now().plusMinutes(3);
+        expiredDateTime = LocalDateTime.now().plusMinutes(5);
 
         log.info("expiredDateTime: {}", expiredDateTime);
         return KisAccessToken.builder()
