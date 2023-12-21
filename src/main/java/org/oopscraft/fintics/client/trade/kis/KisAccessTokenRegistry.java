@@ -39,6 +39,7 @@ public class KisAccessTokenRegistry {
 
     private synchronized static KisAccessToken refreshAccessToken(String apiUrl, String appKey, String appSecret) throws InterruptedException {
         log.info("Refresh Access Token - {}", apiUrl);
+        Thread.sleep(1000*60);  // 한국 투자 증권 정책 상 1분에 1회 호출 가능함(호출 시 무조건 카운팅 됨으로 강제 sleep)
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
