@@ -38,6 +38,9 @@ public class KisAccessTokenRegistry {
             } catch(Throwable e) {
                 // 토큰 발급 자체도 1분당 1회발급 제약에 걸리게 됨으로
                 // 오류 발생 시에는 1분(이상) 호출 자체를 하지 않아야 함.
+                // Invalid 한 만료기간 1분인 TEMP_ERROR_TOKEN 을 발행 하고
+                // 1분 간은 인증 오류가 발생 하고
+                // 1분 후 만료 시 재호출 됨(그때 정상 이면 복구가 되어야 함, 그때도 장애 상태 이면 계속 반복)
                 accessToken = KisAccessToken.builder()
                         .apiUrl(apiUrl)
                         .appKey(appKey)
@@ -77,7 +80,7 @@ public class KisAccessTokenRegistry {
         );
 
         // for test
-        expiredDateTime = LocalDateTime.now().plusMinutes(2);
+//        expiredDateTime = LocalDateTime.now().plusMinutes(2);
 
         return KisAccessToken.builder()
                 .apiUrl(apiUrl)
