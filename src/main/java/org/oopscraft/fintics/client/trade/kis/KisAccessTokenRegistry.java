@@ -76,6 +76,9 @@ public class KisAccessTokenRegistry {
                 DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
         );
 
+        // for test
+        expiredDateTime = LocalDateTime.now().plusSeconds(30);
+
         return KisAccessToken.builder()
                 .apiUrl(apiUrl)
                 .appKey(appKey)
