@@ -114,11 +114,11 @@
     <!-- ================================== -->
     <!-- start: order                       -->
     <!-- ================================== -->
-    <div class="border-1 padding-1em" style="min-height:400px;">
-        <form onsubmit="return false;" class="grid grid-template-columns-12 grid-gap-1em margin-x-1em">
-            <div class="grid-column-12 s-grid-column-12 grid grid-template-columns-12 grid-gap-1em">
-                <label class="grid-column-3 s-grid-column-12">
-                    <select class="width-100"
+    <div class="border--1 padding--1em" style="min-height:400px;">
+        <form onsubmit="return false;" class="display--grid grid-template-columns--12 grid-gap--1em margin-x--1em">
+            <div class="grid-column--12 s__grid-column--12 display--grid grid-template-columns--12 grid-gap--1em">
+                <label class="grid-column--3 s__grid-column--12">
+                    <select class="width--100"
                             data-duice-bind="orderSearch"
                             data-duice-property="tradeId"
                             data-duice-option="trades"
@@ -127,21 +127,21 @@
                         <option value="" data-th-text="'- ' + #{fintics.Trade} + ' -'"></option>
                     </select>
                 </label>
-                <label class="grid-column-1 s-grid-column-12">
-                    <select class="width-100" data-duice-bind="orderSearch" data-duice-property="orderKind">
+                <label class="grid-column--1 s__grid-column--12">
+                    <select class="width--100" data-duice-bind="orderSearch" data-duice-property="orderKind">
                         <option value="" data-th-text="'- ' + #{fintics.Order.orderKind} + ' -'"></option>
                         <option value="BUY">BUY</option>
                         <option value="SELL">SELL</option>
                     </select>
                 </label>
-                <label class="grid-column-1 s-grid-column-12">
-                    <select class="width-100" data-duice-bind="orderSearch" data-duice-property="orderResult">
+                <label class="grid-column--1 s__grid-column--12">
+                    <select class="width--100" data-duice-bind="orderSearch" data-duice-property="orderResult">
                         <option value="" data-th-text="'- ' + #{fintics.Order.orderResult} + ' -'"></option>
                         <option value="COMPLETED">COMPLETED</option>
                         <option value="FAILED">FAILED</option>
                     </select>
                 </label>
-                <div class="grid-column-1 s-grid-column-12">
+                <div class="grid-column--1 s__grid-column--12">
                     <button type="button" onclick="resetOrders();">
                         <img class="icon" th:src="@{/static/image/icon-reset.svg}" alt="reset"/>
                         <span data-th-text="#{web.global.reset}">Reset</span>
@@ -149,8 +149,8 @@
                 </div>
             </div>
         </form>
-        <div class="overflow-x-scroll">
-            <table class="width-100">
+        <div class="overflow-x--scroll">
+            <table class="width--100">
                 <colgroup>
                     <col style="width:7em;"/>
                     <col style="width:10em;"/>
@@ -164,7 +164,7 @@
                 </colgroup>
                 <thead>
                 <tr>
-                    <th data-th-text="#{web.global.no}" class="text-align-center"></th>
+                    <th data-th-text="#{web.global.no}" class="text-align--center"></th>
                     <th data-th-text="#{fintics.Order.orderAt}"></th>
                     <th data-th-text="#{fintics.Order.orderKind}"></th>
                     <th data-th-text="#{fintics.Trade.name}"></th>
@@ -177,14 +177,14 @@
                 </thead>
                 <tbody>
                 <tr data-duice-bind="orders" data-duice-loop="order,status">
-                    <td class="text-align-center">
-                        <span class="font-size-smaller"
+                    <td class="text-align--center">
+                        <span class="font-size--smaller"
                               data-duice-bind="status"
                               data-duice-execute="this.innerHTML=orderSearch._count - (orderSearch._size*orderSearch._page + status.count) + 1;">
                         </span>
                     </td>
                     <td>
-                        <span class="font-size-smaller"
+                        <span class="font-size--smaller"
                               data-duice-bind="order"
                               data-duice-property="orderAt"
                               data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></span>
@@ -215,18 +215,18 @@
                     </td>
                 </tr>
                 <tr data-duice-bind="orders" data-duice-execute="if(orders.length === 0) this.hidden=false;" hidden>
-                    <td colspan="100%" class="text-align-center">No Data</td>
+                    <td colspan="100%" class="text-align--center">No Data</td>
                 </tr>
                 </tbody>
             </table>
         </div>
-        <div class="grid grid-template-columns-12 padding-1em">
-            <div class="grid-column-4 font-size-smaller">
+        <div class="display--grid grid-template-columns--12 padding--1em">
+            <div class="grid-column--4 font-size--smaller">
                 <span data-th-text="#{web.global.total}"></span>
                 <span data-duice-bind="orderSearch" data-duice-property="_count" data-duice-format="number(0)"></span>
                 <span data-th-text="#{web.global.rows}"></span>
             </div>
-            <div class="grid-column-4 justify-self-center">
+            <div class="grid-column--4 justify-self--center">
                 <duice-pagination
                         data-duice-bind="orderSearch"
                         data-duice-size-property="_size"
@@ -235,7 +235,7 @@
                         data-duice-onclick="getOrders(this.dataset.page);">
                 </duice-pagination>
             </div>
-            <div class="grid-column-4">
+            <div class="grid-column--4">
             </div>
         </div>
     </div>

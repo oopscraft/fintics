@@ -366,20 +366,20 @@
     <!-- end: title                             -->
     <!-- ====================================== -->
 
-    <div class="flex flex-direction-column gap-1em">
+    <div class="display--flex flex-direction--column gap--1em">
         <!-- ================================== -->
         <!-- start: indice                      -->
         <!-- ================================== -->
-        <div class="border-1 padding-1em">
+        <div class="border--1 padding--1em">
             <h2>
                 <img class="icon" th:src="@{/static/image/icon-indice.svg}" alt="indice"/>
                 <span data-th-text="#{fintics.Indice}"></span>
             </h2>
-            <div class="grid grid-template-columns-12 padding-1em s-padding-0">
-                <div class="grid-column-5 s-grid-column-12" style="height:150px;">
+            <div class="display--grid grid-template-columns--12 padding--1em s__padding--0">
+                <div class="grid-column--5 s__grid-column--12" style="height:150px;">
                     <canvas id="indiceDailyOhlcvsChart"></canvas>
                 </div>
-                <div class="grid-column-7 s-grid-column-12" style="height:150px;">
+                <div class="grid-column--7 s__grid-column--12" style="height:150px;">
                     <canvas id="indiceMinuteOhlcvsChart"></canvas>
                 </div>
             </div>
@@ -391,7 +391,7 @@
         <!-- ================================== -->
         <!-- start: trade                       -->
         <!-- ================================== -->
-        <div th:each="trade : ${trades}" class="grid-column-12 border-1 padding-1em">
+        <div th:each="trade : ${trades}" class="grid-column--12 border--1 padding--1em">
             <script th:inline="javascript">
                  _webSocketClient.subscribe('/trade/' + [[${trade.tradeId}]] + '/log', function(frame) {
                      let tradeLog = document.getElementById('tradeLog-' + [[${trade.tradeId}]]);
@@ -411,16 +411,16 @@
                     </small>
                 </a>
             </h2>
-            <div class="grid grid-template-columns-12 grid-gap-1em">
-                <div class="grid-column-5 s-grid-column-12">
+            <div class="display--grid grid-template-columns--12 grid-gap--1em">
+                <div class="grid-column--5 s__grid-column--12">
                     <div style="height:150px;">
                         <canvas th:id="'tradeAssetDailyOhlcvsChart-' + ${trade.tradeId}"></canvas>
                     </div>
                     <div style="height:150px;">
                         <canvas th:id="'tradeAssetMinuteOhlcvsChart-' + ${trade.tradeId}"></canvas>
                     </div>
-                    <div class="overflow-y-auto overflow-x-auto border-top-1">
-                        <table class="width-100 font-size-smaller border-0" style="line-height:normal;">
+                    <div class="overflow-y--auto overflow-x--auto border-top--1">
+                        <table class="width--100 font-size--smaller border--0" style="line-height:normal;">
                             <colgroup>
                                 <col style="width:5rem;"/>
                                 <col style="width:3em;"/>
@@ -432,31 +432,31 @@
                             <tr>
                                 <th data-th-text="#{fintics.BalanceAsset.symbol}"></th>
                                 <th data-th-text="#{fintics.BalanceAsset.name}"></th>
-                                <th data-th-text="#{fintics.BalanceAsset.quantity}" class="text-align-right"></th>
-                                <th data-th-text="#{fintics.BalanceAsset.purchaseAmount}" class="text-align-right"></th>
-                                <th data-th-text="#{fintics.BalanceAsset.valuationAmount}" class="text-align-right"></th>
-                                <th data-th-text="#{fintics.BalanceAsset.profitAmount}" class="text-align-right"></th>
+                                <th data-th-text="#{fintics.BalanceAsset.quantity}" class="text-align--right"></th>
+                                <th data-th-text="#{fintics.BalanceAsset.purchaseAmount}" class="text-align--right"></th>
+                                <th data-th-text="#{fintics.BalanceAsset.valuationAmount}" class="text-align--right"></th>
+                                <th data-th-text="#{fintics.BalanceAsset.profitAmount}" class="text-align--right"></th>
                             </tr>
                             </thead>
                             <tbody>
-                            <tr th:data-duice-bind="'tradeBalanceMap.get(\'' + ${trade.tradeId} + '\').balanceAssets'" data-duice-loop="balanceAsset,status" class="font-size-smaller">
+                            <tr th:data-duice-bind="'tradeBalanceMap.get(\'' + ${trade.tradeId} + '\').balanceAssets'" data-duice-loop="balanceAsset,status" class="font-size--smaller">
                                 <td data-duice-bind="balanceAsset" data-duice-property="symbol"></td>
                                 <td data-duice-bind="balanceAsset" data-duice-property="name"></td>
-                                <td data-duice-bind="balanceAsset" data-duice-property="quantity" data-duice-format="number" class="text-align-right"></td>
-                                <td data-duice-bind="balanceAsset" data-duice-property="purchaseAmount" data-duice-format="number" class="text-align-right"></td>
-                                <td data-duice-bind="balanceAsset" data-duice-property="valuationAmount" data-duice-format="number" class="text-align-right"></td>
-                                <td data-duice-bind="balanceAsset" data-duice-property="profitAmount" data-duice-format="number" class="text-align-right"></td>
+                                <td data-duice-bind="balanceAsset" data-duice-property="quantity" data-duice-format="number" class="text-align--right"></td>
+                                <td data-duice-bind="balanceAsset" data-duice-property="purchaseAmount" data-duice-format="number" class="text-align--right"></td>
+                                <td data-duice-bind="balanceAsset" data-duice-property="valuationAmount" data-duice-format="number" class="text-align--right"></td>
+                                <td data-duice-bind="balanceAsset" data-duice-property="profitAmount" data-duice-format="number" class="text-align--right"></td>
                             </tr>
                             <tr th:data-duice-bind="'tradeBalanceMap.get(\'' + ${trade.tradeId} + '\').balanceAssets'"
                                 th:data-duice-execute="'if(tradeBalanceMap.get(\'' + ${trade.tradeId} + '\').balanceAssets.length === 0) this.hidden=false;'" hidden>
-                                <td colspan="100%" class="text-align-center">No Data</td>
+                                <td colspan="100%" class="text-align--center">No Data</td>
                             </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
-                <div class="grid-column-7 s-grid-column-12" style="min-height:200px;">
-                    <textarea th:id="'tradeLog-' + ${trade.tradeId}" class="tradeLog width-100 height-100"></textarea>
+                <div class="grid-column--7 s__grid-column--12" style="min-height:200px;">
+                    <textarea th:id="'tradeLog-' + ${trade.tradeId}" class="tradeLog width--100 height--100"></textarea>
                 </div>
             </div>
         </div>
