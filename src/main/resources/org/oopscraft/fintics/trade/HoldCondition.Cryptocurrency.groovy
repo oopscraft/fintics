@@ -113,10 +113,14 @@ holdVotes.addAll(resultOfMinute10.values())
 log.debug("[{}] resultOfMinute10: {}", assetName, resultOfMinute10)
 log.info("[{}] resultOfMinute10Average: {}", assetName, resultOfMinute10.values().average())
 
+// minute 60
+def resultOfMinute60 = analyze(assetIndicator, OhlcvType.MINUTE, 60)
+holdVotes.addAll(resultOfMinute60.values())
+log.debug("[{}] resultOfMinute60: {}", assetName, resultOfMinute60)
+log.info("[{}] resultOfMinute60Average: {}", assetName, resultOfMinute60.values().average())
+
 // daily
 def resultOfDaily = analyze(assetIndicator, OhlcvType.DAILY, 1)
-holdVotes.addAll(resultOfDaily.values())
-holdVotes.addAll(resultOfDaily.values())
 holdVotes.addAll(resultOfDaily.values())
 log.debug("[{}] resultOfDaily: {}", assetName, resultOfDaily)
 log.info("[{}] resultOfDailyAverage: {}", assetName, resultOfDaily.values().average())
