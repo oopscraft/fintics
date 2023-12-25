@@ -11,6 +11,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 @RequiredArgsConstructor
@@ -18,6 +19,8 @@ import java.util.*;
 public class TradeThreadManager implements ApplicationListener<ContextClosedEvent> {
 
     private final ThreadGroup tradeThreadGroup = new ThreadGroup("trade");
+
+    private final Map<String,TradeThread> tradeThreadMap = new ConcurrentHashMap<>();
 
     private final ApplicationContext applicationContext;
 
@@ -41,6 +44,7 @@ public class TradeThreadManager implements ApplicationListener<ContextClosedEven
             TradeThread tradeThread = new TradeThread(tradeThreadGroup, tradeRunnable, tradeId);
             tradeThread.setDaemon(true);
             tradeThread.start();
+            tradeThreadMap.put(tradeId, tradeThread);
         }
     }
 
@@ -53,19 +57,17 @@ public class TradeThreadManager implements ApplicationListener<ContextClosedEven
                 throw new RuntimeException(String.format("Thread Thread[%s] is not running.", tradeId));
             }
 
-            TradeThread[] tradeThreads = new TradeThread[tradeThreadGroup.activeCount()];
-            tradeThreadGroup.enumerate(tradeThreads);
-            for(TradeThread tradeThread : tradeThreads) {
-                if(tradeThread.getName().equals(tradeId)) {
-                    try {
-                        tradeThread.interrupt();
-                        tradeThread.join(60_000);
-                    } catch (InterruptedException e) {
-                        log.error(e.getMessage(), e);
-                        throw new RuntimeException(e);
-                    }
+            // interrupt thread
+            getTradeThread(tradeId).ifPresent(tradeThread -> {
+                try {
+                    tradeThread.interrupt();
+                    tradeThread.join(60_000);
+                    tradeThreadMap.remove(tradeId);
+                } catch (InterruptedException e) {
+                    log.error(e.getMessage(), e);
+                    throw new RuntimeException(e);
                 }
-            }
+            });
         }
     }
 
@@ -77,18 +79,15 @@ public class TradeThreadManager implements ApplicationListener<ContextClosedEven
     }
 
     public List<TradeThread> getTradeThreads() {
-        TradeThread[] tradeThreads = new TradeThread[tradeThreadGroup.activeCount()];
-        tradeThreadGroup.enumerate(tradeThreads, false);
-        return List.of(tradeThreads);
+        return new ArrayList<>(tradeThreadMap.values());
     }
 
     public Optional<TradeThread> getTradeThread(String tradeId) {
-        for(TradeThread tradeThread : getTradeThreads()) {
-            if(tradeThread.getName().equals(tradeId)) {
-                return Optional.of(tradeThread);
-            }
+        if(tradeThreadMap.containsKey(tradeId)) {
+            return Optional.of(tradeThreadMap.get(tradeId));
+        }else{
+            return Optional.empty();
         }
-        return Optional.empty();
     }
 
     public boolean isTradeThreadRunning(String tradeId) {
