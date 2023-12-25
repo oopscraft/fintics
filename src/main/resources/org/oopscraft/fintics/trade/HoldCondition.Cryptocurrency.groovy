@@ -116,6 +116,8 @@ log.info("[{}] resultOfMinute10Average: {}", assetName, resultOfMinute10.values(
 // daily
 def resultOfDaily = analyze(assetIndicator, OhlcvType.DAILY, 1)
 holdVotes.addAll(resultOfDaily.values())
+holdVotes.addAll(resultOfDaily.values())
+holdVotes.addAll(resultOfDaily.values())
 log.debug("[{}] resultOfDaily: {}", assetName, resultOfDaily)
 log.info("[{}] resultOfDailyAverage: {}", assetName, resultOfDaily.values().average())
 
