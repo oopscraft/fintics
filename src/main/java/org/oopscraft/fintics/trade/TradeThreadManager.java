@@ -78,7 +78,7 @@ public class TradeThreadManager implements ApplicationListener<ContextClosedEven
 
     public List<TradeThread> getTradeThreads() {
         TradeThread[] tradeThreads = new TradeThread[tradeThreadGroup.activeCount()];
-        tradeThreadGroup.enumerate(tradeThreads);
+        tradeThreadGroup.enumerate(tradeThreads, false);
         return List.of(tradeThreads);
     }
 
