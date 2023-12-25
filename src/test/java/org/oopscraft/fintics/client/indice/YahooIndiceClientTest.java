@@ -36,7 +36,17 @@ class YahooIndiceClientTest extends CoreTestSupport {
         // then
     }
 
+    @Disabled
     @Test
     void getDailyOhlcvs() {
+        // given
+        // when
+        YahooIndiceClient indiceClient = new YahooIndiceClient(objectMapper);
+        for(IndiceSymbol indiceSymbol : IndiceSymbol.values()) {
+            log.info("====== indiceSymbol[{}] =====", indiceSymbol);
+            List<Ohlcv> ohlcvs = indiceClient.getDailyOhlcvs(indiceSymbol);
+            log.debug("ohlcvs:{}", ohlcvs);
+        }
+        // then
     }
 }
