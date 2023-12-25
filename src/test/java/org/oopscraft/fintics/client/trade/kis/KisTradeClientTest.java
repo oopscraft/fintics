@@ -40,9 +40,9 @@ class KisTradeClientTest extends CoreTestSupport {
     static {
         production = Optional.ofNullable(System.getenv("PRODUCTION")).orElse("false");
         apiUrl = Optional.ofNullable(System.getenv("API_URL")).orElse("https://openapivts.koreainvestment.com:29443");
-        appKey = Optional.ofNullable(System.getenv("APP_KEY")).orElseThrow();
-        appSecret = Optional.ofNullable(System.getenv("APP_SECRET")).orElseThrow();
-        accountNo = Optional.ofNullable(System.getenv("ACCOUNT_NO")).orElseThrow();
+        appKey = System.getenv("APP_KEY");
+        appSecret = System.getenv("APP_SECRET");
+        accountNo = System.getenv("ACCOUNT_NO");
     }
 
     KisTradeClient getKisClient() {
