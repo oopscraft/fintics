@@ -117,35 +117,37 @@ public class YahooIndiceClient extends IndiceClient {
 
         // duplicated data retrieved.
         Map<LocalDateTime, Ohlcv> ohlcvMap = new LinkedHashMap<>();
-        for(int i = 0; i < timestamps.size(); i ++) {
-            LocalDateTime dateTime = Instant.ofEpochSecond(timestamps.get(i))
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDateTime();
+        if(timestamps != null) {        // if data not found, timestamps element is null.
+            for(int i = 0; i < timestamps.size(); i ++) {
+                LocalDateTime dateTime = Instant.ofEpochSecond(timestamps.get(i))
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDateTime();
 
-            // truncates dateTime
-            switch(ohlcvType) {
-                case MINUTE -> dateTime = dateTime.truncatedTo(ChronoUnit.MINUTES);
-                case DAILY -> dateTime = dateTime.truncatedTo(ChronoUnit.DAYS);
-            }
+                // truncates dateTime
+                switch(ohlcvType) {
+                    case MINUTE -> dateTime = dateTime.truncatedTo(ChronoUnit.MINUTES);
+                    case DAILY -> dateTime = dateTime.truncatedTo(ChronoUnit.DAYS);
+                }
 
-            BigDecimal openPrice = opens.get(i);
-            if(openPrice == null) {     // sometimes open price is null (data error)
-                continue;
+                BigDecimal openPrice = opens.get(i);
+                if(openPrice == null) {     // sometimes open price is null (data error)
+                    continue;
+                }
+                BigDecimal highPrice = Optional.ofNullable(highs.get(i)).orElse(openPrice);
+                BigDecimal lowPrice = Optional.ofNullable(lows.get(i)).orElse(openPrice);
+                BigDecimal closePrice = Optional.ofNullable(closes.get(i)).orElse(openPrice);
+                BigDecimal volume = Optional.ofNullable(volumes.get(i)).orElse(BigDecimal.ZERO);
+                Ohlcv ohlcv = Ohlcv.builder()
+                        .dateTime(dateTime)
+                        .ohlcvType(ohlcvType)
+                        .openPrice(openPrice)
+                        .highPrice(highPrice)
+                        .lowPrice(lowPrice)
+                        .closePrice(closePrice)
+                        .volume(volume)
+                        .build();
+                ohlcvMap.put(dateTime, ohlcv);
             }
-            BigDecimal highPrice = Optional.ofNullable(highs.get(i)).orElse(openPrice);
-            BigDecimal lowPrice = Optional.ofNullable(lows.get(i)).orElse(openPrice);
-            BigDecimal closePrice = Optional.ofNullable(closes.get(i)).orElse(openPrice);
-            BigDecimal volume = Optional.ofNullable(volumes.get(i)).orElse(BigDecimal.ZERO);
-            Ohlcv ohlcv = Ohlcv.builder()
-                    .dateTime(dateTime)
-                    .ohlcvType(ohlcvType)
-                    .openPrice(openPrice)
-                    .highPrice(highPrice)
-                    .lowPrice(lowPrice)
-                    .closePrice(closePrice)
-                    .volume(volume)
-                    .build();
-            ohlcvMap.put(dateTime, ohlcv);
         }
         List<Ohlcv> ohlcvs = new ArrayList<>(ohlcvMap.values());
 
