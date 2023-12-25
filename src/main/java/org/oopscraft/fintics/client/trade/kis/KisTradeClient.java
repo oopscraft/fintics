@@ -17,10 +17,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.math.BigDecimal;
-import java.time.DayOfWeek;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -50,6 +47,20 @@ public class KisTradeClient extends TradeClient {
         this.objectMapper = new ObjectMapper();
     }
 
+    HttpHeaders createHeaders() throws InterruptedException {
+        KisAccessToken accessToken = KisAccessTokenRegistry.getAccessToken(apiUrl, appKey, appSecret);
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8");
+        httpHeaders.add("authorization", "Bearer " + accessToken.getAccessToken());
+        httpHeaders.add("appkey", appKey);
+        httpHeaders.add("appsecret", appSecret);
+        return httpHeaders;
+    }
+
+    private synchronized static void sleep() throws InterruptedException {
+        Thread.sleep(300);
+    }
+
     @Override
     public boolean isOpened() throws InterruptedException {
         LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
@@ -60,22 +71,72 @@ public class KisTradeClient extends TradeClient {
             return false;
         }
 
+        // check holiday
+        if(isHoliday(now)) {
+            return false;
+        }
+
         // default
         return true;
     }
 
-    private synchronized static void sleep() throws InterruptedException {
-        Thread.sleep(300);
-    }
+    boolean isHoliday(LocalDateTime dateTime) throws InterruptedException {
+        // 모의 투자는 휴장일 조회 API 제공 하지 않음
+        if(!production) {
+            return false;
+        }
 
-    HttpHeaders createHeaders() throws InterruptedException {
-        KisAccessToken accessToken = KisAccessTokenRegistry.getAccessToken(apiUrl, appKey, appSecret);
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add(HttpHeaders.CONTENT_TYPE, "application/json; charset=utf-8");
-        httpHeaders.add("authorization", "Bearer " + accessToken.getAccessToken());
-        httpHeaders.add("appkey", appKey);
-        httpHeaders.add("appsecret", appSecret);
-        return httpHeaders;
+        RestTemplate restTemplate = RestTemplateBuilder.create()
+                .insecure(true)
+                .build();
+        String url = apiUrl + "/uapi/domestic-stock/v1/quotations/chk-holiday";
+        HttpHeaders headers = createHeaders();
+        headers.add("tr_id", "CTCA0903R");
+
+        String baseDt = dateTime.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        url = UriComponentsBuilder.fromUriString(url)
+                .queryParam("BASS_DT", baseDt)
+                .queryParam("CTX_AREA_NK","")
+                .queryParam("CTX_AREA_FK","")
+                .build()
+                .toUriString();
+        RequestEntity<Void> requestEntity = RequestEntity
+                .get(url)
+                .headers(headers)
+                .build();
+        sleep();
+        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+        JsonNode rootNode;
+        try {
+            rootNode = objectMapper.readTree(responseEntity.getBody());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+        String rtCd = objectMapper.convertValue(rootNode.path("rt_cd"), String.class);
+        String msg1 = objectMapper.convertValue(rootNode.path("msg1"), String.class);
+        if(!"0".equals(rtCd)) {
+            throw new RuntimeException(msg1);
+        }
+
+        List<ValueMap> output = objectMapper.convertValue(rootNode.path("output"), new TypeReference<>(){});
+        ValueMap matchedRow = output.stream()
+                .filter(row -> {
+                    LocalDate localDate = LocalDate.parse(row.getString("bass_dt"), DateTimeFormatter.ofPattern("yyyyMMdd"));
+                    return localDate.isEqual(dateTime.toLocalDate());
+                })
+                .findFirst()
+                .orElse(null);
+
+        // define holiday
+        boolean holiday = false;
+        if(matchedRow != null) {
+            String openYn = matchedRow.getString("opnd_yn");
+            if(openYn.equals("N")) {
+                holiday = true;
+            }
+        }
+        return holiday;
     }
 
     @Override

@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.client.kis;
+package org.oopscraft.fintics.client.trade.kis;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -8,27 +8,51 @@ import org.oopscraft.arch4j.core.test.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
 import org.oopscraft.fintics.client.trade.TradeClientFactory;
 import org.oopscraft.fintics.client.trade.kis.KisTradeClient;
+import org.oopscraft.fintics.client.trade.upbit.UpbitTradeClient;
 import org.oopscraft.fintics.dao.TradeEntity;
 import org.oopscraft.fintics.model.*;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest(classes = FinticsConfiguration.class)
 @RequiredArgsConstructor
 @Slf4j
 class KisTradeClientTest extends CoreTestSupport {
 
-    private static final String TRADE_ID = "06c228451ce0400fa57bb36f0568d7cb";
+    private static final String production;
+
+    private static final String apiUrl;
+
+    private static final String appKey;
+
+    private static final String appSecret;
+
+    private static final String accountNo;
+
+    static {
+        production = Optional.ofNullable(System.getenv("PRODUCTION")).orElse("false");
+        apiUrl = Optional.ofNullable(System.getenv("API_URL")).orElse("https://openapivts.koreainvestment.com:29443");
+        appKey = Optional.ofNullable(System.getenv("APP_KEY")).orElseThrow();
+        appSecret = Optional.ofNullable(System.getenv("APP_SECRET")).orElseThrow();
+        accountNo = Optional.ofNullable(System.getenv("ACCOUNT_NO")).orElseThrow();
+    }
 
     KisTradeClient getKisClient() {
-        TradeEntity tradeEntity = entityManager.find(TradeEntity.class, TRADE_ID);
-        String clientType = KisTradeClient.class.getName();
-        String clientProperties = tradeEntity.getClientProperties();
-        return (KisTradeClient) TradeClientFactory.getClient(clientType, clientProperties);
+        Properties properties = new Properties();
+        properties.setProperty("production", production);
+        properties.setProperty("apiUrl", apiUrl);
+        properties.setProperty("appKey", appKey);
+        properties.setProperty("appSecret", appSecret);
+        properties.setProperty("accountNo", accountNo);
+        return new KisTradeClient(properties);
     }
 
     @Disabled
@@ -39,6 +63,19 @@ class KisTradeClientTest extends CoreTestSupport {
         boolean opened = getKisClient().isOpened();
         // then
         log.info("== opened:{}", opened);
+    }
+
+    @Disabled
+    @Test
+    void isHoliday() throws InterruptedException {
+        // given
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime dateTime = LocalDateTime.of(now.getYear(), 12, 25, 0, 0, 0);
+        // when
+        boolean holiday = getKisClient().isHoliday(dateTime);
+        // then
+        log.info("== holiday: {}", holiday);
+        assertTrue(holiday);
     }
 
     @Disabled

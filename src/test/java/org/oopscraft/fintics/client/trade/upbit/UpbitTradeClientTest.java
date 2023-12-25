@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.client.upbit;
+package org.oopscraft.fintics.client.trade.upbit;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Disabled;

@@ -42,7 +42,7 @@ public class KisAccessTokenRegistry {
                     // Invalid 한 만료기간 1분인 TEMP_ERROR_TOKEN 을 발행 하고
                     // 1분 간은 인증 오류가 발생 하고
                     // 1분 후 만료 시 재호출 됨(그때 정상 이면 복구가 되어야 함, 그때도 장애 상태 이면 계속 반복)
-                    log.error("Refresh access token error: {}", e.getMessage());
+                    log.warn("Refresh access token error: {}", e.getMessage());
                     accessToken = KisAccessToken.builder()
                             .apiUrl(apiUrl)
                             .appKey(appKey)
