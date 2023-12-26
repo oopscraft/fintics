@@ -2,7 +2,7 @@ package org.oopscraft.fintics.dao;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.oopscraft.arch4j.core.data.SystemFieldEntity;
+import org.oopscraft.arch4j.core.data.SystemEntity;
 import org.oopscraft.fintics.model.OrderKind;
 import org.oopscraft.fintics.model.OrderResult;
 import org.oopscraft.fintics.model.OrderType;
@@ -23,7 +23,7 @@ import java.time.LocalDateTime;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class OrderEntity extends SystemFieldEntity {
+public class OrderEntity extends SystemEntity {
 
     @Id
     @Column(name = "order_id", length = 32)

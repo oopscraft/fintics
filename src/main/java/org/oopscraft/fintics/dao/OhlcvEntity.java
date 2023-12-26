@@ -2,7 +2,7 @@ package org.oopscraft.fintics.dao;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.oopscraft.arch4j.core.data.SystemFieldEntity;
+import org.oopscraft.arch4j.core.data.SystemEntity;
 import org.oopscraft.fintics.model.OhlcvType;
 
 import javax.persistence.*;
@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-public class OhlcvEntity extends SystemFieldEntity {
+public class OhlcvEntity extends SystemEntity {
 
     @Id
     @Column(name = "ohlcv_type", length = 32)

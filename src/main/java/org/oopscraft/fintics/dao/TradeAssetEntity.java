@@ -2,7 +2,7 @@ package org.oopscraft.fintics.dao;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.oopscraft.arch4j.core.data.SystemFieldEntity;
+import org.oopscraft.arch4j.core.data.SystemEntity;
 import org.oopscraft.arch4j.core.data.converter.BooleanToYNConverter;
 
 import javax.persistence.*;
@@ -17,7 +17,7 @@ import java.math.BigDecimal;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class TradeAssetEntity extends SystemFieldEntity {
+public class TradeAssetEntity extends SystemEntity {
 
     public static class Pk implements Serializable {
         private String tradeId;
