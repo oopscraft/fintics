@@ -268,29 +268,37 @@
                     <div class="overflow-y--scroll border--1">
                         <table class="width--100 border--0">
                             <colgroup>
+                                <col style="width:3em;"/>
                                 <col style="width:5em;"/>
                                 <col/>
                                 <col/>
                                 <col style="width:10em;"/>
                                 <col style="width:10em;"/>
-                                <col style="width:3em;"/>
                             </colgroup>
                             <thead>
                             <tr>
+                                <th class="text-align--center">
+                                    <button type="button" class="small" onclick="addTradeAsset();">
+                                        <img class="icon" th:src="@{/static/image/icon-add.svg}" alt="add"/>
+                                    </button>
+                                </th>
                                 <th data-th-text="#{web.global.no}" class="text-align--center"></th>
                                 <th data-th-text="#{fintics.Asset.symbol}"></th>
                                 <th data-th-text="#{fintics.Asset.name}"></th>
                                 <th data-th-text="#{fintics.TradeAsset.enabled}" class="text-align--center"></th>
                                 <th data-th-text="#{fintics.TradeAsset.holdRatio}" class="text-align--center"></th>
-                                <th class="text-align--right">
-                                    <button type="button" class="small" onclick="addTradeAsset();">
-                                        <img class="icon" th:src="@{/static/image/icon-add.svg}" alt="add"/>
-                                    </button>
-                                </th>
                             </tr>
                             </thead>
                             <tbody>
                             <tr data-duice-bind="trade.tradeAssets" data-duice-loop="tradeAsset,status">
+                                <td class="text-align--center">
+                                    <button type="button" class="small"
+                                            data-duice-bind="tradeAsset"
+                                            data-duice-execute="this.dataset.index=status.index;"
+                                            onclick="removeTradeAsset(this.dataset.index);">
+                                        <img class="icon" th:src="@{/static/image/icon-remove.svg}" alt="remove"/>
+                                    </button>
+                                </td>
                                 <td class="text-align--center">
                                 <span data-duice-bind="status" data-duice-property="count"
                                       class="text-align--center"></span>
@@ -313,14 +321,6 @@
                                                data-duice-property="holdRatio" class="width--50"/>
                                         %
                                     </label>
-                                </td>
-                                <td class="text-align--right">
-                                    <button type="button" class="small"
-                                            data-duice-bind="tradeAsset"
-                                            data-duice-execute="this.dataset.index=status.index;"
-                                            onclick="removeTradeAsset(this.dataset.index);">
-                                        <img class="icon" th:src="@{/static/image/icon-remove.svg}" alt="remove"/>
-                                    </button>
                                 </td>
                             </tr>
                             <tr data-duice-bind="trade.tradeAssets"
