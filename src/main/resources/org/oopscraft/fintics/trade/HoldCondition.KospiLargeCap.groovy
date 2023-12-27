@@ -119,17 +119,11 @@ holdVotes.addAll(resultOfDaily.values())
 log.debug("[{}] resultOfDaily: {}", assetName, resultOfDaily)
 log.info("[{}] resultOfDailyAverage: {}", assetName, resultOfDaily.values().average())
 
-// USD/KRW (환율 하락 시 매수)
-def resultOfUsdKrw = analyze(indiceIndicators['USD_KRW'], OhlcvType.DAILY, 1)
-holdVotes.addAll(resultOfUsdKrw.values().collect{100 - (it as Number)})
-log.debug("[{}] resultOfUsdKrw: {}", assetName, resultOfUsdKrw)
-log.info("[{}] resultOfUsdKrwAverage: {}", assetName, resultOfUsdKrw.values().average())
-
-// Nasdaq Future (나스닥 선물 상승 시 매수)
-def resultOfNdxFuture = analyze(indiceIndicators['NDX_FUTURE'], OhlcvType.DAILY, 1)
-holdVotes.addAll(resultOfNdxFuture.values())
-log.debug("[{}] resultOfNdxFuture: {}", assetName, resultOfNdxFuture)
-log.info("[{}] resultOfNdxFutureAverage: {}", assetName, resultOfNdxFuture.values().average())
+// KOSPI
+def resultOfKospi = analyze(indiceIndicators['KOSPI'], OhlcvType.DAILY, 1)
+holdVotes.addAll(resultOfKospi.values())
+log.debug("[{}] resultOfKospi: {}", assetName, resultOfKospi)
+log.info("[{}] resultOfKospiAverage: {}", assetName, resultOfKospi.values().average())
 
 // decide hold
 def hold = null
