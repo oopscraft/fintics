@@ -8,7 +8,7 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.oopscraft.arch4j.core.test.CoreTestSupport;
+import org.oopscraft.arch4j.core.support.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
 import org.oopscraft.fintics.model.Ohlcv;
 import org.oopscraft.fintics.model.OhlcvType;

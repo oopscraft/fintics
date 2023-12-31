@@ -2,7 +2,7 @@ package org.oopscraft.fintics.dao;
 
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
-import org.oopscraft.arch4j.core.test.CoreTestSupport;
+import org.oopscraft.arch4j.core.support.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
 import org.oopscraft.fintics.model.OhlcvType;
 import org.springframework.boot.test.context.SpringBootTest;
