@@ -3,7 +3,7 @@ package org.oopscraft.fintics.api.v1;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.oopscraft.arch4j.core.security.SecurityUtils;
+import org.oopscraft.arch4j.web.security.SecurityUtils;
 import org.oopscraft.fintics.api.v1.dto.AssetIndicatorResponse;
 import org.oopscraft.fintics.api.v1.dto.BalanceResponse;
 import org.oopscraft.fintics.api.v1.dto.TradeRequest;

@@ -37,15 +37,16 @@ core:
         properties:
           password: ENC(QyzCISjurYg1lGaTDNUfPP4/DtbMkM5Z3UTCInz5daqp3mJ0/O7RiR5DzkALIJKpOFO5Hn2FnTetAVJOQ1eYXl57VQUjC0PAAC2B8RhoXEA=)
           salt: ENC(BfWWzNsezrykOn0EFRPCHPkwEcMnEvbAoSBe4yFP9SQ9XApGgUEjZD76RBuIt/4S)
-  security:
-    authentication-token:
-      signing-key: ENC(GgF+YM6Oc307CxjpiHf/6HsH6mo2Y7JJY03ai2nHQy4LpTQsSryiFzwKTPfXyt50cCWA/zaOcrCpX5Hqo6InUXxRdqtVui643lnVW7SwFq0=)
   storage:
     storage-client:
       properties:
         location: /nfs/fintics/storage/
   git:
     location: /.tmp/fintics/git/
+
+# web
+web:
+  security-signing-key: ENC(GgF+YM6Oc307CxjpiHf/6HsH6mo2Y7JJY03ai2nHQy4LpTQsSryiFzwKTPfXyt50cCWA/zaOcrCpX5Hqo6InUXxRdqtVui643lnVW7SwFq0=)
 
 # fintics
 fintics:

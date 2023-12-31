@@ -6,15 +6,12 @@ spring:
     hikari:
       leakDetectionThreshold: 300000
 
-# core
-core:
-  security-policy: AUTHENTICATED
-
 # web
 web:
   brand: <img class="icon" src="/static/image/logo-fintics.png"/>
   title: Fintics
   index: monitor
+  security-policy: ANONYMOUS
 
 # fintics
 fintics:
