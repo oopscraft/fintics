@@ -68,7 +68,7 @@ public class TradeService {
         tradeEntity.setAlarmOnOrder(trade.isAlarmOnOrder());
 
         // trade asset
-        tradeEntity.getTradeAssetEntities().clear();
+        tradeEntity.getTradeAssets().clear();
         List<TradeAssetEntity> tradeAssetEntities = trade.getTradeAssets().stream()
                 .map(tradeAsset ->
                         TradeAssetEntity.builder()
@@ -79,7 +79,7 @@ public class TradeService {
                                 .holdRatio(tradeAsset.getHoldRatio())
                                 .build())
                 .collect(Collectors.toList());
-        tradeEntity.getTradeAssetEntities().addAll(tradeAssetEntities);
+        tradeEntity.getTradeAssets().addAll(tradeAssetEntities);
 
         // save and return
         TradeEntity savedTradeEntity = tradeRepository.saveAndFlush(tradeEntity);

@@ -65,7 +65,7 @@ public class Trade {
                 .build();
 
         // trade assets
-        List<TradeAsset> tradeAssets = tradeEntity.getTradeAssetEntities().stream()
+        List<TradeAsset> tradeAssets = tradeEntity.getTradeAssets().stream()
                 .map(TradeAsset::from)
                 .collect(Collectors.toList());
         trade.setTradeAssets(tradeAssets);

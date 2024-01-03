@@ -72,6 +72,6 @@ public class TradeEntity extends SystemEntity {
     @JoinColumn(name = "trade_id", updatable = false)
     @Builder.Default
     @Setter(AccessLevel.NONE)
-    private List<TradeAssetEntity> tradeAssetEntities = new ArrayList<>();
+    private List<TradeAssetEntity> tradeAssets = new ArrayList<>();
 
 }
