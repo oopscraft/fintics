@@ -639,6 +639,7 @@ public class KisTradeClient extends TradeClient {
         ValueMap payloadMap = new ValueMap();
         payloadMap.put("CANO", accountNo.split("-")[0]);
         payloadMap.put("ACNT_PRDT_CD", accountNo.split("-")[1]);
+        payloadMap.put("KRX_FWDG_ORD_ORGNO", "");
         payloadMap.put("ORGN_ODNO", order.getClientOrderId());
         payloadMap.put("ORD_DVSN", ordDvsn);
         payloadMap.put("RVSE_CNCL_DVSN_CD", "01");
