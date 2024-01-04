@@ -104,7 +104,7 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
 }
 
 // defines
-def assetName = assetIndicator.getItemName()
+def assetName = assetIndicator.getName()
 def holdVotes = []
 
 // minute 10
