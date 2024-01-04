@@ -489,7 +489,7 @@ public class KisTradeClient extends TradeClient {
         switch(order.getOrderType()) {
             case LIMIT -> {
                 ordDvsn = "00";
-                ordUnpr = String.valueOf(order.getPrice().intValue());
+                ordUnpr = String.valueOf(order.getPrice().longValue());
             }
             case MARKET -> {
                 ordDvsn = "01";
@@ -643,7 +643,7 @@ public class KisTradeClient extends TradeClient {
         payloadMap.put("ORD_DVSN", ordDvsn);
         payloadMap.put("RVSE_CNCL_DVSN_CD", "01");
         payloadMap.put("ORD_QTY", "0");
-        payloadMap.put("ORD_UNPR", order.getPrice());
+        payloadMap.put("ORD_UNPR", String.valueOf(order.getPrice().longValue()));
         payloadMap.put("QTY_ALL_ORD_YN", "Y");
         RequestEntity<ValueMap> requestEntity = RequestEntity
                 .post(url)
