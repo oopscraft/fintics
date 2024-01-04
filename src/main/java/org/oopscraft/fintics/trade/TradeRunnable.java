@@ -29,6 +29,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class TradeRunnable implements Runnable {
@@ -175,90 +176,94 @@ public class TradeRunnable implements Runnable {
 
             // checks buy condition
             for (TradeAsset tradeAsset : trade.getTradeAssets()) {
-                Thread.sleep(100);
+                try {
+                    Thread.sleep(100);
 
-                // check enabled
-                if (!tradeAsset.isEnabled()) {
-                    continue;
-                }
-
-                // logging
-                log.info("Check asset - [{}]", tradeAsset.getName());
-
-                // indicator
-                List<Ohlcv> minuteOhlcvs = tradeClient.getMinuteOhlcvs(tradeAsset);
-                List<Ohlcv> previousMinuteOhlcvs = getPreviousAssetMinuteOhlcvs(tradeAsset, minuteOhlcvs);
-                minuteOhlcvs.addAll(previousMinuteOhlcvs);
-
-                List<Ohlcv> dailyOhlcvs = tradeClient.getDailyOhlcvs(tradeAsset);
-                List<Ohlcv> previousDailyOhlcvs = getPreviousAssetDailyOhlcvs(tradeAsset, dailyOhlcvs);
-                dailyOhlcvs.addAll(previousDailyOhlcvs);
-
-                AssetIndicator assetIndicator = AssetIndicator.builder()
-                        .symbol(tradeAsset.getSymbol())
-                        .name(tradeAsset.getName())
-                        .minuteOhlcvs(minuteOhlcvs)
-                        .dailyOhlcvs(dailyOhlcvs)
-                        .build();
-
-                // order book
-                OrderBook orderBook = tradeClient.getOrderBook(tradeAsset);
-
-                // executes trade asset decider
-                TradeAssetDecider tradeAssetDecider = TradeAssetDecider.builder()
-                        .holdCondition(trade.getHoldCondition())
-                        .logger(log)
-                        .dateTime(dateTime)
-                        .orderBook(orderBook)
-                        .balance(balance)
-                        .indiceIndicators(indiceIndicators)
-                        .assetIndicator(assetIndicator)
-                        .build();
-                Boolean holdConditionResult = tradeAssetDecider.execute();
-                log.info("holdConditionResult: {}", holdConditionResult);
-
-                // 1. null is no operation
-                if (holdConditionResult == null) {
-                    continue;
-                }
-
-                // 2. buy and hold
-                if (holdConditionResult.equals(Boolean.TRUE)) {
-                    if (!balance.hasBalanceAsset(tradeAsset.getSymbol())) {
-                        BigDecimal buyAmount = balance.getTotalAmount()
-                                .divide(BigDecimal.valueOf(100), MathContext.DECIMAL32)
-                                .multiply(tradeAsset.getHoldRatio())
-                                .setScale(2, RoundingMode.HALF_UP);
-                        BigDecimal price = orderBook.getPrice();
-                        BigDecimal quantity = buyAmount
-                                .divide(price, MathContext.DECIMAL32);
-
-                        // buy
-                        log.info("Buy asset: {}", tradeAsset.getName());
-                        buyTradeAsset(trade, tradeAsset, trade.getOrderType(), quantity, price);
+                    // check enabled
+                    if (!tradeAsset.isEnabled()) {
+                        continue;
                     }
-                }
 
-                // 3. sell
-                else if (holdConditionResult.equals(Boolean.FALSE)) {
-                    if (balance.hasBalanceAsset(tradeAsset.getSymbol())) {
-                        // price, quantity
-                        BalanceAsset balanceAsset = balance.getBalanceAsset(tradeAsset.getSymbol()).orElseThrow();
-                        BigDecimal price = orderBook.getPrice();
-                        BigDecimal quantity = balanceAsset.getOrderableQuantity();
+                    // logging
+                    log.info("Check asset - [{}]", tradeAsset.getName());
 
-                        // sell
-                        log.info("Sell asset: {}", tradeAsset.getName());
-                        sellBalanceAsset(trade, balanceAsset, trade.getOrderType(), quantity, price);
+                    // indicator
+                    List<Ohlcv> minuteOhlcvs = tradeClient.getMinuteOhlcvs(tradeAsset);
+                    List<Ohlcv> previousMinuteOhlcvs = getPreviousAssetMinuteOhlcvs(tradeAsset, minuteOhlcvs);
+                    minuteOhlcvs.addAll(previousMinuteOhlcvs);
+
+                    List<Ohlcv> dailyOhlcvs = tradeClient.getDailyOhlcvs(tradeAsset);
+                    List<Ohlcv> previousDailyOhlcvs = getPreviousAssetDailyOhlcvs(tradeAsset, dailyOhlcvs);
+                    dailyOhlcvs.addAll(previousDailyOhlcvs);
+
+                    AssetIndicator assetIndicator = AssetIndicator.builder()
+                            .symbol(tradeAsset.getSymbol())
+                            .name(tradeAsset.getName())
+                            .minuteOhlcvs(minuteOhlcvs)
+                            .dailyOhlcvs(dailyOhlcvs)
+                            .build();
+
+                    // order book
+                    OrderBook orderBook = tradeClient.getOrderBook(tradeAsset);
+
+                    // executes trade asset decider
+                    TradeAssetDecider tradeAssetDecider = TradeAssetDecider.builder()
+                            .holdCondition(trade.getHoldCondition())
+                            .logger(log)
+                            .dateTime(dateTime)
+                            .orderBook(orderBook)
+                            .balance(balance)
+                            .indiceIndicators(indiceIndicators)
+                            .assetIndicator(assetIndicator)
+                            .build();
+                    Boolean holdConditionResult = tradeAssetDecider.execute();
+                    log.info("holdConditionResult: {}", holdConditionResult);
+
+                    // 1. null is no operation
+                    if (holdConditionResult == null) {
+                        continue;
                     }
+
+                    // 2. buy and hold
+                    if (holdConditionResult.equals(Boolean.TRUE)) {
+                        if (!balance.hasBalanceAsset(tradeAsset.getSymbol())) {
+                            BigDecimal buyAmount = balance.getTotalAmount()
+                                    .divide(BigDecimal.valueOf(100), MathContext.DECIMAL32)
+                                    .multiply(tradeAsset.getHoldRatio())
+                                    .setScale(2, RoundingMode.HALF_UP);
+                            BigDecimal price = orderBook.getPrice();
+                            BigDecimal quantity = buyAmount
+                                    .divide(price, MathContext.DECIMAL32);
+
+                            // buy
+                            log.info("Buy asset: {}", tradeAsset.getName());
+                            buyTradeAsset(trade, tradeAsset, trade.getOrderType(), quantity, price);
+                        }
+                    }
+
+                    // 3. sell
+                    else if (holdConditionResult.equals(Boolean.FALSE)) {
+                        if (balance.hasBalanceAsset(tradeAsset.getSymbol())) {
+                            // price, quantity
+                            BalanceAsset balanceAsset = balance.getBalanceAsset(tradeAsset.getSymbol()).orElseThrow();
+                            BigDecimal price = orderBook.getPrice();
+                            BigDecimal quantity = balanceAsset.getOrderableQuantity();
+
+                            // sell
+                            log.info("Sell asset: {}", tradeAsset.getName());
+                            sellBalanceAsset(trade, balanceAsset, trade.getOrderType(), quantity, price);
+                        }
+                    }
+                } catch (Throwable e) {
+                    log.error(e.getMessage(), e);
+                    sendErrorAlarmIfEnabled(trade, tradeAsset, e);
                 }
             }
-
         } catch(InterruptedException e) {
             throw e;
         } catch (Throwable e) {
             log.error(e.getMessage(), e);
-            sendErrorAlarmIfEnabled(trade, e);
+            sendErrorAlarmIfEnabled(trade, null, e);
             throw e;
         }
     }
@@ -332,10 +337,10 @@ public class TradeRunnable implements Runnable {
                 .collect(Collectors.toList());
     }
 
-    private void sendErrorAlarmIfEnabled(Trade trade, Throwable t) throws InterruptedException {
+    private void sendErrorAlarmIfEnabled(Trade trade, TradeAsset tradeAsset, Throwable t) throws InterruptedException {
         if(trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
             if (trade.isAlarmOnError()) {
-                String subject = String.format("[%s]", trade.getName());
+                String subject = String.format("[%s - %s]", trade.getName(), tradeAsset != null ? tradeAsset.getName() : "");
                 String content = ExceptionUtils.getRootCause(t).getMessage();
                 alarmService.sendAlarm(trade.getAlarmId(), subject, content);
             }
