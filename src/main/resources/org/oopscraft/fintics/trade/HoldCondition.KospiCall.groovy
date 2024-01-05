@@ -107,35 +107,40 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
 def assetName = assetIndicator.getName()
 def holdVotes = []
 
-// minute 10
-def resultOfMinute10 = analyze(assetIndicator, OhlcvType.MINUTE, 10)
-holdVotes.addAll(resultOfMinute10.values())
-log.debug("[{}] resultOfMinute10: {}", assetName, resultOfMinute10)
-log.info("[{}] resultOfMinute10Average: {}", assetName, resultOfMinute10.values().average())
+// minute
+def resultOfMinute = analyze(assetIndicator, OhlcvType.MINUTE, 1)
+def resultOfMinuteAverage = resultOfMinute.values().average()
+holdVotes.addAll(resultOfMinute.values())
+log.debug("[{}] resultOfMinute: {}", assetName, resultOfMinute)
+log.info("[{}] resultOfMinuteAverage: {}", assetName, resultOfMinuteAverage)
 
-// minute 60
-def resultOfMinute60 = analyze(assetIndicator, OhlcvType.MINUTE, 60)
-holdVotes.addAll(resultOfMinute60.values())
-log.debug("[{}] resultOfMinute60: {}", assetName, resultOfMinute60)
-log.info("[{}] resultOfMinute60Average: {}", assetName, resultOfMinute60.values().average())
+// hourly
+def resultOfHourly = analyze(assetIndicator, OhlcvType.MINUTE, 60)
+def resultOfHourlyAverage = resultOfHourly.values().average()
+holdVotes.addAll(resultOfHourly.values())
+log.debug("[{}] resultOfHourly: {}", assetName, resultOfHourly)
+log.info("[{}] resultOfHourlyAverage: {}", assetName, resultOfHourlyAverage)
 
 // daily
 def resultOfDaily = analyze(assetIndicator, OhlcvType.DAILY, 1)
+def resultOfDailyAverage = resultOfDaily.values().average()
 holdVotes.addAll(resultOfDaily.values())
 log.debug("[{}] resultOfDaily: {}", assetName, resultOfDaily)
-log.info("[{}] resultOfDailyAverage: {}", assetName, resultOfDaily.values().average())
+log.info("[{}] resultOfDailyAverage: {}", assetName, resultOfDailyAverage)
 
 // USD/KRW (환율 하락 시 매수)
 def resultOfUsdKrw = analyze(indiceIndicators['USD_KRW'], OhlcvType.DAILY, 1)
+def resultOfUsdKrwAverage = resultOfUsdKrw.values().average()
 holdVotes.addAll(resultOfUsdKrw.values().collect{100 - (it as Number)})
 log.debug("[{}] resultOfUsdKrw: {}", assetName, resultOfUsdKrw)
-log.info("[{}] resultOfUsdKrwAverage: {}", assetName, resultOfUsdKrw.values().average())
+log.info("[{}] resultOfUsdKrwAverage: {}", assetName, resultOfUsdKrwAverage)
 
 // Nasdaq Future (나스닥 선물 상승 시 매수)
 def resultOfNdxFuture = analyze(indiceIndicators['NDX_FUTURE'], OhlcvType.DAILY, 1)
+def resultOfNdxFutureAverage = resultOfNdxFuture.values().average()
 holdVotes.addAll(resultOfNdxFuture.values())
 log.debug("[{}] resultOfNdxFuture: {}", assetName, resultOfNdxFuture)
-log.info("[{}] resultOfNdxFutureAverage: {}", assetName, resultOfNdxFuture.values().average())
+log.info("[{}] resultOfNdxFutureAverage: {}", assetName, resultOfNdxFutureAverage)
 
 // decide hold
 def hold = null
@@ -144,7 +149,7 @@ log.debug("[{}] holdVotes: {}", assetName, holdVotes)
 log.info("[{}] holdVotesAverage: {}", assetName, holdVotesAverage)
 
 // buy
-if(holdVotesAverage > 70) {
+if(holdVotesAverage > 60) {
     hold = true
 }
 
