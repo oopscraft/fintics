@@ -476,7 +476,7 @@ public class KisTradeClient extends TradeClient {
 
         // order kind
         String trId = null;
-        switch(order.getOrderKind()) {
+        switch(order.getOrderType()) {
             case BUY -> trId = production ? "TTTC0802U" : "VTTC0802U";
             case SELL -> trId = production ? "TTTC0801U" : "VTTC0801U";
             default -> throw new RuntimeException("invalid order kind");
@@ -486,7 +486,7 @@ public class KisTradeClient extends TradeClient {
         // order type
         String ordDvsn = null;
         String ordUnpr = null;
-        switch(order.getOrderType()) {
+        switch(order.getOrderKind()) {
             case LIMIT -> {
                 ordDvsn = "00";
                 ordUnpr = String.valueOf(order.getPrice().longValue());
@@ -581,17 +581,17 @@ public class KisTradeClient extends TradeClient {
         // return
         return output.stream()
                 .map(row -> {
-                    OrderKind orderKind;
+                    OrderType orderType;
                     switch (row.getString("sll_buy_dvsn_cd")) {
-                        case "01" -> orderKind = OrderKind.SELL;
-                        case "02" -> orderKind = OrderKind.BUY;
+                        case "01" -> orderType = OrderType.SELL;
+                        case "02" -> orderType = OrderType.BUY;
                         default -> throw new RuntimeException("invalid sll_buy_dvsn_cd");
                     }
-                    OrderType orderType;
+                    OrderKind orderKind;
                     switch (row.getString("ord_dvsn_cd")) {
-                        case "00" -> orderType = OrderType.LIMIT;
-                        case "01" -> orderType = OrderType.MARKET;
-                        default -> orderType = null;
+                        case "00" -> orderKind = OrderKind.LIMIT;
+                        case "01" -> orderKind = OrderKind.MARKET;
+                        default -> orderKind = null;
                     }
 
                     String symbol = row.getString("pdno");
@@ -599,9 +599,9 @@ public class KisTradeClient extends TradeClient {
                     BigDecimal price = row.getNumber("ord_unpr");
                     String clientOrderId = row.getString("odno");
                     return Order.builder()
-                            .orderKind(orderKind)
-                            .symbol(symbol)
                             .orderType(orderType)
+                            .symbol(symbol)
+                            .orderKind(orderKind)
                             .quantity(quantity)
                             .price(price)
                             .clientOrderId(clientOrderId)
@@ -625,7 +625,7 @@ public class KisTradeClient extends TradeClient {
 
         // order type
         String ordDvsn = null;
-        switch(order.getOrderType()) {
+        switch(order.getOrderKind()) {
             case LIMIT -> {
                 ordDvsn = "00";
             }

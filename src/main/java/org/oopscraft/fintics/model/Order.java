@@ -19,7 +19,7 @@ public class Order {
 
     private LocalDateTime orderAt;
 
-    private OrderKind orderKind;
+    private OrderType orderType;
 
     private String tradeId;
 
@@ -27,7 +27,7 @@ public class Order {
 
     private String assetName;
 
-    private OrderType orderType;
+    private OrderKind orderKind;
 
     private BigDecimal quantity;
 
@@ -43,11 +43,11 @@ public class Order {
         return Order.builder()
                 .orderId(orderEntity.getOrderId())
                 .orderAt(orderEntity.getOrderAt())
-                .orderKind(orderEntity.getOrderKind())
+                .orderType(orderEntity.getOrderType())
                 .tradeId(orderEntity.getTradeId())
                 .symbol(orderEntity.getSymbol())
                 .assetName(orderEntity.getAssetName())
-                .orderType(orderEntity.getOrderType())
+                .orderKind(orderEntity.getOrderKind())
                 .quantity(orderEntity.getQuantity())
                 .price(orderEntity.getPrice())
                 .orderResult(orderEntity.getOrderResult())

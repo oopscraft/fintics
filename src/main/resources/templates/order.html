@@ -7,7 +7,7 @@
     <script th:inline="javascript">
         const orderSearch = new duice.ObjectProxy({
             tradeId: null,
-            orderKind: null,
+            orderType: null,
             orderResult: null,
             _page: 0,
             _size: 20,
@@ -29,8 +29,8 @@
             if(orderSearch.tradeId) {
                 url.searchParams.append('tradeId', orderSearch.tradeId);
             }
-            if(orderSearch.orderKind) {
-                url.searchParams.append('orderKind', orderSearch.orderKind);
+            if(orderSearch.orderType) {
+                url.searchParams.append('orderType', orderSearch.orderType);
             }
             if(orderSearch.orderResult) {
                 url.searchParams.append('orderResult', orderSearch.orderResult);
@@ -68,36 +68,6 @@
 
     </script>
     <style th:inline="css">
-        .orderKind {
-            padding: 0.25em 1em;
-            font-size: xx-small;
-            font-weight: bold;
-            text-align: center;
-            white-space: nowrap;
-            vertical-align: baseline;
-            border-radius: 0.1em;
-        }
-       .orderKind.BUY {
-            background-color: var(--web-background-color-red);
-        }
-        .orderKind.SELL {
-            background-color: var(--web-background-color-blue);
-        }
-        .orderResult {
-            padding: 0.25em 1em;
-            font-size: xx-small;
-            font-weight: bold;
-            text-align: center;
-            white-space: nowrap;
-            vertical-align: baseline;
-            border-radius: 0.1em;
-        }
-        .orderResult.COMPLETED {
-            background-color: var(--web-background-color-green);
-        }
-        .orderResult.FAILED {
-            background-color: var(--web-background-color-red);
-        }
     </style>
 
     <!-- ====================================== -->
@@ -128,8 +98,8 @@
                     </select>
                 </label>
                 <label class="grid-column--1 s__grid-column--12">
-                    <select class="width--100" data-duice-bind="orderSearch" data-duice-property="orderKind">
-                        <option value="" data-th-text="'- ' + #{fintics.Order.orderKind} + ' -'"></option>
+                    <select class="width--100" data-duice-bind="orderSearch" data-duice-property="orderType">
+                        <option value="" data-th-text="'- ' + #{fintics.Order.orderType} + ' -'"></option>
                         <option value="BUY">BUY</option>
                         <option value="SELL">SELL</option>
                     </select>
@@ -166,7 +136,7 @@
                 <tr>
                     <th data-th-text="#{web.global.no}" class="text-align--center"></th>
                     <th data-th-text="#{fintics.Order.orderAt}"></th>
-                    <th data-th-text="#{fintics.Order.orderKind}"></th>
+                    <th data-th-text="#{fintics.Order.orderType}"></th>
                     <th data-th-text="#{fintics.Trade.name}"></th>
                     <th data-th-text="#{fintics.Asset.name}"></th>
                     <th data-th-text="#{fintics.Order.quantity}"></th>
@@ -190,9 +160,7 @@
                               data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></span>
                     </td>
                     <td>
-                        <span data-duice-bind="order" data-duice-property="orderKind" class="orderKind"
-                              data-duice-execute="this.classList.add(order.orderKind);">
-                        </span>
+                        <span data-duice-bind="order" data-duice-property="orderType" class="font-size--smaller font-weight--bold"></span>
                     </td>
                     <td>
                         <span data-duice-bind="order" data-duice-property="tradeName"></span>
@@ -207,8 +175,7 @@
                         <span data-duice-bind="order" data-duice-property="price" data-duice-format="number"></span>
                     </td>
                     <td>
-                        <span data-duice-bind="order" data-duice-property="orderResult" class="orderResult"
-                              data-duice-execute="this.classList.add(order.orderResult);"></span>
+                        <span data-duice-bind="order" data-duice-property="orderResult" class="font-size--smaller font-weight--bold"></span>
                     </td>
                     <td>
                         <span data-duice-bind="order" data-duice-property="errorMessage"></span>

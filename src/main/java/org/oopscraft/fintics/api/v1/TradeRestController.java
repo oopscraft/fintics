@@ -70,7 +70,7 @@ public class TradeRestController {
                 .clientType(tradeRequest.getClientType())
                 .clientProperties(tradeRequest.getClientProperties())
                 .holdCondition(tradeRequest.getHoldCondition())
-                .orderType(tradeRequest.getOrderType())
+                .orderKind(tradeRequest.getOrderKind())
                 .alarmId(tradeRequest.getAlarmId())
                 .alarmOnError(tradeRequest.isAlarmOnError())
                 .alarmOnOrder(tradeRequest.isAlarmOnOrder())
@@ -110,7 +110,7 @@ public class TradeRestController {
         trade.setClientType(tradeRequest.getClientType());
         trade.setClientProperties(tradeRequest.getClientProperties());
         trade.setHoldCondition(tradeRequest.getHoldCondition());
-        trade.setOrderType(tradeRequest.getOrderType());
+        trade.setOrderKind(tradeRequest.getOrderKind());
         trade.setAlarmId(tradeRequest.getAlarmId());
         trade.setAlarmOnError(tradeRequest.isAlarmOnError());
         trade.setAlarmOnOrder(tradeRequest.isAlarmOnOrder());

@@ -33,7 +33,7 @@ public class Trade {
 
     private String holdCondition;
 
-    private OrderType orderType;
+    private OrderKind orderKind;
 
     private String alarmId;
 
@@ -57,7 +57,7 @@ public class Trade {
                 .clientType(tradeEntity.getClientType())
                 .clientProperties(tradeEntity.getClientProperties())
                 .holdCondition(tradeEntity.getHoldCondition())
-                .orderType(tradeEntity.getOrderType())
+                .orderKind(tradeEntity.getOrderKind())
                 .alarmId(tradeEntity.getAlarmId())
                 .alarmOnError(tradeEntity.isAlarmOnError())
                 .alarmOnOrder(tradeEntity.isAlarmOnOrder())

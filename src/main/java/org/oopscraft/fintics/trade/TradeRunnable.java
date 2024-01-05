@@ -29,7 +29,6 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class TradeRunnable implements Runnable {
@@ -237,7 +236,7 @@ public class TradeRunnable implements Runnable {
 
                             // buy
                             log.info("Buy asset: {}", tradeAsset.getName());
-                            buyTradeAsset(trade, tradeAsset, trade.getOrderType(), quantity, price);
+                            buyTradeAsset(trade, tradeAsset, trade.getOrderKind(), quantity, price);
                         }
                     }
 
@@ -251,7 +250,7 @@ public class TradeRunnable implements Runnable {
 
                             // sell
                             log.info("Sell asset: {}", tradeAsset.getName());
-                            sellBalanceAsset(trade, balanceAsset, trade.getOrderType(), quantity, price);
+                            sellBalanceAsset(trade, balanceAsset, trade.getOrderKind(), quantity, price);
                         }
                     }
                 } catch (Throwable e) {
@@ -347,13 +346,13 @@ public class TradeRunnable implements Runnable {
         }
     }
 
-    private void buyTradeAsset(Trade trade, TradeAsset tradeAsset, OrderType orderType, BigDecimal quantity, BigDecimal price) throws InterruptedException {
+    private void buyTradeAsset(Trade trade, TradeAsset tradeAsset, OrderKind orderKind, BigDecimal quantity, BigDecimal price) throws InterruptedException {
         TradeClient tradeClient = TradeClientFactory.getClient(trade);
         Order order = Order.builder()
                 .orderId(IdGenerator.uuid())
                 .orderAt(LocalDateTime.now())
-                .orderKind(OrderKind.BUY)
-                .orderType(orderType)
+                .orderType(OrderType.BUY)
+                .orderKind(orderKind)
                 .tradeId(trade.getTradeId())
                 .symbol(tradeAsset.getSymbol())
                 .assetName(tradeAsset.getName())
@@ -365,12 +364,12 @@ public class TradeRunnable implements Runnable {
         Order waitingOrder = tradeClient.getWaitingOrders().stream()
                 .filter(element ->
                         Objects.equals(element.getSymbol(), order.getSymbol())
-                                && element.getOrderKind() == order.getOrderKind())
+                                && element.getOrderType() == order.getOrderType())
                 .findFirst()
                 .orElse(null);
         if(waitingOrder != null) {
             // if limit type order, amend order
-            if(waitingOrder.getOrderType() == OrderType.LIMIT) {
+            if(waitingOrder.getOrderKind() == OrderKind.LIMIT) {
                 waitingOrder.setPrice(price);
                 log.info("amend buy order:{}", waitingOrder);
                 tradeClient.amendOrder(waitingOrder);
@@ -399,13 +398,13 @@ public class TradeRunnable implements Runnable {
         }
     }
 
-    private void sellBalanceAsset(Trade trade, BalanceAsset balanceAsset, OrderType orderType, BigDecimal quantity, BigDecimal price) throws InterruptedException {
+    private void sellBalanceAsset(Trade trade, BalanceAsset balanceAsset, OrderKind orderKind, BigDecimal quantity, BigDecimal price) throws InterruptedException {
         TradeClient tradeClient = TradeClientFactory.getClient(trade);
         Order order = Order.builder()
                 .orderId(IdGenerator.uuid())
                 .orderAt(LocalDateTime.now())
-                .orderKind(OrderKind.SELL)
-                .orderType(orderType)
+                .orderType(OrderType.SELL)
+                .orderKind(orderKind)
                 .tradeId(trade.getTradeId())
                 .symbol(balanceAsset.getSymbol())
                 .assetName(balanceAsset.getName())
@@ -417,12 +416,12 @@ public class TradeRunnable implements Runnable {
         Order waitingOrder = tradeClient.getWaitingOrders().stream()
                 .filter(element ->
                         Objects.equals(element.getSymbol(), order.getSymbol())
-                                && element.getOrderKind() == order.getOrderKind())
+                                && element.getOrderType() == order.getOrderType())
                 .findFirst()
                 .orElse(null);
         if(waitingOrder != null) {
             // if limit type order, amend order
-            if(waitingOrder.getOrderType() == OrderType.LIMIT) {
+            if(waitingOrder.getOrderKind() == OrderKind.LIMIT) {
                 waitingOrder.setPrice(price);
                 log.info("amend sell order:{}", waitingOrder);
                 tradeClient.amendOrder(waitingOrder);
@@ -458,11 +457,11 @@ public class TradeRunnable implements Runnable {
             orderRepository.saveAndFlush(OrderEntity.builder()
                     .orderId(order.getOrderId())
                     .orderAt(order.getOrderAt())
-                    .orderKind(order.getOrderKind())
+                    .orderType(order.getOrderType())
                     .tradeId(order.getTradeId())
                     .symbol(order.getSymbol())
                     .assetName(order.getAssetName())
-                    .orderType(order.getOrderType())
+                    .orderKind(order.getOrderKind())
                     .quantity(order.getQuantity())
                     .price(order.getPrice())
                     .orderResult(order.getOrderResult())

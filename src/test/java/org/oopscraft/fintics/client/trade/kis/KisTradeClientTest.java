@@ -138,8 +138,8 @@ class KisTradeClientTest extends CoreTestSupport {
         // given
         Order order = Order.builder()
                 .symbol("005930")   // Samsung Electronic
-                .orderKind(OrderKind.BUY)
-                .orderType(OrderType.MARKET)
+                .orderType(OrderType.BUY)
+                .orderKind(OrderKind.MARKET)
                 .quantity(BigDecimal.valueOf(1))
                 .build();
 
@@ -153,8 +153,8 @@ class KisTradeClientTest extends CoreTestSupport {
         // given
         Order order = Order.builder()
                 .symbol("069500")   // Kodex 200 ETF
-                .orderKind(OrderKind.BUY)
-                .orderType(OrderType.MARKET)
+                .orderType(OrderType.BUY)
+                .orderKind(OrderKind.MARKET)
                 .quantity(BigDecimal.valueOf(1))
                 .build();
 
@@ -168,8 +168,8 @@ class KisTradeClientTest extends CoreTestSupport {
         // given
         Order order = Order.builder()
                 .symbol("005930")   // Samsung Electronic
-                .orderKind(OrderKind.SELL)
-                .orderType(OrderType.MARKET)
+                .orderType(OrderType.SELL)
+                .orderKind(OrderKind.MARKET)
                 .quantity(BigDecimal.valueOf(1))
                 .build();
 
@@ -183,8 +183,8 @@ class KisTradeClientTest extends CoreTestSupport {
         // given
         Order order = Order.builder()
                 .symbol("069500")   // Kodex 200 ETF
-                .orderKind(OrderKind.SELL)
-                .orderType(OrderType.MARKET)
+                .orderType(OrderType.SELL)
+                .orderKind(OrderKind.MARKET)
                 .quantity(BigDecimal.valueOf(1))
                 .build();
 

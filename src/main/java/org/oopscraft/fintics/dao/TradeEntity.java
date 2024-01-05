@@ -4,7 +4,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.arch4j.core.data.BaseEntity;
 import org.oopscraft.arch4j.core.data.converter.BooleanToYNConverter;
-import org.oopscraft.fintics.model.OrderType;
+import org.oopscraft.fintics.model.OrderKind;
 
 import javax.persistence.*;
 import java.time.LocalTime;
@@ -51,8 +51,8 @@ public class TradeEntity extends BaseEntity {
     @Lob
     private String holdCondition;
 
-    @Column(name = "order_type", length = 16)
-    private OrderType orderType;
+    @Column(name = "order_kind", length = 16)
+    private OrderKind orderKind;
 
     @Column(name = "alarm_id", length = 32)
     private String alarmId;

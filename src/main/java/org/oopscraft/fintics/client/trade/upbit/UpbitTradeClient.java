@@ -242,10 +242,10 @@ public class UpbitTradeClient extends TradeClient {
         String ordType;
         BigDecimal price;
         BigDecimal volume;
-        switch(order.getOrderKind()) {
+        switch(order.getOrderType()) {
             case BUY -> {
                 side = "bid";
-                switch(order.getOrderType()) {
+                switch(order.getOrderKind()) {
                     case LIMIT -> {
                         ordType = "limit";
                         price = order.getPrice();
@@ -262,7 +262,7 @@ public class UpbitTradeClient extends TradeClient {
             }
             case SELL -> {
                 side = "ask";
-                switch(order.getOrderType()) {
+                switch(order.getOrderKind()) {
                     case LIMIT -> {
                         ordType = "limit";
                         price = order.getPrice();
@@ -350,16 +350,16 @@ public class UpbitTradeClient extends TradeClient {
         }
         return rows.stream()
                 .map(row -> {
-                    OrderKind orderKind;
+                    OrderType orderKind;
                     switch(row.getString("side")) {
-                        case "bid" -> orderKind = OrderKind.BUY;
-                        case "ask" -> orderKind = OrderKind.SELL;
+                        case "bid" -> orderKind = OrderType.BUY;
+                        case "ask" -> orderKind = OrderType.SELL;
                         default -> throw new RuntimeException("invalid side");
                     }
-                    OrderType orderType;
+                    OrderKind orderType;
                     switch(row.getString("ord_type")) {
-                        case "limit" -> orderType = OrderType.LIMIT;
-                        case "market","price" -> orderType = OrderType.MARKET;
+                        case "limit" -> orderType = OrderKind.LIMIT;
+                        case "market","price" -> orderType = OrderKind.MARKET;
                         default -> orderType = null;
                     }
                     String symbol = row.getString("market");
@@ -369,9 +369,9 @@ public class UpbitTradeClient extends TradeClient {
 
                     // order
                     return Order.builder()
-                            .orderKind(orderKind)
+                            .orderType(orderKind)
                             .symbol(symbol)
-                            .orderType(orderType)
+                            .orderKind(orderType)
                             .quantity(quantity)
                             .price(price)
                             .clientOrderId(clientOrderId)

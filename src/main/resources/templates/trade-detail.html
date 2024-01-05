@@ -247,10 +247,10 @@
                               class="border--1 width--100" style="font-family:monospace; line-height:1.2em;"></textarea>
                 </label>
                 <label class="grid-column--6">
-                    <span data-th-text="#{fintics.Trade.orderType}" class="font-weight--bold tag-required"></span>
-                    <select data-duice-bind="trade" data-duice-property="orderType" class="width--100">
-                        <option data-th-text="'- ' + #{fintics.Trade.orderType} + ' -'"></option>
-                        <option th:each="orderType : ${orderTypes}" th:value="${orderType}" th:text="#{'fintics.OrderType.'+${orderType}}"></option>
+                    <span data-th-text="#{fintics.Trade.orderKind}" class="font-weight--bold tag-required"></span>
+                    <select data-duice-bind="trade" data-duice-property="orderKind" class="width--100">
+                        <option data-th-text="'- ' + #{fintics.Trade.orderKind} + ' -'"></option>
+                        <option th:each="orderKind : ${orderKinds}" th:value="${orderKind}" th:text="#{'fintics.OrderKind.'+${orderKind}}"></option>
                     </select>
                 </label>
                 <label class="grid-column--12">
@@ -261,7 +261,8 @@
                         data-duice-property="holdCondition"
                         data-duice-mode="groovy"
                         data-duice-theme="dracula"
-                        style="height:800px;"/>
+                        style="height:800px;">
+                    </duice-codemirror>
                 </label>
                 <div class="grid-column--12">
                     <span data-th-text="#{fintics.TradeAsset}" class="font-weight--bold width--100"></span>

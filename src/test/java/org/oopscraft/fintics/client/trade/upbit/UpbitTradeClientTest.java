@@ -3,12 +3,10 @@ package org.oopscraft.fintics.client.trade.upbit;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.oopscraft.fintics.client.trade.upbit.UpbitTradeClient;
 import org.oopscraft.fintics.model.*;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 import java.util.Properties;
 
 @Slf4j
@@ -91,9 +89,9 @@ class UpbitTradeClientTest {
     void submitOrderBuy() throws Exception {
         // given
         Order order = Order.builder()
-                .orderKind(OrderKind.BUY)
+                .orderType(OrderType.BUY)
                 .symbol("KRW-BTC")
-                .orderType(OrderType.MARKET)
+                .orderKind(OrderKind.MARKET)
                 .quantity(BigDecimal.valueOf(6))
                 .price(BigDecimal.valueOf(840))
                 .build();
@@ -107,9 +105,9 @@ class UpbitTradeClientTest {
     void submitOrderSell() throws Exception {
         // given
         Order order = Order.builder()
-                .orderKind(OrderKind.SELL)
+                .orderType(OrderType.SELL)
                 .symbol("KRW-BTC")
-                .orderType(OrderType.MARKET)
+                .orderKind(OrderKind.MARKET)
                 .quantity(BigDecimal.valueOf(0.00008556))
                 .price(null)
                 .build();

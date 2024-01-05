@@ -105,7 +105,7 @@ public class SimulateService {
                         Order order = Order.builder()
                                 .orderId(IdGenerator.uuid())
                                 .orderAt(dateTime)
-                                .orderKind(OrderKind.BUY)
+                                .orderType(OrderType.BUY)
                                 .price(askPrice)
                                 .quantity(quantity)
                                 .build();
@@ -127,7 +127,7 @@ public class SimulateService {
                         Order order = Order.builder()
                                 .orderId(IdGenerator.uuid())
                                 .orderAt(dateTime)
-                                .orderKind(OrderKind.SELL)
+                                .orderType(OrderType.SELL)
                                 .price(bidPrice)
                                 .quantity(quantity)
                                 .build();
