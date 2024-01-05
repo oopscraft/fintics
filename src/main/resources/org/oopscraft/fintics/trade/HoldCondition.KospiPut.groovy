@@ -108,7 +108,7 @@ def assetName = assetIndicator.getName()
 def holdVotes = []
 
 // minute
-def resultOfMinute = analyze(assetIndicator, OhlcvType.MINUTE, 1)
+def resultOfMinute = analyze(assetIndicator, OhlcvType.MINUTE, 5)
 def resultOfMinuteAverage = resultOfMinute.values().average()
 holdVotes.addAll(resultOfMinute.values())
 log.debug("[{}] resultOfMinute: {}", assetName, resultOfMinute)
