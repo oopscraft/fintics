@@ -45,6 +45,7 @@ public class YahooIndiceClient extends IndiceClient {
             case SPX_FUTURE -> getMinuteOhlcvs("ES=F");
             case KOSPI -> getMinuteOhlcvs("^KS11");
             case USD_KRW -> getMinuteOhlcvs("KRW=X");
+            case BITCOIN -> getMinuteOhlcvs("BTC-USD");
         };
     }
 
@@ -57,6 +58,7 @@ public class YahooIndiceClient extends IndiceClient {
             case SPX_FUTURE -> getDailyOhlcvs("ES=F");
             case KOSPI -> getDailyOhlcvs("^KS11");
             case USD_KRW -> getDailyOhlcvs("KRW=X");
+            case BITCOIN -> getDailyOhlcvs("BTC-USD");
         };
     }
 

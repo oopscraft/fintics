@@ -7,7 +7,8 @@ public enum IndiceSymbol {
     SPX("S&P 500"),
     SPX_FUTURE("S&P 500 Future"),
     KOSPI("KOSPI"),
-    USD_KRW("USD/KRW");
+    USD_KRW("USD/KRW"),
+    BITCOIN("Bitcoin");
 
     private final String value;
 
