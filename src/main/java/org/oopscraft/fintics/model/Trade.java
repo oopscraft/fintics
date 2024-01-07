@@ -23,6 +23,8 @@ public class Trade {
 
     private Integer interval;
 
+    private Integer threshold;
+
     private LocalTime startAt;
 
     private LocalTime endAt;
@@ -52,6 +54,7 @@ public class Trade {
                 .name(tradeEntity.getName())
                 .enabled(tradeEntity.isEnabled())
                 .interval(tradeEntity.getInterval())
+                .threshold(tradeEntity.getThreshold())
                 .startAt(tradeEntity.getStartAt())
                 .endAt(tradeEntity.getEndAt())
                 .clientType(tradeEntity.getClientType())

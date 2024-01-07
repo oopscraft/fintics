@@ -42,8 +42,8 @@ insert into `core_alarm`
 
 -- fintics_trade: 한국투자증권 모의투자 - 지수ETF
 insert into `fintics_trade`
-    (`trade_id`,`name`,`enabled`,`interval`,`start_at`,`end_at`,`client_type`,`client_properties`,`alarm_id`,`hold_condition`, `order_kind`) values
-    ('06c228451ce0400fa57bb36f0568d7cb','한국투자증권 모의투자 - 지수ETF','N','60','09:00','15:30',
+    (`trade_id`,`name`,`enabled`,`interval`,`threshold`,`start_at`,`end_at`,`client_type`,`client_properties`,`alarm_id`,`hold_condition`, `order_kind`) values
+    ('06c228451ce0400fa57bb36f0568d7cb','한국투자증권 모의투자 - 지수ETF','N','60','3','09:00','15:30',
      'org.oopscraft.fintics.client.trade.kis.KisTradeClient','production=false
 apiUrl=https://openapivts.koreainvestment.com:29443
 appKey=[Application Key]
@@ -61,8 +61,8 @@ insert into `fintics_trade_asset`
 
 -- fintics_trade: 한국투자증권 모의투자 - 지수ETF(인버스)
 insert into `fintics_trade`
-(`trade_id`,`name`,`enabled`,`interval`,`start_at`,`end_at`,`client_type`,`client_properties`,`alarm_id`,`hold_condition`,`order_kind`) values
-    ('7af6bc641eef4254b12dd9fa1d43384d','한국투자증권 모의투자 - 지수ETF(인버스)','N','60','09:00','15:30',
+(`trade_id`,`name`,`enabled`,`interval`,`threshold`,`start_at`,`end_at`,`client_type`,`client_properties`,`alarm_id`,`hold_condition`,`order_kind`) values
+    ('7af6bc641eef4254b12dd9fa1d43384d','한국투자증권 모의투자 - 지수ETF(인버스)','N','60','3','09:00','15:30',
      'org.oopscraft.fintics.client.trade.kis.KisTradeClient','production=false
 apiUrl=https://openapivts.koreainvestment.com:29443
 appKey=[Application Key]
@@ -80,8 +80,8 @@ insert into `fintics_trade_asset`
 
 -- fintics_trade: 업비트 API(장시간 외 트레이드 테스트용)
 insert into `fintics_trade`
-(`trade_id`,`name`,`enabled`,`interval`,`start_at`,`end_at`,`client_type`,`client_properties`,`alarm_id`,`hold_condition`,`order_kind`) values
-    ('81c6a451d6da49449faa2b5b7e66041b','코인놀이방(24시간 테스트용)','N','30','00:00','23:59',
+(`trade_id`,`name`,`enabled`,`interval`,`threshold`,`start_at`,`end_at`,`client_type`,`client_properties`,`alarm_id`,`hold_condition`,`order_kind`) values
+    ('81c6a451d6da49449faa2b5b7e66041b','코인놀이방(24시간 테스트용)','N','30','3','00:00','23:59',
      'org.oopscraft.fintics.client.trade.upbit.UpbitTradeClient','accessKey=[Access Key]
 secretKey=[Secret Key]',null,'
 

@@ -26,9 +26,7 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class TradeRunnable implements Runnable {
@@ -57,6 +55,10 @@ public class TradeRunnable implements Runnable {
     private final OrderRepository orderRepository;
 
     private final Logger log;
+
+    private Map<String,Boolean> holdConditionResultMap = new HashMap<>();
+
+    private Map<String,Integer> holdConditionResultCountMap = new HashMap<>();
 
     @Setter
     @Getter
@@ -218,6 +220,14 @@ public class TradeRunnable implements Runnable {
                     Boolean holdConditionResult = tradeAssetDecider.execute();
                     log.info("holdConditionResult: {}", holdConditionResult);
 
+                    // 0. checks threshold exceeded
+                    int consecutiveCountOfHoldConditionResult = getConsecutiveCountOfHoldConditionResult(tradeAsset.getSymbol(), holdConditionResult);
+                    log.info("consecutiveCountOfHoldConditionResult: {}", consecutiveCountOfHoldConditionResult);
+                    if(consecutiveCountOfHoldConditionResult < trade.getThreshold()) {
+                        log.info("Threshold has not been exceeded yet - threshold is {}", trade.getThreshold());
+                        continue;
+                    }
+
                     // 1. null is no operation
                     if (holdConditionResult == null) {
                         continue;
@@ -334,6 +344,25 @@ public class TradeRunnable implements Runnable {
                 ).stream()
                 .map(Ohlcv::from)
                 .collect(Collectors.toList());
+    }
+
+    private int getConsecutiveCountOfHoldConditionResult(String symbol, Boolean holdConditionResult) {
+        Boolean previousHoldConditionResult = holdConditionResultMap.get(symbol);
+        int holdConditionResultCount = holdConditionResultCountMap.getOrDefault(symbol, 0);
+
+        // increases match count
+        if(Objects.equals(holdConditionResult, previousHoldConditionResult)) {
+            holdConditionResultCount ++;
+        }else{
+            holdConditionResultCount = 0;
+        }
+
+        // store
+        holdConditionResultMap.put(symbol, holdConditionResult);
+        holdConditionResultCountMap.put(symbol, holdConditionResultCount);
+
+        // return
+        return holdConditionResultCount;
     }
 
     private void sendErrorAlarmIfEnabled(Trade trade, TradeAsset tradeAsset, Throwable t) throws InterruptedException {

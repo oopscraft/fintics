@@ -65,6 +65,7 @@ public class TradeRestController {
                 .name(tradeRequest.getName())
                 .enabled(tradeRequest.isEnabled())
                 .interval(tradeRequest.getInterval())
+                .threshold(tradeRequest.getThreshold())
                 .startAt(tradeRequest.getStartAt())
                 .endAt(tradeRequest.getEndAt())
                 .clientType(tradeRequest.getClientType())
@@ -105,6 +106,7 @@ public class TradeRestController {
         trade.setName(tradeRequest.getName());
         trade.setEnabled(tradeRequest.isEnabled());
         trade.setInterval(tradeRequest.getInterval());
+        trade.setThreshold(tradeRequest.getThreshold());
         trade.setStartAt(tradeRequest.getStartAt());
         trade.setEndAt(tradeRequest.getEndAt());
         trade.setClientType(tradeRequest.getClientType());

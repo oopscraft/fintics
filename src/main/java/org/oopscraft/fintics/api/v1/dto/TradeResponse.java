@@ -23,6 +23,8 @@ public class TradeResponse {
 
     private Integer interval;
 
+    private Integer threshold;
+
     private LocalTime startAt;
 
     private LocalTime endAt;
@@ -52,6 +54,7 @@ public class TradeResponse {
                 .name(trade.getName())
                 .enabled(trade.isEnabled())
                 .interval(trade.getInterval())
+                .threshold(trade.getThreshold())
                 .startAt(trade.getStartAt())
                 .endAt(trade.getEndAt())
                 .clientType(trade.getClientType())

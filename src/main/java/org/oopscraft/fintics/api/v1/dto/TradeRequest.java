@@ -21,6 +21,8 @@ public class TradeRequest {
 
     private Integer interval;
 
+    private Integer threshold;
+
     private LocalTime startAt;
 
     private LocalTime endAt;

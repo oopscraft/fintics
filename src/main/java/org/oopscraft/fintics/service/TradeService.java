@@ -54,6 +54,7 @@ public class TradeService {
         tradeEntity.setName(trade.getName());
         tradeEntity.setEnabled(trade.isEnabled());
         tradeEntity.setInterval(trade.getInterval());
+        tradeEntity.setThreshold(trade.getThreshold());
         tradeEntity.setStartAt(trade.getStartAt());
         tradeEntity.setEndAt(trade.getEndAt());
         tradeEntity.setClientType(trade.getClientType());

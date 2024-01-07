@@ -10,6 +10,7 @@
             tradeId: null,
             name: null,
             interval: null,
+            threshold: null,
             clientType: null,
             clientProperties: null,
             tradeAssets: []
@@ -57,6 +58,11 @@
             if(!trade.interval) {
                 await _alert(/*[[#{web.global.itemEmpty(#{fintics.Trade.interval})}]]*/'');
                 duice.ObjectProxy.focus(trade, 'interval');
+                return false;
+            }
+            if(!trade.threshold) {
+                await _alert(/*[[#{web.global.itemEmpty(#{fintics.Trade.threshold})}]]*/'');
+                duice.ObjectProxy.focus(trade, 'threshold');
                 return false;
             }
 
@@ -180,7 +186,7 @@
                 <span data-th-text="#{fintics.Trade}"></span>
             </h2>
             <form class="display--grid grid-template-columns--12 grid-gap--1em grid-column-gap--2em padding-y--1em s__padding-y--0">
-                <label class="grid-column--12">
+                <label class="grid-column--6">
                     <span data-th-text="#{fintics.Trade.name}" class="font-weight--bold tag-required"></span>
                     <input type="text" data-duice-bind="trade" data-duice-property="name"
                            class="width--100 font-weight--bold"/>
@@ -193,6 +199,10 @@
                 <label class="grid-column--6">
                     <span data-th-text="#{fintics.Trade.interval}" class="font-weight--bold tag-required"></span>
                     <input type="number" data-duice-bind="trade" data-duice-property="interval" class="width--100"/>
+                </label>
+                <label class="grid-column--6">
+                    <span data-th-text="#{fintics.Trade.threshold}" class="font-weight--bold tag-required"></span>
+                    <input type="number" data-duice-bind="trade" data-duice-property="threshold" class="width--100"/>
                 </label>
                 <label class="grid-column--6">
                     <span data-th-text="#{fintics.Trade.startAt}" class="font-weight--bold"></span>

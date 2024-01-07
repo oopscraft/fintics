@@ -34,6 +34,9 @@ public class TradeEntity extends BaseEntity {
     @Column(name = "interval")
     private Integer interval;
 
+    @Column(name = "threshold")
+    private Integer threshold;
+
     @Column(name = "start_at")
     private LocalTime startAt;
 
