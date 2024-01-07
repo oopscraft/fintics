@@ -161,7 +161,7 @@ if(holdVotesAverage > 70) {
 }
 
 // sell
-if(holdVotesAverage < 50) {
+if(holdVotesAverage < 60) {
     hold = false
 }
 
