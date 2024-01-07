@@ -108,32 +108,25 @@ def assetName = assetIndicator.getName()
 def holdVotes = []
 
 // minute
-def resultOfMinute = analyze(assetIndicator, OhlcvType.MINUTE, 10)
+def resultOfMinute = analyze(assetIndicator, OhlcvType.MINUTE, 1)
 def resultOfMinuteAverage = resultOfMinute.values().average()
 holdVotes.addAll(resultOfMinute.values())
 log.debug("[{}] resultOfMinute: {}", assetName, resultOfMinute)
 log.info("[{}] resultOfMinuteAverage: {}", assetName, resultOfMinuteAverage)
 
-// hourly
-def resultOfHourly = analyze(assetIndicator, OhlcvType.MINUTE, 60)
-def resultOfHourlyAverage = resultOfHourly.values().average()
-holdVotes.addAll(resultOfHourly.values())
-log.debug("[{}] resultOfHourly: {}", assetName, resultOfHourly)
-log.info("[{}] resultOfHourlyAverage: {}", assetName, resultOfHourlyAverage)
+// minute10
+def resultOfMinute10 = analyze(assetIndicator, OhlcvType.MINUTE, 10)
+def resultOfMinute10Average = resultOfMinute10.values().average()
+holdVotes.addAll(resultOfMinute10.values())
+log.debug("[{}] resultOfMinute10: {}", assetName, resultOfMinute10)
+log.info("[{}] resultOfMinuteAverage10: {}", assetName, resultOfMinute10Average)
 
-// daily
-def resultOfDaily = analyze(assetIndicator, OhlcvType.DAILY, 1)
-def resultOfDailyAverage = resultOfDaily.values().average()
-holdVotes.addAll(resultOfDaily.values())
-log.debug("[{}] resultOfDaily: {}", assetName, resultOfDaily)
-log.info("[{}] resultOfDailyAverage: {}", assetName, resultOfDailyAverage)
-
-// BITCOIN
-def resultOfBitcoin = analyze(indiceIndicators['BITCOIN'], OhlcvType.DAILY, 1)
-def resultOfBitcoinAverage = resultOfBitcoin.values().average()
-holdVotes.addAll(resultOfBitcoin.values())
-log.debug("[{}] resultOfBitcoin: {}", assetName, resultOfBitcoin)
-log.info("[{}] resultOfBitcoinAverage: {}", assetName, resultOfBitcoinAverage)
+// minute60
+def resultOfMinute60 = analyze(assetIndicator, OhlcvType.MINUTE, 60)
+def resultOfMinute60Average = resultOfMinute60.values().average()
+holdVotes.addAll(resultOfMinute60.values())
+log.debug("[{}] resultOfMinute60: {}", assetName, resultOfMinute60)
+log.info("[{}] resultOfMinuteAverage60: {}", assetName, resultOfMinute60Average)
 
 // decide hold
 def hold = null
@@ -142,7 +135,7 @@ log.debug("[{}] holdVotes: {}", assetName, holdVotes)
 log.info("[{}] holdVotesAverage: {}", assetName, holdVotesAverage)
 
 // buy
-if(holdVotesAverage > 60) {
+if(holdVotesAverage > 70) {
     hold = true
 }
 
