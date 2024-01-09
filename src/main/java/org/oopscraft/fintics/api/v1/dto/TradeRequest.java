@@ -27,7 +27,7 @@ public class TradeRequest {
 
     private LocalTime endAt;
 
-    private String clientType;
+    private String clientId;
 
     private String clientProperties;
 

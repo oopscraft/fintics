@@ -25,7 +25,7 @@ public class TradeService {
 
     private final TradeRepository tradeRepository;
 
-    private final TradeAssetOhlcvRepository tradeAssetOhlcvRepository;
+    private final AssetOhlcvRepository tradeAssetOhlcvRepository;
 
     private final OrderRepository orderRepository;
 
@@ -57,7 +57,7 @@ public class TradeService {
         tradeEntity.setThreshold(trade.getThreshold());
         tradeEntity.setStartAt(trade.getStartAt());
         tradeEntity.setEndAt(trade.getEndAt());
-        tradeEntity.setClientType(trade.getClientType());
+        tradeEntity.setClientId(trade.getClientId());
         if(trade.getClientProperties() != null) {
             String clientProperties = PbePropertiesUtil.encode(trade.getClientProperties());
             tradeEntity.setClientProperties(clientProperties);
@@ -95,8 +95,8 @@ public class TradeService {
 
     public Optional<Balance> getTradeBalance(String tradeId) throws InterruptedException {
         Trade trade = getTrade(tradeId).orElseThrow();
-        if(trade.getClientType() != null) {
-            TradeClient tradeClient = TradeClientFactory.getClient(trade.getClientType(), trade.getClientProperties());
+        if(trade.getClientId() != null) {
+            TradeClient tradeClient = TradeClientFactory.getClient(trade.getClientId(), trade.getClientProperties());
             return Optional.ofNullable(tradeClient.getBalance());
         }else{
             return Optional.empty();

@@ -29,7 +29,7 @@ public class Trade {
 
     private LocalTime endAt;
 
-    private String clientType;
+    private String clientId;
 
     private String clientProperties;
 
@@ -57,7 +57,7 @@ public class Trade {
                 .threshold(tradeEntity.getThreshold())
                 .startAt(tradeEntity.getStartAt())
                 .endAt(tradeEntity.getEndAt())
-                .clientType(tradeEntity.getClientType())
+                .clientId(tradeEntity.getClientId())
                 .clientProperties(tradeEntity.getClientProperties())
                 .holdCondition(tradeEntity.getHoldCondition())
                 .orderKind(tradeEntity.getOrderKind())

@@ -10,23 +10,22 @@ import java.util.Properties;
 
 public class TradeClientFactory {
 
-    public static TradeClient getClient(String clientType, String clientProperties) {
+    public static TradeClient getClient(String clientId, String clientConfig) {
+        TradeClientDefinition tradeClientDefinition = TradeClientDefinitionRegistry.getTradeClientDefinition(clientId).orElseThrow();
         try {
-            Class<? extends TradeClient> clientTypeClass = Class.forName(clientType).asSubclass(TradeClient.class);
+            Class<? extends TradeClient> clientTypeClass = tradeClientDefinition.getType().asSubclass(TradeClient.class);
             Constructor<? extends TradeClient> constructor = clientTypeClass.getConstructor(Properties.class);
-            Properties properties = loadPropertiesFromString(clientProperties);
-            return constructor.newInstance(properties);
-        } catch (ClassNotFoundException e) {
-            throw new IllegalArgumentException("Invalid client type: " + clientType, e);
+            Properties clientConfigProperties = loadPropertiesFromString(clientConfig);
+            return constructor.newInstance(clientConfigProperties);
         } catch (NoSuchMethodException e) {
-            throw new IllegalArgumentException("Client constructor not found: " + clientType, e);
+            throw new IllegalArgumentException("Client constructor not found: " + tradeClientDefinition.getType(), e);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
     public static TradeClient getClient(Trade trade) {
-        return getClient(trade.getClientType(), trade.getClientProperties());
+        return getClient(trade.getClientId(), trade.getClientProperties());
     }
 
     private static Properties loadPropertiesFromString(String propertiesString) {

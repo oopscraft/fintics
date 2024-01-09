@@ -68,7 +68,7 @@ public class TradeRestController {
                 .threshold(tradeRequest.getThreshold())
                 .startAt(tradeRequest.getStartAt())
                 .endAt(tradeRequest.getEndAt())
-                .clientType(tradeRequest.getClientType())
+                .clientId(tradeRequest.getClientId())
                 .clientProperties(tradeRequest.getClientProperties())
                 .holdCondition(tradeRequest.getHoldCondition())
                 .orderKind(tradeRequest.getOrderKind())
@@ -109,7 +109,7 @@ public class TradeRestController {
         trade.setThreshold(tradeRequest.getThreshold());
         trade.setStartAt(tradeRequest.getStartAt());
         trade.setEndAt(tradeRequest.getEndAt());
-        trade.setClientType(tradeRequest.getClientType());
+        trade.setClientId(tradeRequest.getClientId());
         trade.setClientProperties(tradeRequest.getClientProperties());
         trade.setHoldCondition(tradeRequest.getHoldCondition());
         trade.setOrderKind(tradeRequest.getOrderKind());

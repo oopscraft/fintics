@@ -23,6 +23,7 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -49,7 +50,7 @@ public class UpbitTradeClient extends TradeClient {
     }
 
     @Override
-    public boolean isOpened() throws InterruptedException {
+    public boolean isOpened(LocalDateTime dateTime) throws InterruptedException {
         return true;
     }
 
@@ -89,7 +90,7 @@ public class UpbitTradeClient extends TradeClient {
     }
 
     @Override
-    public OrderBook getOrderBook(Asset asset) throws InterruptedException {
+    public OrderBook getOrderBook(Asset asset, LocalDateTime dateTime) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
@@ -117,12 +118,12 @@ public class UpbitTradeClient extends TradeClient {
     }
 
     @Override
-    public List<Ohlcv> getMinuteOhlcvs(Asset asset) throws InterruptedException {
+    public List<Ohlcv> getMinuteOhlcvs(Asset asset, LocalDateTime dateTime) throws InterruptedException {
         return getOhlcvs(asset, OhlcvType.MINUTE);
     }
 
     @Override
-    public List<Ohlcv> getDailyOhlcvs(Asset asset) throws InterruptedException {
+    public List<Ohlcv> getDailyOhlcvs(Asset asset, LocalDateTime dateTime) throws InterruptedException {
         return getOhlcvs(asset, OhlcvType.DAILY);
     }
 

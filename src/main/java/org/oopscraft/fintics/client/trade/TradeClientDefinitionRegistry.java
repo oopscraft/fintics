@@ -14,23 +14,23 @@ import java.util.Optional;
 public class TradeClientDefinitionRegistry implements BeanPostProcessor {
 
     @Getter
-    private static final List<TradeClientDefinition> clientDefinitions = new ArrayList<>();
+    private static final List<TradeClientDefinition> tradeClientDefinitions = new ArrayList<>();
 
-    public void add(TradeClientDefinition executorDefinition) {
-        clientDefinitions.add(executorDefinition);
+    public void add(TradeClientDefinition tradeClientDefinition) {
+        tradeClientDefinitions.add(tradeClientDefinition);
     }
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
         if(bean instanceof TradeClientDefinition) {
-            clientDefinitions.add((TradeClientDefinition) bean);
+            tradeClientDefinitions.add((TradeClientDefinition) bean);
         }
         return bean;
     }
 
-    public static Optional<TradeClientDefinition> getProbeDefinition(String type) {
-        return clientDefinitions.stream()
-                .filter(probe -> Objects.equals(probe.getType().getName(), type))
+    public static Optional<TradeClientDefinition> getTradeClientDefinition(String clientId) {
+        return tradeClientDefinitions.stream()
+                .filter(clientDefinition -> Objects.equals(clientDefinition.getClientId(), clientId))
                 .findFirst();
     }
 

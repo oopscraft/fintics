@@ -10,13 +10,18 @@ import java.util.StringJoiner;
 public class KisTradeClientDefinition implements TradeClientDefinition {
 
     @Override
-    public Class<? extends TradeClient> getType() {
-        return KisTradeClient.class;
+    public String getClientId() {
+        return "KIS";
     }
 
     @Override
-    public String getName() {
+    public String getClientName() {
         return "한국투자증권 Kis API";
+    }
+
+    @Override
+    public Class<? extends TradeClient> getType() {
+        return KisTradeClient.class;
     }
 
     @Override

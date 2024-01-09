@@ -62,17 +62,18 @@ public class KisTradeClient extends TradeClient {
     }
 
     @Override
-    public boolean isOpened() throws InterruptedException {
-        LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+    public boolean isOpened(LocalDateTime dateTime) throws InterruptedException {
+        ZonedDateTime systemZonedDateTime = dateTime.atZone(ZoneId.systemDefault());
+        ZonedDateTime koreaZonedDateTime = systemZonedDateTime.withZoneSameInstant(ZoneId.of("Asia/Seoul"));
 
         // weekend
-        DayOfWeek dayOfWeek = now.getDayOfWeek();
+        DayOfWeek dayOfWeek = koreaZonedDateTime.getDayOfWeek();
         if(dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
             return false;
         }
 
         // check holiday
-        if(isHoliday(now)) {
+        if(isHoliday(koreaZonedDateTime.toLocalDateTime())) {
             return false;
         }
 
@@ -140,7 +141,7 @@ public class KisTradeClient extends TradeClient {
     }
 
     @Override
-    public List<Ohlcv> getMinuteOhlcvs(Asset asset) throws InterruptedException {
+    public List<Ohlcv> getMinuteOhlcvs(Asset asset, LocalDateTime dateTime) throws InterruptedException {
         List<Ohlcv> minuteOhlcvs = new ArrayList<>();
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
@@ -148,9 +149,9 @@ public class KisTradeClient extends TradeClient {
         String fidEtcClsCode = "";
         String fidCondMrktDivCode = "J";
         String fidInputIscd = asset.getSymbol();
-        LocalTime nowTime = LocalTime.now();
+        LocalTime time = dateTime.toLocalTime();
         LocalTime closeTime = LocalTime.of(15,30);
-        LocalTime fidInputHour1Time = (nowTime.isAfter(closeTime) ? closeTime : nowTime);
+        LocalTime fidInputHour1Time = (time.isAfter(closeTime) ? closeTime : time);
 
         for(int i = 0; i < 20; i ++) {
             String url = apiUrl + "/uapi/domestic-stock/v1/quotations/inquire-time-itemchartprice";
@@ -189,7 +190,7 @@ public class KisTradeClient extends TradeClient {
 
             List<Ohlcv> minuteOhlcvsPage = output2.stream()
                     .map(row -> {
-                        LocalDateTime dateTime = LocalDateTime.parse(
+                        LocalDateTime ohlcvDateTime = LocalDateTime.parse(
                                 row.getString("stck_bsop_date") + row.getString("stck_cntg_hour"),
                                 DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
                         );
@@ -200,7 +201,7 @@ public class KisTradeClient extends TradeClient {
                         BigDecimal volume = row.getNumber("cntg_vol");
                         return Ohlcv.builder()
                                 .ohlcvType(OhlcvType.MINUTE)
-                                .dateTime(dateTime)
+                                .dateTime(ohlcvDateTime)
                                 .openPrice(openPrice)
                                 .highPrice(highPrice)
                                 .lowPrice(lowPrice)
@@ -228,7 +229,7 @@ public class KisTradeClient extends TradeClient {
     }
 
     @Override
-    public List<Ohlcv> getDailyOhlcvs(Asset asset) throws InterruptedException {
+    public List<Ohlcv> getDailyOhlcvs(Asset asset, LocalDateTime dateTime) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
@@ -268,7 +269,7 @@ public class KisTradeClient extends TradeClient {
 
         return output.stream()
                 .map(row -> {
-                    LocalDateTime dateTime = LocalDateTime.parse(row.getString("stck_bsop_date")+"000000", DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+                    LocalDateTime ohlcvDateTime = LocalDateTime.parse(row.getString("stck_bsop_date")+"000000", DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
                     BigDecimal openPrice = row.getNumber("stck_oprc");
                     BigDecimal highPrice = row.getNumber("stck_hgpr");
                     BigDecimal lowPrice = row.getNumber("stck_lwpr");
@@ -276,7 +277,7 @@ public class KisTradeClient extends TradeClient {
                     BigDecimal volume = row.getNumber("acml_vol");
                     return Ohlcv.builder()
                             .ohlcvType(OhlcvType.DAILY)
-                            .dateTime(dateTime)
+                            .dateTime(ohlcvDateTime)
                             .openPrice(openPrice)
                             .highPrice(highPrice)
                             .lowPrice(lowPrice)
@@ -288,7 +289,7 @@ public class KisTradeClient extends TradeClient {
     }
 
     @Override
-    public OrderBook getOrderBook(Asset asset) throws InterruptedException {
+    public OrderBook getOrderBook(Asset asset, LocalDateTime dateTime) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();

@@ -10,13 +10,18 @@ import java.util.StringJoiner;
 public class UpbitTradeClientDefinition implements TradeClientDefinition {
 
     @Override
-    public Class<? extends TradeClient> getType() {
-        return UpbitTradeClient.class;
+    public String getClientId() {
+        return "UPBIT";
     }
 
     @Override
-    public String getName() {
+    public String getClientName() {
         return "업비트 API";
+    }
+
+    @Override
+    public Class<? extends TradeClient> getType() {
+        return UpbitTradeClient.class;
     }
 
     @Override

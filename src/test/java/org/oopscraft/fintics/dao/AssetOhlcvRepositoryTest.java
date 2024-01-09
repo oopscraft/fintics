@@ -13,19 +13,19 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(classes = FinticsConfiguration.class)
 @RequiredArgsConstructor
-class TradeAssetOhlcvRepositoryTest extends CoreTestSupport {
+class AssetOhlcvRepositoryTest extends CoreTestSupport {
 
-    private final TradeAssetOhlcvRepository tradeAssetOhlcvRepository;
+    private final AssetOhlcvRepository assetOhlcvRepository;
 
     @Test
     void findMaxDateTimeBySymbolAndOhlcvType() {
         // given
-        String tradeId = "06c228451ce0400fa57bb36f0568d7cb";
+        String clientId = "KIS";
         String symbol = "122630";
         OhlcvType ohlcvType = OhlcvType.MINUTE;
 
         // when
-        LocalDateTime dateTime = tradeAssetOhlcvRepository.findMaxDateTimeBySymbolAndOhlcvType(tradeId, symbol, ohlcvType)
+        LocalDateTime dateTime = assetOhlcvRepository.findMaxDateTimeBySymbolAndOhlcvType(clientId, symbol, ohlcvType)
                 .orElse(LocalDateTime.MIN);
         // then
         assertNotNull(dateTime);

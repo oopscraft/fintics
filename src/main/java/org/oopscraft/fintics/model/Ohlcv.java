@@ -3,7 +3,6 @@ package org.oopscraft.fintics.model;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.fintics.dao.OhlcvEntity;
-import org.oopscraft.fintics.dao.TradeAssetOhlcvEntity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

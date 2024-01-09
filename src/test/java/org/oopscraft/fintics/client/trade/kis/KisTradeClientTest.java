@@ -55,8 +55,9 @@ class KisTradeClientTest extends CoreTestSupport {
     @Test
     void isOpened() throws InterruptedException {
         // given
+        LocalDateTime dateTime = LocalDateTime.now();
         // when
-        boolean opened = getKisClient().isOpened();
+        boolean opened = getKisClient().isOpened(dateTime);
         // then
         log.info("== opened:{}", opened);
     }
@@ -83,7 +84,7 @@ class KisTradeClientTest extends CoreTestSupport {
                 .build();
 
         // when
-        OrderBook orderBook = getKisClient().getOrderBook(tradeAsset);
+        OrderBook orderBook = getKisClient().getOrderBook(tradeAsset, LocalDateTime.now());
         log.info("== orderBook:{}", orderBook);
 
         // then
@@ -100,7 +101,7 @@ class KisTradeClientTest extends CoreTestSupport {
                 .build();
 
         // when
-        List<Ohlcv> minuteOhlcvs = getKisClient().getMinuteOhlcvs(tradeAsset);
+        List<Ohlcv> minuteOhlcvs = getKisClient().getMinuteOhlcvs(tradeAsset, LocalDateTime.now());
 
         // then
         assertNotNull(minuteOhlcvs);
@@ -115,7 +116,7 @@ class KisTradeClientTest extends CoreTestSupport {
                 .build();
 
         // when
-        List<Ohlcv> dailyOhlcvs = getKisClient().getDailyOhlcvs(tradeAsset);
+        List<Ohlcv> dailyOhlcvs = getKisClient().getDailyOhlcvs(tradeAsset, LocalDateTime.now());
 
         // then
         assertNotNull(dailyOhlcvs);

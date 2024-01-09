@@ -9,25 +9,25 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "fintics_trade_asset_ohlcv")
-@IdClass(TradeAssetOhlcvEntity.Pk.class)
+@Table(name = "fintics_asset_ohlcv")
+@IdClass(AssetOhlcvEntity.Pk.class)
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class TradeAssetOhlcvEntity extends OhlcvEntity {
+public class AssetOhlcvEntity extends OhlcvEntity {
 
     public static class Pk implements Serializable {
-        private String tradeId;
+        private String clientId;
         private String symbol;
         private OhlcvType ohlcvType;
         private LocalDateTime dateTime;
     }
 
     @Id
-    @Column(name = "trade_id", length = 32)
-    private String tradeId;
+    @Column(name = "client_id", length = 32)
+    private String clientId;
 
     @Id
     @Column(name = "symbol", length = 32)

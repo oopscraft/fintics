@@ -43,8 +43,8 @@ public class TradeEntity extends BaseEntity {
     @Column(name = "end_at")
     private LocalTime endAt;
 
-    @Column(name = "client_type")
-    private String clientType;
+    @Column(name = "client_id")
+    private String clientId;
 
     @Column(name = "client_properties")
     @Lob

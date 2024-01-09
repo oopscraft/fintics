@@ -2,13 +2,13 @@ package org.oopscraft.fintics.collector;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.oopscraft.fintics.FinticsProperties;
 import org.oopscraft.fintics.client.indice.IndiceClient;
 import org.oopscraft.fintics.dao.IndiceOhlcvEntity;
 import org.oopscraft.fintics.dao.IndiceOhlcvRepository;
 import org.oopscraft.fintics.model.IndiceSymbol;
 import org.oopscraft.fintics.model.Ohlcv;
 import org.oopscraft.fintics.model.OhlcvType;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,10 +23,9 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class IndiceCollector extends AbstractCollector {
+public class IndiceOhlcvCollector {
 
-    @Value("${fintics.collector.indice-collector.ohlcv-retention-months:1}")
-    private Integer ohlcvRetentionMonths = 1;
+    private final FinticsProperties finticsProperties;
 
     private final IndiceClient indiceClient;
 
@@ -38,10 +37,6 @@ public class IndiceCollector extends AbstractCollector {
     @Scheduled(initialDelay = 1_000, fixedDelay = 60_000)
     @Transactional
     public void collect() {
-        if(!isEnabled()) {
-            log.info("Disabled collect indice ohlcv.");
-            return;
-        }
         log.info("Start collect indice ohlcv.");
         for (IndiceSymbol symbol : IndiceSymbol.values()) {
             try {
@@ -55,8 +50,10 @@ public class IndiceCollector extends AbstractCollector {
     }
 
     private void saveIndiceOhlcv(IndiceSymbol symbol) {
+        LocalDateTime dateTime = LocalDateTime.now();
+
         // minute
-        List<Ohlcv> minuteOhlcvs = indiceClient.getMinuteOhlcvs(symbol);
+        List<Ohlcv> minuteOhlcvs = indiceClient.getMinuteOhlcvs(symbol, dateTime);
         Collections.reverse(minuteOhlcvs);
         LocalDateTime minuteLastDateTime = indiceOhlcvRepository.findMaxDateTimeBySymbolAndOhlcvType(symbol, OhlcvType.MINUTE)
                 .orElse(LocalDateTime.of(1,1,1,0,0,0))
@@ -69,7 +66,7 @@ public class IndiceCollector extends AbstractCollector {
         indiceOhlcvRepository.saveAllAndFlush(minuteOhlcvEntities);
 
         // daily
-        List<Ohlcv> dailyOhlcvs = indiceClient.getDailyOhlcvs(symbol);
+        List<Ohlcv> dailyOhlcvs = indiceClient.getDailyOhlcvs(symbol, dateTime);
         Collections.reverse(dailyOhlcvs);
         LocalDateTime dailyLastDateTime = indiceOhlcvRepository.findMaxDateTimeBySymbolAndOhlcvType(symbol, OhlcvType.DAILY)
                 .orElse(LocalDateTime.of(1,1,1,0,0,0))
@@ -102,7 +99,7 @@ public class IndiceCollector extends AbstractCollector {
                                 " where symbol = :symbol " +
                                 " and dateTime < :expiredDateTime")
                 .setParameter("symbol", symbol)
-                .setParameter("expiredDateTime", LocalDateTime.now().minusMonths(ohlcvRetentionMonths))
+                .setParameter("expiredDateTime", LocalDateTime.now().minusMonths(finticsProperties.getOhlcvRetentionMonths()))
                 .executeUpdate();
         entityManager.flush();
         entityManager.clear();

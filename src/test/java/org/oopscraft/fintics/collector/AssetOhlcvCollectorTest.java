@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.oopscraft.arch4j.core.support.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
-import org.oopscraft.fintics.dao.TradeAssetOhlcvEntity;
+import org.oopscraft.fintics.dao.AssetOhlcvEntity;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
@@ -16,24 +16,24 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @SpringBootTest(classes = FinticsConfiguration.class)
 @RequiredArgsConstructor
 @Slf4j
-class TradeCollectorTest extends CoreTestSupport {
+class AssetOhlcvCollectorTest extends CoreTestSupport {
 
-    private final TradeCollector tradeCollector;
+    private final AssetOhlcvCollector assetOhlcvCollector;
 
     @Disabled
     @Test
     void collectAssets() throws InterruptedException {
         // given
         // when
-        tradeCollector.collect();
+        assetOhlcvCollector.collect();
 
         // then
-        List<TradeAssetOhlcvEntity> tradeAssetOhlcvEntities = entityManager
-                .createQuery("select a from TradeAssetOhlcvEntity a", TradeAssetOhlcvEntity.class)
+        List<AssetOhlcvEntity> assetOhlcvEntities = entityManager
+                .createQuery("select a from AssetOhlcvEntity a", AssetOhlcvEntity.class)
                 .setMaxResults(100)
                 .getResultList();
-        log.info("tradeAssetOhlcvEntities:{}", tradeAssetOhlcvEntities);
-        assertTrue(tradeAssetOhlcvEntities.size() > 0);
+        log.info("assetOhlcvEntities:{}", assetOhlcvEntities);
+        assertTrue(assetOhlcvEntities.size() > 0);
     }
 
 

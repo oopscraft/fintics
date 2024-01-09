@@ -237,13 +237,13 @@
                 <label class="grid-column--12">
                     <span data-th-text="#{fintics.Trade.clientType}" class="font-weight--bold width--100"></span>
                     <select data-duice-bind="trade"
-                            data-duice-property="clientType"
+                            data-duice-property="clientId"
                             data-duice-option="clientDefinitions"
-                            data-duice-option-value-property="type"
-                            data-duice-option-text-property="name"
+                            data-duice-option-value-property="clientId"
+                            data-duice-option-text-property="clientName"
                             data-duice-execute="
                             this.addEventListener('change',() => {
-                                trade.clientProperties = clientDefinitions.find(item => item.type === this.value)?.propertiesTemplate;
+                                trade.clientProperties = clientDefinitions.find(item => item.clientId === this.value)?.propertiesTemplate;
                             });
                             "
                             class="width--100">

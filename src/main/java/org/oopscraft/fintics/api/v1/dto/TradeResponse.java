@@ -29,7 +29,7 @@ public class TradeResponse {
 
     private LocalTime endAt;
 
-    private String clientType;
+    private String clientId;
 
     private String clientProperties;
 
@@ -57,7 +57,7 @@ public class TradeResponse {
                 .threshold(trade.getThreshold())
                 .startAt(trade.getStartAt())
                 .endAt(trade.getEndAt())
-                .clientType(trade.getClientType())
+                .clientId(trade.getClientId())
                 .clientProperties(trade.getClientProperties())
                 .holdCondition(trade.getHoldCondition())
                 .orderKind(trade.getOrderKind())

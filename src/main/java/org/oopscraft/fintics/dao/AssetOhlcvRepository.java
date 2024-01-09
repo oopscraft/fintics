@@ -12,26 +12,26 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface TradeAssetOhlcvRepository extends JpaRepository<TradeAssetOhlcvEntity, TradeAssetOhlcvEntity.Pk> {
+public interface AssetOhlcvRepository extends JpaRepository<AssetOhlcvEntity, AssetOhlcvEntity.Pk> {
 
-    @Query("select max(a.dateTime) from TradeAssetOhlcvEntity a " +
-            " where a.tradeId = :tradeId" +
+    @Query("select max(a.dateTime) from AssetOhlcvEntity a " +
+            " where a.clientId = :clientId" +
             " and a.symbol = :symbol" +
             " and a.ohlcvType = :ohlcvType")
     Optional<LocalDateTime> findMaxDateTimeBySymbolAndOhlcvType(
-            @Param("tradeId")String tradeId,
+            @Param("clientId")String clientId,
             @Param("symbol")String symbol,
             @Param("ohlcvType")OhlcvType ohlcvType
     );
 
-    @Query("select a from TradeAssetOhlcvEntity a " +
-            " where a.tradeId = :tradeId" +
+    @Query("select a from AssetOhlcvEntity a " +
+            " where a.clientId = :clientId" +
             " and a.symbol = :symbol" +
             " and a.ohlcvType = :ohlcvType" +
             " and a.dateTime between :dateTimeFrom and :dateTimeTo" +
             " order by a.dateTime desc")
-    List<TradeAssetOhlcvEntity> findAllBySymbolAndOhlcvType(
-            @Param("tradeId")String tradeId,
+    List<AssetOhlcvEntity> findAllBySymbolAndOhlcvType(
+            @Param("clientId")String clientId,
             @Param("symbol")String symbol,
             @Param("ohlcvType")OhlcvType ohlcvType,
             @Param("dateTimeFrom")LocalDateTime dateTimeFrom,

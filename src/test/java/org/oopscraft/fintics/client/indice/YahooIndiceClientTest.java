@@ -11,6 +11,7 @@ import org.oopscraft.fintics.model.IndiceSymbol;
 import org.oopscraft.fintics.model.Ohlcv;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @SpringBootTest(classes = FinticsConfiguration.class)
@@ -28,7 +29,7 @@ class YahooIndiceClientTest extends CoreTestSupport {
         YahooIndiceClient indiceClient = new YahooIndiceClient(objectMapper);
         for(IndiceSymbol indiceSymbol : IndiceSymbol.values()) {
             log.info("====== indiceSymbol[{}] =====", indiceSymbol);
-            List<Ohlcv> ohlcvs = indiceClient.getMinuteOhlcvs(indiceSymbol);
+            List<Ohlcv> ohlcvs = indiceClient.getMinuteOhlcvs(indiceSymbol, LocalDateTime.now());
             log.debug("ohlcvs:{}", ohlcvs);
         }
         // then
@@ -42,7 +43,7 @@ class YahooIndiceClientTest extends CoreTestSupport {
         YahooIndiceClient indiceClient = new YahooIndiceClient(objectMapper);
         for(IndiceSymbol indiceSymbol : IndiceSymbol.values()) {
             log.info("====== indiceSymbol[{}] =====", indiceSymbol);
-            List<Ohlcv> ohlcvs = indiceClient.getDailyOhlcvs(indiceSymbol);
+            List<Ohlcv> ohlcvs = indiceClient.getDailyOhlcvs(indiceSymbol, LocalDateTime.now());
             log.debug("ohlcvs:{}", ohlcvs);
         }
         // then

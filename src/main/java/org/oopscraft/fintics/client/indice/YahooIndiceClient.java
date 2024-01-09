@@ -11,12 +11,9 @@ import org.oopscraft.fintics.model.IndiceSymbol;
 import org.oopscraft.fintics.model.Ohlcv;
 import org.oopscraft.fintics.model.OhlcvType;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -29,7 +26,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Component
-@ConditionalOnProperty(prefix = "fintics.client.indice", name = "class-name", havingValue="org.oopscraft.fintics.client.indice.YahooIndiceClient")
+@ConditionalOnProperty(prefix = "fintics", name = "indice-client-class-name", havingValue="org.oopscraft.fintics.client.indice.YahooIndiceClient")
 @RequiredArgsConstructor
 @Slf4j
 public class YahooIndiceClient extends IndiceClient {
@@ -37,37 +34,37 @@ public class YahooIndiceClient extends IndiceClient {
     private final ObjectMapper objectMapper;
 
     @Override
-    public List<Ohlcv> getMinuteOhlcvs(IndiceSymbol symbol) {
+    public List<Ohlcv> getMinuteOhlcvs(IndiceSymbol symbol, LocalDateTime dateTime) {
         return switch (symbol) {
-            case NDX -> getMinuteOhlcvs("^NDX");
-            case NDX_FUTURE -> getMinuteOhlcvs("NQ=F");
-            case SPX -> getMinuteOhlcvs("^GSPC");
-            case SPX_FUTURE -> getMinuteOhlcvs("ES=F");
-            case KOSPI -> getMinuteOhlcvs("^KS11");
-            case USD_KRW -> getMinuteOhlcvs("KRW=X");
-            case BITCOIN -> getMinuteOhlcvs("BTC-USD");
+            case NDX -> getMinuteOhlcvs("^NDX", dateTime);
+            case NDX_FUTURE -> getMinuteOhlcvs("NQ=F", dateTime);
+            case SPX -> getMinuteOhlcvs("^GSPC", dateTime);
+            case SPX_FUTURE -> getMinuteOhlcvs("ES=F", dateTime);
+            case KOSPI -> getMinuteOhlcvs("^KS11", dateTime);
+            case USD_KRW -> getMinuteOhlcvs("KRW=X", dateTime);
+            case BITCOIN -> getMinuteOhlcvs("BTC-USD", dateTime);
         };
     }
 
     @Override
-    public List<Ohlcv> getDailyOhlcvs(IndiceSymbol symbol) {
+    public List<Ohlcv> getDailyOhlcvs(IndiceSymbol symbol, LocalDateTime dateTime) {
         return switch (symbol) {
-            case NDX -> getDailyOhlcvs("^NDX");
-            case NDX_FUTURE -> getDailyOhlcvs("NQ=F");
-            case SPX -> getDailyOhlcvs("^GSPC");
-            case SPX_FUTURE -> getDailyOhlcvs("ES=F");
-            case KOSPI -> getDailyOhlcvs("^KS11");
-            case USD_KRW -> getDailyOhlcvs("KRW=X");
-            case BITCOIN -> getDailyOhlcvs("BTC-USD");
+            case NDX -> getDailyOhlcvs("^NDX", dateTime);
+            case NDX_FUTURE -> getDailyOhlcvs("NQ=F", dateTime);
+            case SPX -> getDailyOhlcvs("^GSPC", dateTime);
+            case SPX_FUTURE -> getDailyOhlcvs("ES=F", dateTime);
+            case KOSPI -> getDailyOhlcvs("^KS11", dateTime);
+            case USD_KRW -> getDailyOhlcvs("KRW=X", dateTime);
+            case BITCOIN -> getDailyOhlcvs("BTC-USD", dateTime);
         };
     }
 
-    private List<Ohlcv> getMinuteOhlcvs(String yahooSymbol) {
-        return getOhlcvs(yahooSymbol, OhlcvType.MINUTE, LocalDateTime.now().minusDays(3), LocalDateTime.now(), 60*24);    // 1 days
+    private List<Ohlcv> getMinuteOhlcvs(String yahooSymbol, LocalDateTime dateTime) {
+        return getOhlcvs(yahooSymbol, OhlcvType.MINUTE, dateTime.minusDays(3), dateTime, 60*24);    // 1 days
     }
 
-    private List<Ohlcv> getDailyOhlcvs(String yahooSymbol) {
-        return getOhlcvs(yahooSymbol, OhlcvType.DAILY, LocalDateTime.now().minusMonths(2), LocalDateTime.now(), 30);    // 1 months
+    private List<Ohlcv> getDailyOhlcvs(String yahooSymbol, LocalDateTime dateTime) {
+        return getOhlcvs(yahooSymbol, OhlcvType.DAILY, dateTime.minusMonths(2), dateTime, 30);    // 1 months
     }
 
     private List<Ohlcv> getOhlcvs(String symbol, OhlcvType ohlcvType, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo, Integer limit) {

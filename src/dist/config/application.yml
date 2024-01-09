@@ -50,9 +50,5 @@ web:
 
 # fintics
 fintics:
-  collector:
-    enabled: true
-    indice-collector:
-      ohlcv-retention-months: 6
-    trade-collector:
-      ohlcv-retention-months: 6
+  indice-client-class-name: org.oopscraft.fintics.client.indice.YahooIndiceClient
+  ohlcv-retention-months: 12

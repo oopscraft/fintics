@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Test;
 import org.oopscraft.fintics.model.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Properties;
 
@@ -42,7 +44,7 @@ class UpbitTradeClientTest {
         TradeAsset tradeAsset = getTestTradeAsset();
 
         // when
-        OrderBook orderBook = getUpbitTradeClient().getOrderBook(tradeAsset);
+        OrderBook orderBook = getUpbitTradeClient().getOrderBook(tradeAsset, LocalDateTime.now());
 
         // then
         log.info("orderBook:{}", orderBook);
@@ -53,9 +55,11 @@ class UpbitTradeClientTest {
     void getMinuteOhlcvs() throws Exception {
         // given
         TradeAsset tradeAsset = getTestTradeAsset();
+        LocalDateTime fromDateTime = LocalDateTime.now().minusWeeks(1);
+        LocalDateTime toDateTime = LocalDateTime.now();
 
         // when
-        List<Ohlcv> minuteOhlcvs = getUpbitTradeClient().getMinuteOhlcvs(tradeAsset);
+        List<Ohlcv> minuteOhlcvs = getUpbitTradeClient().getMinuteOhlcvs(tradeAsset, LocalDateTime.now());
 
         // then
         log.info("minuteOhlcvs:{}", minuteOhlcvs);
@@ -66,9 +70,11 @@ class UpbitTradeClientTest {
     void getDailyOhlcvs() throws Exception {
         // given
         TradeAsset tradeAsset = getTestTradeAsset();
+        LocalDate fromDate = LocalDate.now().minusYears(1);
+        LocalDate toDate = LocalDate.now();
 
         // when
-        List<Ohlcv> dailyOhlcvs = getUpbitTradeClient().getDailyOhlcvs(tradeAsset);
+        List<Ohlcv> dailyOhlcvs = getUpbitTradeClient().getDailyOhlcvs(tradeAsset, LocalDateTime.now());
 
         // then
         log.info("dailyOhlcvs:{}", dailyOhlcvs);
