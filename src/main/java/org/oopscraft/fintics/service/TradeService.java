@@ -48,7 +48,6 @@ public class TradeService {
         } else {
             tradeEntity = TradeEntity.builder()
                     .tradeId(IdGenerator.uuid())
-                    .userId(trade.getUserId())
                     .build();
         }
         tradeEntity.setName(trade.getName());

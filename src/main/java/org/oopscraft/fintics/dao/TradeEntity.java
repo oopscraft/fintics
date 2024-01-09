@@ -68,9 +68,6 @@ public class TradeEntity extends BaseEntity {
     @Convert(converter = BooleanToYNConverter.class)
     private boolean alarmOnOrder;
 
-    @Column(name = "user_id", length = 32)
-    private String userId;
-
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "trade_id", updatable = false)
     @Builder.Default

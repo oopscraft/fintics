@@ -75,7 +75,6 @@ public class TradeRestController {
                 .alarmId(tradeRequest.getAlarmId())
                 .alarmOnError(tradeRequest.isAlarmOnError())
                 .alarmOnOrder(tradeRequest.isAlarmOnOrder())
-                .userId(SecurityUtils.getCurrentUserId())
                 .build();
 
         List<TradeAsset> tradeAssets = tradeRequest.getTradeAssets().stream()

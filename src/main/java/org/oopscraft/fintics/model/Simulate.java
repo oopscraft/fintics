@@ -15,7 +15,21 @@ import java.util.List;
 @Getter
 public class Simulate {
 
+    private final Trade trade;
+
+    private LocalDateTime dateTimeFrom;
+
+    private LocalDateTime dateTimeTo;
+
+
+
+
+
+
+
     private String holdCondition;
+
+    private int interval;
 
     private LocalTime startAt;
 
@@ -31,9 +45,6 @@ public class Simulate {
 
     private Double bidAskSpread;
 
-    private LocalDateTime dateTimeFrom;
-
-    private LocalDateTime dateTimeTo;
 
     private BigDecimal investAmount;
 

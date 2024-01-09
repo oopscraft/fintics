@@ -43,8 +43,6 @@ public class Trade {
 
     private boolean alarmOnOrder;
 
-    private String userId;
-
     @Builder.Default
     private List<TradeAsset> tradeAssets = new ArrayList<>();
 
@@ -64,7 +62,6 @@ public class Trade {
                 .alarmId(tradeEntity.getAlarmId())
                 .alarmOnError(tradeEntity.isAlarmOnError())
                 .alarmOnOrder(tradeEntity.isAlarmOnOrder())
-                .userId(tradeEntity.getUserId())
                 .build();
 
         // trade assets
