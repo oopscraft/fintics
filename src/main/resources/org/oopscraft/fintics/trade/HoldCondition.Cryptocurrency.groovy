@@ -114,31 +114,38 @@ holdVotes.addAll(resultOfMinute.values())
 log.debug("[{}] resultOfMinute: {}", assetName, resultOfMinute)
 log.info("[{}] resultOfMinuteAverage: {}", assetName, resultOfMinuteAverage)
 
+// minute3
+def resultOfMinute3 = analyze(assetIndicator, OhlcvType.MINUTE, 3)
+def resultOfMinute3Average = resultOfMinute3.values().average()
+holdVotes.addAll(resultOfMinute3.values())
+log.debug("[{}] resultOfMinute3: {}", assetName, resultOfMinute3)
+log.info("[{}] resultOfMinute3verage: {}", assetName, resultOfMinute3Average)
+
+// minute5
+def resultOfMinute5 = analyze(assetIndicator, OhlcvType.MINUTE, 5)
+def resultOfMinute5Average = resultOfMinute5.values().average()
+holdVotes.addAll(resultOfMinute5.values())
+log.debug("[{}] resultOfMinute5: {}", assetName, resultOfMinute5)
+log.info("[{}] resultOfMinute5Average: {}", assetName, resultOfMinute5Average)
+
 // minute10
 def resultOfMinute10 = analyze(assetIndicator, OhlcvType.MINUTE, 10)
 def resultOfMinute10Average = resultOfMinute10.values().average()
 holdVotes.addAll(resultOfMinute10.values())
 log.debug("[{}] resultOfMinute10: {}", assetName, resultOfMinute10)
-log.info("[{}] resultOfMinuteAverage10: {}", assetName, resultOfMinute10Average)
-
-// minute60
-def resultOfMinute60 = analyze(assetIndicator, OhlcvType.MINUTE, 60)
-def resultOfMinute60Average = resultOfMinute60.values().average()
-holdVotes.addAll(resultOfMinute60.values())
-log.debug("[{}] resultOfMinute60: {}", assetName, resultOfMinute60)
-log.info("[{}] resultOfMinuteAverage60: {}", assetName, resultOfMinute60Average)
+log.info("[{}] resultOfMinute10Average: {}", assetName, resultOfMinute10Average)
 
 // daily
 def resultOfDaily = analyze(assetIndicator, OhlcvType.DAILY, 1)
 def resultOfDailyAverage = resultOfDaily.values().average()
-holdVotes.addAll(resultOfDaily.values())
+//holdVotes.addAll(resultOfDaily.values())
 log.debug("[{}] resultOfDaily: {}", assetName, resultOfDaily)
 log.info("[{}] resultOfDailyAverage: {}", assetName, resultOfDailyAverage)
 
 // BITCOIN
 def resultOfBitcoin = analyze(indiceIndicators['BITCOIN'], OhlcvType.DAILY, 1)
 def resultOfBitcoinAverage = resultOfBitcoin.values().average()
-holdVotes.addAll(resultOfBitcoin.values())
+//holdVotes.addAll(resultOfBitcoin.values())
 log.debug("[{}] resultOfBitcoin: {}", assetName, resultOfBitcoin)
 log.info("[{}] resultOfBitcoinAverage: {}", assetName, resultOfBitcoinAverage)
 
@@ -149,12 +156,12 @@ log.debug("[{}] holdVotes: {}", assetName, holdVotes)
 log.info("[{}] holdVotesAverage: {}", assetName, holdVotesAverage)
 
 // buy
-if(holdVotesAverage > 70) {
+if(holdVotesAverage > 60) {
     hold = true
 }
 
 // sell
-if(holdVotesAverage < 60) {
+if(holdVotesAverage < 50) {
     hold = false
 }
 
