@@ -65,7 +65,7 @@ public class AssetOhlcvCollector {
         // minutes
         List<Ohlcv> minuteOhlcvs = tradeClient.getMinuteOhlcvs(tradeAsset, dateTime);
         Collections.reverse(minuteOhlcvs);
-        LocalDateTime minuteLastDateTime = tradeAssetOhlcvRepository.findMaxDateTimeBySymbolAndOhlcvType(tradeAsset.getTradeId(), tradeAsset.getSymbol(), OhlcvType.MINUTE)
+        LocalDateTime minuteLastDateTime = tradeAssetOhlcvRepository.findMaxDateTimeBySymbolAndOhlcvType(trade.getClientId(), tradeAsset.getSymbol(), OhlcvType.MINUTE)
                 .orElse(getExpiredDateTime())
                 .minusMinutes(2);
         List<AssetOhlcvEntity> minuteTradeAssetOhlcvEntities = minuteOhlcvs.stream()
@@ -78,7 +78,7 @@ public class AssetOhlcvCollector {
         // daily
         List<Ohlcv> dailyOhlcvs = tradeClient.getDailyOhlcvs(tradeAsset, dateTime);
         Collections.reverse(dailyOhlcvs);
-        LocalDateTime dailyLastDateTime = tradeAssetOhlcvRepository.findMaxDateTimeBySymbolAndOhlcvType(tradeAsset.getTradeId(), tradeAsset.getSymbol(), OhlcvType.DAILY)
+        LocalDateTime dailyLastDateTime = tradeAssetOhlcvRepository.findMaxDateTimeBySymbolAndOhlcvType(trade.getClientId(), tradeAsset.getSymbol(), OhlcvType.DAILY)
                 .orElse(getExpiredDateTime())
                 .minusDays(2);
         List<AssetOhlcvEntity> dailyOhlcvEntities = dailyOhlcvs.stream()
