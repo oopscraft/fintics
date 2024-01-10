@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class TradeResponse {
 
-    private String tradeId;
+    private String id;
 
     private String name;
 
@@ -29,11 +29,13 @@ public class TradeResponse {
 
     private LocalTime endAt;
 
-    private String clientId;
+    private String tradeClientId;
 
-    private String clientProperties;
+    private String tradeClientConfig;
 
     private String holdCondition;
+
+    private String orderOperatorId;
 
     private OrderKind orderKind;
 
@@ -50,16 +52,17 @@ public class TradeResponse {
 
     public static TradeResponse from(Trade trade) {
         TradeResponse tradeResponse = TradeResponse.builder()
-                .tradeId(trade.getTradeId())
+                .id(trade.getId())
                 .name(trade.getName())
                 .enabled(trade.isEnabled())
                 .interval(trade.getInterval())
                 .threshold(trade.getThreshold())
                 .startAt(trade.getStartAt())
                 .endAt(trade.getEndAt())
-                .clientId(trade.getClientId())
-                .clientProperties(trade.getClientProperties())
+                .tradeClientId(trade.getTradeClientId())
+                .tradeClientConfig(trade.getTradeClientConfig())
                 .holdCondition(trade.getHoldCondition())
+                .orderOperatorId(trade.getOrderOperatorId())
                 .orderKind(trade.getOrderKind())
                 .alarmId(trade.getAlarmId())
                 .alarmOnError(trade.isAlarmOnError())

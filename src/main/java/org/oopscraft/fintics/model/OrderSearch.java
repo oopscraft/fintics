@@ -10,7 +10,7 @@ public class OrderSearch {
 
     private String tradeId;
 
-    private String symbol;
+    private String assetId;
 
     private OrderType orderType;
 

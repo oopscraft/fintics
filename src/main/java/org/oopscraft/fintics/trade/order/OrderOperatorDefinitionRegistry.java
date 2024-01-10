@@ -28,9 +28,9 @@ public class OrderOperatorDefinitionRegistry implements BeanPostProcessor {
         return bean;
     }
 
-    public static Optional<OrderOperatorDefinition> getOrderOperatorDefinition(String operatorId) {
+    public static Optional<OrderOperatorDefinition> getOrderOperatorDefinition(String id) {
         return orderOperatorDefinitions.stream()
-                .filter(clientDefinition -> Objects.equals(clientDefinition.getOperatorId(), operatorId))
+                .filter(clientDefinition -> Objects.equals(clientDefinition.getId(), id))
                 .findFirst();
     }
 

@@ -4,6 +4,8 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.core.Context;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.oopscraft.fintics.dao.TradeEntity;
+import org.oopscraft.fintics.model.Trade;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextClosedEvent;
@@ -26,43 +28,48 @@ public class TradeThreadManager implements ApplicationListener<ContextClosedEven
 
     private final SimpMessagingTemplate messagingTemplate;
 
-    public synchronized void startTradeThread(String tradeId, Integer interval) {
+    public synchronized void startTradeThread(Trade trade) {
         synchronized (this) {
-            log.info("Start TradeThread - {}", tradeId);
+            log.info("Start TradeThread - {}", trade.getId());
 
             // check already running
-            if(isTradeThreadRunning(tradeId)) {
-                throw new RuntimeException(String.format("Thread Thread[%s] is already running.", tradeId));
+            if(isTradeThreadRunning(trade.getId())) {
+                throw new RuntimeException(String.format("Thread Thread[%s] is already running.", trade.getId()));
             }
 
             // add log appender
             Context context = ((Logger)log).getLoggerContext();
-            TradeLogAppender tradeLogAppender = new TradeLogAppender(tradeId, context, messagingTemplate);
+            TradeLogAppender tradeLogAppender = new TradeLogAppender(trade, context, messagingTemplate);
 
             // start thread
-            TradeRunnable tradeRunnable = new TradeRunnable(tradeId, interval, applicationContext, tradeLogAppender);
-            TradeThread tradeThread = new TradeThread(tradeThreadGroup, tradeRunnable, tradeId);
+            TradeRunnable tradeRunnable = TradeRunnable.builder()
+                    .id(trade.getId())
+                    .interval(trade.getInterval())
+                    .applicationContext(applicationContext)
+                    .tradeLogAppender(tradeLogAppender)
+                    .build();
+            TradeThread tradeThread = new TradeThread(tradeThreadGroup, tradeRunnable, trade.getId());
             tradeThread.setDaemon(true);
             tradeThread.start();
-            tradeThreadMap.put(tradeId, tradeThread);
+            tradeThreadMap.put(trade.getId(), tradeThread);
         }
     }
 
-    public synchronized void stopTradeThread(String tradeId) {
+    public synchronized void stopTradeThread(String id) {
         synchronized (this) {
-            log.info("Stop Trade Thread - {}", tradeId);
+            log.info("Stop Trade Thread - {}", id);
 
             // checks target exists
-            if(!isTradeThreadRunning(tradeId)) {
-                throw new RuntimeException(String.format("Thread Thread[%s] is not running.", tradeId));
+            if(!isTradeThreadRunning(id)) {
+                throw new RuntimeException(String.format("Thread Thread[%s] is not running.", id));
             }
 
             // interrupt thread
-            getTradeThread(tradeId).ifPresent(tradeThread -> {
+            getTradeThread(id).ifPresent(tradeThread -> {
                 try {
                     tradeThread.interrupt();
                     tradeThread.join(60_000);
-                    tradeThreadMap.remove(tradeId);
+                    tradeThreadMap.remove(id);
                 } catch (InterruptedException e) {
                     log.error(e.getMessage(), e);
                     throw new RuntimeException(e);
@@ -71,27 +78,27 @@ public class TradeThreadManager implements ApplicationListener<ContextClosedEven
         }
     }
 
-    public synchronized void restartTradeThread(String tradeId, Integer interval) {
-        if(isTradeThreadRunning(tradeId)) {
-            stopTradeThread(tradeId);
+    public synchronized void restartTradeThread(Trade trade) {
+        if(isTradeThreadRunning(trade.getId())) {
+            stopTradeThread(trade.getId());
         }
-        startTradeThread(tradeId, interval);
+        startTradeThread(trade);
     }
 
     public List<TradeThread> getTradeThreads() {
         return new ArrayList<>(tradeThreadMap.values());
     }
 
-    public Optional<TradeThread> getTradeThread(String tradeId) {
-        if(tradeThreadMap.containsKey(tradeId)) {
-            return Optional.of(tradeThreadMap.get(tradeId));
+    public Optional<TradeThread> getTradeThread(String id) {
+        if(tradeThreadMap.containsKey(id)) {
+            return Optional.of(tradeThreadMap.get(id));
         }else{
             return Optional.empty();
         }
     }
 
-    public boolean isTradeThreadRunning(String tradeId) {
-        return getTradeThread(tradeId).isPresent();
+    public boolean isTradeThreadRunning(String id) {
+        return getTradeThread(id).isPresent();
     }
 
     @Override

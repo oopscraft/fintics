@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @ToString
 public class Order {
 
-    private String orderId;
+    private String id;
 
     private LocalDateTime orderAt;
 
@@ -23,7 +23,7 @@ public class Order {
 
     private String tradeId;
 
-    private String symbol;
+    private String assetId;
 
     private String assetName;
 
@@ -41,11 +41,11 @@ public class Order {
 
     public static Order from(OrderEntity orderEntity) {
         return Order.builder()
-                .orderId(orderEntity.getOrderId())
+                .id(orderEntity.getId())
                 .orderAt(orderEntity.getOrderAt())
                 .orderType(orderEntity.getOrderType())
                 .tradeId(orderEntity.getTradeId())
-                .symbol(orderEntity.getSymbol())
+                .assetId(orderEntity.getAssetId())
                 .assetName(orderEntity.getAssetName())
                 .orderKind(orderEntity.getOrderKind())
                 .quantity(orderEntity.getQuantity())

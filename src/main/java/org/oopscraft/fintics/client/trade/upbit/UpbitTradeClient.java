@@ -23,7 +23,6 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -95,7 +94,7 @@ public class UpbitTradeClient extends TradeClient {
                 .insecure(true)
                 .build();
         String url = API_URL + "/v1/orderbook";
-        String queryString = "markets=" + asset.getSymbol();
+        String queryString = "markets=" + asset.getId();
         RequestEntity<Void> requestEntity = RequestEntity
                 .get(url + "?" + queryString)
                 .headers(createHeaders(queryString))
@@ -137,7 +136,7 @@ public class UpbitTradeClient extends TradeClient {
             case DAILY -> url += "days";
             default -> throw new RuntimeException("invalid OhlcvType");
         }
-        String queryString = "market=" + asset.getSymbol() + "&count=200";
+        String queryString = "market=" + asset.getId() + "&count=200";
         RequestEntity<Void> requestEntity = RequestEntity
                 .get(url + "?" + queryString)
                 .headers(createHeaders(queryString))
@@ -212,7 +211,7 @@ public class UpbitTradeClient extends TradeClient {
                         .setScale(0, RoundingMode.HALF_UP);
                 purchaseAmount = purchaseAmount.add(assetPurchaseAmount);
                 balanceAssets.add(BalanceAsset.builder()
-                        .symbol(symbol)
+                        .id(symbol)
                         .name(symbol)
                         .quantity(balance)
                         .orderableQuantity(balance)
@@ -238,7 +237,7 @@ public class UpbitTradeClient extends TradeClient {
                 .build();
 
         // define parameters
-        String market = order.getSymbol();
+        String market = order.getAssetId();
         String side;
         String ordType;
         BigDecimal price;
@@ -371,7 +370,7 @@ public class UpbitTradeClient extends TradeClient {
                     // order
                     return Order.builder()
                             .orderType(orderKind)
-                            .symbol(symbol)
+                            .assetId(symbol)
                             .orderKind(orderType)
                             .quantity(quantity)
                             .price(price)

@@ -1,7 +1,5 @@
 package org.oopscraft.fintics.model;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -11,7 +9,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 public class Asset {
 
-    private String symbol;
+    private String id;
 
     private String name;
 

@@ -13,7 +13,7 @@ import java.util.List;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class TradeRequest {
 
-    private String tradeId;
+    private String id;
 
     private String name;
 
@@ -27,11 +27,13 @@ public class TradeRequest {
 
     private LocalTime endAt;
 
-    private String clientId;
+    private String tradeClientId;
 
-    private String clientProperties;
+    private String tradeClientConfig;
 
     private String holdCondition;
+
+    private String orderOperatorId;
 
     private OrderKind orderKind;
 

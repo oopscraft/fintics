@@ -3,7 +3,6 @@ package org.oopscraft.fintics.api.v1;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.oopscraft.arch4j.web.security.SecurityUtils;
 import org.oopscraft.fintics.api.v1.dto.AssetIndicatorResponse;
 import org.oopscraft.fintics.api.v1.dto.BalanceResponse;
 import org.oopscraft.fintics.api.v1.dto.TradeRequest;
@@ -48,9 +47,9 @@ public class TradeRestController {
         return ResponseEntity.ok(tradeResponses);
     }
 
-    @GetMapping("{tradeId}")
-    public ResponseEntity<TradeResponse> getTrade(@PathVariable("tradeId")String tradeId) {
-        TradeResponse tradeResponse = tradeService.getTrade(tradeId)
+    @GetMapping("{id}")
+    public ResponseEntity<TradeResponse> getTrade(@PathVariable("id")String id) {
+        TradeResponse tradeResponse = tradeService.getTrade(id)
                 .map(TradeResponse::from)
                 .orElseThrow();
         return ResponseEntity.ok(tradeResponse);
@@ -61,16 +60,17 @@ public class TradeRestController {
     @PreAuthorize("hasAuthority('TRADE_EDIT')")
     public ResponseEntity<TradeResponse> createTrade(@RequestBody TradeRequest tradeRequest) {
         Trade trade = Trade.builder()
-                .tradeId(tradeRequest.getTradeId())
+                .id(tradeRequest.getId())
                 .name(tradeRequest.getName())
                 .enabled(tradeRequest.isEnabled())
                 .interval(tradeRequest.getInterval())
                 .threshold(tradeRequest.getThreshold())
                 .startAt(tradeRequest.getStartAt())
                 .endAt(tradeRequest.getEndAt())
-                .clientId(tradeRequest.getClientId())
-                .clientProperties(tradeRequest.getClientProperties())
+                .tradeClientId(tradeRequest.getTradeClientId())
+                .tradeClientConfig(tradeRequest.getTradeClientConfig())
                 .holdCondition(tradeRequest.getHoldCondition())
+                .orderOperatorId(tradeRequest.getOrderOperatorId())
                 .orderKind(tradeRequest.getOrderKind())
                 .alarmId(tradeRequest.getAlarmId())
                 .alarmOnError(tradeRequest.isAlarmOnError())
@@ -81,7 +81,7 @@ public class TradeRestController {
                 .map(tradeAssetRequest ->
                         TradeAsset.builder()
                                 .tradeId(tradeAssetRequest.getTradeId())
-                                .symbol(tradeAssetRequest.getSymbol())
+                                .id(tradeAssetRequest.getId())
                                 .name(tradeAssetRequest.getName())
                                 .enabled(tradeAssetRequest.isEnabled())
                                 .holdRatio(tradeAssetRequest.getHoldRatio())
@@ -94,23 +94,24 @@ public class TradeRestController {
         return ResponseEntity.status(HttpStatus.CREATED).body(savedTradeResponse);
     }
 
-    @PutMapping("{tradeId}")
+    @PutMapping("{id}")
     @Transactional
     @PreAuthorize("hasAuthority('TRADE_EDIT')")
     public ResponseEntity<TradeResponse> modifyTrade(
-            @PathVariable("tradeId")String tradeId,
+            @PathVariable("id")String id,
             @RequestBody TradeRequest tradeRequest
     ) {
-        Trade trade = tradeService.getTrade(tradeId).orElseThrow();
+        Trade trade = tradeService.getTrade(id).orElseThrow();
         trade.setName(tradeRequest.getName());
         trade.setEnabled(tradeRequest.isEnabled());
         trade.setInterval(tradeRequest.getInterval());
         trade.setThreshold(tradeRequest.getThreshold());
         trade.setStartAt(tradeRequest.getStartAt());
         trade.setEndAt(tradeRequest.getEndAt());
-        trade.setClientId(tradeRequest.getClientId());
-        trade.setClientProperties(tradeRequest.getClientProperties());
+        trade.setTradeClientId(tradeRequest.getTradeClientId());
+        trade.setTradeClientConfig(tradeRequest.getTradeClientConfig());
         trade.setHoldCondition(tradeRequest.getHoldCondition());
+        trade.setOrderOperatorId(tradeRequest.getOrderOperatorId());
         trade.setOrderKind(tradeRequest.getOrderKind());
         trade.setAlarmId(tradeRequest.getAlarmId());
         trade.setAlarmOnError(tradeRequest.isAlarmOnError());
@@ -120,7 +121,7 @@ public class TradeRestController {
                 .map(tradeAssetRequest ->
                         TradeAsset.builder()
                                 .tradeId(tradeAssetRequest.getTradeId())
-                                .symbol(tradeAssetRequest.getSymbol())
+                                .id(tradeAssetRequest.getId())
                                 .name(tradeAssetRequest.getName())
                                 .enabled(tradeAssetRequest.isEnabled())
                                 .holdRatio(tradeAssetRequest.getHoldRatio())
@@ -134,29 +135,29 @@ public class TradeRestController {
         return ResponseEntity.ok(savedTradeResponse);
     }
 
-    @DeleteMapping("{tradeId}")
+    @DeleteMapping("{id}")
     @Transactional
     @PreAuthorize("hasAuthority('TRADE_EDIT')")
-    public ResponseEntity<Void> deleteTrade(@PathVariable("tradeId")String tradeId) {
-        tradeService.deleteTrade(tradeId);
+    public ResponseEntity<Void> deleteTrade(@PathVariable("id")String id) {
+        tradeService.deleteTrade(id);
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("{tradeId}/balance")
-    public ResponseEntity<BalanceResponse> getTradeBalance(@PathVariable("tradeId") String tradeId) throws InterruptedException {
-        BalanceResponse balanceResponse = tradeService.getTradeBalance(tradeId)
+    @GetMapping("{id}/balance")
+    public ResponseEntity<BalanceResponse> getTradeBalance(@PathVariable("id") String id) throws InterruptedException {
+        BalanceResponse balanceResponse = tradeService.getTradeBalance(id)
                 .map(BalanceResponse::from)
                 .orElseThrow();
         return ResponseEntity.ok(balanceResponse);
     }
 
-    @Cacheable(cacheNames = TRADE_REST_CONTROLLER_GET_TRADE_ASSET_INDICATORS, key = "#tradeId")
-    @GetMapping("{tradeId}/indicator")
-    public ResponseEntity<List<AssetIndicatorResponse>> getTradeAssetIndicators(@PathVariable("tradeId") String tradeId) {
-        Trade trade = tradeService.getTrade(tradeId).orElseThrow();
+    @Cacheable(cacheNames = TRADE_REST_CONTROLLER_GET_TRADE_ASSET_INDICATORS, key = "#id")
+    @GetMapping("{id}/indicator")
+    public ResponseEntity<List<AssetIndicatorResponse>> getTradeAssetIndicators(@PathVariable("id") String id) {
+        Trade trade = tradeService.getTrade(id).orElseThrow();
         List<AssetIndicatorResponse> tradeAssetIndicatorResponses = new ArrayList<>();
         for(TradeAsset tradeAsset : trade.getTradeAssets()) {
-            AssetIndicator assetIndicator = tradeService.getTradeAssetIndicator(tradeId, tradeAsset.getSymbol()).orElseThrow();
+            AssetIndicator assetIndicator = tradeService.getTradeAssetIndicator(id, tradeAsset.getId()).orElseThrow();
             tradeAssetIndicatorResponses.add(AssetIndicatorResponse.from(assetIndicator));
         }
         return ResponseEntity.ok(tradeAssetIndicatorResponses);

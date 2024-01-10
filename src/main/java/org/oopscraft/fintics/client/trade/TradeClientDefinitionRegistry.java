@@ -28,9 +28,9 @@ public class TradeClientDefinitionRegistry implements BeanPostProcessor {
         return bean;
     }
 
-    public static Optional<TradeClientDefinition> getTradeClientDefinition(String clientId) {
+    public static Optional<TradeClientDefinition> getTradeClientDefinition(String id) {
         return tradeClientDefinitions.stream()
-                .filter(clientDefinition -> Objects.equals(clientDefinition.getClientId(), clientId))
+                .filter(item -> Objects.equals(item.getId(), id))
                 .findFirst();
     }
 

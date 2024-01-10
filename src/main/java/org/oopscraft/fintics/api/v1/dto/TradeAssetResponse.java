@@ -13,7 +13,7 @@ public class TradeAssetResponse {
 
     private String tradeId;
 
-    private String symbol;
+    private String id;
 
     private String name;
 
@@ -24,7 +24,7 @@ public class TradeAssetResponse {
     public static TradeAssetResponse from(TradeAsset tradeAsset) {
         return TradeAssetResponse.builder()
                 .tradeId(tradeAsset.getTradeId())
-                .symbol(tradeAsset.getSymbol())
+                .id(tradeAsset.getId())
                 .name(tradeAsset.getName())
                 .enabled(tradeAsset.isEnabled())
                 .holdRatio(tradeAsset.getHoldRatio())

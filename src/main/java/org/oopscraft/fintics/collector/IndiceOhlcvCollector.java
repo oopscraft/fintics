@@ -6,7 +6,7 @@ import org.oopscraft.fintics.FinticsProperties;
 import org.oopscraft.fintics.client.indice.IndiceClient;
 import org.oopscraft.fintics.dao.IndiceOhlcvEntity;
 import org.oopscraft.fintics.dao.IndiceOhlcvRepository;
-import org.oopscraft.fintics.model.IndiceSymbol;
+import org.oopscraft.fintics.model.IndiceId;
 import org.oopscraft.fintics.model.Ohlcv;
 import org.oopscraft.fintics.model.OhlcvType;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -38,7 +38,7 @@ public class IndiceOhlcvCollector {
     @Transactional
     public void collect() {
         log.info("Start collect indice ohlcv.");
-        for (IndiceSymbol symbol : IndiceSymbol.values()) {
+        for (IndiceId symbol : IndiceId.values()) {
             try {
                 saveIndiceOhlcv(symbol);
                 deletePastRetentionOhlcv(symbol);
@@ -49,7 +49,7 @@ public class IndiceOhlcvCollector {
         log.info("End collect indice ohlcv");
     }
 
-    private void saveIndiceOhlcv(IndiceSymbol symbol) {
+    private void saveIndiceOhlcv(IndiceId symbol) {
         LocalDateTime dateTime = LocalDateTime.now();
 
         // minute
@@ -79,7 +79,7 @@ public class IndiceOhlcvCollector {
         indiceOhlcvRepository.saveAllAndFlush(dailyOhlcvEntities);
     }
 
-    private IndiceOhlcvEntity toIndiceOhlcvEntity(IndiceSymbol symbol, Ohlcv ohlcv) {
+    private IndiceOhlcvEntity toIndiceOhlcvEntity(IndiceId symbol, Ohlcv ohlcv) {
         return IndiceOhlcvEntity.builder()
                 .symbol(symbol)
                 .dateTime(ohlcv.getDateTime())
@@ -92,7 +92,7 @@ public class IndiceOhlcvCollector {
                 .build();
     }
 
-    private void deletePastRetentionOhlcv(IndiceSymbol symbol) {
+    private void deletePastRetentionOhlcv(IndiceId symbol) {
         entityManager.createQuery(
                         "delete" +
                                 " from IndiceOhlcvEntity" +

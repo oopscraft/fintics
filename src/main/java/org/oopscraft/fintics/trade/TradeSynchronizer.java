@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.fintics.dao.TradeEntity;
 import org.oopscraft.fintics.dao.TradeRepository;
+import org.oopscraft.fintics.model.Trade;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,35 +28,33 @@ public class TradeSynchronizer {
 
         // deleted trade thread
         for(Thread tradeThread : tradeThreadManager.getTradeThreads()) {
-            String tradeId = tradeThread.getName();
+            String id = tradeThread.getName();
             boolean notExists = tradeEntities.stream()
                     .noneMatch(tradeEntity ->
-                            tradeEntity.getTradeId().equals(tradeId));
+                            tradeEntity.getId().equals(id));
             if(notExists) {
-                tradeThreadManager.stopTradeThread(tradeId);
+                tradeThreadManager.stopTradeThread(id);
                 sleep();
             }
         }
 
         // start trade thread if enabled
         for(TradeEntity tradeEntity : tradeEntities) {
-            String tradeId = tradeEntity.getTradeId();
-            boolean enabled = tradeEntity.isEnabled();
-            Integer interval = tradeEntity.getInterval();
-            if(enabled) {
-                TradeThread tradeThread = tradeThreadManager.getTradeThread(tradeId).orElse(null);
+            Trade trade = Trade.from(tradeEntity);
+            if(trade.isEnabled()) {
+                TradeThread tradeThread = tradeThreadManager.getTradeThread(trade.getId()).orElse(null);
                 if(tradeThread == null) {
-                    tradeThreadManager.startTradeThread(tradeId, interval);
+                    tradeThreadManager.startTradeThread(trade);
                     sleep();
                     continue;
                 }
-                if(tradeThread.getTradeRunnable().getInterval().intValue() != interval.intValue()) {
-                    tradeThreadManager.restartTradeThread(tradeId, interval);
+                if(tradeThread.getTradeRunnable().getInterval().intValue() != trade.getInterval().intValue()) {
+                    tradeThreadManager.restartTradeThread(trade);
                     sleep();
                 }
             }else{
-                if(tradeThreadManager.isTradeThreadRunning(tradeId)) {
-                    tradeThreadManager.stopTradeThread(tradeId);
+                if(tradeThreadManager.isTradeThreadRunning(trade.getId())) {
+                    tradeThreadManager.stopTradeThread(trade.getId());
                     sleep();
                 }
             }

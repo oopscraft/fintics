@@ -12,7 +12,7 @@ public class TradeAssetRequest {
 
     private String tradeId;
 
-    private String symbol;
+    private String id;
 
     private String name;
 

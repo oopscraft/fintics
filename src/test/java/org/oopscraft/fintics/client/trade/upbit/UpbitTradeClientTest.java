@@ -32,7 +32,7 @@ class UpbitTradeClientTest {
 
     TradeAsset getTestTradeAsset() {
         return TradeAsset.builder()
-                .symbol("KRW-BTC")
+                .id("KRW-BTC")
                 .name("Bitcoin")
                 .build();
     }
@@ -96,7 +96,7 @@ class UpbitTradeClientTest {
         // given
         Order order = Order.builder()
                 .orderType(OrderType.BUY)
-                .symbol("KRW-BTC")
+                .assetId("KRW-BTC")
                 .orderKind(OrderKind.MARKET)
                 .quantity(BigDecimal.valueOf(6))
                 .price(BigDecimal.valueOf(840))
@@ -112,7 +112,7 @@ class UpbitTradeClientTest {
         // given
         Order order = Order.builder()
                 .orderType(OrderType.SELL)
-                .symbol("KRW-BTC")
+                .assetId("KRW-BTC")
                 .orderKind(OrderKind.MARKET)
                 .quantity(BigDecimal.valueOf(0.00008556))
                 .price(null)

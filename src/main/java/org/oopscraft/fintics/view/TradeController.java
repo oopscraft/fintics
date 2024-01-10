@@ -7,6 +7,7 @@ import org.oopscraft.arch4j.core.alarm.AlarmService;
 import org.oopscraft.fintics.client.trade.TradeClientDefinitionRegistry;
 import org.oopscraft.fintics.model.OrderKind;
 import org.oopscraft.fintics.service.TradeService;
+import org.oopscraft.fintics.trade.order.OrderOperatorDefinitionRegistry;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -33,10 +34,11 @@ public class TradeController {
     }
 
     @GetMapping("trade-detail")
-    public ModelAndView tradeDetail(@RequestParam(value="tradeId", required = false) String tradeId) {
+    public ModelAndView tradeDetail(@RequestParam(value= "id", required = false) String id) {
         ModelAndView modelAndView = new ModelAndView("trade-detail.html");
-        modelAndView.addObject("tradeId", tradeId);
-        modelAndView.addObject("clientDefinitions", TradeClientDefinitionRegistry.getTradeClientDefinitions());
+        modelAndView.addObject("id", id);
+        modelAndView.addObject("tradeClientDefinitions", TradeClientDefinitionRegistry.getTradeClientDefinitions());
+        modelAndView.addObject("orderOperatorDefinitions", OrderOperatorDefinitionRegistry.getOrderOperatorDefinitions());
         List<Alarm> alarms = alarmService.getAlarms(AlarmSearch.builder().build(), Pageable.unpaged()).getContent();
         modelAndView.addObject("alarms", alarms);
         modelAndView.addObject("orderKinds", OrderKind.values());

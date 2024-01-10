@@ -9,22 +9,31 @@ import org.oopscraft.fintics.model.OrderBook;
 import org.oopscraft.fintics.model.Trade;
 import org.springframework.context.ApplicationContext;
 
+import javax.validation.constraints.NotNull;
+
 @Builder
 @Getter
 public class OrderOperatorContext {
 
-    private String operatorId;
+    @NotNull
+    private String id;
 
+    @NotNull
     private ApplicationContext applicationContext;
 
+    @NotNull
     private TradeClient tradeClient;
 
+    @NotNull
     private Trade trade;
 
+    @NotNull
     private Balance balance;
 
+    @NotNull
     private OrderBook orderBook;
 
-    protected Logger log;
+    @NotNull
+    private Logger log;
 
 }

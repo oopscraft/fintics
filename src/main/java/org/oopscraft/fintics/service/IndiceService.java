@@ -20,23 +20,23 @@ public class IndiceService {
     private final IndiceOhlcvRepository indiceOhlcvRepository;
 
     public List<Indice> getIndices() {
-        return Arrays.stream(IndiceSymbol.values())
+        return Arrays.stream(IndiceId.values())
                 .map(Indice::from)
                 .collect(Collectors.toList());
     }
 
-    public Optional<Indice> getIndice(IndiceSymbol symbol) {
+    public Optional<Indice> getIndice(IndiceId symbol) {
         return Optional.ofNullable(Indice.from(symbol));
     }
     public List<IndiceIndicator> getIndiceIndicators() {
         List<IndiceIndicator> indiceIndicators = new ArrayList<>();
-        for(IndiceSymbol symbol : IndiceSymbol.values()) {
+        for(IndiceId symbol : IndiceId.values()) {
             indiceIndicators.add(getIndiceIndicator(symbol).orElseThrow());
         }
         return indiceIndicators;
     }
 
-    public Optional<IndiceIndicator> getIndiceIndicator(IndiceSymbol symbol) {
+    public Optional<IndiceIndicator> getIndiceIndicator(IndiceId symbol) {
         // minute ohlcv
         LocalDateTime minuteMaxDateTime = indiceOhlcvRepository.findMaxDateTimeBySymbolAndOhlcvType(symbol, OhlcvType.MINUTE)
                 .orElse(LocalDateTime.now());
@@ -53,7 +53,7 @@ public class IndiceService {
 
         // return indicator
         return Optional.of(IndiceIndicator.builder()
-                .symbol(symbol)
+                .id(symbol)
                 .minuteOhlcvs(minuteOhlcvs)
                 .dailyOhlcvs(dailyOhlcvs)
                 .build());

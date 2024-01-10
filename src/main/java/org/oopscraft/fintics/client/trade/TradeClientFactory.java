@@ -25,7 +25,7 @@ public class TradeClientFactory {
     }
 
     public static TradeClient getClient(Trade trade) {
-        return getClient(trade.getClientId(), trade.getClientProperties());
+        return getClient(trade.getTradeClientId(), trade.getTradeClientConfig());
     }
 
     private static Properties loadPropertiesFromString(String propertiesString) {

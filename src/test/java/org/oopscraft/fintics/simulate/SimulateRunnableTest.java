@@ -1,5 +1,6 @@
 package org.oopscraft.fintics.simulate;
 
+import ch.qos.logback.classic.Logger;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Disabled;
@@ -19,8 +20,6 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 @SpringBootTest(classes = FinticsConfiguration.class)
 @RequiredArgsConstructor
 @Slf4j
@@ -33,7 +32,7 @@ class SimulateRunnableTest extends CoreTestSupport {
     void run() {
         // given
         Trade trade = Trade.builder()
-                .tradeId("test")
+                .id("test")
                 .name("Test Trade")
                 .interval(60)
                 .threshold(3)
@@ -44,8 +43,8 @@ class SimulateRunnableTest extends CoreTestSupport {
                 .build();
         List<TradeAsset> tradeAssets = new ArrayList<>();
         tradeAssets.add(TradeAsset.builder()
-                .tradeId(trade.getTradeId())
-                .symbol("122630")
+                .tradeId(trade.getId())
+                .id("122630")
                 .name("KODEX 레버리지")
                 .enabled(true)
                 .holdRatio(BigDecimal.valueOf(30))
@@ -61,7 +60,7 @@ class SimulateRunnableTest extends CoreTestSupport {
         SimulateRunnable simulateRunnable = SimulateRunnable.builder()
                 .simulate(simulate)
                 .applicationContext(applicationContext)
-                .log(log)
+                .log((Logger) log)
                 .build();
         simulateRunnable.run();
 

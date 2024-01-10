@@ -55,12 +55,12 @@ public abstract class OrderOperator {
 
     protected void buyAsset(Asset asset, BigDecimal quantity, BigDecimal price) throws InterruptedException {
         Order order = Order.builder()
-                .orderId(IdGenerator.uuid())
+                .id(IdGenerator.uuid())
                 .orderAt(LocalDateTime.now())
                 .orderType(OrderType.BUY)
                 .orderKind(getTrade().getOrderKind())
-                .tradeId(trade.getTradeId())
-                .symbol(asset.getSymbol())
+                .tradeId(trade.getId())
+                .assetId(asset.getId())
                 .assetName(asset.getName())
                 .quantity(quantity)
                 .price(price)
@@ -69,7 +69,7 @@ public abstract class OrderOperator {
         // check waiting order exists
         Order waitingOrder = tradeClient.getWaitingOrders().stream()
                 .filter(element ->
-                        Objects.equals(element.getSymbol(), order.getSymbol())
+                        Objects.equals(element.getAssetId(), order.getAssetId())
                                 && element.getOrderType() == order.getOrderType())
                 .findFirst()
                 .orElse(null);
@@ -106,12 +106,12 @@ public abstract class OrderOperator {
 
     protected void sellAsset(Asset asset, BigDecimal quantity, BigDecimal price) throws InterruptedException {
         Order order = Order.builder()
-                .orderId(IdGenerator.uuid())
+                .id(IdGenerator.uuid())
                 .orderAt(LocalDateTime.now())
                 .orderType(OrderType.SELL)
                 .orderKind(getTrade().getOrderKind())
-                .tradeId(trade.getTradeId())
-                .symbol(asset.getSymbol())
+                .tradeId(trade.getId())
+                .assetId(asset.getId())
                 .assetName(asset.getName())
                 .quantity(quantity)
                 .price(price)
@@ -120,7 +120,7 @@ public abstract class OrderOperator {
         // check waiting order exists
         Order waitingOrder = tradeClient.getWaitingOrders().stream()
                 .filter(element ->
-                        Objects.equals(element.getSymbol(), order.getSymbol())
+                        Objects.equals(element.getAssetId(), order.getAssetId())
                                 && element.getOrderType() == order.getOrderType())
                 .findFirst()
                 .orElse(null);
@@ -160,11 +160,11 @@ public abstract class OrderOperator {
         TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager, transactionDefinition);
         transactionTemplate.executeWithoutResult(transactionStatus ->
                 orderRepository.saveAndFlush(OrderEntity.builder()
-                        .orderId(order.getOrderId())
+                        .id(order.getId())
                         .orderAt(order.getOrderAt())
                         .orderType(order.getOrderType())
                         .tradeId(order.getTradeId())
-                        .symbol(order.getSymbol())
+                        .assetId(order.getAssetId())
                         .assetName(order.getAssetName())
                         .orderKind(order.getOrderKind())
                         .quantity(order.getQuantity())

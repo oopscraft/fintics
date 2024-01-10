@@ -1,6 +1,6 @@
 package org.oopscraft.fintics.dao;
 
-import org.oopscraft.fintics.model.IndiceSymbol;
+import org.oopscraft.fintics.model.IndiceId;
 import org.oopscraft.fintics.model.OhlcvType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,7 +19,7 @@ public interface IndiceOhlcvRepository extends JpaRepository<IndiceOhlcvEntity, 
             " where a.symbol = :symbol" +
             " and a.ohlcvType = :ohlcvType")
     Optional<LocalDateTime> findMaxDateTimeBySymbolAndOhlcvType(
-            @Param("symbol") IndiceSymbol symbol,
+            @Param("symbol") IndiceId symbol,
             @Param("ohlcvType")OhlcvType ohlcvType
     );
 
@@ -29,7 +29,7 @@ public interface IndiceOhlcvRepository extends JpaRepository<IndiceOhlcvEntity, 
             " and a.dateTime between :dateTimeFrom and :dateTimeTo" +
             " order by a.dateTime desc")
     List<IndiceOhlcvEntity> findAllBySymbolAndOhlcvType(
-            @Param("symbol") IndiceSymbol symbol,
+            @Param("symbol") IndiceId symbol,
             @Param("ohlcvType")OhlcvType ohlcvType,
             @Param("dateTimeFrom")LocalDateTime dateTimeFrom,
             @Param("dateTimeTo")LocalDateTime dateTimeTo,

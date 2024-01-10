@@ -18,13 +18,13 @@
         const tradeAssetMinuteOhlcvsChartMap = new Map();
         const tradeBalanceMap = new Map();
         trades.forEach(trade => {
-            tradeBalanceMap.set(trade.tradeId, new duice.ObjectProxy({
+            tradeBalanceMap.set(trade.id, new duice.ObjectProxy({
                 balanceAssets: new duice.ArrayProxy([])
             }));
         });
         const tradeOrdersMap = new Map();
         trades.forEach(trade => {
-            tradeOrdersMap.set(trade.tradeId, new duice.ArrayProxy([]));
+            tradeOrdersMap.set(trade.id, new duice.ArrayProxy([]));
         });
         const tradeLogEventSourceMap = new Map();
 
@@ -35,7 +35,7 @@
 
         function getIndiceMonitor() {
             const promises = indices.map(async indice => {
-                let url = new URL(`${_apiUrl}/v1/indice/${indice.symbol}/indicator`, document.location.origin);
+                let url = new URL(`${_apiUrl}/v1/indice/${indice.id}/indicator`, document.location.origin);
                 return await _fetch(url, null, true);
             });
             Promise.all(promises)
@@ -85,26 +85,26 @@
 
         function initializeTradeMonitors() {
             trades.forEach(trade => {
-                initializeTradeMonitor(trade.tradeId);
+                initializeTradeMonitor(trade.id);
             });
         }
 
-        function initializeTradeMonitor(tradeId) {
+        function initializeTradeMonitor(id) {
             // chart
-            let dailyOhlcvsChart = createDailyOhlcvsChart(`tradeAssetDailyOhlcvsChart-${tradeId}`);
-            tradeAssetDailyOhlcvsChartMap.set(tradeId, dailyOhlcvsChart);
-            let minuteOhlcvsChart = createMinuteOhlcvsChart(`tradeAssetMinuteOhlcvsChart-${tradeId}`);
-            tradeAssetMinuteOhlcvsChartMap.set(tradeId, minuteOhlcvsChart);
+            let dailyOhlcvsChart = createDailyOhlcvsChart(`tradeAssetDailyOhlcvsChart-${id}`);
+            tradeAssetDailyOhlcvsChartMap.set(id, dailyOhlcvsChart);
+            let minuteOhlcvsChart = createMinuteOhlcvsChart(`tradeAssetMinuteOhlcvsChart-${id}`);
+            tradeAssetMinuteOhlcvsChartMap.set(id, minuteOhlcvsChart);
         }
 
         function getTradeMonitors() {
             trades.forEach(trade => {
-                getTradeMonitor(trade.tradeId);
+                getTradeMonitor(trade.id);
             });
         }
 
-        function getTradeMonitor(tradeId) {
-            let tradeAssetIndicatorUrl = new URL(`${_apiUrl}/v1/trade/${tradeId}/indicator`, document.location.origin);
+        function getTradeMonitor(id) {
+            let tradeAssetIndicatorUrl = new URL(`${_apiUrl}/v1/trade/${id}/indicator`, document.location.origin);
             _fetch(tradeAssetIndicatorUrl, null, true)
                 .then(response => response.json())
                 .then(assetIndicators => {
@@ -116,8 +116,8 @@
                     let minuteTo = new Date(now.getTime());
 
                     // asset chart
-                    let dailyOhlcvsChart = tradeAssetDailyOhlcvsChartMap.get(tradeId);
-                    let minuteOhlcvsChart = tradeAssetMinuteOhlcvsChartMap.get(tradeId);
+                    let dailyOhlcvsChart = tradeAssetDailyOhlcvsChartMap.get(id);
+                    let minuteOhlcvsChart = tradeAssetMinuteOhlcvsChartMap.get(id);
 
                     dailyOhlcvsChart.options.scales.x.min = dailyFrom;
                     dailyOhlcvsChart.options.scales.x.max = dailyTo;
@@ -153,20 +153,20 @@
                     minuteOhlcvsChart.update();
                 });
 
-            let balanceUrl = new URL(`${_apiUrl}/v1/trade/${tradeId}/balance`, document.location.origin);
+            let balanceUrl = new URL(`${_apiUrl}/v1/trade/${id}/balance`, document.location.origin);
             _fetch(balanceUrl, null, true)
                 .then(response => response.json())
                 .then(balance => {
                     // filter trade asset
                     let trade = trades.filter(trade =>
-                        trade.tradeId === tradeId)[0];
+                        trade.id === id)[0];
                     let tradeAssetSymbols = [];
                     trade.tradeAssets?.forEach(tradeAsset =>
-                        tradeAssetSymbols.push(tradeAsset.symbol));
+                        tradeAssetSymbols.push(tradeAsset.id));
                     balance.balanceAssets = balance.balanceAssets?.filter(balanceAsset =>
-                        tradeAssetSymbols.includes(balanceAsset.symbol));
+                        tradeAssetSymbols.includes(balanceAsset.id));
                     // assign
-                    duice.ObjectProxy.assign(tradeBalanceMap.get(tradeId), balance);
+                    duice.ObjectProxy.assign(tradeBalanceMap.get(id), balance);
                 });
         }
 
@@ -319,8 +319,8 @@
             return timeSeries;
         }
 
-        function openTradeDetail(tradeId) {
-            _openLink(`${_rootUrl}/trade/trade-detail?tradeId=${tradeId}`, '_blank');
+        function openTradeDetail(id) {
+            _openLink(`${_rootUrl}/trade/trade-detail?id=${id}`, '_blank');
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -393,8 +393,8 @@
         <!-- ================================== -->
         <div th:each="trade : ${trades}" class="grid-column--12 border--1 padding--1em">
             <script th:inline="javascript">
-                 _webSocketClient.subscribe('/trade/' + [[${trade.tradeId}]] + '/log', function(frame) {
-                     let tradeLog = document.getElementById('tradeLog-' + [[${trade.tradeId}]]);
+                 _webSocketClient.subscribe('/trade/' + [[${trade.id}]] + '/log', function(frame) {
+                     let tradeLog = document.getElementById('tradeLog-' + [[${trade.id}]]);
                      if(tradeLog.value.length > 1024 * 1024) {
                          tradeLog.value = '';
                      }
@@ -405,7 +405,7 @@
             <h2>
                 <img class="icon" th:src="@{/static/image/icon-trade.svg}" alt="trade"/>
                 <span data-th-text="${trade.name}"></span>
-                <a href="#" th:data-trade-id="${trade.tradeId}" onclick="openTradeDetail(this.dataset.tradeId);">
+                <a href="#" th:data-id="${trade.id}" onclick="openTradeDetail(this.dataset.id);">
                     <small>
                         <img class="icon link" th:src="@{/static/image/icon-open.svg}" alt="trade-detail"/>
                     </small>
@@ -414,10 +414,10 @@
             <div class="display--grid grid-template-columns--12 grid-gap--1em">
                 <div class="grid-column--5 s__grid-column--12">
                     <div style="height:150px;">
-                        <canvas th:id="'tradeAssetDailyOhlcvsChart-' + ${trade.tradeId}"></canvas>
+                        <canvas th:id="'tradeAssetDailyOhlcvsChart-' + ${trade.id}"></canvas>
                     </div>
                     <div style="height:150px;">
-                        <canvas th:id="'tradeAssetMinuteOhlcvsChart-' + ${trade.tradeId}"></canvas>
+                        <canvas th:id="'tradeAssetMinuteOhlcvsChart-' + ${trade.id}"></canvas>
                     </div>
                     <div class="overflow-y--auto overflow-x--auto border-top--1">
                         <table class="width--100 font-size--smaller border--0" style="line-height:normal;">
@@ -430,7 +430,7 @@
                             </colgroup>
                             <thead>
                             <tr>
-                                <th data-th-text="#{fintics.BalanceAsset.symbol}"></th>
+                                <th data-th-text="#{fintics.BalanceAsset.id}"></th>
                                 <th data-th-text="#{fintics.BalanceAsset.name}"></th>
                                 <th data-th-text="#{fintics.BalanceAsset.quantity}" class="text-align--right"></th>
                                 <th data-th-text="#{fintics.BalanceAsset.purchaseAmount}" class="text-align--right"></th>
@@ -439,16 +439,16 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <tr th:data-duice-bind="'tradeBalanceMap.get(\'' + ${trade.tradeId} + '\').balanceAssets'" data-duice-loop="balanceAsset,status" class="font-size--smaller">
-                                <td data-duice-bind="balanceAsset" data-duice-property="symbol"></td>
+                            <tr th:data-duice-bind="'tradeBalanceMap.get(\'' + ${trade.id} + '\').balanceAssets'" data-duice-loop="balanceAsset,status" class="font-size--smaller">
+                                <td data-duice-bind="balanceAsset" data-duice-property="id"></td>
                                 <td data-duice-bind="balanceAsset" data-duice-property="name"></td>
                                 <td data-duice-bind="balanceAsset" data-duice-property="quantity" data-duice-format="number" class="text-align--right"></td>
                                 <td data-duice-bind="balanceAsset" data-duice-property="purchaseAmount" data-duice-format="number" class="text-align--right"></td>
                                 <td data-duice-bind="balanceAsset" data-duice-property="valuationAmount" data-duice-format="number" class="text-align--right"></td>
                                 <td data-duice-bind="balanceAsset" data-duice-property="profitAmount" data-duice-format="number" class="text-align--right"></td>
                             </tr>
-                            <tr th:data-duice-bind="'tradeBalanceMap.get(\'' + ${trade.tradeId} + '\').balanceAssets'"
-                                th:data-duice-execute="'if(tradeBalanceMap.get(\'' + ${trade.tradeId} + '\').balanceAssets.length === 0) this.hidden=false;'" hidden>
+                            <tr th:data-duice-bind="'tradeBalanceMap.get(\'' + ${trade.id} + '\').balanceAssets'"
+                                th:data-duice-execute="'if(tradeBalanceMap.get(\'' + ${trade.id} + '\').balanceAssets.length === 0) this.hidden=false;'" hidden>
                                 <td colspan="100%" class="text-align--center">No Data</td>
                             </tr>
                             </tbody>
@@ -456,7 +456,7 @@
                     </div>
                 </div>
                 <div class="grid-column--7 s__grid-column--12" style="min-height:200px;">
-                    <textarea th:id="'tradeLog-' + ${trade.tradeId}" class="tradeLog width--100 height--100"></textarea>
+                    <textarea th:id="'tradeLog-' + ${trade.id}" class="tradeLog width--100 height--100"></textarea>
                 </div>
             </div>
         </div>

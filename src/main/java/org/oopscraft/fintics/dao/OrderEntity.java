@@ -26,8 +26,8 @@ import java.time.LocalDateTime;
 public class OrderEntity extends BaseEntity {
 
     @Id
-    @Column(name = "order_id", length = 32)
-    private String orderId;
+    @Column(name = "id", length = 32)
+    private String id;
 
     @Column(name = "order_at")
     private LocalDateTime orderAt;
@@ -38,8 +38,8 @@ public class OrderEntity extends BaseEntity {
     @Column(name = "trade_id", length = 32)
     private String tradeId;
 
-    @Column(name = "symbol", length = 32)
-    private String symbol;
+    @Column(name = "asset_id", length = 32)
+    private String assetId;
 
     @Column(name = "asset_name")
     private String assetName;

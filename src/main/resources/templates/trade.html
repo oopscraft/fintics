@@ -16,8 +16,8 @@
                 });
         }
 
-        function getTrade(tradeId) {
-            document.location.href = `${_rootUrl}/trade/trade-detail?tradeId=${tradeId}`;
+        function getTrade(id) {
+            document.location.href = `${_rootUrl}/trade/trade-detail?id=${id}`;
         }
 
         function createTrade() {
@@ -50,8 +50,8 @@
         <div class="grid-column--4 s__grid-column--12 border--1 padding--1em link text-align--center"
              data-duice-bind="trades"
              data-duice-loop="trade,status"
-             data-duice-execute="this.dataset.tradeId = trade.tradeId;"
-             onclick="getTrade(this.dataset.tradeId);">
+             data-duice-execute="this.dataset.id= trade.id;"
+             onclick="getTrade(this.dataset.id);">
             <span class="link font-weight--bold"
                   data-duice-bind="trade"
                   data-duice-property="name"></span>

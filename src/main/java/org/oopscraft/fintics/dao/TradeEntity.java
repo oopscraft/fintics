@@ -21,8 +21,8 @@ import java.util.List;
 public class TradeEntity extends BaseEntity {
 
     @Id
-    @Column(name = "trade_id", length = 32)
-    private String tradeId;
+    @Column(name = "id", length = 32)
+    private String id;
 
     @Column(name = "name")
     private String name;
@@ -43,16 +43,19 @@ public class TradeEntity extends BaseEntity {
     @Column(name = "end_at")
     private LocalTime endAt;
 
-    @Column(name = "client_id")
-    private String clientId;
+    @Column(name = "trade_client_id")
+    private String tradeClientId;
 
-    @Column(name = "client_properties")
+    @Column(name = "trade_client_config")
     @Lob
-    private String clientProperties;
+    private String tradeClientConfig;
 
     @Column(name = "hold_condition")
     @Lob
     private String holdCondition;
+
+    @Column(name = "order_operator_id")
+    private String orderOperatorId;
 
     @Column(name = "order_kind", length = 16)
     private OrderKind orderKind;

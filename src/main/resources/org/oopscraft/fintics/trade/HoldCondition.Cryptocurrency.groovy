@@ -142,6 +142,13 @@ holdVotes.addAll(resultOfMinute15.values())
 log.debug("[{}] resultOfMinute15: {}", assetName, resultOfMinute15)
 log.info("[{}] resultOfMinute15Average: {}", assetName, resultOfMinute15Average)
 
+// minute30
+def resultOfMinute30 = analyze(assetIndicator, OhlcvType.MINUTE, 30)
+def resultOfMinute30Average = resultOfMinute30.values().average()
+holdVotes.addAll(resultOfMinute30.values())
+log.debug("[{}] resultOfMinute30: {}", assetName, resultOfMinute30)
+log.info("[{}] resultOfMinute30Average: {}", assetName, resultOfMinute30Average)
+
 // daily
 def resultOfDaily = analyze(assetIndicator, OhlcvType.DAILY, 1)
 def resultOfDailyAverage = resultOfDaily.values().average()
@@ -163,7 +170,7 @@ log.debug("[{}] holdVotes: {}", assetName, holdVotes)
 log.info("[{}] holdVotesAverage: {}", assetName, holdVotesAverage)
 
 // buy
-if(holdVotesAverage > 60) {
+if(holdVotesAverage > 70) {
     hold = true
 }
 

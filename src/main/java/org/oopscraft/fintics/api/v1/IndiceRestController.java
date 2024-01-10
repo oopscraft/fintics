@@ -5,10 +5,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.fintics.api.v1.dto.IndiceIndicatorResponse;
 import org.oopscraft.fintics.api.v1.dto.IndiceResponse;
-import org.oopscraft.fintics.model.IndiceSymbol;
+import org.oopscraft.fintics.model.IndiceId;
 import org.oopscraft.fintics.service.IndiceService;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
@@ -42,18 +40,18 @@ public class IndiceRestController {
         return ResponseEntity.ok(indiceResponses);
     }
 
-    @GetMapping("{symbol}")
-    public ResponseEntity<IndiceResponse> getIndice(@PathVariable("symbol")IndiceSymbol symbol) {
-        IndiceResponse indiceResponse = indiceService.getIndice(symbol)
+    @GetMapping("{id}")
+    public ResponseEntity<IndiceResponse> getIndice(@PathVariable("id") IndiceId id) {
+        IndiceResponse indiceResponse = indiceService.getIndice(id)
                 .map(IndiceResponse::from)
                 .orElseThrow();
         return ResponseEntity.ok(indiceResponse);
     }
 
-    @Cacheable(cacheNames = INDICE_REST_CONTROLLER_GET_INDICE_INDICATOR, key = "#symbol")
-    @GetMapping("{symbol}/indicator")
-    public ResponseEntity<IndiceIndicatorResponse> getIndiceIndicator(@PathVariable("symbol")IndiceSymbol symbol) {
-        IndiceIndicatorResponse indiceIndicatorResponse = indiceService.getIndiceIndicator(symbol)
+    @Cacheable(cacheNames = INDICE_REST_CONTROLLER_GET_INDICE_INDICATOR, key = "#id")
+    @GetMapping("{id}/indicator")
+    public ResponseEntity<IndiceIndicatorResponse> getIndiceIndicator(@PathVariable("id") IndiceId id) {
+        IndiceIndicatorResponse indiceIndicatorResponse = indiceService.getIndiceIndicator(id)
                 .map(IndiceIndicatorResponse::from)
                 .orElseThrow();
         return ResponseEntity.ok(indiceIndicatorResponse);

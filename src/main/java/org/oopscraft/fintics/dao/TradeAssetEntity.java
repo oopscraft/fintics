@@ -21,7 +21,7 @@ public class TradeAssetEntity extends BaseEntity {
 
     public static class Pk implements Serializable {
         private String tradeId;
-        private String symbol;
+        private String id;
     }
 
     @Id
@@ -29,8 +29,8 @@ public class TradeAssetEntity extends BaseEntity {
     private String tradeId;
 
     @Id
-    @Column(name = "symbol", length = 32)
-    private String symbol;
+    @Column(name = "id", length = 32)
+    private String id;
 
     @Column(name = "name")
     private String name;

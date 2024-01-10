@@ -35,19 +35,19 @@ public class TradeService {
                 .collect(Collectors.toList());
     }
 
-    public Optional<Trade> getTrade(String tradeId) {
-        return tradeRepository.findById(tradeId)
+    public Optional<Trade> getTrade(String id) {
+        return tradeRepository.findById(id)
                 .map(Trade::from);
     }
 
     @Transactional
     public Trade saveTrade(Trade trade) {
         final TradeEntity tradeEntity;
-        if(trade.getTradeId() != null) {
-            tradeEntity = tradeRepository.findById(trade.getTradeId()).orElseThrow();
+        if(trade.getId() != null) {
+            tradeEntity = tradeRepository.findById(trade.getId()).orElseThrow();
         } else {
             tradeEntity = TradeEntity.builder()
-                    .tradeId(IdGenerator.uuid())
+                    .id(IdGenerator.uuid())
                     .build();
         }
         tradeEntity.setName(trade.getName());
@@ -56,12 +56,13 @@ public class TradeService {
         tradeEntity.setThreshold(trade.getThreshold());
         tradeEntity.setStartAt(trade.getStartAt());
         tradeEntity.setEndAt(trade.getEndAt());
-        tradeEntity.setClientId(trade.getClientId());
-        if(trade.getClientProperties() != null) {
-            String clientProperties = PbePropertiesUtil.encode(trade.getClientProperties());
-            tradeEntity.setClientProperties(clientProperties);
+        tradeEntity.setTradeClientId(trade.getTradeClientId());
+        if(trade.getTradeClientConfig() != null) {
+            String clientProperties = PbePropertiesUtil.encode(trade.getTradeClientConfig());
+            tradeEntity.setTradeClientConfig(clientProperties);
         }
         tradeEntity.setHoldCondition(trade.getHoldCondition());
+        tradeEntity.setOrderOperatorId(trade.getOrderOperatorId());
         tradeEntity.setOrderKind(trade.getOrderKind());
         tradeEntity.setAlarmId(trade.getAlarmId());
         tradeEntity.setAlarmOnError(trade.isAlarmOnError());
@@ -72,8 +73,8 @@ public class TradeService {
         List<TradeAssetEntity> tradeAssetEntities = trade.getTradeAssets().stream()
                 .map(tradeAsset ->
                         TradeAssetEntity.builder()
-                                .tradeId(tradeEntity.getTradeId())
-                                .symbol(tradeAsset.getSymbol())
+                                .tradeId(tradeEntity.getId())
+                                .id(tradeAsset.getId())
                                 .name(tradeAsset.getName())
                                 .enabled(tradeAsset.isEnabled())
                                 .holdRatio(tradeAsset.getHoldRatio())
@@ -94,8 +95,8 @@ public class TradeService {
 
     public Optional<Balance> getTradeBalance(String tradeId) throws InterruptedException {
         Trade trade = getTrade(tradeId).orElseThrow();
-        if(trade.getClientId() != null) {
-            TradeClient tradeClient = TradeClientFactory.getClient(trade.getClientId(), trade.getClientProperties());
+        if(trade.getTradeClientId() != null) {
+            TradeClient tradeClient = TradeClientFactory.getClient(trade.getTradeClientId(), trade.getTradeClientConfig());
             return Optional.ofNullable(tradeClient.getBalance());
         }else{
             return Optional.empty();
@@ -105,24 +106,24 @@ public class TradeService {
     public Optional<AssetIndicator> getTradeAssetIndicator(String tradeId, String symbol) {
         Trade trade = getTrade(tradeId).orElseThrow();
         TradeAsset tradeAsset = trade.getTradeAssets().stream()
-                .filter(e -> Objects.equals(e.getSymbol(), symbol))
+                .filter(e -> Objects.equals(e.getId(), symbol))
                 .findFirst()
                 .orElseThrow();
 
-        LocalDateTime minuteMaxDateTime = tradeAssetOhlcvRepository.findMaxDateTimeBySymbolAndOhlcvType(trade.getClientId(), symbol, OhlcvType.MINUTE)
+        LocalDateTime minuteMaxDateTime = tradeAssetOhlcvRepository.findMaxDateTimeBySymbolAndOhlcvType(trade.getTradeClientId(), symbol, OhlcvType.MINUTE)
                 .orElse(LocalDateTime.now());
-        List<Ohlcv> minuteOhlcvs = tradeAssetOhlcvRepository.findAllBySymbolAndOhlcvType(trade.getClientId(), symbol, OhlcvType.MINUTE, minuteMaxDateTime.minusDays(1), minuteMaxDateTime, Pageable.unpaged()).stream()
+        List<Ohlcv> minuteOhlcvs = tradeAssetOhlcvRepository.findAllBySymbolAndOhlcvType(trade.getTradeClientId(), symbol, OhlcvType.MINUTE, minuteMaxDateTime.minusDays(1), minuteMaxDateTime, Pageable.unpaged()).stream()
                 .map(Ohlcv::from)
                 .collect(Collectors.toList());
 
-        LocalDateTime dailyMaxDateTime = tradeAssetOhlcvRepository.findMaxDateTimeBySymbolAndOhlcvType(trade.getClientId(), symbol, OhlcvType.DAILY)
+        LocalDateTime dailyMaxDateTime = tradeAssetOhlcvRepository.findMaxDateTimeBySymbolAndOhlcvType(trade.getTradeClientId(), symbol, OhlcvType.DAILY)
                 .orElse(LocalDateTime.now());
-        List<Ohlcv> dailyOhlcvs = tradeAssetOhlcvRepository.findAllBySymbolAndOhlcvType(trade.getClientId(), symbol, OhlcvType.DAILY, dailyMaxDateTime.minusMonths(1), dailyMaxDateTime, Pageable.unpaged()).stream()
+        List<Ohlcv> dailyOhlcvs = tradeAssetOhlcvRepository.findAllBySymbolAndOhlcvType(trade.getTradeClientId(), symbol, OhlcvType.DAILY, dailyMaxDateTime.minusMonths(1), dailyMaxDateTime, Pageable.unpaged()).stream()
                 .map(Ohlcv::from)
                 .collect(Collectors.toList());
 
         return Optional.ofNullable(AssetIndicator.builder()
-                .symbol(tradeAsset.getSymbol())
+                .id(tradeAsset.getId())
                 .name(tradeAsset.getName())
                 .minuteOhlcvs(minuteOhlcvs)
                 .dailyOhlcvs(dailyOhlcvs)

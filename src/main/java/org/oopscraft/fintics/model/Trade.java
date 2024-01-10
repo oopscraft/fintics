@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 @EqualsAndHashCode
 public class Trade {
 
-    private String tradeId;
+    private String id;
 
     private String name;
 
@@ -29,11 +29,13 @@ public class Trade {
 
     private LocalTime endAt;
 
-    private String clientId;
+    private String tradeClientId;
 
-    private String clientProperties;
+    private String tradeClientConfig;
 
     private String holdCondition;
+
+    private String orderOperatorId;
 
     private OrderKind orderKind;
 
@@ -48,16 +50,17 @@ public class Trade {
 
     public static Trade from(TradeEntity tradeEntity) {
         Trade trade = Trade.builder()
-                .tradeId(tradeEntity.getTradeId())
+                .id(tradeEntity.getId())
                 .name(tradeEntity.getName())
                 .enabled(tradeEntity.isEnabled())
                 .interval(tradeEntity.getInterval())
                 .threshold(tradeEntity.getThreshold())
                 .startAt(tradeEntity.getStartAt())
                 .endAt(tradeEntity.getEndAt())
-                .clientId(tradeEntity.getClientId())
-                .clientProperties(tradeEntity.getClientProperties())
+                .tradeClientId(tradeEntity.getTradeClientId())
+                .tradeClientConfig(tradeEntity.getTradeClientConfig())
                 .holdCondition(tradeEntity.getHoldCondition())
+                .orderOperatorId(tradeEntity.getOrderOperatorId())
                 .orderKind(tradeEntity.getOrderKind())
                 .alarmId(tradeEntity.getAlarmId())
                 .alarmOnError(tradeEntity.isAlarmOnError())

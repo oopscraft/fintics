@@ -1,5 +1,6 @@
 package org.oopscraft.fintics.trade;
 
+import ch.qos.logback.classic.Logger;
 import com.github.javaparser.utils.LineSeparator;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
@@ -24,7 +25,7 @@ class TradeAssetDeciderTest {
 
     Trade getTestTrade() {
         return Trade.builder()
-                .tradeId("test")
+                .id("test")
                 .build();
     }
 
@@ -45,9 +46,9 @@ class TradeAssetDeciderTest {
 
     List<IndiceIndicator> getTestIndiceIndicators() {
         List<IndiceIndicator> indiceIndicators = new ArrayList<>();
-        for(IndiceSymbol symbol : IndiceSymbol.values()) {
+        for(IndiceId symbol : IndiceId.values()) {
             indiceIndicators.add(IndiceIndicator.builder()
-                    .symbol(symbol)
+                    .id(symbol)
                     .minuteOhlcvs(new ArrayList<Ohlcv>(){{
                         add(Ohlcv.builder()
                                 .dateTime(LocalDateTime.now())
@@ -88,7 +89,7 @@ class TradeAssetDeciderTest {
 
     AssetIndicator getTestAssetIndicator(TradeAsset tradeAsset) {
         return AssetIndicator.builder()
-                .symbol(tradeAsset.getSymbol())
+                .id(tradeAsset.getId())
                 .name(tradeAsset.getName())
                 .minuteOhlcvs(IntStream.range(1,501)
                         .mapToObj(i -> {
@@ -132,7 +133,7 @@ class TradeAssetDeciderTest {
         // when
         TradeAssetDecider tradeAssetDecider = TradeAssetDecider.builder()
                 .holdCondition(trade.getHoldCondition())
-                .logger(log)
+                .log((Logger)log)
                 .dateTime(LocalDateTime.now())
                 .orderBook(orderBook)
                 .indiceIndicators(indiceIndicators)
@@ -158,7 +159,7 @@ class TradeAssetDeciderTest {
         // when
         TradeAssetDecider tradeAssetDecider = TradeAssetDecider.builder()
                 .holdCondition(trade.getHoldCondition())
-                .logger(log)
+                .log((Logger) log)
                 .dateTime(LocalDateTime.now())
                 .indiceIndicators(indiceIndicators)
                 .assetIndicator(assetIndicator)
@@ -182,7 +183,7 @@ class TradeAssetDeciderTest {
         // when
         TradeAssetDecider tradeAssetDecider = TradeAssetDecider.builder()
                 .holdCondition(trade.getHoldCondition())
-                .logger(log)
+                .log((Logger) log)
                 .dateTime(LocalDateTime.now())
                 .indiceIndicators(indiceIndicators)
                 .assetIndicator(assetIndicator)
@@ -206,7 +207,7 @@ class TradeAssetDeciderTest {
         // when
         TradeAssetDecider tradeAssetDecider = TradeAssetDecider.builder()
                 .holdCondition(trade.getHoldCondition())
-                .logger(log)
+                .log((Logger) log)
                 .dateTime(LocalDateTime.now())
                 .indiceIndicators(indiceIndicators)
                 .assetIndicator(assetIndicator)

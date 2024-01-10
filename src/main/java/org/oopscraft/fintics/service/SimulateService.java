@@ -54,17 +54,17 @@ public class SimulateService {
             BigDecimal closePrice = currentMinuteOhlcvs.get(0).getClosePrice();
 
             Trade trade = Trade.builder()
-                    .tradeId("simulate")
+                    .id("simulate")
                     .holdCondition(simulate.getHoldCondition())
                     .build();
 
             TradeAsset tradeAsset = TradeAsset.builder()
-                    .tradeId(trade.getTradeId())
+                    .tradeId(trade.getId())
                     .name("simulate TradeAsset")
                     .build();
 
             AssetIndicator assetIndicator = AssetIndicator.builder()
-                    .symbol(tradeAsset.getSymbol())
+                    .id(tradeAsset.getId())
                     .name(tradeAsset.getName())
                     .minuteOhlcvs(currentMinuteOhlcvs)
                     .dailyOhlcvs(currentDailyOhlcvs)
@@ -72,7 +72,6 @@ public class SimulateService {
 
             TradeAssetDecider tradeAssetDecider = TradeAssetDecider.builder()
                     .holdCondition(holdCondition)
-                    .logger(log)
                     .dateTime(dateTime)
                     .balance(balance)
                     .indiceIndicators(new ArrayList<IndiceIndicator>())
@@ -83,7 +82,7 @@ public class SimulateService {
 
             if(holdConditionResult != null) {
                 if (holdConditionResult) {
-                    if(!balance.hasBalanceAsset(tradeAsset.getSymbol())) {
+                    if(!balance.hasBalanceAsset(tradeAsset.getId())) {
                         BigDecimal buyAmount = balance.getTotalAmount()
                                 .divide(BigDecimal.valueOf(100), MathContext.DECIMAL32)
                                 .multiply(BigDecimal.valueOf(100))
@@ -103,7 +102,7 @@ public class SimulateService {
 
                         // add order
                         Order order = Order.builder()
-                                .orderId(IdGenerator.uuid())
+                                .id(IdGenerator.uuid())
                                 .orderAt(dateTime)
                                 .orderType(OrderType.BUY)
                                 .price(askPrice)
@@ -113,8 +112,8 @@ public class SimulateService {
                     }
                 }
                 if (!holdConditionResult) {
-                    if(balance.hasBalanceAsset(tradeAsset.getSymbol())) {
-                        BalanceAsset balanceAsset = balance.getBalanceAsset(tradeAsset.getSymbol()).orElseThrow();
+                    if(balance.hasBalanceAsset(tradeAsset.getId())) {
+                        BalanceAsset balanceAsset = balance.getBalanceAsset(tradeAsset.getId()).orElseThrow();
                         BigDecimal bidPrice = closePrice.subtract(BigDecimal.valueOf(bidAskSpread));
                         BigDecimal quantity = balanceAsset.getQuantity();
                         BigDecimal purchaseAmount = balanceAsset.getPurchaseAmount();
@@ -125,7 +124,7 @@ public class SimulateService {
 
                         // add order
                         Order order = Order.builder()
-                                .orderId(IdGenerator.uuid())
+                                .id(IdGenerator.uuid())
                                 .orderAt(dateTime)
                                 .orderType(OrderType.SELL)
                                 .price(bidPrice)
@@ -136,8 +135,8 @@ public class SimulateService {
                 }
 
                 // updates valuation amount
-                if(balance.hasBalanceAsset(tradeAsset.getSymbol())) {
-                    BalanceAsset balanceAsset = balance.getBalanceAsset(tradeAsset.getSymbol()).orElseThrow();
+                if(balance.hasBalanceAsset(tradeAsset.getId())) {
+                    BalanceAsset balanceAsset = balance.getBalanceAsset(tradeAsset.getId()).orElseThrow();
                     balanceAsset.setValuationAmount(balanceAsset.getQuantity().multiply(closePrice));
                     balance.setValuationAmount(balanceAsset.getValuationAmount());
                 }else{

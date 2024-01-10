@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
-import org.oopscraft.fintics.model.IndiceSymbol;
+import org.oopscraft.fintics.model.IndiceId;
 import org.oopscraft.fintics.model.Ohlcv;
 import org.oopscraft.fintics.model.OhlcvType;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -34,7 +34,7 @@ public class YahooIndiceClient extends IndiceClient {
     private final ObjectMapper objectMapper;
 
     @Override
-    public List<Ohlcv> getMinuteOhlcvs(IndiceSymbol symbol, LocalDateTime dateTime) {
+    public List<Ohlcv> getMinuteOhlcvs(IndiceId symbol, LocalDateTime dateTime) {
         return switch (symbol) {
             case NDX -> getMinuteOhlcvs("^NDX", dateTime);
             case NDX_FUTURE -> getMinuteOhlcvs("NQ=F", dateTime);
@@ -47,7 +47,7 @@ public class YahooIndiceClient extends IndiceClient {
     }
 
     @Override
-    public List<Ohlcv> getDailyOhlcvs(IndiceSymbol symbol, LocalDateTime dateTime) {
+    public List<Ohlcv> getDailyOhlcvs(IndiceId symbol, LocalDateTime dateTime) {
         return switch (symbol) {
             case NDX -> getDailyOhlcvs("^NDX", dateTime);
             case NDX_FUTURE -> getDailyOhlcvs("NQ=F", dateTime);

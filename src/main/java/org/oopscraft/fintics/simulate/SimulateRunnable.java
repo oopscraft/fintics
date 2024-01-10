@@ -1,12 +1,13 @@
 package org.oopscraft.fintics.simulate;
 
+import ch.qos.logback.classic.Logger;
 import lombok.Builder;
+import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.fintics.client.indice.IndiceClient;
 import org.oopscraft.fintics.client.trade.TradeClient;
 import org.oopscraft.fintics.model.Simulate;
 import org.oopscraft.fintics.model.Trade;
 import org.oopscraft.fintics.trade.TradeExecutor;
-import org.slf4j.Logger;
 import org.springframework.context.ApplicationContext;
 
 import java.time.LocalDateTime;
@@ -34,9 +35,6 @@ public class SimulateRunnable implements Runnable {
         LocalDateTime dateTimeFrom = simulate.getDateTimeFrom();
         LocalDateTime dateTimeTo = simulate.getDateTimeTo();
 
-        IndiceClient indiceClient = new SimulateIndiceClient();
-        TradeClient tradeClient = new SimulateTradeClient(new Properties());
-
         for(LocalDateTime dateTime = dateTimeFrom.plusMinutes(1); dateTime.isBefore(dateTimeTo); dateTime = dateTime.plusMinutes(1)) {
             // check start and end time
             if(dateTime.toLocalTime().isBefore(trade.getStartAt()) || dateTime.toLocalTime().isAfter(trade.getEndAt())) {
@@ -46,15 +44,12 @@ public class SimulateRunnable implements Runnable {
             log.info("== dateTime:{}", dateTime);
 
             TradeExecutor tradeExecutor = TradeExecutor.builder()
-                    .trade(trade)
-                    .indiceClient(indiceClient)
-                    .tradeClient(tradeClient)
                     .applicationContext(applicationContext)
                     .log(log)
                     .build();
 
             try {
-                tradeExecutor.execute(dateTime);
+                tradeExecutor.execute(trade, dateTime);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }

@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @Getter
 public class OrderResponse {
 
-    private String orderId;
+    private String id;
 
     private LocalDateTime orderAt;
 
@@ -26,7 +26,7 @@ public class OrderResponse {
     @Setter
     private String tradeName;
 
-    private String symbol;
+    private String assetId;
 
     private String assetName;
 
@@ -42,11 +42,11 @@ public class OrderResponse {
 
     public static OrderResponse from(Order order) {
         return OrderResponse.builder()
-                .orderId(order.getOrderId())
+                .id(order.getId())
                 .orderAt(order.getOrderAt())
                 .orderType(order.getOrderType())
                 .tradeId(order.getTradeId())
-                .symbol(order.getSymbol())
+                .assetId(order.getAssetId())
                 .assetName(order.getAssetName())
                 .orderKind(order.getOrderKind())
                 .quantity(order.getQuantity())

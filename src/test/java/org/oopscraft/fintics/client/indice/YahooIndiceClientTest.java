@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.oopscraft.arch4j.core.support.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
-import org.oopscraft.fintics.model.IndiceSymbol;
+import org.oopscraft.fintics.model.IndiceId;
 import org.oopscraft.fintics.model.Ohlcv;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -27,7 +27,7 @@ class YahooIndiceClientTest extends CoreTestSupport {
         // given
         // when
         YahooIndiceClient indiceClient = new YahooIndiceClient(objectMapper);
-        for(IndiceSymbol indiceSymbol : IndiceSymbol.values()) {
+        for(IndiceId indiceSymbol : IndiceId.values()) {
             log.info("====== indiceSymbol[{}] =====", indiceSymbol);
             List<Ohlcv> ohlcvs = indiceClient.getMinuteOhlcvs(indiceSymbol, LocalDateTime.now());
             log.debug("ohlcvs:{}", ohlcvs);
@@ -41,7 +41,7 @@ class YahooIndiceClientTest extends CoreTestSupport {
         // given
         // when
         YahooIndiceClient indiceClient = new YahooIndiceClient(objectMapper);
-        for(IndiceSymbol indiceSymbol : IndiceSymbol.values()) {
+        for(IndiceId indiceSymbol : IndiceId.values()) {
             log.info("====== indiceSymbol[{}] =====", indiceSymbol);
             List<Ohlcv> ohlcvs = indiceClient.getDailyOhlcvs(indiceSymbol, LocalDateTime.now());
             log.debug("ohlcvs:{}", ohlcvs);

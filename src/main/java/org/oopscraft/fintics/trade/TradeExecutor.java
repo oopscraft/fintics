@@ -1,5 +1,6 @@
 package org.oopscraft.fintics.trade;
 
+import ch.qos.logback.classic.Logger;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -13,7 +14,6 @@ import org.oopscraft.fintics.model.*;
 import org.oopscraft.fintics.trade.order.OrderOperator;
 import org.oopscraft.fintics.trade.order.OrderOperatorContext;
 import org.oopscraft.fintics.trade.order.OrderOperatorFactory;
-import org.slf4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.PageRequest;
 
@@ -27,11 +27,7 @@ public class TradeExecutor {
 
     private final ApplicationContext applicationContext;
 
-    private final Trade trade;
-
     private final IndiceClient indiceClient;
-
-    private final TradeClient tradeClient;
 
     private final IndiceOhlcvRepository indiceOhlcvRepository;
 
@@ -46,18 +42,18 @@ public class TradeExecutor {
     private final Map<String,Integer> holdConditionResultCountMap = new HashMap<>();
 
     @Builder
-    public TradeExecutor(Trade trade, IndiceClient indiceClient, TradeClient tradeClient, ApplicationContext applicationContext, Logger log) {
+    protected TradeExecutor(ApplicationContext applicationContext, Logger log) {
         this.applicationContext = applicationContext;
-        this.trade = trade;
-        this.indiceClient = indiceClient;
-        this.tradeClient = tradeClient;
+        this.indiceClient = applicationContext.getBean(IndiceClient.class);
         this.indiceOhlcvRepository = applicationContext.getBean(IndiceOhlcvRepository.class);
         this.assetOhlcvRepository = applicationContext.getBean(AssetOhlcvRepository.class);
         this.alarmService = applicationContext.getBean(AlarmService.class);
         this.log = log;
     }
 
-    public void execute(LocalDateTime dateTime) throws InterruptedException {
+    public void execute(Trade trade, LocalDateTime dateTime) throws InterruptedException {
+        log.info("Check trade - [{}]", trade.getName());
+        TradeClient tradeClient = TradeClientFactory.getClient(trade);
 
         // check market opened
         if(!tradeClient.isOpened(dateTime)) {
@@ -66,14 +62,14 @@ public class TradeExecutor {
         }
 
         // checks start,end time
-        if (!isOperatingTime(dateTime.toLocalTime())) {
+        if (!isOperatingTime(trade, dateTime)) {
             log.info("Not operating time - [{}] {} ~ {}", trade.getName(), trade.getStartAt(), trade.getEndAt());
             return;
         }
 
         // indice indicators
         List<IndiceIndicator> indiceIndicators = new ArrayList<>();
-        for(IndiceSymbol symbol : IndiceSymbol.values()) {
+        for(IndiceId symbol : IndiceId.values()) {
             indiceClient.getMinuteOhlcvs(symbol, dateTime);
 
             // minute ohlcvs
@@ -88,7 +84,7 @@ public class TradeExecutor {
 
             // add indicator
             indiceIndicators.add(IndiceIndicator.builder()
-                    .symbol(symbol)
+                    .id(symbol)
                     .minuteOhlcvs(minuteOhlcvs)
                     .dailyOhlcvs(dailyOhlcvs)
                     .build());
@@ -96,8 +92,6 @@ public class TradeExecutor {
 
         // balance
         Balance balance = tradeClient.getBalance();
-
-
 
         // checks buy condition
         for (TradeAsset tradeAsset : trade.getTradeAssets()) {
@@ -114,15 +108,15 @@ public class TradeExecutor {
 
                 // indicator
                 List<Ohlcv> minuteOhlcvs = tradeClient.getMinuteOhlcvs(tradeAsset, dateTime);
-                List<Ohlcv> previousMinuteOhlcvs = getPreviousAssetMinuteOhlcvs(trade.getClientId(), tradeAsset.getSymbol(), minuteOhlcvs, dateTime);
+                List<Ohlcv> previousMinuteOhlcvs = getPreviousAssetMinuteOhlcvs(trade.getTradeClientId(), tradeAsset.getId(), minuteOhlcvs, dateTime);
                 minuteOhlcvs.addAll(previousMinuteOhlcvs);
 
                 List<Ohlcv> dailyOhlcvs = tradeClient.getDailyOhlcvs(tradeAsset, dateTime);
-                List<Ohlcv> previousDailyOhlcvs = getPreviousAssetDailyOhlcvs(trade.getClientId(), tradeAsset.getSymbol(), dailyOhlcvs, dateTime);
+                List<Ohlcv> previousDailyOhlcvs = getPreviousAssetDailyOhlcvs(trade.getTradeClientId(), tradeAsset.getId(), dailyOhlcvs, dateTime);
                 dailyOhlcvs.addAll(previousDailyOhlcvs);
 
                 AssetIndicator assetIndicator = AssetIndicator.builder()
-                        .symbol(tradeAsset.getSymbol())
+                        .id(tradeAsset.getId())
                         .name(tradeAsset.getName())
                         .minuteOhlcvs(minuteOhlcvs)
                         .dailyOhlcvs(dailyOhlcvs)
@@ -134,7 +128,7 @@ public class TradeExecutor {
                 // executes trade asset decider
                 TradeAssetDecider tradeAssetDecider = TradeAssetDecider.builder()
                         .holdCondition(trade.getHoldCondition())
-                        .logger(log)
+                        .log(log)
                         .dateTime(dateTime)
                         .orderBook(orderBook)
                         .balance(balance)
@@ -146,16 +140,18 @@ public class TradeExecutor {
 
                 // order operator
                 OrderOperatorContext orderOperatorContext = OrderOperatorContext.builder()
-                        .operatorId("SIMPLE")
+                        .id(trade.getOrderOperatorId())
+                        .applicationContext(applicationContext)
                         .tradeClient(tradeClient)
                         .trade(trade)
-                        .orderBook(orderBook)
                         .balance(balance)
+                        .orderBook(orderBook)
+                        .log(log)
                         .build();
                 OrderOperator orderOperator = OrderOperatorFactory.getOrderOperator(orderOperatorContext);
 
                 // 0. checks threshold exceeded
-                int consecutiveCountOfHoldConditionResult = getConsecutiveCountOfHoldConditionResult(tradeAsset.getSymbol(), holdConditionResult);
+                int consecutiveCountOfHoldConditionResult = getConsecutiveCountOfHoldConditionResult(tradeAsset.getId(), holdConditionResult);
                 log.info("consecutiveCountOfHoldConditionResult: {}", consecutiveCountOfHoldConditionResult);
                 if (consecutiveCountOfHoldConditionResult < trade.getThreshold()) {
                     log.info("Threshold has not been exceeded yet - threshold is {}", trade.getThreshold());
@@ -178,19 +174,20 @@ public class TradeExecutor {
                 }
             } catch (Throwable e) {
                 log.error(e.getMessage(), e);
-                sendErrorAlarmIfEnabled(tradeAsset, e);
+                sendErrorAlarmIfEnabled(trade, tradeAsset, e);
             }
         }
     }
 
-    private boolean isOperatingTime(LocalTime time) {
+    private boolean isOperatingTime(Trade trade, LocalDateTime dateTime) {
         if(trade.getStartAt() == null || trade.getEndAt() == null) {
             return false;
         }
+        LocalTime time = dateTime.toLocalTime();
         return time.isAfter(trade.getStartAt()) && time.isBefore(trade.getEndAt());
     }
 
-    private List<Ohlcv> getPreviousIndiceMinuteOhlcvs(IndiceSymbol symbol, List<Ohlcv> ohlcvs, LocalDateTime dateTime) {
+    private List<Ohlcv> getPreviousIndiceMinuteOhlcvs(IndiceId symbol, List<Ohlcv> ohlcvs, LocalDateTime dateTime) {
         LocalDateTime lastDateTime = !ohlcvs.isEmpty()
                 ? ohlcvs.get(ohlcvs.size()-1).getDateTime()
                 : dateTime;
@@ -204,7 +201,7 @@ public class TradeExecutor {
                 .collect(Collectors.toList());
     }
 
-    private List<Ohlcv> getPreviousIndiceDailyOhlcvs(IndiceSymbol symbol, List<Ohlcv> ohlcvs, LocalDateTime dateTime) {
+    private List<Ohlcv> getPreviousIndiceDailyOhlcvs(IndiceId symbol, List<Ohlcv> ohlcvs, LocalDateTime dateTime) {
         LocalDateTime lastDateTime = !ohlcvs.isEmpty()
                 ? ohlcvs.get(ohlcvs.size()-1).getDateTime()
                 : dateTime;
@@ -271,7 +268,7 @@ public class TradeExecutor {
         return holdConditionResultCount;
     }
 
-    private void sendErrorAlarmIfEnabled(TradeAsset tradeAsset, Throwable t) throws InterruptedException {
+    private void sendErrorAlarmIfEnabled(Trade trade, TradeAsset tradeAsset, Throwable t) throws InterruptedException {
         if(trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
             if (trade.isAlarmOnError()) {
                 String subject = String.format("[%s - %s]", trade.getName(), tradeAsset != null ? tradeAsset.getName() : "");

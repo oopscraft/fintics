@@ -19,18 +19,18 @@ import java.time.LocalDateTime;
 public class AssetOhlcvEntity extends OhlcvEntity {
 
     public static class Pk implements Serializable {
-        private String clientId;
-        private String symbol;
+        private String tradeClientId;
+        private String id;
         private OhlcvType ohlcvType;
         private LocalDateTime dateTime;
     }
 
     @Id
-    @Column(name = "client_id", length = 32)
-    private String clientId;
+    @Column(name = "trade_client_id", length = 32)
+    private String tradeClientId;
 
     @Id
-    @Column(name = "symbol", length = 32)
-    private String symbol;
+    @Column(name = "id", length = 32)
+    private String id;
 
 }

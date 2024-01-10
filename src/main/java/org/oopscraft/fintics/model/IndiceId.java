@@ -1,6 +1,6 @@
 package org.oopscraft.fintics.model;
 
-public enum IndiceSymbol {
+public enum IndiceId {
 
     NDX("Nasdaq"),
     NDX_FUTURE("Nasdaq Future"),
@@ -12,7 +12,7 @@ public enum IndiceSymbol {
 
     private final String value;
 
-    IndiceSymbol(String value) {
+    IndiceId(String value) {
         this.value = value;
     }
 

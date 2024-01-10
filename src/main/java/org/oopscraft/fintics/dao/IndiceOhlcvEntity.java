@@ -2,7 +2,7 @@ package org.oopscraft.fintics.dao;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.oopscraft.fintics.model.IndiceSymbol;
+import org.oopscraft.fintics.model.IndiceId;
 import org.oopscraft.fintics.model.OhlcvType;
 
 import javax.persistence.*;
@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 public class IndiceOhlcvEntity extends OhlcvEntity {
 
     public static class Pk implements Serializable {
-        private IndiceSymbol symbol;
+        private IndiceId symbol;
         private OhlcvType ohlcvType;
         private LocalDateTime dateTime;
     }
@@ -28,6 +28,6 @@ public class IndiceOhlcvEntity extends OhlcvEntity {
     @Id
     @Column(name = "symbol", length = 32)
     @Enumerated(EnumType.STRING)    // @Id is converter not work
-    private IndiceSymbol symbol;
+    private IndiceId symbol;
 
 }

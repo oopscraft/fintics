@@ -80,7 +80,7 @@ class KisTradeClientTest extends CoreTestSupport {
     void getOrderBook() throws InterruptedException {
         // given
         TradeAsset tradeAsset = TradeAsset.builder()
-                .symbol("005930")
+                .id("005930")
                 .build();
 
         // when
@@ -97,7 +97,7 @@ class KisTradeClientTest extends CoreTestSupport {
     void getMinuteOhlcvs() throws InterruptedException {
         // given
         TradeAsset tradeAsset = TradeAsset.builder()
-                .symbol("005930")
+                .id("005930")
                 .build();
 
         // when
@@ -112,7 +112,7 @@ class KisTradeClientTest extends CoreTestSupport {
     void getDailyOhlcvs() throws InterruptedException {
         // given
         TradeAsset tradeAsset = TradeAsset.builder()
-                .symbol("005930")
+                .id("005930")
                 .build();
 
         // when
@@ -138,7 +138,7 @@ class KisTradeClientTest extends CoreTestSupport {
     void submitOrderBuyStock() throws InterruptedException {
         // given
         Order order = Order.builder()
-                .symbol("005930")   // Samsung Electronic
+                .assetId("005930")   // Samsung Electronic
                 .orderType(OrderType.BUY)
                 .orderKind(OrderKind.MARKET)
                 .quantity(BigDecimal.valueOf(1))
@@ -153,7 +153,7 @@ class KisTradeClientTest extends CoreTestSupport {
     void submitOrderBuyEtf() throws InterruptedException {
         // given
         Order order = Order.builder()
-                .symbol("069500")   // Kodex 200 ETF
+                .assetId("069500")   // Kodex 200 ETF
                 .orderType(OrderType.BUY)
                 .orderKind(OrderKind.MARKET)
                 .quantity(BigDecimal.valueOf(1))
@@ -168,7 +168,7 @@ class KisTradeClientTest extends CoreTestSupport {
     void submitOrderSellStock() throws InterruptedException {
         // given
         Order order = Order.builder()
-                .symbol("005930")   // Samsung Electronic
+                .assetId("005930")   // Samsung Electronic
                 .orderType(OrderType.SELL)
                 .orderKind(OrderKind.MARKET)
                 .quantity(BigDecimal.valueOf(1))
@@ -183,7 +183,7 @@ class KisTradeClientTest extends CoreTestSupport {
     void submitOrderSellEtf() throws InterruptedException {
         // given
         Order order = Order.builder()
-                .symbol("069500")   // Kodex 200 ETF
+                .assetId("069500")   // Kodex 200 ETF
                 .orderType(OrderType.SELL)
                 .orderKind(OrderKind.MARKET)
                 .quantity(BigDecimal.valueOf(1))
