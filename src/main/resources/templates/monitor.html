@@ -404,7 +404,7 @@
             </script>
             <h2>
                 <img class="icon" th:src="@{/static/image/icon-trade.svg}" alt="trade"/>
-                <span data-th-text="${trade.name}"></span>
+                <span data-th-text="${trade.tradeName}"></span>
                 <a href="#" th:data-trade-id="${trade.tradeId}" onclick="openTradeDetail(this.dataset.tradeId);">
                     <small>
                         <img class="icon link" th:src="@{/static/image/icon-open.svg}" alt="trade-detail"/>
