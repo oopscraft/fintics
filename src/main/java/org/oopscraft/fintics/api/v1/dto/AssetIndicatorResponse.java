@@ -14,11 +14,13 @@ public class AssetIndicatorResponse extends IndicatorResponse {
 
     public static AssetIndicatorResponse from(AssetIndicator assetIndicator) {
         return AssetIndicatorResponse.builder()
+                .indicatorName(assetIndicator.getIndicatorName())
                 .assetId(assetIndicator.getAssetId())
                 .assetName(assetIndicator.getAssetName())
                 .minuteOhlcvs(assetIndicator.getMinuteOhlcvs())
                 .dailyOhlcvs(assetIndicator.getDailyOhlcvs())
                 .build();
     }
+
 
 }

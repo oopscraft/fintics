@@ -9,14 +9,15 @@ import org.oopscraft.fintics.model.IndiceIndicator;
 @Getter
 public class IndiceIndicatorResponse extends IndicatorResponse {
 
-    private final IndiceId id;
+    private final IndiceId indiceId;
 
-    private final String name;
+    private final String indiceName;
 
     public static IndiceIndicatorResponse from(IndiceIndicator indiceIndicator) {
         return IndiceIndicatorResponse.builder()
-                .id(indiceIndicator.getIndiceId())
-                .name(indiceIndicator.getIndiceId().getValue())
+                .indicatorName(indiceIndicator.getIndicatorName())
+                .indiceId(indiceIndicator.getIndiceId())
+                .indiceName(indiceIndicator.getIndiceId().getValue())
                 .minuteOhlcvs(indiceIndicator.getMinuteOhlcvs())
                 .dailyOhlcvs(indiceIndicator.getDailyOhlcvs())
                 .build();

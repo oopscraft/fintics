@@ -12,6 +12,8 @@ import java.util.List;
 @Getter
 public abstract class IndicatorResponse {
 
+    public String indicatorName;
+
     @Builder.Default
     private List<Ohlcv> minuteOhlcvs = new ArrayList<>();
 

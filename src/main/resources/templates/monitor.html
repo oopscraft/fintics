@@ -60,7 +60,7 @@
                         let dailyOhlcvs = indiceIndicator['dailyOhlcvs'];
                         let dailyTimeSeries = createTimeSeries(dailyFrom, dailyTo, dailyOhlcvs, 60000*60*24);
                         let dailyDataset = {
-                            label: indiceIndicator.name,
+                            label: indiceIndicator.indicatorName,
                             data: dailyTimeSeries,
                             borderWidth: 1,
                             pointStyle: false
@@ -71,7 +71,7 @@
                         let minuteOhlcvs = indiceIndicator['minuteOhlcvs'];
                         let minuteTimeSeries = createTimeSeries(minuteFrom, minuteTo, minuteOhlcvs, 60000);
                         let minuteDataset = {
-                            label: indiceIndicator.name,
+                            label: indiceIndicator.indicatorName,
                             data: minuteTimeSeries,
                             borderWidth: 1,
                             pointStyle: false
@@ -131,7 +131,7 @@
                         let dailyOhlcvs = assetIndicator['dailyOhlcvs'];
                         let dailyTimeSeries = createTimeSeries(dailyFrom, dailyTo, dailyOhlcvs);
                         let dailyDataset = {
-                            label: assetIndicator.name,
+                            label: assetIndicator.indicatorName,
                             data: dailyTimeSeries,
                             borderWidth: 1,
                             pointStyle: false
@@ -142,7 +142,7 @@
                         let minuteOhlcvs = assetIndicator['minuteOhlcvs'];
                         let minuteTimeSeries = createTimeSeries(minuteFrom, minuteTo, minuteOhlcvs);
                         let minuteDataset = {
-                            label: assetIndicator.name,
+                            label: assetIndicator.indicatorName,
                             data: minuteTimeSeries,
                             borderWidth: 1,
                             pointStyle: false
