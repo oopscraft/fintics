@@ -8,17 +8,17 @@ import org.springframework.stereotype.Component;
 public class SimpleOrderOperatorDefinition implements OrderOperatorDefinition {
 
     @Override
-    public String getId() {
+    public String getOrderOperatorId() {
         return "SIMPLE";
     }
 
     @Override
-    public String getName() {
+    public String getOrderOperatorName() {
         return "Simple Order Operator";
     }
 
     @Override
-    public Class<? extends OrderOperator> getType() {
+    public Class<? extends OrderOperator> getClassType() {
         return SimpleOrderOperator.class;
     }
 

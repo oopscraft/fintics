@@ -55,13 +55,13 @@ public abstract class OrderOperator {
 
     protected void buyAsset(Asset asset, BigDecimal quantity, BigDecimal price) throws InterruptedException {
         Order order = Order.builder()
-                .id(IdGenerator.uuid())
+                .orderId(IdGenerator.uuid())
                 .orderAt(LocalDateTime.now())
                 .orderType(OrderType.BUY)
                 .orderKind(getTrade().getOrderKind())
-                .tradeId(trade.getId())
-                .assetId(asset.getId())
-                .assetName(asset.getName())
+                .tradeId(trade.getTradeId())
+                .assetId(asset.getAssetId())
+                .assetName(asset.getAssetName())
                 .quantity(quantity)
                 .price(price)
                 .build();
@@ -89,8 +89,8 @@ public abstract class OrderOperator {
             tradeClient.submitOrder(order);
             if (trade.isAlarmOnOrder()) {
                 if (trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
-                    String subject = String.format("[%s]", trade.getName());
-                    String content = String.format("[%s] Buy %s", asset.getName(), quantity);
+                    String subject = String.format("[%s]", trade.getTradeName());
+                    String content = String.format("[%s] Buy %s", asset.getAssetName(), quantity);
                     alarmService.sendAlarm(trade.getAlarmId(), subject, content);
                 }
             }
@@ -106,13 +106,13 @@ public abstract class OrderOperator {
 
     protected void sellAsset(Asset asset, BigDecimal quantity, BigDecimal price) throws InterruptedException {
         Order order = Order.builder()
-                .id(IdGenerator.uuid())
+                .orderId(IdGenerator.uuid())
                 .orderAt(LocalDateTime.now())
                 .orderType(OrderType.SELL)
                 .orderKind(getTrade().getOrderKind())
-                .tradeId(trade.getId())
-                .assetId(asset.getId())
-                .assetName(asset.getName())
+                .tradeId(trade.getTradeId())
+                .assetId(asset.getAssetId())
+                .assetName(asset.getAssetName())
                 .quantity(quantity)
                 .price(price)
                 .build();
@@ -140,8 +140,8 @@ public abstract class OrderOperator {
             tradeClient.submitOrder(order);
             if (trade.isAlarmOnOrder()) {
                 if (trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
-                    String subject = String.format("[%s]", trade.getName());
-                    String content = String.format("[%s] Sell %s", asset.getName(), quantity);
+                    String subject = String.format("[%s]", trade.getTradeName());
+                    String content = String.format("[%s] Sell %s", asset.getAssetName(), quantity);
                     alarmService.sendAlarm(trade.getAlarmId(), subject, content);
                 }
             }
@@ -160,7 +160,7 @@ public abstract class OrderOperator {
         TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager, transactionDefinition);
         transactionTemplate.executeWithoutResult(transactionStatus ->
                 orderRepository.saveAndFlush(OrderEntity.builder()
-                        .id(order.getId())
+                        .orderId(order.getOrderId())
                         .orderAt(order.getOrderAt())
                         .orderType(order.getOrderType())
                         .tradeId(order.getTradeId())

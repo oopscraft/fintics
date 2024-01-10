@@ -5,10 +5,10 @@
       layout:decorate="_web.html">
 <th:block layout:fragment="_content">
     <script th:inline="javascript">
-        const id = /*[[${id}]]*/'';
+        const tradeId = /*[[${tradeId}]]*/'';
         const trade = new duice.ObjectProxy({
-            id: null,
-            name: null,
+            tradeId: null,
+            tradeName: null,
             interval: null,
             threshold: null,
             clientType: null,
@@ -28,7 +28,7 @@
         duice.ObjectProxy.setReadonlyAll(balance, true);
 
         function getTrade() {
-            let url = new URL(`${_apiUrl}/v1/trade/${id}`, document.location.origin);
+            let url = new URL(`${_apiUrl}/v1/trade/${tradeId}`, document.location.origin);
             _fetch(url)
                 .then(response => response.json())
                 .then(data => {
@@ -39,8 +39,8 @@
         async function addTradeAsset() {
             let asset = await assetAdd.open();
             trade.tradeAssets.push({
-                symbol: asset.symbol,
-                name: asset.name,
+                assetId: asset.assetId,
+                assetName: asset.assetName,
                 enabled: false,
                 holdRatio: 0
             });
@@ -51,9 +51,9 @@
         }
 
         async function saveTrade() {
-            if(!trade.name) {
-                await _alert(/*[[#{web.global.itemEmpty(#{fintics.Trade.name})}]]*/'');
-                duice.ObjectProxy.focus(trade, 'name');
+            if(!trade.tradeName) {
+                await _alert(/*[[#{web.global.itemEmpty(#{fintics.Trade.tradeName})}]]*/'');
+                duice.ObjectProxy.focus(trade, 'tradeName');
                 return false;
             }
             if(!trade.interval) {
@@ -71,11 +71,11 @@
                 if (result) {
                     let url;
                     let method;
-                    if(!id) {
+                    if(!tradeId) {
                         url = `${_apiUrl}/v1/trade`;
                         method = 'POST';
                     }else{
-                        url = `${_apiUrl}/v1/trade/${trade.id}`;
+                        url = `${_apiUrl}/v1/trade/${trade.tradeId}`;
                         method = 'PUT';
                     }
                     _fetch(new URL(url, document.location.origin), {
@@ -91,7 +91,7 @@
                                     duice.ObjectProxy.clear(trade);
                                     duice.ObjectProxy.assign(trade, data);
                                 }else{
-                                    document.location.href = `${_rootUrl}/trade/trade-detail?id=${data.id}`;
+                                    document.location.href = `${_rootUrl}/trade/trade-detail?tradeId=${data.tradeId}`;
                                 }
                             });
                     });
@@ -102,7 +102,7 @@
         function deleteTrade() {
             _confirm(/*[[#{web.global.deleteItemConfirm(#{fintics.Trade})}]]*/'').then(result => {
                 if (result) {
-                    let url = new URL(`${_apiUrl}/v1/trade/${id}`, document.location.origin);
+                    let url = new URL(`${_apiUrl}/v1/trade/${tradeId}`, document.location.origin);
                     _fetch(url,{
                         method: 'DELETE'
                     }).then(response => {
@@ -117,7 +117,7 @@
         }
 
         function getTradeBalance() {
-            let url = new URL(`${_apiUrl}/v1/trade/${id}/balance`, document.location.origin);
+            let url = new URL(`${_apiUrl}/v1/trade/${tradeId}/balance`, document.location.origin);
             _fetch(url)
                 .then(response => response.json())
                 .then(data => {
@@ -139,7 +139,7 @@
                     })
             );
             tabFolder.setActive(0);
-            if(id) {
+            if(tradeId) {
                 getTrade();
             }
         });
@@ -188,8 +188,8 @@
             </h2>
             <form class="display--grid grid-template-columns--12 grid-gap--1em grid-column-gap--2em padding-y--1em s__padding-y--0">
                 <label class="grid-column--6">
-                    <span data-th-text="#{fintics.Trade.name}" class="font-weight--bold tag-required"></span>
-                    <input type="text" data-duice-bind="trade" data-duice-property="name"
+                    <span data-th-text="#{fintics.Trade.tradeName}" class="font-weight--bold tag-required"></span>
+                    <input type="text" data-duice-bind="trade" data-duice-property="tradeName"
                            class="width--100 font-weight--bold"/>
                 </label>
                 <label class="grid-column--6">
@@ -218,8 +218,8 @@
                     <select data-duice-bind="trade"
                             data-duice-property="alarmId"
                             data-duice-option="alarms"
-                            data-duice-option-value-property="id"
-                            data-duice-option-text-property="name"
+                            data-duice-option-value-property="alarmId"
+                            data-duice-option-text-property="alarmName"
                             class="width--100">
                         <option data-th-text="'- '+#{web.global.select}+' -'"></option>
                     </select>
@@ -240,11 +240,11 @@
                     <select data-duice-bind="trade"
                             data-duice-property="tradeClientId"
                             data-duice-option="tradeClientDefinitions"
-                            data-duice-option-value-property="id"
-                            data-duice-option-text-property="name"
+                            data-duice-option-value-property="tradeClientId"
+                            data-duice-option-text-property="tradeClientName"
                             data-duice-execute="
                             this.addEventListener('change',() => {
-                                trade.tradeClientConfig = clientDefinitions.find(item => item.id === this.value)?.configTemplate;
+                                trade.tradeClientConfig = clientDefinitions.find(item => item.tradeClientId === this.value)?.configTemplate;
                             });
                             "
                             class="width--100">
@@ -298,8 +298,8 @@
                                     </button>
                                 </th>
                                 <th data-th-text="#{web.global.no}" class="text-align--center"></th>
-                                <th data-th-text="#{fintics.Asset.symbol}"></th>
-                                <th data-th-text="#{fintics.Asset.name}"></th>
+                                <th data-th-text="#{fintics.Asset.assetId}"></th>
+                                <th data-th-text="#{fintics.Asset.assetName}"></th>
                                 <th data-th-text="#{fintics.TradeAsset.enabled}" class="text-align--center"></th>
                                 <th data-th-text="#{fintics.TradeAsset.holdRatio}" class="text-align--center"></th>
                             </tr>
@@ -319,10 +319,10 @@
                                       class="text-align--center"></span>
                                 </td>
                                 <td>
-                                    <span data-duice-bind="tradeAsset" data-duice-property="symbol"></span>
+                                    <span data-duice-bind="tradeAsset" data-duice-property="assetId"></span>
                                 </td>
                                 <td>
-                                    <span data-duice-bind="tradeAsset" data-duice-property="name"></span>
+                                    <span data-duice-bind="tradeAsset" data-duice-property="assetName"></span>
                                 </td>
                                 <td class="text-align--center">
                                     <label>
@@ -453,8 +453,8 @@
                             <thead>
                             <tr>
                                 <th data-th-text="#{web.global.no}" class="text-align--center"></th>
-                                <th data-th-text="#{fintics.BalanceAsset.symbol}"></th>
-                                <th data-th-text="#{fintics.BalanceAsset.name}"></th>
+                                <th data-th-text="#{fintics.BalanceAsset.assetId}"></th>
+                                <th data-th-text="#{fintics.BalanceAsset.assetName}"></th>
                                 <th data-th-text="#{fintics.BalanceAsset.quantity}"></th>
                                 <th data-th-text="#{fintics.BalanceAsset.purchaseAmount}"></th>
                                 <th data-th-text="#{fintics.BalanceAsset.valuationAmount}"></th>
@@ -532,8 +532,8 @@
             const assetAdd = {
                 dialog: new duice.dialog.Dialog(document.getElementById('assetAdd')),
                 asset: new duice.ObjectProxy({
-                    symbol: null,
-                    name: null
+                    assetId: null,
+                    assetName: null
                 }),
                 open: function() {
                     duice.ObjectProxy.clear(this.asset);
@@ -551,12 +551,12 @@
             </h2>
             <form onsubmit="return false;" class="display--grid grid-template-columns--12 grid-gap--1em">
                 <label class="grid-column--12">
-                    <span th:text="#{fintics.TradeAsset.symbol}" class="font-weight--bold tag-required"></span>
-                    <input class="width--100" type="text" data-duice-bind="assetAdd.asset" data-duice-property="symbol"/>
+                    <span th:text="#{fintics.TradeAsset.assetId}" class="font-weight--bold tag-required"></span>
+                    <input class="width--100" type="text" data-duice-bind="assetAdd.asset" data-duice-property="assetId"/>
                 </label>
                 <label class="grid-column--12">
-                    <span th:text="#{fintics.TradeAsset.name}" class="font-weight--bold tag-required"></span>
-                    <input class="width--100" type="text" data-duice-bind="assetAdd.asset" data-duice-property="name"/>
+                    <span th:text="#{fintics.TradeAsset.assetName}" class="font-weight--bold tag-required"></span>
+                    <input class="width--100" type="text" data-duice-bind="assetAdd.asset" data-duice-property="assetName"/>
                 </label>
             </form>
             <div class="display--flex justify-content--flex-end">

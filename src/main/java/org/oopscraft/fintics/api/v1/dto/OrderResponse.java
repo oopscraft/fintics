@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @Getter
 public class OrderResponse {
 
-    private String id;
+    private String orderId;
 
     private LocalDateTime orderAt;
 
@@ -42,7 +42,7 @@ public class OrderResponse {
 
     public static OrderResponse from(Order order) {
         return OrderResponse.builder()
-                .id(order.getId())
+                .orderId(order.getOrderId())
                 .orderAt(order.getOrderAt())
                 .orderType(order.getOrderType())
                 .tradeId(order.getTradeId())

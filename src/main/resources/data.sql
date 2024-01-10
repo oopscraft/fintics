@@ -37,12 +37,12 @@ insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
 
 -- core_alarm
 insert into `core_alarm`
-    (`id`,`name`,`alarm_client_id`,`alarm_client_config`) values
+    (`alarm_id`,`alarm_name`,`alarm_client_id`,`alarm_client_config`) values
     ('fintics','Slack-Fintics','SLACK','url=https://hooks.slack.com/services/___');
 
 -- fintics_trade: 한국투자증권 모의투자 - 지수ETF
 insert into `fintics_trade`
-    (`id`,`name`,`enabled`,`interval`,`threshold`,`start_at`,`end_at`,`trade_client_id`,`trade_client_config`,`alarm_id`,`hold_condition`, `order_operator_id`, `order_kind`) values
+    (`trade_id`,`trade_name`,`enabled`,`interval`,`threshold`,`start_at`,`end_at`,`trade_client_id`,`trade_client_config`,`alarm_id`,`hold_condition`, `order_operator_id`, `order_kind`) values
     ('06c228451ce0400fa57bb36f0568d7cb','한국투자증권 모의투자 - 지수ETF','N','60','3','09:00','15:30',
      'KIS','production=false
 apiUrl=https://openapivts.koreainvestment.com:29443
@@ -52,15 +52,15 @@ accountNo=[Account Number]
 ',null,'
 ','SIMPLE','LIMIT');
 insert into `fintics_trade_asset`
-(`trade_id`,`id`,`name`, `enabled`, `hold_ratio`) values
+(`trade_id`,`asset_id`,`asset_name`, `enabled`, `hold_ratio`) values
     ('06c228451ce0400fa57bb36f0568d7cb','122630','KODEX 레버리지','N','50');
 insert into `fintics_trade_asset`
-(`trade_id`,`id`,`name`, `enabled`, `hold_ratio`) values
+(`trade_id`,`asset_id`,`asset_name`, `enabled`, `hold_ratio`) values
     ('06c228451ce0400fa57bb36f0568d7cb','229200','KODEX 코스닥150','Y','50');
 
 -- fintics_trade: 한국투자증권 모의투자 - 지수ETF(인버스)
 insert into `fintics_trade`
-(`id`,`name`,`enabled`,`interval`,`threshold`,`start_at`,`end_at`,`trade_client_id`,`trade_client_config`,`alarm_id`,`hold_condition`,`order_operator_id`,`order_kind`) values
+(`trade_id`,`trade_name`,`enabled`,`interval`,`threshold`,`start_at`,`end_at`,`trade_client_id`,`trade_client_config`,`alarm_id`,`hold_condition`,`order_operator_id`,`order_kind`) values
     ('7af6bc641eef4254b12dd9fa1d43384d','한국투자증권 모의투자 - 지수ETF(인버스)','N','60','3','09:00','15:30',
      'KIS','production=false
 apiUrl=https://openapivts.koreainvestment.com:29443
@@ -70,36 +70,36 @@ accountNo=[Account Number]
 ',null,'
 ','SIMPLE','LIMIT');
 insert into `fintics_trade_asset`
-(`trade_id`,`id`,`name`, `enabled`, `hold_ratio`) values
+(`trade_id`,`asset_id`,`asset_name`, `enabled`, `hold_ratio`) values
     ('7af6bc641eef4254b12dd9fa1d43384d','252670','KODEX 200선물인버스2X','N','40');
 insert into `fintics_trade_asset`
-(`trade_id`,`id`,`name`, `enabled`, `hold_ratio`) values
+(`trade_id`,`asset_id`,`asset_name`, `enabled`, `hold_ratio`) values
     ('7af6bc641eef4254b12dd9fa1d43384d','251340','KODEX 코스닥150선물인버스','Y','40');
 
 -- fintics_trade: 업비트 API(장시간 외 트레이드 테스트용)
 insert into `fintics_trade`
-(`id`,`name`,`enabled`,`interval`,`threshold`,`start_at`,`end_at`,`trade_client_id`,`trade_client_config`,`alarm_id`,`hold_condition`,`order_operator_id`,`order_kind`) values
+(`trade_id`,`trade_name`,`enabled`,`interval`,`threshold`,`start_at`,`end_at`,`trade_client_id`,`trade_client_config`,`alarm_id`,`hold_condition`,`order_operator_id`,`order_kind`) values
     ('81c6a451d6da49449faa2b5b7e66041b','코인놀이방(24시간 테스트용)','N','30','3','00:00','23:59',
      'UPBIT','accessKey=[Access Key]
 secretKey=[Secret Key]',null,'
 
 ','SIMPLE','LIMIT');
 insert into `fintics_trade_asset`
-(`trade_id`,`id`,`name`,`enabled`, `hold_ratio`) values
+(`trade_id`,`asset_id`,`asset_name`,`enabled`, `hold_ratio`) values
     ('81c6a451d6da49449faa2b5b7e66041b','KRW-BTC','Bitcoin','N','20');
 insert into `fintics_trade_asset`
-(`trade_id`,`id`,`name`,`enabled`, `hold_ratio`) values
+(`trade_id`,`asset_id`,`asset_name`,`enabled`, `hold_ratio`) values
     ('81c6a451d6da49449faa2b5b7e66041b','KRW-ETH','Ethereum','N','20');
 
 -- fintics_order
 INSERT INTO fintics_order
-(`id`, order_at, order_type, trade_id, asset_id, asset_name, quantity, order_result, error_message)
+(`order_id`, order_at, order_type, trade_id, asset_id, asset_name, quantity, order_result, error_message)
 VALUES('36ac47501be24bd5b7cdb0255912e757', '2023-11-10 02:23:50.000', 'BUY', '06c228451ce0400fa57bb36f0568d7cb', '122630', 'KODEX 레버리지(테스트)', 262, 'FAILED', '모의투자 장시작전 입니다.');
 INSERT INTO fintics_order
-(`id`, order_at, order_type, trade_id, asset_id, asset_name, quantity, order_result, error_message)
+(`order_id`, order_at, order_type, trade_id, asset_id, asset_name, quantity, order_result, error_message)
 VALUES('a44181a8d6424dc78682b4fa8e4b0729', '2023-11-10 09:01:12.000', 'BUY', '06c228451ce0400fa57bb36f0568d7cb', '122630', 'KODEX 레버리지(테스트)', 264, 'COMPLETED', NULL);
 INSERT INTO fintics_order
-(`id`, order_at, order_type, trade_id, asset_id, asset_name, quantity, order_result, error_message)
+(`order_id`, order_at, order_type, trade_id, asset_id, asset_name, quantity, order_result, error_message)
 VALUES('62b521b88ee742239753c5b1157d7407', '2023-11-10 14:47:14.000', 'SELL', '06c228451ce0400fa57bb36f0568d7cb', '122630', 'KODEX 레버리지(테스트)', 264, 'COMPLETED', NULL);
 
 

@@ -39,13 +39,13 @@ public class Balance {
 
     public boolean hasBalanceAsset(String symbol) {
         return balanceAssets.stream()
-                .anyMatch(e -> Objects.equals(e.getId(), symbol));
+                .anyMatch(e -> Objects.equals(e.getAssetId(), symbol));
     }
 
     public Optional<BalanceAsset> getBalanceAsset(String symbol) {
         return balanceAssets.stream()
                 .filter(balanceAsset ->
-                    Objects.equals(balanceAsset.getId(), symbol))
+                    Objects.equals(balanceAsset.getAssetId(), symbol))
                 .findFirst();
     }
 

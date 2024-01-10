@@ -148,7 +148,7 @@ public class KisTradeClient extends TradeClient {
                 .build();
         String fidEtcClsCode = "";
         String fidCondMrktDivCode = "J";
-        String fidInputIscd = asset.getId();
+        String fidInputIscd = asset.getAssetId();
         LocalTime time = dateTime.toLocalTime();
         LocalTime closeTime = LocalTime.of(15,30);
         LocalTime fidInputHour1Time = (time.isAfter(closeTime) ? closeTime : time);
@@ -234,7 +234,7 @@ public class KisTradeClient extends TradeClient {
                 .insecure(true)
                 .build();
         String fidCondMrktDivCode = "J";
-        String fidInputIscd = asset.getId();
+        String fidInputIscd = asset.getAssetId();
 
         String url = apiUrl + "/uapi/domestic-stock/v1/quotations/inquire-daily-price";
         HttpHeaders headers = createHeaders();
@@ -297,7 +297,7 @@ public class KisTradeClient extends TradeClient {
         HttpHeaders headers = createHeaders();
         headers.add("tr_id", "FHKST01010200");
         String fidCondMrktDivCode = "J";
-        String fidInputIscd = asset.getId();
+        String fidInputIscd = asset.getAssetId();
         url = UriComponentsBuilder.fromUriString(url)
                 .queryParam("FID_COND_MRKT_DIV_CODE", fidCondMrktDivCode)
                 .queryParam("FID_INPUT_ISCD", fidInputIscd)
@@ -395,8 +395,8 @@ public class KisTradeClient extends TradeClient {
         List<BalanceAsset> balanceAssets = output1.stream()
                 .map(row -> BalanceAsset.builder()
                         .accountNo(accountNo)
-                        .id(row.getString("pdno"))
-                        .name(row.getString("prdt_name"))
+                        .assetId(row.getString("pdno"))
+                        .assetName(row.getString("prdt_name"))
                         .quantity(row.getNumber("hldg_qty"))
                         .orderableQuantity(row.getNumber("ord_psbl_qty"))
                         .purchaseAmount(row.getNumber("pchs_amt"))

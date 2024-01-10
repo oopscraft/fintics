@@ -7,10 +7,15 @@ import lombok.experimental.SuperBuilder;
 @Getter
 public class IndiceIndicator extends Indicator {
 
-    private final IndiceId id;
+    private final IndiceId indiceId;
 
-    String getName() {
-        return id.getValue();
+    String getIndiceName() {
+        return indiceId.getValue();
+    }
+
+    @Override
+    public String getIndicatorName() {
+        return getIndiceName();
     }
 
 }

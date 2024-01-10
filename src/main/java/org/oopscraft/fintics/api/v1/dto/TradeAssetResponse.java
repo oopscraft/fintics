@@ -13,9 +13,9 @@ public class TradeAssetResponse {
 
     private String tradeId;
 
-    private String id;
+    private String assetId;
 
-    private String name;
+    private String assetName;
 
     private boolean enabled;
 
@@ -24,8 +24,8 @@ public class TradeAssetResponse {
     public static TradeAssetResponse from(TradeAsset tradeAsset) {
         return TradeAssetResponse.builder()
                 .tradeId(tradeAsset.getTradeId())
-                .id(tradeAsset.getId())
-                .name(tradeAsset.getName())
+                .assetId(tradeAsset.getAssetId())
+                .assetName(tradeAsset.getAssetName())
                 .enabled(tradeAsset.isEnabled())
                 .holdRatio(tradeAsset.getHoldRatio())
                 .build();

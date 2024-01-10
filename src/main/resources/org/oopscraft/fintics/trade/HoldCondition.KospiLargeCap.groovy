@@ -5,7 +5,7 @@ import org.oopscraft.fintics.model.*
 
 def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     // info
-    def name = indicator.getName() + ':' + ohlcvType + ':' + period
+    def name = indicator.getIndicatorName() + ':' + ohlcvType + ':' + period
 
     // shortMa
     def shortMas = indicator.calculate(ohlcvType, period, EmaContext.of(10))
@@ -104,7 +104,7 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
 }
 
 // defines
-def assetName = assetIndicator.getName()
+def assetName = assetIndicator.getAssetName()
 def holdVotes = []
 
 // minute

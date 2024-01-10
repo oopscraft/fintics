@@ -4,7 +4,7 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.core.Context;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.oopscraft.fintics.dao.TradeEntity;
+import org.jetbrains.annotations.NotNull;
 import org.oopscraft.fintics.model.Trade;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
@@ -30,11 +30,11 @@ public class TradeThreadManager implements ApplicationListener<ContextClosedEven
 
     public synchronized void startTradeThread(Trade trade) {
         synchronized (this) {
-            log.info("Start TradeThread - {}", trade.getId());
+            log.info("Start TradeThread - {}", trade.getTradeId());
 
             // check already running
-            if(isTradeThreadRunning(trade.getId())) {
-                throw new RuntimeException(String.format("Thread Thread[%s] is already running.", trade.getId()));
+            if(isTradeThreadRunning(trade.getTradeId())) {
+                throw new RuntimeException(String.format("Thread Thread[%s] is already running.", trade.getTradeId()));
             }
 
             // add log appender
@@ -43,15 +43,15 @@ public class TradeThreadManager implements ApplicationListener<ContextClosedEven
 
             // start thread
             TradeRunnable tradeRunnable = TradeRunnable.builder()
-                    .id(trade.getId())
+                    .tradeId(trade.getTradeId())
                     .interval(trade.getInterval())
                     .applicationContext(applicationContext)
                     .tradeLogAppender(tradeLogAppender)
                     .build();
-            TradeThread tradeThread = new TradeThread(tradeThreadGroup, tradeRunnable, trade.getId());
+            TradeThread tradeThread = new TradeThread(tradeThreadGroup, tradeRunnable, trade.getTradeId());
             tradeThread.setDaemon(true);
             tradeThread.start();
-            tradeThreadMap.put(trade.getId(), tradeThread);
+            tradeThreadMap.put(trade.getTradeId(), tradeThread);
         }
     }
 
@@ -79,8 +79,8 @@ public class TradeThreadManager implements ApplicationListener<ContextClosedEven
     }
 
     public synchronized void restartTradeThread(Trade trade) {
-        if(isTradeThreadRunning(trade.getId())) {
-            stopTradeThread(trade.getId());
+        if(isTradeThreadRunning(trade.getTradeId())) {
+            stopTradeThread(trade.getTradeId());
         }
         startTradeThread(trade);
     }
@@ -102,7 +102,7 @@ public class TradeThreadManager implements ApplicationListener<ContextClosedEven
     }
 
     @Override
-    public void onApplicationEvent(ContextClosedEvent event) {
+    public void onApplicationEvent(@NotNull ContextClosedEvent event) {
         log.info("Shutdown all trade trade.[{}]", event);
         tradeThreadGroup.interrupt();
     }

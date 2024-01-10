@@ -38,22 +38,22 @@ public class IndiceService {
 
     public Optional<IndiceIndicator> getIndiceIndicator(IndiceId symbol) {
         // minute ohlcv
-        LocalDateTime minuteMaxDateTime = indiceOhlcvRepository.findMaxDateTimeBySymbolAndOhlcvType(symbol, OhlcvType.MINUTE)
+        LocalDateTime minuteMaxDateTime = indiceOhlcvRepository.findMaxDateTimeByIndiceIdAndOhlcvType(symbol, OhlcvType.MINUTE)
                 .orElse(LocalDateTime.now());
-        List<Ohlcv> minuteOhlcvs = indiceOhlcvRepository.findAllBySymbolAndOhlcvType(symbol, OhlcvType.MINUTE, minuteMaxDateTime.minusDays(1), minuteMaxDateTime, Pageable.unpaged()).stream()
+        List<Ohlcv> minuteOhlcvs = indiceOhlcvRepository.findAllByIndiceIdAndOhlcvType(symbol, OhlcvType.MINUTE, minuteMaxDateTime.minusDays(1), minuteMaxDateTime, Pageable.unpaged()).stream()
                 .map(Ohlcv::from)
                 .collect(Collectors.toList());
 
         // daily ohlcv
-        LocalDateTime dailyMaxDateTime = indiceOhlcvRepository.findMaxDateTimeBySymbolAndOhlcvType(symbol, OhlcvType.DAILY)
+        LocalDateTime dailyMaxDateTime = indiceOhlcvRepository.findMaxDateTimeByIndiceIdAndOhlcvType(symbol, OhlcvType.DAILY)
                 .orElse(LocalDateTime.now());
-        List<Ohlcv> dailyOhlcvs = indiceOhlcvRepository.findAllBySymbolAndOhlcvType(symbol, OhlcvType.DAILY, dailyMaxDateTime.minusMonths(3), dailyMaxDateTime, Pageable.unpaged()).stream()
+        List<Ohlcv> dailyOhlcvs = indiceOhlcvRepository.findAllByIndiceIdAndOhlcvType(symbol, OhlcvType.DAILY, dailyMaxDateTime.minusMonths(3), dailyMaxDateTime, Pageable.unpaged()).stream()
                 .map(Ohlcv::from)
                 .collect(Collectors.toList());
 
         // return indicator
         return Optional.of(IndiceIndicator.builder()
-                .id(symbol)
+                .indiceId(symbol)
                 .minuteOhlcvs(minuteOhlcvs)
                 .dailyOhlcvs(dailyOhlcvs)
                 .build());

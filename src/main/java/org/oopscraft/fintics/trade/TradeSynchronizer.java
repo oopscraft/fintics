@@ -28,12 +28,12 @@ public class TradeSynchronizer {
 
         // deleted trade thread
         for(Thread tradeThread : tradeThreadManager.getTradeThreads()) {
-            String id = tradeThread.getName();
+            String tradeId = tradeThread.getName();
             boolean notExists = tradeEntities.stream()
                     .noneMatch(tradeEntity ->
-                            tradeEntity.getId().equals(id));
+                            tradeEntity.getTradeId().equals(tradeId));
             if(notExists) {
-                tradeThreadManager.stopTradeThread(id);
+                tradeThreadManager.stopTradeThread(tradeId);
                 sleep();
             }
         }
@@ -42,7 +42,7 @@ public class TradeSynchronizer {
         for(TradeEntity tradeEntity : tradeEntities) {
             Trade trade = Trade.from(tradeEntity);
             if(trade.isEnabled()) {
-                TradeThread tradeThread = tradeThreadManager.getTradeThread(trade.getId()).orElse(null);
+                TradeThread tradeThread = tradeThreadManager.getTradeThread(trade.getTradeId()).orElse(null);
                 if(tradeThread == null) {
                     tradeThreadManager.startTradeThread(trade);
                     sleep();
@@ -53,8 +53,8 @@ public class TradeSynchronizer {
                     sleep();
                 }
             }else{
-                if(tradeThreadManager.isTradeThreadRunning(trade.getId())) {
-                    tradeThreadManager.stopTradeThread(trade.getId());
+                if(tradeThreadManager.isTradeThreadRunning(trade.getTradeId())) {
+                    tradeThreadManager.stopTradeThread(trade.getTradeId());
                     sleep();
                 }
             }

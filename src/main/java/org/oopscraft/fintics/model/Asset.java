@@ -9,8 +9,8 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 public class Asset {
 
-    private String id;
+    private String assetId;
 
-    private String name;
+    private String assetName;
 
 }

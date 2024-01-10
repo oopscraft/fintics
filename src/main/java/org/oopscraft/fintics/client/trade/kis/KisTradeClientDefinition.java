@@ -10,22 +10,22 @@ import java.util.StringJoiner;
 public class KisTradeClientDefinition implements TradeClientDefinition {
 
     @Override
-    public String getId() {
+    public String getTradeClientId() {
         return "KIS";
     }
 
     @Override
-    public String getName() {
+    public String getTradeClientName() {
         return "한국투자증권 Kis API";
     }
 
     @Override
-    public Class<? extends TradeClient> getType() {
+    public Class<? extends TradeClient> getClassType() {
         return KisTradeClient.class;
     }
 
     @Override
-    public String getPropertiesTemplate() {
+    public String getConfigTemplate() {
         StringJoiner template = new StringJoiner("\n");
         template.add("production=false");
         template.add("apiUrl=https://openapivts.koreainvestment.com:29443");

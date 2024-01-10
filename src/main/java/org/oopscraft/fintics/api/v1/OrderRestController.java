@@ -47,7 +47,7 @@ public class OrderRestController {
         // set trade name
         orderResponses.forEach(orderResponse ->
                 orderResponse.setTradeName(tradeService.getTrade(orderResponse.getTradeId())
-                        .map(Trade::getName)
+                        .map(Trade::getTradeName)
                         .orElse("")));
 
         // response

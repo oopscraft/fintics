@@ -15,8 +15,8 @@ public class IndiceIndicatorResponse extends IndicatorResponse {
 
     public static IndiceIndicatorResponse from(IndiceIndicator indiceIndicator) {
         return IndiceIndicatorResponse.builder()
-                .id(indiceIndicator.getId())
-                .name(indiceIndicator.getId().getValue())
+                .id(indiceIndicator.getIndiceId())
+                .name(indiceIndicator.getIndiceId().getValue())
                 .minuteOhlcvs(indiceIndicator.getMinuteOhlcvs())
                 .dailyOhlcvs(indiceIndicator.getDailyOhlcvs())
                 .build();

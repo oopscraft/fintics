@@ -4,10 +4,10 @@ import org.springframework.beans.factory.Aware;
 
 public interface OrderOperatorDefinition extends Aware {
 
-    String getId();
+    String getOrderOperatorId();
 
-    String getName();
+    String getOrderOperatorName();
 
-    Class<? extends OrderOperator> getType();
+    Class<? extends OrderOperator> getClassType();
 
 }

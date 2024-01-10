@@ -7,8 +7,8 @@ public class TradeThread extends Thread {
     @Getter
     private final TradeRunnable tradeRunnable;
 
-    public TradeThread(ThreadGroup threadGroup, TradeRunnable tradeRunnable, String name) {
-        super(threadGroup, tradeRunnable, name);
+    public TradeThread(ThreadGroup threadGroup, TradeRunnable tradeRunnable, String tradeId) {
+        super(threadGroup, tradeRunnable, tradeId);
         this.tradeRunnable = tradeRunnable;
     }
 

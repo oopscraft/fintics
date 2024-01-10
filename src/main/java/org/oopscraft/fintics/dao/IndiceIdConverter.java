@@ -6,6 +6,6 @@ import org.oopscraft.fintics.model.IndiceId;
 import javax.persistence.Converter;
 
 @Converter(autoApply = true)
-public class IndiceSymbolConverter extends AbstractEnumConverter<IndiceId> {
+public class IndiceIdConverter extends AbstractEnumConverter<IndiceId> {
 
 }

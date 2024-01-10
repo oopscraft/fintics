@@ -16,20 +16,20 @@ import java.util.Optional;
 public interface IndiceOhlcvRepository extends JpaRepository<IndiceOhlcvEntity, IndiceOhlcvEntity.Pk> {
 
     @Query("select max(a.dateTime) from IndiceOhlcvEntity a" +
-            " where a.symbol = :symbol" +
+            " where a.indiceId = :indiceId" +
             " and a.ohlcvType = :ohlcvType")
-    Optional<LocalDateTime> findMaxDateTimeBySymbolAndOhlcvType(
-            @Param("symbol") IndiceId symbol,
+    Optional<LocalDateTime> findMaxDateTimeByIndiceIdAndOhlcvType(
+            @Param("indiceId") IndiceId indiceId,
             @Param("ohlcvType")OhlcvType ohlcvType
     );
 
     @Query("select a from IndiceOhlcvEntity a" +
-            " where a.symbol = :symbol" +
+            " where a.indiceId = :indiceId" +
             " and a.ohlcvType = :ohlcvType" +
             " and a.dateTime between :dateTimeFrom and :dateTimeTo" +
             " order by a.dateTime desc")
-    List<IndiceOhlcvEntity> findAllBySymbolAndOhlcvType(
-            @Param("symbol") IndiceId symbol,
+    List<IndiceOhlcvEntity> findAllByIndiceIdAndOhlcvType(
+            @Param("indiceId") IndiceId indiceId,
             @Param("ohlcvType")OhlcvType ohlcvType,
             @Param("dateTimeFrom")LocalDateTime dateTimeFrom,
             @Param("dateTimeTo")LocalDateTime dateTimeTo,

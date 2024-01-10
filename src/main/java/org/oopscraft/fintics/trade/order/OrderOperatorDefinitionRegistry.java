@@ -30,7 +30,7 @@ public class OrderOperatorDefinitionRegistry implements BeanPostProcessor {
 
     public static Optional<OrderOperatorDefinition> getOrderOperatorDefinition(String id) {
         return orderOperatorDefinitions.stream()
-                .filter(clientDefinition -> Objects.equals(clientDefinition.getId(), id))
+                .filter(clientDefinition -> Objects.equals(clientDefinition.getOrderOperatorId(), id))
                 .findFirst();
     }
 

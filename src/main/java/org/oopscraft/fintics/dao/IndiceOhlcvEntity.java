@@ -20,14 +20,14 @@ import java.time.LocalDateTime;
 public class IndiceOhlcvEntity extends OhlcvEntity {
 
     public static class Pk implements Serializable {
-        private IndiceId symbol;
+        private IndiceId indiceId;
         private OhlcvType ohlcvType;
         private LocalDateTime dateTime;
     }
 
     @Id
-    @Column(name = "symbol", length = 32)
+    @Column(name = "indice_id", length = 32)
     @Enumerated(EnumType.STRING)    // @Id is converter not work
-    private IndiceId symbol;
+    private IndiceId indiceId;
 
 }

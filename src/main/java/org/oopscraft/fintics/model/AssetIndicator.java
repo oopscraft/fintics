@@ -7,8 +7,13 @@ import lombok.experimental.SuperBuilder;
 @Getter
 public class AssetIndicator extends Indicator {
 
-    private final String id;
+    private final String assetId;
 
-    private final String name;
+    private final String assetName;
+
+    @Override
+    public String getIndicatorName() {
+        return getAssetName();
+    }
 
 }

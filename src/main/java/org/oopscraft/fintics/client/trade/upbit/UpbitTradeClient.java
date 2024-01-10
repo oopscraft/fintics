@@ -94,7 +94,7 @@ public class UpbitTradeClient extends TradeClient {
                 .insecure(true)
                 .build();
         String url = API_URL + "/v1/orderbook";
-        String queryString = "markets=" + asset.getId();
+        String queryString = "markets=" + asset.getAssetId();
         RequestEntity<Void> requestEntity = RequestEntity
                 .get(url + "?" + queryString)
                 .headers(createHeaders(queryString))
@@ -136,7 +136,7 @@ public class UpbitTradeClient extends TradeClient {
             case DAILY -> url += "days";
             default -> throw new RuntimeException("invalid OhlcvType");
         }
-        String queryString = "market=" + asset.getId() + "&count=200";
+        String queryString = "market=" + asset.getAssetId() + "&count=200";
         RequestEntity<Void> requestEntity = RequestEntity
                 .get(url + "?" + queryString)
                 .headers(createHeaders(queryString))
@@ -211,8 +211,8 @@ public class UpbitTradeClient extends TradeClient {
                         .setScale(0, RoundingMode.HALF_UP);
                 purchaseAmount = purchaseAmount.add(assetPurchaseAmount);
                 balanceAssets.add(BalanceAsset.builder()
-                        .id(symbol)
-                        .name(symbol)
+                        .assetId(symbol)
+                        .assetName(symbol)
                         .quantity(balance)
                         .orderableQuantity(balance)
                         .purchaseAmount(purchaseAmount)

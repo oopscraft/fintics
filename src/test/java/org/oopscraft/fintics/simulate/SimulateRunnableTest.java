@@ -32,8 +32,8 @@ class SimulateRunnableTest extends CoreTestSupport {
     void run() {
         // given
         Trade trade = Trade.builder()
-                .id("test")
-                .name("Test Trade")
+                .tradeId("test")
+                .tradeName("Test Trade")
                 .interval(60)
                 .threshold(3)
                 .startAt(LocalTime.of(9,30,0))
@@ -43,9 +43,9 @@ class SimulateRunnableTest extends CoreTestSupport {
                 .build();
         List<TradeAsset> tradeAssets = new ArrayList<>();
         tradeAssets.add(TradeAsset.builder()
-                .tradeId(trade.getId())
-                .id("122630")
-                .name("KODEX 레버리지")
+                .tradeId(trade.getTradeId())
+                .assetId("122630")
+                .assetName("KODEX 레버리지")
                 .enabled(true)
                 .holdRatio(BigDecimal.valueOf(30))
                 .build());

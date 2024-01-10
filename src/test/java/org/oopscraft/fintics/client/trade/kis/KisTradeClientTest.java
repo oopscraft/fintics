@@ -80,7 +80,7 @@ class KisTradeClientTest extends CoreTestSupport {
     void getOrderBook() throws InterruptedException {
         // given
         TradeAsset tradeAsset = TradeAsset.builder()
-                .id("005930")
+                .assetId("005930")
                 .build();
 
         // when
@@ -97,7 +97,7 @@ class KisTradeClientTest extends CoreTestSupport {
     void getMinuteOhlcvs() throws InterruptedException {
         // given
         TradeAsset tradeAsset = TradeAsset.builder()
-                .id("005930")
+                .assetId("005930")
                 .build();
 
         // when
@@ -112,7 +112,7 @@ class KisTradeClientTest extends CoreTestSupport {
     void getDailyOhlcvs() throws InterruptedException {
         // given
         TradeAsset tradeAsset = TradeAsset.builder()
-                .id("005930")
+                .assetId("005930")
                 .build();
 
         // when

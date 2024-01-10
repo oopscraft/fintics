@@ -55,7 +55,7 @@ public class IndiceOhlcvCollector {
         // minute
         List<Ohlcv> minuteOhlcvs = indiceClient.getMinuteOhlcvs(symbol, dateTime);
         Collections.reverse(minuteOhlcvs);
-        LocalDateTime minuteLastDateTime = indiceOhlcvRepository.findMaxDateTimeBySymbolAndOhlcvType(symbol, OhlcvType.MINUTE)
+        LocalDateTime minuteLastDateTime = indiceOhlcvRepository.findMaxDateTimeByIndiceIdAndOhlcvType(symbol, OhlcvType.MINUTE)
                 .orElse(LocalDateTime.of(1,1,1,0,0,0))
                 .minusMinutes(2);
         List<IndiceOhlcvEntity> minuteOhlcvEntities = minuteOhlcvs.stream()
@@ -68,7 +68,7 @@ public class IndiceOhlcvCollector {
         // daily
         List<Ohlcv> dailyOhlcvs = indiceClient.getDailyOhlcvs(symbol, dateTime);
         Collections.reverse(dailyOhlcvs);
-        LocalDateTime dailyLastDateTime = indiceOhlcvRepository.findMaxDateTimeBySymbolAndOhlcvType(symbol, OhlcvType.DAILY)
+        LocalDateTime dailyLastDateTime = indiceOhlcvRepository.findMaxDateTimeByIndiceIdAndOhlcvType(symbol, OhlcvType.DAILY)
                 .orElse(LocalDateTime.of(1,1,1,0,0,0))
                 .minusDays(2);
         List<IndiceOhlcvEntity> dailyOhlcvEntities = dailyOhlcvs.stream()
@@ -79,9 +79,9 @@ public class IndiceOhlcvCollector {
         indiceOhlcvRepository.saveAllAndFlush(dailyOhlcvEntities);
     }
 
-    private IndiceOhlcvEntity toIndiceOhlcvEntity(IndiceId symbol, Ohlcv ohlcv) {
+    private IndiceOhlcvEntity toIndiceOhlcvEntity(IndiceId indiceId, Ohlcv ohlcv) {
         return IndiceOhlcvEntity.builder()
-                .symbol(symbol)
+                .indiceId(indiceId)
                 .dateTime(ohlcv.getDateTime())
                 .ohlcvType(ohlcv.getOhlcvType())
                 .openPrice(ohlcv.getOpenPrice())
@@ -96,7 +96,7 @@ public class IndiceOhlcvCollector {
         entityManager.createQuery(
                         "delete" +
                                 " from IndiceOhlcvEntity" +
-                                " where symbol = :symbol " +
+                                " where indiceId = :symbol " +
                                 " and dateTime < :expiredDateTime")
                 .setParameter("symbol", symbol)
                 .setParameter("expiredDateTime", LocalDateTime.now().minusMonths(finticsProperties.getOhlcvRetentionMonths()))

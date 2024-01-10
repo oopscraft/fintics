@@ -37,8 +37,6 @@ public class TradeRestController {
 
     private final TradeService tradeService;
 
-    private final TradeThreadManager tradeThreadManager;
-
     @GetMapping
     public ResponseEntity<List<TradeResponse>> getTrades() {
         List<TradeResponse> tradeResponses = tradeService.getTrades().stream()
@@ -47,9 +45,9 @@ public class TradeRestController {
         return ResponseEntity.ok(tradeResponses);
     }
 
-    @GetMapping("{id}")
-    public ResponseEntity<TradeResponse> getTrade(@PathVariable("id")String id) {
-        TradeResponse tradeResponse = tradeService.getTrade(id)
+    @GetMapping("{tradeId}")
+    public ResponseEntity<TradeResponse> getTrade(@PathVariable("tradeId")String tradeId) {
+        TradeResponse tradeResponse = tradeService.getTrade(tradeId)
                 .map(TradeResponse::from)
                 .orElseThrow();
         return ResponseEntity.ok(tradeResponse);
@@ -60,8 +58,8 @@ public class TradeRestController {
     @PreAuthorize("hasAuthority('TRADE_EDIT')")
     public ResponseEntity<TradeResponse> createTrade(@RequestBody TradeRequest tradeRequest) {
         Trade trade = Trade.builder()
-                .id(tradeRequest.getId())
-                .name(tradeRequest.getName())
+                .tradeId(tradeRequest.getTradeId())
+                .tradeName(tradeRequest.getTradeName())
                 .enabled(tradeRequest.isEnabled())
                 .interval(tradeRequest.getInterval())
                 .threshold(tradeRequest.getThreshold())
@@ -81,8 +79,8 @@ public class TradeRestController {
                 .map(tradeAssetRequest ->
                         TradeAsset.builder()
                                 .tradeId(tradeAssetRequest.getTradeId())
-                                .id(tradeAssetRequest.getId())
-                                .name(tradeAssetRequest.getName())
+                                .assetId(tradeAssetRequest.getAssetId())
+                                .assetName(tradeAssetRequest.getAssetName())
                                 .enabled(tradeAssetRequest.isEnabled())
                                 .holdRatio(tradeAssetRequest.getHoldRatio())
                                 .build())
@@ -94,15 +92,15 @@ public class TradeRestController {
         return ResponseEntity.status(HttpStatus.CREATED).body(savedTradeResponse);
     }
 
-    @PutMapping("{id}")
+    @PutMapping("{tradeId}")
     @Transactional
     @PreAuthorize("hasAuthority('TRADE_EDIT')")
     public ResponseEntity<TradeResponse> modifyTrade(
-            @PathVariable("id")String id,
+            @PathVariable("tradeId")String tradeId,
             @RequestBody TradeRequest tradeRequest
     ) {
-        Trade trade = tradeService.getTrade(id).orElseThrow();
-        trade.setName(tradeRequest.getName());
+        Trade trade = tradeService.getTrade(tradeId).orElseThrow();
+        trade.setTradeName(tradeRequest.getTradeName());
         trade.setEnabled(tradeRequest.isEnabled());
         trade.setInterval(tradeRequest.getInterval());
         trade.setThreshold(tradeRequest.getThreshold());
@@ -121,8 +119,8 @@ public class TradeRestController {
                 .map(tradeAssetRequest ->
                         TradeAsset.builder()
                                 .tradeId(tradeAssetRequest.getTradeId())
-                                .id(tradeAssetRequest.getId())
-                                .name(tradeAssetRequest.getName())
+                                .assetId(tradeAssetRequest.getAssetId())
+                                .assetName(tradeAssetRequest.getAssetName())
                                 .enabled(tradeAssetRequest.isEnabled())
                                 .holdRatio(tradeAssetRequest.getHoldRatio())
                                 .build())
@@ -135,29 +133,29 @@ public class TradeRestController {
         return ResponseEntity.ok(savedTradeResponse);
     }
 
-    @DeleteMapping("{id}")
+    @DeleteMapping("{tradeId}")
     @Transactional
     @PreAuthorize("hasAuthority('TRADE_EDIT')")
-    public ResponseEntity<Void> deleteTrade(@PathVariable("id")String id) {
-        tradeService.deleteTrade(id);
+    public ResponseEntity<Void> deleteTrade(@PathVariable("tradeId")String tradeId) {
+        tradeService.deleteTrade(tradeId);
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("{id}/balance")
-    public ResponseEntity<BalanceResponse> getTradeBalance(@PathVariable("id") String id) throws InterruptedException {
-        BalanceResponse balanceResponse = tradeService.getTradeBalance(id)
+    @GetMapping("{tradeId}/balance")
+    public ResponseEntity<BalanceResponse> getTradeBalance(@PathVariable("tradeId") String tradeId) throws InterruptedException {
+        BalanceResponse balanceResponse = tradeService.getTradeBalance(tradeId)
                 .map(BalanceResponse::from)
                 .orElseThrow();
         return ResponseEntity.ok(balanceResponse);
     }
 
-    @Cacheable(cacheNames = TRADE_REST_CONTROLLER_GET_TRADE_ASSET_INDICATORS, key = "#id")
-    @GetMapping("{id}/indicator")
-    public ResponseEntity<List<AssetIndicatorResponse>> getTradeAssetIndicators(@PathVariable("id") String id) {
-        Trade trade = tradeService.getTrade(id).orElseThrow();
+    @Cacheable(cacheNames = TRADE_REST_CONTROLLER_GET_TRADE_ASSET_INDICATORS, key = "#tradeId")
+    @GetMapping("{tradeId}/indicator")
+    public ResponseEntity<List<AssetIndicatorResponse>> getTradeAssetIndicators(@PathVariable("tradeId") String tradeId) {
+        Trade trade = tradeService.getTrade(tradeId).orElseThrow();
         List<AssetIndicatorResponse> tradeAssetIndicatorResponses = new ArrayList<>();
         for(TradeAsset tradeAsset : trade.getTradeAssets()) {
-            AssetIndicator assetIndicator = tradeService.getTradeAssetIndicator(id, tradeAsset.getId()).orElseThrow();
+            AssetIndicator assetIndicator = tradeService.getTradeAssetIndicator(tradeId, tradeAsset.getAssetId()).orElseThrow();
             tradeAssetIndicatorResponses.add(AssetIndicatorResponse.from(assetIndicator));
         }
         return ResponseEntity.ok(tradeAssetIndicatorResponses);

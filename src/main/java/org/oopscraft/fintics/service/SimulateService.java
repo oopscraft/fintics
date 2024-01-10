@@ -54,18 +54,18 @@ public class SimulateService {
             BigDecimal closePrice = currentMinuteOhlcvs.get(0).getClosePrice();
 
             Trade trade = Trade.builder()
-                    .id("simulate")
+                    .tradeId("simulate")
                     .holdCondition(simulate.getHoldCondition())
                     .build();
 
             TradeAsset tradeAsset = TradeAsset.builder()
-                    .tradeId(trade.getId())
-                    .name("simulate TradeAsset")
+                    .tradeId(trade.getTradeId())
+                    .assetName("simulate TradeAsset")
                     .build();
 
             AssetIndicator assetIndicator = AssetIndicator.builder()
-                    .id(tradeAsset.getId())
-                    .name(tradeAsset.getName())
+                    .assetId(tradeAsset.getAssetId())
+                    .assetName(tradeAsset.getAssetName())
                     .minuteOhlcvs(currentMinuteOhlcvs)
                     .dailyOhlcvs(currentDailyOhlcvs)
                     .build();
@@ -82,7 +82,7 @@ public class SimulateService {
 
             if(holdConditionResult != null) {
                 if (holdConditionResult) {
-                    if(!balance.hasBalanceAsset(tradeAsset.getId())) {
+                    if(!balance.hasBalanceAsset(tradeAsset.getAssetId())) {
                         BigDecimal buyAmount = balance.getTotalAmount()
                                 .divide(BigDecimal.valueOf(100), MathContext.DECIMAL32)
                                 .multiply(BigDecimal.valueOf(100))
@@ -102,7 +102,7 @@ public class SimulateService {
 
                         // add order
                         Order order = Order.builder()
-                                .id(IdGenerator.uuid())
+                                .orderId(IdGenerator.uuid())
                                 .orderAt(dateTime)
                                 .orderType(OrderType.BUY)
                                 .price(askPrice)
@@ -112,8 +112,8 @@ public class SimulateService {
                     }
                 }
                 if (!holdConditionResult) {
-                    if(balance.hasBalanceAsset(tradeAsset.getId())) {
-                        BalanceAsset balanceAsset = balance.getBalanceAsset(tradeAsset.getId()).orElseThrow();
+                    if(balance.hasBalanceAsset(tradeAsset.getAssetId())) {
+                        BalanceAsset balanceAsset = balance.getBalanceAsset(tradeAsset.getAssetId()).orElseThrow();
                         BigDecimal bidPrice = closePrice.subtract(BigDecimal.valueOf(bidAskSpread));
                         BigDecimal quantity = balanceAsset.getQuantity();
                         BigDecimal purchaseAmount = balanceAsset.getPurchaseAmount();
@@ -124,7 +124,7 @@ public class SimulateService {
 
                         // add order
                         Order order = Order.builder()
-                                .id(IdGenerator.uuid())
+                                .orderId(IdGenerator.uuid())
                                 .orderAt(dateTime)
                                 .orderType(OrderType.SELL)
                                 .price(bidPrice)
@@ -135,8 +135,8 @@ public class SimulateService {
                 }
 
                 // updates valuation amount
-                if(balance.hasBalanceAsset(tradeAsset.getId())) {
-                    BalanceAsset balanceAsset = balance.getBalanceAsset(tradeAsset.getId()).orElseThrow();
+                if(balance.hasBalanceAsset(tradeAsset.getAssetId())) {
+                    BalanceAsset balanceAsset = balance.getBalanceAsset(tradeAsset.getAssetId()).orElseThrow();
                     balanceAsset.setValuationAmount(balanceAsset.getQuantity().multiply(closePrice));
                     balance.setValuationAmount(balanceAsset.getValuationAmount());
                 }else{

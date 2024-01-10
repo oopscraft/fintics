@@ -21,11 +21,11 @@ import java.util.List;
 public class TradeEntity extends BaseEntity {
 
     @Id
-    @Column(name = "id", length = 32)
-    private String id;
+    @Column(name = "trade_id", length = 32)
+    private String tradeId;
 
-    @Column(name = "name")
-    private String name;
+    @Column(name = "trade_name")
+    private String tradeName;
 
     @Column(name = "enabled", length = 1)
     @Convert(converter = BooleanToYNConverter.class)
@@ -43,7 +43,7 @@ public class TradeEntity extends BaseEntity {
     @Column(name = "end_at")
     private LocalTime endAt;
 
-    @Column(name = "trade_client_id")
+    @Column(name = "trade_client_id", length = 32)
     private String tradeClientId;
 
     @Column(name = "trade_client_config")

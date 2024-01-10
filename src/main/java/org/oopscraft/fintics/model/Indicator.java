@@ -18,6 +18,8 @@ import java.util.List;
 @Getter
 public abstract class Indicator {
 
+    public abstract String getIndicatorName();
+
     @Builder.Default
     @Getter
     private final List<Ohlcv> minuteOhlcvs = new ArrayList<>();

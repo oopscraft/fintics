@@ -25,7 +25,7 @@ class AssetOhlcvRepositoryTest extends CoreTestSupport {
         OhlcvType ohlcvType = OhlcvType.MINUTE;
 
         // when
-        LocalDateTime dateTime = assetOhlcvRepository.findMaxDateTimeBySymbolAndOhlcvType(clientId, symbol, ohlcvType)
+        LocalDateTime dateTime = assetOhlcvRepository.findMaxDateTimeByTradeClientIdAndAssetIdAndOhlcvType(clientId, symbol, ohlcvType)
                 .orElse(LocalDateTime.MIN);
         // then
         assertNotNull(dateTime);

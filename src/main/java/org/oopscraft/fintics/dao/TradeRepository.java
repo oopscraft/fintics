@@ -10,7 +10,7 @@ import java.util.List;
 public interface TradeRepository extends JpaRepository<TradeEntity,String> {
 
     @Query("select a from TradeEntity a" +
-            " order by a.name")
+            " order by a.tradeName")
     List<TradeEntity> findAllOrderByName();
 
 }

@@ -39,7 +39,7 @@ public class TradeAssetDecider {
         this.balance = balance;
         this.indiceIndicators = indiceIndicators.stream()
                 .collect(Collectors.toMap(indiceIndicator ->
-                        indiceIndicator.getId().name(), indiceIndicator -> indiceIndicator));
+                        indiceIndicator.getIndiceId().name(), indiceIndicator -> indiceIndicator));
         this.assetIndicator = assetIndicator;
     }
 

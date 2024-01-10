@@ -9,14 +9,14 @@ import org.oopscraft.fintics.model.IndiceId;
 @Getter
 public class IndiceResponse {
 
-    private IndiceId id;
+    private IndiceId indiceId;
 
-    private String name;
+    private String indiceName;
 
     public static IndiceResponse from(Indice indice) {
         return IndiceResponse.builder()
-                .id(indice.getId())
-                .name(indice.getName())
+                .indiceId(indice.getIndiceId())
+                .indiceName(indice.getIndiceName())
                 .build();
     }
 

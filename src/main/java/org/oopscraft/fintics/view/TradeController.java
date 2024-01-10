@@ -34,9 +34,9 @@ public class TradeController {
     }
 
     @GetMapping("trade-detail")
-    public ModelAndView tradeDetail(@RequestParam(value= "id", required = false) String id) {
+    public ModelAndView tradeDetail(@RequestParam(value= "tradeId", required = false) String tradeId) {
         ModelAndView modelAndView = new ModelAndView("trade-detail.html");
-        modelAndView.addObject("id", id);
+        modelAndView.addObject("tradeId", tradeId);
         modelAndView.addObject("tradeClientDefinitions", TradeClientDefinitionRegistry.getTradeClientDefinitions());
         modelAndView.addObject("orderOperatorDefinitions", OrderOperatorDefinitionRegistry.getOrderOperatorDefinitions());
         List<Alarm> alarms = alarmService.getAlarms(AlarmSearch.builder().build(), Pageable.unpaged()).getContent();

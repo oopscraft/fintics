@@ -20,7 +20,7 @@ public class AssetOhlcvEntity extends OhlcvEntity {
 
     public static class Pk implements Serializable {
         private String tradeClientId;
-        private String id;
+        private String assetId;
         private OhlcvType ohlcvType;
         private LocalDateTime dateTime;
     }
@@ -30,7 +30,7 @@ public class AssetOhlcvEntity extends OhlcvEntity {
     private String tradeClientId;
 
     @Id
-    @Column(name = "id", length = 32)
-    private String id;
+    @Column(name = "asset_id", length = 32)
+    private String assetId;
 
 }

@@ -40,18 +40,18 @@ public class IndiceRestController {
         return ResponseEntity.ok(indiceResponses);
     }
 
-    @GetMapping("{id}")
-    public ResponseEntity<IndiceResponse> getIndice(@PathVariable("id") IndiceId id) {
-        IndiceResponse indiceResponse = indiceService.getIndice(id)
+    @GetMapping("{indiceId}")
+    public ResponseEntity<IndiceResponse> getIndice(@PathVariable("indiceId") IndiceId indiceId) {
+        IndiceResponse indiceResponse = indiceService.getIndice(indiceId)
                 .map(IndiceResponse::from)
                 .orElseThrow();
         return ResponseEntity.ok(indiceResponse);
     }
 
-    @Cacheable(cacheNames = INDICE_REST_CONTROLLER_GET_INDICE_INDICATOR, key = "#id")
-    @GetMapping("{id}/indicator")
-    public ResponseEntity<IndiceIndicatorResponse> getIndiceIndicator(@PathVariable("id") IndiceId id) {
-        IndiceIndicatorResponse indiceIndicatorResponse = indiceService.getIndiceIndicator(id)
+    @Cacheable(cacheNames = INDICE_REST_CONTROLLER_GET_INDICE_INDICATOR, key = "#indiceId")
+    @GetMapping("{indiceId}/indicator")
+    public ResponseEntity<IndiceIndicatorResponse> getIndiceIndicator(@PathVariable("indiceId") IndiceId indiceId) {
+        IndiceIndicatorResponse indiceIndicatorResponse = indiceService.getIndiceIndicator(indiceId)
                 .map(IndiceIndicatorResponse::from)
                 .orElseThrow();
         return ResponseEntity.ok(indiceIndicatorResponse);

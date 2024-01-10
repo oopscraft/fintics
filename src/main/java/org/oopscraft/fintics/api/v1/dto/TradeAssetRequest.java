@@ -12,9 +12,9 @@ public class TradeAssetRequest {
 
     private String tradeId;
 
-    private String id;
+    private String assetId;
 
-    private String name;
+    private String assetName;
 
     private boolean enabled;
 

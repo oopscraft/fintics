@@ -13,9 +13,9 @@ import java.util.List;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class TradeRequest {
 
-    private String id;
+    private String tradeId;
 
-    private String name;
+    private String tradeName;
 
     private boolean enabled;
 

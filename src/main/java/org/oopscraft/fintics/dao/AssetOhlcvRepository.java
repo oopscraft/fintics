@@ -16,23 +16,23 @@ public interface AssetOhlcvRepository extends JpaRepository<AssetOhlcvEntity, As
 
     @Query("select max(a.dateTime) from AssetOhlcvEntity a " +
             " where a.tradeClientId = :tradeClientId" +
-            " and a.id = :id" +
+            " and a.assetId = :assetId" +
             " and a.ohlcvType = :ohlcvType")
-    Optional<LocalDateTime> findMaxDateTimeBySymbolAndOhlcvType(
+    Optional<LocalDateTime> findMaxDateTimeByTradeClientIdAndAssetIdAndOhlcvType(
             @Param("tradeClientId")String tradeClientId,
-            @Param("id")String id,
+            @Param("assetId")String assetId,
             @Param("ohlcvType")OhlcvType ohlcvType
     );
 
     @Query("select a from AssetOhlcvEntity a " +
             " where a.tradeClientId = :tradeClientId" +
-            " and a.id = :id" +
+            " and a.assetId = :assetId" +
             " and a.ohlcvType = :ohlcvType" +
             " and a.dateTime between :dateTimeFrom and :dateTimeTo" +
             " order by a.dateTime desc")
-    List<AssetOhlcvEntity> findAllBySymbolAndOhlcvType(
+    List<AssetOhlcvEntity> findAllByTradeClientIdAndAssetIdAndOhlcvType(
             @Param("tradeClientId")String tradeClientId,
-            @Param("id")String id,
+            @Param("assetId")String assetId,
             @Param("ohlcvType")OhlcvType ohlcvType,
             @Param("dateTimeFrom")LocalDateTime dateTimeFrom,
             @Param("dateTimeTo")LocalDateTime dateTimeTo,

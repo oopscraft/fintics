@@ -22,8 +22,8 @@ public class TradeAsset extends Asset {
     public static TradeAsset from(TradeAssetEntity tradeAssetEntity) {
         return TradeAsset.builder()
                 .tradeId(tradeAssetEntity.getTradeId())
-                .id(tradeAssetEntity.getId())
-                .name(tradeAssetEntity.getName())
+                .assetId(tradeAssetEntity.getAssetId())
+                .assetName(tradeAssetEntity.getAssetName())
                 .enabled(tradeAssetEntity.isEnabled())
                 .holdRatio(tradeAssetEntity.getHoldRatio())
                 .build();

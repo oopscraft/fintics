@@ -15,9 +15,9 @@ import java.util.stream.Collectors;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class TradeResponse {
 
-    private String id;
+    private String tradeId;
 
-    private String name;
+    private String tradeName;
 
     private boolean enabled;
 
@@ -52,8 +52,8 @@ public class TradeResponse {
 
     public static TradeResponse from(Trade trade) {
         TradeResponse tradeResponse = TradeResponse.builder()
-                .id(trade.getId())
-                .name(trade.getName())
+                .tradeId(trade.getTradeId())
+                .tradeName(trade.getTradeName())
                 .enabled(trade.isEnabled())
                 .interval(trade.getInterval())
                 .threshold(trade.getThreshold())

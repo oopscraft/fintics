@@ -35,22 +35,22 @@ public class TradeService {
                 .collect(Collectors.toList());
     }
 
-    public Optional<Trade> getTrade(String id) {
-        return tradeRepository.findById(id)
+    public Optional<Trade> getTrade(String tradeId) {
+        return tradeRepository.findById(tradeId)
                 .map(Trade::from);
     }
 
     @Transactional
     public Trade saveTrade(Trade trade) {
         final TradeEntity tradeEntity;
-        if(trade.getId() != null) {
-            tradeEntity = tradeRepository.findById(trade.getId()).orElseThrow();
+        if(trade.getTradeId() != null) {
+            tradeEntity = tradeRepository.findById(trade.getTradeId()).orElseThrow();
         } else {
             tradeEntity = TradeEntity.builder()
-                    .id(IdGenerator.uuid())
+                    .tradeId(IdGenerator.uuid())
                     .build();
         }
-        tradeEntity.setName(trade.getName());
+        tradeEntity.setTradeName(trade.getTradeName());
         tradeEntity.setEnabled(trade.isEnabled());
         tradeEntity.setInterval(trade.getInterval());
         tradeEntity.setThreshold(trade.getThreshold());
@@ -73,9 +73,9 @@ public class TradeService {
         List<TradeAssetEntity> tradeAssetEntities = trade.getTradeAssets().stream()
                 .map(tradeAsset ->
                         TradeAssetEntity.builder()
-                                .tradeId(tradeEntity.getId())
-                                .id(tradeAsset.getId())
-                                .name(tradeAsset.getName())
+                                .tradeId(tradeEntity.getTradeId())
+                                .assetId(tradeAsset.getAssetId())
+                                .assetName(tradeAsset.getAssetName())
                                 .enabled(tradeAsset.isEnabled())
                                 .holdRatio(tradeAsset.getHoldRatio())
                                 .build())
@@ -103,28 +103,28 @@ public class TradeService {
         }
     }
 
-    public Optional<AssetIndicator> getTradeAssetIndicator(String tradeId, String symbol) {
+    public Optional<AssetIndicator> getTradeAssetIndicator(String tradeId, String assetId) {
         Trade trade = getTrade(tradeId).orElseThrow();
         TradeAsset tradeAsset = trade.getTradeAssets().stream()
-                .filter(e -> Objects.equals(e.getId(), symbol))
+                .filter(e -> Objects.equals(e.getAssetId(), assetId))
                 .findFirst()
                 .orElseThrow();
 
-        LocalDateTime minuteMaxDateTime = tradeAssetOhlcvRepository.findMaxDateTimeBySymbolAndOhlcvType(trade.getTradeClientId(), symbol, OhlcvType.MINUTE)
+        LocalDateTime minuteMaxDateTime = tradeAssetOhlcvRepository.findMaxDateTimeByTradeClientIdAndAssetIdAndOhlcvType(trade.getTradeClientId(), assetId, OhlcvType.MINUTE)
                 .orElse(LocalDateTime.now());
-        List<Ohlcv> minuteOhlcvs = tradeAssetOhlcvRepository.findAllBySymbolAndOhlcvType(trade.getTradeClientId(), symbol, OhlcvType.MINUTE, minuteMaxDateTime.minusDays(1), minuteMaxDateTime, Pageable.unpaged()).stream()
+        List<Ohlcv> minuteOhlcvs = tradeAssetOhlcvRepository.findAllByTradeClientIdAndAssetIdAndOhlcvType(trade.getTradeClientId(), assetId, OhlcvType.MINUTE, minuteMaxDateTime.minusDays(1), minuteMaxDateTime, Pageable.unpaged()).stream()
                 .map(Ohlcv::from)
                 .collect(Collectors.toList());
 
-        LocalDateTime dailyMaxDateTime = tradeAssetOhlcvRepository.findMaxDateTimeBySymbolAndOhlcvType(trade.getTradeClientId(), symbol, OhlcvType.DAILY)
+        LocalDateTime dailyMaxDateTime = tradeAssetOhlcvRepository.findMaxDateTimeByTradeClientIdAndAssetIdAndOhlcvType(trade.getTradeClientId(), assetId, OhlcvType.DAILY)
                 .orElse(LocalDateTime.now());
-        List<Ohlcv> dailyOhlcvs = tradeAssetOhlcvRepository.findAllBySymbolAndOhlcvType(trade.getTradeClientId(), symbol, OhlcvType.DAILY, dailyMaxDateTime.minusMonths(1), dailyMaxDateTime, Pageable.unpaged()).stream()
+        List<Ohlcv> dailyOhlcvs = tradeAssetOhlcvRepository.findAllByTradeClientIdAndAssetIdAndOhlcvType(trade.getTradeClientId(), assetId, OhlcvType.DAILY, dailyMaxDateTime.minusMonths(1), dailyMaxDateTime, Pageable.unpaged()).stream()
                 .map(Ohlcv::from)
                 .collect(Collectors.toList());
 
         return Optional.ofNullable(AssetIndicator.builder()
-                .id(tradeAsset.getId())
-                .name(tradeAsset.getName())
+                .assetId(tradeAsset.getAssetId())
+                .assetName(tradeAsset.getAssetName())
                 .minuteOhlcvs(minuteOhlcvs)
                 .dailyOhlcvs(dailyOhlcvs)
                 .build());

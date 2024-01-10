@@ -21,7 +21,7 @@ public class TradeAssetEntity extends BaseEntity {
 
     public static class Pk implements Serializable {
         private String tradeId;
-        private String id;
+        private String assetId;
     }
 
     @Id
@@ -29,11 +29,11 @@ public class TradeAssetEntity extends BaseEntity {
     private String tradeId;
 
     @Id
-    @Column(name = "id", length = 32)
-    private String id;
+    @Column(name = "asset_id", length = 32)
+    private String assetId;
 
-    @Column(name = "name")
-    private String name;
+    @Column(name = "asset_name")
+    private String assetName;
 
     @Column(name = "enabled", length = 1)
     @Convert(converter = BooleanToYNConverter.class)

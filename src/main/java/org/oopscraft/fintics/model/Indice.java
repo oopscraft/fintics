@@ -7,14 +7,14 @@ import lombok.Getter;
 @Getter
 public class Indice {
 
-    private IndiceId id;
+    private IndiceId indiceId;
 
-    private String name;
+    private String indiceName;
 
     public static Indice from(IndiceId indiceSymbol) {
         return Indice.builder()
-                .id(indiceSymbol)
-                .name(indiceSymbol.getValue())
+                .indiceId(indiceSymbol)
+                .indiceName(indiceSymbol.getValue())
                 .build();
     }
 

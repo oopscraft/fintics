@@ -65,34 +65,34 @@ public class AssetOhlcvCollector {
         // minutes
         List<Ohlcv> minuteOhlcvs = tradeClient.getMinuteOhlcvs(tradeAsset, dateTime);
         Collections.reverse(minuteOhlcvs);
-        LocalDateTime minuteLastDateTime = tradeAssetOhlcvRepository.findMaxDateTimeBySymbolAndOhlcvType(trade.getTradeClientId(), tradeAsset.getId(), OhlcvType.MINUTE)
+        LocalDateTime minuteLastDateTime = tradeAssetOhlcvRepository.findMaxDateTimeByTradeClientIdAndAssetIdAndOhlcvType(trade.getTradeClientId(), tradeAsset.getAssetId(), OhlcvType.MINUTE)
                 .orElse(getExpiredDateTime())
                 .minusMinutes(2);
         List<AssetOhlcvEntity> minuteTradeAssetOhlcvEntities = minuteOhlcvs.stream()
                 .filter(ohlcv -> ohlcv.getDateTime().isAfter(minuteLastDateTime))
                 .limit(10)
-                .map(ohlcv -> toAssetOhlcvEntity(trade.getTradeClientId(), tradeAsset.getId(), ohlcv))
+                .map(ohlcv -> toAssetOhlcvEntity(trade.getTradeClientId(), tradeAsset.getAssetId(), ohlcv))
                 .collect(Collectors.toList());
         tradeAssetOhlcvRepository.saveAllAndFlush(minuteTradeAssetOhlcvEntities);
 
         // daily
         List<Ohlcv> dailyOhlcvs = tradeClient.getDailyOhlcvs(tradeAsset, dateTime);
         Collections.reverse(dailyOhlcvs);
-        LocalDateTime dailyLastDateTime = tradeAssetOhlcvRepository.findMaxDateTimeBySymbolAndOhlcvType(trade.getTradeClientId(), tradeAsset.getId(), OhlcvType.DAILY)
+        LocalDateTime dailyLastDateTime = tradeAssetOhlcvRepository.findMaxDateTimeByTradeClientIdAndAssetIdAndOhlcvType(trade.getTradeClientId(), tradeAsset.getAssetId(), OhlcvType.DAILY)
                 .orElse(getExpiredDateTime())
                 .minusDays(2);
         List<AssetOhlcvEntity> dailyOhlcvEntities = dailyOhlcvs.stream()
                 .filter(ohlcv -> ohlcv.getDateTime().isAfter(dailyLastDateTime))
                 .limit(10)
-                .map(ohlcv -> toAssetOhlcvEntity(trade.getTradeClientId(), tradeAsset.getId(), ohlcv))
+                .map(ohlcv -> toAssetOhlcvEntity(trade.getTradeClientId(), tradeAsset.getAssetId(), ohlcv))
                 .collect(Collectors.toList());
         tradeAssetOhlcvRepository.saveAllAndFlush(dailyOhlcvEntities);
     }
 
-    private AssetOhlcvEntity toAssetOhlcvEntity(String tradeClientId, String id, Ohlcv ohlcv) {
+    private AssetOhlcvEntity toAssetOhlcvEntity(String tradeClientId, String assetId, Ohlcv ohlcv) {
         return AssetOhlcvEntity.builder()
                 .tradeClientId(tradeClientId)
-                .id(id)
+                .assetId(assetId)
                 .dateTime(ohlcv.getDateTime())
                 .ohlcvType(ohlcv.getOhlcvType())
                 .openPrice(ohlcv.getOpenPrice())
@@ -112,10 +112,10 @@ public class AssetOhlcvCollector {
                         "delete" +
                                 " from AssetOhlcvEntity" +
                                 " where tradeClientId = :clientId " +
-                                " and id = :symbol " +
+                                " and assetId = :symbol " +
                                 " and dateTime < :expiredDateTime")
                 .setParameter("clientId", trade.getTradeClientId())
-                .setParameter("symbol", tradeAsset.getId())
+                .setParameter("symbol", tradeAsset.getAssetId())
                 .setParameter("expiredDateTime", getExpiredDateTime())
                 .executeUpdate();
         entityManager.flush();

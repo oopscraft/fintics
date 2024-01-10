@@ -26,8 +26,8 @@ public class TradeServiceTest extends CoreTestSupport {
     void getTrades() {
         // given
         TradeEntity tradeEntity = TradeEntity.builder()
-                .id(IdGenerator.uuid())
-                .name("test")
+                .tradeId(IdGenerator.uuid())
+                .tradeName("test")
                 .enabled(true)
                 .build();
         entityManager.persist(tradeEntity);
@@ -44,18 +44,18 @@ public class TradeServiceTest extends CoreTestSupport {
     void getTrade() {
         // given
         TradeEntity tradeEntity = TradeEntity.builder()
-                .id(IdGenerator.uuid())
-                .name("test")
+                .tradeId(IdGenerator.uuid())
+                .tradeName("test")
                 .enabled(true)
                 .build();
         entityManager.persist(tradeEntity);
 
         // when
-        Trade trade = tradeService.getTrade(tradeEntity.getId())
+        Trade trade = tradeService.getTrade(tradeEntity.getTradeId())
                 .orElseThrow();
 
         // then
-        assertEquals(tradeEntity.getId(), trade.getId());
+        assertEquals(tradeEntity.getTradeId(), trade.getTradeId());
     }
 
 }

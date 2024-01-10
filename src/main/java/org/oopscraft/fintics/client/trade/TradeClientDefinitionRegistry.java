@@ -30,7 +30,7 @@ public class TradeClientDefinitionRegistry implements BeanPostProcessor {
 
     public static Optional<TradeClientDefinition> getTradeClientDefinition(String id) {
         return tradeClientDefinitions.stream()
-                .filter(item -> Objects.equals(item.getId(), id))
+                .filter(item -> Objects.equals(item.getTradeClientId(), id))
                 .findFirst();
     }
 

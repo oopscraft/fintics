@@ -15,9 +15,9 @@ import java.util.stream.Collectors;
 @EqualsAndHashCode
 public class Trade {
 
-    private String id;
+    private String tradeId;
 
-    private String name;
+    private String tradeName;
 
     private boolean enabled;
 
@@ -50,8 +50,8 @@ public class Trade {
 
     public static Trade from(TradeEntity tradeEntity) {
         Trade trade = Trade.builder()
-                .id(tradeEntity.getId())
-                .name(tradeEntity.getName())
+                .tradeId(tradeEntity.getTradeId())
+                .tradeName(tradeEntity.getTradeName())
                 .enabled(tradeEntity.isEnabled())
                 .interval(tradeEntity.getInterval())
                 .threshold(tradeEntity.getThreshold())

@@ -14,7 +14,6 @@
             _count: 0
         });
         duice.ObjectProxy.onPropertyChanged(orderSearch, () => {
-            console.log("===========", orderSearch);
             orderSearch._page = 0;
             getOrders();
         });
@@ -93,7 +92,7 @@
                             data-duice-property="tradeId"
                             data-duice-option="trades"
                             data-duice-option-value-property="tradeId"
-                            data-duice-option-text-property="name">
+                            data-duice-option-text-property="tradeName">
                         <option value="" data-th-text="'- ' + #{fintics.Trade} + ' -'"></option>
                     </select>
                 </label>
@@ -137,8 +136,8 @@
                     <th data-th-text="#{web.global.no}" class="text-align--center"></th>
                     <th data-th-text="#{fintics.Order.orderAt}"></th>
                     <th data-th-text="#{fintics.Order.orderType}"></th>
-                    <th data-th-text="#{fintics.Trade.name}"></th>
-                    <th data-th-text="#{fintics.Asset.name}"></th>
+                    <th data-th-text="#{fintics.Trade.tradeName}"></th>
+                    <th data-th-text="#{fintics.Asset.assetName}"></th>
                     <th data-th-text="#{fintics.Order.quantity}"></th>
                     <th data-th-text="#{fintics.Order.price}"></th>
                     <th data-th-text="#{fintics.Order.orderResult}"></th>

@@ -30,8 +30,8 @@ public class BalanceAssetResponse {
     public static BalanceAssetResponse from(BalanceAsset balanceAsset) {
         return BalanceAssetResponse.builder()
                 .accountNo(balanceAsset.getAccountNo())
-                .symbol(balanceAsset.getId())
-                .name(balanceAsset.getName())
+                .symbol(balanceAsset.getAssetId())
+                .name(balanceAsset.getAssetName())
                 .quantity(balanceAsset.getQuantity())
                 .orderableQuantity(balanceAsset.getOrderableQuantity())
                 .purchaseAmount(balanceAsset.getPurchaseAmount())

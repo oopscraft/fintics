@@ -13,12 +13,12 @@ public class TradeClientFactory {
     public static TradeClient getClient(String clientId, String clientConfig) {
         TradeClientDefinition tradeClientDefinition = TradeClientDefinitionRegistry.getTradeClientDefinition(clientId).orElseThrow();
         try {
-            Class<? extends TradeClient> clientTypeClass = tradeClientDefinition.getType().asSubclass(TradeClient.class);
+            Class<? extends TradeClient> clientTypeClass = tradeClientDefinition.getClassType().asSubclass(TradeClient.class);
             Constructor<? extends TradeClient> constructor = clientTypeClass.getConstructor(Properties.class);
             Properties clientConfigProperties = loadPropertiesFromString(clientConfig);
             return constructor.newInstance(clientConfigProperties);
         } catch (NoSuchMethodException e) {
-            throw new IllegalArgumentException("Client constructor not found: " + tradeClientDefinition.getType(), e);
+            throw new IllegalArgumentException("Client constructor not found: " + tradeClientDefinition.getClassType(), e);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

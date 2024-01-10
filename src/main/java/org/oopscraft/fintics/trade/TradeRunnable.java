@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 public class TradeRunnable implements Runnable {
 
     @Getter
-    private final String id;
+    private final String tradeId;
 
     @Getter
     private final Integer interval;
@@ -42,8 +42,8 @@ public class TradeRunnable implements Runnable {
     private boolean interrupted = false;
 
     @Builder
-    protected TradeRunnable(String id, Integer interval, ApplicationContext applicationContext, TradeLogAppender tradeLogAppender) {
-        this.id = id;
+    protected TradeRunnable(String tradeId, Integer interval, ApplicationContext applicationContext, TradeLogAppender tradeLogAppender) {
+        this.tradeId = tradeId;
         this.interval = interval;
         this.applicationContext = applicationContext;
         this.tradeLogAppender = tradeLogAppender;
@@ -53,7 +53,7 @@ public class TradeRunnable implements Runnable {
         this.tradeRepository = applicationContext.getBean(TradeRepository.class);
 
         // add log appender
-        log = (Logger) LoggerFactory.getLogger(id);
+        log = (Logger) LoggerFactory.getLogger(tradeId);
         log.addAppender(this.tradeLogAppender);
 
         // trade executor
@@ -66,7 +66,7 @@ public class TradeRunnable implements Runnable {
     @Override
     public void run() {
         this.tradeLogAppender.start();
-        log.info("Start TradeRunnable: {}", id);
+        log.info("Start TradeRunnable: {}", tradeId);
         while(!Thread.currentThread().isInterrupted() && !interrupted) {
             TransactionStatus transactionStatus = null;
             try {
@@ -81,7 +81,7 @@ public class TradeRunnable implements Runnable {
 
                 // call trade executor
                 LocalDateTime dateTime = LocalDateTime.now();
-                Trade trade = tradeRepository.findById(id)
+                Trade trade = tradeRepository.findById(tradeId)
                         .map(Trade::from)
                         .orElseThrow();
                 tradeExecutor.execute(trade, dateTime);
@@ -103,7 +103,7 @@ public class TradeRunnable implements Runnable {
                 }
             }
         }
-        log.info("End TradeRunnable: {}", id);
+        log.info("End TradeRunnable: {}", tradeId);
         this.tradeLogAppender.stop();
     }
 

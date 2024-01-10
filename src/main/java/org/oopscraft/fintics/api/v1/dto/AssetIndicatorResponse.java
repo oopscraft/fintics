@@ -8,14 +8,14 @@ import org.oopscraft.fintics.model.AssetIndicator;
 @Getter
 public class AssetIndicatorResponse extends IndicatorResponse {
 
-    private final String id;
+    private final String assetId;
 
-    private final String name;
+    private final String assetName;
 
     public static AssetIndicatorResponse from(AssetIndicator assetIndicator) {
         return AssetIndicatorResponse.builder()
-                .id(assetIndicator.getId())
-                .name(assetIndicator.getName())
+                .assetId(assetIndicator.getAssetId())
+                .assetName(assetIndicator.getAssetName())
                 .minuteOhlcvs(assetIndicator.getMinuteOhlcvs())
                 .dailyOhlcvs(assetIndicator.getDailyOhlcvs())
                 .build();

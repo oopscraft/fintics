@@ -32,8 +32,8 @@ class UpbitTradeClientTest {
 
     TradeAsset getTestTradeAsset() {
         return TradeAsset.builder()
-                .id("KRW-BTC")
-                .name("Bitcoin")
+                .assetId("KRW-BTC")
+                .assetName("Bitcoin")
                 .build();
     }
 

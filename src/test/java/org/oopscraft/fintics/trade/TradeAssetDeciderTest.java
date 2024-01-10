@@ -25,14 +25,14 @@ class TradeAssetDeciderTest {
 
     Trade getTestTrade() {
         return Trade.builder()
-                .id("test")
+                .tradeId("test")
                 .build();
     }
 
     TradeAsset getTestTradeAsset() {
         return TradeAsset.builder()
                 .tradeId("test")
-                .name("Test")
+                .assetName("Test")
                 .build();
     }
 
@@ -48,7 +48,7 @@ class TradeAssetDeciderTest {
         List<IndiceIndicator> indiceIndicators = new ArrayList<>();
         for(IndiceId symbol : IndiceId.values()) {
             indiceIndicators.add(IndiceIndicator.builder()
-                    .id(symbol)
+                    .indiceId(symbol)
                     .minuteOhlcvs(new ArrayList<Ohlcv>(){{
                         add(Ohlcv.builder()
                                 .dateTime(LocalDateTime.now())
@@ -89,8 +89,8 @@ class TradeAssetDeciderTest {
 
     AssetIndicator getTestAssetIndicator(TradeAsset tradeAsset) {
         return AssetIndicator.builder()
-                .id(tradeAsset.getId())
-                .name(tradeAsset.getName())
+                .assetId(tradeAsset.getAssetId())
+                .assetName(tradeAsset.getAssetName())
                 .minuteOhlcvs(IntStream.range(1,501)
                         .mapToObj(i -> {
                             BigDecimal price = BigDecimal.valueOf(1000 - (i*10));

@@ -10,22 +10,22 @@ import java.util.StringJoiner;
 public class UpbitTradeClientDefinition implements TradeClientDefinition {
 
     @Override
-    public String getId() {
+    public String getTradeClientId() {
         return "UPBIT";
     }
 
     @Override
-    public String getName() {
+    public String getTradeClientName() {
         return "업비트 API";
     }
 
     @Override
-    public Class<? extends TradeClient> getType() {
+    public Class<? extends TradeClient> getClassType() {
         return UpbitTradeClient.class;
     }
 
     @Override
-    public String getPropertiesTemplate() {
+    public String getConfigTemplate() {
         StringJoiner template = new StringJoiner("\n");
         template.add("accessKey=[Access Key]");
         template.add("secretKey=[Secret Key]");

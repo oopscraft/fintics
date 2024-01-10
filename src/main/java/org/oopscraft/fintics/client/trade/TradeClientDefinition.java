@@ -4,12 +4,12 @@ import org.springframework.beans.factory.Aware;
 
 public interface TradeClientDefinition extends Aware {
 
-    String getId();
+    String getTradeClientId();
 
-    String getName();
+    String getTradeClientName();
 
-    Class<? extends TradeClient> getType();
+    Class<? extends TradeClient> getClassType();
 
-    String getPropertiesTemplate();
+    String getConfigTemplate();
 
 }

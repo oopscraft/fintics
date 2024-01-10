@@ -52,7 +52,7 @@ public class TradeExecutor {
     }
 
     public void execute(Trade trade, LocalDateTime dateTime) throws InterruptedException {
-        log.info("Check trade - [{}]", trade.getName());
+        log.info("Check trade - [{}]", trade.getTradeName());
         TradeClient tradeClient = TradeClientFactory.getClient(trade);
 
         // check market opened
@@ -63,7 +63,7 @@ public class TradeExecutor {
 
         // checks start,end time
         if (!isOperatingTime(trade, dateTime)) {
-            log.info("Not operating time - [{}] {} ~ {}", trade.getName(), trade.getStartAt(), trade.getEndAt());
+            log.info("Not operating time - [{}] {} ~ {}", trade.getTradeName(), trade.getStartAt(), trade.getEndAt());
             return;
         }
 
@@ -84,7 +84,7 @@ public class TradeExecutor {
 
             // add indicator
             indiceIndicators.add(IndiceIndicator.builder()
-                    .id(symbol)
+                    .indiceId(symbol)
                     .minuteOhlcvs(minuteOhlcvs)
                     .dailyOhlcvs(dailyOhlcvs)
                     .build());
@@ -104,20 +104,20 @@ public class TradeExecutor {
                 }
 
                 // logging
-                log.info("Check asset - [{}]", tradeAsset.getName());
+                log.info("Check asset - [{}]", tradeAsset.getAssetName());
 
                 // indicator
                 List<Ohlcv> minuteOhlcvs = tradeClient.getMinuteOhlcvs(tradeAsset, dateTime);
-                List<Ohlcv> previousMinuteOhlcvs = getPreviousAssetMinuteOhlcvs(trade.getTradeClientId(), tradeAsset.getId(), minuteOhlcvs, dateTime);
+                List<Ohlcv> previousMinuteOhlcvs = getPreviousAssetMinuteOhlcvs(trade.getTradeClientId(), tradeAsset.getAssetId(), minuteOhlcvs, dateTime);
                 minuteOhlcvs.addAll(previousMinuteOhlcvs);
 
                 List<Ohlcv> dailyOhlcvs = tradeClient.getDailyOhlcvs(tradeAsset, dateTime);
-                List<Ohlcv> previousDailyOhlcvs = getPreviousAssetDailyOhlcvs(trade.getTradeClientId(), tradeAsset.getId(), dailyOhlcvs, dateTime);
+                List<Ohlcv> previousDailyOhlcvs = getPreviousAssetDailyOhlcvs(trade.getTradeClientId(), tradeAsset.getAssetId(), dailyOhlcvs, dateTime);
                 dailyOhlcvs.addAll(previousDailyOhlcvs);
 
                 AssetIndicator assetIndicator = AssetIndicator.builder()
-                        .id(tradeAsset.getId())
-                        .name(tradeAsset.getName())
+                        .assetId(tradeAsset.getAssetId())
+                        .assetName(tradeAsset.getAssetName())
                         .minuteOhlcvs(minuteOhlcvs)
                         .dailyOhlcvs(dailyOhlcvs)
                         .build();
@@ -151,7 +151,7 @@ public class TradeExecutor {
                 OrderOperator orderOperator = OrderOperatorFactory.getOrderOperator(orderOperatorContext);
 
                 // 0. checks threshold exceeded
-                int consecutiveCountOfHoldConditionResult = getConsecutiveCountOfHoldConditionResult(tradeAsset.getId(), holdConditionResult);
+                int consecutiveCountOfHoldConditionResult = getConsecutiveCountOfHoldConditionResult(tradeAsset.getAssetId(), holdConditionResult);
                 log.info("consecutiveCountOfHoldConditionResult: {}", consecutiveCountOfHoldConditionResult);
                 if (consecutiveCountOfHoldConditionResult < trade.getThreshold()) {
                     log.info("Threshold has not been exceeded yet - threshold is {}", trade.getThreshold());
@@ -187,11 +187,12 @@ public class TradeExecutor {
         return time.isAfter(trade.getStartAt()) && time.isBefore(trade.getEndAt());
     }
 
-    private List<Ohlcv> getPreviousIndiceMinuteOhlcvs(IndiceId symbol, List<Ohlcv> ohlcvs, LocalDateTime dateTime) {
+    private List<Ohlcv> getPreviousIndiceMinuteOhlcvs(IndiceId indiceId, List<Ohlcv> ohlcvs, LocalDateTime dateTime) {
         LocalDateTime lastDateTime = !ohlcvs.isEmpty()
                 ? ohlcvs.get(ohlcvs.size()-1).getDateTime()
                 : dateTime;
-        return indiceOhlcvRepository.findAllBySymbolAndOhlcvType(symbol,
+        return indiceOhlcvRepository.findAllByIndiceIdAndOhlcvType(
+                        indiceId,
                         OhlcvType.MINUTE,
                         lastDateTime.minusWeeks(1),
                         lastDateTime.minusMinutes(1),
@@ -201,12 +202,12 @@ public class TradeExecutor {
                 .collect(Collectors.toList());
     }
 
-    private List<Ohlcv> getPreviousIndiceDailyOhlcvs(IndiceId symbol, List<Ohlcv> ohlcvs, LocalDateTime dateTime) {
+    private List<Ohlcv> getPreviousIndiceDailyOhlcvs(IndiceId indiceId, List<Ohlcv> ohlcvs, LocalDateTime dateTime) {
         LocalDateTime lastDateTime = !ohlcvs.isEmpty()
                 ? ohlcvs.get(ohlcvs.size()-1).getDateTime()
                 : dateTime;
-        return indiceOhlcvRepository.findAllBySymbolAndOhlcvType(
-                        symbol,
+        return indiceOhlcvRepository.findAllByIndiceIdAndOhlcvType(
+                        indiceId,
                         OhlcvType.MINUTE,
                         lastDateTime.minusYears(1),
                         lastDateTime.minusDays(1),
@@ -217,13 +218,13 @@ public class TradeExecutor {
                 .collect(Collectors.toList());
     }
 
-    private List<Ohlcv> getPreviousAssetMinuteOhlcvs(String clientId, String symbol, List<Ohlcv> ohlcvs, LocalDateTime dateTime) {
+    private List<Ohlcv> getPreviousAssetMinuteOhlcvs(String tradeClientId, String assetId, List<Ohlcv> ohlcvs, LocalDateTime dateTime) {
         LocalDateTime lastDateTime = !ohlcvs.isEmpty()
                 ? ohlcvs.get(ohlcvs.size()-1).getDateTime()
                 : dateTime;
-        return assetOhlcvRepository.findAllBySymbolAndOhlcvType(
-                        clientId,
-                        symbol,
+        return assetOhlcvRepository.findAllByTradeClientIdAndAssetIdAndOhlcvType(
+                        tradeClientId,
+                        assetId,
                         OhlcvType.MINUTE,
                         lastDateTime.minusWeeks(1),
                         lastDateTime.minusMinutes(1),
@@ -233,13 +234,13 @@ public class TradeExecutor {
                 .collect(Collectors.toList());
     }
 
-    private List<Ohlcv> getPreviousAssetDailyOhlcvs(String clientId, String symbol, List<Ohlcv> ohlcvs, LocalDateTime dateTime) {
+    private List<Ohlcv> getPreviousAssetDailyOhlcvs(String tradeClientId, String assetId, List<Ohlcv> ohlcvs, LocalDateTime dateTime) {
         LocalDateTime lastDateTime = !ohlcvs.isEmpty()
                 ? ohlcvs.get(ohlcvs.size()-1).getDateTime()
                 : dateTime;
-        return assetOhlcvRepository.findAllBySymbolAndOhlcvType(
-                        clientId,
-                        symbol,
+        return assetOhlcvRepository.findAllByTradeClientIdAndAssetIdAndOhlcvType(
+                        tradeClientId,
+                        assetId,
                         OhlcvType.MINUTE,
                         lastDateTime.minusYears(1),
                         lastDateTime.minusDays(1),
@@ -249,9 +250,9 @@ public class TradeExecutor {
                 .collect(Collectors.toList());
     }
 
-    private int getConsecutiveCountOfHoldConditionResult(String symbol, Boolean holdConditionResult) {
-        Boolean previousHoldConditionResult = holdConditionResultMap.get(symbol);
-        int holdConditionResultCount = holdConditionResultCountMap.getOrDefault(symbol, 0);
+    private int getConsecutiveCountOfHoldConditionResult(String assetId, Boolean holdConditionResult) {
+        Boolean previousHoldConditionResult = holdConditionResultMap.get(assetId);
+        int holdConditionResultCount = holdConditionResultCountMap.getOrDefault(assetId, 0);
 
         // increases match count
         if(Objects.equals(holdConditionResult, previousHoldConditionResult)) {
@@ -261,8 +262,8 @@ public class TradeExecutor {
         }
 
         // store
-        holdConditionResultMap.put(symbol, holdConditionResult);
-        holdConditionResultCountMap.put(symbol, holdConditionResultCount);
+        holdConditionResultMap.put(assetId, holdConditionResult);
+        holdConditionResultCountMap.put(assetId, holdConditionResultCount);
 
         // return
         return holdConditionResultCount;
@@ -271,7 +272,7 @@ public class TradeExecutor {
     private void sendErrorAlarmIfEnabled(Trade trade, TradeAsset tradeAsset, Throwable t) throws InterruptedException {
         if(trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
             if (trade.isAlarmOnError()) {
-                String subject = String.format("[%s - %s]", trade.getName(), tradeAsset != null ? tradeAsset.getName() : "");
+                String subject = String.format("[%s - %s]", trade.getTradeName(), tradeAsset != null ? tradeAsset.getAssetName() : "");
                 String content = ExceptionUtils.getRootCause(t).getMessage();
                 alarmService.sendAlarm(trade.getAlarmId(), subject, content);
             }
