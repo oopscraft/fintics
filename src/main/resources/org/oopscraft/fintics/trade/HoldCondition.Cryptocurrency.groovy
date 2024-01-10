@@ -152,14 +152,14 @@ log.info("[{}] resultOfMinute30Average: {}", assetName, resultOfMinute30Average)
 // daily
 def resultOfDaily = analyze(assetIndicator, OhlcvType.DAILY, 1)
 def resultOfDailyAverage = resultOfDaily.values().average()
-//holdVotes.addAll(resultOfDaily.values())
+holdVotes.addAll(resultOfDaily.values())
 log.debug("[{}] resultOfDaily: {}", assetName, resultOfDaily)
 log.info("[{}] resultOfDailyAverage: {}", assetName, resultOfDailyAverage)
 
 // BITCOIN
 def resultOfBitcoin = analyze(indiceIndicators['BITCOIN'], OhlcvType.DAILY, 1)
 def resultOfBitcoinAverage = resultOfBitcoin.values().average()
-//holdVotes.addAll(resultOfBitcoin.values())
+holdVotes.addAll(resultOfBitcoin.values())
 log.debug("[{}] resultOfBitcoin: {}", assetName, resultOfBitcoin)
 log.info("[{}] resultOfBitcoinAverage: {}", assetName, resultOfBitcoinAverage)
 

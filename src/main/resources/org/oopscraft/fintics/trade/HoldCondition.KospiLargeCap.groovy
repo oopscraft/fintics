@@ -152,14 +152,14 @@ log.info("[{}] resultOfMinute30Average: {}", assetName, resultOfMinute30Average)
 // daily
 def resultOfDaily = analyze(assetIndicator, OhlcvType.DAILY, 1)
 def resultOfDailyAverage = resultOfDaily.values().average()
-//holdVotes.addAll(resultOfDaily.values())
+holdVotes.addAll(resultOfDaily.values())
 log.debug("[{}] resultOfDaily: {}", assetName, resultOfDaily)
 log.info("[{}] resultOfDailyAverage: {}", assetName, resultOfDailyAverage)
 
 // KOSPI
 def resultOfKospi = analyze(indiceIndicators['KOSPI'], OhlcvType.DAILY, 1)
 def resultOfKospiAverage = resultOfKospi.values().average()
-//holdVotes.addAll(resultOfKospi.values())
+holdVotes.addAll(resultOfKospi.values())
 log.debug("[{}] resultOfKospi: {}", assetName, resultOfKospi)
 log.info("[{}] resultOfKospiAverage: {}", assetName, resultOfKospiAverage)
 
