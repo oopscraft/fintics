@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -53,7 +54,7 @@ class SimulateRunnableTest extends CoreTestSupport {
                 .setSkipHeaderRecord(true)
                 .build();
         try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(filePath)) {
-            return CSVParser.parse(inputStream, StandardCharsets.UTF_8, format).stream()
+            List<Ohlcv> ohlcvs = CSVParser.parse(inputStream, StandardCharsets.UTF_8, format).stream()
                     .map(record -> Ohlcv.builder()
                             .ohlcvType(OhlcvType.valueOf(record.get("ohlcv_type")))
                             .dateTime(LocalDateTime.parse(record.get("date_time"), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")))
@@ -64,6 +65,8 @@ class SimulateRunnableTest extends CoreTestSupport {
                             .volume(new BigDecimal(record.get("volume").replaceAll(",","")))
                             .build())
                     .collect(Collectors.toList());
+            Collections.reverse(ohlcvs);
+            return ohlcvs;
         }catch(Throwable e) {
             throw new RuntimeException(e);
         }
@@ -71,46 +74,62 @@ class SimulateRunnableTest extends CoreTestSupport {
 
     @Disabled
     @Test
-    void run() {
+    void run() throws Exception {
         // given
         Trade trade = Trade.builder()
                 .tradeId("test")
                 .tradeName("Test Trade")
                 .interval(60)
                 .threshold(3)
-                .startAt(LocalTime.of(9,30,0))
+                .startAt(LocalTime.of(9,0,0))
                 .endAt(LocalTime.of(15,30,0))
-                .holdCondition("log.info('=={}==', dateTime);\nreturn null")
+                .orderOperatorId("SIMPLE")
                 .orderKind(OrderKind.MARKET)
+                .holdCondition(loadHoldCondition("org/oopscraft/fintics/trade/HoldCondition.KospiCall.groovy"))
                 .build();
         List<TradeAsset> tradeAssets = new ArrayList<>();
         TradeAsset tradeAsset = TradeAsset.builder()
                 .assetId("122630")
                 .assetName("KODEX 레버리지")
+                .enabled(true)
+                .holdRatio(BigDecimal.valueOf(30))
                 .build();
         trade.getTradeAssets().add(tradeAsset);
 
-        SimulateIndiceClient indiceClient = new SimulateIndiceClient();
+        // simulate indice client
+        SimulateIndiceClient simulateIndiceClient = new SimulateIndiceClient();
+        simulateIndiceClient.addMinuteOhlcvs(IndiceId.NDX_FUTURE, loadOhlcvs("org/oopscraft/fintics/simulate/indice_ohlcv_NDX_FUTURE_minute.tsv"));
+        simulateIndiceClient.addDailyOhlcvs(IndiceId.NDX_FUTURE, loadOhlcvs("org/oopscraft/fintics/simulate/indice_ohlcv_NDX_FUTURE_daily.tsv"));
+        simulateIndiceClient.addMinuteOhlcvs(IndiceId.USD_KRW, loadOhlcvs("org/oopscraft/fintics/simulate/indice_ohlcv_USD_KRW_minute.tsv"));
+        simulateIndiceClient.addDailyOhlcvs(IndiceId.USD_KRW, loadOhlcvs("org/oopscraft/fintics/simulate/indice_ohlcv_USD_KRW_daily.tsv"));
 
-        SimulateTradeClient tradeClient = new SimulateTradeClient();
-        tradeClient.addMinuteOhlcvs(tradeAsset, loadOhlcvs("org/oopscraft/fintics/simulate/asset_ohlcv_122630_minute.tsv"));
+        // simulate trade client
+        SimulateTradeClient simulateTradeClient = new SimulateTradeClient();
+        simulateTradeClient.addMinuteOhlcvs(tradeAsset, loadOhlcvs("org/oopscraft/fintics/simulate/asset_ohlcv_122630_minute.tsv"));
+        simulateTradeClient.addDailyOhlcvs(tradeAsset, loadOhlcvs("org/oopscraft/fintics/simulate/asset_ohlcv_122630_daily.tsv"));
 
         // when
         Simulate simulate = Simulate.builder()
                 .trade(trade)
-                .dateTimeFrom(LocalDateTime.now().minusMonths(1))
-                .dateTimeTo(LocalDateTime.now())
+                .dateTimeFrom(LocalDateTime.of(2023,12,4,0,0))
+                .dateTimeTo(LocalDateTime.of(2023,12,4,23,59))
+                .investAmount(BigDecimal.valueOf(10_000_000))
                 .build();
         SimulateRunnable simulateRunnable = SimulateRunnable.builder()
                 .simulate(simulate)
-                .indiceClient(indiceClient)
-                .tradeClient(tradeClient)
+                .simulateIndiceClient(simulateIndiceClient)
+                .simulateTradeClient(simulateTradeClient)
                 .applicationContext(applicationContext)
                 .log((Logger) log)
                 .build();
         simulateRunnable.run();
 
         // then
+        Balance balance = simulateTradeClient.getBalance();
+        List<Order> orders = simulateTradeClient.getOrders();
+        log.info("Balance:{}", balance);
+        log.info("Orders:{}", orders);
+
     }
 
 }

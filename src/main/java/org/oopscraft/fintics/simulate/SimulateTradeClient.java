@@ -28,6 +28,9 @@ public class SimulateTradeClient extends TradeClient {
 
     private final Map<String,List<Ohlcv>> dailyOhlcvsMap = new HashMap<>();
 
+    @Getter
+    private final List<Order> orders = new ArrayList<>();
+
     public SimulateTradeClient() {
         super(new Properties());
     }
@@ -57,16 +60,22 @@ public class SimulateTradeClient extends TradeClient {
     @Override
     public List<Ohlcv> getMinuteOhlcvs(Asset asset, LocalDateTime dateTime) throws InterruptedException {
         Objects.requireNonNull(minuteOhlcvsMap.get(asset.getAssetId()));
+        LocalDateTime dateTimeFrom = dateTime.minusWeeks(1);
+        LocalDateTime dateTimeTo = dateTime.minusMinutes(0);
         return minuteOhlcvsMap.get(asset.getAssetId()).stream()
-                .filter(ohlcv -> ohlcv.getDateTime().isBefore(dateTime.plusMinutes(1)))
+                .filter(ohlcv -> (ohlcv.getDateTime().isAfter(dateTimeFrom) || ohlcv.getDateTime().isEqual(dateTimeFrom))
+                        && (ohlcv.getDateTime().isBefore(dateTimeTo) || ohlcv.getDateTime().isEqual(dateTimeTo)))
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<Ohlcv> getDailyOhlcvs(Asset asset, LocalDateTime dateTime) throws InterruptedException {
         Objects.requireNonNull(dailyOhlcvsMap.get(asset.getAssetId()));
+        LocalDateTime dateTimeFrom = dateTime.minusYears(1);
+        LocalDateTime dateTimeTo = dateTime.minusDays(0);
         return dailyOhlcvsMap.get(asset.getAssetId()).stream()
-                .filter(ohlcv -> ohlcv.getDateTime().isBefore(dateTime.plusMinutes(1)))
+                .filter(ohlcv -> (ohlcv.getDateTime().isAfter(dateTimeFrom) || ohlcv.getDateTime().isEqual(dateTimeFrom))
+                        && (ohlcv.getDateTime().isBefore(dateTimeTo) || ohlcv.getDateTime().isEqual(dateTimeTo)))
                 .collect(Collectors.toList());
     }
 
@@ -187,6 +196,9 @@ public class SimulateTradeClient extends TradeClient {
             // deposit
             deposit(sellAmount);
         }
+
+        // save order
+        orders.add(order);
 
         // return
         return order;

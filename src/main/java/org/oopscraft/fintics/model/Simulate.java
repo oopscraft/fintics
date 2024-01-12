@@ -21,6 +21,7 @@ public class Simulate {
 
     private LocalDateTime dateTimeTo;
 
+    private BigDecimal investAmount;
 
 
 
@@ -46,7 +47,6 @@ public class Simulate {
     private Double bidAskSpread;
 
 
-    private BigDecimal investAmount;
 
     @Builder.Default
     private Balance balance = new Balance();
