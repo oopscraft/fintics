@@ -17,31 +17,18 @@ public class SimpleOrderOperator extends OrderOperator {
     @Override
     public void buyTradeAsset(TradeAsset tradeAsset) throws InterruptedException {
         if (!getBalance().hasBalanceAsset(tradeAsset.getAssetId())) {
-            BigDecimal buyAmount = getBalance().getTotalAmount()
-                    .divide(BigDecimal.valueOf(100), MathContext.DECIMAL32)
-                    .multiply(tradeAsset.getHoldRatio())
-                    .setScale(2, RoundingMode.HALF_UP);
-            BigDecimal price = getOrderBook().getPrice();
-            BigDecimal quantity = buyAmount
-                    .divide(price, MathContext.DECIMAL32);
-
-            // buy
-            log.info("Buy asset: {}", tradeAsset.getAssetName());
-            buyAsset(tradeAsset, quantity, price);
+            BigDecimal holdRatioAmount = calculateHoldRatioAmount(tradeAsset);
+            buyAssetByAmount(tradeAsset, holdRatioAmount);
         }
     }
 
     @Override
     public void sellTradeAsset(TradeAsset tradeAsset) throws InterruptedException {
         if (getBalance().hasBalanceAsset(tradeAsset.getAssetId())) {
-            // price, quantity
             BalanceAsset balanceAsset = getBalance().getBalanceAsset(tradeAsset.getAssetId()).orElseThrow();
-            BigDecimal price = getOrderBook().getPrice();
             BigDecimal quantity = balanceAsset.getOrderableQuantity();
-
-            // sell
-            log.info("Sell asset: {}", balanceAsset.getAssetName());
-            sellAsset(tradeAsset, quantity, price);
+            BigDecimal price = getOrderBook().getPrice();
+            sellAssetByQuantityAndPrice(tradeAsset, quantity, price);
         }
     }
 

@@ -27,8 +27,6 @@ public class TradeExecutor {
 
     private final ApplicationContext applicationContext;
 
-    private final IndiceClient indiceClient;
-
     private final IndiceOhlcvRepository indiceOhlcvRepository;
 
     private final AssetOhlcvRepository assetOhlcvRepository;
@@ -44,16 +42,14 @@ public class TradeExecutor {
     @Builder
     protected TradeExecutor(ApplicationContext applicationContext, Logger log) {
         this.applicationContext = applicationContext;
-        this.indiceClient = applicationContext.getBean(IndiceClient.class);
         this.indiceOhlcvRepository = applicationContext.getBean(IndiceOhlcvRepository.class);
         this.assetOhlcvRepository = applicationContext.getBean(AssetOhlcvRepository.class);
         this.alarmService = applicationContext.getBean(AlarmService.class);
         this.log = log;
     }
 
-    public void execute(Trade trade, LocalDateTime dateTime) throws InterruptedException {
+    public void execute(Trade trade, LocalDateTime dateTime, IndiceClient indiceClient, TradeClient tradeClient) throws InterruptedException {
         log.info("Check trade - [{}]", trade.getTradeName());
-        TradeClient tradeClient = TradeClientFactory.getClient(trade);
 
         // check market opened
         if(!tradeClient.isOpened(dateTime)) {
@@ -123,7 +119,7 @@ public class TradeExecutor {
                         .build();
 
                 // order book
-                OrderBook orderBook = tradeClient.getOrderBook(tradeAsset, dateTime);
+                OrderBook orderBook = tradeClient.getOrderBook(tradeAsset);
 
                 // executes trade asset decider
                 TradeAssetDecider tradeAssetDecider = TradeAssetDecider.builder()

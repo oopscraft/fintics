@@ -22,7 +22,7 @@ public abstract class TradeClient {
 
     public abstract List<Ohlcv> getDailyOhlcvs(Asset asset, LocalDateTime dateTime) throws InterruptedException;
 
-    public abstract OrderBook getOrderBook(Asset asset, LocalDateTime dateTime) throws InterruptedException;
+    public abstract OrderBook getOrderBook(Asset asset) throws InterruptedException;
 
     public abstract Balance getBalance() throws InterruptedException;
 

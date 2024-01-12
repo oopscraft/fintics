@@ -4,6 +4,9 @@ import ch.qos.logback.classic.Logger;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import org.oopscraft.fintics.client.indice.IndiceClient;
+import org.oopscraft.fintics.client.trade.TradeClient;
+import org.oopscraft.fintics.client.trade.TradeClientFactory;
 import org.oopscraft.fintics.dao.TradeRepository;
 import org.oopscraft.fintics.model.Trade;
 import org.slf4j.LoggerFactory;
@@ -33,6 +36,8 @@ public class TradeRunnable implements Runnable {
 
     private final TradeRepository tradeRepository;
 
+    private final IndiceClient indiceClient;
+
     private final Logger log;
 
     private final TradeExecutor tradeExecutor;
@@ -51,6 +56,7 @@ public class TradeRunnable implements Runnable {
         // component
         this.transactionManager = applicationContext.getBean(PlatformTransactionManager.class);
         this.tradeRepository = applicationContext.getBean(TradeRepository.class);
+        this.indiceClient = applicationContext.getBean(IndiceClient.class);
 
         // add log appender
         log = (Logger) LoggerFactory.getLogger(tradeId);
@@ -84,7 +90,8 @@ public class TradeRunnable implements Runnable {
                 Trade trade = tradeRepository.findById(tradeId)
                         .map(Trade::from)
                         .orElseThrow();
-                tradeExecutor.execute(trade, dateTime);
+                TradeClient tradeClient = TradeClientFactory.getClient(trade);
+                tradeExecutor.execute(trade, dateTime, indiceClient, tradeClient);
 
                 // end transaction
                 transactionManager.commit(transactionStatus);

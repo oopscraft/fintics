@@ -289,7 +289,7 @@ public class KisTradeClient extends TradeClient {
     }
 
     @Override
-    public OrderBook getOrderBook(Asset asset, LocalDateTime dateTime) throws InterruptedException {
+    public OrderBook getOrderBook(Asset asset) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();

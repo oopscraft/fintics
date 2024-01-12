@@ -84,7 +84,7 @@ class KisTradeClientTest extends CoreTestSupport {
                 .build();
 
         // when
-        OrderBook orderBook = getKisClient().getOrderBook(tradeAsset, LocalDateTime.now());
+        OrderBook orderBook = getKisClient().getOrderBook(tradeAsset);
         log.info("== orderBook:{}", orderBook);
 
         // then

@@ -15,6 +15,8 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -53,7 +55,20 @@ public abstract class OrderOperator {
         this.transactionManager = context.getApplicationContext().getBean(PlatformTransactionManager.class);
     }
 
-    protected void buyAsset(Asset asset, BigDecimal quantity, BigDecimal price) throws InterruptedException {
+    public BigDecimal calculateHoldRatioAmount(TradeAsset tradeAsset) {
+        return balance.getTotalAmount()
+                .divide(BigDecimal.valueOf(100), MathContext.DECIMAL32)
+                .multiply(tradeAsset.getHoldRatio())
+                .setScale(2, RoundingMode.HALF_UP);
+    }
+
+    protected void buyAssetByAmount(Asset asset, BigDecimal amount) throws InterruptedException {
+        BigDecimal price = getOrderBook().getPrice();
+        BigDecimal quantity = amount.divide(price, MathContext.DECIMAL32);
+        buyAssetByQuantityAndPrice(asset, quantity, price);
+    }
+
+    protected void buyAssetByQuantityAndPrice(Asset asset, BigDecimal quantity, BigDecimal price) throws InterruptedException {
         Order order = Order.builder()
                 .orderId(IdGenerator.uuid())
                 .orderAt(LocalDateTime.now())
@@ -104,7 +119,13 @@ public abstract class OrderOperator {
         }
     }
 
-    protected void sellAsset(Asset asset, BigDecimal quantity, BigDecimal price) throws InterruptedException {
+    protected void sellAssetByAmount(Asset asset, BigDecimal amount) throws InterruptedException {
+        BigDecimal price = getOrderBook().getPrice();
+        BigDecimal quantity = amount.divide(price, MathContext.DECIMAL32);
+        sellAssetByQuantityAndPrice(asset, quantity, price);
+    }
+
+    protected void sellAssetByQuantityAndPrice(Asset asset, BigDecimal quantity, BigDecimal price) throws InterruptedException {
         Order order = Order.builder()
                 .orderId(IdGenerator.uuid())
                 .orderAt(LocalDateTime.now())

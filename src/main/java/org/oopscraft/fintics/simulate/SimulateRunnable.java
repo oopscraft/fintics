@@ -22,9 +22,15 @@ public class SimulateRunnable implements Runnable {
 
     private final Logger log;
 
+    private final IndiceClient indiceClient;
+
+    private final TradeClient tradeClient;
+
     @Builder
-    public SimulateRunnable(Simulate simulate, ApplicationContext applicationContext, Logger log) {
+    public SimulateRunnable(Simulate simulate, IndiceClient indiceClient, TradeClient tradeClient, ApplicationContext applicationContext, Logger log) {
         this.simulate = simulate;
+        this.indiceClient = indiceClient;
+        this.tradeClient = tradeClient;
         this.applicationContext = applicationContext;
         this.log = log;
     }
@@ -49,7 +55,7 @@ public class SimulateRunnable implements Runnable {
                     .build();
 
             try {
-                tradeExecutor.execute(trade, dateTime);
+                tradeExecutor.execute(trade, dateTime, indiceClient, tradeClient);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }

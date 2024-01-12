@@ -1,24 +1,31 @@
 package org.oopscraft.fintics.simulate;
 
 import ch.qos.logback.classic.Logger;
+import com.github.javaparser.utils.LineSeparator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.oopscraft.arch4j.core.support.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
-import org.oopscraft.fintics.model.OrderKind;
-import org.oopscraft.fintics.model.Simulate;
-import org.oopscraft.fintics.model.Trade;
-import org.oopscraft.fintics.model.TradeAsset;
+import org.oopscraft.fintics.client.indice.IndiceClient;
+import org.oopscraft.fintics.model.*;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @SpringBootTest(classes = FinticsConfiguration.class)
 @RequiredArgsConstructor
@@ -26,6 +33,41 @@ import java.util.List;
 class SimulateRunnableTest extends CoreTestSupport {
 
     private final ApplicationContext applicationContext;
+
+    private String loadHoldCondition(String filePath) {
+        StringBuilder stringBuilder = new StringBuilder();
+        try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(filePath)) {
+            IOUtils.readLines(inputStream, StandardCharsets.UTF_8).forEach(line -> {
+                stringBuilder.append(line).append(LineSeparator.LF);
+            });
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return stringBuilder.toString();
+    }
+
+    private List<Ohlcv> loadOhlcvs(String filePath) {
+        CSVFormat format = CSVFormat.Builder.create()
+                .setDelimiter("\t")
+                .setHeader("ohlcv_type","date_time","open_price","high_price","low_price","close_price","volume")
+                .setSkipHeaderRecord(true)
+                .build();
+        try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(filePath)) {
+            return CSVParser.parse(inputStream, StandardCharsets.UTF_8, format).stream()
+                    .map(record -> Ohlcv.builder()
+                            .ohlcvType(OhlcvType.valueOf(record.get("ohlcv_type")))
+                            .dateTime(LocalDateTime.parse(record.get("date_time"), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")))
+                            .openPrice(new BigDecimal(record.get("open_price").replaceAll(",","")))
+                            .highPrice(new BigDecimal(record.get("high_price").replaceAll(",","")))
+                            .lowPrice(new BigDecimal(record.get("low_price").replaceAll(",","")))
+                            .closePrice(new BigDecimal(record.get("close_price").replaceAll(",","")))
+                            .volume(new BigDecimal(record.get("volume").replaceAll(",","")))
+                            .build())
+                    .collect(Collectors.toList());
+        }catch(Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @Disabled
     @Test
@@ -42,14 +84,16 @@ class SimulateRunnableTest extends CoreTestSupport {
                 .orderKind(OrderKind.MARKET)
                 .build();
         List<TradeAsset> tradeAssets = new ArrayList<>();
-        tradeAssets.add(TradeAsset.builder()
-                .tradeId(trade.getTradeId())
+        TradeAsset tradeAsset = TradeAsset.builder()
                 .assetId("122630")
                 .assetName("KODEX 레버리지")
-                .enabled(true)
-                .holdRatio(BigDecimal.valueOf(30))
-                .build());
-        trade.setTradeAssets(tradeAssets);
+                .build();
+        trade.getTradeAssets().add(tradeAsset);
+
+        SimulateIndiceClient indiceClient = new SimulateIndiceClient();
+
+        SimulateTradeClient tradeClient = new SimulateTradeClient();
+        tradeClient.addMinuteOhlcvs(tradeAsset, loadOhlcvs("org/oopscraft/fintics/simulate/asset_ohlcv_122630_minute.tsv"));
 
         // when
         Simulate simulate = Simulate.builder()
@@ -59,6 +103,8 @@ class SimulateRunnableTest extends CoreTestSupport {
                 .build();
         SimulateRunnable simulateRunnable = SimulateRunnable.builder()
                 .simulate(simulate)
+                .indiceClient(indiceClient)
+                .tradeClient(tradeClient)
                 .applicationContext(applicationContext)
                 .log((Logger) log)
                 .build();

@@ -44,7 +44,7 @@ class UpbitTradeClientTest {
         TradeAsset tradeAsset = getTestTradeAsset();
 
         // when
-        OrderBook orderBook = getUpbitTradeClient().getOrderBook(tradeAsset, LocalDateTime.now());
+        OrderBook orderBook = getUpbitTradeClient().getOrderBook(tradeAsset);
 
         // then
         log.info("orderBook:{}", orderBook);
