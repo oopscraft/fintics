@@ -1,182 +1,152 @@
 package org.oopscraft.fintics.service;
 
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.core.Context;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.oopscraft.arch4j.core.data.IdGenerator;
+import org.oopscraft.fintics.dao.AssetOhlcvRepository;
+import org.oopscraft.fintics.dao.IndiceOhlcvRepository;
 import org.oopscraft.fintics.model.*;
-import org.oopscraft.fintics.trade.TradeAssetDecider;
+import org.oopscraft.fintics.simulate.*;
+import org.springframework.context.ApplicationContext;
+import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.math.MathContext;
-import java.math.RoundingMode;
 import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.*;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class SimulateService {
 
-    public Simulate simulate(Simulate simulate) {
-        String holdCondition = simulate.getHoldCondition();
-        LocalTime startAt = simulate.getStartAt();
-        LocalTime endAt = simulate.getEndAt();
-        List<Ohlcv> minuteOhlcvs = simulate.getMinuteOhlcvs();
-        List<Ohlcv> dailyOhlcvs = simulate.getDailyOhlcvs();
-        Double feeRate = simulate.getFeeRate();
-        Double bidAskSpread = simulate.getBidAskSpread();
+    private final ApplicationContext applicationContext;
+
+    private final IndiceOhlcvRepository indiceOhlcvRepository;
+
+    private final AssetOhlcvRepository assetOhlcvRepository;
+
+    private final SimpMessagingTemplate messagingTemplate;
+
+    private final BlockingQueue<Runnable> simulateQueue = new ArrayBlockingQueue<>(3);
+
+    private final ThreadPoolExecutor simulateExecutor = new ThreadPoolExecutor(
+            1,
+            3,
+           60,
+            TimeUnit.SECONDS,
+            simulateQueue
+    );
+
+    private final Map<String,SimulateRunnable> simulateRunnableMap = new ConcurrentHashMap<>();
+
+    public Simulate prepareSimulate(Simulate simulate) {
+        String simulateId = simulate.getSimulateId();
+        Trade trade = simulate.getTrade();
         LocalDateTime dateTimeFrom = simulate.getDateTimeFrom();
         LocalDateTime dateTimeTo = simulate.getDateTimeTo();
-        BigDecimal investAmount = simulate.getInvestAmount();
-        Balance balance = simulate.getBalance();
-        List<Order> orders = simulate.getOrders();
 
-        balance.setTotalAmount(investAmount);
-        for(LocalDateTime dateTime = dateTimeFrom.plusMinutes(1); dateTime.isBefore(dateTimeTo); dateTime = dateTime.plusMinutes(1)) {
-            // check startAt, endAt time
-            LocalTime time = dateTime.toLocalTime();
-            if(startAt != null && endAt != null) {
-                if(time.isBefore(startAt) || time.isAfter(endAt)) {
-                    continue;
-                }
-            }
-            log.debug("== dateTime:{}", dateTime);
-
-            List<Ohlcv> currentMinuteOhlcvs = subtractCurrentMinuteOhlcvs(minuteOhlcvs, dateTime);
-            log.debug("currentMinuteOhlcv:{}", currentMinuteOhlcvs.size());
-
-            List<Ohlcv> currentDailyOhlcvs = subtractCurrentDailyOhlcvs(dailyOhlcvs, dateTime);
-            log.debug("currentDailyOhlcv:{}", currentDailyOhlcvs);
-
-            BigDecimal closePrice = currentMinuteOhlcvs.get(0).getClosePrice();
-
-            Trade trade = Trade.builder()
-                    .tradeId("simulate")
-                    .holdCondition(simulate.getHoldCondition())
+        // indice indicators
+        List<IndiceIndicator> indiceIndicators = new ArrayList<>();
+        for(IndiceId indiceId : IndiceId.values()) {
+            List<Ohlcv> minuteOhlcvs = indiceOhlcvRepository.findAllByIndiceIdAndOhlcvType(indiceId, OhlcvType.MINUTE, dateTimeFrom, dateTimeTo, Pageable.unpaged()).stream()
+                    .map(Ohlcv::from)
+                    .toList();
+            List<Ohlcv> dailyOhlcvs = indiceOhlcvRepository.findAllByIndiceIdAndOhlcvType(indiceId, OhlcvType.DAILY, dateTimeFrom, dateTimeTo, Pageable.unpaged()).stream()
+                    .map(Ohlcv::from)
+                    .toList();
+            IndiceIndicator indiceIndicator = IndiceIndicator.builder()
+                    .indiceId(indiceId)
+                    .minuteOhlcvs(minuteOhlcvs)
+                    .dailyOhlcvs(dailyOhlcvs)
                     .build();
+            indiceIndicators.add(indiceIndicator);
+        }
 
-            TradeAsset tradeAsset = TradeAsset.builder()
-                    .tradeId(trade.getTradeId())
-                    .assetName("simulate TradeAsset")
-                    .build();
-
+        // asset indicators
+        List<AssetIndicator> assetIndicators = new ArrayList<>();
+        trade.getTradeAssets().forEach(tradeAsset -> {
+            List<Ohlcv> minuteOhlcvs = assetOhlcvRepository.findAllByTradeClientIdAndAssetIdAndOhlcvType(trade.getTradeClientId(), tradeAsset.getAssetId(), OhlcvType.MINUTE, dateTimeFrom, dateTimeTo, Pageable.unpaged())
+                    .stream()
+                    .map(Ohlcv::from)
+                    .toList();
+            List<Ohlcv> dailyOhlcvs = assetOhlcvRepository.findAllByTradeClientIdAndAssetIdAndOhlcvType(trade.getTradeClientId(), tradeAsset.getAssetId(), OhlcvType.DAILY, dateTimeFrom, dateTimeTo, Pageable.unpaged())
+                    .stream()
+                    .map(Ohlcv::from)
+                    .toList();
             AssetIndicator assetIndicator = AssetIndicator.builder()
                     .assetId(tradeAsset.getAssetId())
                     .assetName(tradeAsset.getAssetName())
-                    .minuteOhlcvs(currentMinuteOhlcvs)
-                    .dailyOhlcvs(currentDailyOhlcvs)
+                    .minuteOhlcvs(minuteOhlcvs)
+                    .dailyOhlcvs(dailyOhlcvs)
                     .build();
+            assetIndicators.add(assetIndicator);
+        });
 
-            TradeAssetDecider tradeAssetDecider = TradeAssetDecider.builder()
-                    .holdCondition(holdCondition)
-                    .dateTime(dateTime)
-                    .balance(balance)
-                    .indiceIndicators(new ArrayList<IndiceIndicator>())
-                    .assetIndicator(assetIndicator)
-                    .build();
-            Boolean holdConditionResult = tradeAssetDecider.execute();
-            log.info("[{}] holdConditionResult: {}", dateTime, holdConditionResult);
+        // return prepared simulate
+        return Simulate.builder()
+                .simulateId(simulateId)
+                .trade(trade)
+                .dateTimeFrom(dateTimeFrom)
+                .dateTimeTo(dateTimeTo)
+                .indiceIndicators(indiceIndicators)
+                .assetIndicators(assetIndicators)
+                .build();
+    }
 
-            if(holdConditionResult != null) {
-                if (holdConditionResult) {
-                    if(!balance.hasBalanceAsset(tradeAsset.getAssetId())) {
-                        BigDecimal buyAmount = balance.getTotalAmount()
-                                .divide(BigDecimal.valueOf(100), MathContext.DECIMAL32)
-                                .multiply(BigDecimal.valueOf(100))
-                                .setScale(2, RoundingMode.HALF_UP);
-                        BigDecimal askPrice = closePrice
-                                .add(BigDecimal.valueOf(bidAskSpread));
-                        BigDecimal quantity = buyAmount
-                                .divide(askPrice, MathContext.DECIMAL32);
-                        BigDecimal purchaseAmount = askPrice.multiply(quantity);
-                        BalanceAsset balanceAsset = BalanceAsset.builder()
-                                .quantity(quantity)
-                                .orderableQuantity(quantity)
-                                .purchasePrice(askPrice)
-                                .purchaseAmount(purchaseAmount)
-                                .build();
-                        balance.addBalanceAsset(balanceAsset);
+    public synchronized Simulate runSimulate(Simulate simulate) {
+        Objects.requireNonNull(simulate.getSimulateId(), "simulateId is null");
+        List<IndiceIndicator> indiceIndicators = simulate.getIndiceIndicators();
+        List<AssetIndicator> assetIndicators = simulate.getAssetIndicators();
 
-                        // add order
-                        Order order = Order.builder()
-                                .orderId(IdGenerator.uuid())
-                                .orderAt(dateTime)
-                                .orderType(OrderType.BUY)
-                                .price(askPrice)
-                                .quantity(quantity)
-                                .build();
-                        orders.add(order);
-                    }
-                }
-                if (!holdConditionResult) {
-                    if(balance.hasBalanceAsset(tradeAsset.getAssetId())) {
-                        BalanceAsset balanceAsset = balance.getBalanceAsset(tradeAsset.getAssetId()).orElseThrow();
-                        BigDecimal bidPrice = closePrice.subtract(BigDecimal.valueOf(bidAskSpread));
-                        BigDecimal quantity = balanceAsset.getQuantity();
-                        BigDecimal purchaseAmount = balanceAsset.getPurchaseAmount();
-                        BigDecimal sellAmount = bidPrice.multiply(quantity);
-                        BigDecimal profitAmount = sellAmount.subtract(purchaseAmount);
-                        balance.setRealizedProfitAmount(balance.getRealizedProfitAmount().add(profitAmount));
-                        balance.removeBalanceAsset(balanceAsset);
+        // simulate indice client
+        SimulateIndiceClient simulateIndiceClient = new SimulateIndiceClient();
+        indiceIndicators.forEach(indiceIndicator -> {
+            simulateIndiceClient.addMinuteOhlcvs(indiceIndicator.getIndiceId(), indiceIndicator.getMinuteOhlcvs());
+            simulateIndiceClient.addDailyOhlcvs(indiceIndicator.getIndiceId(), indiceIndicator.getDailyOhlcvs());
+        });
 
-                        // add order
-                        Order order = Order.builder()
-                                .orderId(IdGenerator.uuid())
-                                .orderAt(dateTime)
-                                .orderType(OrderType.SELL)
-                                .price(bidPrice)
-                                .quantity(quantity)
-                                .build();
-                        orders.add(order);
-                    }
-                }
+        // simulate trade client
+        SimulateTradeClient simulateTradeClient = new SimulateTradeClient();
+        assetIndicators.forEach(assetIndicator -> {
+            simulateTradeClient.addMinuteOhlcvs(assetIndicator.getAssetId(), assetIndicator.getMinuteOhlcvs());
+            simulateTradeClient.addDailyOhlcvs(assetIndicator.getAssetId(), assetIndicator.getDailyOhlcvs());
+        });
 
-                // updates valuation amount
-                if(balance.hasBalanceAsset(tradeAsset.getAssetId())) {
-                    BalanceAsset balanceAsset = balance.getBalanceAsset(tradeAsset.getAssetId()).orElseThrow();
-                    balanceAsset.setValuationAmount(balanceAsset.getQuantity().multiply(closePrice));
-                    balance.setValuationAmount(balanceAsset.getValuationAmount());
-                }else{
-                    balance.setValuationAmount(BigDecimal.ZERO);
-                }
-            }
-        }
+        // add log appender
+        Context context = ((Logger)log).getLoggerContext();
+        SimulateLogAppender simulateLogAppender = new SimulateLogAppender(simulate, context, messagingTemplate);
+
+        // run
+        SimulateRunnable simulateRunnable = SimulateRunnable.builder()
+                .simulate(simulate)
+                .simulateIndiceClient(simulateIndiceClient)
+                .simulateTradeClient(simulateTradeClient)
+                .applicationContext(applicationContext)
+                .simulateLogAppender(simulateLogAppender)
+                .build();
+        simulateRunnable.onComplete(() -> {
+            this.simulateRunnableMap.remove(simulate.getSimulateId());
+        });
+
+        this.stopSimulate(simulate.getSimulateId());
+        simulateExecutor.submit(simulateRunnable);
+        simulateRunnableMap.put(simulate.getSimulateId(), simulateRunnable);
 
         // return
         return simulate;
     }
 
-    private List<Ohlcv> subtractCurrentMinuteOhlcvs(List<Ohlcv> minuteOhlcvs, LocalDateTime dateTime) {
-        return minuteOhlcvs.stream()
-                .filter(ohlcv ->
-                    (ohlcv.getDateTime().isEqual(dateTime) || ohlcv.getDateTime().isBefore(dateTime))
-                    && ohlcv.getDateTime().isAfter(dateTime.minusWeeks(1))
-                )
-                .limit(1000)
-                .collect(Collectors.toList());
+    public synchronized void stopSimulate(String simulateId) {
+        if(simulateRunnableMap.containsKey(simulateId)) {
+            simulateRunnableMap.get(simulateId).setInterrupted(true);
+        }
     }
-
-    private List<Ohlcv> subtractCurrentDailyOhlcvs(List<Ohlcv> dailyOhlcvs, LocalDateTime dateTime) {
-        return dailyOhlcvs.stream()
-                .filter(ohlcv ->
-                        (ohlcv.getDateTime().isEqual(dateTime) || ohlcv.getDateTime().isBefore(dateTime))
-                                && ohlcv.getDateTime().isAfter(dateTime.minusYears(10))
-                )
-                .limit(1000)
-                .collect(Collectors.toList());
-    }
-
-
-    private Double calculateFee(Double price, Double feeRate) {
-        double fee = BigDecimal.valueOf(price)
-                .multiply(BigDecimal.valueOf(feeRate).divide(BigDecimal.valueOf(100), MathContext.DECIMAL128))
-                .setScale(2, RoundingMode.HALF_UP)
-                .doubleValue();
-        return fee;
-    }
-
 
 }

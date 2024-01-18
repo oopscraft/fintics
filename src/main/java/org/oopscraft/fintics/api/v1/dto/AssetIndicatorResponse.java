@@ -1,16 +1,19 @@
 package org.oopscraft.fintics.api.v1.dto;
 
-import lombok.Getter;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.fintics.model.AssetIndicator;
 
+@Data
+@EqualsAndHashCode(callSuper = true)
 @SuperBuilder
-@Getter
+@NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class AssetIndicatorResponse extends IndicatorResponse {
 
-    private final String assetId;
+    private String assetId;
 
-    private final String assetName;
+    private String assetName;
 
     public static AssetIndicatorResponse from(AssetIndicator assetIndicator) {
         return AssetIndicatorResponse.builder()

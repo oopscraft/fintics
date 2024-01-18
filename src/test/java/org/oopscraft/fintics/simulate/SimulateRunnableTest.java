@@ -9,6 +9,7 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.oopscraft.arch4j.core.data.IdGenerator;
 import org.oopscraft.arch4j.core.support.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
 import org.oopscraft.fintics.client.indice.IndiceClient;
@@ -105,11 +106,12 @@ class SimulateRunnableTest extends CoreTestSupport {
 
         // simulate trade client
         SimulateTradeClient simulateTradeClient = new SimulateTradeClient();
-        simulateTradeClient.addMinuteOhlcvs(tradeAsset, loadOhlcvs("org/oopscraft/fintics/simulate/asset_ohlcv_122630_minute.tsv"));
-        simulateTradeClient.addDailyOhlcvs(tradeAsset, loadOhlcvs("org/oopscraft/fintics/simulate/asset_ohlcv_122630_daily.tsv"));
+        simulateTradeClient.addMinuteOhlcvs(tradeAsset.getAssetId(), loadOhlcvs("org/oopscraft/fintics/simulate/asset_ohlcv_122630_minute.tsv"));
+        simulateTradeClient.addDailyOhlcvs(tradeAsset.getAssetId(), loadOhlcvs("org/oopscraft/fintics/simulate/asset_ohlcv_122630_daily.tsv"));
 
         // when
         Simulate simulate = Simulate.builder()
+                .simulateId(IdGenerator.uuid())
                 .trade(trade)
                 .dateTimeFrom(LocalDateTime.of(2023,12,4,0,0))
                 .dateTimeTo(LocalDateTime.of(2023,12,4,23,59))
@@ -120,7 +122,6 @@ class SimulateRunnableTest extends CoreTestSupport {
                 .simulateIndiceClient(simulateIndiceClient)
                 .simulateTradeClient(simulateTradeClient)
                 .applicationContext(applicationContext)
-                .log((Logger) log)
                 .build();
         simulateRunnable.run();
 

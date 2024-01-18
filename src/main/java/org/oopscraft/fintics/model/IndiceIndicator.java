@@ -1,13 +1,16 @@
 package org.oopscraft.fintics.model;
 
-import lombok.Getter;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+@Data
+@EqualsAndHashCode(callSuper = true)
 @SuperBuilder
-@Getter
+@NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class IndiceIndicator extends Indicator {
 
-    private final IndiceId indiceId;
+    private IndiceId indiceId;
 
     String getIndiceName() {
         return indiceId.getValue();

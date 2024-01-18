@@ -64,7 +64,7 @@ class SimulateTradeClientTest {
 
         // when
         SimulateTradeClient tradeClient = new SimulateTradeClient();
-        tradeClient.addMinuteOhlcvs(asset, getTestMinuteOhlcvs(now));
+        tradeClient.addMinuteOhlcvs(asset.getAssetId(), getTestMinuteOhlcvs(now));
         tradeClient.setDateTime(now.minusMinutes(1));
         OrderBook orderBook = tradeClient.getOrderBook(asset);
 
@@ -82,7 +82,7 @@ class SimulateTradeClientTest {
 
         // when
         SimulateTradeClient tradeClient = new SimulateTradeClient();
-        tradeClient.addMinuteOhlcvs(asset, getTestMinuteOhlcvs(now));
+        tradeClient.addMinuteOhlcvs(asset.getAssetId(), getTestMinuteOhlcvs(now));
         tradeClient.setDateTime(now.minusMinutes(1));
         Balance balance = tradeClient.getBalance();
 
@@ -100,7 +100,7 @@ class SimulateTradeClientTest {
 
         // when
         SimulateTradeClient tradeClient = new SimulateTradeClient();
-        tradeClient.addMinuteOhlcvs(asset, getTestMinuteOhlcvs(now));
+        tradeClient.addMinuteOhlcvs(asset.getAssetId(), getTestMinuteOhlcvs(now));
         tradeClient.deposit(BigDecimal.valueOf(1000));
         tradeClient.setDateTime(now.minusMinutes(2));
         tradeClient.submitOrder(Order.builder()

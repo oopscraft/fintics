@@ -1,15 +1,18 @@
 package org.oopscraft.fintics.model;
 
-import lombok.Getter;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+@Data
+@EqualsAndHashCode(callSuper = true)
 @SuperBuilder
-@Getter
+@NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class AssetIndicator extends Indicator {
 
-    private final String assetId;
+    private String assetId;
 
-    private final String assetName;
+    private String assetName;
 
     @Override
     public String getIndicatorName() {

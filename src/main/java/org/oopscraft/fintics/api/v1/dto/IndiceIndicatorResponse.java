@@ -1,17 +1,20 @@
 package org.oopscraft.fintics.api.v1.dto;
 
-import lombok.Getter;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.fintics.model.IndiceId;
 import org.oopscraft.fintics.model.IndiceIndicator;
 
+@Data
+@EqualsAndHashCode(callSuper = true)
 @SuperBuilder
-@Getter
+@NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class IndiceIndicatorResponse extends IndicatorResponse {
 
-    private final IndiceId indiceId;
+    private IndiceId indiceId;
 
-    private final String indiceName;
+    private String indiceName;
 
     public static IndiceIndicatorResponse from(IndiceIndicator indiceIndicator) {
         return IndiceIndicatorResponse.builder()

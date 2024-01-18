@@ -13,9 +13,9 @@ public class BalanceAssetResponse {
 
     private String accountNo;
 
-    private String symbol;
+    private String assetId;
 
-    private String name;
+    private String assetName;
 
     private BigDecimal quantity;
 
@@ -30,8 +30,8 @@ public class BalanceAssetResponse {
     public static BalanceAssetResponse from(BalanceAsset balanceAsset) {
         return BalanceAssetResponse.builder()
                 .accountNo(balanceAsset.getAccountNo())
-                .symbol(balanceAsset.getAssetId())
-                .name(balanceAsset.getAssetName())
+                .assetId(balanceAsset.getAssetId())
+                .assetName(balanceAsset.getAssetName())
                 .quantity(balanceAsset.getQuantity())
                 .orderableQuantity(balanceAsset.getOrderableQuantity())
                 .purchaseAmount(balanceAsset.getPurchaseAmount())

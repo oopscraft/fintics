@@ -15,38 +15,21 @@ import java.util.List;
 @Getter
 public class Simulate {
 
+    private final String simulateId;
+
     private final Trade trade;
 
-    private LocalDateTime dateTimeFrom;
+    private final LocalDateTime dateTimeFrom;
 
-    private LocalDateTime dateTimeTo;
+    private final LocalDateTime dateTimeTo;
+
+    @Builder.Default
+    private List<IndiceIndicator> indiceIndicators = new ArrayList<>();
+
+    @Builder.Default
+    private List<AssetIndicator> assetIndicators = new ArrayList<>();
 
     private BigDecimal investAmount;
-
-
-
-
-
-
-    private String holdCondition;
-
-    private int interval;
-
-    private LocalTime startAt;
-
-    private LocalTime endAt;
-
-    @Builder.Default
-    private List<Ohlcv> minuteOhlcvs = new ArrayList<>();
-
-    @Builder.Default
-    private List<Ohlcv> dailyOhlcvs = new ArrayList<>();
-
-    private Double feeRate;
-
-    private Double bidAskSpread;
-
-
 
     @Builder.Default
     private Balance balance = new Balance();

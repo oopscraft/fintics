@@ -10,6 +10,7 @@ insert into `core_authority` (`authority_id`,`system_required`,`authority_name`)
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('TRADE','Y','Trade Access Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('TRADE_EDIT','Y','Trade Edit Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('ORDER','Y','Order Access Authority');
+insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('SIMULATE','Y','Simulate Authority');
 
 -- core_role_authority
 insert into `core_role_authority` (`role_id`,`authority_id`) values ('USER', 'MONITOR');

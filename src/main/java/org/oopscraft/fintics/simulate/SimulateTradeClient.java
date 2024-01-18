@@ -1,17 +1,21 @@
 package org.oopscraft.fintics.simulate;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.oopscraft.fintics.client.trade.TradeClient;
 import org.oopscraft.fintics.model.*;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class SimulateTradeClient extends TradeClient {
@@ -31,8 +35,14 @@ public class SimulateTradeClient extends TradeClient {
     @Getter
     private final List<Order> orders = new ArrayList<>();
 
+    private Consumer<Order> onOrder;
+
     public SimulateTradeClient() {
         super(new Properties());
+    }
+
+    public void onOrder(Consumer<Order> listener) {
+        this.onOrder = listener;
     }
 
     public void deposit(BigDecimal amount) {
@@ -43,12 +53,14 @@ public class SimulateTradeClient extends TradeClient {
         balance.setCashAmount(balance.getCashAmount().subtract(amount));
     }
 
-    public void addMinuteOhlcvs(Asset asset, List<Ohlcv> minuteOhlcvs) {
-        minuteOhlcvsMap.put(asset.getAssetId(), minuteOhlcvs);
+    public void addMinuteOhlcvs(String assetId, List<Ohlcv> minuteOhlcvs) {
+        Objects.requireNonNull(assetId, "assetId is null");
+        minuteOhlcvsMap.put(assetId, minuteOhlcvs);
     }
 
-    public void addDailyOhlcvs(Asset asset, List<Ohlcv> dailyOhlcvs) {
-        dailyOhlcvsMap.put(asset.getAssetId(), dailyOhlcvs);
+    public void addDailyOhlcvs(String assetId, List<Ohlcv> dailyOhlcvs) {
+        Objects.requireNonNull(assetId, "assetId is null");
+        dailyOhlcvsMap.put(assetId, dailyOhlcvs);
     }
 
     @Override
@@ -82,13 +94,16 @@ public class SimulateTradeClient extends TradeClient {
     @Override
     public OrderBook getOrderBook(Asset asset) throws InterruptedException {
         Objects.requireNonNull(minuteOhlcvsMap.get(asset.getAssetId()));
-        Ohlcv ohlcv = minuteOhlcvsMap.get(asset.getAssetId()).stream()
-                .filter(el -> el.getDateTime().isEqual(dateTime))
+        LocalDateTime dateTimeFrom = dateTime.truncatedTo(ChronoUnit.MINUTES);
+        LocalDateTime dateTimeTo = dateTimeFrom.plusMinutes(1).minusNanos(1);
+        Ohlcv minuteOhlcv = minuteOhlcvsMap.get(asset.getAssetId()).stream()
+                .filter(ohlcv -> (ohlcv.getDateTime().isAfter(dateTimeFrom) || ohlcv.getDateTime().isEqual(dateTimeFrom))
+                        && (ohlcv.getDateTime().isBefore(dateTimeTo) || ohlcv.getDateTime().isEqual(dateTimeTo)))
                 .findFirst()
                 .orElseThrow();
-        BigDecimal price = ohlcv.getClosePrice();
-        BigDecimal bidPrice = ohlcv.getLowPrice();
-        BigDecimal askPrice = ohlcv.getHighPrice();
+        BigDecimal price = minuteOhlcv.getClosePrice();
+        BigDecimal bidPrice = minuteOhlcv.getLowPrice();
+        BigDecimal askPrice = minuteOhlcv.getHighPrice();
         return OrderBook.builder()
                 .price(price)
                 .bidPrice(bidPrice)
@@ -127,6 +142,7 @@ public class SimulateTradeClient extends TradeClient {
 
     @Override
     public Order submitOrder(Order order) throws InterruptedException {
+        order.setOrderAt(dateTime);
         String assetId = order.getAssetId();
         String assetName = order.getAssetName();
 
@@ -199,6 +215,11 @@ public class SimulateTradeClient extends TradeClient {
 
         // save order
         orders.add(order);
+
+        // send message
+        if(this.onOrder != null) {
+            onOrder.accept(order);
+        }
 
         // return
         return order;

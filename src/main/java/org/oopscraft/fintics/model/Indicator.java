@@ -1,7 +1,6 @@
 package org.oopscraft.fintics.model;
 
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.fintics.calculator.CalculateContext;
 import org.oopscraft.fintics.calculator.CalculateResult;
@@ -14,8 +13,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+@Data
 @SuperBuilder
-@Getter
+@NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class Indicator {
 
     public abstract String getIndicatorName();
