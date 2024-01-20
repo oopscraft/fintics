@@ -164,7 +164,7 @@ public class Tool {
         BigDecimal std = std(series);
 
         List<BigDecimal> zScores = new ArrayList<>();
-        for(BigDecimal value : values) {
+        for(BigDecimal value : series) {
             if(std.compareTo(BigDecimal.ZERO) == 0) {
                 zScores.add(BigDecimal.ZERO);
                 continue;
@@ -177,6 +177,44 @@ public class Tool {
 
         Collections.reverse(zScores);
         return zScores;
+    }
+
+    /**
+     * get current(first) z-score
+     * @param values data point values (time descending)
+     * @return current z-score(first)
+     */
+    public BigDecimal zScore(List<BigDecimal> values) {
+        List<BigDecimal> zScores = zScores(values);
+        return values.get(0);
+    }
+
+    /**
+     * check elements is ascending
+     * @param values values
+     * @return result
+     */
+    public Boolean isAscending(List<BigDecimal> values) {
+        for (int i = 1; i < values.size(); i++) {
+            if (values.get(i).compareTo(values.get(i - 1)) < 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * check element is descending
+     * @param values values
+     * @return result
+     */
+    public Boolean isDescending(List<BigDecimal> values) {
+        for (int i = 1; i < values.size(); i++) {
+            if (values.get(i).compareTo(values.get(i - 1)) > 0) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**

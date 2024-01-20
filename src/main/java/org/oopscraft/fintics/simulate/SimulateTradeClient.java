@@ -12,6 +12,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -19,6 +20,8 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class SimulateTradeClient extends TradeClient {
+
+    private Set<LocalDate> openDates;
 
     private final Balance balance = Balance.builder()
             .cashAmount(BigDecimal.ZERO)
@@ -66,7 +69,28 @@ public class SimulateTradeClient extends TradeClient {
     @Override
     public boolean isOpened(LocalDateTime dateTime) throws InterruptedException {
         DayOfWeek dayOfWeek = dateTime.getDayOfWeek();
-        return dayOfWeek != DayOfWeek.SATURDAY && dayOfWeek != DayOfWeek.SUNDAY;
+        if(dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
+            return false;
+        }
+
+        // set open dates
+        if(openDates == null) {
+            openDates = new HashSet<>();
+            for(List<Ohlcv> ohlcvs : minuteOhlcvsMap.values()) {
+                ohlcvs.stream()
+                        .map(Ohlcv::getDateTime)
+                        .map(LocalDateTime::toLocalDate)
+                        .distinct()
+                        .forEach(date -> openDates.add(date));
+            }
+        }
+        if(openDates != null) {
+            return openDates.stream()
+                    .anyMatch(date -> date.equals(dateTime.toLocalDate()));
+        }
+
+        // default true
+        return true;
     }
 
     @Override
@@ -93,22 +117,28 @@ public class SimulateTradeClient extends TradeClient {
 
     @Override
     public OrderBook getOrderBook(Asset asset) throws InterruptedException {
-        Objects.requireNonNull(minuteOhlcvsMap.get(asset.getAssetId()));
-        LocalDateTime dateTimeFrom = dateTime.truncatedTo(ChronoUnit.MINUTES);
-        LocalDateTime dateTimeTo = dateTimeFrom.plusMinutes(1).minusNanos(1);
-        Ohlcv minuteOhlcv = minuteOhlcvsMap.get(asset.getAssetId()).stream()
-                .filter(ohlcv -> (ohlcv.getDateTime().isAfter(dateTimeFrom) || ohlcv.getDateTime().isEqual(dateTimeFrom))
-                        && (ohlcv.getDateTime().isBefore(dateTimeTo) || ohlcv.getDateTime().isEqual(dateTimeTo)))
-                .findFirst()
-                .orElseThrow();
-        BigDecimal price = minuteOhlcv.getClosePrice();
-        BigDecimal bidPrice = minuteOhlcv.getLowPrice();
-        BigDecimal askPrice = minuteOhlcv.getHighPrice();
-        return OrderBook.builder()
-                .price(price)
-                .bidPrice(bidPrice)
-                .askPrice(askPrice)
-                .build();
+        try {
+            Objects.requireNonNull(minuteOhlcvsMap.get(asset.getAssetId()));
+            LocalDateTime dateTimeFrom = dateTime.truncatedTo(ChronoUnit.MINUTES);
+            LocalDateTime dateTimeTo = dateTimeFrom.plusMinutes(1).minusNanos(1);
+                Ohlcv minuteOhlcv = minuteOhlcvsMap.get(asset.getAssetId()).stream()
+                        .filter(ohlcv -> (ohlcv.getDateTime().isAfter(dateTimeFrom) || ohlcv.getDateTime().isEqual(dateTimeFrom))
+                                && (ohlcv.getDateTime().isBefore(dateTimeTo) || ohlcv.getDateTime().isEqual(dateTimeTo)))
+                        .findFirst()
+                        .orElseThrow();
+
+            BigDecimal price = minuteOhlcv.getClosePrice();
+            BigDecimal bidPrice = minuteOhlcv.getLowPrice();
+            BigDecimal askPrice = minuteOhlcv.getHighPrice();
+            return OrderBook.builder()
+                    .price(price)
+                    .bidPrice(bidPrice)
+                    .askPrice(askPrice)
+                    .build();
+        }catch(Throwable e) {
+            System.err.println(e.getMessage());
+            throw e;
+        }
     }
 
     @Override

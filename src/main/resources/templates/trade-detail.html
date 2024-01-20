@@ -627,18 +627,18 @@
                 </div>
             </form>
             <div>
-                <div style="height:200px;">
+                <div style="height:300px;">
                     <canvas id="simulateDialog-indiceDailyOhlcvsChart"></canvas>
                 </div>
-                <div style="height:200px;">
+                <div style="height:300px;">
                     <canvas id="simulateDialog-indiceMinuteOhlcvsChart"></canvas>
                 </div>
             </div>
             <div>
-                <div style="height:200px;">
+                <div style="height:300px;">
                     <canvas id="simulateDialog-assetDailyOhlcvsChart"></canvas>
                 </div>
-                <div style="height:200px;">
+                <div style="height:300px;">
                     <canvas id="simulateDialog-assetMinuteOhlcvsChart"></canvas>
                 </div>
             </div>
@@ -667,7 +667,7 @@
                 </div>
             </form>
             <div>
-                <textarea id="simulateDialog-log" class="width--100" style="min-height:200px;"></textarea>
+                <textarea id="simulateDialog-log" class="width--100" style="min-height:300px;"></textarea>
                 <table class="width--100 font-size--smaller">
                     <colgroup>
                         <col style="width:5em;"/>
@@ -742,7 +742,7 @@
                 balance: new duice.ObjectProxy({
                     balanceAssets: new duice.ArrayProxy([])
                 }),
-                open: function() {
+                initialize: function() {
                     let _this = this;
 
                     // websocket
@@ -762,8 +762,8 @@
                     _webSocketClient.subscribe(`/simulate/${this.simulate.simulateId}/order`, function(frame) {
                         _this.setMarkOrderAtChart(JSON.parse(frame.body));
                     });
-
-                    // open dialog
+                },
+                open: function() {
                     return this.dialog.open();
                 },
                 prepareSimulate: function() {
@@ -905,7 +905,10 @@
                     // update
                     this.assetMinuteOhlcvsChart.update();
                 }
-            }
+            };
+            (function(){
+                simulateDialog.initialize();
+            })();
         </script>
     </dialog>
     <!-- ====================================== -->

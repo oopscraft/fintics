@@ -70,6 +70,7 @@ public class SimulateRunnable implements Runnable {
             Trade trade = simulate.getTrade();
             LocalDateTime dateTimeFrom = simulate.getDateTimeFrom();
             LocalDateTime dateTimeTo = simulate.getDateTimeTo();
+            Integer interval = trade.getInterval();
 
             // invest amount
             BigDecimal investAmount = simulate.getInvestAmount();
@@ -87,7 +88,7 @@ public class SimulateRunnable implements Runnable {
                     .build();
 
             // start
-            for(LocalDateTime dateTime = dateTimeFrom.plusMinutes(1); dateTime.isBefore(dateTimeTo); dateTime = dateTime.plusMinutes(1)) {
+            for(LocalDateTime dateTime = dateTimeFrom.plusSeconds(interval); dateTime.isBefore(dateTimeTo); dateTime = dateTime.plusSeconds(interval)) {
                 // check interrupted
                 if(interrupted) {
                     log.info("SimulateRunnable is interrupted");
@@ -102,17 +103,25 @@ public class SimulateRunnable implements Runnable {
                 try {
                     simulateIndiceClient.setDateTime(dateTime);
                     simulateTradeClient.setDateTime(dateTime);
-                    tradeExecutor.execute(trade, dateTime, simulateIndiceClient, simulateTradeClient);
-                } catch (InterruptedException e) {
-                    log.warn(e.getMessage(), e);
-                    break;
-                }
 
-                // send message
-                HashMap<String,String> status = new LinkedHashMap<>();
-                status.put("dateTime", dateTime.format(DateTimeFormatter.ISO_DATE_TIME));
-                sendMessage("status", status);
-                sendMessage("balance", simulateTradeClient.getBalance());
+                    // check market open
+                    if(!simulateTradeClient.isOpened(dateTime)) {
+                        log.info("market not open:{}", dateTime);
+                        continue;
+                    }
+
+                    // executes trade
+                    tradeExecutor.execute(trade, dateTime, simulateIndiceClient, simulateTradeClient);
+
+                    // send message
+                    HashMap<String,String> status = new LinkedHashMap<>();
+                    status.put("dateTime", dateTime.format(DateTimeFormatter.ISO_DATE_TIME));
+                    sendMessage("status", status);
+                    sendMessage("balance", simulateTradeClient.getBalance());
+
+                } catch (Throwable e) {
+                    log.warn(e.getMessage(), e);
+                }
             }
 
         }catch(Exception e) {
