@@ -23,6 +23,8 @@ public class RunSimulateRequest {
 
     private BigDecimal investAmount;
 
+    private BigDecimal feeRate;
+
     @Builder.Default
     private List<IndiceIndicator> indiceIndicators = new ArrayList<>();
 

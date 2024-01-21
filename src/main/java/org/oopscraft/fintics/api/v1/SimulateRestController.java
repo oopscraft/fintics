@@ -70,6 +70,7 @@ public class SimulateRestController {
                 .withZoneSameInstant(ZoneId.systemDefault())
                 .toLocalDateTime();
         BigDecimal investAmount = runSimulateRequest.getInvestAmount();
+        BigDecimal feeRate = runSimulateRequest.getFeeRate();
         List<IndiceIndicator> indiceIndicators = runSimulateRequest.getIndiceIndicators();
         List<AssetIndicator> assetIndicators = runSimulateRequest.getAssetIndicators();
 
@@ -79,6 +80,7 @@ public class SimulateRestController {
                 .dateTimeFrom(dateTimeFrom)
                 .dateTimeTo(dateTimeTo)
                 .investAmount(investAmount)
+                .feeRate(feeRate)
                 .indiceIndicators(indiceIndicators)
                 .assetIndicators(assetIndicators)
                 .build();

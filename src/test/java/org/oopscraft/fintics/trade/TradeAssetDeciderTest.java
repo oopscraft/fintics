@@ -147,13 +147,13 @@ class TradeAssetDeciderTest {
     }
 
     @Test
-    void testHoldConditionCryptocurrency() {
+    void testHoldCondition() {
         // given
         Trade trade = getTestTrade();
         TradeAsset tradeAsset = getTestTradeAsset();
         List<IndiceIndicator> indiceIndicators = getTestIndiceIndicators();
         AssetIndicator assetIndicator = getTestAssetIndicator(tradeAsset);
-        String holdCondition = loadGroovyFileAsString("HoldCondition.Cryptocurrency.groovy");
+        String holdCondition = loadGroovyFileAsString("HoldCondition.groovy");
         trade.setHoldCondition(holdCondition);
 
         // when
@@ -169,54 +169,5 @@ class TradeAssetDeciderTest {
         // then
         log.info("== result:{}", result);
     }
-
-    @Test
-    void testHoldConditionKospiCall() {
-        // given
-        Trade trade = getTestTrade();
-        TradeAsset tradeAsset = getTestTradeAsset();
-        List<IndiceIndicator> indiceIndicators = getTestIndiceIndicators();
-        AssetIndicator assetIndicator = getTestAssetIndicator(tradeAsset);
-        String holdCondition = loadGroovyFileAsString("HoldCondition.KospiCall.groovy");
-        trade.setHoldCondition(holdCondition);
-
-        // when
-        TradeAssetDecider tradeAssetDecider = TradeAssetDecider.builder()
-                .holdCondition(trade.getHoldCondition())
-                .log((Logger) log)
-                .dateTime(LocalDateTime.now())
-                .indiceIndicators(indiceIndicators)
-                .assetIndicator(assetIndicator)
-                .build();
-        Boolean result = tradeAssetDecider.execute();
-
-        // then
-        log.info("== result:{}", result);
-    }
-
-    @Test
-    void testHoldConditionKospiPut() {
-        // given
-        Trade trade = getTestTrade();
-        TradeAsset tradeAsset = getTestTradeAsset();
-        List<IndiceIndicator> indiceIndicators = getTestIndiceIndicators();
-        AssetIndicator assetIndicator = getTestAssetIndicator(tradeAsset);
-        String holdCondition = loadGroovyFileAsString("HoldCondition.KospiPut.groovy");
-        trade.setHoldCondition(holdCondition);
-
-        // when
-        TradeAssetDecider tradeAssetDecider = TradeAssetDecider.builder()
-                .holdCondition(trade.getHoldCondition())
-                .log((Logger) log)
-                .dateTime(LocalDateTime.now())
-                .indiceIndicators(indiceIndicators)
-                .assetIndicator(assetIndicator)
-                .build();
-        Boolean result = tradeAssetDecider.execute();
-
-        // then
-        log.info("== result:{}", result);
-    }
-
 
 }

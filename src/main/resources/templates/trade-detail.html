@@ -20,6 +20,27 @@
         const orderOperatorDefinitions = new duice.ArrayProxy(/*[[${orderOperatorDefinitions}]]*/[]);
         const alarms = new duice.ArrayProxy(/*[[${alarms}]]*/[]);
 
+        // simulate
+        const simulate = new duice.ObjectProxy({
+            simulateId: tradeId,
+            trade: trade,
+            dateTimeFrom: dateFns.startOfDay(dateFns.subDays(new Date(),7)).toISOString(),
+            dateTimeTo: dateFns.endOfDay(Date()).toISOString(),
+            investAmount: 10_000_000,
+            feeRate: 0.01,
+            indiceIndicators: new duice.ArrayProxy([]),
+            assetIndicators: new duice.ArrayProxy([])
+        });
+        let indiceDailyOhlcvsChart = null;
+        let indiceMinuteOhlcvsChart = null;
+        let assetDailyOhlcvsChart = null;
+        let assetMinuteOhlcvsChart = null;
+        let simulateLog = null;
+        const simulateStatus = new duice.ObjectProxy({});
+        const simulateBalance = new duice.ObjectProxy({
+            balanceAssets: []
+        });
+
         // balance
         const balance = new duice.ObjectProxy({
             total: null,
@@ -117,6 +138,190 @@
             });
         }
 
+        function initializeTradeSimulate() {
+            // initialize chart
+            indiceDailyOhlcvsChart = _createDailyOhlcvsChart('simulateDialog-indiceDailyOhlcvsChart');
+            indiceMinuteOhlcvsChart = _createMinuteOhlcvsChart('simulateDialog-indiceMinuteOhlcvsChart');
+            assetDailyOhlcvsChart = _createDailyOhlcvsChart('simulateDialog-assetDailyOhlcvsChart');
+            assetMinuteOhlcvsChart = _createMinuteOhlcvsChart('simulateDialog-assetMinuteOhlcvsChart');
+
+            // chart tab
+            let tabFolder = duice.tabFolder(
+                duice.tabItem(
+                    document.getElementById('simulateDialog-assetTabButton'),
+                    document.getElementById('simulateDialog-assetTabContent'),
+                    () => {}),
+                duice.tabItem(
+                    document.getElementById('simulateDialog-indiceTabButton'),
+                    document.getElementById('simulateDialog-indiceTabContent'),
+                    () => {})
+            );
+            tabFolder.setActive(0);
+
+            // simulate log
+            simulateLog = document.getElementById('simulateLog');
+
+            // websocket
+            _webSocketClient.subscribe(`/simulate/${simulate.simulateId}/log`, function(frame) {
+                if(simulateLog.value.length > 100_000) {
+                    simulateLog.value = '';
+                }
+                simulateLog.value += frame.body + '\n';
+                simulateLog.scrollTop = simulateLog.scrollHeight;
+            });
+            _webSocketClient.subscribe(`/simulate/${simulate.simulateId}/status`, function(frame) {
+                let status = JSON.parse(frame.body);
+                duice.ObjectProxy.assign(simulateStatus, status);
+            });
+            _webSocketClient.subscribe(`/simulate/${simulate.simulateId}/balance`, function(frame) {
+                duice.ObjectProxy.assign(simulateBalance, JSON.parse(frame.body));
+            });
+            _webSocketClient.subscribe(`/simulate/${simulate.simulateId}/order`, function(frame) {
+                setSimulateMarkOrderAtChart(JSON.parse(frame.body));
+            });
+        }
+
+        function prepareSimulate() {
+            let url = new URL(`${_apiUrl}/v1/simulate`, document.location.origin);
+            _fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(simulate)
+            }).then(response => response.json())
+                .then(responseBody => {
+                    // assign
+                    simulate.simulateId = trade.tradeId;
+                    duice.ArrayProxy.assign(simulate.indiceIndicators, responseBody['indiceIndicators']);
+                    duice.ArrayProxy.assign(simulate.assetIndicators, responseBody['assetIndicators']);
+
+                    let dateFrom = new Date(simulate.dateTimeFrom);
+                    let dateTo = new Date(simulate.dateTimeTo);
+                    // indice chart
+                    indiceDailyOhlcvsChart.data.datasets.length = 0;
+                    indiceMinuteOhlcvsChart.data.datasets.length = 0;
+                    simulate.indiceIndicators.forEach(indiceIndicator => {
+                        // daily
+                        let dailyOhlcvs = indiceIndicator['dailyOhlcvs'];
+                        let dailyTimeSeries = _createTimeSeries(dateFrom , dateTo, dailyOhlcvs);
+                        let dailyDataset = {
+                            label: indiceIndicator.indicatorName,
+                            data: dailyTimeSeries,
+                            borderWidth: 1,
+                            pointStyle: false
+                        };
+                        indiceDailyOhlcvsChart.data.datasets.push(dailyDataset);
+                        // minute
+                        let minuteOhlcvs = indiceIndicator['minuteOhlcvs'];
+                        let minuteTimeSeries = _createTimeSeries(dateFrom, dateTo, minuteOhlcvs);
+                        let minuteDataset = {
+                            label: indiceIndicator.indicatorName,
+                            data: minuteTimeSeries,
+                            borderWidth: 1,
+                            pointStyle: false
+                        };
+                        indiceMinuteOhlcvsChart.data.datasets.push(minuteDataset);
+                    });
+                    indiceDailyOhlcvsChart.update();
+                    indiceMinuteOhlcvsChart.update();
+
+                    // asset chart
+                    assetDailyOhlcvsChart.data.datasets.length = 0;
+                    assetMinuteOhlcvsChart.data.datasets.length = 0;
+                    simulate.assetIndicators.forEach(assetIndicator => {
+                        // daily
+                        let dailyOhlcvs = assetIndicator['dailyOhlcvs'];
+                        let dailyTimeSeries = _createTimeSeries(dateFrom, dateTo, dailyOhlcvs);
+                        let dailyDataset = {
+                            assetId: assetIndicator.assetId,
+                            label: assetIndicator.assetName,
+                            data: dailyTimeSeries,
+                            borderWidth: 1,
+                            pointStyle: false
+                        };
+                        assetDailyOhlcvsChart.data.datasets.push(dailyDataset);
+
+                        // minute
+                        let minuteOhlcvs = assetIndicator['minuteOhlcvs'];
+                        let minuteTimeSeries = _createTimeSeries(dateFrom, dateTo, minuteOhlcvs);
+                        let minuteDataset = {
+                            assetId: assetIndicator.assetId,
+                            label: assetIndicator.assetName,
+                            data: minuteTimeSeries,
+                            borderWidth: 1,
+                            pointStyle: new Array(minuteTimeSeries.length).fill(false)
+                        };
+                        assetMinuteOhlcvsChart.data.datasets.push(minuteDataset);
+                    });
+                    assetDailyOhlcvsChart.update();
+                    assetMinuteOhlcvsChart.update();
+                });
+        }
+
+        function runSimulate() {
+            clearSimulateMarkOrderAtChart();
+            let url = new URL(`${_apiUrl}/v1/simulate/${simulate.simulateId}/run`, document.location.origin);
+            _fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(simulate)
+            }).then(response => {
+                console.log(response);
+                if(!response.ok) {
+                    duice.alert(response);
+                }
+                simulateLog.value = '';
+            });
+        }
+
+        function stopSimulate() {
+            let url = new URL(`${_apiUrl}/v1/simulate/${simulate.simulateId}/stop`, document.location.origin);
+            _fetch(url, {
+                method: 'PUT'
+            }).then(response => {
+                console.log(response);
+            });
+        }
+
+        function clearSimulateMarkOrderAtChart() {
+            assetMinuteOhlcvsChart.data.datasets.forEach((dataset) => {
+                dataset.pointStyle = new Array(dataset.data.length).fill(false);
+                dataset.pointBorderColor = new Array(dataset.data.length).fill(false);
+                dataset.pointBackgroundColor = new Array(dataset.data.length).fill(false);
+            });
+            assetMinuteOhlcvsChart.update();
+        }
+
+        function setSimulateMarkOrderAtChart(order) {
+            // find dataset
+            let dataset = assetMinuteOhlcvsChart.data.datasets.find((dataset) => dataset.assetId === order.assetId);
+
+            // find index by order at
+            let index = dataset.data.findIndex((ohlcv) => {
+                return dateFns.isEqual(dateFns.startOfMinute(new Date(ohlcv.dateTime)), dateFns.startOfMinute(new Date(order.orderAt)));
+            });
+
+            // buy
+            if(order.orderType === 'BUY') {
+                dataset.pointStyle[index] = 'triangle';
+                dataset.pointBorderColor[index] = 'red';
+                dataset.pointBackgroundColor[index] = 'red';
+            }
+
+            // sell
+            if(order.orderType === 'SELL') {
+                dataset.pointStyle[index] = 'circle';
+                dataset.pointBorderColor[index] = 'blue';
+                dataset.pointBackgroundColor[index] = 'blue';
+            }
+
+            // update
+            assetMinuteOhlcvsChart.update();
+        }
+
         function getTradeBalance() {
             let url = new URL(`${_apiUrl}/v1/trade/${tradeId}/balance`, document.location.origin);
             _fetch(url)
@@ -126,15 +331,15 @@
                 });
         }
 
-        function openSimulateDialog() {
-            simulateDialog.open();
-        }
-
         document.addEventListener('DOMContentLoaded', () => {
             let tabFolder = duice.tabFolder(
                 duice.tabItem(
                     document.getElementById('tradeTabButton'),
                     document.getElementById('tradeTabContent'),
+                    () => {}),
+                duice.tabItem(
+                    document.getElementById('tradeSimulateTabButton'),
+                    document.getElementById('tradeSimulateTabContent'),
                     () => {}),
                 duice.tabItem(
                     document.getElementById('tradeBalanceTabButton'),
@@ -147,8 +352,25 @@
             if(tradeId) {
                 getTrade();
             }
+
+            // initialize trade simulate
+            initializeTradeSimulate();
+        });
+
+        window.addEventListener('beforeunload', () => {
+            // void
         });
     </script>
+    <style th:inline="css">
+        #simulateLog {
+            padding-top: 0.5em;
+            line-height: 1.2em;
+            background-color: #222;
+            color: white;
+            font-family: monospace;
+            font-size: smaller;
+        }
+    </style>
 
     <!-- ====================================== -->
     <!-- start: title                           -->
@@ -170,6 +392,10 @@
         <button id="tradeTabButton" type="button" class="tab">
             <img class="icon" th:src="@{/static/image/icon-detail.svg}" alt="detail"/>
             <span data-th-text="#{fintics.Trade}"></span>
+        </button>
+        <button id="tradeSimulateTabButton" type="button" class="tab">
+            <img class="icon" th:src="@{/static/image/icon-simulate.svg}" alt="simulate"/>
+            <span data-th-text="#{fintics.Simulate}"></span>
         </button>
         <button id="tradeBalanceTabButton" type="button" class="tab">
             <img class="icon" th:src="@{/static/image/icon-balance.svg}" alt="balance"/>
@@ -355,14 +581,6 @@
                             <span data-th-text="#{fintics.Trade.holdCondition}" class="font-weight--bold width--100"></span>
                             <small class="font-weight--bold">(Groovy Script)</small>
                         </div>
-                        <div>
-                            <button class="small" type="button"
-                                    th:classappend="!${#authorization.expression('hasAuthority(''SIMULATE'')')}?'locked'"
-                                    onclick="openSimulateDialog();">
-                                <img class="icon" th:src="@{/static/image/icon-simulate.svg}" alt="save"/>
-                                <span data-th-text="#{fintics.Simulate}"></span>
-                            </button>
-                        </div>
                     </div>
                     <duice-codemirror style="height:50em;"
                         data-duice-bind="trade"
@@ -393,6 +611,146 @@
         <!-- ====================================== -->
         <!-- end: trade                             -->
         <!-- ====================================== -->
+
+        <!-- ================================== -->
+        <!-- start: simulate                    -->
+        <!-- ================================== -->
+        <div id="tradeSimulateTabContent" class="border--1 padding--1em">
+            <h2>
+                <img class="icon" th:src="@{/static/image/icon-simulate.svg}" alt="simulate"/>
+                <span data-th-text="#{fintics.Simulate}"></span>
+            </h2>
+            <form onsubmit="return false;" class="display--grid grid-template-columns--12 grid-gap--1em grid-column-gap--2em padding-y--1em s__padding-y--0">
+                <label class="grid-column--3">
+                    <span th:text="#{fintics.Simulate.dateTimeFrom}" class="font-weight--bold tag-required"></span>
+                    <input class="width--100" type="datetime-local" data-duice-bind="simulate" data-duice-property="dateTimeFrom"/>
+                </label>
+                <label class="grid-column--3">
+                    <span th:text="#{fintics.Simulate.dateTimeTo}" class="font-weight--bold tag-required"></span>
+                    <input class="width--100" type="datetime-local" data-duice-bind="simulate" data-duice-property="dateTimeTo"/>
+                </label>
+                <label class="grid-column--3">
+                    <span data-th-text="#{fintics.Simulate.investAmount}" class="font-weight--bold tag-required"></span>
+                    <input class="width--100" type="number" data-duice-bind="simulate" data-duice-property="investAmount" data-duice-format="number"/>
+                </label>
+                <label class="grid-column--3">
+                    <span data-th-text="#{fintics.Simulate.feeRate}" class="font-weight--bold tag-required"></span>
+                    <input class="width--100" type="number" data-duice-bind="simulate" data-duice-property="feeRate" data-duice-format="number(4)"/>
+                </label>
+                <div class="grid-column--12 justify-self--end">
+                    <button type="button" onclick="prepareSimulate();">
+                        <img class="icon" th:src="@{/static/image/icon-search.svg}" alt="search"/>
+                        <span data-th-text="#{web.global.search}"></span>
+                    </button>
+                    <button type="button" onclick="runSimulate();">
+                        <img class="icon" th:src="@{/static/image/icon-run.svg}" alt="run"/>
+                        <span data-th-text="#{web.global.run}"></span>
+                    </button>
+                    <button type="button" onclick="stopSimulate();">
+                        <img class="icon" th:src="@{/static/image/icon-stop.svg}" alt="stop"/>
+                        <span data-th-text="#{web.global.stop}"></span>
+                    </button>
+                </div>
+            </form>
+            <div class="padding-y--1em s__padding--0">
+                <div>
+                    <button id="simulateDialog-assetTabButton" type="button" class="tab">
+                        <img class="icon" th:src="@{/static/image/icon-asset.svg}" alt="asset"/>
+                        <span data-th-text="#{fintics.Asset}"></span>
+                    </button>
+                    <button id="simulateDialog-indiceTabButton" type="button" class="tab">
+                        <img class="icon" th:src="@{/static/image/icon-indice.svg}" alt="indice"/>
+                        <span data-th-text="#{fintics.Indice}"></span>
+                    </button>
+                    <hr class="margin--1px"/>
+                </div>
+                <div id="simulateDialog-assetTabContent" class="display--grid grid-template-columns--12">
+                    <div class="grid-column--4" style="height:300px;">
+                        <canvas id="simulateDialog-assetDailyOhlcvsChart"></canvas>
+                    </div>
+                    <div class="grid-column--8" style="height:300px;">
+                        <canvas id="simulateDialog-assetMinuteOhlcvsChart"></canvas>
+                    </div>
+                </div>
+                <div id="simulateDialog-indiceTabContent" class="display--grid grid-template-columns--12">
+                    <div class="grid-column--4" style="height:300px;">
+                        <canvas id="simulateDialog-indiceDailyOhlcvsChart"></canvas>
+                    </div>
+                    <div class="grid-column--8" style="height:300px;">
+                        <canvas id="simulateDialog-indiceMinuteOhlcvsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="display--grid grid-template-columns--12 padding--1em padding-y--2em s__padding--0">
+                <label class="grid-column--6">
+                    <img class="icon" th:src="@{/static/image/icon-datetime.svg}" alt="datetime"/>
+                    <input type="text" data-duice-bind="simulateStatus" data-duice-property="dateTime" data-duice-format="date('yyyy-MM-dd HH:mm')"/>
+                </label>
+                <label class="grid-column--6 justify-self--end">
+                    <span data-th-text="#{fintics.Balance.totalAmount}" class="font-weight--bold"></span>
+                    <input type="number" data-duice-bind="simulateBalance" data-duice-property="totalAmount" data-duice-format="number"/>
+                </label>
+                <div class="grid-column--12">
+                    <textarea id="simulateLog" class="width--100" style="min-height:300px;"></textarea>
+                </div>
+                <div class="grid-column--12">
+                    <table class="width--100 font-size--smaller">
+                        <colgroup>
+                            <col style="width:5em;"/>
+                            <col/>
+                            <col/>
+                            <col/>
+                            <col/>
+                            <col/>
+                            <col/>
+                        </colgroup>
+                        <thead>
+                        <tr>
+                            <th data-th-text="#{web.global.no}" class="text-align--center"></th>
+                            <th data-th-text="#{fintics.BalanceAsset.assetId}"></th>
+                            <th data-th-text="#{fintics.BalanceAsset.assetName}"></th>
+                            <th data-th-text="#{fintics.BalanceAsset.quantity}"></th>
+                            <th data-th-text="#{fintics.BalanceAsset.purchaseAmount}"></th>
+                            <th data-th-text="#{fintics.BalanceAsset.valuationAmount}"></th>
+                            <th data-th-text="#{fintics.BalanceAsset.profitAmount}" class="text-align--center"></thd>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr data-duice-bind="simulateBalance.balanceAssets"
+                            data-duice-loop="balanceAsset,status">
+                            <td class="text-align--center">
+                                <span data-duice-bind="status" data-duice-property="count" class="text-align--center"></span>
+                            </td>
+                            <td>
+                                <span data-duice-bind="balanceAsset" data-duice-property="assetId"></span>
+                            </td>
+                            <td>
+                                <span data-duice-bind="balanceAsset" data-duice-property="assetName"></span>
+                            </td>
+                            <td>
+                                <span data-duice-bind="balanceAsset" data-duice-property="quantity" data-duice-format="number"></span>
+                            </td>
+                            <td>
+                                <span data-duice-bind="balanceAsset" data-duice-property="purchaseAmount" data-duice-format="number"></span>
+                            </td>
+                            <td>
+                                <span data-duice-bind="balanceAsset" data-duice-property="valuationAmount" data-duice-format="number"></span>
+                            </td>
+                            <td class="text-align--center">
+                                <span data-duice-bind="balanceAsset" data-duice-property="profitAmount" data-duice-format="number"></span>
+                            </td>
+                        </tr>
+                        <tr data-duice-bind="simulateBalance.balanceAssets" data-duice-execute="if(simulateBalance.balanceAssets.length === 0) this.hidden=false;" hidden>
+                            <td colspan="100%" class="text-align--center">No Data</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- ================================== -->
+        <!-- end: simulate                      -->
+        <!-- ================================== -->
 
         <!-- ================================== -->
         <!-- start: balance                     -->
@@ -584,335 +942,6 @@
     </dialog>
     <!-- ====================================== -->
     <!-- end: asset-add                         -->
-    <!-- ====================================== -->
-
-    <!-- ====================================== -->
-    <!-- start: simulateDialog                  -->
-    <!-- ====================================== -->
-    <dialog id="simulateDialog">
-        <style th:inline="css">
-            #simulateDialog {
-                width: 100%;
-                height: 100%;
-                padding: 1.5rem;
-            }
-            #simulateDialog-log {
-                padding-top: 0.5em;
-                line-height: 1.2em;
-                background-color: #222;
-                color: white;
-                font-family: monospace;
-                font-size: smaller;
-            }
-        </style>
-        <div class="display--grid grid-gap--1em">
-            <h2>
-                <img class="icon" th:src="@{/static/image/icon-simulate.svg}" alt="simulate"/>
-                <span data-th-text="#{fintics.Simulate}"></span>
-            </h2>
-            <form onsubmit="return false;" class="display--grid grid-template-columns--12 grid-gap--1em">
-                <label class="grid-column--6">
-                    <span th:text="#{fintics.Simulate.dateTimeFrom}" class="font-weight--bold tag-required"></span>
-                    <input class="width--100" type="datetime-local" data-duice-bind="simulateDialog.simulate" data-duice-property="dateTimeFrom"/>
-                </label>
-                <label class="grid-column--6">
-                    <span th:text="#{fintics.Simulate.dateTimeTo}" class="font-weight--bold tag-required"></span>
-                    <input class="width--100" type="datetime-local" data-duice-bind="simulateDialog.simulate" data-duice-property="dateTimeTo"/>
-                </label>
-                <div class="grid-column--12 justify-self--end">
-                    <button type="button" onclick="simulateDialog.prepareSimulate();">
-                        <img class="icon" th:src="@{/static/image/icon-search.svg}" alt="search"/>
-                        <span data-th-text="#{web.global.search}"></span>
-                    </button>
-                </div>
-            </form>
-            <div>
-                <div style="height:300px;">
-                    <canvas id="simulateDialog-indiceDailyOhlcvsChart"></canvas>
-                </div>
-                <div style="height:300px;">
-                    <canvas id="simulateDialog-indiceMinuteOhlcvsChart"></canvas>
-                </div>
-            </div>
-            <div>
-                <div style="height:300px;">
-                    <canvas id="simulateDialog-assetDailyOhlcvsChart"></canvas>
-                </div>
-                <div style="height:300px;">
-                    <canvas id="simulateDialog-assetMinuteOhlcvsChart"></canvas>
-                </div>
-            </div>
-            <form onsubmit="return false;" class="display--grid grid-template-columns--12 grid-gap--1em">
-                <label class="grid-column--6">
-                    <span data-th-text="#{fintics.Simulate.investAmount}" class="font-weight--bold tag-required"></span>
-                    <input class="width--100" type="number" data-duice-bind="simulateDialog.simulate" data-duice-property="investAmount" data-duice-format="number"/>
-                </label>
-                <label class="grid-column--6">
-                    <span data-th-text="#{fintics.Balance.totalAmount}" class="font-weight--bold"></span>
-                    <input type="number" data-duice-bind="simulateDialog.balance" data-duice-property="totalAmount" data-duice-format="number" class="width--100"/>
-                </label>
-                <div class="grid-column--6 align-self--end">
-                    <img class="icon" th:src="@{/static/image/icon-datetime.svg}" alt="datetime"/>
-                    <span data-duice-bind="simulateDialog.status" data-duice-property="dateTime" data-duice-format="date('yyyy-MM-dd HH:mm')"></span>
-                </div>
-                <div class="grid-column--6 justify-self--end">
-                    <button type="button" onclick="simulateDialog.runSimulate();">
-                        <img class="icon" th:src="@{/static/image/icon-run.svg}" alt="run"/>
-                        <span data-th-text="#{web.global.run}"></span>
-                    </button>
-                    <button type="button" onclick="simulateDialog.stopSimulate();">
-                        <img class="icon" th:src="@{/static/image/icon-stop.svg}" alt="stop"/>
-                        <span data-th-text="#{web.global.stop}"></span>
-                    </button>
-                </div>
-            </form>
-            <div>
-                <textarea id="simulateDialog-log" class="width--100" style="min-height:300px;"></textarea>
-                <table class="width--100 font-size--smaller">
-                    <colgroup>
-                        <col style="width:5em;"/>
-                        <col/>
-                        <col/>
-                        <col/>
-                        <col/>
-                        <col/>
-                        <col/>
-                    </colgroup>
-                    <thead>
-                    <tr>
-                        <th data-th-text="#{web.global.no}" class="text-align--center"></th>
-                        <th data-th-text="#{fintics.BalanceAsset.assetId}"></th>
-                        <th data-th-text="#{fintics.BalanceAsset.assetName}"></th>
-                        <th data-th-text="#{fintics.BalanceAsset.quantity}"></th>
-                        <th data-th-text="#{fintics.BalanceAsset.purchaseAmount}"></th>
-                        <th data-th-text="#{fintics.BalanceAsset.valuationAmount}"></th>
-                        <th data-th-text="#{fintics.BalanceAsset.profitAmount}" class="text-align--center"></thd>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr data-duice-bind="simulateDialog.balance.balanceAssets"
-                        data-duice-loop="balanceAsset,status">
-                        <td class="text-align--center">
-                            <span data-duice-bind="status" data-duice-property="count" class="text-align--center"></span>
-                        </td>
-                        <td>
-                            <span data-duice-bind="balanceAsset" data-duice-property="assetId"></span>
-                        </td>
-                        <td>
-                            <span data-duice-bind="balanceAsset" data-duice-property="assetName"></span>
-                        </td>
-                        <td>
-                            <span data-duice-bind="balanceAsset" data-duice-property="quantity" data-duice-format="number"></span>
-                        </td>
-                        <td>
-                            <span data-duice-bind="balanceAsset" data-duice-property="purchaseAmount" data-duice-format="number"></span>
-                        </td>
-                        <td>
-                            <span data-duice-bind="balanceAsset" data-duice-property="valuationAmount" data-duice-format="number"></span>
-                        </td>
-                        <td class="text-align--center">
-                            <span data-duice-bind="balanceAsset" data-duice-property="profitAmount" data-duice-format="number"></span>
-                        </td>
-                    </tr>
-                    <tr data-duice-bind="simulateDialog.balance.balanceAssets" data-duice-execute="if(simulateDialog.balance.balanceAssets.length === 0) this.hidden=false;" hidden>
-                        <td colspan="100%" class="text-align--center">No Data</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        <script th:inline="javascript">
-            const simulateDialog = {
-                dialog: new duice.dialog.Dialog(document.getElementById('simulateDialog')),
-                simulate: new duice.ObjectProxy({
-                    simulateId: tradeId,
-                    trade: trade,
-                    dateTimeFrom: dateFns.subDays(new Date(),1).toISOString(),
-                    dateTimeTo: new Date().toISOString(),
-                    investAmount: 10_000_000,
-                    indiceIndicators: new duice.ArrayProxy([]),
-                    assetIndicators: new duice.ArrayProxy([])
-                }),
-                indiceDailyOhlcvsChart:  _createDailyOhlcvsChart('simulateDialog-indiceDailyOhlcvsChart'),
-                indiceMinuteOhlcvsChart: _createMinuteOhlcvsChart('simulateDialog-indiceMinuteOhlcvsChart'),
-                assetDailyOhlcvsChart: _createDailyOhlcvsChart('simulateDialog-assetDailyOhlcvsChart'),
-                assetMinuteOhlcvsChart: _createMinuteOhlcvsChart('simulateDialog-assetMinuteOhlcvsChart'),
-                log: document.getElementById('simulateDialog-log'),
-                status: new duice.ObjectProxy({}),
-                balance: new duice.ObjectProxy({
-                    balanceAssets: new duice.ArrayProxy([])
-                }),
-                initialize: function() {
-                    let _this = this;
-
-                    // websocket
-                    _webSocketClient.subscribe(`/simulate/${this.simulate.simulateId}/log`, function(frame) {
-                        if(_this.log.value.length > 100_000) {
-                            _this.log.value = '';
-                        }
-                        _this.log.value += frame.body + '\n';
-                        _this.log.scrollTop = _this.log.scrollHeight;
-                    });
-                    _webSocketClient.subscribe(`/simulate/${this.simulate.simulateId}/status`, function(frame) {
-                        duice.ObjectProxy.assign(_this.status, JSON.parse(frame.body));
-                    });
-                    _webSocketClient.subscribe(`/simulate/${this.simulate.simulateId}/balance`, function(frame) {
-                        duice.ObjectProxy.assign(_this.balance, JSON.parse(frame.body));
-                    });
-                    _webSocketClient.subscribe(`/simulate/${this.simulate.simulateId}/order`, function(frame) {
-                        _this.setMarkOrderAtChart(JSON.parse(frame.body));
-                    });
-                },
-                open: function() {
-                    return this.dialog.open();
-                },
-                prepareSimulate: function() {
-                    let _this = this;
-                    let url = new URL(`${_apiUrl}/v1/simulate`, document.location.origin);
-                    _fetch(url, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(this.simulate)
-                    }).then(response => response.json())
-                        .then(responseBody => {
-                            // assign
-                            this.simulate.simulateId = responseBody['simulateId'];
-                            duice.ArrayProxy.assign(this.simulate.indiceIndicators, responseBody['indiceIndicators']);
-                            duice.ArrayProxy.assign(this.simulate.assetIndicators, responseBody['assetIndicators']);
-
-                            let dateFrom = new Date(this.simulate.dateTimeFrom);
-                            let dateTo = new Date(this.simulate.dateTimeTo);
-                            // indice chart
-                            _this.indiceDailyOhlcvsChart.data.datasets.length = 0;
-                            _this.indiceMinuteOhlcvsChart.data.datasets.length = 0;
-                            this.simulate.indiceIndicators.forEach(indiceIndicator => {
-                                // daily
-                                let dailyOhlcvs = indiceIndicator['dailyOhlcvs'];
-                                let dailyTimeSeries = _createTimeSeries(dateFrom , dateTo, dailyOhlcvs);
-                                let dailyDataset = {
-                                    label: indiceIndicator.indicatorName,
-                                    data: dailyTimeSeries,
-                                    borderWidth: 1,
-                                    pointStyle: false
-                                };
-                                _this.indiceDailyOhlcvsChart.data.datasets.push(dailyDataset);
-                                // minute
-                                let minuteOhlcvs = indiceIndicator['minuteOhlcvs'];
-                                let minuteTimeSeries = _createTimeSeries(dateFrom, dateTo, minuteOhlcvs);
-                                let minuteDataset = {
-                                    label: indiceIndicator.indicatorName,
-                                    data: minuteTimeSeries,
-                                    borderWidth: 1,
-                                    pointStyle: false
-                                };
-                                _this.indiceMinuteOhlcvsChart.data.datasets.push(minuteDataset);
-                            });
-                            _this.indiceDailyOhlcvsChart.update();
-                            _this.indiceMinuteOhlcvsChart.update();
-
-                            // asset chart
-                            _this.assetDailyOhlcvsChart.data.datasets.length = 0;
-                            _this.assetMinuteOhlcvsChart.data.datasets.length = 0;
-                            this.simulate.assetIndicators.forEach(assetIndicator => {
-                                // daily
-                                let dailyOhlcvs = assetIndicator['dailyOhlcvs'];
-                                let dailyTimeSeries = _createTimeSeries(dateFrom, dateTo, dailyOhlcvs);
-                                let dailyDataset = {
-                                    assetId: assetIndicator.assetId,
-                                    label: assetIndicator.assetName,
-                                    data: dailyTimeSeries,
-                                    borderWidth: 1,
-                                    pointStyle: false
-                                };
-                                _this.assetDailyOhlcvsChart.data.datasets.push(dailyDataset);
-
-                                // minute
-                                let minuteOhlcvs = assetIndicator['minuteOhlcvs'];
-                                let minuteTimeSeries = _createTimeSeries(dateFrom, dateTo, minuteOhlcvs);
-                                let minuteDataset = {
-                                    assetId: assetIndicator.assetId,
-                                    label: assetIndicator.assetName,
-                                    data: minuteTimeSeries,
-                                    borderWidth: 1,
-                                    pointStyle: new Array(minuteTimeSeries.length).fill(false)
-                                };
-                                _this.assetMinuteOhlcvsChart.data.datasets.push(minuteDataset);
-                            });
-                            _this.assetDailyOhlcvsChart.update();
-                            _this.assetMinuteOhlcvsChart.update();
-                        });
-                },
-                runSimulate: function() {
-                    this.clearMarkOrderAtChart();
-                    let _this = this;
-                    let url = new URL(`${_apiUrl}/v1/simulate/${this.simulate.simulateId}/run`, document.location.origin);
-                    _fetch(url, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(this.simulate)
-                    }).then(response => {
-                        console.log(response);
-                        if(!response.ok) {
-                            duice.alert(response);
-                        }
-                        _this.log.value = '';
-                    });
-                },
-                stopSimulate: function() {
-                    let _this = this;
-                    let url = new URL(`${_apiUrl}/v1/simulate/${this.simulate.simulateId}/stop`, document.location.origin);
-                    _fetch(url, {
-                        method: 'PUT'
-                    }).then(response => {
-                        console.log(response);
-                    });
-                },
-                clearMarkOrderAtChart: function() {
-                    this.assetMinuteOhlcvsChart.data.datasets.forEach((dataset) => {
-                        dataset.pointStyle = new Array(dataset.data.length).fill(false);
-                        dataset.pointBorderColor = new Array(dataset.data.length).fill(false);
-                        dataset.pointBackgroundColor = new Array(dataset.data.length).fill(false);
-                    });
-                    this.assetMinuteOhlcvsChart.update();
-                },
-                setMarkOrderAtChart: function(order) {
-                    // find dataset
-                    let dataset = this.assetMinuteOhlcvsChart.data.datasets.find((dataset) => dataset.assetId === order.assetId);
-
-                    // find index by order at
-                    let index = dataset.data.findIndex((ohlcv) => {
-                        return dateFns.isEqual(dateFns.startOfMinute(new Date(ohlcv.dateTime)), dateFns.startOfMinute(new Date(order.orderAt)));
-                    });
-
-                    // buy
-                    if(order.orderType === 'BUY') {
-                        dataset.pointStyle[index] = 'triangle';
-                        dataset.pointBorderColor[index] = 'red';
-                        dataset.pointBackgroundColor[index] = 'red';
-                    }
-
-                    // sell
-                    if(order.orderType === 'SELL') {
-                        dataset.pointStyle[index] = 'circle';
-                        dataset.pointBorderColor[index] = 'blue';
-                        dataset.pointBackgroundColor[index] = 'blue';
-                    }
-
-                    // update
-                    this.assetMinuteOhlcvsChart.update();
-                }
-            };
-            (function(){
-                simulateDialog.initialize();
-            })();
-        </script>
-    </dialog>
-    <!-- ====================================== -->
-    <!-- start: simulate                        -->
     <!-- ====================================== -->
 
 </th:block>

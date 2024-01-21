@@ -72,9 +72,11 @@ public class SimulateRunnable implements Runnable {
             LocalDateTime dateTimeTo = simulate.getDateTimeTo();
             Integer interval = trade.getInterval();
 
-            // invest amount
+            // invest amount, fee rate
             BigDecimal investAmount = simulate.getInvestAmount();
+            BigDecimal feeRate = simulate.getFeeRate();
             simulateTradeClient.deposit(investAmount);
+            simulateTradeClient.setFeeRate(feeRate);
 
             // add order listener
             simulateTradeClient.onOrder(order -> {

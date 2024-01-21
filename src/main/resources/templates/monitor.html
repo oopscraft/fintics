@@ -189,11 +189,7 @@
         });
 
         window.addEventListener('beforeunload', () => {
-            tradeLogEventSourceMap.forEach((eventSource) => {
-                try {
-                    eventSource.close();
-                }catch(e){}
-            });
+            // void
         });
     </script>
     <style th:inline="css">

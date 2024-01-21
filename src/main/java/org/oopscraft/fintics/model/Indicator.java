@@ -29,7 +29,7 @@ public abstract class Indicator {
     @Getter
     private final List<Ohlcv> dailyOhlcvs = new ArrayList<>();
 
-    public List<Ohlcv> resample(OhlcvType ohlcvType, int period) {
+    public List<Ohlcv> getOhlcvs(OhlcvType ohlcvType, int period) {
         switch(ohlcvType) {
             case MINUTE -> {
                 return resampleOhlcvs(minuteOhlcvs, period);
@@ -108,7 +108,7 @@ public abstract class Indicator {
     }
 
     public <C extends CalculateContext, R extends CalculateResult> List<R> calculate(OhlcvType ohlcvType, int period, C context) {
-        List<Ohlcv> ohlcvs = resample(ohlcvType, period);
+        List<Ohlcv> ohlcvs = getOhlcvs(ohlcvType, period);
         Collections.reverse(ohlcvs);
 
         // calculate

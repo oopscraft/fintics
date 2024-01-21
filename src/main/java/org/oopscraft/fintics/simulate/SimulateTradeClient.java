@@ -21,6 +21,9 @@ import java.util.stream.Collectors;
 
 public class SimulateTradeClient extends TradeClient {
 
+    @Setter
+    private BigDecimal feeRate = BigDecimal.ZERO;
+
     private Set<LocalDate> openDates;
 
     private final Balance balance = Balance.builder()

@@ -6,21 +6,22 @@ import org.oopscraft.fintics.model.*
 def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     // info
     def name = indicator.getIndicatorName() + ':' + ohlcvType + ':' + period
+    def pctChangePeriod = 3
 
     // shortMa
     def shortMas = indicator.calculate(ohlcvType, period, EmaContext.of(10))
     def shortMa = shortMas.first()
     def shortMaValues = shortMas.collect{it.value}
     def shortMaValue = shortMaValues.first()
-    def shortMaValuePctChange = tool.pctChange(shortMaValues.take(5))
+    def shortMaValuePctChange = tool.pctChange(shortMaValues.take(pctChangePeriod))
     log.debug("[{}] shortMa: {}", name, shortMa)
 
     // longMa
-    def longMas = indicator.calculate(ohlcvType, period, EmaContext.of(30))
+    def longMas = indicator.calculate(ohlcvType, period, EmaContext.of(20))
     def longMa = longMas.first()
     def longMaValues = longMas.collect{it.value}
     def longMaValue = longMaValues.first()
-    def longMaValuePctChange = tool.pctChange(longMaValues.take(5))
+    def longMaValuePctChange = tool.pctChange(longMaValues.take(pctChangePeriod))
     log.debug("[{}] longMa: {}", name, longMa)
 
     // macd
@@ -28,7 +29,7 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     def macd = macds.first()
     def macdValues = macds.collect{it.value}
     def macdValue = macdValues.first()
-    def macdValuePctChange = tool.pctChange(macdValues.take(5))
+    def macdValuePctChange = tool.pctChange(macdValues.take(pctChangePeriod))
     def macdSignals = macds.collect{it.signal}
     def macdSignal = macdSignals.first()
     def macdOscillators = macds.collect{it.oscillator}
@@ -40,7 +41,7 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     def rsi = rsis.first()
     def rsiValues = rsis.collect{it.value}
     def rsiValue = rsiValues.first()
-    def rsiValuePctChange = tool.pctChange(rsiValues.take(5))
+    def rsiValuePctChange = tool.pctChange(rsiValues.take(pctChangePeriod))
     def rsiSignals = rsis.collect{it.signal}
     def rsiSignal = rsiSignals.first()
     log.debug("[{}] rsi: {}", name, rsi)
@@ -50,13 +51,13 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     def dmi = dmis.first()
     def dmiPdis = dmis.collect{it.pdi}
     def dmiPdi = dmiPdis.first()
-    def dmiPdiPctChange = tool.pctChange(dmiPdis.take(5))
+    def dmiPdiPctChange = tool.pctChange(dmiPdis.take(pctChangePeriod))
     def dmiMdis = dmis.collect{it.mdi}
     def dmiMdi = dmiMdis.first()
-    def dmiMdiPctChange = tool.pctChange(dmiMdis.take(5))
+    def dmiMdiPctChange = tool.pctChange(dmiMdis.take(pctChangePeriod))
     def dmiAdxs = dmis.collect{it.adx}
     def dmiAdx = dmiAdxs.first()
-    def dmiAdxPctChange = tool.pctChange(dmiAdxs.take(5))
+    def dmiAdxPctChange = tool.pctChange(dmiAdxs.take(pctChangePeriod))
     log.debug("[{}] dmi: {}", name, dmi)
 
     // obv
@@ -64,7 +65,7 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     def obv = obvs.first()
     def obvValues = obvs.collect{it.value}
     def obvValue = obvValues.first()
-    def obvValuePctChange = tool.pctChange(obvValues.take(5))
+    def obvValuePctChange = tool.pctChange(obvValues.take(pctChangePeriod))
     def obvSignals = obv.collect{it.signal}
     def obvSignal = obvSignals.first()
     log.debug("[{}] obv:{}", name, obv)
@@ -74,7 +75,7 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     def co = cos.first()
     def coValues = cos.collect{it.value}
     def coValue = coValues.first()
-    def coValuePctChange = tool.pctChange(coValues.take(5))
+    def coValuePctChange = tool.pctChange(coValues.take(pctChangePeriod))
     def coSignals = cos.collect{it.signal}
     def coSignal = coSignals.first()
     log.debug("[{}] co: {}", name, co)
@@ -86,6 +87,7 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     result.shortMaValueOverLongMaValue = (shortMaValue > longMaValue ? 100 : 0)
     result.macdValuePctChange = (macdValuePctChange > 0 ? 100 : 0)
     result.macdValue = (macdValue > 0 ? 100 : 0)
+    result.macdValueOverSignal = (macdValue > macdSignal ? 100 : 0)
     result.macdOscillator = (macdOscillator > 0 ? 100 : 0)
     result.rsiValuePctChange = (rsiValuePctChange > 0 ? 100 : 0)
     result.rsiValueOverSignal = (rsiValue > rsiSignal ? 100 : 0)
@@ -93,6 +95,8 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     result.dmiPdiPctChange = (dmiPdiPctChange > 0 ? 100 : 0)
     result.dmiMdiPctChange = (dmiMdiPctChange < 0 ? 100 : 0)
     result.dmiPdiOverMdi = (dmiPdi > dmiMdi ? 100 : 0)
+    result.dmiAdxPctChange = (dmiAdxPctChange > 0 && dmiPdiPctChange > 0 ? 100 : 0)
+    result.dmiAdx = (dmiAdx > 20 && dmiPdi > dmiMdi ? 100 : 0)
     result.obvValuePctChange = (obvValuePctChange > 0 ? 100 : 0)
     result.obvValueOverSignal = (obvValue > obvSignal ? 100 : 0)
     result.coValuePctChange = (coValuePctChange > 0 ? 100 : 0)
@@ -109,34 +113,18 @@ def holdVotes = []
 log.info("[{}] dateTime: {}", assetName, dateTime)
 
 // price
-def ohlcvs = assetIndicator.resample(OhlcvType.MINUTE, 1);
+def ohlcvs = assetIndicator.getOhlcvs(OhlcvType.MINUTE, 1);
 def ohlcv = ohlcvs.first()
 def prices = ohlcvs.collect{it.closePrice}
 def price = prices.first()
 def pricePctChange = tool.pctChange(prices.take(5))
-log.info("[{}] price: {}", assetName, price)
+log.info("[{}] price(%): {}({}%)", assetName, price, pricePctChange)
 
 // z-core
-def zScores = tool.zScores(prices.take(60))
+def zScores = tool.zScores(prices.take(10))
 def zScore = zScores.first()
-//def zScorePctChange = tool.pctChange(zScores)
-log.info("[{}] zScore: {} [{}]", assetName, zScore, prices.take(10));
-
-// shorMa
-def shortMas = assetIndicator.calculate(OhlcvType.MINUTE, 1, EmaContext.of(3))
-def shortMa = shortMas.first()
-def shortMaValues = shortMas.collect{it.value}
-def shortMaValue = shortMaValues.first()
-def shortMaValuePctChange = tool.pctChange(shortMaValues.take(3))
-log.info("[{}] shortMa: {}", assetName, shortMa)
-
-// longMa
-def longMas = assetIndicator.calculate(OhlcvType.MINUTE, 1, EmaContext.of(10))
-def longMa = longMas.first()
-def longMaValues = longMas.collect{it.value}
-def longMaValue = longMaValues.first()
-def longMaValuePctChange = tool.pctChange(longMaValues.take(5))
-log.info("[{}] longMa: {}", assetName, longMa)
+def zScorePctChange = tool.pctChange(zScores)
+log.info("[{}] zScore(%): {}({}%)", assetName, zScore, zScorePctChange);
 
 // minute
 def resultOfMinute = analyze(assetIndicator, OhlcvType.MINUTE, 1)
@@ -181,11 +169,11 @@ log.debug("[{}] resultOfMinute30: {}", assetName, resultOfMinute30)
 log.info("[{}] resultOfMinute30Average: {}", assetName, resultOfMinute30Average)
 
 // daily
-//def resultOfDaily = analyze(assetIndicator, OhlcvType.DAILY, 1)
-//def resultOfDailyAverage = resultOfDaily.values().average()
-//holdVotes.addAll(resultOfDaily.values())
-//log.debug("[{}] resultOfDaily: {}", assetName, resultOfDaily)
-//log.info("[{}] resultOfDailyAverage: {}", assetName, resultOfDailyAverage)
+def resultOfDaily = analyze(assetIndicator, OhlcvType.DAILY, 1)
+def resultOfDailyAverage = resultOfDaily.values().average()
+holdVotes.addAll(resultOfDaily.values())
+log.debug("[{}] resultOfDaily: {}", assetName, resultOfDaily)
+log.info("[{}] resultOfDailyAverage: {}", assetName, resultOfDailyAverage)
 
 // USD/KRW (환율 하락 시 매수)
 //def resultOfUsdKrw = analyze(indiceIndicators['USD_KRW'], OhlcvType.DAILY, 1)
@@ -207,22 +195,26 @@ def holdVotesAverage = holdVotes.average()
 log.debug("[{}] holdVotes: {}", assetName, holdVotes)
 log.info("[{}] holdVotesAverage: {}", assetName, holdVotesAverage)
 
-// buy
-if(pricePctChange > 0.0) {
+// check buy
+if(pricePctChange > 0) {
+    // default
     if(holdVotesAverage > 50) {
         hold = true
     }
-    if(tool.isDescending([resultOfMinuteAverage, resultOfMinute3Average, resultOfMinute5Average, resultOfMinute10Average, resultOfMinute15Average, resultOfMinute30Average])) {
+    // divergence (golden cross)
+    if(tool.isDescending([resultOfMinuteAverage, resultOfMinute3Average, resultOfMinute5Average, resultOfMinute10Average, resultOfMinute15Average, resultOfMinute30Average, resultOfDailyAverage])) {
         hold = true
     }
 }
 
-// sell
-if(pricePctChange < 0.0) {
+// check sell
+if(pricePctChange < 0) {
+    // default
     if(holdVotesAverage < 50) {
         hold = false
     }
-    if(tool.isAscending([resultOfMinuteAverage, resultOfMinute3Average, resultOfMinute5Average, resultOfMinute10Average, resultOfMinute15Average, resultOfMinute30Average])) {
+    // divergence (dead cross)
+    if(tool.isAscending([resultOfMinuteAverage, resultOfMinute3Average, resultOfMinute5Average, resultOfMinute10Average, resultOfMinute15Average, resultOfMinute30Average, resultOfDailyAverage])) {
         hold = true
     }
 }

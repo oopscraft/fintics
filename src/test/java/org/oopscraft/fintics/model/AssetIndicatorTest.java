@@ -34,7 +34,7 @@ public class AssetIndicatorTest {
     }
 
     @Test
-    void resample() {
+    void getOhlcvs() {
         // given
         LocalDateTime now = LocalDateTime.now();
         List<Ohlcv> minuteOhlcvs = new ArrayList<>(){{
@@ -47,7 +47,7 @@ public class AssetIndicatorTest {
         AssetIndicator assetIndicator = AssetIndicator.builder()
                 .minuteOhlcvs(minuteOhlcvs)
                 .build();
-        List<Ohlcv> resampleOhlcvs = assetIndicator.resample(OhlcvType.MINUTE, 3);
+        List<Ohlcv> resampleOhlcvs = assetIndicator.getOhlcvs(OhlcvType.MINUTE, 3);
 
         // then
         log.info("resampleOhlcvs:{}", resampleOhlcvs);
@@ -61,7 +61,7 @@ public class AssetIndicatorTest {
     }
 
     @Test
-    void resampleUnderPeriod() {
+    void getOhlcvsWithUnderPeriod() {
         // given
         LocalDateTime now = LocalDateTime.now();
         List<Ohlcv> minuteOhlcvs = new ArrayList<>(){{
@@ -73,7 +73,7 @@ public class AssetIndicatorTest {
         AssetIndicator assetIndicator = AssetIndicator.builder()
                 .minuteOhlcvs(minuteOhlcvs)
                 .build();
-        List<Ohlcv> resampleOhlcvs = assetIndicator.resample(OhlcvType.MINUTE, 3);
+        List<Ohlcv> resampleOhlcvs = assetIndicator.getOhlcvs(OhlcvType.MINUTE, 3);
 
         // then
         log.info("resampleOhlcvs:{}", resampleOhlcvs);
@@ -87,7 +87,7 @@ public class AssetIndicatorTest {
     }
 
     @Test
-    void resampleOverPeriod() {
+    void getOhlcvWithOverPeriod() {
         // given
         LocalDateTime now = LocalDateTime.now();
         List<Ohlcv> minuteOhlcvs = new ArrayList<>(){{
@@ -102,7 +102,7 @@ public class AssetIndicatorTest {
         AssetIndicator indicator = AssetIndicator.builder()
                 .minuteOhlcvs(minuteOhlcvs)
                 .build();
-        List<Ohlcv> resampleOhlcvs = indicator.resample(OhlcvType.MINUTE, 3);
+        List<Ohlcv> resampleOhlcvs = indicator.getOhlcvs(OhlcvType.MINUTE, 3);
 
         // then
         log.info("resampleOhlcvs:{}", resampleOhlcvs);

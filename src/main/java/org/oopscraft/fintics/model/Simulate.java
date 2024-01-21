@@ -29,7 +29,11 @@ public class Simulate {
     @Builder.Default
     private List<AssetIndicator> assetIndicators = new ArrayList<>();
 
-    private BigDecimal investAmount;
+    @Builder.Default
+    private BigDecimal investAmount = BigDecimal.ZERO;
+
+    @Builder.Default
+    private BigDecimal feeRate = BigDecimal.ZERO;
 
     @Builder.Default
     private Balance balance = new Balance();
