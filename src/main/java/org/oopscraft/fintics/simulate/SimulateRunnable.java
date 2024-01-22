@@ -14,6 +14,10 @@ import org.oopscraft.fintics.trade.TradeLogAppender;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -40,6 +44,8 @@ public class SimulateRunnable implements Runnable {
 
     private final ObjectMapper objectMapper;
 
+    private final PlatformTransactionManager transactionManager;
+
     @Setter
     @Getter
     private boolean interrupted = false;
@@ -55,6 +61,7 @@ public class SimulateRunnable implements Runnable {
         this.simulateLogAppender = simulateLogAppender;
         this.messagingTemplate = applicationContext.getBean(SimpMessagingTemplate.class);
         this.objectMapper = applicationContext.getBean(ObjectMapper.class);
+        this.transactionManager = applicationContext.getBean(PlatformTransactionManager.class);
 
         // add log appender
         log = (Logger) LoggerFactory.getLogger(simulate.getSimulateId());
@@ -102,6 +109,7 @@ public class SimulateRunnable implements Runnable {
                 }
 
                 log.info("== dateTime:{}", dateTime);
+                TransactionStatus transactionStatus = null;
                 try {
                     simulateIndiceClient.setDateTime(dateTime);
                     simulateTradeClient.setDateTime(dateTime);
@@ -111,6 +119,11 @@ public class SimulateRunnable implements Runnable {
                         log.info("market not open:{}", dateTime);
                         continue;
                     }
+
+                    // start transaction
+                    DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition();
+                    transactionDefinition.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+                    transactionStatus = transactionManager.getTransaction(transactionDefinition);
 
                     // executes trade
                     tradeExecutor.execute(trade, dateTime, simulateIndiceClient, simulateTradeClient);
@@ -123,6 +136,13 @@ public class SimulateRunnable implements Runnable {
 
                 } catch (Throwable e) {
                     log.warn(e.getMessage(), e);
+                } finally {
+                    if(transactionStatus != null) {
+                        if(!transactionStatus.isCompleted()) {
+                            transactionStatus.setRollbackOnly();
+                            transactionManager.commit(transactionStatus);
+                        }
+                    }
                 }
             }
 

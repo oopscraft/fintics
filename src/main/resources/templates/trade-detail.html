@@ -306,14 +306,14 @@
 
             // buy
             if(order.orderType === 'BUY') {
-                dataset.pointStyle[index] = 'triangle';
+                dataset.pointStyle[index] = 'circle';
                 dataset.pointBorderColor[index] = 'red';
                 dataset.pointBackgroundColor[index] = 'red';
             }
 
             // sell
             if(order.orderType === 'SELL') {
-                dataset.pointStyle[index] = 'circle';
+                dataset.pointStyle[index] = 'rect';
                 dataset.pointBorderColor[index] = 'blue';
                 dataset.pointBackgroundColor[index] = 'blue';
             }

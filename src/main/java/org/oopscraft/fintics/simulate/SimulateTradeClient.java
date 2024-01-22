@@ -124,11 +124,11 @@ public class SimulateTradeClient extends TradeClient {
             Objects.requireNonNull(minuteOhlcvsMap.get(asset.getAssetId()));
             LocalDateTime dateTimeFrom = dateTime.truncatedTo(ChronoUnit.MINUTES);
             LocalDateTime dateTimeTo = dateTimeFrom.plusMinutes(1).minusNanos(1);
-                Ohlcv minuteOhlcv = minuteOhlcvsMap.get(asset.getAssetId()).stream()
-                        .filter(ohlcv -> (ohlcv.getDateTime().isAfter(dateTimeFrom) || ohlcv.getDateTime().isEqual(dateTimeFrom))
-                                && (ohlcv.getDateTime().isBefore(dateTimeTo) || ohlcv.getDateTime().isEqual(dateTimeTo)))
-                        .findFirst()
-                        .orElseThrow();
+            Ohlcv minuteOhlcv = minuteOhlcvsMap.get(asset.getAssetId()).stream()
+                    .filter(ohlcv -> (ohlcv.getDateTime().isAfter(dateTimeFrom) || ohlcv.getDateTime().isEqual(dateTimeFrom))
+                            && (ohlcv.getDateTime().isBefore(dateTimeTo) || ohlcv.getDateTime().isEqual(dateTimeTo)))
+                    .findFirst()
+                    .orElseThrow();
 
             BigDecimal price = minuteOhlcv.getClosePrice();
             BigDecimal bidPrice = minuteOhlcv.getLowPrice();
