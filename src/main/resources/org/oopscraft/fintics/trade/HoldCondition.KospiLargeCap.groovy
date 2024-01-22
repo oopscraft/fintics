@@ -6,13 +6,14 @@ import org.oopscraft.fintics.model.*
 def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     // info
     def name = indicator.getIndicatorName() + ':' + ohlcvType + ':' + period
+    def pctChangePeriod = 5
 
     // shortMa
     def shortMas = indicator.calculate(ohlcvType, period, EmaContext.of(10))
     def shortMa = shortMas.first()
     def shortMaValues = shortMas.collect{it.value}
     def shortMaValue = shortMaValues.first()
-    def shortMaValuePctChange = tool.pctChange(shortMaValues.take(5))
+    def shortMaValuePctChange = tool.pctChange(shortMaValues.take(pctChangePeriod))
     log.debug("[{}] shortMa: {}", name, shortMa)
 
     // longMa
@@ -20,7 +21,7 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     def longMa = longMas.first()
     def longMaValues = longMas.collect{it.value}
     def longMaValue = longMaValues.first()
-    def longMaValuePctChange = tool.pctChange(longMaValues.take(5))
+    def longMaValuePctChange = tool.pctChange(longMaValues.take(pctChangePeriod))
     log.debug("[{}] longMa: {}", name, longMa)
 
     // macd
@@ -28,7 +29,7 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     def macd = macds.first()
     def macdValues = macds.collect{it.value}
     def macdValue = macdValues.first()
-    def macdValuePctChange = tool.pctChange(macdValues.take(5))
+    def macdValuePctChange = tool.pctChange(macdValues.take(pctChangePeriod))
     def macdSignals = macds.collect{it.signal}
     def macdSignal = macdSignals.first()
     def macdOscillators = macds.collect{it.oscillator}
@@ -40,7 +41,7 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     def rsi = rsis.first()
     def rsiValues = rsis.collect{it.value}
     def rsiValue = rsiValues.first()
-    def rsiValuePctChange = tool.pctChange(rsiValues.take(5))
+    def rsiValuePctChange = tool.pctChange(rsiValues.take(pctChangePeriod))
     def rsiSignals = rsis.collect{it.signal}
     def rsiSignal = rsiSignals.first()
     log.debug("[{}] rsi: {}", name, rsi)
@@ -50,13 +51,13 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     def dmi = dmis.first()
     def dmiPdis = dmis.collect{it.pdi}
     def dmiPdi = dmiPdis.first()
-    def dmiPdiPctChange = tool.pctChange(dmiPdis.take(5))
+    def dmiPdiPctChange = tool.pctChange(dmiPdis.take(pctChangePeriod))
     def dmiMdis = dmis.collect{it.mdi}
     def dmiMdi = dmiMdis.first()
-    def dmiMdiPctChange = tool.pctChange(dmiMdis.take(5))
+    def dmiMdiPctChange = tool.pctChange(dmiMdis.take(pctChangePeriod))
     def dmiAdxs = dmis.collect{it.adx}
     def dmiAdx = dmiAdxs.first()
-    def dmiAdxPctChange = tool.pctChange(dmiAdxs.take(5))
+    def dmiAdxPctChange = tool.pctChange(dmiAdxs.take(pctChangePeriod))
     log.debug("[{}] dmi: {}", name, dmi)
 
     // obv
@@ -64,7 +65,7 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     def obv = obvs.first()
     def obvValues = obvs.collect{it.value}
     def obvValue = obvValues.first()
-    def obvValuePctChange = tool.pctChange(obvValues.take(5))
+    def obvValuePctChange = tool.pctChange(obvValues.take(pctChangePeriod))
     def obvSignals = obv.collect{it.signal}
     def obvSignal = obvSignals.first()
     log.debug("[{}] obv:{}", name, obv)
@@ -74,7 +75,7 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     def co = cos.first()
     def coValues = cos.collect{it.value}
     def coValue = coValues.first()
-    def coValuePctChange = tool.pctChange(coValues.take(5))
+    def coValuePctChange = tool.pctChange(coValues.take(pctChangePeriod))
     def coSignals = cos.collect{it.signal}
     def coSignal = coSignals.first()
     log.debug("[{}] co: {}", name, co)
@@ -86,6 +87,7 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     result.shortMaValueOverLongMaValue = (shortMaValue > longMaValue ? 100 : 0)
     result.macdValuePctChange = (macdValuePctChange > 0 ? 100 : 0)
     result.macdValue = (macdValue > 0 ? 100 : 0)
+    result.macdValueOverSignal = (macdValue > macdSignal ? 100 : 0)
     result.macdOscillator = (macdOscillator > 0 ? 100 : 0)
     result.rsiValuePctChange = (rsiValuePctChange > 0 ? 100 : 0)
     result.rsiValueOverSignal = (rsiValue > rsiSignal ? 100 : 0)
@@ -93,6 +95,8 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     result.dmiPdiPctChange = (dmiPdiPctChange > 0 ? 100 : 0)
     result.dmiMdiPctChange = (dmiMdiPctChange < 0 ? 100 : 0)
     result.dmiPdiOverMdi = (dmiPdi > dmiMdi ? 100 : 0)
+    result.dmiAdxPctChange = (dmiAdxPctChange > 0 && dmiPdiPctChange > 0 ? 100 : 0)
+    result.dmiAdx = (dmiAdx > 20 && dmiPdi > dmiMdi ? 100 : 0)
     result.obvValuePctChange = (obvValuePctChange > 0 ? 100 : 0)
     result.obvValueOverSignal = (obvValue > obvSignal ? 100 : 0)
     result.coValuePctChange = (coValuePctChange > 0 ? 100 : 0)
@@ -106,6 +110,7 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
 // defines
 def assetName = assetIndicator.getAssetName()
 def holdVotes = []
+log.info("[{}] dateTime: {}", assetName, dateTime)
 
 // minute
 def resultOfMinute = analyze(assetIndicator, OhlcvType.MINUTE, 1)
@@ -149,6 +154,13 @@ holdVotes.addAll(resultOfMinute30.values())
 log.debug("[{}] resultOfMinute30: {}", assetName, resultOfMinute30)
 log.info("[{}] resultOfMinute30Average: {}", assetName, resultOfMinute30Average)
 
+// minute60
+def resultOfMinute60 = analyze(assetIndicator, OhlcvType.MINUTE, 60)
+def resultOfMinute60Average = resultOfMinute60.values().average()
+holdVotes.addAll(resultOfMinute60.values())
+log.debug("[{}] resultOfMinute60: {}", assetName, resultOfMinute60)
+log.info("[{}] resultOfMinute60Average: {}", assetName, resultOfMinute60Average)
+
 // daily
 def resultOfDaily = analyze(assetIndicator, OhlcvType.DAILY, 1)
 def resultOfDailyAverage = resultOfDaily.values().average()
@@ -169,13 +181,13 @@ def holdVotesAverage = holdVotes.average()
 log.debug("[{}] holdVotes: {}", assetName, holdVotes)
 log.info("[{}] holdVotesAverage: {}", assetName, holdVotesAverage)
 
-// buy
-if(holdVotesAverage > 70) {
+// check buy
+if(holdVotesAverage > 60) {
     hold = true
 }
 
-// sell
-if(holdVotesAverage < 50) {
+// check sell
+if(holdVotesAverage < 40) {
     hold = false
 }
 

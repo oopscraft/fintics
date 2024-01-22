@@ -6,7 +6,7 @@ import org.oopscraft.fintics.model.*
 def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     // info
     def name = indicator.getIndicatorName() + ':' + ohlcvType + ':' + period
-    def pctChangePeriod = 3
+    def pctChangePeriod = 5
 
     // shortMa
     def shortMas = indicator.calculate(ohlcvType, period, EmaContext.of(10))
@@ -17,7 +17,7 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     log.debug("[{}] shortMa: {}", name, shortMa)
 
     // longMa
-    def longMas = indicator.calculate(ohlcvType, period, EmaContext.of(20))
+    def longMas = indicator.calculate(ohlcvType, period, EmaContext.of(30))
     def longMa = longMas.first()
     def longMaValues = longMas.collect{it.value}
     def longMaValue = longMaValues.first()
@@ -112,20 +112,6 @@ def assetName = assetIndicator.getAssetName()
 def holdVotes = []
 log.info("[{}] dateTime: {}", assetName, dateTime)
 
-// price
-def ohlcvs = assetIndicator.getOhlcvs(OhlcvType.MINUTE, 1);
-def ohlcv = ohlcvs.first()
-def prices = ohlcvs.collect{it.closePrice}
-def price = prices.first()
-def pricePctChange = tool.pctChange(prices.take(5))
-log.info("[{}] price(%): {}({}%)", assetName, price, pricePctChange)
-
-// z-core
-def zScores = tool.zScores(prices.take(10))
-def zScore = zScores.first()
-def zScorePctChange = tool.pctChange(zScores)
-log.info("[{}] zScore(%): {}({}%)", assetName, zScore, zScorePctChange);
-
 // minute
 def resultOfMinute = analyze(assetIndicator, OhlcvType.MINUTE, 1)
 def resultOfMinuteAverage = resultOfMinute.values().average()
@@ -168,26 +154,19 @@ holdVotes.addAll(resultOfMinute30.values())
 log.debug("[{}] resultOfMinute30: {}", assetName, resultOfMinute30)
 log.info("[{}] resultOfMinute30Average: {}", assetName, resultOfMinute30Average)
 
+// minute60
+def resultOfMinute60 = analyze(assetIndicator, OhlcvType.MINUTE, 60)
+def resultOfMinute60Average = resultOfMinute60.values().average()
+holdVotes.addAll(resultOfMinute60.values())
+log.debug("[{}] resultOfMinute60: {}", assetName, resultOfMinute60)
+log.info("[{}] resultOfMinute60Average: {}", assetName, resultOfMinute60Average)
+
 // daily
 def resultOfDaily = analyze(assetIndicator, OhlcvType.DAILY, 1)
 def resultOfDailyAverage = resultOfDaily.values().average()
 holdVotes.addAll(resultOfDaily.values())
 log.debug("[{}] resultOfDaily: {}", assetName, resultOfDaily)
 log.info("[{}] resultOfDailyAverage: {}", assetName, resultOfDailyAverage)
-
-// USD/KRW (환율 하락 시 매수)
-//def resultOfUsdKrw = analyze(indiceIndicators['USD_KRW'], OhlcvType.DAILY, 1)
-//def resultOfUsdKrwAverage = resultOfUsdKrw.values().average()
-//holdVotes.addAll(resultOfUsdKrw.values().collect{100 - (it as Number)})
-//log.debug("[{}] resultOfUsdKrw: {}", assetName, resultOfUsdKrw)
-//log.info("[{}] resultOfUsdKrwAverage: {}", assetName, resultOfUsdKrwAverage)
-
-// Nasdaq Future (나스닥 선물 상승 시 매수)
-//def resultOfNdxFuture = analyze(indiceIndicators['NDX_FUTURE'], OhlcvType.DAILY, 1)
-//def resultOfNdxFutureAverage = resultOfNdxFuture.values().average()
-//holdVotes.addAll(resultOfNdxFuture.values())
-//log.debug("[{}] resultOfNdxFuture: {}", assetName, resultOfNdxFuture)
-//log.info("[{}] resultOfNdxFutureAverage: {}", assetName, resultOfNdxFutureAverage)
 
 // decide hold
 def hold = null
@@ -196,27 +175,13 @@ log.debug("[{}] holdVotes: {}", assetName, holdVotes)
 log.info("[{}] holdVotesAverage: {}", assetName, holdVotesAverage)
 
 // check buy
-if(pricePctChange > 0) {
-    // default
-    if(holdVotesAverage > 50) {
-        hold = true
-    }
-    // divergence (golden cross)
-    if(tool.isDescending([resultOfMinuteAverage, resultOfMinute3Average, resultOfMinute5Average, resultOfMinute10Average, resultOfMinute15Average, resultOfMinute30Average, resultOfDailyAverage])) {
-        hold = true
-    }
+if(holdVotesAverage > 60) {
+    hold = true
 }
 
 // check sell
-if(pricePctChange < 0) {
-    // default
-    if(holdVotesAverage < 50) {
-        hold = false
-    }
-    // divergence (dead cross)
-    if(tool.isAscending([resultOfMinuteAverage, resultOfMinute3Average, resultOfMinute5Average, resultOfMinute10Average, resultOfMinute15Average, resultOfMinute30Average, resultOfDailyAverage])) {
-        hold = true
-    }
+if(holdVotesAverage < 40) {
+    hold = false
 }
 
 // return

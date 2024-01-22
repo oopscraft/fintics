@@ -24,7 +24,7 @@
         const simulate = new duice.ObjectProxy({
             simulateId: tradeId,
             trade: trade,
-            dateTimeFrom: dateFns.startOfDay(dateFns.subDays(new Date(),7)).toISOString(),
+            dateTimeFrom: dateFns.startOfDay(dateFns.subDays(new Date(),3)).toISOString(),
             dateTimeTo: dateFns.endOfDay(Date()).toISOString(),
             investAmount: 10_000_000,
             feeRate: 0.01,
