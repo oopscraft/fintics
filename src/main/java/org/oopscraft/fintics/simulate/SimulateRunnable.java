@@ -6,6 +6,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import org.oopscraft.fintics.dao.SimulateEntity;
+import org.oopscraft.fintics.dao.SimulateRepository;
+import org.oopscraft.fintics.model.Balance;
 import org.oopscraft.fintics.model.Order;
 import org.oopscraft.fintics.model.Simulate;
 import org.oopscraft.fintics.model.Trade;
@@ -46,6 +49,8 @@ public class SimulateRunnable implements Runnable {
 
     private final PlatformTransactionManager transactionManager;
 
+    private final SimulateRepository simulateRepository;
+
     @Setter
     @Getter
     private boolean interrupted = false;
@@ -62,6 +67,7 @@ public class SimulateRunnable implements Runnable {
         this.messagingTemplate = applicationContext.getBean(SimpMessagingTemplate.class);
         this.objectMapper = applicationContext.getBean(ObjectMapper.class);
         this.transactionManager = applicationContext.getBean(PlatformTransactionManager.class);
+        this.simulateRepository = applicationContext.getBean(SimulateRepository.class);
 
         // add log appender
         log = (Logger) LoggerFactory.getLogger(simulate.getSimulateId());
@@ -72,6 +78,9 @@ public class SimulateRunnable implements Runnable {
 
     @Override
     public void run() {
+        // save history
+        saveHistory("STARTED");
+
         simulateLogAppender.start();
         try {
             Trade trade = simulate.getTrade();
@@ -152,6 +161,9 @@ public class SimulateRunnable implements Runnable {
         }finally{
             simulateLogAppender.stop();
             this.onComplete.run();
+
+            // save history
+            saveHistory("COMPLETED");
         }
     }
 
@@ -169,6 +181,37 @@ public class SimulateRunnable implements Runnable {
 
     public void onComplete(Runnable listener) {
         this.onComplete = listener;
+    }
+
+    public void saveHistory(String result) {
+        SimulateEntity simulateEntity = simulateRepository.findById(simulate.getSimulateId())
+                .orElse(null);
+        if(simulateEntity == null) {
+            simulateEntity = SimulateEntity.builder()
+                    .simulateId(simulate.getSimulateId())
+                    .holdCondition(simulate.getTrade().getHoldCondition())
+                    .dateTimeFrom(simulate.getDateTimeFrom())
+                    .dateTimeTo(simulate.getDateTimeTo())
+                    .investAmount(simulate.getInvestAmount())
+                    .feeRate(simulate.getFeeRate())
+                    .startedAt(LocalDateTime.now())
+                    .build();
+        }
+        simulateEntity.setEndedAt(LocalDateTime.now());
+        simulateEntity.setResult(result);
+
+        // result message
+        String resultMessage = null;
+        try {
+            Balance balance = simulateTradeClient.getBalance();
+            resultMessage = objectMapper.writeValueAsString(balance);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+        simulateEntity.setResultMessage(resultMessage);
+
+        // save
+        simulateRepository.saveAndFlush(simulateEntity);
     }
 
 }

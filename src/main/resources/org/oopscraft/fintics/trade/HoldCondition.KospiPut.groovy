@@ -3,7 +3,14 @@ package org.oopscraft.fintics.trade
 import org.oopscraft.fintics.calculator.*
 import org.oopscraft.fintics.model.*
 
-def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
+/**
+ * analyze indicator
+ * @param indicator indicator
+ * @param ohlcvType ohlcvType
+ * @param period period
+ * @return result map
+ */
+def analyzeIndicator(Indicator indicator, OhlcvType ohlcvType, int period) {
     // info
     def name = indicator.getIndicatorName() + ':' + ohlcvType + ':' + period
     def pctChangePeriod = 5
@@ -107,96 +114,62 @@ def analyze(Indicator indicator, OhlcvType ohlcvType, int period) {
     return result
 }
 
+//=============================
 // defines
-def assetName = assetIndicator.getAssetName()
-def holdVotes = []
-log.info("[{}] dateTime: {}", assetName, dateTime)
-
-// minute
-def resultOfMinute = analyze(assetIndicator, OhlcvType.MINUTE, 1)
-def resultOfMinuteAverage = resultOfMinute.values().average()
-holdVotes.addAll(resultOfMinute.values())
-log.debug("[{}] resultOfMinute: {}", assetName, resultOfMinute)
-log.info("[{}] resultOfMinuteAverage: {}", assetName, resultOfMinuteAverage)
-
-// minute3
-def resultOfMinute3 = analyze(assetIndicator, OhlcvType.MINUTE, 3)
-def resultOfMinute3Average = resultOfMinute3.values().average()
-holdVotes.addAll(resultOfMinute3.values())
-log.debug("[{}] resultOfMinute3: {}", assetName, resultOfMinute3)
-log.info("[{}] resultOfMinute3verage: {}", assetName, resultOfMinute3Average)
-
-// minute5
-def resultOfMinute5 = analyze(assetIndicator, OhlcvType.MINUTE, 5)
-def resultOfMinute5Average = resultOfMinute5.values().average()
-holdVotes.addAll(resultOfMinute5.values())
-log.debug("[{}] resultOfMinute5: {}", assetName, resultOfMinute5)
-log.info("[{}] resultOfMinute5Average: {}", assetName, resultOfMinute5Average)
-
-// minute10
-def resultOfMinute10 = analyze(assetIndicator, OhlcvType.MINUTE, 10)
-def resultOfMinute10Average = resultOfMinute10.values().average()
-holdVotes.addAll(resultOfMinute10.values())
-log.debug("[{}] resultOfMinute10: {}", assetName, resultOfMinute10)
-log.info("[{}] resultOfMinute10Average: {}", assetName, resultOfMinute10Average)
-
-// minute15
-def resultOfMinute15 = analyze(assetIndicator, OhlcvType.MINUTE, 15)
-def resultOfMinute15Average = resultOfMinute15.values().average()
-holdVotes.addAll(resultOfMinute15.values())
-log.debug("[{}] resultOfMinute15: {}", assetName, resultOfMinute15)
-log.info("[{}] resultOfMinute15Average: {}", assetName, resultOfMinute15Average)
-
-// minute30
-def resultOfMinute30 = analyze(assetIndicator, OhlcvType.MINUTE, 30)
-def resultOfMinute30Average = resultOfMinute30.values().average()
-holdVotes.addAll(resultOfMinute30.values())
-log.debug("[{}] resultOfMinute30: {}", assetName, resultOfMinute30)
-log.info("[{}] resultOfMinute30Average: {}", assetName, resultOfMinute30Average)
-
-// minute60
-def resultOfMinute60 = analyze(assetIndicator, OhlcvType.MINUTE, 60)
-def resultOfMinute60Average = resultOfMinute60.values().average()
-holdVotes.addAll(resultOfMinute60.values())
-log.debug("[{}] resultOfMinute60: {}", assetName, resultOfMinute60)
-log.info("[{}] resultOfMinute60Average: {}", assetName, resultOfMinute60Average)
-
-// daily
-def resultOfDaily = analyze(assetIndicator, OhlcvType.DAILY, 1)
-def resultOfDailyAverage = resultOfDaily.values().average()
-holdVotes.addAll(resultOfDaily.values())
-log.debug("[{}] resultOfDaily: {}", assetName, resultOfDaily)
-log.info("[{}] resultOfDailyAverage: {}", assetName, resultOfDailyAverage)
-
-// USD/KRW (환율 상승 시 매수)
-def resultOfUsdKrw = analyze(indiceIndicators['USD_KRW'], OhlcvType.DAILY, 1)
-def resultOfUsdKrwAverage = resultOfUsdKrw.values().average()
-holdVotes.addAll(resultOfUsdKrw.values())
-log.debug("[{}] resultOfUsdKrw: {}", assetName, resultOfUsdKrw)
-log.info("[{}] resultOfUsdKrwAverage: {}", assetName, resultOfUsdKrwAverage)
-
-// Nasdaq Future (나스닥 선물 하락 시 매수)
-def resultOfNdxFuture = analyze(indiceIndicators['NDX_FUTURE'], OhlcvType.DAILY, 1)
-def resultOfNdxFutureAverage = resultOfNdxFuture.values().average()
-holdVotes.addAll(resultOfNdxFuture.values().collect{100 - (it as Number)})
-log.debug("[{}] resultOfNdxFuture: {}", assetName, resultOfNdxFuture)
-log.info("[{}] resultOfNdxFutureAverage: {}", assetName, resultOfNdxFutureAverage)
-
-// decide hold
+//=============================
 def hold = null
-def holdVotesAverage = holdVotes.average()
-log.debug("[{}] holdVotes: {}", assetName, holdVotes)
-log.info("[{}] holdVotesAverage: {}", assetName, holdVotesAverage)
+def assetId = assetIndicator.getAssetId()
+def assetName = assetIndicator.getAssetName()
+def assetAlias = "${assetName}(${assetId})"
+def analysisScores = []
 
-// check buy
-if(holdVotesAverage > 60) {
-    hold = true
+//=============================
+// analyze asset
+//=============================
+def assetResultMap = [:]
+assetResultMap.minute3 = analyzeIndicator(assetIndicator, OhlcvType.MINUTE, 5)
+assetResultMap.minute10 = analyzeIndicator(assetIndicator, OhlcvType.MINUTE, 10)
+assetResultMap.minute30 = analyzeIndicator(assetIndicator, OhlcvType.MINUTE, 30)
+assetResultMap.minute60 = analyzeIndicator(assetIndicator, OhlcvType.MINUTE, 60)
+assetResultMap.daily = analyzeIndicator(assetIndicator, OhlcvType.DAILY, 1)
+assetResultMap.each { key, value ->
+    def average = value.values().average()
+    analysisScores.add(average)
+    log.debug("[{}] assetResult.{}: {}", assetAlias, key, average)
 }
 
-// check sell
-if(holdVotesAverage < 40) {
+//=============================
+// analyze indice
+//=============================
+// USD/KRW
+def usdKrwResult = analyzeIndicator(indiceIndicators['USD_KRW'], OhlcvType.MINUTE, 60)
+analysisScores.add(usdKrwResult.values().average())
+log.debug("[{}] usdKrwResult: {}", assetAlias, usdKrwResult.values().average())
+
+// Nasdaq Future
+def ndxFutureResult = analyzeIndicator(indiceIndicators['NDX_FUTURE'], OhlcvType.MINUTE, 60)
+analysisScores.add(100 - (ndxFutureResult.values().average() as Number))
+log.debug("[{}] ndxFutureResult: {}", assetAlias, ndxFutureResult.values().average())
+
+//=============================
+// decide hold
+//=============================
+def analysisScoreAverage = analysisScores.average()
+log.info("[{}] analysisScoreAverage:{}", assetAlias, analysisScoreAverage)
+def assetScores = assetResultMap.values().collect{it.values().average()}
+log.info("[{}] assetScores:{}", assetAlias, assetScores)
+
+// default
+if(analysisScoreAverage > 70) {
+    log.info("[{}] analysisScoreAverage over 70", assetAlias)
+    hold = true
+}
+if(analysisScoreAverage < 50) {
+    log.info("[{}] assetResult under 50", assetAlias)
     hold = false
 }
 
+//==============================
 // return
+//==============================
 return hold

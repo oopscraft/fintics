@@ -89,24 +89,24 @@ def analyzeIndicator(Indicator indicator, OhlcvType ohlcvType, int period) {
 
     // result
     def result = [:]
-//    result.shortMaValuePctChange = (shortMaValuePctChange > 0 ? 100 : 0)
-//    result.longMaValuePctChange = (longMaValuePctChange > 0 ? 100 : 0)
+    result.shortMaValuePctChange = (shortMaValuePctChange > 0 ? 100 : 0)
+    result.longMaValuePctChange = (longMaValuePctChange > 0 ? 100 : 0)
     result.shortMaValueOverLongMaValue = (shortMaValue > longMaValue ? 100 : 0)
-//    result.macdValuePctChange = (macdValuePctChange > 0 ? 100 : 0)
+    result.macdValuePctChange = (macdValuePctChange > 0 ? 100 : 0)
     result.macdValue = (macdValue > 0 ? 100 : 0)
     result.macdValueOverSignal = (macdValue > macdSignal ? 100 : 0)
     result.macdOscillator = (macdOscillator > 0 ? 100 : 0)
-//    result.rsiValuePctChange = (rsiValuePctChange > 0 ? 100 : 0)
+    result.rsiValuePctChange = (rsiValuePctChange > 0 ? 100 : 0)
     result.rsiValueOverSignal = (rsiValue > rsiSignal ? 100 : 0)
     result.rsiValue = (rsiValue > 50 ? 100 : 0)
-//    result.dmiPdiPctChange = (dmiPdiPctChange > 0 ? 100 : 0)
-//    result.dmiMdiPctChange = (dmiMdiPctChange < 0 ? 100 : 0)
+    result.dmiPdiPctChange = (dmiPdiPctChange > 0 ? 100 : 0)
+    result.dmiMdiPctChange = (dmiMdiPctChange < 0 ? 100 : 0)
     result.dmiPdiOverMdi = (dmiPdi > dmiMdi ? 100 : 0)
-//    result.dmiAdxPctChange = (dmiAdxPctChange > 0 && dmiPdiPctChange > 0 ? 100 : 0)
-//    result.dmiAdx = (dmiAdx > 20 && dmiPdi > dmiMdi ? 100 : 0)
-//    result.obvValuePctChange = (obvValuePctChange > 0 ? 100 : 0)
+    result.dmiAdxPctChange = (dmiAdxPctChange > 0 && dmiPdiPctChange > 0 ? 100 : 0)
+    result.dmiAdx = (dmiAdx > 20 && dmiPdi > dmiMdi ? 100 : 0)
+    result.obvValuePctChange = (obvValuePctChange > 0 ? 100 : 0)
     result.obvValueOverSignal = (obvValue > obvSignal ? 100 : 0)
-//    result.coValuePctChange = (coValuePctChange > 0 ? 100 : 0)
+    result.coValuePctChange = (coValuePctChange > 0 ? 100 : 0)
     result.coValueOverSignal = (coValue > coSignal ? 100 : 0)
     result.coValue = (coValue > 0 ? 100 : 0)
 
@@ -121,70 +121,58 @@ def hold = null
 def assetId = assetIndicator.getAssetId()
 def assetName = assetIndicator.getAssetName()
 def assetAlias = "${assetName}(${assetId})"
+def analysisScores = []
 
 //=============================
-// analyze
+// analyze asset
 //=============================
-// asset analysis
-def assetAnalysis = [:]
-assetAnalysis.minute = analyzeIndicator(assetIndicator, OhlcvType.MINUTE, 1)
-//assetAnalysis.minute3 = analyzeIndicator(assetIndicator, OhlcvType.MINUTE, 3)
-assetAnalysis.minute5 = analyzeIndicator(assetIndicator, OhlcvType.MINUTE, 5)
-assetAnalysis.minute10 = analyzeIndicator(assetIndicator, OhlcvType.MINUTE, 10)
-assetAnalysis.minute15 = analyzeIndicator(assetIndicator, OhlcvType.MINUTE, 15)
-assetAnalysis.minute30 = analyzeIndicator(assetIndicator, OhlcvType.MINUTE, 30)
-assetAnalysis.minute60 = analyzeIndicator(assetIndicator, OhlcvType.MINUTE, 60)
-assetAnalysis.daily = analyzeIndicator(assetIndicator, OhlcvType.DAILY, 1)
-assetAnalysis.each { key, value -> log.info("[{}] analysisResult.{}: {}", assetAlias, key, value.values().average())}
-
-// indice analysis
-// TODO
+def assetResultMap = [:]
+assetResultMap.minute3 = analyzeIndicator(assetIndicator, OhlcvType.MINUTE, 5)
+assetResultMap.minute10 = analyzeIndicator(assetIndicator, OhlcvType.MINUTE, 10)
+assetResultMap.minute30 = analyzeIndicator(assetIndicator, OhlcvType.MINUTE, 30)
+assetResultMap.minute60 = analyzeIndicator(assetIndicator, OhlcvType.MINUTE, 60)
+assetResultMap.daily = analyzeIndicator(assetIndicator, OhlcvType.DAILY, 1)
+assetResultMap.each { key, value ->
+    def average = value.values().average()
+    analysisScores.add(average)
+    log.debug("[{}] assetResult.{}: {}", assetAlias, key, average)
+}
 
 //=============================
-// 1. check default
+// analyze indice
 //=============================
-def analysisAverage = [
-        assetAnalysis.minute.values().average(),
-//        assetAnalysis.minute3.values().average(),
-        assetAnalysis.minute5.values().average(),
-        assetAnalysis.minute10.values().average(),
-//        assetAnalysis.minute15.values().average(),
-        assetAnalysis.minute30.values().average(),
-        assetAnalysis.minute60.values().average(),
-        assetAnalysis.daily.values().average(),
-].average()
-log.info("[{}] analysisAverage:{}", assetAlias, analysisAverage)
+// USD/KRW
+//def usdKrwResult = analyzeIndicator(indiceIndicators['USD_KRW'], OhlcvType.MINUTE, 60)
+//analysisScores.add(100 - (usdKrwResult.values().average() as Number))
+//log.debug("[{}] usdKrwResult: {}", assetAlias, usdKrwResult.values().average())
 
-// buy
-if(analysisAverage > 70) {
+// KOSPI
+//def kospiFutureResult = analyzeIndicator(indiceIndicators['KOSPI'], OhlcvType.MINUTE, 60)
+//analysisScores.add(kospiFutureResult.values().average())
+//log.debug("[{}] kospiFutureResult: {}", assetAlias, kospiFutureResult.values().average())
+
+// Nasdaq Future
+//def ndxFutureResult = analyzeIndicator(indiceIndicators['NDX_FUTURE'], OhlcvType.MINUTE, 60)
+//analysisScores.add(ndxFutureResult.values().average())
+//log.debug("[{}] ndxFutureResult: {}", assetAlias, ndxFutureResult.values().average())
+
+//=============================
+// decide hold
+//=============================
+def analysisScoreAverage = analysisScores.average()
+log.info("[{}] analysisScoreAverage:{}", assetAlias, analysisScoreAverage)
+def assetScores = assetResultMap.values().collect{it.values().average()}
+log.info("[{}] assetScores:{}", assetAlias, assetScores)
+
+// default
+if(analysisScoreAverage > 70) {
+    log.info("[{}] analysisScoreAverage over 70", assetAlias)
     hold = true
 }
-
-// sell
-if(analysisAverage < 50) {
+if(analysisScoreAverage < 50) {
+    log.info("[{}] assetResult under 50", assetAlias)
     hold = false
 }
-
-//=============================
-// 2. check divergence
-//=============================
-//def divergenceFactors = [
-//        assetAnalysis.minute.values().average(),
-//        assetAnalysis.minute3.values().average(),
-//        assetAnalysis.minute5.values().average(),
-//        assetAnalysis.minute10.values().average(),
-//        assetAnalysis.minute15.values().average(),
-//        assetAnalysis.minute30.values().average(),
-//        assetAnalysis.minute60.values().average(),
-//        assetAnalysis.daily.values().average(),
-//]
-//log.info("[{}] divergenceFactors:{}", assetAlias, divergenceFactors)
-//if(tool.isDescending(analysisAverage)) {
-//    hold = true
-//}
-//if(tool.isAscending(analysisAverage)) {
-//    hold = false
-//}
 
 //==============================
 // return
