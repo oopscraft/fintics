@@ -58,7 +58,7 @@ public class SimulateService {
             List<Ohlcv> minuteOhlcvs = indiceOhlcvRepository.findAllByIndiceIdAndOhlcvType(indiceId, OhlcvType.MINUTE, dateTimeFrom, dateTimeTo, Pageable.unpaged()).stream()
                     .map(Ohlcv::from)
                     .toList();
-            List<Ohlcv> dailyOhlcvs = indiceOhlcvRepository.findAllByIndiceIdAndOhlcvType(indiceId, OhlcvType.DAILY, dateTimeFrom, dateTimeTo, Pageable.unpaged()).stream()
+            List<Ohlcv> dailyOhlcvs = indiceOhlcvRepository.findAllByIndiceIdAndOhlcvType(indiceId, OhlcvType.DAILY, dateTimeFrom.minusMonths(1), dateTimeTo, Pageable.unpaged()).stream()
                     .map(Ohlcv::from)
                     .toList();
             IndiceIndicator indiceIndicator = IndiceIndicator.builder()
@@ -72,21 +72,23 @@ public class SimulateService {
         // asset indicators
         List<AssetIndicator> assetIndicators = new ArrayList<>();
         trade.getTradeAssets().forEach(tradeAsset -> {
-            List<Ohlcv> minuteOhlcvs = assetOhlcvRepository.findAllByTradeClientIdAndAssetIdAndOhlcvType(trade.getTradeClientId(), tradeAsset.getAssetId(), OhlcvType.MINUTE, dateTimeFrom, dateTimeTo, Pageable.unpaged())
-                    .stream()
-                    .map(Ohlcv::from)
-                    .toList();
-            List<Ohlcv> dailyOhlcvs = assetOhlcvRepository.findAllByTradeClientIdAndAssetIdAndOhlcvType(trade.getTradeClientId(), tradeAsset.getAssetId(), OhlcvType.DAILY, dateTimeFrom, dateTimeTo, Pageable.unpaged())
-                    .stream()
-                    .map(Ohlcv::from)
-                    .toList();
-            AssetIndicator assetIndicator = AssetIndicator.builder()
-                    .assetId(tradeAsset.getAssetId())
-                    .assetName(tradeAsset.getAssetName())
-                    .minuteOhlcvs(minuteOhlcvs)
-                    .dailyOhlcvs(dailyOhlcvs)
-                    .build();
-            assetIndicators.add(assetIndicator);
+            if(tradeAsset.isEnabled()) {
+                List<Ohlcv> minuteOhlcvs = assetOhlcvRepository.findAllByTradeClientIdAndAssetIdAndOhlcvType(trade.getTradeClientId(), tradeAsset.getAssetId(), OhlcvType.MINUTE, dateTimeFrom, dateTimeTo, Pageable.unpaged())
+                        .stream()
+                        .map(Ohlcv::from)
+                        .toList();
+                List<Ohlcv> dailyOhlcvs = assetOhlcvRepository.findAllByTradeClientIdAndAssetIdAndOhlcvType(trade.getTradeClientId(), tradeAsset.getAssetId(), OhlcvType.DAILY, dateTimeFrom.minusMonths(1), dateTimeTo, Pageable.unpaged())
+                        .stream()
+                        .map(Ohlcv::from)
+                        .toList();
+                AssetIndicator assetIndicator = AssetIndicator.builder()
+                        .assetId(tradeAsset.getAssetId())
+                        .assetName(tradeAsset.getAssetName())
+                        .minuteOhlcvs(minuteOhlcvs)
+                        .dailyOhlcvs(dailyOhlcvs)
+                        .build();
+                assetIndicators.add(assetIndicator);
+            }
         });
 
         // return prepared simulate

@@ -204,7 +204,7 @@
                     simulate.indiceIndicators.forEach(indiceIndicator => {
                         // daily
                         let dailyOhlcvs = indiceIndicator['dailyOhlcvs'];
-                        let dailyTimeSeries = _createTimeSeries(dateFrom , dateTo, dailyOhlcvs);
+                        let dailyTimeSeries = _createTimeSeries(dateFns.subMonths(dateFrom,1) , dateTo, dailyOhlcvs);
                         let dailyDataset = {
                             label: indiceIndicator.indicatorName,
                             data: dailyTimeSeries,
@@ -232,7 +232,7 @@
                     simulate.assetIndicators.forEach(assetIndicator => {
                         // daily
                         let dailyOhlcvs = assetIndicator['dailyOhlcvs'];
-                        let dailyTimeSeries = _createTimeSeries(dateFrom, dateTo, dailyOhlcvs);
+                        let dailyTimeSeries = _createTimeSeries(dateFns.subMonths(dateFrom,1), dateTo, dailyOhlcvs);
                         let dailyDataset = {
                             assetId: assetIndicator.assetId,
                             label: assetIndicator.assetName,

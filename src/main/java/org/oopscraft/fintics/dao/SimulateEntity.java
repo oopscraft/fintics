@@ -12,12 +12,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(
-        name = "fintics_order",
-        indexes = {
-                @Index(name = "ix_fintics_order_trade_id", columnList = "trade_id")
-        }
-)
+@Table(name = "fintics_simulate")
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder

@@ -13,7 +13,7 @@ import org.oopscraft.fintics.model.*
 def analyzeIndicator(Indicator indicator, OhlcvType ohlcvType, int period) {
     // info
     def name = indicator.getIndicatorName() + ':' + ohlcvType + ':' + period
-    def pctChangePeriod = 5
+    def pctChangePeriod = 10
 
     // shortMa
     def shortMas = indicator.calculate(ohlcvType, period, EmaContext.of(10))
@@ -121,47 +121,68 @@ def hold = null
 def assetId = assetIndicator.getAssetId()
 def assetName = assetIndicator.getAssetName()
 def assetAlias = "${assetName}(${assetId})"
-def analysisScores = []
+def analysisAverages = []
 
 //=============================
 // analyze asset
 //=============================
-def assetResultMap = [:]
-assetResultMap.minute3 = analyzeIndicator(assetIndicator, OhlcvType.MINUTE, 5)
-assetResultMap.minute10 = analyzeIndicator(assetIndicator, OhlcvType.MINUTE, 10)
-assetResultMap.minute30 = analyzeIndicator(assetIndicator, OhlcvType.MINUTE, 30)
-assetResultMap.minute60 = analyzeIndicator(assetIndicator, OhlcvType.MINUTE, 60)
-assetResultMap.daily = analyzeIndicator(assetIndicator, OhlcvType.DAILY, 1)
-assetResultMap.each { key, value ->
+def assetAnalysisMap = [:]
+def assetAnalysisAverages = []
+assetAnalysisMap.minute10 = analyzeIndicator(assetIndicator, OhlcvType.MINUTE, 10)
+assetAnalysisMap.minute30 = analyzeIndicator(assetIndicator, OhlcvType.MINUTE, 30)
+assetAnalysisMap.minute60 = analyzeIndicator(assetIndicator, OhlcvType.MINUTE, 60)
+assetAnalysisMap.daily = analyzeIndicator(assetIndicator, OhlcvType.DAILY, 1)
+assetAnalysisMap.each { key, value ->
     def average = value.values().average()
-    analysisScores.add(average)
-    log.debug("[{}] assetResult.{}: {}", assetAlias, key, average)
+    log.debug("[{}] assetAnalysisMap.{}: {}", assetAlias, key, average)
+    analysisAverages.add(average)
+    assetAnalysisAverages.add(average)
 }
 
 //=============================
 // analyze indice
 //=============================
+def indiceAnalysisMap = [:]
+def indiceAnalysisAverages = []
+
 // KOSPI
-def kospiFutureResult = analyzeIndicator(indiceIndicators['KOSPI'], OhlcvType.MINUTE, 60)
-analysisScores.add(kospiFutureResult.values().average())
-log.debug("[{}] kospiFutureResult: {}", assetAlias, kospiFutureResult.values().average())
+indiceAnalysisMap.kospi = analyzeIndicator(indiceIndicators['KOSPI'], OhlcvType.MINUTE, 60)
+analysisAverages.add(indiceAnalysisMap.kospi.values().average())
+
+// logging
+indiceAnalysisMap.each { key, value ->
+    def average = value.values().average()
+    log.debug("[{}] indiceAnalysisMap.{}: {}", assetAlias, key, average)
+    indiceAnalysisAverages.add(average)
+}
 
 //=============================
 // decide hold
 //=============================
-def analysisScoreAverage = analysisScores.average()
-log.info("[{}] analysisScoreAverage:{}", assetAlias, analysisScoreAverage)
-def assetScores = assetResultMap.values().collect{it.values().average()}
-log.info("[{}] assetScores:{}", assetAlias, assetScores)
+def analysisAverage = analysisAverages.average()
+log.info("[{}] analysisAverages:{}", assetAlias, analysisAverages)
+log.info("[{}] analysisAverage:{}", assetAlias, analysisAverage)
 
-// default
-if(analysisScoreAverage > 70) {
-    log.info("[{}] analysisScoreAverage over 70", assetAlias)
+// 1. default fallback
+if(analysisAverage > 70) {
+    log.info("[{}] analysisAverage over 70", assetAlias)
     hold = true
 }
-if(analysisScoreAverage < 50) {
-    log.info("[{}] assetResult under 50", assetAlias)
+if(analysisAverage < 50) {
+    log.info("[{}] analysisAverage under 50", assetAlias)
     hold = false
+}
+
+// 2. divergence
+if(hold == null) {
+    if(tool.isDescending(assetAnalysisAverages)) {
+        log.info("[{}] is cross up - {}", assetAlias, assetAnalysisAverages)
+        hold = true
+    }
+    if(tool.isAscending(assetAnalysisAverages)) {
+        log.info("[{}] is cross down - {}", assetAlias, assetAnalysisAverages)
+        hold = false
+    }
 }
 
 //==============================
