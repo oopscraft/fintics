@@ -7,9 +7,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.fintics.dao.AssetOhlcvRepository;
 import org.oopscraft.fintics.dao.IndiceOhlcvRepository;
+import org.oopscraft.fintics.dao.SimulateEntity;
+import org.oopscraft.fintics.dao.SimulateRepository;
 import org.oopscraft.fintics.model.*;
 import org.oopscraft.fintics.simulate.*;
 import org.springframework.context.ApplicationContext;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -25,6 +29,8 @@ import java.util.concurrent.*;
 @Slf4j
 @RequiredArgsConstructor
 public class SimulateService {
+
+    private final SimulateRepository simulateRepository;
 
     private final ApplicationContext applicationContext;
 
@@ -45,6 +51,15 @@ public class SimulateService {
     );
 
     private final Map<String,SimulateRunnable> simulateRunnableMap = new ConcurrentHashMap<>();
+
+    public Page<Simulate> getSimulates(SimulateSearch simulateSearch, Pageable pageable) {
+        Page<SimulateEntity> simulateEntityPage = simulateRepository.findAll(simulateSearch, pageable);
+        List<Simulate> simulates = simulateEntityPage.getContent().stream()
+                .map(Simulate::from)
+                .toList();
+        long count = simulateEntityPage.getTotalElements();
+        return new PageImpl<>(simulates, pageable, count);
+    }
 
     public Simulate prepareSimulate(Simulate simulate) {
         String simulateId = simulate.getSimulateId();

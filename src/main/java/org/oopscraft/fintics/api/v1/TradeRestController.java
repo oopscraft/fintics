@@ -3,12 +3,16 @@ package org.oopscraft.fintics.api.v1;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.oopscraft.arch4j.web.support.PageableUtils;
 import org.oopscraft.fintics.api.v1.dto.*;
 import org.oopscraft.fintics.model.*;
 import org.oopscraft.fintics.service.SimulateService;
 import org.oopscraft.fintics.service.TradeService;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -139,6 +143,18 @@ public class TradeRestController {
     public ResponseEntity<Void> deleteTrade(@PathVariable("tradeId")String tradeId) {
         tradeService.deleteTrade(tradeId);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("{tradeId}/order")
+    public ResponseEntity<List<OrderResponse>> getOrders(@PathVariable("tradeId")String tradeId, OrderSearch orderSearch, Pageable pageable) {
+        Page<Order> orderPage = tradeService.getOrders(tradeId, orderSearch, pageable);
+        List<OrderResponse> orderResponses = orderPage.getContent().stream()
+                .map(OrderResponse::from)
+                .toList();
+        long count = orderPage.getTotalElements();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_RANGE, PageableUtils.toContentRange("order", pageable, count))
+                .body(orderResponses);
     }
 
     @GetMapping("{tradeId}/balance")

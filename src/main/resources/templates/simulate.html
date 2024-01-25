@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="_web.html">
+<th:block layout:fragment="_content">
+    <script th:inline="javascript">
+        const simulateSearch = new duice.ObjectProxy({
+            tradeId: null,
+            _page: 0,
+            _size: 20,
+            _count: 0
+        });
+        duice.ObjectProxy.onPropertyChanged(simulateSearch, () => {
+            simulateSearch._page = 0;
+            getSimulates();
+        });
+        const simulates = new duice.ArrayProxy([]);
+        const trades = new duice.ArrayProxy([]);
+
+        function getSimulates(page) {
+            if(page) {
+                simulateSearch._page = page;
+            }
+            let url = new URL(`${_apiUrl}/v1/simulate`, document.location.origin);
+            if(simulateSearch.tradeId) {
+                url.searchParams.append('tradeId', simulateSearch.tradeId);
+            }
+
+            url.searchParams.append('_page', simulateSearch._page);
+            url.searchParams.append('_size', simulateSearch._size);
+            _fetch(url)
+                .then(response => {
+                    simulateSearch._count = _parseTotalCount(response);
+                    return response.json();
+                })
+                .then(data => {
+                    duice.ArrayProxy.assign(simulates, data);
+                });
+        }
+
+        function resetSimulates() {
+            duice.ObjectProxy.reset(simulateSearch);
+            getSimulates();
+        }
+
+        function getTrades() {
+            let url = new URL(`${_apiUrl}/v1/trade`, document.location.origin);
+            _fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    duice.ArrayProxy.assign(trades, data);
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            getSimulates();
+            getTrades();
+        });
+
+    </script>
+    <style th:inline="css">
+    </style>
+
+    <!-- ====================================== -->
+    <!-- start: title                           -->
+    <!-- ====================================== -->
+    <h1 id="title">
+        <img class="icon" th:src="@{/static/image/icon-simulate.svg}" alt="simulate"/>
+        <span data-th-text="#{fintics.Simulate}"></span>
+    </h1>
+    <!-- ====================================== -->
+    <!-- end: title                             -->
+    <!-- ====================================== -->
+
+    <!-- ================================== -->
+    <!-- start: simulates                   -->
+    <!-- ================================== -->
+    <div class="border--1 padding--1em" style="min-height:400px;">
+        <form onsubmit="return false;" class="display--grid grid-template-columns--12 grid-gap--1em margin-x--1em">
+            <div class="grid-column--12 s__grid-column--12 display--grid grid-template-columns--12 grid-gap--1em">
+                <label class="grid-column--3 s__grid-column--12">
+                    <select class="width--100"
+                            data-duice-bind="simulateSearch"
+                            data-duice-property="tradeId"
+                            data-duice-option="trades"
+                            data-duice-option-value-property="tradeId"
+                            data-duice-option-text-property="tradeName">
+                        <option value="" data-th-text="'- ' + #{fintics.Trade} + ' -'"></option>
+                    </select>
+                </label>
+            </div>
+        </form>
+        <div class="overflow-x--scroll">
+            <table class="width--100">
+                <colgroup>
+                    <col style="width:7em;"/>
+                    <col style="width:10em;"/>
+                    <col style="width:10em;"/>
+                    <col style="width:10em;"/>
+                    <col/>
+                    <col style="width:10em;"/>
+                    <col style="width:10em;"/>
+                    <col style="width:10em;"/>
+                </colgroup>
+                <thead>
+                <tr>
+                    <th data-th-text="#{web.global.no}" class="text-align--center"></th>
+                    <th data-th-text="#{fintics.Simulate.startedAt}"></th>
+                    <th data-th-text="#{fintics.Simulate.endedAt}"></th>
+                    <th data-th-text="#{fintics.Simulate.status}"></th>
+                    <th data-th-text="#{fintics.Trade.tradeName}"></th>
+                    <th data-th-text="#{fintics.Simulate.dateTimeFrom}"></th>
+                    <th data-th-text="#{fintics.Simulate.dateTimeTo}"></th>
+                    <th>-</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr data-duice-bind="simulates" data-duice-loop="simulate,status">
+                    <td class="text-align--center">
+                        <span class="font-size--smaller"
+                              data-duice-bind="status"
+                              data-duice-execute="this.innerHTML=simulateSearch._count - (simulateSearch._size*simulateSearch._page + status.count) + 1;">
+                        </span>
+                    </td>
+                    <td>
+                        <span class="font-size--smaller"
+                              data-duice-bind="simulate"
+                              data-duice-property="startedAt"
+                              data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></span>
+                    </td>
+                    <td>
+                        <span class="font-size--smaller"
+                              data-duice-bind="simulate"
+                              data-duice-property="endedAt"
+                              data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></span>
+                    </td>
+                    <td>
+                        <span data-duice-bind="simulate" data-duice-property="status" class="font-size--smaller font-weight--bold"></span>
+                    </td>
+                    <td>
+                        <span data-duice-bind="simulate" data-duice-property="tradeName"></span>
+                    </td>
+                    <td>
+                        <span class="font-size--smaller"
+                              data-duice-bind="simulate"
+                              data-duice-property="dateTimeFrom"
+                              data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></span>
+                    </td>
+                    <td>
+                        <span class="font-size--smaller"
+                              data-duice-bind="simulate"
+                              data-duice-property="dateTimeTo"
+                              data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></span>
+                    </td>
+                    <td>
+                        <button>detail</button>
+                    </td>
+                </tr>
+                <tr data-duice-bind="simulates" data-duice-execute="if(simulates.length === 0) this.hidden=false;" hidden>
+                    <td colspan="100%" class="text-align--center">No Data</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="display--grid grid-template-columns--12 padding--1em">
+            <div class="grid-column--4 font-size--smaller">
+                <span data-th-text="#{web.global.total}"></span>
+                <span data-duice-bind="simulateSearch" data-duice-property="_count" data-duice-format="number(0)"></span>
+                <span data-th-text="#{web.global.rows}"></span>
+            </div>
+            <div class="grid-column--4 justify-self--center">
+                <duice-pagination
+                        data-duice-bind="simulateSearch"
+                        data-duice-size-property="_size"
+                        data-duice-page-property="_page"
+                        data-duice-count-property="_count"
+                        data-duice-onclick="getSimulates(this.dataset.page);">
+                </duice-pagination>
+            </div>
+            <div class="grid-column--4">
+            </div>
+        </div>
+    </div>
+    <!-- ================================== -->
+    <!-- end: simulates                     -->
+    <!-- ================================== -->
+
+</th:block>

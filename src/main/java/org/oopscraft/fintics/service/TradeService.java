@@ -15,6 +15,8 @@ import org.oopscraft.fintics.simulate.SimulateLogAppender;
 import org.oopscraft.fintics.simulate.SimulateRunnable;
 import org.oopscraft.fintics.simulate.SimulateTradeClient;
 import org.springframework.context.ApplicationContext;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -31,6 +33,8 @@ import java.util.stream.Collectors;
 public class TradeService {
 
     private final TradeRepository tradeRepository;
+
+    private final OrderRepository orderRepository;
 
     private final AssetOhlcvRepository assetOhlcvRepository;
 
@@ -96,6 +100,16 @@ public class TradeService {
     public void deleteTrade(String tradeId) {
         tradeRepository.deleteById(tradeId);
         tradeRepository.flush();
+    }
+
+    public Page<Order> getOrders(String tradeId, OrderSearch orderSearch, Pageable pageable) {
+        orderSearch.setTradeId(tradeId);
+        Page<OrderEntity> orderEntityPage = orderRepository.findAll(orderSearch, pageable);
+        List<Order> orders = orderEntityPage.getContent().stream()
+                .map(Order::from)
+                .toList();
+        long total = orderEntityPage.getTotalElements();
+        return new PageImpl<>(orders, pageable, total);
     }
 
     public Optional<Balance> getTradeBalance(String tradeId) throws InterruptedException {

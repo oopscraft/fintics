@@ -78,8 +78,9 @@ public class SimulateRunnable implements Runnable {
 
     @Override
     public void run() {
-        // save history
-        saveHistory("STARTED");
+        simulate.setStatus(Simulate.Status.RUNNING);
+        simulate.setStartedAt(LocalDateTime.now());
+        saveSimulate(simulate);
 
         simulateLogAppender.start();
         try {
@@ -155,15 +156,20 @@ public class SimulateRunnable implements Runnable {
                 }
             }
 
+            // save history
+            simulate.setStatus(Simulate.Status.COMPLETED);
+
         }catch(Exception e) {
             log.error(e.getMessage(), e);
+            simulate.setStatus(Simulate.Status.FAILED);
             throw new RuntimeException(e);
         }finally{
             simulateLogAppender.stop();
             this.onComplete.run();
 
             // save history
-            saveHistory("COMPLETED");
+            simulate.setEndedAt(LocalDateTime.now());
+            saveSimulate(simulate);
         }
     }
 
@@ -183,12 +189,13 @@ public class SimulateRunnable implements Runnable {
         this.onComplete = listener;
     }
 
-    public void saveHistory(String result) {
+    public void saveSimulate(Simulate simulate) {
         SimulateEntity simulateEntity = simulateRepository.findById(simulate.getSimulateId())
                 .orElse(null);
         if(simulateEntity == null) {
             simulateEntity = SimulateEntity.builder()
                     .simulateId(simulate.getSimulateId())
+                    .status(simulate.getStatus())
                     .holdCondition(simulate.getTrade().getHoldCondition())
                     .dateTimeFrom(simulate.getDateTimeFrom())
                     .dateTimeTo(simulate.getDateTimeTo())
@@ -197,20 +204,10 @@ public class SimulateRunnable implements Runnable {
                     .startedAt(LocalDateTime.now())
                     .build();
         }
-        simulateEntity.setEndedAt(LocalDateTime.now());
-        simulateEntity.setResult(result);
+        simulateEntity.setStartedAt(simulate.getStartedAt());
+        simulateEntity.setEndedAt(simulate.getEndedAt());
+        simulateEntity.setResult(simulate.getResult());
 
-        // result message
-        String resultMessage = null;
-        try {
-            Balance balance = simulateTradeClient.getBalance();
-            resultMessage = objectMapper.writeValueAsString(balance);
-        } catch (Throwable e) {
-            throw new RuntimeException(e);
-        }
-        simulateEntity.setResultMessage(resultMessage);
-
-        // save
         simulateRepository.saveAndFlush(simulateEntity);
     }
 
