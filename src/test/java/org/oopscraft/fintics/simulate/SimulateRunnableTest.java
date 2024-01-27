@@ -13,6 +13,8 @@ import org.oopscraft.arch4j.core.data.IdGenerator;
 import org.oopscraft.arch4j.core.support.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
 import org.oopscraft.fintics.client.indice.IndiceClient;
+import org.oopscraft.fintics.dao.AssetOhlcvRepository;
+import org.oopscraft.fintics.dao.IndiceOhlcvRepository;
 import org.oopscraft.fintics.model.*;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
@@ -34,7 +36,14 @@ import java.util.stream.Collectors;
 @Slf4j
 class SimulateRunnableTest extends CoreTestSupport {
 
+    private final IndiceOhlcvRepository indiceOhlcvRepository;
+
+    private final AssetOhlcvRepository assetOhlcvRepository;
+
     private final ApplicationContext applicationContext;
+
+    private final SimulateRunnableFactory simulateRunnableFactory;
+
 
     private String loadHoldCondition(String filePath) {
         StringBuilder stringBuilder = new StringBuilder();
@@ -96,20 +105,6 @@ class SimulateRunnableTest extends CoreTestSupport {
                 .holdRatio(BigDecimal.valueOf(30))
                 .build();
         trade.getTradeAssets().add(tradeAsset);
-
-        // simulate indice client
-        SimulateIndiceClient simulateIndiceClient = new SimulateIndiceClient();
-        simulateIndiceClient.addMinuteOhlcvs(IndiceId.NDX_FUTURE, loadOhlcvs("org/oopscraft/fintics/simulate/indice_ohlcv_NDX_FUTURE_minute.tsv"));
-        simulateIndiceClient.addDailyOhlcvs(IndiceId.NDX_FUTURE, loadOhlcvs("org/oopscraft/fintics/simulate/indice_ohlcv_NDX_FUTURE_daily.tsv"));
-        simulateIndiceClient.addMinuteOhlcvs(IndiceId.USD_KRW, loadOhlcvs("org/oopscraft/fintics/simulate/indice_ohlcv_USD_KRW_minute.tsv"));
-        simulateIndiceClient.addDailyOhlcvs(IndiceId.USD_KRW, loadOhlcvs("org/oopscraft/fintics/simulate/indice_ohlcv_USD_KRW_daily.tsv"));
-
-        // simulate trade client
-        SimulateTradeClient simulateTradeClient = new SimulateTradeClient();
-        simulateTradeClient.addMinuteOhlcvs(tradeAsset.getAssetId(), loadOhlcvs("org/oopscraft/fintics/simulate/asset_ohlcv_122630_minute.tsv"));
-        simulateTradeClient.addDailyOhlcvs(tradeAsset.getAssetId(), loadOhlcvs("org/oopscraft/fintics/simulate/asset_ohlcv_122630_daily.tsv"));
-
-        // when
         Simulate simulate = Simulate.builder()
                 .simulateId(IdGenerator.uuid())
                 .trade(trade)
@@ -117,17 +112,14 @@ class SimulateRunnableTest extends CoreTestSupport {
                 .dateTimeTo(LocalDateTime.of(2023,12,4,23,59))
                 .investAmount(BigDecimal.valueOf(10_000_000))
                 .build();
-        SimulateRunnable simulateRunnable = SimulateRunnable.builder()
-                .simulate(simulate)
-                .simulateIndiceClient(simulateIndiceClient)
-                .simulateTradeClient(simulateTradeClient)
-                .applicationContext(applicationContext)
-                .build();
+
+        // when
+        SimulateRunnable simulateRunnable = simulateRunnableFactory.getObject(simulate);
         simulateRunnable.run();
 
         // then
-        Balance balance = simulateTradeClient.getBalance();
-        List<Order> orders = simulateTradeClient.getOrders();
+        Balance balance = simulate.getBalance();;
+        List<Order> orders = simulate.getOrders();
         log.info("Balance:{}", balance);
         log.info("Orders:{}", orders);
 

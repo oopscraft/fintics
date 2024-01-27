@@ -23,8 +23,11 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -165,13 +168,17 @@ public class TradeRestController {
         return ResponseEntity.ok(balanceResponse);
     }
 
-    @Cacheable(cacheNames = TRADE_REST_CONTROLLER_GET_TRADE_ASSET_INDICATORS, key = "#tradeId")
+    @Cacheable(cacheNames = TRADE_REST_CONTROLLER_GET_TRADE_ASSET_INDICATORS, key = "#tradeId + '_' + #dateTimeFrom + '_' + #dateTimeTo")
     @GetMapping("{tradeId}/indicator")
-    public ResponseEntity<List<AssetIndicatorResponse>> getTradeAssetIndicators(@PathVariable("tradeId") String tradeId) {
+    public ResponseEntity<List<AssetIndicatorResponse>> getTradeAssetIndicators(
+            @PathVariable("tradeId") String tradeId,
+            @RequestParam(value = "dateTimeFrom", required = false) LocalDateTime dateTimeFrom,
+            @RequestParam(value = "dateTimeTo", required = false) LocalDateTime dateTimeTo
+    ) {
         Trade trade = tradeService.getTrade(tradeId).orElseThrow();
         List<AssetIndicatorResponse> tradeAssetIndicatorResponses = new ArrayList<>();
         for(TradeAsset tradeAsset : trade.getTradeAssets()) {
-            AssetIndicator assetIndicator = tradeService.getTradeAssetIndicator(tradeId, tradeAsset.getAssetId()).orElseThrow();
+            AssetIndicator assetIndicator = tradeService.getTradeAssetIndicator(tradeId, tradeAsset.getAssetId(), dateTimeFrom, dateTimeTo).orElseThrow();
             tradeAssetIndicatorResponses.add(AssetIndicatorResponse.from(assetIndicator));
         }
         return ResponseEntity.ok(tradeAssetIndicatorResponses);

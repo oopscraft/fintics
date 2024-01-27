@@ -1,7 +1,5 @@
 package org.oopscraft.fintics.service;
 
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.core.Context;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.data.IdGenerator;
@@ -10,21 +8,16 @@ import org.oopscraft.fintics.client.trade.TradeClient;
 import org.oopscraft.fintics.client.trade.TradeClientFactory;
 import org.oopscraft.fintics.dao.*;
 import org.oopscraft.fintics.model.*;
-import org.oopscraft.fintics.simulate.SimulateIndiceClient;
-import org.oopscraft.fintics.simulate.SimulateLogAppender;
-import org.oopscraft.fintics.simulate.SimulateRunnable;
-import org.oopscraft.fintics.simulate.SimulateTradeClient;
-import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -122,22 +115,33 @@ public class TradeService {
         }
     }
 
-    public Optional<AssetIndicator> getTradeAssetIndicator(String tradeId, String assetId) {
+    public Optional<AssetIndicator> getTradeAssetIndicator(String tradeId, String assetId, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo) {
         Trade trade = getTrade(tradeId).orElseThrow();
+        String tradeClientId = trade.getTradeClientId();
         TradeAsset tradeAsset = trade.getTradeAssets().stream()
                 .filter(e -> Objects.equals(e.getAssetId(), assetId))
                 .findFirst()
                 .orElseThrow();
 
-        LocalDateTime minuteMaxDateTime = assetOhlcvRepository.findMaxDateTimeByTradeClientIdAndAssetIdAndOhlcvType(trade.getTradeClientId(), assetId, OhlcvType.MINUTE)
-                .orElse(LocalDateTime.now());
-        List<Ohlcv> minuteOhlcvs = assetOhlcvRepository.findAllByTradeClientIdAndAssetIdAndOhlcvType(trade.getTradeClientId(), assetId, OhlcvType.MINUTE, minuteMaxDateTime.minusDays(1), minuteMaxDateTime, Pageable.unpaged()).stream()
+        // minute ohlcv
+        LocalDateTime minuteDateTimeTo = Optional.ofNullable(dateTimeTo)
+                .orElse(assetOhlcvRepository.findMaxDateTimeByTradeClientIdAndAssetIdAndOhlcvType(tradeClientId, assetId, OhlcvType.MINUTE)
+                        .orElse(LocalDateTime.now()));
+        LocalDateTime minuteDateTimeFrom = Optional.ofNullable(dateTimeFrom)
+                .orElse(minuteDateTimeTo.minusDays(1));
+        List<Ohlcv> minuteOhlcvs = assetOhlcvRepository.findAllByTradeClientIdAndAssetIdAndOhlcvType(tradeClientId, assetId, OhlcvType.MINUTE, minuteDateTimeFrom, minuteDateTimeTo, Pageable.unpaged())
+                .stream()
                 .map(Ohlcv::from)
                 .collect(Collectors.toList());
 
-        LocalDateTime dailyMaxDateTime = assetOhlcvRepository.findMaxDateTimeByTradeClientIdAndAssetIdAndOhlcvType(trade.getTradeClientId(), assetId, OhlcvType.DAILY)
-                .orElse(LocalDateTime.now());
-        List<Ohlcv> dailyOhlcvs = assetOhlcvRepository.findAllByTradeClientIdAndAssetIdAndOhlcvType(trade.getTradeClientId(), assetId, OhlcvType.DAILY, dailyMaxDateTime.minusMonths(1), dailyMaxDateTime, Pageable.unpaged()).stream()
+        // daily ohlcv
+        LocalDateTime dailyDateTimeTo = Optional.ofNullable(dateTimeTo)
+                .orElse(assetOhlcvRepository.findMaxDateTimeByTradeClientIdAndAssetIdAndOhlcvType(tradeClientId, assetId, OhlcvType.DAILY)
+                        .orElse(LocalDateTime.now()));
+        LocalDateTime dailyDateTimeFrom = Optional.ofNullable(dateTimeFrom)
+                .orElse(dailyDateTimeTo.minusMonths(1));
+        List<Ohlcv> dailyOhlcvs = assetOhlcvRepository.findAllByTradeClientIdAndAssetIdAndOhlcvType(tradeClientId, assetId, OhlcvType.DAILY, dailyDateTimeFrom, dailyDateTimeTo, Pageable.unpaged())
+                .stream()
                 .map(Ohlcv::from)
                 .collect(Collectors.toList());
 

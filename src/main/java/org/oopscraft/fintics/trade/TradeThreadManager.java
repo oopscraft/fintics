@@ -20,11 +20,11 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class TradeThreadManager implements ApplicationListener<ContextClosedEvent> {
 
+    private final TradeRunnableFactory tradeRunnableFactory;
+
     private final ThreadGroup tradeThreadGroup = new ThreadGroup("trade");
 
     private final Map<String,TradeThread> tradeThreadMap = new ConcurrentHashMap<>();
-
-    private final ApplicationContext applicationContext;
 
     private final SimpMessagingTemplate messagingTemplate;
 
@@ -37,17 +37,17 @@ public class TradeThreadManager implements ApplicationListener<ContextClosedEven
                 throw new RuntimeException(String.format("Thread Thread[%s] is already running.", trade.getTradeId()));
             }
 
-            // add log appender
+            // trade runnable
+            TradeRunnable tradeRunnable = tradeRunnableFactory.getObject(trade);
             Context context = ((Logger)log).getLoggerContext();
-            TradeLogAppender tradeLogAppender = new TradeLogAppender(trade, context, messagingTemplate);
-
-            // start thread
-            TradeRunnable tradeRunnable = TradeRunnable.builder()
-                    .tradeId(trade.getTradeId())
-                    .interval(trade.getInterval())
-                    .applicationContext(applicationContext)
-                    .tradeLogAppender(tradeLogAppender)
+            TradeLogAppender tradeLogAppender = TradeLogAppender.builder()
+                    .trade(trade)
+                    .context(context)
+                    .messagingTemplate(messagingTemplate)
                     .build();
+            tradeRunnable.setTradeLogAppender(tradeLogAppender);
+
+            // run thread
             TradeThread tradeThread = new TradeThread(tradeThreadGroup, tradeRunnable, trade.getTradeId());
             tradeThread.setDaemon(true);
             tradeThread.start();

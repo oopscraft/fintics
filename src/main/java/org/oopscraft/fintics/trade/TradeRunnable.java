@@ -10,13 +10,14 @@ import org.oopscraft.fintics.client.trade.TradeClientFactory;
 import org.oopscraft.fintics.dao.TradeRepository;
 import org.oopscraft.fintics.model.Trade;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 public class TradeRunnable implements Runnable {
 
@@ -26,53 +27,52 @@ public class TradeRunnable implements Runnable {
     @Getter
     private final Integer interval;
 
-    @Getter
-    private final ApplicationContext applicationContext;
-
-    @Getter
-    private final TradeLogAppender tradeLogAppender;
-
-    private final PlatformTransactionManager transactionManager;
-
     private final TradeRepository tradeRepository;
+
+    private final TradeExecutorFactory tradeExecutorFactory;
 
     private final IndiceClient indiceClient;
 
+    private final PlatformTransactionManager transactionManager;
+
     private final Logger log;
 
-    private final TradeExecutor tradeExecutor;
+    @Setter
+    private TradeLogAppender tradeLogAppender;
 
     @Setter
     @Getter
     private boolean interrupted = false;
 
     @Builder
-    protected TradeRunnable(String tradeId, Integer interval, ApplicationContext applicationContext, TradeLogAppender tradeLogAppender) {
+    protected TradeRunnable(
+        String tradeId,
+        Integer interval,
+        TradeRepository tradeRepository,
+        TradeExecutorFactory tradeExecutorFactory,
+        IndiceClient indiceClient,
+        PlatformTransactionManager transactionManager
+    ){
         this.tradeId = tradeId;
         this.interval = interval;
-        this.applicationContext = applicationContext;
-        this.tradeLogAppender = tradeLogAppender;
+        this.tradeRepository = tradeRepository;
+        this.tradeExecutorFactory = tradeExecutorFactory;
+        this.indiceClient = indiceClient;
+        this.transactionManager = transactionManager;
 
-        // component
-        this.transactionManager = applicationContext.getBean(PlatformTransactionManager.class);
-        this.tradeRepository = applicationContext.getBean(TradeRepository.class);
-        this.indiceClient = applicationContext.getBean(IndiceClient.class);
-
-        // add log appender
-        log = (Logger) LoggerFactory.getLogger(tradeId);
-        log.addAppender(this.tradeLogAppender);
-
-        // trade executor
-        this.tradeExecutor = TradeExecutor.builder()
-                .applicationContext(applicationContext)
-                .log(log)
-                .build();
+        // log
+        this.log = (Logger) LoggerFactory.getLogger(tradeId);
     }
 
     @Override
     public void run() {
-        this.tradeLogAppender.start();
+        if(this.tradeLogAppender != null) {
+            log.addAppender(this.tradeLogAppender);
+            this.tradeLogAppender.start();
+        }
         log.info("Start TradeRunnable: {}", tradeId);
+
+        // start loop
         while(!Thread.currentThread().isInterrupted() && !interrupted) {
             TransactionStatus transactionStatus = null;
             try {
@@ -86,6 +86,8 @@ public class TradeRunnable implements Runnable {
                 transactionStatus = transactionManager.getTransaction(transactionDefinition);
 
                 // call trade executor
+                TradeExecutor tradeExecutor = tradeExecutorFactory.getObject();
+                tradeExecutor.setLog(log);
                 LocalDateTime dateTime = LocalDateTime.now();
                 Trade trade = tradeRepository.findById(tradeId)
                         .map(Trade::from)
@@ -111,7 +113,10 @@ public class TradeRunnable implements Runnable {
             }
         }
         log.info("End TradeRunnable: {}", tradeId);
-        this.tradeLogAppender.stop();
+        if(this.tradeLogAppender != null) {
+            this.tradeLogAppender.stop();
+            log.detachAppender(this.tradeLogAppender);
+        }
     }
 
 }

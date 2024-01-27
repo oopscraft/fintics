@@ -21,7 +21,7 @@ import java.util.stream.IntStream;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
-class TradeAssetDeciderTest {
+class HoldConditionExecutorTest {
 
     Trade getTestTrade() {
         return Trade.builder()
@@ -131,9 +131,8 @@ class TradeAssetDeciderTest {
         trade.setHoldCondition("return true;");
 
         // when
-        TradeAssetDecider tradeAssetDecider = TradeAssetDecider.builder()
+        HoldConditionExecutor tradeAssetDecider = HoldConditionExecutor.builder()
                 .holdCondition(trade.getHoldCondition())
-                .log((Logger)log)
                 .dateTime(LocalDateTime.now())
                 .orderBook(orderBook)
                 .indiceIndicators(indiceIndicators)
@@ -157,9 +156,8 @@ class TradeAssetDeciderTest {
         trade.setHoldCondition(holdCondition);
 
         // when
-        TradeAssetDecider tradeAssetDecider = TradeAssetDecider.builder()
+        HoldConditionExecutor tradeAssetDecider = HoldConditionExecutor.builder()
                 .holdCondition(trade.getHoldCondition())
-                .log((Logger) log)
                 .dateTime(LocalDateTime.now())
                 .indiceIndicators(indiceIndicators)
                 .assetIndicator(assetIndicator)

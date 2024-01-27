@@ -13,7 +13,7 @@ function _createDailyOhlcvsChart(elementId) {
             scales: {
                 x: {
                     type: 'time',
-                    distribution: 'linear',
+                    distribution: 'series',
                     time: {
                         unit: 'day',
                         displayFormats: {
@@ -22,6 +22,7 @@ function _createDailyOhlcvsChart(elementId) {
                     },
                     ticks: {
                         stepSize: 3,
+                        maxTicksLimit: 10,
                         font: {
                             size: 8
                         }
@@ -77,7 +78,7 @@ function _createMinuteOhlcvsChart(elementId) {
             scales: {
                 x: {
                     type: 'time',
-                    distribution: 'linear',
+                    distribution: 'series',
                     time: {
                         unit: 'hour',
                         displayFormats: {
@@ -86,6 +87,7 @@ function _createMinuteOhlcvsChart(elementId) {
                     },
                     ticks: {
                         stepSize: 1,
+                        maxTicksLimit: 10,
                         font: {
                             size: 8
                         }
@@ -127,14 +129,7 @@ function _createMinuteOhlcvsChart(elementId) {
 }
 
 function _createTimeSeries(dateFrom, dateTo, ohlcvs) {
-    let ohlcvSeries = JSON.parse(JSON.stringify(ohlcvs)).reverse();
-    let timeSeries = [];
-    ohlcvSeries.forEach(ohlcvPoint => {
-        let dateTime = new Date(ohlcvPoint.dateTime);
-        if(dateFrom.getTime() <= dateTime.getTime() && dateTime.getTime() <= dateTo.getTime()) {
-            timeSeries.push(ohlcvPoint);
-        }
-    });
+    let timeSeries = JSON.parse(JSON.stringify(ohlcvs)).reverse();
 
     // fill pct change
     let basePrice;

@@ -2,7 +2,6 @@ package org.oopscraft.fintics.service;
 
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.core.Context;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.fintics.dao.AssetOhlcvRepository;
@@ -37,6 +36,8 @@ public class SimulateService {
     private final IndiceOhlcvRepository indiceOhlcvRepository;
 
     private final AssetOhlcvRepository assetOhlcvRepository;
+
+    private final SimulateRunnableFactory simulateRunnableFactory;
 
     private final SimpMessagingTemplate messagingTemplate;
 
@@ -118,36 +119,17 @@ public class SimulateService {
     }
 
     public synchronized Simulate runSimulate(Simulate simulate) {
-        Objects.requireNonNull(simulate.getSimulateId(), "simulateId is null");
-        List<IndiceIndicator> indiceIndicators = simulate.getIndiceIndicators();
-        List<AssetIndicator> assetIndicators = simulate.getAssetIndicators();
-
-        // simulate indice client
-        SimulateIndiceClient simulateIndiceClient = new SimulateIndiceClient();
-        indiceIndicators.forEach(indiceIndicator -> {
-            simulateIndiceClient.addMinuteOhlcvs(indiceIndicator.getIndiceId(), indiceIndicator.getMinuteOhlcvs());
-            simulateIndiceClient.addDailyOhlcvs(indiceIndicator.getIndiceId(), indiceIndicator.getDailyOhlcvs());
-        });
-
-        // simulate trade client
-        SimulateTradeClient simulateTradeClient = new SimulateTradeClient();
-        assetIndicators.forEach(assetIndicator -> {
-            simulateTradeClient.addMinuteOhlcvs(assetIndicator.getAssetId(), assetIndicator.getMinuteOhlcvs());
-            simulateTradeClient.addDailyOhlcvs(assetIndicator.getAssetId(), assetIndicator.getDailyOhlcvs());
-        });
+        Trade trade = simulate.getTrade();
+        LocalDateTime dateTimeFrom = simulate.getDateTimeFrom();
+        LocalDateTime dateTimeTo = simulate.getDateTimeTo();
 
         // add log appender
         Context context = ((Logger)log).getLoggerContext();
         SimulateLogAppender simulateLogAppender = new SimulateLogAppender(simulate, context, messagingTemplate);
 
         // run
-        SimulateRunnable simulateRunnable = SimulateRunnable.builder()
-                .simulate(simulate)
-                .simulateIndiceClient(simulateIndiceClient)
-                .simulateTradeClient(simulateTradeClient)
-                .applicationContext(applicationContext)
-                .simulateLogAppender(simulateLogAppender)
-                .build();
+        SimulateRunnable simulateRunnable = simulateRunnableFactory.getObject(simulate);
+        simulateRunnable.setSimulateLogAppender(simulateLogAppender);
         simulateRunnable.onComplete(() -> {
             this.simulateRunnableMap.remove(simulate.getSimulateId());
         });

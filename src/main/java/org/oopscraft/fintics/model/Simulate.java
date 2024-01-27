@@ -1,5 +1,8 @@
 package org.oopscraft.fintics.model;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,6 +30,10 @@ public class Simulate {
     @Setter
     @Builder.Default
     private Status status = Status.WAITING;
+
+    private String tradeId;
+
+    private String tradeName;
 
     private final Trade trade;
 
@@ -59,15 +66,53 @@ public class Simulate {
     }
 
     public static Simulate from(SimulateEntity simulateEntity) {
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        // trade data
+        Trade trade = null;
+        if(simulateEntity.getTradeData() != null) {
+            try {
+                trade = objectMapper.readValue(simulateEntity.getTradeData(), Trade.class);
+            } catch (JsonProcessingException ignored) {
+                trade = new Trade();
+            }
+        }
+
+        // balance data
+        Balance balance = null;
+        if(simulateEntity.getBalanceData() != null) {
+            try {
+                balance = objectMapper.readValue(simulateEntity.getBalanceData(), Balance.class);
+            } catch (JsonProcessingException ignored) {
+                balance = new Balance();
+            }
+        }
+
+        // orders data
+        List<Order> orders = null;
+        if(simulateEntity.getOrdersData() != null) {
+            try {
+                orders = objectMapper.readValue(simulateEntity.getOrdersData(), new TypeReference<>(){});
+            } catch (JsonProcessingException ignored) {
+                orders = new ArrayList<>();
+            }
+        }
+
+        // return
         return Simulate.builder()
                 .simulateId(simulateEntity.getSimulateId())
                 .status(simulateEntity.getStatus())
                 .startedAt(simulateEntity.getStartedAt())
                 .endedAt(simulateEntity.getEndedAt())
+                .tradeId(simulateEntity.getTradeId())
+                .tradeName(simulateEntity.getTradeName())
+                .trade(trade)
                 .dateTimeFrom(simulateEntity.getDateTimeFrom())
                 .dateTimeTo(simulateEntity.getDateTimeTo())
                 .investAmount(simulateEntity.getInvestAmount())
                 .feeRate(simulateEntity.getFeeRate())
+                .balance(balance)
+                .orders(orders)
                 .build();
     }
 

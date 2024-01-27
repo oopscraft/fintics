@@ -40,6 +40,10 @@ public class SimulateEntity extends BaseEntity {
     @Column(name = "trade_name")
     private String tradeName;
 
+    @Column(name = "trade_data")
+    @Lob
+    private String tradeData;
+
     @Column(name = "date_time_from")
     private LocalDateTime dateTimeFrom;
 
@@ -52,13 +56,13 @@ public class SimulateEntity extends BaseEntity {
     @Column(name = "fee_rate")
     private BigDecimal feeRate;
 
-    @Column(name = "hold_condition")
+    @Column(name = "balance_data")
     @Lob
-    private String holdCondition;
+    private String balanceData;
 
-    @Column(name = "result")
+    @Column(name = "orders_data")
     @Lob
-    private String result;
+    private String ordersData;
 
     @Converter(autoApply = true)
     public static class StatusConverter extends AbstractEnumConverter<Simulate.Status> {

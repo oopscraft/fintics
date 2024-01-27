@@ -12,12 +12,13 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -48,10 +49,14 @@ public class IndiceRestController {
         return ResponseEntity.ok(indiceResponse);
     }
 
-    @Cacheable(cacheNames = INDICE_REST_CONTROLLER_GET_INDICE_INDICATOR, key = "#indiceId")
+    @Cacheable(cacheNames = INDICE_REST_CONTROLLER_GET_INDICE_INDICATOR, key = "#indiceId + '_' + #dateTimeFrom + '_' + #dateTimeTo")
     @GetMapping("{indiceId}/indicator")
-    public ResponseEntity<IndiceIndicatorResponse> getIndiceIndicator(@PathVariable("indiceId") IndiceId indiceId) {
-        IndiceIndicatorResponse indiceIndicatorResponse = indiceService.getIndiceIndicator(indiceId)
+    public ResponseEntity<IndiceIndicatorResponse> getIndiceIndicator(
+            @PathVariable("indiceId") IndiceId indiceId,
+            @RequestParam(value = "dateTimeFrom", required = false) LocalDateTime dateTimeFrom,
+            @RequestParam(value = "dateTimeTo", required = false) LocalDateTime dateTimeTo
+    ) {
+        IndiceIndicatorResponse indiceIndicatorResponse = indiceService.getIndiceIndicator(indiceId, dateTimeFrom, dateTimeTo)
                 .map(IndiceIndicatorResponse::from)
                 .orElseThrow();
         return ResponseEntity.ok(indiceIndicatorResponse);

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.oopscraft.fintics.dao.SimulateEntity;
 import org.oopscraft.fintics.dao.SimulateRepository;
@@ -13,6 +14,7 @@ import org.oopscraft.fintics.model.Order;
 import org.oopscraft.fintics.model.Simulate;
 import org.oopscraft.fintics.model.Trade;
 import org.oopscraft.fintics.trade.TradeExecutor;
+import org.oopscraft.fintics.trade.TradeExecutorFactory;
 import org.oopscraft.fintics.trade.TradeLogAppender;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -31,25 +33,29 @@ import java.util.function.Consumer;
 
 public class SimulateRunnable implements Runnable {
 
+    @Getter
     private final Simulate simulate;
-
-    private final ApplicationContext applicationContext;
-
-    private final SimulateLogAppender simulateLogAppender;
-
-    private final Logger log;
 
     private final SimulateIndiceClient simulateIndiceClient;
 
     private final SimulateTradeClient simulateTradeClient;
 
-    private final SimpMessagingTemplate messagingTemplate;
-
-    private final ObjectMapper objectMapper;
+    private final TradeExecutorFactory tradeExecutorFactory;
 
     private final PlatformTransactionManager transactionManager;
 
     private final SimulateRepository simulateRepository;
+
+    private final ObjectMapper objectMapper;
+
+    @Setter
+    private Logger log;
+
+    @Setter
+    private SimulateLogAppender simulateLogAppender;
+
+    @Setter
+    private SimpMessagingTemplate messagingTemplate;
 
     @Setter
     @Getter
@@ -58,22 +64,28 @@ public class SimulateRunnable implements Runnable {
     private Runnable onComplete;
 
     @Builder
-    public SimulateRunnable(Simulate simulate, SimulateIndiceClient simulateIndiceClient, SimulateTradeClient simulateTradeClient, ApplicationContext applicationContext, SimulateLogAppender simulateLogAppender) {
+    protected SimulateRunnable(
+            Simulate simulate,
+            SimulateIndiceClient simulateIndiceClient,
+            SimulateTradeClient simulateTradeClient,
+            TradeExecutorFactory tradeExecutorFactory,
+            PlatformTransactionManager transactionManager,
+            SimulateRepository simulateRepository,
+            ObjectMapper objectMapper
+    ){
         this.simulate = simulate;
         this.simulateIndiceClient = simulateIndiceClient;
         this.simulateTradeClient = simulateTradeClient;
-        this.applicationContext = applicationContext;
-        this.simulateLogAppender = simulateLogAppender;
-        this.messagingTemplate = applicationContext.getBean(SimpMessagingTemplate.class);
-        this.objectMapper = applicationContext.getBean(ObjectMapper.class);
-        this.transactionManager = applicationContext.getBean(PlatformTransactionManager.class);
-        this.simulateRepository = applicationContext.getBean(SimulateRepository.class);
+        this.tradeExecutorFactory = tradeExecutorFactory;
+        this.transactionManager = transactionManager;
+        this.simulateRepository = simulateRepository;
+        this.objectMapper = objectMapper;
 
         // add log appender
-        log = (Logger) LoggerFactory.getLogger(simulate.getSimulateId());
-        if(this.simulateLogAppender != null) {
-            log.addAppender(this.simulateLogAppender);
-        }
+//        log = (Logger) LoggerFactory.getLogger(simulate.getSimulateId());
+//        if(this.simulateLogAppender != null) {
+//            log.addAppender(this.simulateLogAppender);
+//        }
     }
 
     @Override
@@ -101,10 +113,8 @@ public class SimulateRunnable implements Runnable {
             });
 
             // trade executor
-            TradeExecutor tradeExecutor = TradeExecutor.builder()
-                    .applicationContext(applicationContext)
-                    .log(log)
-                    .build();
+            TradeExecutor tradeExecutor = tradeExecutorFactory.getObject();
+//            tradeExecutor.setLog(log);
 
             // start
             for(LocalDateTime dateTime = dateTimeFrom.plusSeconds(interval); dateTime.isBefore(dateTimeTo); dateTime = dateTime.plusSeconds(interval)) {
@@ -195,8 +205,9 @@ public class SimulateRunnable implements Runnable {
         if(simulateEntity == null) {
             simulateEntity = SimulateEntity.builder()
                     .simulateId(simulate.getSimulateId())
-                    .status(simulate.getStatus())
-                    .holdCondition(simulate.getTrade().getHoldCondition())
+                    .tradeId(simulate.getTradeId())
+                    .tradeName(simulate.getTradeName())
+                    .tradeData(toDataString(simulate.getTrade()))
                     .dateTimeFrom(simulate.getDateTimeFrom())
                     .dateTimeTo(simulate.getDateTimeTo())
                     .investAmount(simulate.getInvestAmount())
@@ -206,9 +217,20 @@ public class SimulateRunnable implements Runnable {
         }
         simulateEntity.setStartedAt(simulate.getStartedAt());
         simulateEntity.setEndedAt(simulate.getEndedAt());
-        simulateEntity.setResult(simulate.getResult());
+        simulateEntity.setStatus(simulate.getStatus());
+        simulateEntity.setBalanceData(toDataString(simulate.getBalance()));
+        simulateEntity.setOrdersData(toDataString(simulate.getOrders()));
 
         simulateRepository.saveAndFlush(simulateEntity);
+    }
+
+    private String toDataString(Object object) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            return objectMapper.writeValueAsString(object);
+        } catch (JsonProcessingException ignored) {
+            return null;
+        }
     }
 
 }

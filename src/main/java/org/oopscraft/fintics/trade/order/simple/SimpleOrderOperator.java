@@ -1,5 +1,6 @@
 package org.oopscraft.fintics.trade.order.simple;
 
+import lombok.Builder;
 import org.oopscraft.fintics.model.*;
 import org.oopscraft.fintics.trade.order.OrderOperator;
 import org.oopscraft.fintics.trade.order.OrderOperatorContext;

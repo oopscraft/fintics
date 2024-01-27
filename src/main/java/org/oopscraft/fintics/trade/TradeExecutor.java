@@ -2,19 +2,18 @@ package org.oopscraft.fintics.trade;
 
 import ch.qos.logback.classic.Logger;
 import lombok.Builder;
-import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
 import org.oopscraft.fintics.client.indice.IndiceClient;
 import org.oopscraft.fintics.client.trade.TradeClient;
-import org.oopscraft.fintics.client.trade.TradeClientFactory;
 import org.oopscraft.fintics.dao.AssetOhlcvRepository;
 import org.oopscraft.fintics.dao.IndiceOhlcvRepository;
 import org.oopscraft.fintics.model.*;
 import org.oopscraft.fintics.trade.order.OrderOperator;
 import org.oopscraft.fintics.trade.order.OrderOperatorContext;
 import org.oopscraft.fintics.trade.order.OrderOperatorFactory;
-import org.springframework.context.ApplicationContext;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 
 import java.time.LocalDateTime;
@@ -22,29 +21,31 @@ import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@RequiredArgsConstructor
 public class TradeExecutor {
-
-    private final ApplicationContext applicationContext;
 
     private final IndiceOhlcvRepository indiceOhlcvRepository;
 
     private final AssetOhlcvRepository assetOhlcvRepository;
 
-    private final AlarmService alarmService;
+    private final OrderOperatorFactory orderOperatorFactory;
 
-    private final Logger log;
+    @Setter
+    private AlarmService alarmService;
+
+    private Logger log = (Logger) LoggerFactory.getLogger(this.getClass());
 
     private final Map<String,Boolean> holdConditionResultMap = new HashMap<>();
 
     private final Map<String,Integer> holdConditionResultCountMap = new HashMap<>();
 
     @Builder
-    protected TradeExecutor(ApplicationContext applicationContext, Logger log) {
-        this.applicationContext = applicationContext;
-        this.indiceOhlcvRepository = applicationContext.getBean(IndiceOhlcvRepository.class);
-        this.assetOhlcvRepository = applicationContext.getBean(AssetOhlcvRepository.class);
-        this.alarmService = applicationContext.getBean(AlarmService.class);
+    private TradeExecutor(IndiceOhlcvRepository indiceOhlcvRepository, AssetOhlcvRepository assetOhlcvRepository, OrderOperatorFactory orderOperatorFactory) {
+        this.indiceOhlcvRepository = indiceOhlcvRepository;
+        this.assetOhlcvRepository = assetOhlcvRepository;
+        this.orderOperatorFactory = orderOperatorFactory;
+    }
+
+    public void setLog(Logger log) {
         this.log = log;
     }
 
@@ -120,29 +121,27 @@ public class TradeExecutor {
                 OrderBook orderBook = tradeClient.getOrderBook(tradeAsset);
 
                 // executes trade asset decider
-                TradeAssetDecider tradeAssetDecider = TradeAssetDecider.builder()
+                HoldConditionExecutor holdConditionExecutor = HoldConditionExecutor.builder()
                         .holdCondition(trade.getHoldCondition())
-                        .log(log)
                         .dateTime(dateTime)
                         .orderBook(orderBook)
                         .balance(balance)
                         .indiceIndicators(indiceIndicators)
                         .assetIndicator(assetIndicator)
                         .build();
-                Boolean holdConditionResult = tradeAssetDecider.execute();
+                holdConditionExecutor.setLog(log);
+                Boolean holdConditionResult = holdConditionExecutor.execute();
                 log.info("holdConditionResult: {}", holdConditionResult);
 
                 // order operator
                 OrderOperatorContext orderOperatorContext = OrderOperatorContext.builder()
                         .id(trade.getOrderOperatorId())
-                        .applicationContext(applicationContext)
                         .tradeClient(tradeClient)
                         .trade(trade)
                         .balance(balance)
                         .orderBook(orderBook)
-                        .log(log)
                         .build();
-                OrderOperator orderOperator = OrderOperatorFactory.getOrderOperator(orderOperatorContext);
+                OrderOperator orderOperator = orderOperatorFactory.getObject(orderOperatorContext);
 
                 // 0. checks threshold exceeded
                 int consecutiveCountOfHoldConditionResult = getConsecutiveCountOfHoldConditionResult(tradeAsset.getAssetId(), holdConditionResult);
@@ -271,7 +270,7 @@ public class TradeExecutor {
         return holdConditionResultCount;
     }
 
-    private void sendErrorAlarmIfEnabled(Trade trade, TradeAsset tradeAsset, Throwable t) throws InterruptedException {
+    private void sendErrorAlarmIfEnabled(Trade trade, TradeAsset tradeAsset, Throwable t) {
         if(trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
             if (trade.isAlarmOnError()) {
                 String subject = String.format("[%s - %s]", trade.getTradeName(), tradeAsset != null ? tradeAsset.getAssetName() : "");

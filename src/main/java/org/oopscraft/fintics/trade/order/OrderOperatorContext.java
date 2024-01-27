@@ -8,6 +8,7 @@ import org.oopscraft.fintics.model.Balance;
 import org.oopscraft.fintics.model.OrderBook;
 import org.oopscraft.fintics.model.Trade;
 import org.springframework.context.ApplicationContext;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.validation.constraints.NotNull;
 
@@ -15,25 +16,16 @@ import javax.validation.constraints.NotNull;
 @Getter
 public class OrderOperatorContext {
 
-    @NotNull
-    private String id;
+    private final String id;
 
-    @NotNull
-    private ApplicationContext applicationContext;
+    private final TradeClient tradeClient;
 
-    @NotNull
-    private TradeClient tradeClient;
+    private final Trade trade;
 
-    @NotNull
-    private Trade trade;
+    private final Balance balance;
 
-    @NotNull
-    private Balance balance;
+    private final OrderBook orderBook;
 
-    @NotNull
-    private OrderBook orderBook;
-
-    @NotNull
-    private Logger log;
+    private final PlatformTransactionManager transactionManager;
 
 }

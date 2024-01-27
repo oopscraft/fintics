@@ -1,8 +1,10 @@
 package org.oopscraft.fintics.trade.order;
 
 import ch.qos.logback.classic.Logger;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
 import org.oopscraft.arch4j.core.data.IdGenerator;
 import org.oopscraft.fintics.client.trade.TradeClient;
@@ -21,7 +23,6 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Getter
-@RequiredArgsConstructor
 public abstract class OrderOperator {
 
     private final TradeClient tradeClient;
@@ -32,28 +33,28 @@ public abstract class OrderOperator {
 
     private final OrderBook orderBook;
 
-    protected final Logger log;
-
-    private final OrderRepository orderRepository;
-
-    private final AlarmService alarmService;
-
     private final PlatformTransactionManager transactionManager;
 
-    public abstract void buyTradeAsset(TradeAsset tradeAsset) throws InterruptedException;
+    @Setter
+    private OrderRepository orderRepository;
 
-    public abstract void sellTradeAsset(TradeAsset balanceAsset) throws InterruptedException;
+    @Setter
+    private AlarmService alarmService;
 
-    public OrderOperator(OrderOperatorContext context) {
+    @Setter
+    protected Logger log;
+
+    protected OrderOperator(OrderOperatorContext context) {
         this.tradeClient = context.getTradeClient();
         this.trade = context.getTrade();
         this.balance = context.getBalance();
         this.orderBook = context.getOrderBook();
-        this.log = context.getLog();
-        this.orderRepository = context.getApplicationContext().getBean(OrderRepository.class);
-        this.alarmService = context.getApplicationContext().getBean(AlarmService.class);
-        this.transactionManager = context.getApplicationContext().getBean(PlatformTransactionManager.class);
+        this.transactionManager = context.getTransactionManager();
     }
+
+    public abstract void buyTradeAsset(TradeAsset tradeAsset) throws InterruptedException;
+
+    public abstract void sellTradeAsset(TradeAsset balanceAsset) throws InterruptedException;
 
     public BigDecimal calculateHoldRatioAmount(TradeAsset tradeAsset) {
         return balance.getTotalAmount()
