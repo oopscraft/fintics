@@ -12,8 +12,8 @@ public class OrderSearch {
 
     private String assetId;
 
-    private OrderType orderType;
+    private Order.Type type;
 
-    private OrderResult orderResult;
+    private Order.Result result;
 
 }

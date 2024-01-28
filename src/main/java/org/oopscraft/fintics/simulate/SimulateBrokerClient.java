@@ -3,8 +3,8 @@ package org.oopscraft.fintics.simulate;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import org.oopscraft.fintics.client.trade.TradeClient;
-import org.oopscraft.fintics.dao.AssetOhlcvRepository;
+import org.oopscraft.fintics.client.broker.BrokerClient;
+import org.oopscraft.fintics.dao.BrokerAssetOhlcvRepository;
 import org.oopscraft.fintics.model.*;
 import org.springframework.data.domain.Pageable;
 
@@ -18,11 +18,11 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-public class SimulateTradeClient extends TradeClient {
+public class SimulateBrokerClient extends BrokerClient {
 
     private final String tradeClientId;
 
-    private final AssetOhlcvRepository assetOhlcvRepository;
+    private final BrokerAssetOhlcvRepository assetOhlcvRepository;
 
     @Setter
     @Getter
@@ -47,7 +47,7 @@ public class SimulateTradeClient extends TradeClient {
     private Consumer<Order> onOrder;
 
     @Builder
-    protected SimulateTradeClient(String tradeClientId, AssetOhlcvRepository assetOhlcvRepository) {
+    protected SimulateBrokerClient(String tradeClientId, BrokerAssetOhlcvRepository assetOhlcvRepository) {
         super(new Properties());
         this.tradeClientId = tradeClientId;
         this.assetOhlcvRepository = assetOhlcvRepository;
@@ -69,7 +69,7 @@ public class SimulateTradeClient extends TradeClient {
         // minutes
         List<Ohlcv> minuteOhlcvs = minuteOhlcvsMap.get(asset.getAssetId());
         if(minuteOhlcvs == null || minuteOhlcvs.isEmpty() || minuteOhlcvs.get(0).getDateTime().isBefore(dateTime)) {
-            minuteOhlcvs = assetOhlcvRepository.findAllByTradeClientIdAndAssetIdAndOhlcvType(tradeClientId, asset.getAssetId(), OhlcvType.MINUTE, dateTime.minusMonths(1), dateTime, Pageable.unpaged())
+            minuteOhlcvs = assetOhlcvRepository.findAllByBrokerIdAndAssetIdAndType(tradeClientId, asset.getAssetId(), Ohlcv.Type.MINUTE, dateTime.minusMonths(1), dateTime, Pageable.unpaged())
                     .stream()
                     .map(Ohlcv::from)
                     .toList();
@@ -79,7 +79,7 @@ public class SimulateTradeClient extends TradeClient {
         // daily
         List<Ohlcv> dailyOhlcvs = minuteOhlcvsMap.get(asset.getAssetId());
         if(dailyOhlcvs == null || dailyOhlcvs.isEmpty() || dailyOhlcvs.get(0).getDateTime().isBefore(dateTime)) {
-            dailyOhlcvs = assetOhlcvRepository.findAllByTradeClientIdAndAssetIdAndOhlcvType(tradeClientId, asset.getAssetId(), OhlcvType.DAILY, dateTime.minusYears(1), dateTime, Pageable.unpaged())
+            dailyOhlcvs = assetOhlcvRepository.findAllByBrokerIdAndAssetIdAndType(tradeClientId, asset.getAssetId(), Ohlcv.Type.DAILY, dateTime.minusYears(1), dateTime, Pageable.unpaged())
                     .stream()
                     .map(Ohlcv::from)
                     .toList();
@@ -206,7 +206,7 @@ public class SimulateTradeClient extends TradeClient {
         BalanceAsset balanceAsset = balance.getBalanceAsset(order.getAssetId()).orElse(null);
 
         // buy
-        if(order.getOrderType() == OrderType.BUY) {
+        if(order.getType() == Order.Type.BUY) {
             BigDecimal buyQuantity = order.getQuantity();
             BigDecimal buyPrice = orderBook.getAskPrice();
             BigDecimal buyAmount = buyQuantity.multiply(buyPrice, MathContext.DECIMAL32);
@@ -236,7 +236,7 @@ public class SimulateTradeClient extends TradeClient {
         }
 
         // sell
-        if(order.getOrderType() == OrderType.SELL) {
+        if(order.getType() == Order.Type.SELL) {
             Objects.requireNonNull(balanceAsset, "balance asset is null");
             BigDecimal sellQuantity = order.getQuantity();
             BigDecimal sellPrice = orderBook.getBidPrice();

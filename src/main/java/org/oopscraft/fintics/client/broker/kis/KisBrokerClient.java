@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.client.trade.kis;
+package org.oopscraft.fintics.client.broker.kis;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
 import org.oopscraft.arch4j.core.support.ValueMap;
-import org.oopscraft.fintics.client.trade.TradeClient;
+import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.model.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -23,7 +23,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class KisTradeClient extends TradeClient {
+public class KisBrokerClient extends BrokerClient {
 
     private final boolean production;
 
@@ -37,7 +37,7 @@ public class KisTradeClient extends TradeClient {
 
     private final ObjectMapper objectMapper;
 
-    public KisTradeClient(Properties properties) {
+    public KisBrokerClient(Properties properties) {
         super(properties);
         this.production = Boolean.parseBoolean(properties.getProperty("production"));
         this.apiUrl = properties.getProperty("apiUrl");
@@ -200,7 +200,7 @@ public class KisTradeClient extends TradeClient {
                         BigDecimal closePrice = row.getNumber("stck_prpr");
                         BigDecimal volume = row.getNumber("cntg_vol");
                         return Ohlcv.builder()
-                                .ohlcvType(OhlcvType.MINUTE)
+                                .type(Ohlcv.Type.MINUTE)
                                 .dateTime(ohlcvDateTime)
                                 .openPrice(openPrice)
                                 .highPrice(highPrice)
@@ -276,7 +276,7 @@ public class KisTradeClient extends TradeClient {
                     BigDecimal closePrice = row.getNumber("stck_clpr");
                     BigDecimal volume = row.getNumber("acml_vol");
                     return Ohlcv.builder()
-                            .ohlcvType(OhlcvType.DAILY)
+                            .type(Ohlcv.Type.DAILY)
                             .dateTime(ohlcvDateTime)
                             .openPrice(openPrice)
                             .highPrice(highPrice)
@@ -477,7 +477,7 @@ public class KisTradeClient extends TradeClient {
 
         // order kind
         String trId = null;
-        switch(order.getOrderType()) {
+        switch(order.getType()) {
             case BUY -> trId = production ? "TTTC0802U" : "VTTC0802U";
             case SELL -> trId = production ? "TTTC0801U" : "VTTC0801U";
             default -> throw new RuntimeException("invalid order kind");
@@ -487,7 +487,7 @@ public class KisTradeClient extends TradeClient {
         // order type
         String ordDvsn = null;
         String ordUnpr = null;
-        switch(order.getOrderKind()) {
+        switch(order.getKind()) {
             case LIMIT -> {
                 ordDvsn = "00";
                 ordUnpr = String.valueOf(order.getPrice().longValue());
@@ -582,16 +582,16 @@ public class KisTradeClient extends TradeClient {
         // return
         return output.stream()
                 .map(row -> {
-                    OrderType orderType;
+                    Order.Type orderType;
                     switch (row.getString("sll_buy_dvsn_cd")) {
-                        case "01" -> orderType = OrderType.SELL;
-                        case "02" -> orderType = OrderType.BUY;
+                        case "01" -> orderType = Order.Type.SELL;
+                        case "02" -> orderType = Order.Type.BUY;
                         default -> throw new RuntimeException("invalid sll_buy_dvsn_cd");
                     }
-                    OrderKind orderKind;
+                    Order.Kind orderKind;
                     switch (row.getString("ord_dvsn_cd")) {
-                        case "00" -> orderKind = OrderKind.LIMIT;
-                        case "01" -> orderKind = OrderKind.MARKET;
+                        case "00" -> orderKind = Order.Kind.LIMIT;
+                        case "01" -> orderKind = Order.Kind.MARKET;
                         default -> orderKind = null;
                     }
 
@@ -600,12 +600,12 @@ public class KisTradeClient extends TradeClient {
                     BigDecimal price = row.getNumber("ord_unpr");
                     String clientOrderId = row.getString("odno");
                     return Order.builder()
-                            .orderType(orderType)
+                            .type(orderType)
                             .assetId(symbol)
-                            .orderKind(orderKind)
+                            .kind(orderKind)
                             .quantity(quantity)
                             .price(price)
-                            .clientOrderId(clientOrderId)
+                            .brokerOrderId(clientOrderId)
                             .build();
 
                 })
@@ -626,7 +626,7 @@ public class KisTradeClient extends TradeClient {
 
         // order type
         String ordDvsn = null;
-        switch(order.getOrderKind()) {
+        switch(order.getKind()) {
             case LIMIT -> {
                 ordDvsn = "00";
             }
@@ -641,7 +641,7 @@ public class KisTradeClient extends TradeClient {
         payloadMap.put("CANO", accountNo.split("-")[0]);
         payloadMap.put("ACNT_PRDT_CD", accountNo.split("-")[1]);
         payloadMap.put("KRX_FWDG_ORD_ORGNO", "");
-        payloadMap.put("ORGN_ODNO", order.getClientOrderId());
+        payloadMap.put("ORGN_ODNO", order.getBrokerOrderId());
         payloadMap.put("ORD_DVSN", ordDvsn);
         payloadMap.put("RVSE_CNCL_DVSN_CD", "01");
         payloadMap.put("ORD_QTY", "0");

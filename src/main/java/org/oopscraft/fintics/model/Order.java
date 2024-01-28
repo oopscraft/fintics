@@ -4,8 +4,10 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.oopscraft.arch4j.core.data.converter.AbstractEnumConverter;
 import org.oopscraft.fintics.dao.OrderEntity;
 
+import javax.persistence.Converter;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -19,7 +21,7 @@ public class Order {
 
     private LocalDateTime orderAt;
 
-    private OrderType orderType;
+    private Type type;
 
     private String tradeId;
 
@@ -27,30 +29,45 @@ public class Order {
 
     private String assetName;
 
-    private OrderKind orderKind;
+    private Kind kind;
 
     private BigDecimal quantity;
 
     private BigDecimal price;
 
-    private String clientOrderId;
+    private String brokerOrderId;
 
-    private OrderResult orderResult;
+    private Result result;
 
     private String errorMessage;
+
+    public enum Type { BUY, SELL }
+
+    @Converter(autoApply = true)
+    public static class TypeConverter extends AbstractEnumConverter<Type> {}
+
+    public enum Kind { LIMIT, MARKET }
+
+    @Converter(autoApply = true)
+    public static class KindConverter extends AbstractEnumConverter<Kind> {}
+
+    public enum Result { COMPLETED, FAILED }
+
+    @Converter(autoApply = true)
+    public static class ResultConverter extends AbstractEnumConverter<Result> {}
 
     public static Order from(OrderEntity orderEntity) {
         return Order.builder()
                 .orderId(orderEntity.getOrderId())
                 .orderAt(orderEntity.getOrderAt())
-                .orderType(orderEntity.getOrderType())
+                .type(orderEntity.getType())
                 .tradeId(orderEntity.getTradeId())
                 .assetId(orderEntity.getAssetId())
                 .assetName(orderEntity.getAssetName())
-                .orderKind(orderEntity.getOrderKind())
+                .kind(orderEntity.getKind())
                 .quantity(orderEntity.getQuantity())
                 .price(orderEntity.getPrice())
-                .orderResult(orderEntity.getOrderResult())
+                .result(orderEntity.getResult())
                 .errorMessage(orderEntity.getErrorMessage())
                 .build();
     }

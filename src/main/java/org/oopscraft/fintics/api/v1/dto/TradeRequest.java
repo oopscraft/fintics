@@ -1,7 +1,7 @@
 package org.oopscraft.fintics.api.v1.dto;
 
 import lombok.*;
-import org.oopscraft.fintics.model.OrderKind;
+import org.oopscraft.fintics.model.Order;
 
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -35,7 +35,7 @@ public class TradeRequest {
 
     private String orderOperatorId;
 
-    private OrderKind orderKind;
+    private Order.Kind orderKind;
 
     private String alarmId;
 

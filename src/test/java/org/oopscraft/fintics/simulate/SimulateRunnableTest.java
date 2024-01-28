@@ -1,6 +1,5 @@
 package org.oopscraft.fintics.simulate;
 
-import ch.qos.logback.classic.Logger;
 import com.github.javaparser.utils.LineSeparator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,8 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.oopscraft.arch4j.core.data.IdGenerator;
 import org.oopscraft.arch4j.core.support.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
-import org.oopscraft.fintics.client.indice.IndiceClient;
-import org.oopscraft.fintics.dao.AssetOhlcvRepository;
+import org.oopscraft.fintics.dao.BrokerAssetOhlcvRepository;
 import org.oopscraft.fintics.dao.IndiceOhlcvRepository;
 import org.oopscraft.fintics.model.*;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -38,7 +36,7 @@ class SimulateRunnableTest extends CoreTestSupport {
 
     private final IndiceOhlcvRepository indiceOhlcvRepository;
 
-    private final AssetOhlcvRepository assetOhlcvRepository;
+    private final BrokerAssetOhlcvRepository assetOhlcvRepository;
 
     private final ApplicationContext applicationContext;
 
@@ -60,13 +58,13 @@ class SimulateRunnableTest extends CoreTestSupport {
     private List<Ohlcv> loadOhlcvs(String filePath) {
         CSVFormat format = CSVFormat.Builder.create()
                 .setDelimiter("\t")
-                .setHeader("ohlcv_type","date_time","open_price","high_price","low_price","close_price","volume")
+                .setHeader("type","date_time","open_price","high_price","low_price","close_price","volume")
                 .setSkipHeaderRecord(true)
                 .build();
         try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(filePath)) {
             List<Ohlcv> ohlcvs = CSVParser.parse(inputStream, StandardCharsets.UTF_8, format).stream()
                     .map(record -> Ohlcv.builder()
-                            .ohlcvType(OhlcvType.valueOf(record.get("ohlcv_type")))
+                            .type(Ohlcv.Type.valueOf(record.get("type")))
                             .dateTime(LocalDateTime.parse(record.get("date_time"), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")))
                             .openPrice(new BigDecimal(record.get("open_price").replaceAll(",","")))
                             .highPrice(new BigDecimal(record.get("high_price").replaceAll(",","")))
@@ -94,7 +92,7 @@ class SimulateRunnableTest extends CoreTestSupport {
                 .startAt(LocalTime.of(9,0,0))
                 .endAt(LocalTime.of(15,30,0))
                 .orderOperatorId("SIMPLE")
-                .orderKind(OrderKind.MARKET)
+                .orderKind(Order.Kind.MARKET)
                 .holdCondition(loadHoldCondition("org/oopscraft/fintics/trade/HoldCondition.KospiCall.groovy"))
                 .build();
         List<TradeAsset> tradeAssets = new ArrayList<>();

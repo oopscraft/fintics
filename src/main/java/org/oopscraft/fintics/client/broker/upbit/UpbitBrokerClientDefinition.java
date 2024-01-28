@@ -1,27 +1,27 @@
-package org.oopscraft.fintics.client.trade.upbit;
+package org.oopscraft.fintics.client.broker.upbit;
 
-import org.oopscraft.fintics.client.trade.TradeClient;
-import org.oopscraft.fintics.client.trade.TradeClientDefinition;
+import org.oopscraft.fintics.client.broker.BrokerClient;
+import org.oopscraft.fintics.client.broker.BrokerClientDefinition;
 import org.springframework.stereotype.Component;
 
 import java.util.StringJoiner;
 
 @Component
-public class UpbitTradeClientDefinition implements TradeClientDefinition {
+public class UpbitBrokerClientDefinition implements BrokerClientDefinition {
 
     @Override
-    public String getTradeClientId() {
+    public String getBrokerId() {
         return "UPBIT";
     }
 
     @Override
-    public String getTradeClientName() {
+    public String getBrokerName() {
         return "업비트 API";
     }
 
     @Override
-    public Class<? extends TradeClient> getClassType() {
-        return UpbitTradeClient.class;
+    public Class<? extends BrokerClient> getClassType() {
+        return UpbitBrokerClient.class;
     }
 
     @Override

@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
 import org.oopscraft.fintics.model.IndiceId;
 import org.oopscraft.fintics.model.Ohlcv;
-import org.oopscraft.fintics.model.OhlcvType;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.RequestEntity;
@@ -26,7 +25,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Component
-@ConditionalOnProperty(prefix = "fintics", name = "indice-client-class-name", havingValue="org.oopscraft.fintics.client.indice.YahooIndiceClient")
+@ConditionalOnProperty(prefix = "fintics", name = "indice-client-class-name", havingValue="org.oopscraft.fintics.indice.YahooIndiceClient")
 @RequiredArgsConstructor
 @Slf4j
 public class YahooIndiceClient extends IndiceClient {
@@ -60,16 +59,16 @@ public class YahooIndiceClient extends IndiceClient {
     }
 
     private List<Ohlcv> getMinuteOhlcvs(String yahooSymbol, LocalDateTime dateTime) {
-        return getOhlcvs(yahooSymbol, OhlcvType.MINUTE, dateTime.minusDays(3), dateTime, 60*24);    // 1 days
+        return getOhlcvs(yahooSymbol, Ohlcv.Type.MINUTE, dateTime.minusDays(3), dateTime, 60*24);    // 1 days
     }
 
     private List<Ohlcv> getDailyOhlcvs(String yahooSymbol, LocalDateTime dateTime) {
-        return getOhlcvs(yahooSymbol, OhlcvType.DAILY, dateTime.minusMonths(2), dateTime, 30);    // 1 months
+        return getOhlcvs(yahooSymbol, Ohlcv.Type.DAILY, dateTime.minusMonths(2), dateTime, 30);    // 1 months
     }
 
-    private List<Ohlcv> getOhlcvs(String symbol, OhlcvType ohlcvType, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo, Integer limit) {
+    private List<Ohlcv> getOhlcvs(String symbol, Ohlcv.Type type, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo, Integer limit) {
         String interval;
-        switch(ohlcvType) {
+        switch(type) {
             case MINUTE -> interval = "1m";
             case DAILY -> interval = "1d";
             default -> throw new IllegalArgumentException("invalid ohlcvType");
@@ -123,7 +122,7 @@ public class YahooIndiceClient extends IndiceClient {
                         .toLocalDateTime();
 
                 // truncates dateTime
-                switch(ohlcvType) {
+                switch(type) {
                     case MINUTE -> dateTime = dateTime.truncatedTo(ChronoUnit.MINUTES);
                     case DAILY -> dateTime = dateTime.truncatedTo(ChronoUnit.DAYS);
                 }
@@ -138,7 +137,7 @@ public class YahooIndiceClient extends IndiceClient {
                 BigDecimal volume = Optional.ofNullable(volumes.get(i)).orElse(BigDecimal.ZERO);
                 Ohlcv ohlcv = Ohlcv.builder()
                         .dateTime(dateTime)
-                        .ohlcvType(ohlcvType)
+                        .type(type)
                         .openPrice(openPrice)
                         .highPrice(highPrice)
                         .lowPrice(lowPrice)

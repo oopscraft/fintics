@@ -23,13 +23,13 @@ public interface OrderRepository extends JpaRepository<OrderEntity, String>, Jpa
             specification = specification.and((root, query, criteriaBuilder) ->
                     criteriaBuilder.equal(root.get(OrderEntity_.ASSET_ID), orderSearch.getAssetId()));
         }
-        if(orderSearch.getOrderType() != null) {
+        if(orderSearch.getType() != null) {
             specification = specification.and((root, query, criteriaBuilder) ->
-                    criteriaBuilder.equal(root.get(OrderEntity_.ORDER_TYPE), orderSearch.getOrderType()));
+                    criteriaBuilder.equal(root.get(OrderEntity_.TYPE), orderSearch.getType()));
         }
-        if(orderSearch.getOrderResult() != null) {
+        if(orderSearch.getResult() != null) {
             specification = specification.and((root, query, criteriaBuilder) ->
-                    criteriaBuilder.equal(root.get(OrderEntity_.ORDER_RESULT), orderSearch.getOrderResult()));
+                    criteriaBuilder.equal(root.get(OrderEntity_.RESULT), orderSearch.getResult()));
         }
         Sort sort = Sort.by(OrderEntity_.ORDER_AT).descending();
         pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);

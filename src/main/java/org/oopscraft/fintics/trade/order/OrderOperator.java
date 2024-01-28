@@ -1,13 +1,11 @@
 package org.oopscraft.fintics.trade.order;
 
 import ch.qos.logback.classic.Logger;
-import lombok.Builder;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
 import org.oopscraft.arch4j.core.data.IdGenerator;
-import org.oopscraft.fintics.client.trade.TradeClient;
+import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.dao.OrderEntity;
 import org.oopscraft.fintics.dao.OrderRepository;
 import org.oopscraft.fintics.model.*;
@@ -25,7 +23,7 @@ import java.util.Objects;
 @Getter
 public abstract class OrderOperator {
 
-    private final TradeClient tradeClient;
+    private final BrokerClient tradeClient;
 
     private final Trade trade;
 
@@ -73,8 +71,8 @@ public abstract class OrderOperator {
         Order order = Order.builder()
                 .orderId(IdGenerator.uuid())
                 .orderAt(LocalDateTime.now())
-                .orderType(OrderType.BUY)
-                .orderKind(getTrade().getOrderKind())
+                .type(Order.Type.BUY)
+                .kind(getTrade().getOrderKind())
                 .tradeId(trade.getTradeId())
                 .assetId(asset.getAssetId())
                 .assetName(asset.getAssetName())
@@ -86,12 +84,12 @@ public abstract class OrderOperator {
         Order waitingOrder = tradeClient.getWaitingOrders().stream()
                 .filter(element ->
                         Objects.equals(element.getAssetId(), order.getAssetId())
-                                && element.getOrderType() == order.getOrderType())
+                                && element.getType() == order.getType())
                 .findFirst()
                 .orElse(null);
         if(waitingOrder != null) {
             // if limit type order, amend order
-            if(waitingOrder.getOrderKind() == OrderKind.LIMIT) {
+            if(waitingOrder.getKind() == Order.Kind.LIMIT) {
                 waitingOrder.setPrice(price);
                 log.info("amend buy order:{}", waitingOrder);
                 tradeClient.amendOrder(waitingOrder);
@@ -110,9 +108,9 @@ public abstract class OrderOperator {
                     alarmService.sendAlarm(trade.getAlarmId(), subject, content);
                 }
             }
-            order.setOrderResult(OrderResult.COMPLETED);
+            order.setResult(Order.Result.COMPLETED);
         } catch(Throwable e) {
-            order.setOrderResult(OrderResult.FAILED);
+            order.setResult(Order.Result.FAILED);
             order.setErrorMessage(e.getMessage());
             throw e;
         } finally {
@@ -130,8 +128,8 @@ public abstract class OrderOperator {
         Order order = Order.builder()
                 .orderId(IdGenerator.uuid())
                 .orderAt(LocalDateTime.now())
-                .orderType(OrderType.SELL)
-                .orderKind(getTrade().getOrderKind())
+                .type(Order.Type.SELL)
+                .kind(getTrade().getOrderKind())
                 .tradeId(trade.getTradeId())
                 .assetId(asset.getAssetId())
                 .assetName(asset.getAssetName())
@@ -143,12 +141,12 @@ public abstract class OrderOperator {
         Order waitingOrder = tradeClient.getWaitingOrders().stream()
                 .filter(element ->
                         Objects.equals(element.getAssetId(), order.getAssetId())
-                                && element.getOrderType() == order.getOrderType())
+                                && element.getType() == order.getType())
                 .findFirst()
                 .orElse(null);
         if(waitingOrder != null) {
             // if limit type order, amend order
-            if(waitingOrder.getOrderKind() == OrderKind.LIMIT) {
+            if(waitingOrder.getKind() == Order.Kind.LIMIT) {
                 waitingOrder.setPrice(price);
                 log.info("amend sell order:{}", waitingOrder);
                 tradeClient.amendOrder(waitingOrder);
@@ -167,9 +165,9 @@ public abstract class OrderOperator {
                     alarmService.sendAlarm(trade.getAlarmId(), subject, content);
                 }
             }
-            order.setOrderResult(OrderResult.COMPLETED);
+            order.setResult(Order.Result.COMPLETED);
         } catch(Throwable e) {
-            order.setOrderResult(OrderResult.FAILED);
+            order.setResult(Order.Result.FAILED);
             order.setErrorMessage(e.getMessage());
             throw e;
         } finally {
@@ -184,14 +182,14 @@ public abstract class OrderOperator {
                 orderRepository.saveAndFlush(OrderEntity.builder()
                         .orderId(order.getOrderId())
                         .orderAt(order.getOrderAt())
-                        .orderType(order.getOrderType())
+                        .type(order.getType())
                         .tradeId(order.getTradeId())
                         .assetId(order.getAssetId())
                         .assetName(order.getAssetName())
-                        .orderKind(order.getOrderKind())
+                        .kind(order.getKind())
                         .quantity(order.getQuantity())
                         .price(order.getPrice())
-                        .orderResult(order.getOrderResult())
+                        .result(order.getResult())
                         .errorMessage(order.getErrorMessage())
                         .build()));
     }

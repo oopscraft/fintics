@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.client.trade.upbit;
+package org.oopscraft.fintics.client.broker.upbit;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Disabled;
@@ -23,11 +23,11 @@ class UpbitTradeClientTest {
         secretKey = System.getenv("UPBIT_SECRET_KEY");
     }
 
-    UpbitTradeClient getUpbitTradeClient() {
+    UpbitBrokerClient getUpbitTradeClient() {
         Properties properties = new Properties();
         properties.setProperty("accessKey", accessKey);
         properties.setProperty("secretKey", secretKey);
-        return new UpbitTradeClient(properties);
+        return new UpbitBrokerClient(properties);
     }
 
     TradeAsset getTestTradeAsset() {
@@ -95,9 +95,9 @@ class UpbitTradeClientTest {
     void submitOrderBuy() throws Exception {
         // given
         Order order = Order.builder()
-                .orderType(OrderType.BUY)
+                .type(Order.Type.BUY)
                 .assetId("KRW-BTC")
-                .orderKind(OrderKind.MARKET)
+                .kind(Order.Kind.MARKET)
                 .quantity(BigDecimal.valueOf(6))
                 .price(BigDecimal.valueOf(840))
                 .build();
@@ -111,9 +111,9 @@ class UpbitTradeClientTest {
     void submitOrderSell() throws Exception {
         // given
         Order order = Order.builder()
-                .orderType(OrderType.SELL)
+                .type(Order.Type.SELL)
                 .assetId("KRW-BTC")
-                .orderKind(OrderKind.MARKET)
+                .kind(Order.Kind.MARKET)
                 .quantity(BigDecimal.valueOf(0.00008556))
                 .price(null)
                 .build();

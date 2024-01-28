@@ -29,15 +29,15 @@ public class Trade {
 
     private LocalTime endAt;
 
-    private String tradeClientId;
+    private String brokerId;
 
-    private String tradeClientConfig;
+    private String brokerConfig;
 
     private String holdCondition;
 
     private String orderOperatorId;
 
-    private OrderKind orderKind;
+    private Order.Kind orderKind;
 
     private String alarmId;
 
@@ -57,8 +57,8 @@ public class Trade {
                 .threshold(tradeEntity.getThreshold())
                 .startAt(tradeEntity.getStartAt())
                 .endAt(tradeEntity.getEndAt())
-                .tradeClientId(tradeEntity.getTradeClientId())
-                .tradeClientConfig(tradeEntity.getTradeClientConfig())
+                .brokerId(tradeEntity.getBrokerId())
+                .brokerConfig(tradeEntity.getBrokerConfig())
                 .holdCondition(tradeEntity.getHoldCondition())
                 .orderOperatorId(tradeEntity.getOrderOperatorId())
                 .orderKind(tradeEntity.getOrderKind())

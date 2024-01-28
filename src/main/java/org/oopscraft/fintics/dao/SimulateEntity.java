@@ -32,6 +32,7 @@ public class SimulateEntity extends BaseEntity {
     private LocalDateTime endedAt;
 
     @Column(name = "status", length = 16)
+    @Convert(converter = Simulate.StatusConverter.class)
     private Simulate.Status status;
 
     @Column(name = "trade_id", length = 32)
@@ -63,10 +64,5 @@ public class SimulateEntity extends BaseEntity {
     @Column(name = "orders_data")
     @Lob
     private String ordersData;
-
-    @Converter(autoApply = true)
-    public static class StatusConverter extends AbstractEnumConverter<Simulate.Status> {
-
-    }
 
 }

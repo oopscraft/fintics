@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.client.trade.kis;
+package org.oopscraft.fintics.client.broker.kis;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,14 +41,14 @@ class KisTradeClientTest extends CoreTestSupport {
         accountNo = System.getenv("ACCOUNT_NO");
     }
 
-    KisTradeClient getKisClient() {
+    KisBrokerClient getKisClient() {
         Properties properties = new Properties();
         properties.setProperty("production", production);
         properties.setProperty("apiUrl", apiUrl);
         properties.setProperty("appKey", appKey);
         properties.setProperty("appSecret", appSecret);
         properties.setProperty("accountNo", accountNo);
-        return new KisTradeClient(properties);
+        return new KisBrokerClient(properties);
     }
 
     @Disabled
@@ -139,8 +139,8 @@ class KisTradeClientTest extends CoreTestSupport {
         // given
         Order order = Order.builder()
                 .assetId("005930")   // Samsung Electronic
-                .orderType(OrderType.BUY)
-                .orderKind(OrderKind.MARKET)
+                .type(Order.Type.BUY)
+                .kind(Order.Kind.MARKET)
                 .quantity(BigDecimal.valueOf(1))
                 .build();
 
@@ -154,8 +154,8 @@ class KisTradeClientTest extends CoreTestSupport {
         // given
         Order order = Order.builder()
                 .assetId("069500")   // Kodex 200 ETF
-                .orderType(OrderType.BUY)
-                .orderKind(OrderKind.MARKET)
+                .type(Order.Type.BUY)
+                .kind(Order.Kind.MARKET)
                 .quantity(BigDecimal.valueOf(1))
                 .build();
 
@@ -169,8 +169,8 @@ class KisTradeClientTest extends CoreTestSupport {
         // given
         Order order = Order.builder()
                 .assetId("005930")   // Samsung Electronic
-                .orderType(OrderType.SELL)
-                .orderKind(OrderKind.MARKET)
+                .type(Order.Type.SELL)
+                .kind(Order.Kind.MARKET)
                 .quantity(BigDecimal.valueOf(1))
                 .build();
 
@@ -184,8 +184,8 @@ class KisTradeClientTest extends CoreTestSupport {
         // given
         Order order = Order.builder()
                 .assetId("069500")   // Kodex 200 ETF
-                .orderType(OrderType.SELL)
-                .orderKind(OrderKind.MARKET)
+                .type(Order.Type.SELL)
+                .kind(Order.Kind.MARKET)
                 .quantity(BigDecimal.valueOf(1))
                 .build();
 

@@ -3,9 +3,8 @@ package org.oopscraft.fintics.dao;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.arch4j.core.data.BaseEntity;
-import org.oopscraft.fintics.model.OrderKind;
-import org.oopscraft.fintics.model.OrderType;
-import org.oopscraft.fintics.model.OrderResult;
+import org.oopscraft.arch4j.core.data.converter.AbstractEnumConverter;
+import org.oopscraft.fintics.model.Order;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -32,8 +31,8 @@ public class OrderEntity extends BaseEntity {
     @Column(name = "order_at")
     private LocalDateTime orderAt;
 
-    @Column(name = "order_type", length = 8)
-    private OrderType orderType;
+    @Column(name = "type", length = 8)
+    private Order.Type type;
 
     @Column(name = "trade_id", length = 32)
     private String tradeId;
@@ -44,8 +43,8 @@ public class OrderEntity extends BaseEntity {
     @Column(name = "asset_name")
     private String assetName;
 
-    @Column(name = "order_kind", length = 16)
-    private OrderKind orderKind;
+    @Column(name = "kind", length = 16)
+    private Order.Kind kind;
 
     @Column(name = "quantity")
     private BigDecimal quantity;
@@ -53,8 +52,8 @@ public class OrderEntity extends BaseEntity {
     @Column(name = "price")
     private BigDecimal price;
 
-    @Column(name = "order_result")
-    private OrderResult orderResult;
+    @Column(name = "result")
+    private Order.Result result;
 
     @Column(name = "error_message")
     @Lob

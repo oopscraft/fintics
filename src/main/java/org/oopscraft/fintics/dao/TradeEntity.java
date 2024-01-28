@@ -4,7 +4,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.arch4j.core.data.BaseEntity;
 import org.oopscraft.arch4j.core.data.converter.BooleanToYNConverter;
-import org.oopscraft.fintics.model.OrderKind;
+import org.oopscraft.fintics.model.Order;
 
 import javax.persistence.*;
 import java.time.LocalTime;
@@ -43,12 +43,12 @@ public class TradeEntity extends BaseEntity {
     @Column(name = "end_at")
     private LocalTime endAt;
 
-    @Column(name = "trade_client_id", length = 32)
-    private String tradeClientId;
+    @Column(name = "broker_id", length = 32)
+    private String brokerId;
 
-    @Column(name = "trade_client_config")
+    @Column(name = "broker_config")
     @Lob
-    private String tradeClientConfig;
+    private String brokerConfig;
 
     @Column(name = "hold_condition")
     @Lob
@@ -58,7 +58,7 @@ public class TradeEntity extends BaseEntity {
     private String orderOperatorId;
 
     @Column(name = "order_kind", length = 16)
-    private OrderKind orderKind;
+    private Order.Kind orderKind;
 
     @Column(name = "alarm_id", length = 32)
     private String alarmId;

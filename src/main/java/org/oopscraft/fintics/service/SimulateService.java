@@ -4,7 +4,7 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.core.Context;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.oopscraft.fintics.dao.AssetOhlcvRepository;
+import org.oopscraft.fintics.dao.BrokerAssetOhlcvRepository;
 import org.oopscraft.fintics.dao.IndiceOhlcvRepository;
 import org.oopscraft.fintics.dao.SimulateEntity;
 import org.oopscraft.fintics.dao.SimulateRepository;
@@ -21,7 +21,6 @@ import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.*;
 
 @Service
@@ -35,7 +34,7 @@ public class SimulateService {
 
     private final IndiceOhlcvRepository indiceOhlcvRepository;
 
-    private final AssetOhlcvRepository assetOhlcvRepository;
+    private final BrokerAssetOhlcvRepository assetOhlcvRepository;
 
     private final SimulateRunnableFactory simulateRunnableFactory;
 
@@ -71,10 +70,10 @@ public class SimulateService {
         // indice indicators
         List<IndiceIndicator> indiceIndicators = new ArrayList<>();
         for(IndiceId indiceId : IndiceId.values()) {
-            List<Ohlcv> minuteOhlcvs = indiceOhlcvRepository.findAllByIndiceIdAndOhlcvType(indiceId, OhlcvType.MINUTE, dateTimeFrom, dateTimeTo, Pageable.unpaged()).stream()
+            List<Ohlcv> minuteOhlcvs = indiceOhlcvRepository.findAllByIndiceIdAndType(indiceId, Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo, Pageable.unpaged()).stream()
                     .map(Ohlcv::from)
                     .toList();
-            List<Ohlcv> dailyOhlcvs = indiceOhlcvRepository.findAllByIndiceIdAndOhlcvType(indiceId, OhlcvType.DAILY, dateTimeFrom.minusMonths(1), dateTimeTo, Pageable.unpaged()).stream()
+            List<Ohlcv> dailyOhlcvs = indiceOhlcvRepository.findAllByIndiceIdAndType(indiceId, Ohlcv.Type.DAILY, dateTimeFrom.minusMonths(1), dateTimeTo, Pageable.unpaged()).stream()
                     .map(Ohlcv::from)
                     .toList();
             IndiceIndicator indiceIndicator = IndiceIndicator.builder()
@@ -89,11 +88,11 @@ public class SimulateService {
         List<AssetIndicator> assetIndicators = new ArrayList<>();
         trade.getTradeAssets().forEach(tradeAsset -> {
             if(tradeAsset.isEnabled()) {
-                List<Ohlcv> minuteOhlcvs = assetOhlcvRepository.findAllByTradeClientIdAndAssetIdAndOhlcvType(trade.getTradeClientId(), tradeAsset.getAssetId(), OhlcvType.MINUTE, dateTimeFrom, dateTimeTo, Pageable.unpaged())
+                List<Ohlcv> minuteOhlcvs = assetOhlcvRepository.findAllByBrokerIdAndAssetIdAndType(trade.getBrokerId(), tradeAsset.getAssetId(), Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo, Pageable.unpaged())
                         .stream()
                         .map(Ohlcv::from)
                         .toList();
-                List<Ohlcv> dailyOhlcvs = assetOhlcvRepository.findAllByTradeClientIdAndAssetIdAndOhlcvType(trade.getTradeClientId(), tradeAsset.getAssetId(), OhlcvType.DAILY, dateTimeFrom.minusMonths(1), dateTimeTo, Pageable.unpaged())
+                List<Ohlcv> dailyOhlcvs = assetOhlcvRepository.findAllByBrokerIdAndAssetIdAndType(trade.getBrokerId(), tradeAsset.getAssetId(), Ohlcv.Type.DAILY, dateTimeFrom.minusMonths(1), dateTimeTo, Pageable.unpaged())
                         .stream()
                         .map(Ohlcv::from)
                         .toList();

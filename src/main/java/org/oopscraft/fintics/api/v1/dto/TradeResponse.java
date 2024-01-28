@@ -1,7 +1,7 @@
 package org.oopscraft.fintics.api.v1.dto;
 
 import lombok.*;
-import org.oopscraft.fintics.model.OrderKind;
+import org.oopscraft.fintics.model.Order;
 import org.oopscraft.fintics.model.Trade;
 
 import java.time.LocalTime;
@@ -29,15 +29,15 @@ public class TradeResponse {
 
     private LocalTime endAt;
 
-    private String tradeClientId;
+    private String brokerId;
 
-    private String tradeClientConfig;
+    private String brokerConfig;
 
     private String holdCondition;
 
     private String orderOperatorId;
 
-    private OrderKind orderKind;
+    private Order.Kind orderKind;
 
     private String alarmId;
 
@@ -59,8 +59,8 @@ public class TradeResponse {
                 .threshold(trade.getThreshold())
                 .startAt(trade.getStartAt())
                 .endAt(trade.getEndAt())
-                .tradeClientId(trade.getTradeClientId())
-                .tradeClientConfig(trade.getTradeClientConfig())
+                .brokerId(trade.getBrokerId())
+                .brokerConfig(trade.getBrokerConfig())
                 .holdCondition(trade.getHoldCondition())
                 .orderOperatorId(trade.getOrderOperatorId())
                 .orderKind(trade.getOrderKind())

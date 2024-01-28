@@ -2,18 +2,14 @@ package org.oopscraft.fintics.simulate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.oopscraft.fintics.dao.AssetOhlcvRepository;
+import org.oopscraft.fintics.dao.BrokerAssetOhlcvRepository;
 import org.oopscraft.fintics.dao.IndiceOhlcvRepository;
 import org.oopscraft.fintics.dao.SimulateRepository;
 import org.oopscraft.fintics.model.*;
 import org.oopscraft.fintics.service.IndiceService;
 import org.oopscraft.fintics.trade.TradeExecutorFactory;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
-
-import java.time.LocalDateTime;
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -23,7 +19,7 @@ public class SimulateRunnableFactory {
 
     private final IndiceOhlcvRepository indiceOhlcvRepository;
 
-    private final AssetOhlcvRepository assetOhlcvRepository;
+    private final BrokerAssetOhlcvRepository assetOhlcvRepository;
 
     private final TradeExecutorFactory tradeExecutorFactory;
 
@@ -40,8 +36,8 @@ public class SimulateRunnableFactory {
                 .indiceOhlcvRepository(indiceOhlcvRepository)
                 .build();
 
-        SimulateTradeClient simulateTradeClient = SimulateTradeClient.builder()
-                .tradeClientId(trade.getTradeClientId())
+        SimulateBrokerClient simulateTradeClient = SimulateBrokerClient.builder()
+                .tradeClientId(trade.getBrokerId())
                 .assetOhlcvRepository(assetOhlcvRepository)
                 .build();
 

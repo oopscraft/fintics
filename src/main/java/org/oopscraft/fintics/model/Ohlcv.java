@@ -2,8 +2,10 @@ package org.oopscraft.fintics.model;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.oopscraft.arch4j.core.data.converter.AbstractEnumConverter;
 import org.oopscraft.fintics.dao.OhlcvEntity;
 
+import javax.persistence.Converter;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -13,7 +15,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Ohlcv {
 
-    private OhlcvType ohlcvType;
+    private Type type;
 
     private LocalDateTime dateTime;
 
@@ -32,6 +34,11 @@ public class Ohlcv {
     @Builder.Default
     private BigDecimal volume = BigDecimal.ZERO;
 
+    public enum Type { MINUTE, DAILY }
+
+    @Converter(autoApply = true)
+    public static class TypeConverter extends AbstractEnumConverter<Type> {}
+
     public static Ohlcv of(LocalDateTime dateTime, double openPrice, double highPrice, double lowPrice, double closePrice, double volume) {
         return Ohlcv.builder()
                 .dateTime(dateTime)
@@ -45,7 +52,7 @@ public class Ohlcv {
 
     public static Ohlcv from(OhlcvEntity ohlcvEntity) {
         return Ohlcv.builder()
-                .ohlcvType(ohlcvEntity.getOhlcvType())
+                .type(ohlcvEntity.getType())
                 .dateTime(ohlcvEntity.getDateTime())
                 .openPrice(ohlcvEntity.getOpenPrice())
                 .highPrice(ohlcvEntity.getHighPrice())

@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.client.trade;
+package org.oopscraft.fintics.client.broker;
 
 import lombok.Getter;
 import org.oopscraft.fintics.model.*;
@@ -7,12 +7,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Properties;
 
-public abstract class TradeClient {
+public abstract class BrokerClient {
 
     @Getter
     private final Properties properties;
 
-    public TradeClient(Properties properties) {
+    public BrokerClient(Properties properties) {
         this.properties = properties;
     }
 

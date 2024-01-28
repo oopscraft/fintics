@@ -29,8 +29,8 @@ public abstract class Indicator {
     @Getter
     private final List<Ohlcv> dailyOhlcvs = new ArrayList<>();
 
-    public List<Ohlcv> getOhlcvs(OhlcvType ohlcvType, int period) {
-        switch(ohlcvType) {
+    public List<Ohlcv> getOhlcvs(Ohlcv.Type type, int period) {
+        switch(type) {
             case MINUTE -> {
                 return resampleOhlcvs(minuteOhlcvs, period);
             }
@@ -65,7 +65,7 @@ public abstract class Indicator {
         List<Ohlcv> series = new ArrayList<>(ohlcvs);
         Collections.reverse(series);
 
-        OhlcvType ohlcvType = null;
+        Ohlcv.Type type = null;
         LocalDateTime dateTime = null;
         BigDecimal openPrice = BigDecimal.ZERO;
         BigDecimal highPrice = BigDecimal.ZERO;
@@ -76,7 +76,7 @@ public abstract class Indicator {
         for(int i = 0; i < series.size(); i ++ ) {
             Ohlcv ohlcv = series.get(i);
             if(i == 0) {
-                ohlcvType = ohlcv.getOhlcvType();
+                type = ohlcv.getType();
                 dateTime = ohlcv.getDateTime();
                 openPrice = ohlcv.getOpenPrice();
                 highPrice = ohlcv.getHighPrice();
@@ -97,7 +97,7 @@ public abstract class Indicator {
         }
 
         return Ohlcv.builder()
-                .ohlcvType(ohlcvType)
+                .type(type)
                 .dateTime(dateTime)
                 .openPrice(openPrice)
                 .highPrice(highPrice)
@@ -107,8 +107,8 @@ public abstract class Indicator {
                 .build();
     }
 
-    public <C extends CalculateContext, R extends CalculateResult> List<R> calculate(OhlcvType ohlcvType, int period, C context) {
-        List<Ohlcv> ohlcvs = getOhlcvs(ohlcvType, period);
+    public <C extends CalculateContext, R extends CalculateResult> List<R> calculate(Ohlcv.Type type, int period, C context) {
+        List<Ohlcv> ohlcvs = getOhlcvs(type, period);
         Collections.reverse(ohlcvs);
 
         // calculate

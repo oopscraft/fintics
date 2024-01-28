@@ -4,28 +4,28 @@ import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.oopscraft.arch4j.core.support.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
-import org.oopscraft.fintics.model.OhlcvType;
+import org.oopscraft.fintics.model.Ohlcv;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDateTime;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest(classes = FinticsConfiguration.class)
 @RequiredArgsConstructor
 class AssetOhlcvRepositoryTest extends CoreTestSupport {
 
-    private final AssetOhlcvRepository assetOhlcvRepository;
+    private final BrokerAssetOhlcvRepository brokerAssetOhlcvRepository;
 
     @Test
-    void findMaxDateTimeBySymbolAndOhlcvType() {
+    void findMaxDateTimeBySymbolAndType() {
         // given
         String clientId = "KIS";
         String symbol = "122630";
-        OhlcvType ohlcvType = OhlcvType.MINUTE;
+        Ohlcv.Type type = Ohlcv.Type.MINUTE;
 
         // when
-        LocalDateTime dateTime = assetOhlcvRepository.findMaxDateTimeByTradeClientIdAndAssetIdAndOhlcvType(clientId, symbol, ohlcvType)
+        LocalDateTime dateTime = brokerAssetOhlcvRepository.findMaxDateTimeByBrokerIdAndAssetIdAndType(clientId, symbol, type)
                 .orElse(LocalDateTime.MIN);
         // then
         assertNotNull(dateTime);

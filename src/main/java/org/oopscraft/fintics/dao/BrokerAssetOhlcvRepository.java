@@ -1,6 +1,6 @@
 package org.oopscraft.fintics.dao;
 
-import org.oopscraft.fintics.model.OhlcvType;
+import org.oopscraft.fintics.model.Ohlcv;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -12,28 +12,28 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface AssetOhlcvRepository extends JpaRepository<AssetOhlcvEntity, AssetOhlcvEntity.Pk> {
+public interface BrokerAssetOhlcvRepository extends JpaRepository<BrokerAssetOhlcvEntity, BrokerAssetOhlcvEntity.Pk> {
 
-    @Query("select max(a.dateTime) from AssetOhlcvEntity a " +
-            " where a.tradeClientId = :tradeClientId" +
+    @Query("select max(a.dateTime) from BrokerAssetOhlcvEntity a " +
+            " where a.brokerId = :brokerId" +
             " and a.assetId = :assetId" +
-            " and a.ohlcvType = :ohlcvType")
-    Optional<LocalDateTime> findMaxDateTimeByTradeClientIdAndAssetIdAndOhlcvType(
-            @Param("tradeClientId")String tradeClientId,
+            " and a.type = :type")
+    Optional<LocalDateTime> findMaxDateTimeByBrokerIdAndAssetIdAndType(
+            @Param("brokerId")String brokerId,
             @Param("assetId")String assetId,
-            @Param("ohlcvType")OhlcvType ohlcvType
+            @Param("type") Ohlcv.Type type
     );
 
-    @Query("select a from AssetOhlcvEntity a " +
-            " where a.tradeClientId = :tradeClientId" +
+    @Query("select a from BrokerAssetOhlcvEntity a " +
+            " where a.brokerId = :brokerId" +
             " and a.assetId = :assetId" +
-            " and a.ohlcvType = :ohlcvType" +
+            " and a.type = :type" +
             " and a.dateTime between :dateTimeFrom and :dateTimeTo" +
             " order by a.dateTime desc")
-    List<AssetOhlcvEntity> findAllByTradeClientIdAndAssetIdAndOhlcvType(
-            @Param("tradeClientId")String tradeClientId,
+    List<BrokerAssetOhlcvEntity> findAllByBrokerIdAndAssetIdAndType(
+            @Param("brokerId")String brokerId,
             @Param("assetId")String assetId,
-            @Param("ohlcvType")OhlcvType ohlcvType,
+            @Param("type")Ohlcv.Type type,
             @Param("dateTimeFrom")LocalDateTime dateTimeFrom,
             @Param("dateTimeTo")LocalDateTime dateTimeTo,
             Pageable pageable

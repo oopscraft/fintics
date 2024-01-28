@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.client.trade.upbit;
+package org.oopscraft.fintics.client.broker.upbit;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -10,7 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.data.IdGenerator;
 import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
 import org.oopscraft.arch4j.core.support.ValueMap;
-import org.oopscraft.fintics.client.trade.TradeClient;
+import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.model.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.RequestEntity;
@@ -29,7 +29,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class UpbitTradeClient extends TradeClient {
+public class UpbitBrokerClient extends BrokerClient {
 
     private static final String API_URL = "https://api.upbit.com";
 
@@ -41,7 +41,7 @@ public class UpbitTradeClient extends TradeClient {
 
     private final ObjectMapper objectMapper;
 
-    public UpbitTradeClient(Properties properties) {
+    public UpbitBrokerClient(Properties properties) {
         super(properties);
         this.accessKey = properties.getProperty("accessKey");
         this.secretKey = properties.getProperty("secretKey");
@@ -118,15 +118,15 @@ public class UpbitTradeClient extends TradeClient {
 
     @Override
     public List<Ohlcv> getMinuteOhlcvs(Asset asset, LocalDateTime dateTime) throws InterruptedException {
-        return getOhlcvs(asset, OhlcvType.MINUTE);
+        return getOhlcvs(asset, Ohlcv.Type.MINUTE);
     }
 
     @Override
     public List<Ohlcv> getDailyOhlcvs(Asset asset, LocalDateTime dateTime) throws InterruptedException {
-        return getOhlcvs(asset, OhlcvType.DAILY);
+        return getOhlcvs(asset, Ohlcv.Type.DAILY);
     }
 
-    private List<Ohlcv> getOhlcvs(Asset asset, OhlcvType ohlcvType) throws InterruptedException {
+    private List<Ohlcv> getOhlcvs(Asset asset, Ohlcv.Type ohlcvType) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
@@ -157,7 +157,7 @@ public class UpbitTradeClient extends TradeClient {
                             DateTimeFormatter.ISO_LOCAL_DATE_TIME
                     );
                     return Ohlcv.builder()
-                            .ohlcvType(ohlcvType)
+                            .type(ohlcvType)
                             .dateTime(dateTime)
                             .openPrice(row.getNumber("opening_price"))
                             .highPrice(row.getNumber("high_price"))
@@ -242,10 +242,10 @@ public class UpbitTradeClient extends TradeClient {
         String ordType;
         BigDecimal price;
         BigDecimal volume;
-        switch(order.getOrderType()) {
+        switch(order.getType()) {
             case BUY -> {
                 side = "bid";
-                switch(order.getOrderKind()) {
+                switch(order.getKind()) {
                     case LIMIT -> {
                         ordType = "limit";
                         price = order.getPrice();
@@ -262,7 +262,7 @@ public class UpbitTradeClient extends TradeClient {
             }
             case SELL -> {
                 side = "ask";
-                switch(order.getOrderKind()) {
+                switch(order.getKind()) {
                     case LIMIT -> {
                         ordType = "limit";
                         price = order.getPrice();
@@ -320,7 +320,7 @@ public class UpbitTradeClient extends TradeClient {
         ValueMap responseMap = responseEntity.getBody();
         log.info("{}", responseMap);
         if(responseMap != null) {
-            order.setClientOrderId(responseMap.getString("uuid"));
+            order.setBrokerOrderId(responseMap.getString("uuid"));
         }
 
         // return
@@ -350,16 +350,16 @@ public class UpbitTradeClient extends TradeClient {
         }
         return rows.stream()
                 .map(row -> {
-                    OrderType orderKind;
+                    Order.Type orderKind;
                     switch(row.getString("side")) {
-                        case "bid" -> orderKind = OrderType.BUY;
-                        case "ask" -> orderKind = OrderType.SELL;
+                        case "bid" -> orderKind = Order.Type.BUY;
+                        case "ask" -> orderKind = Order.Type.SELL;
                         default -> throw new RuntimeException("invalid side");
                     }
-                    OrderKind orderType;
+                    Order.Kind orderType;
                     switch(row.getString("ord_type")) {
-                        case "limit" -> orderType = OrderKind.LIMIT;
-                        case "market","price" -> orderType = OrderKind.MARKET;
+                        case "limit" -> orderType = Order.Kind.LIMIT;
+                        case "market","price" -> orderType = Order.Kind.MARKET;
                         default -> orderType = null;
                     }
                     String symbol = row.getString("market");
@@ -369,12 +369,12 @@ public class UpbitTradeClient extends TradeClient {
 
                     // order
                     return Order.builder()
-                            .orderType(orderKind)
+                            .type(orderKind)
                             .assetId(symbol)
-                            .orderKind(orderType)
+                            .kind(orderType)
                             .quantity(quantity)
                             .price(price)
-                            .clientOrderId(clientOrderId)
+                            .brokerOrderId(clientOrderId)
                             .build();
                 })
                 .collect(Collectors.toList());
@@ -387,7 +387,7 @@ public class UpbitTradeClient extends TradeClient {
                 .insecure(true)
                 .build();
         String url = API_URL + "/v1/order";
-        String queryString = "uuid=" + order.getClientOrderId();
+        String queryString = "uuid=" + order.getBrokerOrderId();
         RequestEntity<Void> requestEntity = RequestEntity
                 .delete(url + "?" + queryString)
                 .headers(createHeaders(queryString))

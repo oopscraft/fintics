@@ -29,7 +29,7 @@ public class AssetIndicatorTest {
                 }})
                 .build();
 
-        List<Sma> results = assetIndicator.calculate(OhlcvType.MINUTE, 1, SmaContext.DEFAULT);
+        List<Sma> results = assetIndicator.calculate(Ohlcv.Type.MINUTE, 1, SmaContext.DEFAULT);
         results.forEach(sma -> log.info("{}", sma));
     }
 
@@ -47,7 +47,7 @@ public class AssetIndicatorTest {
         AssetIndicator assetIndicator = AssetIndicator.builder()
                 .minuteOhlcvs(minuteOhlcvs)
                 .build();
-        List<Ohlcv> resampleOhlcvs = assetIndicator.getOhlcvs(OhlcvType.MINUTE, 3);
+        List<Ohlcv> resampleOhlcvs = assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 3);
 
         // then
         log.info("resampleOhlcvs:{}", resampleOhlcvs);
@@ -73,7 +73,7 @@ public class AssetIndicatorTest {
         AssetIndicator assetIndicator = AssetIndicator.builder()
                 .minuteOhlcvs(minuteOhlcvs)
                 .build();
-        List<Ohlcv> resampleOhlcvs = assetIndicator.getOhlcvs(OhlcvType.MINUTE, 3);
+        List<Ohlcv> resampleOhlcvs = assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 3);
 
         // then
         log.info("resampleOhlcvs:{}", resampleOhlcvs);
@@ -102,7 +102,7 @@ public class AssetIndicatorTest {
         AssetIndicator indicator = AssetIndicator.builder()
                 .minuteOhlcvs(minuteOhlcvs)
                 .build();
-        List<Ohlcv> resampleOhlcvs = indicator.getOhlcvs(OhlcvType.MINUTE, 3);
+        List<Ohlcv> resampleOhlcvs = indicator.getOhlcvs(Ohlcv.Type.MINUTE, 3);
 
         // then
         log.info("resampleOhlcvs:{}", resampleOhlcvs);

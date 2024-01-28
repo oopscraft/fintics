@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.oopscraft.arch4j.core.support.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
-import org.oopscraft.fintics.dao.AssetOhlcvEntity;
+import org.oopscraft.fintics.dao.BrokerAssetOhlcvEntity;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Slf4j
 class AssetOhlcvCollectorTest extends CoreTestSupport {
 
-    private final AssetOhlcvCollector assetOhlcvCollector;
+    private final BrokerAssetOhlcvCollector assetOhlcvCollector;
 
     @Disabled
     @Test
@@ -28,8 +28,8 @@ class AssetOhlcvCollectorTest extends CoreTestSupport {
         assetOhlcvCollector.collect();
 
         // then
-        List<AssetOhlcvEntity> assetOhlcvEntities = entityManager
-                .createQuery("select a from AssetOhlcvEntity a", AssetOhlcvEntity.class)
+        List<BrokerAssetOhlcvEntity> assetOhlcvEntities = entityManager
+                .createQuery("select a from BrokerAssetOhlcvEntity a", BrokerAssetOhlcvEntity.class)
                 .setMaxResults(100)
                 .getResultList();
         log.info("assetOhlcvEntities:{}", assetOhlcvEntities);

@@ -2,10 +2,9 @@ package org.oopscraft.fintics.simulate;
 
 import lombok.Builder;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.oopscraft.fintics.client.indice.IndiceClient;
-import org.oopscraft.fintics.dao.AssetOhlcvRepository;
+import org.oopscraft.fintics.dao.BrokerAssetOhlcvRepository;
 import org.oopscraft.fintics.dao.IndiceOhlcvRepository;
 import org.oopscraft.fintics.model.*;
 import org.springframework.data.domain.Pageable;
@@ -18,7 +17,7 @@ public class SimulateIndiceClient extends IndiceClient {
 
     private final IndiceOhlcvRepository indiceOhlcvRepository;
 
-    private final AssetOhlcvRepository assetOhlcvRepository;
+    private final BrokerAssetOhlcvRepository brokerAssetOhlcvRepository;
 
     @Setter
     @Getter
@@ -29,17 +28,17 @@ public class SimulateIndiceClient extends IndiceClient {
     private Map<IndiceId,List<Ohlcv>> dailyOhlcvsMap = new HashMap<>();
 
     @Builder
-    protected SimulateIndiceClient(IndiceOhlcvRepository indiceOhlcvRepository, AssetOhlcvRepository assetOhlcvRepository) {
+    protected SimulateIndiceClient(IndiceOhlcvRepository indiceOhlcvRepository, BrokerAssetOhlcvRepository brokerAssetOhlcvRepository) {
         this.indiceOhlcvRepository = indiceOhlcvRepository;
-        this.assetOhlcvRepository = assetOhlcvRepository;
+        this.brokerAssetOhlcvRepository = brokerAssetOhlcvRepository;
     }
 
     private void loadOhlcvs(IndiceId indiceId, LocalDateTime dateTime) {
-        List<Ohlcv> minuteOhlcvs = indiceOhlcvRepository.findAllByIndiceIdAndOhlcvType(indiceId, OhlcvType.MINUTE, dateTime.minusMonths(1), dateTime, Pageable.unpaged())
+        List<Ohlcv> minuteOhlcvs = indiceOhlcvRepository.findAllByIndiceIdAndType(indiceId, Ohlcv.Type.MINUTE, dateTime.minusMonths(1), dateTime, Pageable.unpaged())
                 .stream()
                 .map(Ohlcv::from)
                 .toList();
-        List<Ohlcv> dailyOhlcvs = indiceOhlcvRepository.findAllByIndiceIdAndOhlcvType(indiceId, OhlcvType.DAILY, dateTime.minusYears(1), dateTime, Pageable.unpaged())
+        List<Ohlcv> dailyOhlcvs = indiceOhlcvRepository.findAllByIndiceIdAndType(indiceId, Ohlcv.Type.DAILY, dateTime.minusYears(1), dateTime, Pageable.unpaged())
                 .stream()
                 .map(Ohlcv::from)
                 .toList();

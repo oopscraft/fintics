@@ -12,12 +12,20 @@
             tradeName: null,
             interval: null,
             threshold: null,
-            clientType: null,
-            clientProperties: null,
+            brokerId: null,
+            brokerConfig: null,
             tradeAssets: []
         });
-        const tradeClientDefinitions = new duice.ArrayProxy(/*[[${tradeClientDefinitions}]]*/[]);
-        const orderOperatorDefinitions = new duice.ArrayProxy(/*[[${orderOperatorDefinitions}]]*/[]);
+
+        duice.ObjectProxy.onPropertyChanged(trade, event => {
+            console.log("========> ", event.property, event.value);
+            if(event.property === 'brokerId') {
+                trade.brokerConfig = brokers.find(it => it.brokerId === event.value)?.configTemplate;
+            }
+        });
+
+        const brokers = new duice.ArrayProxy(/*[[${brokers}]]*/[]);
+        const orderOperators = new duice.ArrayProxy(/*[[${orderOperators}]]*/[]);
         const alarms = new duice.ArrayProxy(/*[[${alarms}]]*/[]);
 
         // simulate
@@ -43,8 +51,8 @@
 
         // order
         const orderSearch = new duice.ObjectProxy({
-            orderType: null,
-            orderResult: null,
+            type: null,
+            result: null,
             _page: 0,
             _size: 20,
             _count: 0
@@ -338,11 +346,11 @@
 
         function getOrders() {
             let url = new URL(`${_apiUrl}/v1/trade/${tradeId}/order`, document.location.origin);
-            if(orderSearch.orderType) {
-                url.searchParams.append('orderType', orderSearch.orderType);
+            if(orderSearch.type) {
+                url.searchParams.append('type', orderSearch.type);
             }
-            if(orderSearch.orderResult) {
-                url.searchParams.append('orderResult', orderSearch.orderResult);
+            if(orderSearch.result) {
+                url.searchParams.append('result', orderSearch.result);
             }
             url.searchParams.append('_page', orderSearch._page);
             url.searchParams.append('_size', orderSearch._size);
@@ -514,27 +522,22 @@
                     </label>
                 </div>
                 <label class="grid-column--12">
-                    <span data-th-text="#{fintics.Trade.tradeClientId}" class="font-weight--bold width--100"></span>
+                    <span data-th-text="#{fintics.Trade.brokerId}" class="font-weight--bold width--100"></span>
                     <select data-duice-bind="trade"
-                            data-duice-property="tradeClientId"
-                            data-duice-option="tradeClientDefinitions"
-                            data-duice-option-value-property="tradeClientId"
-                            data-duice-option-text-property="tradeClientName"
-                            data-duice-execute="
-                            this.addEventListener('change',() => {
-                                trade.tradeClientConfig = clientDefinitions.find(item => item.tradeClientId === this.value)?.configTemplate;
-                            });
-                            "
+                            data-duice-property="brokerId"
+                            data-duice-option="brokers"
+                            data-duice-option-value-property="brokerId"
+                            data-duice-option-text-property="brokerName"
                             class="width--100">
                         <option data-th-text="'- '+#{web.global.select}+' -'"></option>
                     </select>
                 </label>
                 <label class="grid-column--12">
-                    <span data-th-text="#{fintics.Trade.tradeClientConfig}"
+                    <span data-th-text="#{fintics.Trade.brokerConfig}"
                           class="font-weight--bold width--100"></span>
                     <duice-codemirror
                             data-duice-bind="trade"
-                            data-duice-property="tradeClientConfig"
+                            data-duice-property="brokerConfig"
                             class="border--1" style="height:7em;">
                     </duice-codemirror>
                 </label>
@@ -542,7 +545,7 @@
                     <span data-th-text="#{fintics.Trade.orderOperator}" class="font-weight--bold tag-required"></span>
                     <select data-duice-bind="trade"
                             data-duice-property="orderOperatorId"
-                            data-duice-option="orderOperatorDefinitions"
+                            data-duice-option="orderOperators"
                             data-duice-option-value-property="orderOperatorId"
                             data-duice-option-text-property="orderOperatorName"
                             class="width--100">
@@ -553,7 +556,7 @@
                     <span data-th-text="#{fintics.Trade.orderKind}" class="font-weight--bold tag-required"></span>
                     <select data-duice-bind="trade" data-duice-property="orderKind" class="width--100">
                         <option data-th-text="'- ' + #{web.global.select} + ' -'"></option>
-                        <option th:each="orderKind : ${orderKinds}" th:value="${orderKind}" th:text="#{'fintics.OrderKind.'+${orderKind}}"></option>
+                        <option th:each="orderKind : ${orderKinds}" th:value="${orderKind}" th:text="#{'fintics.Order.Kind.'+${orderKind}}"></option>
                     </select>
                 </label>
                 <div class="grid-column--12">
@@ -808,15 +811,15 @@
             <form onsubmit="return false;" class="display--grid grid-template-columns--12 grid-gap--1em margin-x--1em">
                 <div class="grid-column--12 s__grid-column--12 display--grid grid-template-columns--12 grid-gap--1em">
                     <label class="grid-column--1 s__grid-column--12">
-                        <select class="width--100" data-duice-bind="orderSearch" data-duice-property="orderType">
-                            <option value="" data-th-text="'- ' + #{fintics.Order.orderType} + ' -'"></option>
+                        <select class="width--100" data-duice-bind="orderSearch" data-duice-property="type">
+                            <option value="" data-th-text="'- ' + #{fintics.Order.type} + ' -'"></option>
                             <option value="BUY">BUY</option>
                             <option value="SELL">SELL</option>
                         </select>
                     </label>
                     <label class="grid-column--1 s__grid-column--12">
-                        <select class="width--100" data-duice-bind="orderSearch" data-duice-property="orderResult">
-                            <option value="" data-th-text="'- ' + #{fintics.Order.orderResult} + ' -'"></option>
+                        <select class="width--100" data-duice-bind="orderSearch" data-duice-property="result">
+                            <option value="" data-th-text="'- ' + #{fintics.Order.result} + ' -'"></option>
                             <option value="COMPLETED">COMPLETED</option>
                             <option value="FAILED">FAILED</option>
                         </select>
@@ -845,11 +848,11 @@
                     <tr>
                         <th data-th-text="#{web.global.no}" class="text-align--center"></th>
                         <th data-th-text="#{fintics.Order.orderAt}"></th>
-                        <th data-th-text="#{fintics.Order.orderType}"></th>
+                        <th data-th-text="#{fintics.Order.type}"></th>
                         <th data-th-text="#{fintics.Asset.assetName}"></th>
                         <th data-th-text="#{fintics.Order.quantity}"></th>
                         <th data-th-text="#{fintics.Order.price}"></th>
-                        <th data-th-text="#{fintics.Order.orderResult}"></th>
+                        <th data-th-text="#{fintics.Order.result}"></th>
                         <th data-th-text="#{fintics.Order.errorMessage}"></th>
                     </tr>
                     </thead>

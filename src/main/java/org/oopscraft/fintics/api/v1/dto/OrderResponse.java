@@ -4,9 +4,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.oopscraft.fintics.model.Order;
-import org.oopscraft.fintics.model.OrderType;
-import org.oopscraft.fintics.model.OrderResult;
-import org.oopscraft.fintics.model.OrderKind;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -19,7 +16,7 @@ public class OrderResponse {
 
     private LocalDateTime orderAt;
 
-    private OrderType orderType;
+    private Order.Type type;
 
     private String tradeId;
 
@@ -30,13 +27,13 @@ public class OrderResponse {
 
     private String assetName;
 
-    private OrderKind orderKind;
+    private Order.Kind kind;
 
     private BigDecimal quantity;
 
     private BigDecimal price;
 
-    private OrderResult orderResult;
+    private Order.Result result;
 
     private String errorMessage;
 
@@ -44,14 +41,14 @@ public class OrderResponse {
         return OrderResponse.builder()
                 .orderId(order.getOrderId())
                 .orderAt(order.getOrderAt())
-                .orderType(order.getOrderType())
+                .type(order.getType())
                 .tradeId(order.getTradeId())
                 .assetId(order.getAssetId())
                 .assetName(order.getAssetName())
-                .orderKind(order.getOrderKind())
+                .kind(order.getKind())
                 .quantity(order.getQuantity())
                 .price(order.getPrice())
-                .orderResult(order.getOrderResult())
+                .result(order.getResult())
                 .errorMessage(order.getErrorMessage())
                 .build();
     }

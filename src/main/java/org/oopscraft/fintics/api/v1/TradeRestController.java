@@ -20,14 +20,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -72,8 +67,8 @@ public class TradeRestController {
                 .threshold(tradeRequest.getThreshold())
                 .startAt(tradeRequest.getStartAt())
                 .endAt(tradeRequest.getEndAt())
-                .tradeClientId(tradeRequest.getTradeClientId())
-                .tradeClientConfig(tradeRequest.getTradeClientConfig())
+                .brokerId(tradeRequest.getTradeClientId())
+                .brokerConfig(tradeRequest.getTradeClientConfig())
                 .holdCondition(tradeRequest.getHoldCondition())
                 .orderOperatorId(tradeRequest.getOrderOperatorId())
                 .orderKind(tradeRequest.getOrderKind())
@@ -113,8 +108,8 @@ public class TradeRestController {
         trade.setThreshold(tradeRequest.getThreshold());
         trade.setStartAt(tradeRequest.getStartAt());
         trade.setEndAt(tradeRequest.getEndAt());
-        trade.setTradeClientId(tradeRequest.getTradeClientId());
-        trade.setTradeClientConfig(tradeRequest.getTradeClientConfig());
+        trade.setBrokerId(tradeRequest.getTradeClientId());
+        trade.setBrokerConfig(tradeRequest.getTradeClientConfig());
         trade.setHoldCondition(tradeRequest.getHoldCondition());
         trade.setOrderOperatorId(tradeRequest.getOrderOperatorId());
         trade.setOrderKind(tradeRequest.getOrderKind());

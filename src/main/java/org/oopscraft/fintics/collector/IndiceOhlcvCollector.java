@@ -8,7 +8,6 @@ import org.oopscraft.fintics.dao.IndiceOhlcvEntity;
 import org.oopscraft.fintics.dao.IndiceOhlcvRepository;
 import org.oopscraft.fintics.model.IndiceId;
 import org.oopscraft.fintics.model.Ohlcv;
-import org.oopscraft.fintics.model.OhlcvType;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,7 +54,7 @@ public class IndiceOhlcvCollector {
         // minute
         List<Ohlcv> minuteOhlcvs = indiceClient.getMinuteOhlcvs(symbol, dateTime);
         Collections.reverse(minuteOhlcvs);
-        LocalDateTime minuteLastDateTime = indiceOhlcvRepository.findMaxDateTimeByIndiceIdAndOhlcvType(symbol, OhlcvType.MINUTE)
+        LocalDateTime minuteLastDateTime = indiceOhlcvRepository.findMaxDateTimeByIndiceIdAndType(symbol, Ohlcv.Type.MINUTE)
                 .orElse(LocalDateTime.of(1,1,1,0,0,0))
                 .minusMinutes(2);
         List<IndiceOhlcvEntity> minuteOhlcvEntities = minuteOhlcvs.stream()
@@ -68,7 +67,7 @@ public class IndiceOhlcvCollector {
         // daily
         List<Ohlcv> dailyOhlcvs = indiceClient.getDailyOhlcvs(symbol, dateTime);
         Collections.reverse(dailyOhlcvs);
-        LocalDateTime dailyLastDateTime = indiceOhlcvRepository.findMaxDateTimeByIndiceIdAndOhlcvType(symbol, OhlcvType.DAILY)
+        LocalDateTime dailyLastDateTime = indiceOhlcvRepository.findMaxDateTimeByIndiceIdAndType(symbol, Ohlcv.Type.DAILY)
                 .orElse(LocalDateTime.of(1,1,1,0,0,0))
                 .minusDays(2);
         List<IndiceOhlcvEntity> dailyOhlcvEntities = dailyOhlcvs.stream()
@@ -83,7 +82,7 @@ public class IndiceOhlcvCollector {
         return IndiceOhlcvEntity.builder()
                 .indiceId(indiceId)
                 .dateTime(ohlcv.getDateTime())
-                .ohlcvType(ohlcv.getOhlcvType())
+                .type(ohlcv.getType())
                 .openPrice(ohlcv.getOpenPrice())
                 .highPrice(ohlcv.getHighPrice())
                 .lowPrice(ohlcv.getLowPrice())

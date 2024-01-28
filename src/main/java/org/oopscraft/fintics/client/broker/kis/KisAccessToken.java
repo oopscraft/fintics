@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.client.trade.kis;
+package org.oopscraft.fintics.client.broker.kis;
 
 import lombok.*;
 import net.minidev.json.annotate.JsonIgnore;

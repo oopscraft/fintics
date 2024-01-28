@@ -3,7 +3,7 @@ package org.oopscraft.fintics.dao;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.arch4j.core.data.BaseEntity;
-import org.oopscraft.fintics.model.OhlcvType;
+import org.oopscraft.fintics.model.Ohlcv;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -18,9 +18,9 @@ import java.time.LocalDateTime;
 public class OhlcvEntity extends BaseEntity {
 
     @Id
-    @Column(name = "ohlcv_type", length = 32)
+    @Column(name = "type", length = 32)
     @Enumerated(EnumType.STRING)
-    private OhlcvType ohlcvType;
+    private Ohlcv.Type type;
 
     @Id
     @Column(name = "date_time")

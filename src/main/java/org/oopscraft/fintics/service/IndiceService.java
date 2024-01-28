@@ -6,7 +6,6 @@ import org.oopscraft.fintics.model.*;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -30,22 +29,22 @@ public class IndiceService {
     public Optional<IndiceIndicator> getIndiceIndicator(IndiceId indiceId, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo) {
         // minute ohlcv
         LocalDateTime minuteDateTimeTo = Optional.ofNullable(dateTimeTo)
-                .orElse(indiceOhlcvRepository.findMaxDateTimeByIndiceIdAndOhlcvType(indiceId, OhlcvType.MINUTE)
+                .orElse(indiceOhlcvRepository.findMaxDateTimeByIndiceIdAndType(indiceId, Ohlcv.Type.MINUTE)
                         .orElse(LocalDateTime.now()));
         LocalDateTime minuteDateTimeFrom = Optional.ofNullable(dateTimeFrom)
                 .orElse(minuteDateTimeTo.minusDays(1));
-        List<Ohlcv> minuteOhlcvs = indiceOhlcvRepository.findAllByIndiceIdAndOhlcvType(indiceId, OhlcvType.MINUTE, minuteDateTimeFrom, minuteDateTimeTo, Pageable.unpaged())
+        List<Ohlcv> minuteOhlcvs = indiceOhlcvRepository.findAllByIndiceIdAndType(indiceId, Ohlcv.Type.MINUTE, minuteDateTimeFrom, minuteDateTimeTo, Pageable.unpaged())
                 .stream()
                 .map(Ohlcv::from)
                 .collect(Collectors.toList());
 
         // daily ohlcv
         LocalDateTime dailyDateTimeTo = Optional.ofNullable(dateTimeTo)
-                .orElse(indiceOhlcvRepository.findMaxDateTimeByIndiceIdAndOhlcvType(indiceId, OhlcvType.DAILY)
+                .orElse(indiceOhlcvRepository.findMaxDateTimeByIndiceIdAndType(indiceId, Ohlcv.Type.DAILY)
                         .orElse(LocalDateTime.now()));
         LocalDateTime dailyDateTimeFrom = Optional.ofNullable(dateTimeFrom)
                 .orElse(dailyDateTimeTo.minusMonths(1));
-        List<Ohlcv> dailyOhlcvs = indiceOhlcvRepository.findAllByIndiceIdAndOhlcvType(indiceId, OhlcvType.DAILY, dailyDateTimeFrom, dailyDateTimeTo, Pageable.unpaged())
+        List<Ohlcv> dailyOhlcvs = indiceOhlcvRepository.findAllByIndiceIdAndType(indiceId, Ohlcv.Type.DAILY, dailyDateTimeFrom, dailyDateTimeTo, Pageable.unpaged())
                 .stream()
                 .map(Ohlcv::from)
                 .collect(Collectors.toList());

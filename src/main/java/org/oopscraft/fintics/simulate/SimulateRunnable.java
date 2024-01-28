@@ -5,19 +5,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.oopscraft.fintics.dao.SimulateEntity;
 import org.oopscraft.fintics.dao.SimulateRepository;
-import org.oopscraft.fintics.model.Balance;
-import org.oopscraft.fintics.model.Order;
 import org.oopscraft.fintics.model.Simulate;
 import org.oopscraft.fintics.model.Trade;
 import org.oopscraft.fintics.trade.TradeExecutor;
 import org.oopscraft.fintics.trade.TradeExecutorFactory;
-import org.oopscraft.fintics.trade.TradeLogAppender;
-import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -29,7 +23,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.function.Consumer;
 
 public class SimulateRunnable implements Runnable {
 
@@ -38,7 +31,7 @@ public class SimulateRunnable implements Runnable {
 
     private final SimulateIndiceClient simulateIndiceClient;
 
-    private final SimulateTradeClient simulateTradeClient;
+    private final SimulateBrokerClient simulateTradeClient;
 
     private final TradeExecutorFactory tradeExecutorFactory;
 
@@ -67,7 +60,7 @@ public class SimulateRunnable implements Runnable {
     protected SimulateRunnable(
             Simulate simulate,
             SimulateIndiceClient simulateIndiceClient,
-            SimulateTradeClient simulateTradeClient,
+            SimulateBrokerClient simulateTradeClient,
             TradeExecutorFactory tradeExecutorFactory,
             PlatformTransactionManager transactionManager,
             SimulateRepository simulateRepository,
@@ -114,7 +107,7 @@ public class SimulateRunnable implements Runnable {
 
             // trade executor
             TradeExecutor tradeExecutor = tradeExecutorFactory.getObject();
-//            tradeExecutor.setLog(log);
+            tradeExecutor.setLog(log);
 
             // start
             for(LocalDateTime dateTime = dateTimeFrom.plusSeconds(interval); dateTime.isBefore(dateTimeTo); dateTime = dateTime.plusSeconds(interval)) {
