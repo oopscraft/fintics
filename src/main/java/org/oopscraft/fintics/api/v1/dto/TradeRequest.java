@@ -27,9 +27,9 @@ public class TradeRequest {
 
     private LocalTime endAt;
 
-    private String tradeClientId;
+    private String brokerId;
 
-    private String tradeClientConfig;
+    private String brokerConfig;
 
     private String holdCondition;
 

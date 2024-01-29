@@ -52,7 +52,7 @@ public class OrderEntity extends BaseEntity {
     @Column(name = "price")
     private BigDecimal price;
 
-    @Column(name = "result")
+    @Column(name = "result", length = 16)
     private Order.Result result;
 
     @Column(name = "error_message")

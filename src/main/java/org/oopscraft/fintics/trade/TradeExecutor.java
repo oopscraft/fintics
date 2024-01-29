@@ -2,7 +2,6 @@ package org.oopscraft.fintics.trade;
 
 import ch.qos.logback.classic.Logger;
 import lombok.Builder;
-import lombok.Setter;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
 import org.oopscraft.fintics.client.indice.IndiceClient;
@@ -11,7 +10,6 @@ import org.oopscraft.fintics.dao.BrokerAssetOhlcvRepository;
 import org.oopscraft.fintics.dao.IndiceOhlcvRepository;
 import org.oopscraft.fintics.model.*;
 import org.oopscraft.fintics.trade.order.OrderOperator;
-import org.oopscraft.fintics.trade.order.OrderOperatorContext;
 import org.oopscraft.fintics.trade.order.OrderOperatorFactory;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
@@ -29,8 +27,7 @@ public class TradeExecutor {
 
     private final OrderOperatorFactory orderOperatorFactory;
 
-    @Setter
-    private AlarmService alarmService;
+    private final AlarmService alarmService;
 
     private Logger log = (Logger) LoggerFactory.getLogger(this.getClass());
 
@@ -39,21 +36,22 @@ public class TradeExecutor {
     private final Map<String,Integer> holdConditionResultCountMap = new HashMap<>();
 
     @Builder
-    private TradeExecutor(IndiceOhlcvRepository indiceOhlcvRepository, BrokerAssetOhlcvRepository assetOhlcvRepository, OrderOperatorFactory orderOperatorFactory) {
+    private TradeExecutor(IndiceOhlcvRepository indiceOhlcvRepository, BrokerAssetOhlcvRepository assetOhlcvRepository, OrderOperatorFactory orderOperatorFactory, AlarmService alarmService) {
         this.indiceOhlcvRepository = indiceOhlcvRepository;
         this.assetOhlcvRepository = assetOhlcvRepository;
         this.orderOperatorFactory = orderOperatorFactory;
+        this.alarmService = alarmService;
     }
 
     public void setLog(Logger log) {
         this.log = log;
     }
 
-    public void execute(Trade trade, LocalDateTime dateTime, IndiceClient indiceClient, BrokerClient tradeClient) throws InterruptedException {
+    public void execute(Trade trade, LocalDateTime dateTime, IndiceClient indiceClient, BrokerClient brokerClient) throws InterruptedException {
         log.info("Check trade - [{}]", trade.getTradeName());
 
         // check market opened
-        if(!tradeClient.isOpened(dateTime)) {
+        if(!brokerClient.isOpened(dateTime)) {
             log.info("Market not opened.");
             return;
         }
@@ -86,7 +84,7 @@ public class TradeExecutor {
         }
 
         // balance
-        Balance balance = tradeClient.getBalance();
+        Balance balance = brokerClient.getBalance();
 
         // checks buy condition
         for (TradeAsset tradeAsset : trade.getTradeAssets()) {
@@ -99,14 +97,14 @@ public class TradeExecutor {
                 }
 
                 // logging
-                log.info("Check asset - [{}]", tradeAsset.getAssetName());
+                log.info("Check asset - [{}({})]", tradeAsset.getAssetName(), tradeAsset.getAssetId());
 
                 // indicator
-                List<Ohlcv> minuteOhlcvs = tradeClient.getMinuteOhlcvs(tradeAsset, dateTime);
+                List<Ohlcv> minuteOhlcvs = brokerClient.getMinuteOhlcvs(tradeAsset, dateTime);
                 List<Ohlcv> previousMinuteOhlcvs = getPreviousAssetMinuteOhlcvs(trade.getBrokerId(), tradeAsset.getAssetId(), minuteOhlcvs, dateTime);
                 minuteOhlcvs.addAll(previousMinuteOhlcvs);
 
-                List<Ohlcv> dailyOhlcvs = tradeClient.getDailyOhlcvs(tradeAsset, dateTime);
+                List<Ohlcv> dailyOhlcvs = brokerClient.getDailyOhlcvs(tradeAsset, dateTime);
                 List<Ohlcv> previousDailyOhlcvs = getPreviousAssetDailyOhlcvs(trade.getBrokerId(), tradeAsset.getAssetId(), dailyOhlcvs, dateTime);
                 dailyOhlcvs.addAll(previousDailyOhlcvs);
 
@@ -116,9 +114,11 @@ public class TradeExecutor {
                         .minuteOhlcvs(minuteOhlcvs)
                         .dailyOhlcvs(dailyOhlcvs)
                         .build();
+                log.info("MinuteOhlcvs({}):{}...", assetIndicator.getMinuteOhlcvs().size(), assetIndicator.getMinuteOhlcvs().get(0).getDateTime());
+                log.info("DailyOhlcvs({}):{}...", assetIndicator.getDailyOhlcvs().size(), assetIndicator.getDailyOhlcvs().get(0).getDateTime());
 
                 // order book
-                OrderBook orderBook = tradeClient.getOrderBook(tradeAsset);
+                OrderBook orderBook = brokerClient.getOrderBook(tradeAsset);
 
                 // executes trade asset decider
                 HoldConditionExecutor holdConditionExecutor = HoldConditionExecutor.builder()
@@ -134,14 +134,8 @@ public class TradeExecutor {
                 log.info("holdConditionResult: {}", holdConditionResult);
 
                 // order operator
-                OrderOperatorContext orderOperatorContext = OrderOperatorContext.builder()
-                        .id(trade.getOrderOperatorId())
-                        .tradeClient(tradeClient)
-                        .trade(trade)
-                        .balance(balance)
-                        .orderBook(orderBook)
-                        .build();
-                OrderOperator orderOperator = orderOperatorFactory.getObject(orderOperatorContext);
+                OrderOperator orderOperator = orderOperatorFactory.getObject(trade, brokerClient, balance, orderBook);
+                orderOperator.setLog(log);
 
                 // 0. checks threshold exceeded
                 int consecutiveCountOfHoldConditionResult = getConsecutiveCountOfHoldConditionResult(tradeAsset.getAssetId(), holdConditionResult);

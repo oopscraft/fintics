@@ -1,19 +1,12 @@
 package org.oopscraft.fintics.trade.order.simple;
 
-import lombok.Builder;
-import org.oopscraft.fintics.model.*;
+import org.oopscraft.fintics.model.BalanceAsset;
+import org.oopscraft.fintics.model.TradeAsset;
 import org.oopscraft.fintics.trade.order.OrderOperator;
-import org.oopscraft.fintics.trade.order.OrderOperatorContext;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
-import java.math.RoundingMode;
 
 public class SimpleOrderOperator extends OrderOperator {
-
-    public SimpleOrderOperator(OrderOperatorContext context) {
-        super(context);
-    }
 
     @Override
     public void buyTradeAsset(TradeAsset tradeAsset) throws InterruptedException {

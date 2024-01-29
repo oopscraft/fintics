@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-public class OhlcvEntity extends BaseEntity {
+public abstract class OhlcvEntity extends BaseEntity {
 
     @Id
     @Column(name = "type", length = 32)

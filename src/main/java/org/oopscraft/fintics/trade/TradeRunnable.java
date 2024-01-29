@@ -27,7 +27,7 @@ public class TradeRunnable implements Runnable {
 
     private final TradeRepository tradeRepository;
 
-    private final TradeExecutorFactory tradeExecutorFactory;
+    private final TradeExecutor tradeExecutor;
 
     private final IndiceClient indiceClient;
 
@@ -49,7 +49,7 @@ public class TradeRunnable implements Runnable {
         String tradeId,
         Integer interval,
         TradeRepository tradeRepository,
-        TradeExecutorFactory tradeExecutorFactory,
+        TradeExecutor tradeExecutor,
         IndiceClient indiceClient,
         BrokerClientFactory brokerClientFactory,
         PlatformTransactionManager transactionManager
@@ -57,7 +57,7 @@ public class TradeRunnable implements Runnable {
         this.tradeId = tradeId;
         this.interval = interval;
         this.tradeRepository = tradeRepository;
-        this.tradeExecutorFactory = tradeExecutorFactory;
+        this.tradeExecutor = tradeExecutor;
         this.indiceClient = indiceClient;
         this.brokerClientFactory = brokerClientFactory;
         this.transactionManager = transactionManager;
@@ -68,6 +68,7 @@ public class TradeRunnable implements Runnable {
 
     @Override
     public void run() {
+        tradeExecutor.setLog(log);
         if(this.tradeLogAppender != null) {
             log.addAppender(this.tradeLogAppender);
             this.tradeLogAppender.start();
@@ -88,8 +89,6 @@ public class TradeRunnable implements Runnable {
                 transactionStatus = transactionManager.getTransaction(transactionDefinition);
 
                 // call trade executor
-                TradeExecutor tradeExecutor = tradeExecutorFactory.getObject();
-                tradeExecutor.setLog(log);
                 LocalDateTime dateTime = LocalDateTime.now();
                 Trade trade = tradeRepository.findById(tradeId)
                         .map(Trade::from)

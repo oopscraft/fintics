@@ -9,6 +9,7 @@ import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.dao.OrderEntity;
 import org.oopscraft.fintics.dao.OrderRepository;
 import org.oopscraft.fintics.model.*;
+import org.slf4j.LoggerFactory;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
@@ -23,15 +24,17 @@ import java.util.Objects;
 @Getter
 public abstract class OrderOperator {
 
-    private final BrokerClient tradeClient;
+    @Setter
+    private Trade trade;
 
-    private final Trade trade;
+    @Setter
+    private BrokerClient brokerClient;
 
-    private final Balance balance;
+    @Setter
+    private Balance balance;
 
-    private final OrderBook orderBook;
-
-    private final PlatformTransactionManager transactionManager;
+    @Setter
+    private OrderBook orderBook;
 
     @Setter
     private OrderRepository orderRepository;
@@ -40,15 +43,10 @@ public abstract class OrderOperator {
     private AlarmService alarmService;
 
     @Setter
-    protected Logger log;
+    private PlatformTransactionManager transactionManager;
 
-    protected OrderOperator(OrderOperatorContext context) {
-        this.tradeClient = context.getTradeClient();
-        this.trade = context.getTrade();
-        this.balance = context.getBalance();
-        this.orderBook = context.getOrderBook();
-        this.transactionManager = context.getTransactionManager();
-    }
+    @Setter
+    protected Logger log = (Logger) LoggerFactory.getLogger(this.getClass());
 
     public abstract void buyTradeAsset(TradeAsset tradeAsset) throws InterruptedException;
 
@@ -62,7 +60,7 @@ public abstract class OrderOperator {
     }
 
     protected void buyAssetByAmount(Asset asset, BigDecimal amount) throws InterruptedException {
-        BigDecimal price = getOrderBook().getPrice();
+        BigDecimal price = orderBook.getPrice();
         BigDecimal quantity = amount.divide(price, MathContext.DECIMAL32);
         buyAssetByQuantityAndPrice(asset, quantity, price);
     }
@@ -81,7 +79,7 @@ public abstract class OrderOperator {
                 .build();
 
         // check waiting order exists
-        Order waitingOrder = tradeClient.getWaitingOrders().stream()
+        Order waitingOrder = brokerClient.getWaitingOrders().stream()
                 .filter(element ->
                         Objects.equals(element.getAssetId(), order.getAssetId())
                                 && element.getType() == order.getType())
@@ -92,7 +90,7 @@ public abstract class OrderOperator {
             if(waitingOrder.getKind() == Order.Kind.LIMIT) {
                 waitingOrder.setPrice(price);
                 log.info("amend buy order:{}", waitingOrder);
-                tradeClient.amendOrder(waitingOrder);
+                brokerClient.amendOrder(waitingOrder);
             }
             return;
         }
@@ -100,7 +98,7 @@ public abstract class OrderOperator {
         // submit buy order
         try {
             log.info("submit buy order:{}", order);
-            tradeClient.submitOrder(order);
+            brokerClient.submitOrder(order);
             if (trade.isAlarmOnOrder()) {
                 if (trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
                     String subject = String.format("[%s]", trade.getTradeName());
@@ -138,7 +136,7 @@ public abstract class OrderOperator {
                 .build();
 
         // check waiting order exists
-        Order waitingOrder = tradeClient.getWaitingOrders().stream()
+        Order waitingOrder = brokerClient.getWaitingOrders().stream()
                 .filter(element ->
                         Objects.equals(element.getAssetId(), order.getAssetId())
                                 && element.getType() == order.getType())
@@ -149,7 +147,7 @@ public abstract class OrderOperator {
             if(waitingOrder.getKind() == Order.Kind.LIMIT) {
                 waitingOrder.setPrice(price);
                 log.info("amend sell order:{}", waitingOrder);
-                tradeClient.amendOrder(waitingOrder);
+                brokerClient.amendOrder(waitingOrder);
             }
             return;
         }
@@ -157,7 +155,7 @@ public abstract class OrderOperator {
         // submit sell order
         try {
             log.info("submit sell order:{}", order);
-            tradeClient.submitOrder(order);
+            brokerClient.submitOrder(order);
             if (trade.isAlarmOnOrder()) {
                 if (trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
                     String subject = String.format("[%s]", trade.getTradeName());

@@ -25,7 +25,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Component
-@ConditionalOnProperty(prefix = "fintics", name = "indice-client-class-name", havingValue="org.oopscraft.fintics.indice.YahooIndiceClient")
+@ConditionalOnProperty(prefix = "fintics", name = "indice-client-class-name", havingValue="org.oopscraft.fintics.client.indice.YahooIndiceClient")
 @RequiredArgsConstructor
 @Slf4j
 public class YahooIndiceClient extends IndiceClient {

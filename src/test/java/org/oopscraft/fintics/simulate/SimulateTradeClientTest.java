@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @RequiredArgsConstructor
 class SimulateTradeClientTest extends CoreTestSupport {
 
-    private static final String TRADE_CLIENT_ID = "KIS";
+    private static final String BROKER_ID = "KIS";
 
     private static final String ASSET_ID = "test";
 
@@ -35,7 +35,7 @@ class SimulateTradeClientTest extends CoreTestSupport {
     @BeforeEach
     void createTestData() {
         entityManager.persist(BrokerAssetOhlcvEntity.builder()
-                .brokerId(TRADE_CLIENT_ID)
+                .brokerId(BROKER_ID)
                 .assetId(ASSET_ID)
                 .type(Ohlcv.Type.MINUTE)
                 .dateTime(NOW)
@@ -45,7 +45,7 @@ class SimulateTradeClientTest extends CoreTestSupport {
                 .closePrice(BigDecimal.valueOf(300))
                 .build());
         entityManager.persist(BrokerAssetOhlcvEntity.builder()
-                .brokerId(TRADE_CLIENT_ID)
+                .brokerId(BROKER_ID)
                 .assetId(ASSET_ID)
                 .type(Ohlcv.Type.MINUTE)
                 .dateTime(NOW.minusMinutes(1))
@@ -55,7 +55,7 @@ class SimulateTradeClientTest extends CoreTestSupport {
                 .closePrice(BigDecimal.valueOf(200))
                 .build());
         entityManager.persist(BrokerAssetOhlcvEntity.builder()
-                .brokerId(TRADE_CLIENT_ID)
+                .brokerId(BROKER_ID)
                 .assetId(ASSET_ID)
                 .type(Ohlcv.Type.MINUTE)
                 .dateTime(NOW.minusMinutes(2))
@@ -69,7 +69,7 @@ class SimulateTradeClientTest extends CoreTestSupport {
 
     SimulateBrokerClient createSimulateClient() {
         return SimulateBrokerClient.builder()
-                .tradeClientId(TRADE_CLIENT_ID)
+                .brokerId(BROKER_ID)
                 .assetOhlcvRepository(assetOhlcvRepository)
                 .build();
     }

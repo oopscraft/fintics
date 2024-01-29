@@ -6,6 +6,7 @@ import org.oopscraft.arch4j.core.alarm.AlarmSearch;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
 import org.oopscraft.fintics.client.broker.BrokerClientFactory;
 import org.oopscraft.fintics.model.Order;
+import org.oopscraft.fintics.service.BrokerService;
 import org.oopscraft.fintics.service.TradeService;
 import org.oopscraft.fintics.trade.order.OrderOperatorFactory;
 import org.springframework.data.domain.Pageable;
@@ -26,7 +27,11 @@ public class TradeController {
 
     private final TradeService tradeService;
 
+    private final BrokerService brokerService;
+
     private final AlarmService alarmService;
+
+    private final OrderOperatorFactory orderOperatorFactory;
 
     @GetMapping
     public ModelAndView trade() {
@@ -37,8 +42,8 @@ public class TradeController {
     public ModelAndView tradeDetail(@RequestParam(value= "tradeId", required = false) String tradeId) {
         ModelAndView modelAndView = new ModelAndView("trade-detail.html");
         modelAndView.addObject("tradeId", tradeId);
-        modelAndView.addObject("brokers", BrokerClientFactory.getBrokerClientDefinitions());
-        modelAndView.addObject("orderOperators", OrderOperatorFactory.getOrderOperatorDefinitions());
+        modelAndView.addObject("brokers", brokerService.getBrokers());
+        modelAndView.addObject("orderOperators", orderOperatorFactory.getOrderOperatorDefinitions());
         List<Alarm> alarms = alarmService.getAlarms(AlarmSearch.builder().build(), Pageable.unpaged()).getContent();
         modelAndView.addObject("alarms", alarms);
         modelAndView.addObject("orderKinds", Order.Kind.values());

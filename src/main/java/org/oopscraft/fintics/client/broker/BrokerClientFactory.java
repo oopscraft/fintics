@@ -16,7 +16,7 @@ import java.util.*;
 public class BrokerClientFactory implements BeanPostProcessor {
 
     @Getter
-    private static final List<BrokerClientDefinition> brokerClientDefinitions = new ArrayList<>();
+    private final List<BrokerClientDefinition> brokerClientDefinitions = new ArrayList<>();
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
@@ -26,21 +26,21 @@ public class BrokerClientFactory implements BeanPostProcessor {
         return bean;
     }
 
-    public static Optional<BrokerClientDefinition> getBrokerClientDefinition(String brokerId) {
+    public Optional<BrokerClientDefinition> getBrokerClientDefinition(String brokerId) {
         return brokerClientDefinitions.stream()
                 .filter(item -> Objects.equals(item.getBrokerId(), brokerId))
                 .findFirst();
     }
 
     public BrokerClient getObject(String brokerId, String brokerConfig) {
-        BrokerClientDefinition tradeClientDefinition = getBrokerClientDefinition(brokerId).orElseThrow();
+        BrokerClientDefinition brokerClientDefinition = getBrokerClientDefinition(brokerId).orElseThrow();
         try {
-            Class<? extends BrokerClient> clientTypeClass = tradeClientDefinition.getClassType().asSubclass(BrokerClient.class);
-            Constructor<? extends BrokerClient> constructor = clientTypeClass.getConstructor(Properties.class);
+            Class<? extends BrokerClient> clientTypeClass = brokerClientDefinition.getClassType().asSubclass(BrokerClient.class);
+            Constructor<? extends BrokerClient> constructor = clientTypeClass.getConstructor(BrokerClientDefinition.class, Properties.class);
             Properties clientConfigProperties = loadPropertiesFromString(brokerConfig);
-            return constructor.newInstance(clientConfigProperties);
+            return constructor.newInstance(brokerClientDefinition, clientConfigProperties);
         } catch (NoSuchMethodException e) {
-            throw new IllegalArgumentException("Client constructor not found: " + tradeClientDefinition.getClassType(), e);
+            throw new IllegalArgumentException("Client constructor not found: " + brokerClientDefinition.getClassType(), e);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

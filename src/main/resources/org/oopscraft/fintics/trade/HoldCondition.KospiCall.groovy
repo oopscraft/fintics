@@ -10,7 +10,7 @@ import org.oopscraft.fintics.model.*
  * @param period period
  * @return result map
  */
-def analyzeIndicator(Indicator indicator, OhlcvType ohlcvType, int period) {
+def analyzeIndicator(Indicator indicator, Ohlcv.Type ohlcvType, int period) {
     // info
     def name = indicator.getIndicatorName() + ':' + ohlcvType + ':' + period
     def pctChangePeriod = 10
@@ -89,24 +89,24 @@ def analyzeIndicator(Indicator indicator, OhlcvType ohlcvType, int period) {
 
     // result
     def result = [:]
-    result.shortMaValuePctChange = (shortMaValuePctChange > 0 ? 100 : 0)
-    result.longMaValuePctChange = (longMaValuePctChange > 0 ? 100 : 0)
+//    result.shortMaValuePctChange = (shortMaValuePctChange > 0 ? 100 : 0)
+//    result.longMaValuePctChange = (longMaValuePctChange > 0 ? 100 : 0)
     result.shortMaValueOverLongMaValue = (shortMaValue > longMaValue ? 100 : 0)
-    result.macdValuePctChange = (macdValuePctChange > 0 ? 100 : 0)
+//    result.macdValuePctChange = (macdValuePctChange > 0 ? 100 : 0)
     result.macdValue = (macdValue > 0 ? 100 : 0)
     result.macdValueOverSignal = (macdValue > macdSignal ? 100 : 0)
     result.macdOscillator = (macdOscillator > 0 ? 100 : 0)
-    result.rsiValuePctChange = (rsiValuePctChange > 0 ? 100 : 0)
+//    result.rsiValuePctChange = (rsiValuePctChange > 0 ? 100 : 0)
     result.rsiValueOverSignal = (rsiValue > rsiSignal ? 100 : 0)
     result.rsiValue = (rsiValue > 50 ? 100 : 0)
-    result.dmiPdiPctChange = (dmiPdiPctChange > 0 ? 100 : 0)
-    result.dmiMdiPctChange = (dmiMdiPctChange < 0 ? 100 : 0)
+//    result.dmiPdiPctChange = (dmiPdiPctChange > 0 ? 100 : 0)
+//    result.dmiMdiPctChange = (dmiMdiPctChange < 0 ? 100 : 0)
     result.dmiPdiOverMdi = (dmiPdi > dmiMdi ? 100 : 0)
-    result.dmiAdxPctChange = (dmiAdxPctChange > 0 && dmiPdiPctChange > 0 ? 100 : 0)
+//    result.dmiAdxPctChange = (dmiAdxPctChange > 0 && dmiPdiPctChange > 0 ? 100 : 0)
     result.dmiAdx = (dmiAdx > 20 && dmiPdi > dmiMdi ? 100 : 0)
-    result.obvValuePctChange = (obvValuePctChange > 0 ? 100 : 0)
+//    result.obvValuePctChange = (obvValuePctChange > 0 ? 100 : 0)
     result.obvValueOverSignal = (obvValue > obvSignal ? 100 : 0)
-    result.coValuePctChange = (coValuePctChange > 0 ? 100 : 0)
+//    result.coValuePctChange = (coValuePctChange > 0 ? 100 : 0)
     result.coValueOverSignal = (coValue > coSignal ? 100 : 0)
     result.coValue = (coValue > 0 ? 100 : 0)
 
@@ -128,10 +128,11 @@ def analysisAverages = []
 //=============================
 def assetAnalysisMap = [:]
 def assetAnalysisAverages = []
-assetAnalysisMap.minute10 = analyzeIndicator(assetIndicator, OhlcvType.MINUTE, 10)
-assetAnalysisMap.minute30 = analyzeIndicator(assetIndicator, OhlcvType.MINUTE, 30)
-assetAnalysisMap.minute60 = analyzeIndicator(assetIndicator, OhlcvType.MINUTE, 60)
-assetAnalysisMap.daily = analyzeIndicator(assetIndicator, OhlcvType.DAILY, 1)
+//assetAnalysisMap.minute3 = analyzeIndicator(assetIndicator, OhlcvType.MINUTE, 3)
+//assetAnalysisMap.minute10 = analyzeIndicator(assetIndicator, OhlcvType.MINUTE, 10)
+assetAnalysisMap.minute30 = analyzeIndicator(assetIndicator, Ohlcv.Type.MINUTE, 30)
+assetAnalysisMap.minute60 = analyzeIndicator(assetIndicator, Ohlcv.Type.MINUTE, 60)
+assetAnalysisMap.daily = analyzeIndicator(assetIndicator, Ohlcv.Type.DAILY, 1)
 assetAnalysisMap.each { key, value ->
     def average = value.values().average()
     log.debug("[{}] assetAnalysisMap.{}: {}", assetAlias, key, average)
@@ -146,8 +147,16 @@ def indiceAnalysisMap = [:]
 def indiceAnalysisAverages = []
 
 // USD/KRW (inverse)
-indiceAnalysisMap.usdKrw = analyzeIndicator(indiceIndicators['USD_KRW'], OhlcvType.MINUTE, 60)
-analysisAverages.add(100 - (indiceAnalysisMap.usdKrw.values().average() as Number))
+//indiceAnalysisMap.usdKrw = analyzeIndicator(indiceIndicators['USD_KRW'], OhlcvType.MINUTE, 60)
+//analysisAverages.add(100 - (indiceAnalysisMap.usdKrw.values().average() as Number))
+
+// KOSPI
+//indiceAnalysisMap.kospi = analyzeIndicator(indiceIndicators['KOSPI'], OhlcvType.MINUTE, 60)
+//analysisAverages.add(indiceAnalysisMap.kospi.values().average())
+
+// Nasdaq Future
+//indiceAnalysisMap.ndxFuture = analyzeIndicator(indiceIndicators['NDX_FUTURE'], OhlcvType.MINUTE, 60)
+//analysisAverages.add(indiceAnalysisMap.ndxFuture.values().average())
 
 // logging
 indiceAnalysisMap.each { key, value ->
@@ -171,18 +180,6 @@ if(analysisAverage > 70) {
 if(analysisAverage < 50) {
     log.info("[{}] analysisAverage under 50", assetAlias)
     hold = false
-}
-
-// 2. divergence
-if(hold == null) {
-    if(tool.isDescending(assetAnalysisAverages)) {
-        log.info("[{}] is cross up - {}", assetAlias, assetAnalysisAverages)
-        hold = true
-    }
-    if(tool.isAscending(assetAnalysisAverages)) {
-        log.info("[{}] is cross down - {}", assetAlias, assetAnalysisAverages)
-        hold = false
-    }
 }
 
 //==============================

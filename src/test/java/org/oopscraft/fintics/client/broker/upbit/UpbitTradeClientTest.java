@@ -27,7 +27,7 @@ class UpbitTradeClientTest {
         Properties properties = new Properties();
         properties.setProperty("accessKey", accessKey);
         properties.setProperty("secretKey", secretKey);
-        return new UpbitBrokerClient(properties);
+        return new UpbitBrokerClient(new UpbitBrokerClientDefinition(), properties);
     }
 
     TradeAsset getTestTradeAsset() {

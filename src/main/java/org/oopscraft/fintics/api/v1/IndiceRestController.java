@@ -49,8 +49,8 @@ public class IndiceRestController {
         return ResponseEntity.ok(indiceResponse);
     }
 
-    @Cacheable(cacheNames = INDICE_REST_CONTROLLER_GET_INDICE_INDICATOR, key = "#indiceId + '_' + #dateTimeFrom + '_' + #dateTimeTo")
     @GetMapping("{indiceId}/indicator")
+    @Cacheable(cacheNames = INDICE_REST_CONTROLLER_GET_INDICE_INDICATOR, key = "#indiceId + '_' + #dateTimeFrom + '_' + #dateTimeTo")
     public ResponseEntity<IndiceIndicatorResponse> getIndiceIndicator(
             @PathVariable("indiceId") IndiceId indiceId,
             @RequestParam(value = "dateTimeFrom", required = false) LocalDateTime dateTimeFrom,

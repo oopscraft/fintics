@@ -16,7 +16,7 @@ public class UpbitBrokerClientDefinition implements BrokerClientDefinition {
 
     @Override
     public String getBrokerName() {
-        return "업비트 API";
+        return "Upbit API";
     }
 
     @Override

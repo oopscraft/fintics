@@ -10,7 +10,7 @@ import org.oopscraft.fintics.model.*
  * @param period period
  * @return result map
  */
-def analyzeIndicator(Indicator indicator, OhlcvType ohlcvType, int period) {
+def analyzeIndicator(Indicator indicator, Ohlcv.Type ohlcvType, int period) {
     // info
     def name = indicator.getIndicatorName() + ':' + ohlcvType + ':' + period
     def pctChangePeriod = 10

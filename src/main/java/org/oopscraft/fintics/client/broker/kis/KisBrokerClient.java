@@ -8,6 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
 import org.oopscraft.arch4j.core.support.ValueMap;
 import org.oopscraft.fintics.client.broker.BrokerClient;
+import org.oopscraft.fintics.client.broker.BrokerClientDefinition;
+import org.oopscraft.fintics.client.broker.KrxBrokerClient;
 import org.oopscraft.fintics.model.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -23,7 +25,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class KisBrokerClient extends BrokerClient {
+public class KisBrokerClient extends KrxBrokerClient {
 
     private final boolean production;
 
@@ -37,13 +39,13 @@ public class KisBrokerClient extends BrokerClient {
 
     private final ObjectMapper objectMapper;
 
-    public KisBrokerClient(Properties properties) {
-        super(properties);
-        this.production = Boolean.parseBoolean(properties.getProperty("production"));
-        this.apiUrl = properties.getProperty("apiUrl");
-        this.appKey = properties.getProperty("appKey");
-        this.appSecret = properties.getProperty("appSecret");
-        this.accountNo = properties.getProperty("accountNo");
+    public KisBrokerClient(BrokerClientDefinition definition, Properties config) {
+        super(definition, config);
+        this.production = Boolean.parseBoolean(config.getProperty("production"));
+        this.apiUrl = config.getProperty("apiUrl");
+        this.appKey = config.getProperty("appKey");
+        this.appSecret = config.getProperty("appSecret");
+        this.accountNo = config.getProperty("accountNo");
         this.objectMapper = new ObjectMapper();
     }
 

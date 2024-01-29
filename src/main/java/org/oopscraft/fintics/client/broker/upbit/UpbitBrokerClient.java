@@ -11,6 +11,7 @@ import org.oopscraft.arch4j.core.data.IdGenerator;
 import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
 import org.oopscraft.arch4j.core.support.ValueMap;
 import org.oopscraft.fintics.client.broker.BrokerClient;
+import org.oopscraft.fintics.client.broker.BrokerClientDefinition;
 import org.oopscraft.fintics.model.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.RequestEntity;
@@ -41,16 +42,21 @@ public class UpbitBrokerClient extends BrokerClient {
 
     private final ObjectMapper objectMapper;
 
-    public UpbitBrokerClient(Properties properties) {
-        super(properties);
-        this.accessKey = properties.getProperty("accessKey");
-        this.secretKey = properties.getProperty("secretKey");
+    public UpbitBrokerClient(BrokerClientDefinition definition, Properties config) {
+        super(definition, config);
+        this.accessKey = config.getProperty("accessKey");
+        this.secretKey = config.getProperty("secretKey");
         this.objectMapper = new ObjectMapper();
     }
 
     @Override
     public boolean isOpened(LocalDateTime dateTime) throws InterruptedException {
         return true;
+    }
+
+    @Override
+    public List<BrokerAsset> getBrokerAssets() {
+        return new ArrayList<>();
     }
 
     private synchronized static void sleep() throws InterruptedException {

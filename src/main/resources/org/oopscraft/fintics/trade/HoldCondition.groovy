@@ -10,7 +10,7 @@ import org.oopscraft.fintics.model.*
  * @param period period
  * @return result map
  */
-def analyzeIndicator(Indicator indicator, OhlcvType ohlcvType, int period) {
+def analyzeIndicator(Indicator indicator, Ohlcv.Type ohlcvType, int period) {
     // info
     def name = indicator.getIndicatorName() + ':' + ohlcvType + ':' + period
     def pctChangePeriod = 10
@@ -130,9 +130,9 @@ def assetAnalysisMap = [:]
 def assetAnalysisAverages = []
 //assetAnalysisMap.minute3 = analyzeIndicator(assetIndicator, OhlcvType.MINUTE, 3)
 //assetAnalysisMap.minute10 = analyzeIndicator(assetIndicator, OhlcvType.MINUTE, 10)
-assetAnalysisMap.minute30 = analyzeIndicator(assetIndicator, OhlcvType.MINUTE, 30)
-assetAnalysisMap.minute60 = analyzeIndicator(assetIndicator, OhlcvType.MINUTE, 60)
-assetAnalysisMap.daily = analyzeIndicator(assetIndicator, OhlcvType.DAILY, 1)
+assetAnalysisMap.minute30 = analyzeIndicator(assetIndicator, Ohlcv.Type.MINUTE, 30)
+assetAnalysisMap.minute60 = analyzeIndicator(assetIndicator, Ohlcv.Type.MINUTE, 60)
+assetAnalysisMap.daily = analyzeIndicator(assetIndicator, Ohlcv.Type.DAILY, 1)
 assetAnalysisMap.each { key, value ->
     def average = value.values().average()
     log.debug("[{}] assetAnalysisMap.{}: {}", assetAlias, key, average)

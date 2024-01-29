@@ -10,13 +10,19 @@ import java.util.Properties;
 public abstract class BrokerClient {
 
     @Getter
-    private final Properties properties;
+    private final BrokerClientDefinition definition;
 
-    public BrokerClient(Properties properties) {
-        this.properties = properties;
+    @Getter
+    private final Properties config;
+
+    public BrokerClient(BrokerClientDefinition definition, Properties config) {
+        this.definition = definition;
+        this.config = config;
     }
 
     public abstract boolean isOpened(LocalDateTime dateTime) throws InterruptedException;
+
+    public abstract List<BrokerAsset> getBrokerAssets();
 
     public abstract List<Ohlcv> getMinuteOhlcvs(Asset asset, LocalDateTime dateTime) throws InterruptedException;
 

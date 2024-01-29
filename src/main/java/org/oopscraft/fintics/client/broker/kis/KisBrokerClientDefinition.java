@@ -16,7 +16,7 @@ public class KisBrokerClientDefinition implements BrokerClientDefinition {
 
     @Override
     public String getBrokerName() {
-        return "한국투자증권 Kis API";
+        return "Korea Investment Kis API";
     }
 
     @Override

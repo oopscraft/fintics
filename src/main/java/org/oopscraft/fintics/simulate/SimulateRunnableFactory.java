@@ -37,7 +37,7 @@ public class SimulateRunnableFactory {
                 .build();
 
         SimulateBrokerClient simulateTradeClient = SimulateBrokerClient.builder()
-                .tradeClientId(trade.getBrokerId())
+                .brokerId(trade.getBrokerId())
                 .assetOhlcvRepository(assetOhlcvRepository)
                 .build();
 

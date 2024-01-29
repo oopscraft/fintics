@@ -1,6 +1,8 @@
 package org.oopscraft.fintics.trade;
 
 import lombok.RequiredArgsConstructor;
+import org.oopscraft.fintics.client.broker.BrokerClient;
+import org.oopscraft.fintics.client.broker.BrokerClientFactory;
 import org.oopscraft.fintics.client.indice.IndiceClient;
 import org.oopscraft.fintics.dao.TradeRepository;
 import org.oopscraft.fintics.model.Trade;
@@ -17,6 +19,8 @@ public class TradeRunnableFactory {
 
     private final IndiceClient indiceClient;
 
+    private final BrokerClientFactory brokerClientFactory;
+
     private final PlatformTransactionManager transactionManager;
 
     public TradeRunnable getObject(Trade trade) {
@@ -24,8 +28,9 @@ public class TradeRunnableFactory {
                 .tradeId(trade.getTradeId())
                 .interval(trade.getInterval())
                 .tradeRepository(tradeRepository)
-                .tradeExecutorFactory(tradeExecutorFactory)
+                .tradeExecutor(tradeExecutorFactory.getObject())
                 .indiceClient(indiceClient)
+                .brokerClientFactory(brokerClientFactory)
                 .transactionManager(transactionManager)
                 .build();
     }

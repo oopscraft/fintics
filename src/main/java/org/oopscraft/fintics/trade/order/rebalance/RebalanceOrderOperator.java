@@ -3,16 +3,10 @@ package org.oopscraft.fintics.trade.order.rebalance;
 import org.oopscraft.fintics.model.BalanceAsset;
 import org.oopscraft.fintics.model.TradeAsset;
 import org.oopscraft.fintics.trade.order.OrderOperator;
-import org.oopscraft.fintics.trade.order.OrderOperatorContext;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 
 public class RebalanceOrderOperator extends OrderOperator {
-
-    public RebalanceOrderOperator(OrderOperatorContext context) {
-        super(context);
-    }
 
     @Override
     public void buyTradeAsset(TradeAsset tradeAsset) throws InterruptedException {

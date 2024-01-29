@@ -48,7 +48,7 @@ class KisTradeClientTest extends CoreTestSupport {
         properties.setProperty("appKey", appKey);
         properties.setProperty("appSecret", appSecret);
         properties.setProperty("accountNo", accountNo);
-        return new KisBrokerClient(properties);
+        return new KisBrokerClient(new KisBrokerClientDefinition(), properties);
     }
 
     @Disabled

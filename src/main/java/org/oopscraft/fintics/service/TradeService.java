@@ -117,6 +117,7 @@ public class TradeService {
         }
     }
 
+    @Deprecated
     public Optional<AssetIndicator> getTradeAssetIndicator(String tradeId, String assetId, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo) {
         Trade trade = getTrade(tradeId).orElseThrow();
         String tradeClientId = trade.getBrokerId();

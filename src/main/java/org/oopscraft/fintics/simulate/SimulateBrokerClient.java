@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 public class SimulateBrokerClient extends BrokerClient {
 
-    private final String tradeClientId;
+    private final String brokerId;
 
     private final BrokerAssetOhlcvRepository assetOhlcvRepository;
 
@@ -47,9 +47,9 @@ public class SimulateBrokerClient extends BrokerClient {
     private Consumer<Order> onOrder;
 
     @Builder
-    protected SimulateBrokerClient(String tradeClientId, BrokerAssetOhlcvRepository assetOhlcvRepository) {
-        super(new Properties());
-        this.tradeClientId = tradeClientId;
+    protected SimulateBrokerClient(String brokerId, BrokerAssetOhlcvRepository assetOhlcvRepository) {
+        super(null, new Properties());
+        this.brokerId = brokerId;
         this.assetOhlcvRepository = assetOhlcvRepository;
     }
 
@@ -69,7 +69,7 @@ public class SimulateBrokerClient extends BrokerClient {
         // minutes
         List<Ohlcv> minuteOhlcvs = minuteOhlcvsMap.get(asset.getAssetId());
         if(minuteOhlcvs == null || minuteOhlcvs.isEmpty() || minuteOhlcvs.get(0).getDateTime().isBefore(dateTime)) {
-            minuteOhlcvs = assetOhlcvRepository.findAllByBrokerIdAndAssetIdAndType(tradeClientId, asset.getAssetId(), Ohlcv.Type.MINUTE, dateTime.minusMonths(1), dateTime, Pageable.unpaged())
+            minuteOhlcvs = assetOhlcvRepository.findAllByBrokerIdAndAssetIdAndType(brokerId, asset.getAssetId(), Ohlcv.Type.MINUTE, dateTime.minusMonths(1), dateTime, Pageable.unpaged())
                     .stream()
                     .map(Ohlcv::from)
                     .toList();
@@ -79,7 +79,7 @@ public class SimulateBrokerClient extends BrokerClient {
         // daily
         List<Ohlcv> dailyOhlcvs = minuteOhlcvsMap.get(asset.getAssetId());
         if(dailyOhlcvs == null || dailyOhlcvs.isEmpty() || dailyOhlcvs.get(0).getDateTime().isBefore(dateTime)) {
-            dailyOhlcvs = assetOhlcvRepository.findAllByBrokerIdAndAssetIdAndType(tradeClientId, asset.getAssetId(), Ohlcv.Type.DAILY, dateTime.minusYears(1), dateTime, Pageable.unpaged())
+            dailyOhlcvs = assetOhlcvRepository.findAllByBrokerIdAndAssetIdAndType(brokerId, asset.getAssetId(), Ohlcv.Type.DAILY, dateTime.minusYears(1), dateTime, Pageable.unpaged())
                     .stream()
                     .map(Ohlcv::from)
                     .toList();
@@ -112,6 +112,11 @@ public class SimulateBrokerClient extends BrokerClient {
 
         // default true
         return true;
+    }
+
+    @Override
+    public List<BrokerAsset> getBrokerAssets() {
+        throw new UnsupportedOperationException();
     }
 
     @Override
