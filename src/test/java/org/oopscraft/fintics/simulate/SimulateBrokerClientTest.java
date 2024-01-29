@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @Slf4j
 @SpringBootTest(classes = FinticsConfiguration.class)
 @RequiredArgsConstructor
-class SimulateTradeClientTest extends CoreTestSupport {
+class SimulateBrokerClientTest extends CoreTestSupport {
 
     private static final String BROKER_ID = "KIS";
 
