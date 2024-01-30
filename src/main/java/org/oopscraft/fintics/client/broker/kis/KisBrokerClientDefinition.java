@@ -2,12 +2,13 @@ package org.oopscraft.fintics.client.broker.kis;
 
 import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.client.broker.BrokerClientDefinition;
+import org.oopscraft.fintics.client.broker.KrxBrokerClientDefinition;
 import org.springframework.stereotype.Component;
 
 import java.util.StringJoiner;
 
 @Component
-public class KisBrokerClientDefinition implements BrokerClientDefinition {
+public class KisBrokerClientDefinition extends KrxBrokerClientDefinition {
 
     @Override
     public String getBrokerId() {

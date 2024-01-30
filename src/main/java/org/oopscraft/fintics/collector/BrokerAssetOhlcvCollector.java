@@ -43,7 +43,7 @@ public class BrokerAssetOhlcvCollector {
     @Scheduled(initialDelay = 1_000, fixedDelay = 60_000)
     @Transactional
     public void collect() {
-        log.info("Start collect trade asset ohlcv.");
+        log.info("Start collect broker asset ohlcv.");
         List<TradeEntity> tradeEntities = tradeRepository.findAll();
         for (TradeEntity tradeEntity : tradeEntities) {
             try {
@@ -56,7 +56,7 @@ public class BrokerAssetOhlcvCollector {
                 log.warn(e.getMessage());
             }
         }
-        log.info("End collect trade asset ohlcv");
+        log.info("End collect broker asset ohlcv");
     }
 
     private void saveAssetOhlcv(Trade trade, TradeAsset tradeAsset) throws InterruptedException {

@@ -1,19 +1,17 @@
 package org.oopscraft.fintics.service;
 
 import lombok.RequiredArgsConstructor;
+import org.oopscraft.fintics.client.broker.BrokerClientDefinition;
 import org.oopscraft.fintics.client.broker.BrokerClientFactory;
 import org.oopscraft.fintics.dao.*;
 import org.oopscraft.fintics.model.*;
-import org.springframework.beans.factory.annotation.Required;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -21,25 +19,23 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class BrokerService {
 
-    private final BrokerClientFactory brokerClientFactory;
-
     private final BrokerAssetRepository brokerAssetRepository;
 
     private final BrokerAssetOhlcvRepository brokerAssetOhlcvRepository;
 
     public List<Broker> getBrokers() {
-        return brokerClientFactory.getBrokerClientDefinitions().stream()
+        return BrokerClientFactory.getBrokerClientDefinitions().stream()
                 .map(Broker::from)
                 .toList();
     }
 
     public Optional<Broker> getBroker(String brokerId) {
-        return brokerClientFactory.getBrokerClientDefinition(brokerId)
+        return BrokerClientFactory.getBrokerClientDefinition(brokerId)
                 .map(Broker::from);
     }
 
-    public Page<BrokerAsset> getBrokerAssets(String brokerId, String assetId, String assetName, Pageable pageable) {
-        Page<BrokerAssetEntity> brokerAssetEntityPage = brokerAssetRepository.findAllBy(brokerId, assetId, assetName, pageable);
+    public Page<BrokerAsset> getBrokerAssets(String brokerId, AssetSearch assetSearch, Pageable pageable) {
+        Page<BrokerAssetEntity> brokerAssetEntityPage = brokerAssetRepository.findAllBy(brokerId, assetSearch, pageable);
         List<BrokerAsset> brokerAssets = brokerAssetEntityPage.getContent().stream()
                 .map(BrokerAsset::from)
                 .toList();
@@ -47,8 +43,15 @@ public class BrokerService {
         return new PageImpl<>(brokerAssets, pageable, total);
     }
 
-    public Optional<BrokerAsset> getBrokerAssets(String brokerId, String assetId) {
-        return Optional.empty();
+    public Optional<BrokerAsset> getBrokerAsset(String brokerId, String assetId) {
+        BrokerAssetEntity.Pk pk = BrokerAssetEntity.Pk.builder()
+                .brokerId(brokerId)
+                .assetId(assetId)
+                .build();
+        BrokerAsset brokerAsset = brokerAssetRepository.findById(pk)
+                .map(BrokerAsset::from)
+                .orElseThrow();
+        return Optional.of(brokerAsset);
     }
 
     public Optional<AssetIndicator> getAssetIndicator(String brokerId, String assetId, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo) {
@@ -56,7 +59,9 @@ public class BrokerService {
                 .brokerId(brokerId)
                 .assetId(assetId)
                 .build();
-        BrokerAssetEntity brokerAssetEntity = brokerAssetRepository.findById(brokerAssetPk).orElseThrow();
+        BrokerAssetEntity brokerAssetEntity = brokerAssetRepository.findById(brokerAssetPk)
+                .orElse(null);
+        String assetName = (brokerAssetEntity != null ? brokerAssetEntity.getAssetName() : assetId);
 
         // minute ohlcv
         LocalDateTime minuteDateTimeTo = Optional.ofNullable(dateTimeTo)
@@ -82,19 +87,10 @@ public class BrokerService {
 
         return Optional.ofNullable(AssetIndicator.builder()
                 .assetId(assetId)
-                .assetName(brokerAssetEntity.getAssetName())
+                .assetName(assetName)
                 .minuteOhlcvs(minuteOhlcvs)
                 .dailyOhlcvs(dailyOhlcvs)
                 .build());
     }
-
-//    public Page<Ohlcv> getBrokerAssetOhlcvs(String brokerId, String assetId, Ohlcv.Type type, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo, Pageable pageable) {
-//        Page<BrokerAssetOhlcvEntity> brokerAssetOhlcvPage = brokerAssetOhlcvRepository.findAllByBrokerIdAndAssetIdAndType(brokerId, assetId, type, dateTimeFrom, dateTimeTo, pageable);
-//        List<Ohlcv> brokerAssetOhlcvs = brokerAssetOhlcvPage.getContent().stream()
-//                .map(Ohlcv::from)
-//                .collect(Collectors.toList());
-//        long total = brokerAssetOhlcvPage.getTotalElements();
-//        return new PageImpl<>(brokerAssetOhlcvs, pageable, total);
-//    }
 
 }

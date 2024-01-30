@@ -1,6 +1,8 @@
 package org.oopscraft.fintics.model;
 
 import lombok.*;
+import org.oopscraft.fintics.client.broker.BrokerClientDefinition;
+import org.oopscraft.fintics.client.broker.BrokerClientFactory;
 import org.oopscraft.fintics.dao.TradeEntity;
 
 import java.time.LocalTime;
@@ -70,6 +72,13 @@ public class Trade {
         // trade assets
         List<TradeAsset> tradeAssets = tradeEntity.getTradeAssets().stream()
                 .map(TradeAsset::from)
+                .peek(tradeAsset -> {
+                    if(trade.getBrokerId() != null) {
+                        BrokerClientFactory.getBrokerClientDefinition(trade.getBrokerId()).ifPresent(brokerClientDefinition -> {
+                            tradeAsset.setLinks(brokerClientDefinition.getAssetLinks(tradeAsset));
+                        });
+                    }
+                })
                 .collect(Collectors.toList());
         trade.setTradeAssets(tradeAssets);
 

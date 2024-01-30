@@ -2,7 +2,6 @@ package org.oopscraft.fintics.dao;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.oopscraft.arch4j.core.data.BaseEntity;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -19,6 +18,8 @@ public class BrokerAssetEntity extends AssetEntity {
 
     @Builder
     @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PROTECTED)
     public static class Pk implements Serializable {
         private String brokerId;
         private String assetId;

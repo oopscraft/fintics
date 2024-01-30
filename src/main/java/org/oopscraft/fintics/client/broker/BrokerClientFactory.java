@@ -16,7 +16,7 @@ import java.util.*;
 public class BrokerClientFactory implements BeanPostProcessor {
 
     @Getter
-    private final List<BrokerClientDefinition> brokerClientDefinitions = new ArrayList<>();
+    private static final List<BrokerClientDefinition> brokerClientDefinitions = new ArrayList<>();
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
@@ -26,7 +26,7 @@ public class BrokerClientFactory implements BeanPostProcessor {
         return bean;
     }
 
-    public Optional<BrokerClientDefinition> getBrokerClientDefinition(String brokerId) {
+    public static Optional<BrokerClientDefinition> getBrokerClientDefinition(String brokerId) {
         return brokerClientDefinitions.stream()
                 .filter(item -> Objects.equals(item.getBrokerId(), brokerId))
                 .findFirst();

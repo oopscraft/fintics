@@ -2,14 +2,20 @@ package org.oopscraft.fintics.api.v1;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.oopscraft.arch4j.web.support.PageableUtils;
 import org.oopscraft.fintics.api.v1.dto.AssetIndicatorResponse;
 import org.oopscraft.fintics.api.v1.dto.BrokerAssetResponse;
 import org.oopscraft.fintics.api.v1.dto.BrokerResponse;
 import org.oopscraft.fintics.client.broker.BrokerClientFactory;
 import org.oopscraft.fintics.model.AssetIndicator;
+import org.oopscraft.fintics.model.AssetSearch;
+import org.oopscraft.fintics.model.BrokerAsset;
 import org.oopscraft.fintics.service.BrokerService;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -46,9 +52,19 @@ public class BrokerRestController {
     }
 
     @GetMapping("{brokerId}/asset")
-    public ResponseEntity<List<BrokerAssetResponse>> getAssets(@PathVariable("brokerId") String brokerId) {
-        List<BrokerAssetResponse> assetResponses = new ArrayList<>();
-        return ResponseEntity.ok(assetResponses);
+    public ResponseEntity<List<BrokerAssetResponse>> getAssets(
+            @PathVariable("brokerId") String brokerId,
+            AssetSearch assetSearch,
+            Pageable pageable
+    ) {
+        Page<BrokerAsset> brokerAssetPage = brokerService.getBrokerAssets(brokerId, assetSearch, pageable);
+        List<BrokerAssetResponse> brokerAssetResponses = brokerAssetPage.getContent().stream()
+                .map(BrokerAssetResponse::from)
+                .toList();
+        long total = brokerAssetPage.getTotalElements();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_RANGE, PageableUtils.toContentRange("broker-asset", pageable, total))
+                .body(brokerAssetResponses);
     }
 
     @GetMapping("{brokerId}/asset/{assetId}")
@@ -56,9 +72,9 @@ public class BrokerRestController {
         @PathVariable("brokerId") String brokerId,
         @PathVariable("assetId") String assetId
     ){
-        BrokerAssetResponse assetResponse = BrokerAssetResponse.builder()
-                .assetId(assetId)
-                .build();
+        BrokerAssetResponse assetResponse = brokerService.getBrokerAsset(brokerId, assetId)
+                .map(BrokerAssetResponse::from)
+                .orElseThrow();
         return ResponseEntity.ok(assetResponse);
     }
 

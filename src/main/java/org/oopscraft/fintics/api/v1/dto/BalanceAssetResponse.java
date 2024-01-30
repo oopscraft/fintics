@@ -1,21 +1,21 @@
 package org.oopscraft.fintics.api.v1.dto;
 
 import lombok.*;
+import lombok.experimental.SuperBuilder;
+import net.bytebuddy.implementation.bind.annotation.Super;
+import org.oopscraft.fintics.model.Asset;
 import org.oopscraft.fintics.model.BalanceAsset;
 
 import java.math.BigDecimal;
 
 @Data
-@Builder
+@EqualsAndHashCode(callSuper = true)
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class BalanceAssetResponse {
+public class BalanceAssetResponse extends AssetResponse {
 
     private String accountNo;
-
-    private String assetId;
-
-    private String assetName;
 
     private BigDecimal quantity;
 
@@ -32,6 +32,7 @@ public class BalanceAssetResponse {
                 .accountNo(balanceAsset.getAccountNo())
                 .assetId(balanceAsset.getAssetId())
                 .assetName(balanceAsset.getAssetName())
+                .links(AssetResponse.LinkResponse.from(balanceAsset.getLinks()))
                 .quantity(balanceAsset.getQuantity())
                 .orderableQuantity(balanceAsset.getOrderableQuantity())
                 .purchaseAmount(balanceAsset.getPurchaseAmount())

@@ -10,7 +10,7 @@ spring:
   datasource:
     hikari:
       driver-class-Name: org.mariadb.jdbc.Driver
-      jdbc-url: jdbc:mariadb://192.168.0.2:3306/fintics
+      jdbc-url: jdbc:mariadb://192.168.0.2:3306/fintics?useUnicode=true&characterEncoding=UTF-8
       username: fintics
       password: fintics
       minimum-idle: 20

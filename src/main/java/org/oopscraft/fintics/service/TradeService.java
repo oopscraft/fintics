@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.data.IdGenerator;
 import org.oopscraft.arch4j.core.data.pbe.PbePropertiesUtil;
 import org.oopscraft.fintics.client.broker.BrokerClient;
+import org.oopscraft.fintics.client.broker.BrokerClientDefinition;
 import org.oopscraft.fintics.client.broker.BrokerClientFactory;
 import org.oopscraft.fintics.dao.*;
 import org.oopscraft.fintics.model.*;

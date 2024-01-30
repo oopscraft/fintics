@@ -13,6 +13,7 @@ import org.oopscraft.arch4j.core.support.ValueMap;
 import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.client.broker.BrokerClientDefinition;
 import org.oopscraft.fintics.model.*;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
@@ -56,7 +57,22 @@ public class UpbitBrokerClient extends BrokerClient {
 
     @Override
     public List<BrokerAsset> getBrokerAssets() {
-        return new ArrayList<>();
+        RestTemplate restTemplate = RestTemplateBuilder.create()
+                .insecure(true)
+                .build();
+        RequestEntity<Void> requestEntity = RequestEntity
+                .get(API_URL + "/v1/market/all")
+                .build();
+        ResponseEntity<List<ValueMap>> responseEntity = restTemplate.exchange(requestEntity, new ParameterizedTypeReference<List<ValueMap>>() {});
+        return responseEntity.getBody().stream()
+                .map(map -> {
+                    return BrokerAsset.builder()
+                            .brokerId(getDefinition().getBrokerId())
+                            .assetId(map.getString("market"))
+                            .assetName(map.getString("english_name"))
+                            .build();
+                })
+                .collect(Collectors.toList());
     }
 
     private synchronized static void sleep() throws InterruptedException {
