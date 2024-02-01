@@ -29,7 +29,6 @@
 
         // simulate
         const simulate = new duice.ObjectProxy({
-            simulateId: tradeId,
             trade: trade,
             dateTimeFrom: dateFns.startOfDay(dateFns.subDays(new Date(),3)).toISOString(),
             dateTimeTo: dateFns.endOfDay(Date()).toISOString(),
@@ -42,7 +41,10 @@
         let indiceMinuteOhlcvsChart = null;
         let assetDailyOhlcvsChart = null;
         let assetMinuteOhlcvsChart = null;
-        let simulateLog = null;
+        let subscribeLog = null;
+        let subscribeStatus = null;
+        let subscribeBalance = null;
+        let subscribeOrder = null;
         const simulateStatus = new duice.ObjectProxy({});
         const simulateBalance = new duice.ObjectProxy({
             balanceAssets: []
@@ -185,31 +187,100 @@
                     () => {})
             );
             tabFolder.setActive(0);
-
-            // simulate log
-            simulateLog = document.getElementById('simulateLog');
-
-            // websocket
-            _webSocketClient.subscribe(`/simulate/${simulate.simulateId}/log`, function(frame) {
-                if(simulateLog.value.length > 100_000) {
-                    simulateLog.value = '';
-                }
-                simulateLog.value += frame.body + '\n';
-                simulateLog.scrollTop = simulateLog.scrollHeight;
-            });
-            _webSocketClient.subscribe(`/simulate/${simulate.simulateId}/status`, function(frame) {
-                let status = JSON.parse(frame.body);
-                duice.ObjectProxy.assign(simulateStatus, status);
-            });
-            _webSocketClient.subscribe(`/simulate/${simulate.simulateId}/balance`, function(frame) {
-                duice.ObjectProxy.assign(simulateBalance, JSON.parse(frame.body));
-            });
-            _webSocketClient.subscribe(`/simulate/${simulate.simulateId}/order`, function(frame) {
-                setSimulateMarkOrderAtChart(JSON.parse(frame.body));
-            });
         }
 
         function prepareSimulate() {
+            // broker asset indicator
+            const assetIndicatorPromises = trade.tradeAssets
+                .filter(tradeAsset => tradeAsset.enabled)
+                .map(async tradeAsset => {
+                    let url = new URL(`${_apiUrl}/v1/broker/${trade.brokerId}/asset/${tradeAsset.assetId}/indicator`, document.location.origin);
+                    url.searchParams.append('dateTimeFrom', simulate.dateTimeFrom);
+                    url.searchParams.append('dateTimeTo', simulate.dateTimeTo);
+                    return await _fetch(url, null, true);
+                });
+            Promise.all(assetIndicatorPromises).then(responses => {
+                return Promise.all(responses.map(response => response.json()));
+            }).then(assetIndicators => {
+                let dateFrom = new Date(simulate.dateTimeFrom);
+                let dateTo = new Date(simulate.dateTimeTo);
+
+                // asset chart
+                assetDailyOhlcvsChart.data.datasets.length = 0;
+                assetMinuteOhlcvsChart.data.datasets.length = 0;
+                assetIndicators.forEach(assetIndicator => {
+                    // daily
+                    let dailyOhlcvs = assetIndicator['dailyOhlcvs'];
+                    let dailyTimeSeries = _createTimeSeries(dateFns.subMonths(dateFrom,1), dateTo, dailyOhlcvs);
+                    let dailyDataset = {
+                        assetId: assetIndicator.assetId,
+                        label: assetIndicator.assetName,
+                        data: dailyTimeSeries,
+                        borderWidth: 1,
+                        pointStyle: false
+                    };
+                    assetDailyOhlcvsChart.data.datasets.push(dailyDataset);
+
+                    // minute
+                    let minuteOhlcvs = assetIndicator['minuteOhlcvs'];
+                    let minuteTimeSeries = _createTimeSeries(dateFrom, dateTo, minuteOhlcvs);
+                    let minuteDataset = {
+                        assetId: assetIndicator.assetId,
+                        label: assetIndicator.assetName,
+                        data: minuteTimeSeries,
+                        borderWidth: 1,
+                        pointStyle: new Array(minuteTimeSeries.length).fill(false)
+                    };
+                    assetMinuteOhlcvsChart.data.datasets.push(minuteDataset);
+                });
+                assetDailyOhlcvsChart.update();
+                assetMinuteOhlcvsChart.update();
+            });
+
+            // indice asset indicator
+            const indices = /*[[${indices}]]*/[];
+            const indiceIndicatorPromises = indices.map(async indice => {
+                let url = new URL(`${_apiUrl}/v1/indice/${indice.indiceId}/indicator`, document.location.origin);
+                return await _fetch(url, null, true);
+            });
+            Promise.all(indiceIndicatorPromises).then(responses => {
+                return Promise.all(responses.map(response => response.json()));
+            }).then(indiceIndicators => {
+                let dateFrom = new Date(simulate.dateTimeFrom);
+                let dateTo = new Date(simulate.dateTimeTo);
+                // indice chart
+                indiceDailyOhlcvsChart.data.datasets.length = 0;
+                indiceMinuteOhlcvsChart.data.datasets.length = 0;
+                indiceIndicators.forEach(indiceIndicator => {
+                    // daily
+                    let dailyOhlcvs = indiceIndicator['dailyOhlcvs'];
+                    let dailyTimeSeries = _createTimeSeries(dateFns.subMonths(dateFrom,1) , dateTo, dailyOhlcvs);
+                    let dailyDataset = {
+                        label: indiceIndicator.indicatorName,
+                        data: dailyTimeSeries,
+                        borderWidth: 1,
+                        pointStyle: false
+                    };
+                    indiceDailyOhlcvsChart.data.datasets.push(dailyDataset);
+                    // minute
+                    let minuteOhlcvs = indiceIndicator['minuteOhlcvs'];
+                    let minuteTimeSeries = _createTimeSeries(dateFrom, dateTo, minuteOhlcvs);
+                    let minuteDataset = {
+                        label: indiceIndicator.indicatorName,
+                        data: minuteTimeSeries,
+                        borderWidth: 1,
+                        pointStyle: false
+                    };
+                    indiceMinuteOhlcvsChart.data.datasets.push(minuteDataset);
+                });
+                indiceDailyOhlcvsChart.update();
+                indiceMinuteOhlcvsChart.update();
+            });
+        }
+
+
+        function runSimulate() {
+            clearSimulateMarkOrderAtChart();
             let url = new URL(`${_apiUrl}/v1/simulate`, document.location.origin);
             _fetch(url, {
                 method: 'POST',
@@ -217,98 +288,62 @@
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(simulate)
-            }).then(response => response.json())
-                .then(responseBody => {
-                    // assign
-                    simulate.simulateId = trade.tradeId;
-                    duice.ArrayProxy.assign(simulate.indiceIndicators, responseBody['indiceIndicators']);
-                    duice.ArrayProxy.assign(simulate.assetIndicators, responseBody['assetIndicators']);
-
-                    let dateFrom = new Date(simulate.dateTimeFrom);
-                    let dateTo = new Date(simulate.dateTimeTo);
-                    // indice chart
-                    indiceDailyOhlcvsChart.data.datasets.length = 0;
-                    indiceMinuteOhlcvsChart.data.datasets.length = 0;
-                    simulate.indiceIndicators.forEach(indiceIndicator => {
-                        // daily
-                        let dailyOhlcvs = indiceIndicator['dailyOhlcvs'];
-                        let dailyTimeSeries = _createTimeSeries(dateFns.subMonths(dateFrom,1) , dateTo, dailyOhlcvs);
-                        let dailyDataset = {
-                            label: indiceIndicator.indicatorName,
-                            data: dailyTimeSeries,
-                            borderWidth: 1,
-                            pointStyle: false
-                        };
-                        indiceDailyOhlcvsChart.data.datasets.push(dailyDataset);
-                        // minute
-                        let minuteOhlcvs = indiceIndicator['minuteOhlcvs'];
-                        let minuteTimeSeries = _createTimeSeries(dateFrom, dateTo, minuteOhlcvs);
-                        let minuteDataset = {
-                            label: indiceIndicator.indicatorName,
-                            data: minuteTimeSeries,
-                            borderWidth: 1,
-                            pointStyle: false
-                        };
-                        indiceMinuteOhlcvsChart.data.datasets.push(minuteDataset);
-                    });
-                    indiceDailyOhlcvsChart.update();
-                    indiceMinuteOhlcvsChart.update();
-
-                    // asset chart
-                    assetDailyOhlcvsChart.data.datasets.length = 0;
-                    assetMinuteOhlcvsChart.data.datasets.length = 0;
-                    simulate.assetIndicators.forEach(assetIndicator => {
-                        // daily
-                        let dailyOhlcvs = assetIndicator['dailyOhlcvs'];
-                        let dailyTimeSeries = _createTimeSeries(dateFns.subMonths(dateFrom,1), dateTo, dailyOhlcvs);
-                        let dailyDataset = {
-                            assetId: assetIndicator.assetId,
-                            label: assetIndicator.assetName,
-                            data: dailyTimeSeries,
-                            borderWidth: 1,
-                            pointStyle: false
-                        };
-                        assetDailyOhlcvsChart.data.datasets.push(dailyDataset);
-
-                        // minute
-                        let minuteOhlcvs = assetIndicator['minuteOhlcvs'];
-                        let minuteTimeSeries = _createTimeSeries(dateFrom, dateTo, minuteOhlcvs);
-                        let minuteDataset = {
-                            assetId: assetIndicator.assetId,
-                            label: assetIndicator.assetName,
-                            data: minuteTimeSeries,
-                            borderWidth: 1,
-                            pointStyle: new Array(minuteTimeSeries.length).fill(false)
-                        };
-                        assetMinuteOhlcvsChart.data.datasets.push(minuteDataset);
-                    });
-                    assetDailyOhlcvsChart.update();
-                    assetMinuteOhlcvsChart.update();
-                });
-        }
-
-        function runSimulate() {
-            clearSimulateMarkOrderAtChart();
-            let url = new URL(`${_apiUrl}/v1/simulate/${simulate.simulateId}/run`, document.location.origin);
-            _fetch(url, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(simulate)
-            }).then(response => {
+            }).then(async response => {
                 console.log(response);
-                if(!response.ok) {
+                if (!response.ok) {
                     duice.alert(response);
                 }
+                let data = await response.json();
+                simulate.simulateId = data.simulateId;
+
+                // websocket
+                let simulateLog = document.getElementById('simulateLog');
                 simulateLog.value = '';
+                _webSocketClient.unsubscribe(subscribeLog);
+                subscribeLog = _webSocketClient.subscribe({
+                    destination: `/simulate/${simulate.simulateId}/log`,
+                    listener: function (frame) {
+                        if (simulateLog.value.length > 100_000) {
+                            simulateLog.value = '';
+                        }
+                        simulateLog.value += frame.body + '\n';
+                        simulateLog.scrollTop = simulateLog.scrollHeight;
+                    }
+                });
+                _webSocketClient.unsubscribe(subscribeStatus);
+                subscribeStatus = _webSocketClient.subscribe({
+                    destination: `/simulate/${simulate.simulateId}/status`,
+                    listener: function(frame) {
+                        let status = JSON.parse(frame.body);
+                        duice.ObjectProxy.assign(simulateStatus, status);
+                    }
+                });
+                _webSocketClient.unsubscribe(subscribeBalance);
+                subscribeBalance = _webSocketClient.subscribe({
+                    destination: `/simulate/${simulate.simulateId}/balance`,
+                    listener: function(frame) {
+                        let balance = JSON.parse(frame.body);
+                        duice.ObjectProxy.assign(simulateBalance, balance);
+                    }
+                });
+                _webSocketClient.unsubscribe(subscribeOrder);
+                subscribeOrder = _webSocketClient.subscribe({
+                    destination: `/simulate/${simulate.simulateId}/order`,
+                    listener: function(frame) {
+                        let order = JSON.parse(frame.body);
+                        setSimulateMarkOrderAtChart(order);
+                    }
+                });
             });
         }
 
         function stopSimulate() {
             let url = new URL(`${_apiUrl}/v1/simulate/${simulate.simulateId}/stop`, document.location.origin);
             _fetch(url, {
-                method: 'PUT'
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
             }).then(response => {
                 console.log(response);
             });
@@ -333,14 +368,14 @@
             });
 
             // buy
-            if(order.orderType === 'BUY') {
+            if(order.type === 'BUY') {
                 dataset.pointStyle[index] = 'circle';
                 dataset.pointBorderColor[index] = 'red';
                 dataset.pointBackgroundColor[index] = 'red';
             }
 
             // sell
-            if(order.orderType === 'SELL') {
+            if(order.type === 'SELL') {
                 dataset.pointStyle[index] = 'rect';
                 dataset.pointBorderColor[index] = 'blue';
                 dataset.pointBackgroundColor[index] = 'blue';
@@ -1136,7 +1171,7 @@
     <dialog id="assetSelect">
         <style th:inline="css">
             #assetSelect {
-                width: 800px;
+                width: 1000px;
                 padding: 1.5rem;
             }
         </style>
@@ -1148,6 +1183,7 @@
                 assetSearch: new duice.ObjectProxy({
                     key: 'assetName',
                     value: null,
+                    type: null,
                     _page: 0,
                     _size: 10,
                     _count: 0
@@ -1173,6 +1209,7 @@
                     if(this.assetSearch.key && this.assetSearch.value) {
                         url.searchParams.append(this.assetSearch.key, this.assetSearch.value);
                     }
+                    this.assetSearch.type == null || url.searchParams.append('type', this.assetSearch.type);
                     url.searchParams.append('_page', this.assetSearch._page);
                     url.searchParams.append('_size', this.assetSearch._size);
                     _fetch(url)
@@ -1231,14 +1268,21 @@
                 <span data-th-text="#{fintics.Asset} + ' ' + #{web.global.select}"></span>
             </h2>
             <form onsubmit="return false;" class="display--grid grid-template-columns--12 grid-gap--1em">
-                <label class="grid-column--3 s-grid-column-4">
+                <label class="grid-column--2 s-grid-column-4">
                     <select class="width--100" data-duice-bind="assetSelect.assetSearch" data-duice-property="key">
                         <option value="assetId" th:text="#{fintics.Asset.assetId}"></option>
                         <option value="assetName" th:text="#{fintics.Asset.assetName}"></option>
                     </select>
                 </label>
-                <label class="grid-column--5 s-grid-column--8">
+                <label class="grid-column--4 s-grid-column--8">
                     <input class="width--100" type="text" data-duice-bind="assetSelect.assetSearch" data-duice-property="value"/>
+                </label>
+                <label class="grid-column--2 s-grid-column--12">
+                    <select class="width--100" data-duice-bind="assetSelect.assetSearch" data-duice-property="type">
+                        <option data-th-text="#{fintics.BrokerAsset.type}"></option>
+                        <option value="STOCK">STOCK</option>
+                        <option value="ETF">ETF</option>
+                    </select>
                 </label>
                 <div class="grid-column--4 s-grid-column--12 justify-self--end">
                     <button onclick="assetSelect.getAssets();">
@@ -1256,6 +1300,10 @@
                     <colgroup>
                         <col style="width:3em;"/>
                         <col style="width:10em;"/>
+                        <col style="width:25%;"/>
+                        <col style="width:5em;"/>
+                        <col/>
+                        <col/>
                         <col/>
                         <col/>
                     </colgroup>
@@ -1264,6 +1312,11 @@
                         <th class="text-align--center">-</th>
                         <th class="text-align--center" data-th-text="#{fintics.Asset.assetId}"></th>
                         <th data-th-text="#{fintics.Asset.assetName}"></th>
+                        <th class="text-align--center" data-th-text="#{fintics.BrokerAsset.type}"></th>
+                        <th class="text-align--center" data-th-text="#{fintics.BrokerAsset.marketCap}"></th>
+                        <th class="text-align--center" data-th-text="#{fintics.BrokerAsset.per}"></th>
+                        <th class="text-align--center" data-th-text="#{fintics.BrokerAsset.roe}"></th>
+                        <th class="text-align--center" data-th-text="#{fintics.BrokerAsset.roa}"></th>
                         <th></th>
                     </tr>
                     </thead>
@@ -1286,6 +1339,21 @@
                         </td>
                         <td>
                             <span data-duice-bind="asset" data-duice-property="assetName"></span>
+                        </td>
+                        <td class="text-align--center">
+                            <span data-duice-bind="asset" data-duice-property="type" class="font-size--smaller font-weight--bold"></span>
+                        </td>
+                        <td class="text-align--center">
+                            <span data-duice-bind="asset" data-duice-property="marketCap" data-duice-format="number" class="font-size--smaller"></span>
+                        </td>
+                        <td class="text-align--center">
+                            <span data-duice-bind="asset" data-duice-property="per" data-duice-format="number" class="font-size--smaller"></span>
+                        </td>
+                        <td class="text-align--center">
+                            <span data-duice-bind="asset" data-duice-property="roe" data-duice-format="number" class="font-size--smaller"></span>
+                        </td>
+                        <td class="text-align--center">
+                            <span data-duice-bind="asset" data-duice-property="roa" data-duice-format="number" class="font-size--smaller"></span>
                         </td>
                         <td class="text-align--right font-size--smaller">
                             <button type="button"
@@ -1331,6 +1399,11 @@
                     <colgroup>
                         <col style="width:3em;"/>
                         <col style="width:10em;"/>
+                        <col style="width:25%;"/>
+                        <col style="width:5em;"/>
+                        <col/>
+                        <col/>
+                        <col/>
                         <col/>
                     </colgroup>
                     <thead>
@@ -1338,6 +1411,12 @@
                         <th class="text-align--center">-</th>
                         <th class="text-align--center" data-th-text="#{fintics.Asset.assetId}"></th>
                         <th data-th-text="#{fintics.Asset.assetName}"></th>
+                        <th class="text-align--center" data-th-text="#{fintics.BrokerAsset.type}"></th>
+                        <th class="text-align--center" data-th-text="#{fintics.BrokerAsset.marketCap}"></th>
+                        <th class="text-align--center" data-th-text="#{fintics.BrokerAsset.per}"></th>
+                        <th class="text-align--center" data-th-text="#{fintics.BrokerAsset.roe}"></th>
+                        <th class="text-align--center" data-th-text="#{fintics.BrokerAsset.roa}"></th>
+                        <th></th>
                     </tr>
                     </thead>
                     <tbody>
@@ -1354,6 +1433,33 @@
                         </td>
                         <td>
                             <span data-duice-bind="asset" data-duice-property="assetName"></span>
+                        </td>
+                        <td class="text-align--center">
+                            <span data-duice-bind="asset" data-duice-property="type" class="font-size--smaller font-weight--bold"></span>
+                        </td>
+                        <td class="text-align--center">
+                            <span data-duice-bind="asset" data-duice-property="marketCap" data-duice-format="number" class="font-size--smaller"></span>
+                        </td>
+                        <td class="text-align--center">
+                            <span data-duice-bind="asset" data-duice-property="per" data-duice-format="number" class="font-size--smaller"></span>
+                        </td>
+                        <td class="text-align--center">
+                            <span data-duice-bind="asset" data-duice-property="roe" data-duice-format="number" class="font-size--smaller"></span>
+                        </td>
+                        <td class="text-align--center">
+                            <span data-duice-bind="asset" data-duice-property="roa" data-duice-format="number" class="font-size--smaller"></span>
+                        </td>
+                        <td class="text-align--right font-size--smaller">
+                            <button type="button"
+                                    class="small"
+                                    data-duice-bind="asset.links"
+                                    data-duice-loop="link,status"
+                                    data-duice-execute="
+                                    this.dataset.url=link.url;
+                                    this.addEventListener('click', () => { _openLink(this.dataset.url,'_blank'); })">
+                                <img class="icon" th:src="@{/static/image/icon-open.svg}" alt="link"/>
+                                <span class="font-weight--bold" data-duice-bind="link" data-duice-property="name"></span>
+                            </button>
                         </td>
                     </tr>
                     <tr data-duice-bind="assetSelect.selectedAssets"

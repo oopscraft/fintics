@@ -6,9 +6,7 @@ import org.oopscraft.arch4j.web.support.PageableUtils;
 import org.oopscraft.fintics.api.v1.dto.AssetIndicatorResponse;
 import org.oopscraft.fintics.api.v1.dto.BrokerAssetResponse;
 import org.oopscraft.fintics.api.v1.dto.BrokerResponse;
-import org.oopscraft.fintics.client.broker.BrokerClientFactory;
-import org.oopscraft.fintics.model.AssetIndicator;
-import org.oopscraft.fintics.model.AssetSearch;
+import org.oopscraft.fintics.model.BrokerAssetSearch;
 import org.oopscraft.fintics.model.BrokerAsset;
 import org.oopscraft.fintics.service.BrokerService;
 import org.springframework.cache.annotation.CacheEvict;
@@ -22,8 +20,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/broker")
@@ -54,10 +54,10 @@ public class BrokerRestController {
     @GetMapping("{brokerId}/asset")
     public ResponseEntity<List<BrokerAssetResponse>> getAssets(
             @PathVariable("brokerId") String brokerId,
-            AssetSearch assetSearch,
+            BrokerAssetSearch brokerAssetSearch,
             Pageable pageable
     ) {
-        Page<BrokerAsset> brokerAssetPage = brokerService.getBrokerAssets(brokerId, assetSearch, pageable);
+        Page<BrokerAsset> brokerAssetPage = brokerService.getBrokerAssets(brokerId, brokerAssetSearch, pageable);
         List<BrokerAssetResponse> brokerAssetResponses = brokerAssetPage.getContent().stream()
                 .map(BrokerAssetResponse::from)
                 .toList();
@@ -83,9 +83,15 @@ public class BrokerRestController {
     public ResponseEntity<AssetIndicatorResponse> getAssetIndicator(
             @PathVariable("brokerId") String brokerId,
             @PathVariable("assetId") String assetId,
-            @RequestParam(value = "dateTimeFrom", required = false) LocalDateTime dateTimeFrom,
-            @RequestParam(value = "dateTimeTo", required = false) LocalDateTime dateTimeTo
+            @RequestParam(value = "dateTimeFrom", required = false) ZonedDateTime zonedDateTimeFrom,
+            @RequestParam(value = "dateTimeTo", required = false) ZonedDateTime zonedDateTimeTo
     ) {
+        LocalDateTime dateTimeFrom = Optional.ofNullable(zonedDateTimeFrom)
+                .map(item -> item.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime())
+                .orElse(null);
+        LocalDateTime dateTimeTo = Optional.ofNullable(zonedDateTimeTo)
+                .map(item -> item.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime())
+                .orElse(null);
         AssetIndicatorResponse assetIndicatorResponse = brokerService.getAssetIndicator(brokerId, assetId, dateTimeFrom, dateTimeTo)
                 .map(AssetIndicatorResponse::from)
                 .orElseThrow();

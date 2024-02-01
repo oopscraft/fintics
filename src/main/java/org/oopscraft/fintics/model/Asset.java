@@ -1,11 +1,11 @@
 package org.oopscraft.fintics.model;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.oopscraft.arch4j.core.data.converter.AbstractEnumConverter;
 
+import javax.persistence.Converter;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,8 +21,10 @@ public class Asset {
     @Builder.Default
     private List<Link> links = new ArrayList<>();
 
+    @Data
     @Builder
-    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PROTECTED)
     public static class Link {
         private String name;
         private String url;

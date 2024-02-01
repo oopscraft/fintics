@@ -114,8 +114,8 @@ public class TradeExecutor {
                         .minuteOhlcvs(minuteOhlcvs)
                         .dailyOhlcvs(dailyOhlcvs)
                         .build();
-                log.info("MinuteOhlcvs({}):{}...", assetIndicator.getMinuteOhlcvs().size(), assetIndicator.getMinuteOhlcvs().get(0).getDateTime());
-                log.info("DailyOhlcvs({}):{}...", assetIndicator.getDailyOhlcvs().size(), assetIndicator.getDailyOhlcvs().get(0).getDateTime());
+                log.info("MinuteOhlcvs({}):{}", assetIndicator.getMinuteOhlcvs().size(), assetIndicator.getMinuteOhlcvs().isEmpty() ? null : assetIndicator.getMinuteOhlcvs().get(0));
+                log.info("DailyOhlcvs({}):{}", assetIndicator.getDailyOhlcvs().size(), assetIndicator.getDailyOhlcvs().isEmpty() ? null : assetIndicator.getDailyOhlcvs().get(0));
 
                 // order book
                 OrderBook orderBook = brokerClient.getOrderBook(tradeAsset);

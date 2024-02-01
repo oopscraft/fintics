@@ -15,6 +15,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
@@ -53,9 +55,15 @@ public class IndiceRestController {
     @Cacheable(cacheNames = INDICE_REST_CONTROLLER_GET_INDICE_INDICATOR, key = "#indiceId + '_' + #dateTimeFrom + '_' + #dateTimeTo")
     public ResponseEntity<IndiceIndicatorResponse> getIndiceIndicator(
             @PathVariable("indiceId") IndiceId indiceId,
-            @RequestParam(value = "dateTimeFrom", required = false) LocalDateTime dateTimeFrom,
-            @RequestParam(value = "dateTimeTo", required = false) LocalDateTime dateTimeTo
+            @RequestParam(value = "dateTimeFrom", required = false) ZonedDateTime zonedDateTimeFrom,
+            @RequestParam(value = "dateTimeTo", required = false) ZonedDateTime zonedDateTimeTo
     ) {
+        LocalDateTime dateTimeFrom = Optional.ofNullable(zonedDateTimeFrom)
+                .map(item -> item.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime())
+                .orElse(null);
+        LocalDateTime dateTimeTo = Optional.ofNullable(zonedDateTimeTo)
+                .map(item -> item.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime())
+                .orElse(null);
         IndiceIndicatorResponse indiceIndicatorResponse = indiceService.getIndiceIndicator(indiceId, dateTimeFrom, dateTimeTo)
                 .map(IndiceIndicatorResponse::from)
                 .orElseThrow();

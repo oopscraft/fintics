@@ -24,7 +24,9 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -45,10 +47,15 @@ public class BrokerAssetCollector {
     public void collect() {
         log.info("Start collect broker asset.");
         List<TradeEntity> tradeEntities = tradeRepository.findAll();
+        List<String> processedBrokerIds = new ArrayList<>();
         for (TradeEntity tradeEntity : tradeEntities) {
             try {
-                Trade trade = Trade.from(tradeEntity);
-                saveBrokerAssets(trade);
+                String brokerId = tradeEntity.getBrokerId();
+                if(!processedBrokerIds.contains(brokerId)) {
+                    Trade trade = Trade.from(tradeEntity);
+                    saveBrokerAssets(trade);
+                    processedBrokerIds.add(brokerId);
+                }
             } catch (Throwable e) {
                 log.warn(e.getMessage());
             }
@@ -63,6 +70,12 @@ public class BrokerAssetCollector {
                         .brokerId(brokerAsset.getBrokerId())
                         .assetId(brokerAsset.getAssetId())
                         .assetName(brokerAsset.getAssetName())
+                        .type(brokerAsset.getType())
+                        .marketCap(brokerAsset.getMarketCap())
+                        .issuedShares(brokerAsset.getIssuedShares())
+                        .per(brokerAsset.getPer())
+                        .roe(brokerAsset.getRoe())
+                        .roa(brokerAsset.getRoa())
                         .build())
                 .collect(Collectors.toList());
 
@@ -73,13 +86,7 @@ public class BrokerAssetCollector {
             int count = 0;
             for(BrokerAssetEntity brokerAssetEntity : brokerAssetEntities) {
                 count ++;
-                BrokerAssetEntity.Pk pk = BrokerAssetEntity.Pk.builder()
-                        .brokerId(brokerAssetEntity.getBrokerId())
-                        .assetId(brokerAssetEntity.getAssetId())
-                        .build();
-                if(!brokerAssetRepository.existsById(pk)) {
-                    brokerAssetRepository.saveAndFlush(brokerAssetEntity);
-                }
+                brokerAssetRepository.saveAndFlush(brokerAssetEntity);
 
                 // middle commit
                 if(count % 100 == 0) {

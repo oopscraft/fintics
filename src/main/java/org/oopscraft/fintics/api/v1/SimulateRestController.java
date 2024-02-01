@@ -3,9 +3,7 @@ package org.oopscraft.fintics.api.v1;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.oopscraft.arch4j.web.support.PageableUtils;
-import org.oopscraft.fintics.api.v1.dto.PrepareSimulateRequest;
-import org.oopscraft.fintics.api.v1.dto.PrepareSimulateResponse;
-import org.oopscraft.fintics.api.v1.dto.RunSimulateRequest;
+import org.oopscraft.fintics.api.v1.dto.SimulateRequest;
 import org.oopscraft.fintics.api.v1.dto.SimulateResponse;
 import org.oopscraft.fintics.model.*;
 import org.oopscraft.fintics.service.SimulateService;
@@ -20,8 +18,8 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/simulate")
@@ -48,64 +46,28 @@ public class SimulateRestController {
     }
 
     @PostMapping
-    public ResponseEntity<PrepareSimulateResponse> prepareSimulate(@RequestBody PrepareSimulateRequest prepareSimulateRequest) {
-        String simulateId = prepareSimulateRequest.getSimulateId();
-        Trade trade = prepareSimulateRequest.getTrade();
-        LocalDateTime dateTimeFrom = prepareSimulateRequest.getDateTimeFrom()
+    public ResponseEntity<SimulateResponse> runSimulate(@RequestBody SimulateRequest simulateRequest) {
+        Trade trade = simulateRequest.getTrade();
+        LocalDateTime dateTimeFrom = simulateRequest.getDateTimeFrom()
                 .withZoneSameInstant(ZoneId.systemDefault())
                 .toLocalDateTime();
-        LocalDateTime dateTimeTo = prepareSimulateRequest.getDateTimeTo()
+        LocalDateTime dateTimeTo = simulateRequest.getDateTimeTo()
                 .withZoneSameInstant(ZoneId.systemDefault())
                 .toLocalDateTime();
-
-        // call service
-        Simulate simulate = Simulate.builder()
-                .simulateId(simulateId)
-                .trade(trade)
-                .dateTimeFrom(dateTimeFrom)
-                .dateTimeTo(dateTimeTo)
-                .build();
-        simulate = simulateService.prepareSimulate(simulate);
-
-        // response
-        PrepareSimulateResponse prepareSimulateResponse = PrepareSimulateResponse.builder()
-                .simulateId(simulate.getSimulateId())
-                .indiceIndicators(simulate.getIndiceIndicators())
-                .assetIndicators(simulate.getAssetIndicators())
-                .build();
-        return ResponseEntity.ok(prepareSimulateResponse);
-    }
-
-    @PutMapping("{simulateId}/run")
-    public ResponseEntity<Void> runSimulate(
-            @PathVariable("simulateId") String simulateId,
-            @RequestBody RunSimulateRequest runSimulateRequest
-    ) {
-        Trade trade = runSimulateRequest.getTrade();
-        LocalDateTime dateTimeFrom = runSimulateRequest.getDateTimeFrom()
-                .withZoneSameInstant(ZoneId.systemDefault())
-                .toLocalDateTime();
-        LocalDateTime dateTimeTo = runSimulateRequest.getDateTimeTo()
-                .withZoneSameInstant(ZoneId.systemDefault())
-                .toLocalDateTime();
-        BigDecimal investAmount = runSimulateRequest.getInvestAmount();
-        BigDecimal feeRate = runSimulateRequest.getFeeRate();
-        List<IndiceIndicator> indiceIndicators = runSimulateRequest.getIndiceIndicators();
-        List<AssetIndicator> assetIndicators = runSimulateRequest.getAssetIndicators();
+        BigDecimal investAmount = simulateRequest.getInvestAmount();
+        BigDecimal feeRate = simulateRequest.getFeeRate();
 
         Simulate simulate = Simulate.builder()
-                .simulateId(simulateId)
                 .trade(trade)
                 .dateTimeFrom(dateTimeFrom)
                 .dateTimeTo(dateTimeTo)
                 .investAmount(investAmount)
                 .feeRate(feeRate)
-                .indiceIndicators(indiceIndicators)
-                .assetIndicators(assetIndicators)
                 .build();
-        simulateService.runSimulate(simulate);
+        simulate = simulateService.runSimulate(simulate);
 
-        return ResponseEntity.ok().build();
+        SimulateResponse simulateResponse = SimulateResponse.from(simulate);
+        return ResponseEntity.ok(simulateResponse);
     }
 
     @PutMapping("{simulateId}/stop")

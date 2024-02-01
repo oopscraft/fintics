@@ -3,6 +3,8 @@ package org.oopscraft.fintics.dao;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.arch4j.core.data.BaseEntity;
+import org.oopscraft.arch4j.core.data.converter.AbstractEnumConverter;
+import org.oopscraft.fintics.model.Asset;
 import org.oopscraft.fintics.model.Ohlcv;
 
 import javax.persistence.*;

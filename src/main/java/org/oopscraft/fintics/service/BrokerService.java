@@ -1,7 +1,6 @@
 package org.oopscraft.fintics.service;
 
 import lombok.RequiredArgsConstructor;
-import org.oopscraft.fintics.client.broker.BrokerClientDefinition;
 import org.oopscraft.fintics.client.broker.BrokerClientFactory;
 import org.oopscraft.fintics.dao.*;
 import org.oopscraft.fintics.model.*;
@@ -34,8 +33,8 @@ public class BrokerService {
                 .map(Broker::from);
     }
 
-    public Page<BrokerAsset> getBrokerAssets(String brokerId, AssetSearch assetSearch, Pageable pageable) {
-        Page<BrokerAssetEntity> brokerAssetEntityPage = brokerAssetRepository.findAllBy(brokerId, assetSearch, pageable);
+    public Page<BrokerAsset> getBrokerAssets(String brokerId, BrokerAssetSearch brokerAssetSearch, Pageable pageable) {
+        Page<BrokerAssetEntity> brokerAssetEntityPage = brokerAssetRepository.findAllBy(brokerId, brokerAssetSearch, pageable);
         List<BrokerAsset> brokerAssets = brokerAssetEntityPage.getContent().stream()
                 .map(BrokerAsset::from)
                 .toList();

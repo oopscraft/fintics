@@ -31,8 +31,6 @@ public class SimulateBrokerClient extends BrokerClient {
     @Setter
     private BigDecimal feeRate = BigDecimal.ZERO;
 
-    private Set<LocalDate> openDates;
-
     private final Map<String,List<Ohlcv>> minuteOhlcvsMap = new HashMap<>();
 
     private final Map<String,List<Ohlcv>> dailyOhlcvsMap = new HashMap<>();
@@ -77,7 +75,7 @@ public class SimulateBrokerClient extends BrokerClient {
         }
 
         // daily
-        List<Ohlcv> dailyOhlcvs = minuteOhlcvsMap.get(asset.getAssetId());
+        List<Ohlcv> dailyOhlcvs = dailyOhlcvsMap.get(asset.getAssetId());
         if(dailyOhlcvs == null || dailyOhlcvs.isEmpty() || dailyOhlcvs.get(0).getDateTime().isBefore(dateTime)) {
             dailyOhlcvs = assetOhlcvRepository.findAllByBrokerIdAndAssetIdAndType(brokerId, asset.getAssetId(), Ohlcv.Type.DAILY, dateTime.minusYears(1), dateTime, Pageable.unpaged())
                     .stream()
@@ -92,22 +90,6 @@ public class SimulateBrokerClient extends BrokerClient {
         DayOfWeek dayOfWeek = dateTime.getDayOfWeek();
         if(dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
             return false;
-        }
-
-        // set open dates
-        if(openDates == null) {
-            openDates = new HashSet<>();
-            for(List<Ohlcv> ohlcvs : minuteOhlcvsMap.values()) {
-                ohlcvs.stream()
-                        .map(Ohlcv::getDateTime)
-                        .map(LocalDateTime::toLocalDate)
-                        .distinct()
-                        .forEach(date -> openDates.add(date));
-            }
-        }
-        if(openDates != null) {
-            return openDates.stream()
-                    .anyMatch(date -> date.equals(dateTime.toLocalDate()));
         }
 
         // default true

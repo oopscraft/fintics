@@ -8,6 +8,7 @@ import org.oopscraft.fintics.dao.SimulateRepository;
 import org.oopscraft.fintics.model.*;
 import org.oopscraft.fintics.service.IndiceService;
 import org.oopscraft.fintics.trade.TradeExecutorFactory;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -26,6 +27,8 @@ public class SimulateRunnableFactory {
     private final PlatformTransactionManager transactionManager;
 
     private final SimulateRepository simulateRepository;
+
+    private final SimpMessagingTemplate messagingTemplate;
 
     private final ObjectMapper objectMapper;
 
@@ -49,6 +52,7 @@ public class SimulateRunnableFactory {
                 .tradeExecutorFactory(tradeExecutorFactory)
                 .transactionManager(transactionManager)
                 .simulateRepository(simulateRepository)
+                .messagingTemplate(messagingTemplate)
                 .objectMapper(objectMapper)
                 .build();
     }

@@ -1,6 +1,6 @@
 package org.oopscraft.fintics.dao;
 
-import org.oopscraft.fintics.model.AssetSearch;
+import org.oopscraft.fintics.model.BrokerAssetSearch;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -13,22 +13,27 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface BrokerAssetRepository extends JpaRepository<BrokerAssetEntity, BrokerAssetEntity.Pk>, JpaSpecificationExecutor<BrokerAssetEntity> {
 
-    default Page<BrokerAssetEntity> findAllBy(String brokerId, AssetSearch assetSearch, Pageable pageable) {
+    default Page<BrokerAssetEntity> findAllBy(String brokerId, BrokerAssetSearch brokerAssetSearch, Pageable pageable) {
         Specification<BrokerAssetEntity> specification = Specification.where(null);
         specification = specification.and((root, query, criteriaBuilder) ->
                 criteriaBuilder.equal(root.get(BrokerAssetEntity_.BROKER_ID), brokerId));
 
-        if(assetSearch.getAssetId() != null) {
-            specification = specification.and(((root, query, criteriaBuilder) ->
-                criteriaBuilder.like(root.get(BrokerAssetEntity_.ASSET_ID), '%' + assetSearch.getAssetId() + '%')));
+        if(brokerAssetSearch.getAssetId() != null) {
+            specification = specification.and((root, query, criteriaBuilder) ->
+                criteriaBuilder.like(root.get(BrokerAssetEntity_.ASSET_ID), '%' + brokerAssetSearch.getAssetId() + '%'));
         }
 
-        if(assetSearch.getAssetName() != null) {
-            specification = specification.and(((root, query, criteriaBuilder) ->
-                    criteriaBuilder.like(root.get(BrokerAssetEntity_.ASSET_NAME), '%' + assetSearch.getAssetName() + '%')));
+        if(brokerAssetSearch.getAssetName() != null) {
+            specification = specification.and((root, query, criteriaBuilder) ->
+                    criteriaBuilder.like(root.get(BrokerAssetEntity_.ASSET_NAME), '%' + brokerAssetSearch.getAssetName() + '%'));
         }
 
-        Sort sort = Sort.by(BrokerAssetEntity_.SYSTEM_UPDATED_AT).descending();
+        if(brokerAssetSearch.getType() != null) {
+            specification = specification.and((root, query, criteriaBuilder) ->
+                    criteriaBuilder.equal(root.get(BrokerAssetEntity_.TYPE), brokerAssetSearch.getType()));
+        }
+
+        Sort sort = Sort.by(BrokerAssetEntity_.MARKET_CAP).descending();
         PageRequest pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
         return findAll(specification, pageRequest);
     }

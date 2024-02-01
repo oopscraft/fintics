@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.core.Context;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.oopscraft.arch4j.core.data.IdGenerator;
 import org.oopscraft.fintics.dao.BrokerAssetOhlcvRepository;
 import org.oopscraft.fintics.dao.IndiceOhlcvRepository;
 import org.oopscraft.fintics.dao.SimulateEntity;
@@ -61,66 +62,8 @@ public class SimulateService {
         return new PageImpl<>(simulates, pageable, count);
     }
 
-    public Simulate prepareSimulate(Simulate simulate) {
-        String simulateId = simulate.getSimulateId();
-        Trade trade = simulate.getTrade();
-        LocalDateTime dateTimeFrom = simulate.getDateTimeFrom();
-        LocalDateTime dateTimeTo = simulate.getDateTimeTo();
-
-        // indice indicators
-        List<IndiceIndicator> indiceIndicators = new ArrayList<>();
-        for(IndiceId indiceId : IndiceId.values()) {
-            List<Ohlcv> minuteOhlcvs = indiceOhlcvRepository.findAllByIndiceIdAndType(indiceId, Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo, Pageable.unpaged()).stream()
-                    .map(Ohlcv::from)
-                    .toList();
-            List<Ohlcv> dailyOhlcvs = indiceOhlcvRepository.findAllByIndiceIdAndType(indiceId, Ohlcv.Type.DAILY, dateTimeFrom.minusMonths(1), dateTimeTo, Pageable.unpaged()).stream()
-                    .map(Ohlcv::from)
-                    .toList();
-            IndiceIndicator indiceIndicator = IndiceIndicator.builder()
-                    .indiceId(indiceId)
-                    .minuteOhlcvs(minuteOhlcvs)
-                    .dailyOhlcvs(dailyOhlcvs)
-                    .build();
-            indiceIndicators.add(indiceIndicator);
-        }
-
-        // asset indicators
-        List<AssetIndicator> assetIndicators = new ArrayList<>();
-        trade.getTradeAssets().forEach(tradeAsset -> {
-            if(tradeAsset.isEnabled()) {
-                List<Ohlcv> minuteOhlcvs = assetOhlcvRepository.findAllByBrokerIdAndAssetIdAndType(trade.getBrokerId(), tradeAsset.getAssetId(), Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo, Pageable.unpaged())
-                        .stream()
-                        .map(Ohlcv::from)
-                        .toList();
-                List<Ohlcv> dailyOhlcvs = assetOhlcvRepository.findAllByBrokerIdAndAssetIdAndType(trade.getBrokerId(), tradeAsset.getAssetId(), Ohlcv.Type.DAILY, dateTimeFrom.minusMonths(1), dateTimeTo, Pageable.unpaged())
-                        .stream()
-                        .map(Ohlcv::from)
-                        .toList();
-                AssetIndicator assetIndicator = AssetIndicator.builder()
-                        .assetId(tradeAsset.getAssetId())
-                        .assetName(tradeAsset.getAssetName())
-                        .minuteOhlcvs(minuteOhlcvs)
-                        .dailyOhlcvs(dailyOhlcvs)
-                        .build();
-                assetIndicators.add(assetIndicator);
-            }
-        });
-
-        // return prepared simulate
-        return Simulate.builder()
-                .simulateId(simulateId)
-                .trade(trade)
-                .dateTimeFrom(dateTimeFrom)
-                .dateTimeTo(dateTimeTo)
-                .indiceIndicators(indiceIndicators)
-                .assetIndicators(assetIndicators)
-                .build();
-    }
-
     public synchronized Simulate runSimulate(Simulate simulate) {
-        Trade trade = simulate.getTrade();
-        LocalDateTime dateTimeFrom = simulate.getDateTimeFrom();
-        LocalDateTime dateTimeTo = simulate.getDateTimeTo();
+        simulate.setSimulateId(IdGenerator.uuid());
 
         // add log appender
         Context context = ((Logger)log).getLoggerContext();
@@ -133,7 +76,6 @@ public class SimulateService {
             this.simulateRunnableMap.remove(simulate.getSimulateId());
         });
 
-        this.stopSimulate(simulate.getSimulateId());
         simulateExecutor.submit(simulateRunnable);
         simulateRunnableMap.put(simulate.getSimulateId(), simulateRunnable);
 

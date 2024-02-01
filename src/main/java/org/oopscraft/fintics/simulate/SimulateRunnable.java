@@ -12,6 +12,7 @@ import org.oopscraft.fintics.model.Simulate;
 import org.oopscraft.fintics.model.Trade;
 import org.oopscraft.fintics.trade.TradeExecutor;
 import org.oopscraft.fintics.trade.TradeExecutorFactory;
+import org.slf4j.LoggerFactory;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -39,6 +40,8 @@ public class SimulateRunnable implements Runnable {
 
     private final SimulateRepository simulateRepository;
 
+    private final SimpMessagingTemplate messagingTemplate;
+
     private final ObjectMapper objectMapper;
 
     @Setter
@@ -46,9 +49,6 @@ public class SimulateRunnable implements Runnable {
 
     @Setter
     private SimulateLogAppender simulateLogAppender;
-
-    @Setter
-    private SimpMessagingTemplate messagingTemplate;
 
     @Setter
     @Getter
@@ -64,6 +64,7 @@ public class SimulateRunnable implements Runnable {
             TradeExecutorFactory tradeExecutorFactory,
             PlatformTransactionManager transactionManager,
             SimulateRepository simulateRepository,
+            SimpMessagingTemplate messagingTemplate,
             ObjectMapper objectMapper
     ){
         this.simulate = simulate;
@@ -72,13 +73,11 @@ public class SimulateRunnable implements Runnable {
         this.tradeExecutorFactory = tradeExecutorFactory;
         this.transactionManager = transactionManager;
         this.simulateRepository = simulateRepository;
+        this.messagingTemplate = messagingTemplate;
         this.objectMapper = objectMapper;
 
-        // add log appender
-//        log = (Logger) LoggerFactory.getLogger(simulate.getSimulateId());
-//        if(this.simulateLogAppender != null) {
-//            log.addAppender(this.simulateLogAppender);
-//        }
+        // log
+        this.log = (Logger) LoggerFactory.getLogger(simulate.getSimulateId());
     }
 
     @Override
@@ -87,7 +86,10 @@ public class SimulateRunnable implements Runnable {
         simulate.setStartedAt(LocalDateTime.now());
         saveSimulate(simulate);
 
-        simulateLogAppender.start();
+        if(this.simulateLogAppender != null) {
+            log.addAppender(this.simulateLogAppender);
+            this.simulateLogAppender.start();
+        }
         try {
             Trade trade = simulate.getTrade();
             LocalDateTime dateTimeFrom = simulate.getDateTimeFrom();

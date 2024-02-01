@@ -128,8 +128,8 @@ def analysisAverages = []
 //=============================
 def assetAnalysisMap = [:]
 def assetAnalysisAverages = []
-//assetAnalysisMap.minute3 = analyzeIndicator(assetIndicator, OhlcvType.MINUTE, 3)
-//assetAnalysisMap.minute10 = analyzeIndicator(assetIndicator, OhlcvType.MINUTE, 10)
+//assetAnalysisMap.minute3 = analyzeIndicator(assetIndicator, Ohlcv.Type.MINUTE, 3)
+//assetAnalysisMap.minute10 = analyzeIndicator(assetIndicator, Ohlcv.Type.MINUTE, 10)
 assetAnalysisMap.minute30 = analyzeIndicator(assetIndicator, Ohlcv.Type.MINUTE, 30)
 assetAnalysisMap.minute60 = analyzeIndicator(assetIndicator, Ohlcv.Type.MINUTE, 60)
 assetAnalysisMap.daily = analyzeIndicator(assetIndicator, Ohlcv.Type.DAILY, 1)

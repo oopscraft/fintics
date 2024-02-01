@@ -27,6 +27,8 @@ import javax.xml.xpath.XPathFactory;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -88,8 +90,8 @@ public abstract class KrxBrokerClient extends BrokerClient {
 
         // sort, limit
         rows.sort((o1, o2) -> {
-            BigDecimal o1MarketCap = new BigDecimal(StringUtils.defaultIfBlank(o1.getString("MARTP_TOTAMT"),"0"));
-            BigDecimal o2MarketCap = new BigDecimal(StringUtils.defaultIfBlank(o2.getString("MARTP_TOTAMT "),"0"));
+            BigDecimal o1MarketCap = toNumber(o1.get("MARTP_TOTAMT"), BigDecimal.ZERO);
+            BigDecimal o2MarketCap = toNumber(o2.getString("MARTP_TOTAMT"), BigDecimal.ZERO);
             return o2MarketCap.compareTo(o1MarketCap);
         });
 
@@ -98,6 +100,13 @@ public abstract class KrxBrokerClient extends BrokerClient {
                         .brokerId(getDefinition().getBrokerId())
                         .assetId(row.getString("SHOTN_ISIN"))
                         .assetName(row.getString("KOR_SECN_NM"))
+                        .type(BrokerAsset.Type.STOCK)
+                        .dateTime(LocalDateTime.now())
+                        .marketCap(toNumber(row.get("MARTP_TOTAMT"), null))
+                        .issuedShares(toNumber(row.get("TOT_ISSU_STKQTY"), null))
+                        .per(toNumber(row.get("PER"), null))
+                        .roe(toNumber(row.get("ROE"), null))
+                        .roa(toNumber(row.get("ROA"), null))
                         .build())
                 .collect(Collectors.toList());
     }
@@ -144,20 +153,32 @@ public abstract class KrxBrokerClient extends BrokerClient {
 
         // sort
         rows.sort((o1, o2) -> {
-            BigDecimal o1MarketCap = new BigDecimal(StringUtils.defaultIfBlank(o1.getString("NETASST_TOTAMT"),"0"));
-            BigDecimal o2MarketCap = new BigDecimal(StringUtils.defaultIfBlank(o2.getString("NETASST_TOTAMT"),"0"));
+            BigDecimal o1MarketCap = toNumber(o1.get("NETASST_TOTAMT"), BigDecimal.ZERO);
+            BigDecimal o2MarketCap = toNumber(o2.get("NETASST_TOTAMT"), BigDecimal.ZERO);
             return o2MarketCap.compareTo(o1MarketCap);
         });
 
         return rows.stream()
-                .map(row -> BrokerAsset.builder()
-                        .brokerId(getDefinition().getBrokerId())
-                        .assetId(row.getString("SHOTN_ISIN"))
-                        .assetName(row.getString("KOR_SECN_NM"))
-                        .build())
+                .map(row -> {
+                    // market cap (etf is 1 krw unit)
+                    BigDecimal marketCap = toNumber(row.get("NETASST_TOTAMT"), null);
+                    if(marketCap != null) {
+                        marketCap = marketCap.divide(BigDecimal.valueOf(100_000_000), MathContext.DECIMAL32)
+                                .setScale(0, RoundingMode.HALF_UP);
+                    }
+
+                    // return
+                    return BrokerAsset.builder()
+                            .brokerId(getDefinition().getBrokerId())
+                            .assetId(row.getString("SHOTN_ISIN"))
+                            .assetName(row.getString("KOR_SECN_NM"))
+                            .type(BrokerAsset.Type.ETF)
+                            .dateTime(LocalDateTime.now())
+                            .marketCap(marketCap)
+                            .build();
+                })
                 .collect(Collectors.toList());
     }
-
 
     private static HttpHeaders createSeibroHeaders(String w2xPath) {
         HttpHeaders headers = new HttpHeaders();
@@ -279,6 +300,15 @@ public abstract class KrxBrokerClient extends BrokerClient {
             throw new RuntimeException(e);
         }
         return map;
+    }
+
+    public static BigDecimal toNumber(Object value, BigDecimal defaultValue) {
+        try {
+            String valueString = value.toString().replace(",", "");
+            return new BigDecimal(valueString);
+        }catch(Throwable e){
+            return defaultValue;
+        }
     }
 
     public static String getIsin(String symbol) {

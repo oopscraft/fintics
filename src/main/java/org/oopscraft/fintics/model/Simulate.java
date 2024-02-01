@@ -21,7 +21,8 @@ import java.util.List;
 @Getter
 public class Simulate {
 
-    private final String simulateId;
+    @Setter
+    private String simulateId;
 
     @Setter
     private LocalDateTime startedAt;
@@ -50,12 +51,6 @@ public class Simulate {
     private BigDecimal feeRate = BigDecimal.ZERO;
 
     private String result;
-
-    @Builder.Default
-    private List<IndiceIndicator> indiceIndicators = new ArrayList<>();
-
-    @Builder.Default
-    private List<AssetIndicator> assetIndicators = new ArrayList<>();
 
     @Builder.Default
     private Balance balance = new Balance();
