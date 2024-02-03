@@ -25,7 +25,7 @@ public class MonitorController {
     private final TradeService tradeService;
 
     @GetMapping
-    public ModelAndView monitor() {
+    public ModelAndView getMonitor() {
         ModelAndView modelAndView = new ModelAndView("monitor.html");
         List<Indice> indices = indiceService.getIndices();
         modelAndView.addObject("indices", indices);

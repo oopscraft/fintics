@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
 import org.oopscraft.arch4j.core.data.IdGenerator;
-import org.oopscraft.fintics.client.broker.BrokerClient;
+import org.oopscraft.fintics.client.trade.TradeClient;
 import org.oopscraft.fintics.dao.OrderEntity;
 import org.oopscraft.fintics.dao.OrderRepository;
 import org.oopscraft.fintics.model.*;
@@ -28,7 +28,7 @@ public abstract class OrderOperator {
     private Trade trade;
 
     @Setter
-    private BrokerClient brokerClient;
+    private TradeClient brokerClient;
 
     @Setter
     private Balance balance;

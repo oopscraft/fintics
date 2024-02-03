@@ -10,6 +10,7 @@ import org.oopscraft.fintics.dao.OrderEntity;
 import javax.persistence.Converter;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Builder
 @Getter
@@ -40,6 +41,14 @@ public class Order {
     private Result result;
 
     private String errorMessage;
+
+    public String getSymbol() {
+        return Optional.ofNullable(assetId)
+                .map(string -> string.split("\\."))
+                .filter(array -> array.length > 1)
+                .map(array -> array[1])
+                .orElseThrow(() -> new RuntimeException(String.format("invalid assetId[%s]",assetId)));
+    }
 
     public enum Type { BUY, SELL }
 

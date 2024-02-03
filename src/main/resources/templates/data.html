@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="_web.html">
+<th:block layout:fragment="_content">
+    <script th:inline="javascript">
+        const assetSearch = new duice.ObjectProxy({
+            key: null,
+            value: null,
+            type: null,
+            _page: 0,
+            _size: 20,
+            _count: 0
+        });
+        const assets = new duice.ArrayProxy([]);
+
+        const assetOhlcvSearch = new duice.ObjectProxy({
+            assetId: null,
+            type: null,
+            _page: 0,
+            _size: 20,
+            _count: 0
+        });
+        const assetOhlcvs = new duice.ArrayProxy([]);
+
+        const indiceOhlcvSearch = new duice.ObjectProxy({
+            indiceId: null,
+            _page: 0,
+            _size: 20,
+            _count: 0
+        });
+        const indiceOhlcvs = new duice.ArrayProxy([]);
+
+        function getAssets(page) {
+            if(page) {
+                assetSearch._page = page;
+            }
+            let url = new URL(`${_apiUrl}/v1/data/assets`, document.location.origin);
+            _fetch(url).then(response => {
+                assetSearch._count = _parseTotalCount(response);
+                return response.json();
+            }).then(responseBody => {
+                duice.ArrayProxy.assign(assets, responseBody);
+            });
+        }
+
+        function resetAssets() {
+            duice.ObjectProxy.reset(assetSearch);
+            getAssets();
+        }
+
+        function getAssetOhlcvs(page) {
+            if(page) {
+                assetOhlcvSearch._page = page;
+            }
+            let url = new URL(`${_apiUrl}/v1/data/asset-ohlcvs`, document.location.origin);
+            _fetch(url).then(response => {
+                assetOhlcvSearch._count = _parseTotalCount(response);
+            }).then(responseBody => {
+                duice.ArrayProxy.assign(assetOhlcvs, responseBody);
+            });
+        }
+
+        function resetAssetOhlcvs() {
+            duice.ObjectProxy.reset(assetOhlcvSearch);
+            getAssetOhlcvs();
+        }
+
+        function getIndiceOhlcvs(page) {
+            if(page) {
+                indiceOhlcvSearch._page = page;
+            }
+            let url = new URL(`${_apiUrl}/v1/data/indice-ohlcvs`, document.location.origin);
+            // todo
+        }
+
+        function resetIndiceOhlcvs() {
+            duice.ObjectProxy.reset(indiceOhlcvSearch);
+            getIndiceOhlcvs();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            let tabFolder = duice.tabFolder(
+                duice.tabItem(
+                    document.getElementById('assetTabButton'),
+                    document.getElementById('assetTabContent'),
+                    () => {
+                        getAssets();
+                    }),
+                duice.tabItem(
+                    document.getElementById('assetOhlcvTabButton'),
+                    document.getElementById('assetOhlcvTabContent'),
+                    () => {
+                        getAssetOhlcvs();
+                    }),
+                duice.tabItem(
+                    document.getElementById('indiceOhlcvTabButton'),
+                    document.getElementById('indiceOhlcvTabContent'),
+                    () => {
+                        getIndiceOhlcvs();
+                    })
+            );
+            tabFolder.setActive(0);
+        });
+    </script>
+    <style th:inline="css">
+    </style>
+
+    <!-- ====================================== -->
+    <!-- start: title                           -->
+    <!-- ====================================== -->
+    <h1 id="title">
+        <img class="icon" th:src="@{/static/image/icon-data.svg}" alt="data"/>
+        <span data-th-text="#{fintics.Data}"></span>
+    </h1>
+    <!-- ====================================== -->
+    <!-- end: title                             -->
+    <!-- ====================================== -->
+
+    <!-- ====================================== -->
+    <!-- start: tab index                       -->
+    <!-- ====================================== -->
+    <div id="tabIndex" class="display--flex flex-wrap--nowrap overflow-x--scroll gap--1px margin-bottom--1px">
+        <button id="assetTabButton" type="button" class="tab">
+            <img class="icon" th:src="@{/static/image/icon-asset.svg}" alt="asset"/>
+            <span data-th-text="#{fintics.BrokerAsset}"></span>
+        </button>
+        <button id="assetOhlcvTabButton" type="button" class="tab">
+            <img class="icon" th:src="@{/static/image/icon-ohlcv.svg}" alt="asset-ohlcv"/>
+            <span data-th-text="#{fintics.BrokerAssetOhlcv}"></span>
+        </button>
+        <button id="indiceOhlcvTabButton" type="button" class="tab">
+            <img class="icon" th:src="@{/static/image/icon-ohlcv.svg}" alt="indice-ohlcv"/>
+            <span data-th-text="#{fintics.IndiceOhlcv}"></span>
+        </button>
+    </div>
+    <!-- ====================================== -->
+    <!-- end: tab index                         -->
+    <!-- ====================================== -->
+
+    <!-- ====================================== -->
+    <!-- start: asset                           -->
+    <!-- ====================================== -->
+    <div id="assetTabContent" class="border--1 padding--1em">
+        <h2>
+            <img class="icon" th:src="@{/static/image/icon-asset.svg}" alt="asset"/>
+            <span data-th-text="#{fintics.BrokerAsset}"></span>
+        </h2>
+        <form onsubmit="return false;" class="display--grid grid-template-columns--12 grid-gap--1em padding-x--1em">
+            <label class="grid-column--2">
+                <select class="width--100">
+                    <option data-th-text="#{web.global.select}"></option>
+                </select>
+            </label>
+        </form>
+        <table class="width--100">
+            <colgroup>
+                <col/>
+                <col/>
+                <col/>
+                <col/>
+                <col/>
+                <col/>
+                <col/>
+                <col/>
+                <col/>
+            </colgroup>
+            <thead>
+            <tr>
+                <th data-th-text="#{web.global.no}"></th>
+                <th data-th-text="#{fintics.Asset.assetId}"></th>
+                <th data-th-text="#{fintics.Asset.assetName}"></th>
+                <th data-th-text="#{fintics.Asset.type}"></th>
+                <th data-th-text="#{fintics.Asset.marketCap}"></th>
+                <th data-th-text="#{fintics.Asset.per}"></th>
+                <th data-th-text="#{fintics.Asset.roe}"></th>
+                <th data-th-text="#{fintics.Asset.roa}"></th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr data-duice-bind="assets" data-duice-loop="asset,status">
+                <td data-duice-bind="asset">1</td>
+                <td data-duice-bind="asset" data-duice-property="assetId"></td>
+                <td data-duice-bind="asset" data-duice-property="assetName"></td>
+                <td data-duice-bind="asset" data-duice-property="type"></td>
+                <td data-duice-bind="asset" data-duice-property="marketCap"></td>
+                <td data-duice-bind="asset" data-duice-property="per"></td>
+                <td data-duice-bind="asset" data-duice-property="roe"></td>
+                <td data-duice-bind="asset" data-duice-property="roa"></td>
+                <td>
+                    <button type="button"
+                            class="small"
+                            data-duice-bind="asset.links"
+                            data-duice-loop="link,status"
+                            data-duice-execute="
+                                    this.dataset.url=link.url;
+                                    this.addEventListener('click', () => { _openLink(this.dataset.url,'_blank'); })">
+                        <img class="icon" th:src="@{/static/image/icon-open.svg}" alt="link"/>
+                        <span class="font-weight--bold" data-duice-bind="link" data-duice-property="name"></span>
+                    </button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <!-- ====================================== -->
+    <!-- end: asset                             -->
+    <!-- ====================================== -->
+
+    <!-- ====================================== -->
+    <!-- start: asseOhlcv                       -->
+    <!-- ====================================== -->
+    <div id="assetOhlcvTabContent" class="border--1 padding--1em">
+        <h2>
+            <img class="icon" th:src="@{/static/image/icon-ohlcv.svg}" alt="ohlcv"/>
+            <span data-th-text="#{fintics.AssetOhlcv}"></span>
+        </h2>
+        <form onsubmit="return false;" class="display--grid grid-template-columns--12 grid-gap--1em padding-x--1em">
+            <label class="grid-column--2">
+                <select class="width--100">
+                    <option data-th-text="#{web.global.select}"></option>
+                </select>
+            </label>
+        </form>
+        <table class="width--100">
+            <colgroup>
+                <col/>
+                <col/>
+                <col/>
+            </colgroup>
+            <thead>
+            <tr>
+                <th>1</th>
+                <th>2</th>
+                <th>3</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>1</td>
+                <td>2</td>
+                <td>3</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <!-- ====================================== -->
+    <!-- end: assetOhlcv                        -->
+    <!-- ====================================== -->
+
+    <!-- ====================================== -->
+    <!-- start: indiceOhlcv                     -->
+    <!-- ====================================== -->
+    <div id="indiceOhlcvTabContent" class="border--1 padding--1em">
+        <h2>
+            <img class="icon" th:src="@{/static/image/icon-ohlcv.svg}" alt="ohlcv"/>
+            <span data-th-text="#{fintics.IndiceOhlcv}"></span>
+        </h2>
+        <form onsubmit="return false;" class="display--grid grid-template-columns--12 grid-gap--1em padding-x--1em">
+            <label class="grid-column--2">
+                <select class="width--100">
+                    <option data-th-text="#{web.global.select}"></option>
+                </select>
+            </label>
+        </form>
+        <table class="width--100">
+            <colgroup>
+                <col/>
+                <col/>
+                <col/>
+            </colgroup>
+            <thead>
+            <tr>
+                <th>1</th>
+                <th>2</th>
+                <th>3</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>1</td>
+                <td>2</td>
+                <td>3</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <!-- ====================================== -->
+    <!-- end: indiceOhlcv                       -->
+    <!-- ====================================== -->
+
+</th:block>

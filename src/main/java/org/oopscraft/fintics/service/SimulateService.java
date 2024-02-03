@@ -5,7 +5,7 @@ import ch.qos.logback.core.Context;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.data.IdGenerator;
-import org.oopscraft.fintics.dao.BrokerAssetOhlcvRepository;
+import org.oopscraft.fintics.dao.AssetOhlcvRepository;
 import org.oopscraft.fintics.dao.IndiceOhlcvRepository;
 import org.oopscraft.fintics.dao.SimulateEntity;
 import org.oopscraft.fintics.dao.SimulateRepository;
@@ -18,8 +18,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-import java.time.*;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
@@ -35,7 +33,7 @@ public class SimulateService {
 
     private final IndiceOhlcvRepository indiceOhlcvRepository;
 
-    private final BrokerAssetOhlcvRepository assetOhlcvRepository;
+    private final AssetOhlcvRepository assetOhlcvRepository;
 
     private final SimulateRunnableFactory simulateRunnableFactory;
 

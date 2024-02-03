@@ -28,7 +28,7 @@ public class TradeAssetResponse extends AssetResponse {
                 .tradeId(tradeAsset.getTradeId())
                 .assetId(tradeAsset.getAssetId())
                 .assetName(tradeAsset.getAssetName())
-                .links(AssetResponse.LinkResponse.from(tradeAsset.getLinks()))
+                .links(LinkResponse.from(tradeAsset.getLinks()))
                 .enabled(tradeAsset.isEnabled())
                 .holdRatio(tradeAsset.getHoldRatio())
                 .build();

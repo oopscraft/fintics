@@ -3,7 +3,7 @@ package org.oopscraft.fintics.trade.order;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
-import org.oopscraft.fintics.client.broker.BrokerClient;
+import org.oopscraft.fintics.client.trade.TradeClient;
 import org.oopscraft.fintics.dao.OrderRepository;
 import org.oopscraft.fintics.model.Balance;
 import org.oopscraft.fintics.model.OrderBook;
@@ -39,7 +39,7 @@ public class OrderOperatorFactory implements BeanPostProcessor {
         return bean;
     }
 
-    public OrderOperator getObject(Trade trade, BrokerClient brokerClient, Balance balance, OrderBook orderBook) {
+    public OrderOperator getObject(Trade trade, TradeClient brokerClient, Balance balance, OrderBook orderBook) {
         OrderOperatorDefinition orderOperatorDefinition = orderOperatorDefinitions.stream()
                 .filter(clientDefinition -> Objects.equals(clientDefinition.getOrderOperatorId(), trade.getOrderOperatorId()))
                 .findFirst()

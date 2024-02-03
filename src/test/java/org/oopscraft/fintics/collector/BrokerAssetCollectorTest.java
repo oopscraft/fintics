@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.oopscraft.arch4j.core.support.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
-import org.oopscraft.fintics.dao.BrokerAssetEntity;
+import org.oopscraft.fintics.dao.AssetEntity;
 import org.oopscraft.fintics.dao.TradeEntity;
 import org.oopscraft.fintics.model.Trade;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @RequiredArgsConstructor
 class BrokerAssetCollectorTest extends CoreTestSupport {
 
-    private final BrokerAssetCollector brokerAssetCollector;
+    private final AssetCollector assetCollector;
 
     @PersistenceContext
     private final EntityManager entityManager;
@@ -32,20 +32,19 @@ class BrokerAssetCollectorTest extends CoreTestSupport {
         // given
         TradeEntity tradeEntity = TradeEntity.builder()
                 .tradeId("test")
-                .brokerId("KIS")
-                .brokerConfig("test=test")
+                .tradeClientId("KIS")
+                .tradeClientConfig("test=test")
                 .enabled(true)
                 .build();
         entityManager.persist(tradeEntity);
         entityManager.flush();
 
         // when
-        brokerAssetCollector.collect();
+        assetCollector.collect();
 
         // then
-        List<BrokerAssetEntity> brokerAssetEntities = entityManager
-                .createQuery("select a from BrokerAssetEntity a where a.brokerId = :brokerId", BrokerAssetEntity.class)
-                .setParameter("brokerId", tradeEntity.getBrokerId())
+        List<AssetEntity> brokerAssetEntities = entityManager
+                .createQuery("select a from AssetEntity a", AssetEntity.class)
                 .getResultList();
         assertTrue(brokerAssetEntities.size() > 0);
     }
@@ -55,15 +54,14 @@ class BrokerAssetCollectorTest extends CoreTestSupport {
     void saveBrokerAssets() {
         // given
         Trade trade = Trade.builder()
-                .brokerId("KIS")
-                .brokerConfig("test=test")
+                .tradeClientId("KIS")
+                .tradeClientConfig("test=test")
                 .build();
         // when
-        brokerAssetCollector.saveBrokerAssets(trade);
+        assetCollector.saveBrokerAssets(trade);
         // then
-        List<BrokerAssetEntity> brokerAssetEntities = entityManager
-                .createQuery("select a from BrokerAssetEntity a where a.brokerId = :brokerId", BrokerAssetEntity.class)
-                .setParameter("brokerId", trade.getBrokerId())
+        List<AssetEntity> brokerAssetEntities = entityManager
+                .createQuery("select a from AssetEntity a", AssetEntity.class)
                 .getResultList();
         assertTrue(brokerAssetEntities.size() > 0);
     }

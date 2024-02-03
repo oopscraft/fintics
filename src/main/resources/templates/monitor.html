@@ -36,7 +36,7 @@
 
         function getIndiceMonitor() {
             const promises = indices.map(async indice => {
-                let url = new URL(`${_apiUrl}/v1/indice/${indice.indiceId}/indicator`, document.location.origin);
+                let url = new URL(`${_apiUrl}/v1/indices/${indice.indiceId}/indicator`, document.location.origin);
                 return await _fetch(url, null, true);
             });
             Promise.all(promises)
@@ -108,7 +108,7 @@
             const promises = trade.tradeAssets
                 .filter(tradeAsset => tradeAsset.enabled)
                 .map(async tradeAsset => {
-                    let url = new URL(`${_apiUrl}/v1/broker/${trade.brokerId}/asset/${tradeAsset.assetId}/indicator`, document.location.origin);
+                    let url = new URL(`${_apiUrl}/v1/assets/${tradeAsset.assetId}/indicator`, document.location.origin);
                     return await _fetch(url, null, true);
                 });
             Promise.all(promises).then(responses => {
@@ -159,7 +159,7 @@
                 minuteOhlcvsChart.update();
             });
 
-            let balanceUrl = new URL(`${_apiUrl}/v1/trade/${trade.tradeId}/balance`, document.location.origin);
+            let balanceUrl = new URL(`${_apiUrl}/v1/trades/${trade.tradeId}/balance`, document.location.origin);
             _fetch(balanceUrl, null, true).then(response => response.json())
                 .then(balance => {
                     let tradeAssetIds = [];
@@ -243,7 +243,7 @@
         <div th:each="trade : ${trades}" class="grid-column--12 border--1 padding--1em">
             <script th:inline="javascript">
                 _webSocketClient.subscribe({
-                    destination: '/trade/' + [[${trade.tradeId}]] + '/log',
+                    destination: '/trades/' + [[${trade.tradeId}]] + '/log',
                     listener: function(frame) {
                         let tradeLog = document.getElementById('tradeLog-' + [[${trade.tradeId}]]);
                         if (tradeLog.value.length > 1024 * 1024) {

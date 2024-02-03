@@ -4,6 +4,8 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.fintics.model.Asset;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,33 +13,44 @@ import java.util.List;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-public abstract class AssetResponse {
+public class AssetResponse {
 
     private String assetId;
 
     private String assetName;
 
+    private String exchangeId;
+
+    private Asset.Type type;
+
+    private LocalDateTime dateTime;
+
+    private BigDecimal marketCap;
+
+    private BigDecimal issuedShares;
+
+    private BigDecimal per;
+
+    private BigDecimal roe;
+
+    private BigDecimal roa;
+
     @Builder.Default
     private List<LinkResponse> links = new ArrayList<>();
 
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor(access = AccessLevel.PROTECTED)
-    public static class LinkResponse {
-        private String name;
-        private String url;
-        public static LinkResponse from(Asset.Link assetLink) {
-            return LinkResponse.builder()
-                    .name(assetLink.getName())
-                    .url(assetLink.getUrl())
-                    .build();
-        }
-        public static List<LinkResponse> from(List<Asset.Link> assetLinks) {
-            return assetLinks.stream()
-                    .map(LinkResponse::from)
-                    .toList();
-        }
+    public static AssetResponse from(Asset brokerAsset) {
+        return AssetResponse.builder()
+                .assetId(brokerAsset.getAssetId())
+                .assetName(brokerAsset.getAssetName())
+                .type(brokerAsset.getType())
+                .dateTime(brokerAsset.getDateTime())
+                .marketCap(brokerAsset.getMarketCap())
+                .issuedShares(brokerAsset.getIssuedShares())
+                .per(brokerAsset.getPer())
+                .roe(brokerAsset.getRoe())
+                .roa(brokerAsset.getRoa())
+                .links(LinkResponse.from(brokerAsset.getLinks()))
+                .build();
     }
 
 }

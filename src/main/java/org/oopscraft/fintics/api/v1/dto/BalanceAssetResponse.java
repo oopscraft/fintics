@@ -29,10 +29,9 @@ public class BalanceAssetResponse extends AssetResponse {
 
     public static BalanceAssetResponse from(BalanceAsset balanceAsset) {
         return BalanceAssetResponse.builder()
-                .accountNo(balanceAsset.getAccountNo())
                 .assetId(balanceAsset.getAssetId())
                 .assetName(balanceAsset.getAssetName())
-                .links(AssetResponse.LinkResponse.from(balanceAsset.getLinks()))
+                .accountNo(balanceAsset.getAccountNo())
                 .quantity(balanceAsset.getQuantity())
                 .orderableQuantity(balanceAsset.getOrderableQuantity())
                 .purchaseAmount(balanceAsset.getPurchaseAmount())

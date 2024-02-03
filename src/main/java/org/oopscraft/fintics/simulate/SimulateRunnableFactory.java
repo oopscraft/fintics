@@ -2,7 +2,7 @@ package org.oopscraft.fintics.simulate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.oopscraft.fintics.dao.BrokerAssetOhlcvRepository;
+import org.oopscraft.fintics.dao.AssetOhlcvRepository;
 import org.oopscraft.fintics.dao.IndiceOhlcvRepository;
 import org.oopscraft.fintics.dao.SimulateRepository;
 import org.oopscraft.fintics.model.*;
@@ -20,7 +20,7 @@ public class SimulateRunnableFactory {
 
     private final IndiceOhlcvRepository indiceOhlcvRepository;
 
-    private final BrokerAssetOhlcvRepository assetOhlcvRepository;
+    private final AssetOhlcvRepository assetOhlcvRepository;
 
     private final TradeExecutorFactory tradeExecutorFactory;
 
@@ -39,8 +39,7 @@ public class SimulateRunnableFactory {
                 .indiceOhlcvRepository(indiceOhlcvRepository)
                 .build();
 
-        SimulateBrokerClient simulateTradeClient = SimulateBrokerClient.builder()
-                .brokerId(trade.getBrokerId())
+        SimulateTradeClient simulateTradeClient = SimulateTradeClient.builder()
                 .assetOhlcvRepository(assetOhlcvRepository)
                 .build();
 

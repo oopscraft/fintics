@@ -43,12 +43,12 @@ public class TradeEntity extends BaseEntity {
     @Column(name = "end_at")
     private LocalTime endAt;
 
-    @Column(name = "broker_id", length = 32)
-    private String brokerId;
+    @Column(name = "trade_client_id", length = 32)
+    private String tradeClientId;
 
-    @Column(name = "broker_config")
+    @Column(name = "trade_client_config")
     @Lob
-    private String brokerConfig;
+    private String tradeClientConfig;
 
     @Column(name = "hold_condition")
     @Lob

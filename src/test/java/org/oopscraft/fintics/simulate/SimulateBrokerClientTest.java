@@ -6,8 +6,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.oopscraft.arch4j.core.support.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
-import org.oopscraft.fintics.dao.BrokerAssetOhlcvEntity;
-import org.oopscraft.fintics.dao.BrokerAssetOhlcvRepository;
+import org.oopscraft.fintics.dao.AssetOhlcvEntity;
+import org.oopscraft.fintics.dao.AssetOhlcvRepository;
 import org.oopscraft.fintics.model.*;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -22,20 +22,17 @@ import static org.junit.jupiter.api.Assertions.*;
 @RequiredArgsConstructor
 class SimulateBrokerClientTest extends CoreTestSupport {
 
-    private static final String BROKER_ID = "KIS";
-
     private static final String ASSET_ID = "test";
 
     private static final LocalDateTime NOW = LocalDateTime.now();
 
-    private final BrokerAssetOhlcvRepository assetOhlcvRepository;
+    private final AssetOhlcvRepository assetOhlcvRepository;
 
     private final EntityManager entityManager;
 
     @BeforeEach
     void createTestData() {
-        entityManager.persist(BrokerAssetOhlcvEntity.builder()
-                .brokerId(BROKER_ID)
+        entityManager.persist(AssetOhlcvEntity.builder()
                 .assetId(ASSET_ID)
                 .type(Ohlcv.Type.MINUTE)
                 .dateTime(NOW)
@@ -44,8 +41,7 @@ class SimulateBrokerClientTest extends CoreTestSupport {
                 .lowPrice(BigDecimal.valueOf(305))
                 .closePrice(BigDecimal.valueOf(300))
                 .build());
-        entityManager.persist(BrokerAssetOhlcvEntity.builder()
-                .brokerId(BROKER_ID)
+        entityManager.persist(AssetOhlcvEntity.builder()
                 .assetId(ASSET_ID)
                 .type(Ohlcv.Type.MINUTE)
                 .dateTime(NOW.minusMinutes(1))
@@ -54,8 +50,7 @@ class SimulateBrokerClientTest extends CoreTestSupport {
                 .lowPrice(BigDecimal.valueOf(205))
                 .closePrice(BigDecimal.valueOf(200))
                 .build());
-        entityManager.persist(BrokerAssetOhlcvEntity.builder()
-                .brokerId(BROKER_ID)
+        entityManager.persist(AssetOhlcvEntity.builder()
                 .assetId(ASSET_ID)
                 .type(Ohlcv.Type.MINUTE)
                 .dateTime(NOW.minusMinutes(2))
@@ -67,9 +62,8 @@ class SimulateBrokerClientTest extends CoreTestSupport {
         entityManager.flush();
     }
 
-    SimulateBrokerClient createSimulateClient() {
-        return SimulateBrokerClient.builder()
-                .brokerId(BROKER_ID)
+    SimulateTradeClient createSimulateClient() {
+        return SimulateTradeClient.builder()
                 .assetOhlcvRepository(assetOhlcvRepository)
                 .build();
     }
@@ -80,7 +74,7 @@ class SimulateBrokerClientTest extends CoreTestSupport {
         long amount = 1234;
 
         // when
-        SimulateBrokerClient tradeClient = createSimulateClient();
+        SimulateTradeClient tradeClient = createSimulateClient();
         tradeClient.deposit(BigDecimal.valueOf(amount));
 
         // then
@@ -96,7 +90,7 @@ class SimulateBrokerClientTest extends CoreTestSupport {
                 .build();
 
         // when
-        SimulateBrokerClient tradeClient = createSimulateClient();
+        SimulateTradeClient tradeClient = createSimulateClient();
         tradeClient.setDateTime(NOW.minusMinutes(1));
         OrderBook orderBook = tradeClient.getOrderBook(asset);
 
@@ -112,7 +106,7 @@ class SimulateBrokerClientTest extends CoreTestSupport {
                 .build();
 
         // when
-        SimulateBrokerClient tradeClient = createSimulateClient();
+        SimulateTradeClient tradeClient = createSimulateClient();
         tradeClient.setDateTime(NOW.minusMinutes(1));
         Balance balance = tradeClient.getBalance();
 
@@ -128,7 +122,7 @@ class SimulateBrokerClientTest extends CoreTestSupport {
                 .build();
 
         // when
-        SimulateBrokerClient tradeClient = createSimulateClient();
+        SimulateTradeClient tradeClient = createSimulateClient();
         tradeClient.deposit(BigDecimal.valueOf(1000));
         tradeClient.setDateTime(NOW.minusMinutes(2));
         tradeClient.submitOrder(Order.builder()

@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.oopscraft.arch4j.core.data.IdGenerator;
 import org.oopscraft.arch4j.core.support.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
-import org.oopscraft.fintics.dao.BrokerAssetOhlcvRepository;
+import org.oopscraft.fintics.dao.AssetOhlcvRepository;
 import org.oopscraft.fintics.dao.IndiceOhlcvRepository;
 import org.oopscraft.fintics.model.*;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -36,7 +36,7 @@ class SimulateRunnableTest extends CoreTestSupport {
 
     private final IndiceOhlcvRepository indiceOhlcvRepository;
 
-    private final BrokerAssetOhlcvRepository assetOhlcvRepository;
+    private final AssetOhlcvRepository assetOhlcvRepository;
 
     private final ApplicationContext applicationContext;
 

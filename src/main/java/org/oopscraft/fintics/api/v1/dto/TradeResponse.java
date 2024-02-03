@@ -29,9 +29,9 @@ public class TradeResponse {
 
     private LocalTime endAt;
 
-    private String brokerId;
+    private String tradeClientId;
 
-    private String brokerConfig;
+    private String tradeClientConfig;
 
     private String holdCondition;
 
@@ -59,8 +59,8 @@ public class TradeResponse {
                 .threshold(trade.getThreshold())
                 .startAt(trade.getStartAt())
                 .endAt(trade.getEndAt())
-                .brokerId(trade.getBrokerId())
-                .brokerConfig(trade.getBrokerConfig())
+                .tradeClientId(trade.getTradeClientId())
+                .tradeClientConfig(trade.getTradeClientConfig())
                 .holdCondition(trade.getHoldCondition())
                 .orderOperatorId(trade.getOrderOperatorId())
                 .orderKind(trade.getOrderKind())

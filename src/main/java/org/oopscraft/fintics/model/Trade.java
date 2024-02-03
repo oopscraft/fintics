@@ -1,8 +1,7 @@
 package org.oopscraft.fintics.model;
 
 import lombok.*;
-import org.oopscraft.fintics.client.broker.BrokerClientDefinition;
-import org.oopscraft.fintics.client.broker.BrokerClientFactory;
+import org.oopscraft.fintics.client.trade.TradeClientFactory;
 import org.oopscraft.fintics.dao.TradeEntity;
 
 import java.time.LocalTime;
@@ -31,9 +30,9 @@ public class Trade {
 
     private LocalTime endAt;
 
-    private String brokerId;
+    private String tradeClientId;
 
-    private String brokerConfig;
+    private String tradeClientConfig;
 
     private String holdCondition;
 
@@ -59,8 +58,8 @@ public class Trade {
                 .threshold(tradeEntity.getThreshold())
                 .startAt(tradeEntity.getStartAt())
                 .endAt(tradeEntity.getEndAt())
-                .brokerId(tradeEntity.getBrokerId())
-                .brokerConfig(tradeEntity.getBrokerConfig())
+                .tradeClientId(tradeEntity.getTradeClientId())
+                .tradeClientConfig(tradeEntity.getTradeClientConfig())
                 .holdCondition(tradeEntity.getHoldCondition())
                 .orderOperatorId(tradeEntity.getOrderOperatorId())
                 .orderKind(tradeEntity.getOrderKind())
@@ -73,8 +72,8 @@ public class Trade {
         List<TradeAsset> tradeAssets = tradeEntity.getTradeAssets().stream()
                 .map(TradeAsset::from)
                 .peek(tradeAsset -> {
-                    if(trade.getBrokerId() != null) {
-                        BrokerClientFactory.getBrokerClientDefinition(trade.getBrokerId()).ifPresent(brokerClientDefinition -> {
+                    if(trade.getTradeClientId() != null) {
+                        TradeClientFactory.getTradeClientDefinition(trade.getTradeClientId()).ifPresent(brokerClientDefinition -> {
                             tradeAsset.setLinks(brokerClientDefinition.getAssetLinks(tradeAsset));
                         });
                     }

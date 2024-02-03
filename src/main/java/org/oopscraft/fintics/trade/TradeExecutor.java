@@ -5,8 +5,8 @@ import lombok.Builder;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
 import org.oopscraft.fintics.client.indice.IndiceClient;
-import org.oopscraft.fintics.client.broker.BrokerClient;
-import org.oopscraft.fintics.dao.BrokerAssetOhlcvRepository;
+import org.oopscraft.fintics.client.trade.TradeClient;
+import org.oopscraft.fintics.dao.AssetOhlcvRepository;
 import org.oopscraft.fintics.dao.IndiceOhlcvRepository;
 import org.oopscraft.fintics.model.*;
 import org.oopscraft.fintics.trade.order.OrderOperator;
@@ -23,7 +23,7 @@ public class TradeExecutor {
 
     private final IndiceOhlcvRepository indiceOhlcvRepository;
 
-    private final BrokerAssetOhlcvRepository assetOhlcvRepository;
+    private final AssetOhlcvRepository assetOhlcvRepository;
 
     private final OrderOperatorFactory orderOperatorFactory;
 
@@ -36,7 +36,7 @@ public class TradeExecutor {
     private final Map<String,Integer> holdConditionResultCountMap = new HashMap<>();
 
     @Builder
-    private TradeExecutor(IndiceOhlcvRepository indiceOhlcvRepository, BrokerAssetOhlcvRepository assetOhlcvRepository, OrderOperatorFactory orderOperatorFactory, AlarmService alarmService) {
+    private TradeExecutor(IndiceOhlcvRepository indiceOhlcvRepository, AssetOhlcvRepository assetOhlcvRepository, OrderOperatorFactory orderOperatorFactory, AlarmService alarmService) {
         this.indiceOhlcvRepository = indiceOhlcvRepository;
         this.assetOhlcvRepository = assetOhlcvRepository;
         this.orderOperatorFactory = orderOperatorFactory;
@@ -47,7 +47,7 @@ public class TradeExecutor {
         this.log = log;
     }
 
-    public void execute(Trade trade, LocalDateTime dateTime, IndiceClient indiceClient, BrokerClient brokerClient) throws InterruptedException {
+    public void execute(Trade trade, LocalDateTime dateTime, IndiceClient indiceClient, TradeClient brokerClient) throws InterruptedException {
         log.info("Check trade - [{}]", trade.getTradeName());
 
         // check market opened
@@ -101,11 +101,11 @@ public class TradeExecutor {
 
                 // indicator
                 List<Ohlcv> minuteOhlcvs = brokerClient.getMinuteOhlcvs(tradeAsset, dateTime);
-                List<Ohlcv> previousMinuteOhlcvs = getPreviousAssetMinuteOhlcvs(trade.getBrokerId(), tradeAsset.getAssetId(), minuteOhlcvs, dateTime);
+                List<Ohlcv> previousMinuteOhlcvs = getPreviousAssetMinuteOhlcvs(trade.getTradeClientId(), tradeAsset.getAssetId(), minuteOhlcvs, dateTime);
                 minuteOhlcvs.addAll(previousMinuteOhlcvs);
 
                 List<Ohlcv> dailyOhlcvs = brokerClient.getDailyOhlcvs(tradeAsset, dateTime);
-                List<Ohlcv> previousDailyOhlcvs = getPreviousAssetDailyOhlcvs(trade.getBrokerId(), tradeAsset.getAssetId(), dailyOhlcvs, dateTime);
+                List<Ohlcv> previousDailyOhlcvs = getPreviousAssetDailyOhlcvs(trade.getTradeClientId(), tradeAsset.getAssetId(), dailyOhlcvs, dateTime);
                 dailyOhlcvs.addAll(previousDailyOhlcvs);
 
                 AssetIndicator assetIndicator = AssetIndicator.builder()
@@ -215,8 +215,7 @@ public class TradeExecutor {
         if(dateTimeTo.isBefore(dateTimeFrom)) {
             return new ArrayList<>();
         }
-        return assetOhlcvRepository.findAllByBrokerIdAndAssetIdAndType(
-                        tradeClientId,
+        return assetOhlcvRepository.findAllByAssetIdAndType(
                         assetId,
                         Ohlcv.Type.MINUTE,
                         dateTimeFrom,
@@ -233,8 +232,7 @@ public class TradeExecutor {
         if(dateTimeTo.isBefore(dateTimeFrom)) {
             return new ArrayList<>();
         }
-        return assetOhlcvRepository.findAllByBrokerIdAndAssetIdAndType(
-                        tradeClientId,
+        return assetOhlcvRepository.findAllByAssetIdAndType(
                         assetId,
                         Ohlcv.Type.MINUTE,
                         dateTimeFrom,

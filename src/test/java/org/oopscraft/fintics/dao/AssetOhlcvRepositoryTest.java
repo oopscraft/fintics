@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @RequiredArgsConstructor
 class AssetOhlcvRepositoryTest extends CoreTestSupport {
 
-    private final BrokerAssetOhlcvRepository brokerAssetOhlcvRepository;
+    private final AssetOhlcvRepository brokerAssetOhlcvRepository;
 
     @Test
     void findMaxDateTimeBySymbolAndType() {
@@ -25,7 +25,7 @@ class AssetOhlcvRepositoryTest extends CoreTestSupport {
         Ohlcv.Type type = Ohlcv.Type.MINUTE;
 
         // when
-        LocalDateTime dateTime = brokerAssetOhlcvRepository.findMaxDateTimeByBrokerIdAndAssetIdAndType(clientId, symbol, type)
+        LocalDateTime dateTime = brokerAssetOhlcvRepository.findMaxDateTimeByAssetIdAndType(symbol, type)
                 .orElse(LocalDateTime.MIN);
         // then
         assertNotNull(dateTime);
