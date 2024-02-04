@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.web.support.PageableUtils;
 import org.oopscraft.fintics.api.v1.dto.OrderResponse;
 import org.oopscraft.fintics.model.Order;
-import org.oopscraft.fintics.model.OrderSearch;
 import org.oopscraft.fintics.model.Trade;
 import org.oopscraft.fintics.service.OrderService;
 import org.oopscraft.fintics.service.TradeService;
@@ -35,11 +34,12 @@ public class OrdersRestController {
 
     @GetMapping
     public ResponseEntity<List<OrderResponse>> getTradeOrders(
-            OrderSearch orderSearch,
-            @PageableDefault
-                    Pageable pageable
+            @RequestParam(value = "tradeId", required = false) String tradeId,
+            @RequestParam(value = "type", required = false) Order.Type type,
+            @RequestParam(value = "result", required = false) Order.Result result,
+            @PageableDefault Pageable pageable
     ) {
-        Page<Order> orderPage = orderService.getOrders(orderSearch, pageable);
+        Page<Order> orderPage = orderService.getOrders(tradeId, type, result, pageable);
         List<OrderResponse> orderResponses = orderPage.getContent().stream()
                 .map(OrderResponse::from)
                 .collect(Collectors.toList());

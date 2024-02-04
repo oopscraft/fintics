@@ -4,6 +4,7 @@ import org.oopscraft.fintics.model.IndiceId;
 import org.oopscraft.fintics.model.Ohlcv;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -13,7 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface IndiceOhlcvRepository extends JpaRepository<IndiceOhlcvEntity, IndiceOhlcvEntity.Pk> {
+public interface IndiceOhlcvRepository extends JpaRepository<IndiceOhlcvEntity, IndiceOhlcvEntity.Pk>, JpaSpecificationExecutor<IndiceOhlcvEntity> {
 
     @Query("select max(a.dateTime) from IndiceOhlcvEntity a" +
             " where a.indiceId = :indiceId" +

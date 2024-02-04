@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import org.oopscraft.fintics.model.AssetOhlcv;
 import org.oopscraft.fintics.model.Ohlcv;
 
 @Data
@@ -18,17 +19,16 @@ public class AssetOhlcvResponse extends OhlcvResponse {
 
     private String assetId;
     
-    public static AssetOhlcvResponse from(String brokerId, String assetId, Ohlcv ohlcv) {
+    public static AssetOhlcvResponse from(AssetOhlcv indiceOhlcv) {
         return AssetOhlcvResponse.builder()
-                .brokerId(brokerId)
-                .assetId(assetId)
-                .type(ohlcv.getType())
-                .dateTime(ohlcv.getDateTime())
-                .openPrice(ohlcv.getOpenPrice())
-                .highPrice(ohlcv.getOpenPrice())
-                .lowPrice(ohlcv.getLowPrice())
-                .closePrice(ohlcv.getClosePrice())
-                .volume(ohlcv.getVolume())
+                .assetId(indiceOhlcv.getAssetId())
+                .type(indiceOhlcv.getType())
+                .dateTime(indiceOhlcv.getDateTime())
+                .openPrice(indiceOhlcv.getOpenPrice())
+                .highPrice(indiceOhlcv.getOpenPrice())
+                .lowPrice(indiceOhlcv.getLowPrice())
+                .closePrice(indiceOhlcv.getClosePrice())
+                .volume(indiceOhlcv.getVolume())
                 .build();
     }
 

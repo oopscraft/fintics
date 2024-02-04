@@ -37,6 +37,8 @@
                 assetSearch._page = page;
             }
             let url = new URL(`${_apiUrl}/v1/data/assets`, document.location.origin);
+            url.searchParams.append('_page', assetSearch._page);
+            url.searchParams.append('_size', assetSearch._size);
             _fetch(url).then(response => {
                 assetSearch._count = _parseTotalCount(response);
                 return response.json();
@@ -55,9 +57,13 @@
                 assetOhlcvSearch._page = page;
             }
             let url = new URL(`${_apiUrl}/v1/data/asset-ohlcvs`, document.location.origin);
+            url.searchParams.append('_page', assetOhlcvSearch._page);
+            url.searchParams.append('_size', assetOhlcvSearch._size);
             _fetch(url).then(response => {
                 assetOhlcvSearch._count = _parseTotalCount(response);
+                return response.json();
             }).then(responseBody => {
+                console.log(responseBody);
                 duice.ArrayProxy.assign(assetOhlcvs, responseBody);
             });
         }
@@ -72,7 +78,14 @@
                 indiceOhlcvSearch._page = page;
             }
             let url = new URL(`${_apiUrl}/v1/data/indice-ohlcvs`, document.location.origin);
-            // todo
+            url.searchParams.append('_page', indiceOhlcvSearch._page);
+            url.searchParams.append('_size', indiceOhlcvSearch._size);
+            _fetch(url).then(response => {
+                indiceOhlcvSearch._count = _parseTotalCount(response);
+                return response.json();
+            }).then(responseBody => {
+                duice.ArrayProxy.assign(indiceOhlcvs, responseBody);
+            });
         }
 
         function resetIndiceOhlcvs() {
@@ -124,11 +137,11 @@
     <div id="tabIndex" class="display--flex flex-wrap--nowrap overflow-x--scroll gap--1px margin-bottom--1px">
         <button id="assetTabButton" type="button" class="tab">
             <img class="icon" th:src="@{/static/image/icon-asset.svg}" alt="asset"/>
-            <span data-th-text="#{fintics.BrokerAsset}"></span>
+            <span data-th-text="#{fintics.Asset}"></span>
         </button>
         <button id="assetOhlcvTabButton" type="button" class="tab">
             <img class="icon" th:src="@{/static/image/icon-ohlcv.svg}" alt="asset-ohlcv"/>
-            <span data-th-text="#{fintics.BrokerAssetOhlcv}"></span>
+            <span data-th-text="#{fintics.AssetOhlcv}"></span>
         </button>
         <button id="indiceOhlcvTabButton" type="button" class="tab">
             <img class="icon" th:src="@{/static/image/icon-ohlcv.svg}" alt="indice-ohlcv"/>
@@ -181,7 +194,7 @@
             </thead>
             <tbody>
             <tr data-duice-bind="assets" data-duice-loop="asset,status">
-                <td data-duice-bind="asset">1</td>
+                <td data-duice-bind="asset" data-duice-execute="this.innerHTML=assetSearch._page * assetSearch._size + status.count;"></td>
                 <td data-duice-bind="asset" data-duice-property="assetId"></td>
                 <td data-duice-bind="asset" data-duice-property="assetName"></td>
                 <td data-duice-bind="asset" data-duice-property="type"></td>
@@ -204,6 +217,24 @@
             </tr>
             </tbody>
         </table>
+        <div class="display--grid grid-template-columns--12 padding--1em">
+            <div class="grid-column--4 font-size--smaller">
+                <span data-th-text="#{web.global.total}"></span>
+                <span data-duice-bind="assetSearch" data-duice-property="_count" data-duice-format="number(0)"></span>
+                <span data-th-text="#{web.global.rows}"></span>
+            </div>
+            <div class="grid-column--4 justify-self--center">
+                <duice-pagination
+                        data-duice-bind="assetSearch"
+                        data-duice-size-property="_size"
+                        data-duice-page-property="_page"
+                        data-duice-count-property="_count"
+                        data-duice-onclick="getAssets(this.dataset.page);">
+                </duice-pagination>
+            </div>
+            <div class="grid-column--4">
+            </div>
+        </div>
     </div>
     <!-- ====================================== -->
     <!-- end: asset                             -->
@@ -229,22 +260,57 @@
                 <col/>
                 <col/>
                 <col/>
+                <col/>
+                <col/>
+                <col/>
+                <col/>
+                <col/>
             </colgroup>
             <thead>
             <tr>
-                <th>1</th>
-                <th>2</th>
-                <th>3</th>
+                <th data-th-text="#{web.global.no}"></th>
+                <th data-th-text="#{fintics.AssetOhlcv.assetId}"></th>
+                <th data-th-text="#{fintics.Ohlcv.type}"></th>
+                <th data-th-text="#{fintics.Ohlcv.dateTime}"></th>
+                <th data-th-text="#{fintics.Ohlcv.openPrice}"></th>
+                <th data-th-text="#{fintics.Ohlcv.highPrice}"></th>
+                <th data-th-text="#{fintics.Ohlcv.lowPrice}"></th>
+                <th data-th-text="#{fintics.Ohlcv.closePrice}"></th>
+                <th data-th-text="#{fintics.Ohlcv.volumn}"></th>
             </tr>
             </thead>
             <tbody>
-            <tr>
-                <td>1</td>
-                <td>2</td>
-                <td>3</td>
+            <tr data-duice-bind="assetOhlcvs" data-duice-loop="assetOhlcv,status">
+                <td data-duice-bind="assetOhlcv" data-duice-execute="this.innerHTML=assetOhlcvSearch._page * assetOhlcvSearch._size + status.count;"></td>
+                <td data-duice-bind="assetOhlcv" data-duice-property="assetId"></td>
+                <td data-duice-bind="assetOhlcv" data-duice-property="type"></td>
+                <td data-duice-bind="assetOhlcv" data-duice-property="dateTime"></td>
+                <td data-duice-bind="assetOhlcv" data-duice-property="openPrice" data-duice-format="number"></td>
+                <td data-duice-bind="assetOhlcv" data-duice-property="highPrice" data-duice-format="number"></td>
+                <td data-duice-bind="assetOhlcv" data-duice-property="lowPrice" data-duice-format="number"></td>
+                <td data-duice-bind="assetOhlcv" data-duice-property="closePrice" data-duice-format="number"></td>
+                <td data-duice-bind="assetOhlcv" data-duice-property="volume" data-duice-format="number"></td>
             </tr>
             </tbody>
         </table>
+        <div class="display--grid grid-template-columns--12 padding--1em">
+            <div class="grid-column--4 font-size--smaller">
+                <span data-th-text="#{web.global.total}"></span>
+                <span data-duice-bind="assetOhlcvSearch" data-duice-property="_count" data-duice-format="number(0)"></span>
+                <span data-th-text="#{web.global.rows}"></span>
+            </div>
+            <div class="grid-column--4 justify-self--center">
+                <duice-pagination
+                        data-duice-bind="assetOhlcvSearch"
+                        data-duice-size-property="_size"
+                        data-duice-page-property="_page"
+                        data-duice-count-property="_count"
+                        data-duice-onclick="getAssetOhlcvs(this.dataset.page);">
+                </duice-pagination>
+            </div>
+            <div class="grid-column--4">
+            </div>
+        </div>
     </div>
     <!-- ====================================== -->
     <!-- end: assetOhlcv                        -->
@@ -270,22 +336,57 @@
                 <col/>
                 <col/>
                 <col/>
+                <col/>
+                <col/>
+                <col/>
+                <col/>
+                <col/>
             </colgroup>
             <thead>
             <tr>
-                <th>1</th>
-                <th>2</th>
-                <th>3</th>
+                <th data-th-text="#{web.global.no}"></th>
+                <th data-th-text="#{fintics.IndiceOhlcv.indiceId}"></th>
+                <th data-th-text="#{fintics.Ohlcv.type}"></th>
+                <th data-th-text="#{fintics.Ohlcv.dateTime}"></th>
+                <th data-th-text="#{fintics.Ohlcv.openPrice}"></th>
+                <th data-th-text="#{fintics.Ohlcv.highPrice}"></th>
+                <th data-th-text="#{fintics.Ohlcv.lowPrice}"></th>
+                <th data-th-text="#{fintics.Ohlcv.closePrice}"></th>
+                <th data-th-text="#{fintics.Ohlcv.volumn}"></th>
             </tr>
             </thead>
             <tbody>
-            <tr>
-                <td>1</td>
-                <td>2</td>
-                <td>3</td>
+            <tr data-duice-bind="indiceOhlcvs" data-duice-loop="indiceOhlcv,status">
+                <td data-duice-bind="indiceOhlcv" data-duice-execute="this.innerHTML=indiceOhlcvSearch._page * indiceOhlcvSearch._size + status.count;"></td>
+                <td data-duice-bind="indiceOhlcv" data-duice-property="indiceId"></td>
+                <td data-duice-bind="indiceOhlcv" data-duice-property="type"></td>
+                <td data-duice-bind="indiceOhlcv" data-duice-property="dateTime"></td>
+                <td data-duice-bind="indiceOhlcv" data-duice-property="openPrice" data-duice-format="number"></td>
+                <td data-duice-bind="indiceOhlcv" data-duice-property="highPrice" data-duice-format="number"></td>
+                <td data-duice-bind="indiceOhlcv" data-duice-property="lowPrice" data-duice-format="number"></td>
+                <td data-duice-bind="indiceOhlcv" data-duice-property="closePrice" data-duice-format="number"></td>
+                <td data-duice-bind="indiceOhlcv" data-duice-property="volume" data-duice-format="number"></td>
             </tr>
             </tbody>
         </table>
+        <div class="display--grid grid-template-columns--12 padding--1em">
+            <div class="grid-column--4 font-size--smaller">
+                <span data-th-text="#{web.global.total}"></span>
+                <span data-duice-bind="indiceOhlcvSearch" data-duice-property="_count" data-duice-format="number(0)"></span>
+                <span data-th-text="#{web.global.rows}"></span>
+            </div>
+            <div class="grid-column--4 justify-self--center">
+                <duice-pagination
+                        data-duice-bind="indiceOhlcvSearch"
+                        data-duice-size-property="_size"
+                        data-duice-page-property="_page"
+                        data-duice-count-property="_count"
+                        data-duice-onclick="getIndiceOhlcvs(this.dataset.page);">
+                </duice-pagination>
+            </div>
+            <div class="grid-column--4">
+            </div>
+        </div>
     </div>
     <!-- ====================================== -->
     <!-- end: indiceOhlcv                       -->

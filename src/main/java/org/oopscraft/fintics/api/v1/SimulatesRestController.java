@@ -31,10 +31,10 @@ public class SimulatesRestController {
 
     @GetMapping
     public ResponseEntity<List<SimulateResponse>> getSimulates(
-            SimulateSearch simulateSearch,
+            @RequestParam(value = "tradeId", required = false) String tradeId,
             @PageableDefault Pageable pageable
     ){
-        Page<Simulate> simulatePage = simulateService.getSimulates(simulateSearch, pageable);
+        Page<Simulate> simulatePage = simulateService.getSimulates(tradeId, pageable);
         List<SimulateResponse> simulateResponses = simulatePage.getContent().stream()
                 .map(SimulateResponse::from)
                 .toList();

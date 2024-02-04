@@ -30,7 +30,7 @@ public class TradeLogAppender extends AppenderBase<ILoggingEvent> {
 
     @Override
     protected void append(ILoggingEvent event) {
-        String destination = String.format("/trade/%s/log", trade.getTradeId());
+        String destination = String.format("/trades/%s/log", trade.getTradeId());
         String logMessage = layout.doLayout(event);
         messagingTemplate.convertAndSend(destination, logMessage);
     }

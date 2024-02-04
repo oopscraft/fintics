@@ -3,9 +3,8 @@ package org.oopscraft.fintics.service;
 import lombok.RequiredArgsConstructor;
 import org.oopscraft.fintics.dao.*;
 import org.oopscraft.fintics.model.*;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -21,13 +20,31 @@ public class AssetService {
 
     private final AssetOhlcvRepository assetOhlcvRepository;
 
-    public Page<Asset> getAssets(AssetSearch assetSearch, Pageable pageable) {
-        Page<AssetEntity> brokerAssetEntityPage = assetRepository.findAllBy(assetSearch, pageable);
-        List<Asset> brokerAssets = brokerAssetEntityPage.getContent().stream()
+    public Page<Asset> getAssets(String assetId, String assetName, Asset.Type type, Pageable pageable) {
+        // where
+        Specification<AssetEntity> specification = Specification.where(null);
+        specification = specification
+                .and(Optional.ofNullable(assetId)
+                        .map(AssetSpecifications::containsAssetId)
+                        .orElse(null))
+                .and(Optional.ofNullable(assetName)
+                        .map(AssetSpecifications::containsAssetName)
+                        .orElse(null))
+                .and(Optional.ofNullable(type)
+                        .map(AssetSpecifications::equalType)
+                        .orElse(null));
+
+        // sort
+        Sort sort = Sort.by(AssetEntity_.MARKET_CAP).descending();
+        pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+
+        // find
+        Page<AssetEntity> assetEntityPage = assetRepository.findAll(specification, pageable);
+        List<Asset> assets = assetEntityPage.getContent().stream()
                 .map(Asset::from)
                 .toList();
-        long total = brokerAssetEntityPage.getTotalElements();
-        return new PageImpl<>(brokerAssets, pageable, total);
+        long total = assetEntityPage.getTotalElements();
+        return new PageImpl<>(assets, pageable, total);
     }
 
     public Optional<Asset> getAsset(String assetId) {

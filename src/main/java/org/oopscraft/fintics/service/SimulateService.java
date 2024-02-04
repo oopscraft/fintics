@@ -5,16 +5,12 @@ import ch.qos.logback.core.Context;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.data.IdGenerator;
-import org.oopscraft.fintics.dao.AssetOhlcvRepository;
-import org.oopscraft.fintics.dao.IndiceOhlcvRepository;
-import org.oopscraft.fintics.dao.SimulateEntity;
-import org.oopscraft.fintics.dao.SimulateRepository;
+import org.oopscraft.fintics.dao.*;
 import org.oopscraft.fintics.model.*;
 import org.oopscraft.fintics.simulate.*;
 import org.springframework.context.ApplicationContext;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -28,12 +24,6 @@ import java.util.concurrent.*;
 public class SimulateService {
 
     private final SimulateRepository simulateRepository;
-
-    private final ApplicationContext applicationContext;
-
-    private final IndiceOhlcvRepository indiceOhlcvRepository;
-
-    private final AssetOhlcvRepository assetOhlcvRepository;
 
     private final SimulateRunnableFactory simulateRunnableFactory;
 
@@ -51,8 +41,17 @@ public class SimulateService {
 
     private final Map<String,SimulateRunnable> simulateRunnableMap = new ConcurrentHashMap<>();
 
-    public Page<Simulate> getSimulates(SimulateSearch simulateSearch, Pageable pageable) {
-        Page<SimulateEntity> simulateEntityPage = simulateRepository.findAll(simulateSearch, pageable);
+    public Page<Simulate> getSimulates(String tradeId, Pageable pageable) {
+        // where
+        Specification<SimulateEntity> specification = Specification.where(null);
+        specification = specification.and(SimulateSpecifications.equalTradeId(tradeId));
+
+        // sort
+        Sort sort = Sort.by(SimulateEntity_.STARTED_AT).descending();
+        PageRequest pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+
+        // find
+        Page<SimulateEntity> simulateEntityPage = simulateRepository.findAll(specification, pageRequest);
         List<Simulate> simulates = simulateEntityPage.getContent().stream()
                 .map(Simulate::from)
                 .toList();

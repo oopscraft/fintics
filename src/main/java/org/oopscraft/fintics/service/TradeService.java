@@ -9,11 +9,9 @@ import org.oopscraft.fintics.client.trade.TradeClientFactory;
 import org.oopscraft.fintics.dao.*;
 import org.oopscraft.fintics.model.Balance;
 import org.oopscraft.fintics.model.Order;
-import org.oopscraft.fintics.model.OrderSearch;
 import org.oopscraft.fintics.model.Trade;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,7 +31,7 @@ public class TradeService {
     private final TradeClientFactory brokerClientFactory;
 
     public List<Trade> getTrades() {
-        return tradeRepository.findAllOrderByName().stream()
+        return tradeRepository.findAll(Sort.by(TradeEntity_.TRADE_NAME)).stream()
                 .map(Trade::from)
                 .collect(Collectors.toList());
     }
@@ -95,9 +93,20 @@ public class TradeService {
         tradeRepository.flush();
     }
 
-    public Page<Order> getOrders(String tradeId, OrderSearch orderSearch, Pageable pageable) {
-        orderSearch.setTradeId(tradeId);
-        Page<OrderEntity> orderEntityPage = orderRepository.findAll(orderSearch, pageable);
+    public Page<Order> getOrders(String tradeId, Order.Type type, Order.Result result, Pageable pageable) {
+        Specification<OrderEntity> specification = Specification.where(null);
+        specification = specification
+                .and(OrderSpecifications.equalTradeId(tradeId))
+                .and(Optional.ofNullable(type)
+                        .map(OrderSpecifications::equalType)
+                        .orElse(null))
+                .and(Optional.ofNullable(result)
+                        .map(OrderSpecifications::equalResult)
+                        .orElse(null));
+        Sort sort = Sort.by(OrderEntity_.ORDER_AT).descending();
+        PageRequest pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+
+        Page<OrderEntity> orderEntityPage = orderRepository.findAll(specification, pageRequest);
         List<Order> orders = orderEntityPage.getContent().stream()
                 .map(Order::from)
                 .toList();

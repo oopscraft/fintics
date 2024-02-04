@@ -6,7 +6,6 @@ import org.oopscraft.arch4j.web.support.PageableUtils;
 import org.oopscraft.fintics.api.v1.dto.AssetIndicatorResponse;
 import org.oopscraft.fintics.api.v1.dto.AssetResponse;
 import org.oopscraft.fintics.model.Asset;
-import org.oopscraft.fintics.model.AssetSearch;
 import org.oopscraft.fintics.service.AssetService;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -36,8 +35,13 @@ public class AssetsRestController {
     private final AssetService assetService;
 
     @GetMapping
-    public ResponseEntity<List<AssetResponse>> getAssets(AssetSearch assetSearch, Pageable pageable) {
-        Page<Asset> assetPage = assetService.getAssets(assetSearch, pageable);
+    public ResponseEntity<List<AssetResponse>> getAssets(
+            @RequestParam(value = "assetId", required = false) String assetId,
+            @RequestParam(value = "assetName", required = false) String assetName,
+            @RequestParam(value = "type", required = false) Asset.Type type,
+            Pageable pageable
+    ) {
+        Page<Asset> assetPage = assetService.getAssets(assetId, assetName, type, pageable);
         List<AssetResponse> assetResponses = assetPage.getContent().stream()
                 .map(AssetResponse::from)
                 .toList();

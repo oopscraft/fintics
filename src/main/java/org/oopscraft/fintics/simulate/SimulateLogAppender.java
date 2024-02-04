@@ -29,7 +29,7 @@ public class SimulateLogAppender extends AppenderBase<ILoggingEvent> {
 
     @Override
     protected void append(ILoggingEvent event) {
-        String destination = String.format("/simulate/%s/log", simulate.getSimulateId());
+        String destination = String.format("/simulates/%s/log", simulate.getSimulateId());
         String logMessage = layout.doLayout(event);
         messagingTemplate.convertAndSend(destination, logMessage);
     }
