@@ -172,8 +172,8 @@
                 });
         }
 
-        function openTradeDetail(tradeId) {
-            _openLink(`${_rootUrl}/trade/trade-detail?tradeId=${tradeId}`, '_blank');
+        function openTrade(tradeId) {
+            _openLink(`${_rootUrl}/trade?tradeId=${tradeId}`, '_blank');
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -257,9 +257,9 @@
             <h2>
                 <img class="icon" th:src="@{/static/image/icon-trade.svg}" alt="trade"/>
                 <span data-th-text="${trade.tradeName}"></span>
-                <a href="#" th:data-trade-id="${trade.tradeId}" onclick="openTradeDetail(this.dataset.tradeId);">
+                <a href="#" th:data-trade-id="${trade.tradeId}" onclick="openTrade(this.dataset.tradeId);">
                     <small>
-                        <img class="icon link" th:src="@{/static/image/icon-open.svg}" alt="trade-detail"/>
+                        <img class="icon link" th:src="@{/static/image/icon-open.svg}" alt="trade"/>
                     </small>
                 </a>
             </h2>
