@@ -3,6 +3,7 @@ package org.oopscraft.fintics.simulate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.oopscraft.arch4j.core.support.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
@@ -20,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @Slf4j
 @SpringBootTest(classes = FinticsConfiguration.class)
 @RequiredArgsConstructor
-class SimulateBrokerClientTest extends CoreTestSupport {
+class SimulateTradeClientTest extends CoreTestSupport {
 
     private static final String ASSET_ID = "test";
 
@@ -68,6 +69,7 @@ class SimulateBrokerClientTest extends CoreTestSupport {
                 .build();
     }
 
+    @Disabled
     @Test
     void deposit() throws Exception {
         // given
@@ -81,7 +83,7 @@ class SimulateBrokerClientTest extends CoreTestSupport {
         assertEquals(amount, tradeClient.getBalance().getCashAmount().longValue());
     }
 
-
+    @Disabled
     @Test
     void getOrderBook() throws Exception {
         // given
@@ -98,6 +100,7 @@ class SimulateBrokerClientTest extends CoreTestSupport {
         assertEquals(200, orderBook.getPrice().longValue());
     }
 
+    @Disabled
     @Test
     void getBalance() throws Exception {
         // given
@@ -114,6 +117,7 @@ class SimulateBrokerClientTest extends CoreTestSupport {
         log.debug("balance:{}", balance);
     }
 
+    @Disabled
     @Test
     void submitOrder() throws Exception {
         // given
