@@ -178,7 +178,7 @@ if(analysisAverage > 70) {
     hold = true
 }
 if(analysisAverage < 60) {
-    log.info("[{}] analysisAverage under 50", assetAlias)
+    log.info("[{}] analysisAverage under 60", assetAlias)
     hold = false
 }
 
