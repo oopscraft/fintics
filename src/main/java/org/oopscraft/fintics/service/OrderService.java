@@ -2,12 +2,11 @@ package org.oopscraft.fintics.service;
 
 import lombok.RequiredArgsConstructor;
 import org.oopscraft.fintics.dao.OrderEntity;
+import org.oopscraft.fintics.dao.OrderEntity_;
 import org.oopscraft.fintics.dao.OrderRepository;
 import org.oopscraft.fintics.dao.OrderSpecifications;
 import org.oopscraft.fintics.model.Order;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +21,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
 
     public Page<Order> getOrders(String tradeId, Order.Type type, Order.Result result, Pageable pageable) {
+        // where
         Specification<OrderEntity> specification = Specification.where(null);
         specification = specification
                 .and(Optional.ofNullable(tradeId)
@@ -34,6 +34,11 @@ public class OrderService {
                         .map(OrderSpecifications::equalResult)
                         .orElse(null));
 
+        // sort
+        Sort sort = Sort.by(OrderEntity_.ORDER_AT).descending();
+        pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+
+        // find
         Page<OrderEntity> orderEntityPage = orderRepository.findAll(specification, pageable);
         List<Order> orders = orderEntityPage.getContent().stream()
                 .map(Order::from)

@@ -94,6 +94,7 @@ public class TradeService {
     }
 
     public Page<Order> getOrders(String tradeId, Order.Type type, Order.Result result, Pageable pageable) {
+        // where
         Specification<OrderEntity> specification = Specification.where(null);
         specification = specification
                 .and(OrderSpecifications.equalTradeId(tradeId))
@@ -103,10 +104,13 @@ public class TradeService {
                 .and(Optional.ofNullable(result)
                         .map(OrderSpecifications::equalResult)
                         .orElse(null));
-        Sort sort = Sort.by(OrderEntity_.ORDER_AT).descending();
-        PageRequest pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
 
-        Page<OrderEntity> orderEntityPage = orderRepository.findAll(specification, pageRequest);
+        // sort
+        Sort sort = Sort.by(OrderEntity_.ORDER_AT).descending();
+        pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+
+        // find
+        Page<OrderEntity> orderEntityPage = orderRepository.findAll(specification, pageable);
         List<Order> orders = orderEntityPage.getContent().stream()
                 .map(Order::from)
                 .toList();
