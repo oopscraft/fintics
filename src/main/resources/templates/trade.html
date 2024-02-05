@@ -302,7 +302,7 @@
                 simulateLog.value = '';
                 _webSocketClient.unsubscribe(subscribeLog);
                 subscribeLog = _webSocketClient.subscribe({
-                    destination: `/simulate/${simulate.simulateId}/log`,
+                    destination: `/simulates/${simulate.simulateId}/log`,
                     listener: function (frame) {
                         if (simulateLog.value.length > 100_000) {
                             simulateLog.value = '';
@@ -313,7 +313,7 @@
                 });
                 _webSocketClient.unsubscribe(subscribeStatus);
                 subscribeStatus = _webSocketClient.subscribe({
-                    destination: `/simulate/${simulate.simulateId}/status`,
+                    destination: `/simulates/${simulate.simulateId}/status`,
                     listener: function(frame) {
                         let status = JSON.parse(frame.body);
                         duice.ObjectProxy.assign(simulateStatus, status);
@@ -321,7 +321,7 @@
                 });
                 _webSocketClient.unsubscribe(subscribeBalance);
                 subscribeBalance = _webSocketClient.subscribe({
-                    destination: `/simulate/${simulate.simulateId}/balance`,
+                    destination: `/simulates/${simulate.simulateId}/balance`,
                     listener: function(frame) {
                         let balance = JSON.parse(frame.body);
                         duice.ObjectProxy.assign(simulateBalance, balance);
@@ -329,7 +329,7 @@
                 });
                 _webSocketClient.unsubscribe(subscribeOrder);
                 subscribeOrder = _webSocketClient.subscribe({
-                    destination: `/simulate/${simulate.simulateId}/order`,
+                    destination: `/simulates/${simulate.simulateId}/order`,
                     listener: function(frame) {
                         let order = JSON.parse(frame.body);
                         setSimulateMarkOrderAtChart(order);

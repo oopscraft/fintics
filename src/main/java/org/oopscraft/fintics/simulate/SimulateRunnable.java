@@ -179,7 +179,7 @@ public class SimulateRunnable implements Runnable {
     }
 
     private void sendMessage(String destinationSuffix, Object object) {
-        String destination =  String.format("/simulate/%s/%s", simulate.getSimulateId(), destinationSuffix);
+        String destination =  String.format("/simulates/%s/%s", simulate.getSimulateId(), destinationSuffix);
         String message = null;
         try {
             message = objectMapper.writeValueAsString(object);
