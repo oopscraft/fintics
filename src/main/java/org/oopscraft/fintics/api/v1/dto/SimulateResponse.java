@@ -23,6 +23,8 @@ public class SimulateResponse {
 
     private String tradeName;
 
+    private TradeResponse trade;
+
     private LocalDateTime dateTimeFrom;
 
     private LocalDateTime dateTimeTo;
@@ -35,16 +37,22 @@ public class SimulateResponse {
 
     private String result;
 
+    private BalanceResponse balance;
+
     public static SimulateResponse from(Simulate simulate) {
         return SimulateResponse.builder()
                 .simulateId(simulate.getSimulateId())
-                .status(simulate.getStatus())
                 .startedAt(simulate.getStartedAt())
                 .endedAt(simulate.getEndedAt())
+                .status(simulate.getStatus())
+                .tradeId(simulate.getTradeId())
+                .tradeName(simulate.getTradeName())
+                .trade(TradeResponse.from(simulate.getTrade()))
                 .dateTimeFrom(simulate.getDateTimeFrom())
                 .dateTimeTo(simulate.getDateTimeTo())
                 .investAmount(simulate.getInvestAmount())
                 .feeRate(simulate.getFeeRate())
+                .balance(BalanceResponse.from(simulate.getBalance()))
                 .build();
     }
 

@@ -7,13 +7,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.oopscraft.arch4j.core.data.converter.AbstractEnumConverter;
+import org.oopscraft.arch4j.core.support.ObjectMapperHolder;
 import org.oopscraft.fintics.dao.SimulateEntity;
 
 import javax.persistence.Converter;
-import java.awt.image.BandCombineOp;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,13 +57,13 @@ public class Simulate {
     @Builder.Default
     private List<Order> orders = new ArrayList<>();
 
-    public enum Status { WAITING, RUNNING, COMPLETED, FAILED }
+    public enum Status { WAITING, RUNNING, COMPLETED, STOPPED, FAILED }
 
     @Converter(autoApply = true)
     public static class StatusConverter extends AbstractEnumConverter<Status> {}
 
     public static Simulate from(SimulateEntity simulateEntity) {
-        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectMapper objectMapper = ObjectMapperHolder.getObject();
 
         // trade data
         Trade trade = null;

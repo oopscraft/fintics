@@ -19,6 +19,7 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import javax.imageio.stream.FileImageInputStream;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -112,14 +113,13 @@ public class SimulateRunnable implements Runnable {
             tradeExecutor.setLog(log);
 
             // start
-            for(LocalDateTime dateTime = dateTimeFrom.plusSeconds(interval); dateTime.isBefore(dateTimeTo); dateTime = dateTime.plusSeconds(interval)) {
+            for (LocalDateTime dateTime = dateTimeFrom.plusSeconds(interval); dateTime.isBefore(dateTimeTo); dateTime = dateTime.plusSeconds(interval)) {
                 // check interrupted
-                if(interrupted) {
-                    log.info("SimulateRunnable is interrupted");
-                    break;
+                if (interrupted) {
+                    throw new InterruptedException("SimulateRunnable is interrupted.");
                 }
                 // check start and end time
-                if(dateTime.toLocalTime().isBefore(trade.getStartAt()) || dateTime.toLocalTime().isAfter(trade.getEndAt())) {
+                if (dateTime.toLocalTime().isBefore(trade.getStartAt()) || dateTime.toLocalTime().isAfter(trade.getEndAt())) {
                     continue;
                 }
 
@@ -130,7 +130,7 @@ public class SimulateRunnable implements Runnable {
                     simulateTradeClient.setDateTime(dateTime);
 
                     // check market open
-                    if(!simulateTradeClient.isOpened(dateTime)) {
+                    if (!simulateTradeClient.isOpened(dateTime)) {
                         log.info("market not open:{}", dateTime);
                         continue;
                     }
@@ -144,16 +144,19 @@ public class SimulateRunnable implements Runnable {
                     tradeExecutor.execute(trade, dateTime, simulateIndiceClient, simulateTradeClient);
 
                     // send message
-                    HashMap<String,String> status = new LinkedHashMap<>();
+                    HashMap<String, String> status = new LinkedHashMap<>();
                     status.put("dateTime", dateTime.format(DateTimeFormatter.ISO_DATE_TIME));
                     sendMessage("status", status);
                     sendMessage("balance", simulateTradeClient.getBalance());
 
+                } catch (InterruptedException e) {
+                    log.warn(e.getMessage(), e);
+                    throw e;
                 } catch (Throwable e) {
                     log.warn(e.getMessage(), e);
                 } finally {
-                    if(transactionStatus != null) {
-                        if(!transactionStatus.isCompleted()) {
+                    if (transactionStatus != null) {
+                        if (!transactionStatus.isCompleted()) {
                             transactionStatus.setRollbackOnly();
                             transactionManager.commit(transactionStatus);
                         }
@@ -164,11 +167,13 @@ public class SimulateRunnable implements Runnable {
             // save history
             simulate.setStatus(Simulate.Status.COMPLETED);
 
-        }catch(Exception e) {
-            log.error(e.getMessage(), e);
+        } catch (InterruptedException e) {
+            log.warn(e.getMessage(), e);
+            simulate.setStatus(Simulate.Status.STOPPED);
+        } catch (Throwable e) {
             simulate.setStatus(Simulate.Status.FAILED);
             throw new RuntimeException(e);
-        }finally{
+        } finally {
             simulateLogAppender.stop();
             this.onComplete.run();
 
@@ -220,7 +225,6 @@ public class SimulateRunnable implements Runnable {
     }
 
     private String toDataString(Object object) {
-        ObjectMapper objectMapper = new ObjectMapper();
         try {
             return objectMapper.writeValueAsString(object);
         } catch (JsonProcessingException ignored) {

@@ -58,6 +58,8 @@ public class SimulatesRestController {
 
         Simulate simulate = Simulate.builder()
                 .trade(trade)
+                .tradeId(trade.getTradeId())
+                .tradeName(trade.getTradeName())
                 .dateTimeFrom(dateTimeFrom)
                 .dateTimeTo(dateTimeTo)
                 .investAmount(investAmount)

@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.*;
 
 @Service
@@ -44,14 +45,17 @@ public class SimulateService {
     public Page<Simulate> getSimulates(String tradeId, Pageable pageable) {
         // where
         Specification<SimulateEntity> specification = Specification.where(null);
-        specification = specification.and(SimulateSpecifications.equalTradeId(tradeId));
+        specification = specification
+                .and(Optional.ofNullable(tradeId)
+                        .map(SimulateSpecifications::equalTradeId)
+                        .orElse(null));
 
         // sort
         Sort sort = Sort.by(SimulateEntity_.STARTED_AT).descending();
-        PageRequest pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+        pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
 
         // find
-        Page<SimulateEntity> simulateEntityPage = simulateRepository.findAll(specification, pageRequest);
+        Page<SimulateEntity> simulateEntityPage = simulateRepository.findAll(specification, pageable);
         List<Simulate> simulates = simulateEntityPage.getContent().stream()
                 .map(Simulate::from)
                 .toList();
