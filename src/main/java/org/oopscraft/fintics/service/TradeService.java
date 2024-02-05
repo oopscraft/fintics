@@ -15,6 +15,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -29,6 +31,9 @@ public class TradeService {
     private final OrderRepository orderRepository;
 
     private final TradeClientFactory brokerClientFactory;
+
+    @PersistenceContext
+    private final EntityManager entityManager;
 
     public List<Trade> getTrades() {
         return tradeRepository.findAll(Sort.by(TradeEntity_.TRADE_NAME)).stream()
@@ -84,6 +89,7 @@ public class TradeService {
 
         // save and return
         TradeEntity savedTradeEntity = tradeRepository.saveAndFlush(tradeEntity);
+        entityManager.refresh(savedTradeEntity);
         return Trade.from(savedTradeEntity);
     }
 

@@ -126,7 +126,6 @@ public class TradesRestController {
         trade.setTradeAssets(tradeAssets);
 
         Trade savedTrade = tradeService.saveTrade(trade);
-
         TradeResponse savedTradeResponse = TradeResponse.from(savedTrade);
         return ResponseEntity.ok(savedTradeResponse);
     }
