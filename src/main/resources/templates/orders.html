@@ -7,18 +7,30 @@
     <script th:inline="javascript">
         const orderSearch = new duice.ObjectProxy({
             tradeId: null,
+            assetId: null,
             type: null,
             result: null,
             _page: 0,
             _size: 20,
             _count: 0
         });
-        duice.ObjectProxy.onPropertyChanged(orderSearch, () => {
+        duice.ObjectProxy.onPropertyChanged(orderSearch, (event) => {
+            // trade id changed, change trade assets
+            if(event.property === 'tradeId') {
+                let index = trades.findIndex(trade => trade.tradeId === event.value);
+                if(index > -1) {
+                    duice.ArrayProxy.assign(tradeAssets, trades[index].tradeAssets);
+                }else{
+                    duice.ArrayProxy.clear(tradeAssets);
+                }
+            }
+            // get order
             orderSearch._page = 0;
             getOrders();
         });
         const orders = new duice.ArrayProxy([]);
         const trades = new duice.ArrayProxy([]);
+        const tradeAssets = new duice.ArrayProxy([]);
 
         function getOrders(page) {
             if(page) {
@@ -27,6 +39,9 @@
             let url = new URL(`${_apiUrl}/v1/orders`, document.location.origin);
             if(orderSearch.tradeId) {
                 url.searchParams.append('tradeId', orderSearch.tradeId);
+            }
+            if(orderSearch.assetId) {
+                url.searchParams.append('assetId', orderSearch.assetId);
             }
             if(orderSearch.type) {
                 url.searchParams.append('type', orderSearch.type);
@@ -94,6 +109,16 @@
                             data-duice-option-value-property="tradeId"
                             data-duice-option-text-property="tradeName">
                         <option value="" data-th-text="'- ' + #{fintics.Trade} + ' -'"></option>
+                    </select>
+                </label>
+                <label class="grid-column--2 s__grid-column--12">
+                    <select class="width--100"
+                            data-duice-bind="orderSearch"
+                            data-duice-property="assetId"
+                            data-duice-option="tradeAssets"
+                            data-duice-option-value-property="assetId"
+                            data-duice-option-text-property="assetName">
+                        <option value="" data-th-text="'- ' + #{fintics.Asset} + ' -'"></option>
                     </select>
                 </label>
                 <label class="grid-column--1 s__grid-column--12">

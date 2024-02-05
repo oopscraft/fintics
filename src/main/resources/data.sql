@@ -148,13 +148,13 @@ insert into `fintics_trade_asset`
 -- fintics_order
 INSERT INTO fintics_order
 (`order_id`, order_at, type, trade_id, asset_id, asset_name, quantity, result, error_message)
-VALUES('36ac47501be24bd5b7cdb0255912e757', '2023-11-10 02:23:50.000', 'BUY', '06c228451ce0400fa57bb36f0568d7cb', '122630', 'KODEX 레버리지(테스트)', 262, 'FAILED', '모의투자 장시작전 입니다.');
+VALUES('36ac47501be24bd5b7cdb0255912e757', '2023-11-10 02:23:50.000', 'BUY', '06c228451ce0400fa57bb36f0568d7cb', 'KR.122630', 'KODEX 레버리지(테스트)', 262, 'FAILED', '모의투자 장시작전 입니다.');
 INSERT INTO fintics_order
 (`order_id`, order_at, type, trade_id, asset_id, asset_name, quantity, result, error_message)
-VALUES('a44181a8d6424dc78682b4fa8e4b0729', '2023-11-10 09:01:12.000', 'BUY', '06c228451ce0400fa57bb36f0568d7cb', '122630', 'KODEX 레버리지(테스트)', 264, 'COMPLETED', NULL);
+VALUES('a44181a8d6424dc78682b4fa8e4b0729', '2023-11-10 09:01:12.000', 'BUY', '06c228451ce0400fa57bb36f0568d7cb', 'KR.122630', 'KODEX 레버리지(테스트)', 264, 'COMPLETED', NULL);
 INSERT INTO fintics_order
 (`order_id`, order_at, type, trade_id, asset_id, asset_name, quantity, result, error_message)
-VALUES('62b521b88ee742239753c5b1157d7407', '2023-11-10 14:47:14.000', 'SELL', '06c228451ce0400fa57bb36f0568d7cb', '122630', 'KODEX 레버리지(테스트)', 264, 'COMPLETED', NULL);
+VALUES('62b521b88ee742239753c5b1157d7407', '2023-11-10 14:47:14.000', 'SELL', '06c228451ce0400fa57bb36f0568d7cb', 'KR.122630', 'KODEX 레버리지(테스트)', 264, 'COMPLETED', NULL);
 
 
 

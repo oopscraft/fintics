@@ -20,12 +20,15 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
 
-    public Page<Order> getOrders(String tradeId, Order.Type type, Order.Result result, Pageable pageable) {
+    public Page<Order> getOrders(String tradeId, String assetId, Order.Type type, Order.Result result, Pageable pageable) {
         // where
         Specification<OrderEntity> specification = Specification.where(null);
         specification = specification
                 .and(Optional.ofNullable(tradeId)
                         .map(OrderSpecifications::equalTradeId)
+                        .orElse(null))
+                .and(Optional.ofNullable(assetId)
+                        .map(OrderSpecifications::equalAssetId)
                         .orElse(null))
                 .and(Optional.ofNullable(type)
                         .map(OrderSpecifications::equalType)

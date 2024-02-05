@@ -35,11 +35,12 @@ public class OrdersRestController {
     @GetMapping
     public ResponseEntity<List<OrderResponse>> getTradeOrders(
             @RequestParam(value = "tradeId", required = false) String tradeId,
+            @RequestParam(value = "assetId", required = false) String assetId,
             @RequestParam(value = "type", required = false) Order.Type type,
             @RequestParam(value = "result", required = false) Order.Result result,
             @PageableDefault Pageable pageable
     ) {
-        Page<Order> orderPage = orderService.getOrders(tradeId, type, result, pageable);
+        Page<Order> orderPage = orderService.getOrders(tradeId, assetId, type, result, pageable);
         List<OrderResponse> orderResponses = orderPage.getContent().stream()
                 .map(OrderResponse::from)
                 .collect(Collectors.toList());

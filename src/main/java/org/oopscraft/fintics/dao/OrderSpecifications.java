@@ -11,6 +11,11 @@ public class OrderSpecifications {
                 criteriaBuilder.equal(root.get(OrderEntity_.TRADE_ID), tradeId);
     }
 
+    public static Specification<OrderEntity> equalAssetId(String assetId) {
+        return ((root, query, criteriaBuilder) ->
+                criteriaBuilder.equal(root.get(OrderEntity_.ASSET_ID), assetId));
+    }
+
     public static Specification<OrderEntity> equalType(Order.Type type) {
         return (root, query, criteriaBuilder) ->
                 criteriaBuilder.equal(root.get(OrderEntity_.TYPE), type);

@@ -52,6 +52,7 @@
 
         // order
         const orderSearch = new duice.ObjectProxy({
+            assetId: null,
             type: null,
             result: null,
             _page: 0,
@@ -387,6 +388,9 @@
 
         function getOrders() {
             let url = new URL(`${_apiUrl}/v1/trades/${tradeId}/orders`, document.location.origin);
+            if(orderSearch.assetId) {
+                url.searchParams.append('assetId', orderSearch.assetId);
+            }
             if(orderSearch.type) {
                 url.searchParams.append('type', orderSearch.type);
             }
@@ -863,8 +867,22 @@
         <!-- start: order                       -->
         <!-- ================================== -->
         <div id="tradeOrderTabContent" class="border--1 padding--1em" style="min-height:400px;">
+            <h2>
+                <img class="icon" th:src="@{/static/image/icon-order.svg}" alt="order"/>
+                <span data-th-text="#{fintics.Order}"></span>
+            </h2>
             <form onsubmit="return false;" class="display--grid grid-template-columns--12 grid-gap--1em margin-x--1em">
                 <div class="grid-column--12 s__grid-column--12 display--grid grid-template-columns--12 grid-gap--1em">
+                    <label class="grid-column--2 s__grid-column--12">
+                        <select class="width--100"
+                                data-duice-bind="orderSearch"
+                                data-duice-property="assetId"
+                                data-duice-option="trade.tradeAssets"
+                                data-duice-option-value-property="assetId"
+                                data-duice-option-text-property="assetName">
+                            <option data-th-text="'- ' + #{fintics.Asset} + ' -'"></option>
+                        </select>
+                    </label>
                     <label class="grid-column--1 s__grid-column--12">
                         <select class="width--100" data-duice-bind="orderSearch" data-duice-property="type">
                             <option value="" data-th-text="'- ' + #{fintics.Order.type} + ' -'"></option>
@@ -904,7 +922,7 @@
                         <th data-th-text="#{web.global.no}" class="text-align--center"></th>
                         <th data-th-text="#{fintics.Order.orderAt}"></th>
                         <th data-th-text="#{fintics.Order.type}"></th>
-                        <th data-th-text="#{fintics.Asset.assetName}"></th>
+                        <th data-th-text="#{fintics.Order.assetName}"></th>
                         <th data-th-text="#{fintics.Order.quantity}"></th>
                         <th data-th-text="#{fintics.Order.price}"></th>
                         <th data-th-text="#{fintics.Order.result}"></th>
@@ -1111,59 +1129,6 @@
         <!-- end: balance                           -->
         <!-- ====================================== -->
     </div>
-
-    <!-- ====================================== -->
-    <!-- start: asset-add                       -->
-    <!-- ====================================== -->
-    <dialog id="assetAdd">
-        <style th:inline="css">
-            #assetAdd {
-                width: 500px;
-                padding: 1.5rem;
-            }
-        </style>
-        <script th:inline="javascript">
-            const assetAdd = {
-                dialog: new duice.dialog.Dialog(document.getElementById('assetAdd')),
-                asset: new duice.ObjectProxy({
-                    assetId: null,
-                    assetName: null
-                }),
-                open: function() {
-                    duice.ObjectProxy.clear(this.asset);
-                    return this.dialog.open();
-                },
-                confirm: function() {
-                    this.dialog.resolve(this.asset);
-                }
-            }
-        </script>
-        <div class="display--grid grid-gap--1em">
-            <h2>
-                <img class="icon" th:src="@{/static/image/icon-asset.svg}" alt="asset"/>
-                <span data-th-text="#{fintics.TradeAsset}"></span>
-            </h2>
-            <form onsubmit="return false;" class="display--grid grid-template-columns--12 grid-gap--1em">
-                <label class="grid-column--12">
-                    <span th:text="#{fintics.TradeAsset.assetId}" class="font-weight--bold tag-required"></span>
-                    <input class="width--100" type="text" data-duice-bind="assetAdd.asset" data-duice-property="assetId"/>
-                </label>
-                <label class="grid-column--12">
-                    <span th:text="#{fintics.TradeAsset.assetName}" class="font-weight--bold tag-required"></span>
-                    <input class="width--100" type="text" data-duice-bind="assetAdd.asset" data-duice-property="assetName"/>
-                </label>
-            </form>
-            <div class="display--flex justify-content--flex-end">
-                <button onclick="assetAdd.confirm();">
-                    <img class="icon" th:src="@{/static/image/icon-confirm.svg}" alt="confirm"/>
-                    <span data-th-text="#{web.global.confirm}"></span>
-                </button>
-            </div>
-        </div>
-    </dialog>
-    <!-- ====================================== -->
-    <!-- end: asset-add                         -->
-    <!-- ====================================== -->
 
     <!-- ====================================== -->
     <!-- start: asset-select                    -->
