@@ -129,8 +129,8 @@ def analysisAverages = []
 def assetAnalysisMap = [:]
 def assetAnalysisAverages = []
 //assetAnalysisMap.minute3 = analyzeIndicator(assetIndicator, Ohlcv.Type.MINUTE, 3)
-//assetAnalysisMap.minute10 = analyzeIndicator(assetIndicator, Ohlcv.Type.MINUTE, 10)
-assetAnalysisMap.minute30 = analyzeIndicator(assetIndicator, Ohlcv.Type.MINUTE, 30)
+assetAnalysisMap.minute10 = analyzeIndicator(assetIndicator, Ohlcv.Type.MINUTE, 10)
+//assetAnalysisMap.minute30 = analyzeIndicator(assetIndicator, Ohlcv.Type.MINUTE, 30)
 assetAnalysisMap.minute60 = analyzeIndicator(assetIndicator, Ohlcv.Type.MINUTE, 60)
 assetAnalysisMap.daily = analyzeIndicator(assetIndicator, Ohlcv.Type.DAILY, 1)
 assetAnalysisMap.each { key, value ->
@@ -177,7 +177,7 @@ if(analysisAverage > 70) {
     log.info("[{}] analysisAverage over 70", assetAlias)
     hold = true
 }
-if(analysisAverage < 50) {
+if(analysisAverage < 60) {
     log.info("[{}] analysisAverage under 50", assetAlias)
     hold = false
 }

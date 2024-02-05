@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.oopscraft.arch4j.web.support.PageableUtils;
 import org.oopscraft.fintics.api.v1.dto.SimulateRequest;
 import org.oopscraft.fintics.api.v1.dto.SimulateResponse;
+import org.oopscraft.fintics.api.v1.dto.TradeRequest;
 import org.oopscraft.fintics.model.*;
 import org.oopscraft.fintics.service.SimulateService;
 import org.springframework.data.domain.Page;
