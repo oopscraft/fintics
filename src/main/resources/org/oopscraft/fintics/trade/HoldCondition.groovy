@@ -3,6 +3,8 @@ package org.oopscraft.fintics.trade
 import org.oopscraft.fintics.calculator.*
 import org.oopscraft.fintics.model.*
 
+import java.time.LocalTime
+
 /**
  * analyze indicator
  * @param indicator indicator
@@ -181,6 +183,22 @@ if(analysisAverage > 70) {
 if(analysisAverage < 50) {
     log.info("[{}] analysisAverage under 60", assetAlias)
     hold = false
+}
+
+//=============================
+// post processor
+//=============================
+// 1. early trading session, detect price dislocation(over-estimated gap-up/gap-down)
+if(dateTime.toLocalTime().isBefore(LocalTime.of(9,30))) {
+    log.info("[{}] filter price pctChange before 9:30", assetAlias)
+    def yesterdayClosePrice = assetIndicator.getOhlcvs(Ohlcv.Type.DAILY,1)[1].closePrice
+    def currentClosePrice = assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE,1).first().closePrice
+    def initialPricePctChange = tool.pctChange([currentClosePrice, yesterdayClosePrice])
+    log.info("[{}] closePricePctChange: {} -> {} ({}%)", assetAlias, yesterdayClosePrice, currentClosePrice, initialPricePctChange)
+    if(initialPricePctChange.abs() > 2.0) {
+        log.warn("[{}] initialPricePctChange is over 1.0%, skip process", assetAlias)
+        hold = null
+    }
 }
 
 //==============================
