@@ -71,13 +71,6 @@ public class Trade {
         // trade assets
         List<TradeAsset> tradeAssets = tradeEntity.getTradeAssets().stream()
                 .map(TradeAsset::from)
-                .peek(tradeAsset -> {
-                    if(trade.getTradeClientId() != null) {
-                        TradeClientFactory.getTradeClientDefinition(trade.getTradeClientId()).ifPresent(brokerClientDefinition -> {
-                            tradeAsset.setLinks(brokerClientDefinition.getAssetLinks(tradeAsset));
-                        });
-                    }
-                })
                 .collect(Collectors.toList());
         trade.setTradeAssets(tradeAssets);
 

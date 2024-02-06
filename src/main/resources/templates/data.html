@@ -6,7 +6,8 @@
 <th:block layout:fragment="_content">
     <script th:inline="javascript">
         const assetSearch = new duice.ObjectProxy({
-            key: null,
+            exchangeId: null,
+            key: 'assetName',
             value: null,
             type: null,
             _page: 0,
@@ -16,7 +17,8 @@
         const assets = new duice.ArrayProxy([]);
 
         const assetOhlcvSearch = new duice.ObjectProxy({
-            assetId: null,
+            key: null,
+            value: null,
             type: null,
             _page: 0,
             _size: 20,
@@ -33,10 +35,14 @@
         const indiceOhlcvs = new duice.ArrayProxy([]);
 
         function getAssets(page) {
-            if(page) {
-                assetSearch._page = page;
-            }
+            assetSearch._page = page || 0;
             let url = new URL(`${_apiUrl}/v1/data/assets`, document.location.origin);
+            if(assetSearch.exchangeId) {
+                url.searchParams.append('assetId', assetSearch.exchangeId + '.');
+            }
+            if(assetSearch.key && assetSearch.value) {
+                url.searchParams.append(assetSearch.key, assetSearch.value);
+            }
             url.searchParams.append('_page', assetSearch._page);
             url.searchParams.append('_size', assetSearch._size);
             _fetch(url).then(response => {
@@ -161,11 +167,38 @@
             <span data-th-text="#{fintics.Asset}"></span>
         </h2>
         <form onsubmit="return false;" class="display--grid grid-template-columns--12 grid-gap--1em padding-x--1em">
-            <label class="grid-column--2">
-                <select class="width--100">
-                    <option data-th-text="#{web.global.select}"></option>
+            <label class="grid-column--1">
+                <select data-duice-bind="assetSearch" data-duice-property="exchangeId" class="width--100">
+                    <option value="" data-th-text="'- ' + #{fintics.Asset.exchangeId} + ' -'"></option>
+                    <option th:each="exchangeId : ${exchangeIds}" th:value="${exchangeId}" th:text="${exchangeId}"></option>
                 </select>
             </label>
+            <label class="grid-column--1 s-grid-column-4">
+                <select class="width--100" data-duice-bind="assetSearch" data-duice-property="key">
+                    <option value="assetName" th:text="#{fintics.Asset.assetName}"></option>
+                    <option value="assetId" th:text="#{fintics.Asset.assetId}"></option>
+                </select>
+            </label>
+            <label class="grid-column--2 s-grid-column--8">
+                <input class="width--100" type="text" data-duice-bind="assetSearch" data-duice-property="value"/>
+            </label>
+            <label class="grid-column--1">
+                <select data-duice-bind="assetSearch" data-duice-property="type" class="width--100">
+                    <option data-th-text="'- ' + #{fintics.Asset.type} + ' -'"></option>
+                    <option value="STOCK">STOCK</option>
+                    <option value="ETF">ETF</option>
+                </select>
+            </label>
+            <div class="grid-column--7 justify-self--end">
+                <button onclick="getAssets();">
+                    <img class="icon" th:src="@{/static/image/icon-search.svg}" alt="search"/>
+                    <span data-th-text="#{web.global.search}">Search</span>
+                </button>
+                <button onclick="resetAssets();">
+                    <img class="icon" th:src="@{/static/image/icon-reset.svg}" alt="reset"/>
+                    <span data-th-text="#{web.global.reset}">Reset</span>
+                </button>
+            </div>
         </form>
         <table class="width--100">
             <colgroup>
@@ -195,14 +228,14 @@
             <tbody>
             <tr data-duice-bind="assets" data-duice-loop="asset,status">
                 <td data-duice-bind="asset" data-duice-execute="this.innerHTML=assetSearch._page * assetSearch._size + status.count;"></td>
-                <td data-duice-bind="asset" data-duice-property="assetId"></td>
+                <td data-duice-bind="asset" data-duice-property="assetId" class="font-weight--bold"></td>
                 <td data-duice-bind="asset" data-duice-property="assetName"></td>
                 <td data-duice-bind="asset" data-duice-property="type"></td>
-                <td data-duice-bind="asset" data-duice-property="marketCap"></td>
+                <td data-duice-bind="asset" data-duice-property="marketCap" data-duice-format="number"></td>
                 <td data-duice-bind="asset" data-duice-property="per"></td>
                 <td data-duice-bind="asset" data-duice-property="roe"></td>
                 <td data-duice-bind="asset" data-duice-property="roa"></td>
-                <td>
+                <td class="text-align--right">
                     <button type="button"
                             class="small"
                             data-duice-bind="asset.links"
@@ -276,15 +309,15 @@
                 <th data-th-text="#{fintics.Ohlcv.highPrice}"></th>
                 <th data-th-text="#{fintics.Ohlcv.lowPrice}"></th>
                 <th data-th-text="#{fintics.Ohlcv.closePrice}"></th>
-                <th data-th-text="#{fintics.Ohlcv.volumn}"></th>
+                <th data-th-text="#{fintics.Ohlcv.volume}"></th>
             </tr>
             </thead>
             <tbody>
             <tr data-duice-bind="assetOhlcvs" data-duice-loop="assetOhlcv,status">
                 <td data-duice-bind="assetOhlcv" data-duice-execute="this.innerHTML=assetOhlcvSearch._page * assetOhlcvSearch._size + status.count;"></td>
-                <td data-duice-bind="assetOhlcv" data-duice-property="assetId"></td>
-                <td data-duice-bind="assetOhlcv" data-duice-property="type"></td>
-                <td data-duice-bind="assetOhlcv" data-duice-property="dateTime"></td>
+                <td data-duice-bind="assetOhlcv" data-duice-property="assetId" class="font-weight--bold"></td>
+                <td data-duice-bind="assetOhlcv" data-duice-property="type" class="font-weight--bold"></td>
+                <td data-duice-bind="assetOhlcv" data-duice-property="dateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')" class="font-weight--bold"></td>
                 <td data-duice-bind="assetOhlcv" data-duice-property="openPrice" data-duice-format="number"></td>
                 <td data-duice-bind="assetOhlcv" data-duice-property="highPrice" data-duice-format="number"></td>
                 <td data-duice-bind="assetOhlcv" data-duice-property="lowPrice" data-duice-format="number"></td>
@@ -352,7 +385,7 @@
                 <th data-th-text="#{fintics.Ohlcv.highPrice}"></th>
                 <th data-th-text="#{fintics.Ohlcv.lowPrice}"></th>
                 <th data-th-text="#{fintics.Ohlcv.closePrice}"></th>
-                <th data-th-text="#{fintics.Ohlcv.volumn}"></th>
+                <th data-th-text="#{fintics.Ohlcv.volume}"></th>
             </tr>
             </thead>
             <tbody>

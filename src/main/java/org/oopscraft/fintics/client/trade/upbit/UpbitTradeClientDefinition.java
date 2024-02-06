@@ -29,13 +29,6 @@ public class UpbitTradeClientDefinition implements TradeClientDefinition {
     }
 
     @Override
-    public List<Link> getAssetLinks(Asset asset) {
-        return new ArrayList<>() {{
-            add(Link.of("UPBIT", "https://upbit.com/exchange?code=CRIX.UPBIT." + asset.getSymbol()));
-        }};
-    }
-
-    @Override
     public Class<? extends TradeClient> getClassType() {
         return UpbitTradeClient.class;
     }

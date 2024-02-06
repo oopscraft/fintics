@@ -602,7 +602,7 @@ public class KisTradeClient extends KrTradeClient {
                     String clientOrderId = row.getString("odno");
                     return Order.builder()
                             .type(orderType)
-                            .assetId(symbol)
+                            .assetId(toAssetId(symbol))
                             .kind(orderKind)
                             .quantity(quantity)
                             .price(price)

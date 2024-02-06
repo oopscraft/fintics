@@ -14,8 +14,6 @@ public interface TradeClientDefinition extends Aware {
 
     String getExchangeId();
 
-    List<Link> getAssetLinks(Asset asset);
-
     Class<? extends TradeClient> getClassType();
 
     String getConfigTemplate();

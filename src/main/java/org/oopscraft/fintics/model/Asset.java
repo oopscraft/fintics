@@ -41,11 +41,27 @@ public class Asset {
                 .map(string -> string.split("\\."))
                 .filter(array -> array.length > 1)
                 .map(array -> array[1])
-                .orElseThrow(() -> new RuntimeException(String.format("invalid assetId[%s]",assetId)));
+                .orElseThrow(() -> new RuntimeException(String.format("invalid assetId[%s]", getAssetId())));
     }
 
-    @Builder.Default
-    private List<Link> links = new ArrayList<>();
+    public List<Link> getLinks() {
+        return Optional.ofNullable(getAssetId())
+                .map(value -> value.split("\\."))
+                .filter(array -> array.length > 1)
+                .map(array -> {
+                    String exchangeId = array[0];
+                    String symbol = array[1];
+                    List<Link> links = new ArrayList<>();
+                    switch (exchangeId) {
+                        case "KR" ->
+                                links.add(Link.of("Naver", "https://finance.naver.com/item/main.naver?code=" + symbol));
+                        case "UPBIT" ->
+                                links.add(Link.of("UPBIT", "https://upbit.com/exchange?code=CRIX.UPBIT." + symbol));
+                    }
+                    return links;
+                })
+                .orElse(new ArrayList<>());
+    }
 
     public enum Type {
         STOCK, ETF

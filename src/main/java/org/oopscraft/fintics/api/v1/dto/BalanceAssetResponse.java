@@ -37,6 +37,13 @@ public class BalanceAssetResponse extends AssetResponse {
                 .purchaseAmount(balanceAsset.getPurchaseAmount())
                 .valuationAmount(balanceAsset.getValuationAmount())
                 .profitAmount(balanceAsset.getProfitAmount())
+                .type(balanceAsset.getType())
+                .marketCap(balanceAsset.getMarketCap())
+                .issuedShares(balanceAsset.getIssuedShares())
+                .per(balanceAsset.getPer())
+                .roe(balanceAsset.getRoe())
+                .roa(balanceAsset.getRoa())
+                .links(LinkResponse.from(balanceAsset.getLinks()))
                 .build();
     }
 }

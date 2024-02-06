@@ -13,11 +13,4 @@ public abstract class KrTradeClientDefinition implements TradeClientDefinition {
         return "KR";
     }
 
-    @Override
-    public List<Link> getAssetLinks(Asset asset) {
-        return new ArrayList<>() {{
-            add(Link.of("Naver", "https://finance.naver.com/item/main.naver?code=" + asset.getSymbol()));
-        }};
-    }
-
 }

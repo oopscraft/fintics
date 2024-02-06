@@ -93,6 +93,13 @@ public class SimulateRunnable implements Runnable {
         }
         try {
             Trade trade = simulate.getTrade();
+
+            // disable alarm
+            trade.setAlarmId(null);
+            trade.setAlarmOnError(false);
+            trade.setAlarmOnOrder(false);
+
+            // date time, interval
             LocalDateTime dateTimeFrom = simulate.getDateTimeFrom();
             LocalDateTime dateTimeTo = simulate.getDateTimeTo();
             Integer interval = trade.getInterval();

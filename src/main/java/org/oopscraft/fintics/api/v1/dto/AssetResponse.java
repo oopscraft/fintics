@@ -3,11 +3,13 @@ package org.oopscraft.fintics.api.v1.dto;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.fintics.model.Asset;
+import org.oopscraft.fintics.model.Link;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Data
 @SuperBuilder
@@ -18,8 +20,6 @@ public class AssetResponse {
     private String assetId;
 
     private String assetName;
-
-    private String exchangeId;
 
     private Asset.Type type;
 
@@ -38,18 +38,18 @@ public class AssetResponse {
     @Builder.Default
     private List<LinkResponse> links = new ArrayList<>();
 
-    public static AssetResponse from(Asset brokerAsset) {
+    public static AssetResponse from(Asset assetAsset) {
         return AssetResponse.builder()
-                .assetId(brokerAsset.getAssetId())
-                .assetName(brokerAsset.getAssetName())
-                .type(brokerAsset.getType())
-                .dateTime(brokerAsset.getDateTime())
-                .marketCap(brokerAsset.getMarketCap())
-                .issuedShares(brokerAsset.getIssuedShares())
-                .per(brokerAsset.getPer())
-                .roe(brokerAsset.getRoe())
-                .roa(brokerAsset.getRoa())
-                .links(LinkResponse.from(brokerAsset.getLinks()))
+                .assetId(assetAsset.getAssetId())
+                .assetName(assetAsset.getAssetName())
+                .type(assetAsset.getType())
+                .dateTime(assetAsset.getDateTime())
+                .marketCap(assetAsset.getMarketCap())
+                .issuedShares(assetAsset.getIssuedShares())
+                .per(assetAsset.getPer())
+                .roe(assetAsset.getRoe())
+                .roa(assetAsset.getRoa())
+                .links(LinkResponse.from(assetAsset.getLinks()))
                 .build();
     }
 

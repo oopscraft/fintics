@@ -158,7 +158,7 @@ public class TradesRestController {
 
     @GetMapping("{tradeId}/balance")
     public ResponseEntity<BalanceResponse> getTradeBalance(@PathVariable("tradeId") String tradeId) throws InterruptedException {
-        BalanceResponse balanceResponse = tradeService.getTradeBalance(tradeId)
+        BalanceResponse balanceResponse = tradeService.getBalance(tradeId)
                 .map(BalanceResponse::from)
                 .orElseThrow();
         return ResponseEntity.ok(balanceResponse);

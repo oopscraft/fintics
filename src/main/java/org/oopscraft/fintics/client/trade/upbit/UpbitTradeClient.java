@@ -391,7 +391,7 @@ public class UpbitTradeClient extends TradeClient {
                     // order
                     return Order.builder()
                             .type(orderKind)
-                            .assetId(getDefinition().getExchangeId() + "." + symbol)
+                            .assetId(toAssetId(symbol))
                             .kind(orderType)
                             .quantity(quantity)
                             .price(price)

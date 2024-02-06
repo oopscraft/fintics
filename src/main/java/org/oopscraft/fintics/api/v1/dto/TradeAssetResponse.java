@@ -31,6 +31,13 @@ public class TradeAssetResponse extends AssetResponse {
                 .links(LinkResponse.from(tradeAsset.getLinks()))
                 .enabled(tradeAsset.isEnabled())
                 .holdRatio(tradeAsset.getHoldRatio())
+                .type(tradeAsset.getType())
+                .marketCap(tradeAsset.getMarketCap())
+                .issuedShares(tradeAsset.getIssuedShares())
+                .per(tradeAsset.getPer())
+                .roe(tradeAsset.getRoe())
+                .roa(tradeAsset.getRoa())
+                .links(LinkResponse.from(tradeAsset.getLinks()))
                 .build();
     }
 

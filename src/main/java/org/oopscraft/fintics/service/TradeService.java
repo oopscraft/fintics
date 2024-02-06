@@ -32,6 +32,8 @@ public class TradeService {
 
     private final TradeClientFactory brokerClientFactory;
 
+    private final AssetRepository assetRepository;
+
     @PersistenceContext
     private final EntityManager entityManager;
 
@@ -127,11 +129,22 @@ public class TradeService {
         return new PageImpl<>(orders, pageable, total);
     }
 
-    public Optional<Balance> getTradeBalance(String tradeId) throws InterruptedException {
+    public Optional<Balance> getBalance(String tradeId) throws InterruptedException {
         Trade trade = getTrade(tradeId).orElseThrow();
         if(trade.getTradeClientId() != null) {
             TradeClient tradeClient = brokerClientFactory.getObject(trade.getTradeClientId(), trade.getTradeClientConfig());
-            return Optional.ofNullable(tradeClient.getBalance());
+            Balance balance = tradeClient.getBalance();
+            balance.getBalanceAssets().forEach(balanceAsset -> {
+                assetRepository.findById(balanceAsset.getAssetId()).ifPresent(assetEntity -> {
+                    balanceAsset.setType(assetEntity.getType());
+                    balanceAsset.setIssuedShares(assetEntity.getIssuedShares());
+                    balanceAsset.setMarketCap(assetEntity.getMarketCap());
+                    balanceAsset.setPer(assetEntity.getPer());
+                    balanceAsset.setRoe(assetEntity.getRoe());
+                    balanceAsset.setRoa(assetEntity.getRoa());
+                });
+            });
+            return Optional.of(balance);
         }else{
             return Optional.empty();
         }

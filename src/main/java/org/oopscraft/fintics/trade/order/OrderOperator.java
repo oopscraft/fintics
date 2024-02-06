@@ -81,7 +81,7 @@ public abstract class OrderOperator {
         // check waiting order exists
         Order waitingOrder = brokerClient.getWaitingOrders().stream()
                 .filter(element ->
-                        Objects.equals(element.getAssetId(), order.getAssetId())
+                        Objects.equals(element.getSymbol(), order.getSymbol())
                                 && element.getType() == order.getType())
                 .findFirst()
                 .orElse(null);
@@ -138,7 +138,7 @@ public abstract class OrderOperator {
         // check waiting order exists
         Order waitingOrder = brokerClient.getWaitingOrders().stream()
                 .filter(element ->
-                        Objects.equals(element.getAssetId(), order.getAssetId())
+                        Objects.equals(element.getSymbol(), order.getSymbol())
                                 && element.getType() == order.getType())
                 .findFirst()
                 .orElse(null);

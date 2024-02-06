@@ -7,16 +7,16 @@ import org.oopscraft.fintics.model.*
  * analyze indicator
  * @param indicator indicator
  * @param ohlcvType ohlcvType
- * @param period period
+ * @param ohlcvPeriod period
  * @return result map
  */
-def analyzeIndicator(Indicator indicator, Ohlcv.Type ohlcvType, int period) {
+def analyzeIndicator(Indicator indicator, Ohlcv.Type ohlcvType, int ohlcvPeriod) {
     // info
-    def name = indicator.getIndicatorName() + ':' + ohlcvType + ':' + period
+    def name = indicator.getIndicatorName() + ':' + ohlcvType + ':' + ohlcvPeriod
     def pctChangePeriod = 10
 
     // shortMa
-    def shortMas = indicator.calculate(ohlcvType, period, EmaContext.of(10))
+    def shortMas = indicator.calculate(ohlcvType, ohlcvPeriod, EmaContext.of(10))
     def shortMa = shortMas.first()
     def shortMaValues = shortMas.collect{it.value}
     def shortMaValue = shortMaValues.first()
@@ -24,7 +24,7 @@ def analyzeIndicator(Indicator indicator, Ohlcv.Type ohlcvType, int period) {
     log.debug("[{}] shortMa: {}", name, shortMa)
 
     // longMa
-    def longMas = indicator.calculate(ohlcvType, period, EmaContext.of(30))
+    def longMas = indicator.calculate(ohlcvType, ohlcvPeriod, EmaContext.of(30))
     def longMa = longMas.first()
     def longMaValues = longMas.collect{it.value}
     def longMaValue = longMaValues.first()
@@ -32,7 +32,7 @@ def analyzeIndicator(Indicator indicator, Ohlcv.Type ohlcvType, int period) {
     log.debug("[{}] longMa: {}", name, longMa)
 
     // macd
-    def macds = indicator.calculate(ohlcvType, period, MacdContext.DEFAULT)
+    def macds = indicator.calculate(ohlcvType, ohlcvPeriod, MacdContext.DEFAULT)
     def macd = macds.first()
     def macdValues = macds.collect{it.value}
     def macdValue = macdValues.first()
@@ -44,7 +44,7 @@ def analyzeIndicator(Indicator indicator, Ohlcv.Type ohlcvType, int period) {
     log.debug("[{}] macd: {}", name, macd)
 
     // rsi
-    def rsis = indicator.calculate(ohlcvType, period, RsiContext.DEFAULT)
+    def rsis = indicator.calculate(ohlcvType, ohlcvPeriod, RsiContext.DEFAULT)
     def rsi = rsis.first()
     def rsiValues = rsis.collect{it.value}
     def rsiValue = rsiValues.first()
@@ -54,7 +54,7 @@ def analyzeIndicator(Indicator indicator, Ohlcv.Type ohlcvType, int period) {
     log.debug("[{}] rsi: {}", name, rsi)
 
     // dmi
-    def dmis = indicator.calculate(ohlcvType, period, DmiContext.DEFAULT)
+    def dmis = indicator.calculate(ohlcvType, ohlcvPeriod, DmiContext.DEFAULT)
     def dmi = dmis.first()
     def dmiPdis = dmis.collect{it.pdi}
     def dmiPdi = dmiPdis.first()
@@ -68,7 +68,7 @@ def analyzeIndicator(Indicator indicator, Ohlcv.Type ohlcvType, int period) {
     log.debug("[{}] dmi: {}", name, dmi)
 
     // obv
-    def obvs = indicator.calculate(ohlcvType, period, ObvContext.DEFAULT)
+    def obvs = indicator.calculate(ohlcvType, ohlcvPeriod, ObvContext.DEFAULT)
     def obv = obvs.first()
     def obvValues = obvs.collect{it.value}
     def obvValue = obvValues.first()
@@ -78,7 +78,7 @@ def analyzeIndicator(Indicator indicator, Ohlcv.Type ohlcvType, int period) {
     log.debug("[{}] obv:{}", name, obv)
 
     // co
-    def cos = indicator.calculate(ohlcvType, period, CoContext.DEFAULT)
+    def cos = indicator.calculate(ohlcvType, ohlcvPeriod, CoContext.DEFAULT)
     def co = cos.first()
     def coValues = cos.collect{it.value}
     def coValue = coValues.first()
@@ -128,7 +128,7 @@ def analysisAverages = []
 //=============================
 def assetAnalysisMap = [:]
 def assetAnalysisAverages = []
-//assetAnalysisMap.minute3 = analyzeIndicator(assetIndicator, Ohlcv.Type.MINUTE, 3)
+//assetAnalysisMap.minute = analyzeIndicator(assetIndicator, Ohlcv.Type.MINUTE, 1)
 assetAnalysisMap.minute10 = analyzeIndicator(assetIndicator, Ohlcv.Type.MINUTE, 10)
 //assetAnalysisMap.minute30 = analyzeIndicator(assetIndicator, Ohlcv.Type.MINUTE, 30)
 assetAnalysisMap.minute60 = analyzeIndicator(assetIndicator, Ohlcv.Type.MINUTE, 60)
@@ -147,21 +147,22 @@ def indiceAnalysisMap = [:]
 def indiceAnalysisAverages = []
 
 // USD/KRW (inverse)
-//indiceAnalysisMap.usdKrw = analyzeIndicator(indiceIndicators['USD_KRW'], OhlcvType.MINUTE, 60)
+//indiceAnalysisMap.usdKrw = analyzeIndicator(indiceIndicators['USD_KRW'], Ohlcv.Type.MINUTE, 60)
 //analysisAverages.add(100 - (indiceAnalysisMap.usdKrw.values().average() as Number))
 
 // KOSPI
-//indiceAnalysisMap.kospi = analyzeIndicator(indiceIndicators['KOSPI'], OhlcvType.MINUTE, 60)
+//indiceAnalysisMap.kospi = analyzeIndicator(indiceIndicators['KOSPI'], Ohlcv.Type.MINUTE, 60)
 //analysisAverages.add(indiceAnalysisMap.kospi.values().average())
 
 // Nasdaq Future
-//indiceAnalysisMap.ndxFuture = analyzeIndicator(indiceIndicators['NDX_FUTURE'], OhlcvType.MINUTE, 60)
+//indiceAnalysisMap.ndxFuture = analyzeIndicator(indiceIndicators['NDX_FUTURE'], Ohlcv.Type.MINUTE, 60)
 //analysisAverages.add(indiceAnalysisMap.ndxFuture.values().average())
 
 // logging
 indiceAnalysisMap.each { key, value ->
     def average = value.values().average()
     log.debug("[{}] indiceAnalysisMap.{}: {}", assetAlias, key, average)
+    analysisAverages.add(average)
     indiceAnalysisAverages.add(average)
 }
 
@@ -177,7 +178,7 @@ if(analysisAverage > 70) {
     log.info("[{}] analysisAverage over 70", assetAlias)
     hold = true
 }
-if(analysisAverage < 60) {
+if(analysisAverage < 50) {
     log.info("[{}] analysisAverage under 60", assetAlias)
     hold = false
 }

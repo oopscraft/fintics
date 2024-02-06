@@ -51,7 +51,7 @@ public class DataService {
                 .and(Optional.ofNullable(type).map(AssetOhlcvSpecifications::equalType).orElse(null));
 
         // sort
-        Sort sort = Sort.by(AssetOhlcvEntity_.TYPE).descending();
+        Sort sort = Sort.by(AssetOhlcvEntity_.DATE_TIME).descending();
         pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
 
         // find

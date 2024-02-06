@@ -87,7 +87,8 @@
             trade.tradeAssets.forEach(tradeAsset => {
                 disabledAssetIds.push(tradeAsset.assetId);
             });
-            let selectedAssets = await assetSelect.open(trade.brokerId, disabledAssetIds);
+            let tradeClient = tradeClients.find(tradeClient => tradeClient.tradeClientId === trade.tradeClientId);
+            let selectedAssets = await assetSelect.open(tradeClient.exchangeId, disabledAssetIds);
             selectedAssets.forEach(asset => {
                 trade.tradeAssets.push({
                     assetId: asset.assetId,
@@ -242,6 +243,8 @@
             const indices = /*[[${indices}]]*/[];
             const indiceIndicatorPromises = indices.map(async indice => {
                 let url = new URL(`${_apiUrl}/v1/indices/${indice.indiceId}/indicator`, document.location.origin);
+                url.searchParams.append('dateTimeFrom', simulate.dateTimeFrom);
+                url.searchParams.append('dateTimeTo', simulate.dateTimeTo);
                 return await _fetch(url, null, true);
             });
             Promise.all(indiceIndicatorPromises).then(responses => {
@@ -278,7 +281,6 @@
                 indiceMinuteOhlcvsChart.update();
             });
         }
-
 
         function runSimulate() {
             clearSimulateMarkOrderAtChart();
@@ -629,6 +631,11 @@
                                 <th data-th-text="#{fintics.Asset.assetName}"></th>
                                 <th data-th-text="#{fintics.TradeAsset.enabled}" class="text-align--center"></th>
                                 <th data-th-text="#{fintics.TradeAsset.holdRatio}" class="text-align--center"></th>
+                                <th class="text-align--center" data-th-text="#{fintics.Asset.type}"></th>
+                                <th class="text-align--center" data-th-text="#{fintics.Asset.marketCap}"></th>
+                                <th class="text-align--center" data-th-text="#{fintics.Asset.per}"></th>
+                                <th class="text-align--center" data-th-text="#{fintics.Asset.roe}"></th>
+                                <th class="text-align--center" data-th-text="#{fintics.Asset.roa}"></th>
                                 <th></th>
                             </tr>
                             </thead>
@@ -664,6 +671,21 @@
                                                data-duice-property="holdRatio" class="width--50"/>
                                         %
                                     </label>
+                                </td>
+                                <td class="text-align--center">
+                                    <span data-duice-bind="tradeAsset" data-duice-property="type" class="font-size--smaller font-weight--bold"></span>
+                                </td>
+                                <td class="text-align--center">
+                                    <span data-duice-bind="tradeAsset" data-duice-property="marketCap" data-duice-format="number" class="font-size--smaller"></span>
+                                </td>
+                                <td class="text-align--center">
+                                    <span data-duice-bind="tradeAsset" data-duice-property="per" data-duice-format="number" class="font-size--smaller"></span>
+                                </td>
+                                <td class="text-align--center">
+                                    <span data-duice-bind="tradeAsset" data-duice-property="roe" data-duice-format="number" class="font-size--smaller"></span>
+                                </td>
+                                <td class="text-align--center">
+                                    <span data-duice-bind="tradeAsset" data-duice-property="roa" data-duice-format="number" class="font-size--smaller"></span>
                                 </td>
                                 <td class="text-align--right font-size--smaller">
                                     <button type="button"
@@ -1070,7 +1092,13 @@
                                 <th data-th-text="#{fintics.BalanceAsset.quantity}"></th>
                                 <th data-th-text="#{fintics.BalanceAsset.purchaseAmount}"></th>
                                 <th data-th-text="#{fintics.BalanceAsset.valuationAmount}"></th>
-                                <th data-th-text="#{fintics.BalanceAsset.profitAmount}" class="text-align--center"></thd>
+                                <th data-th-text="#{fintics.BalanceAsset.profitAmount}" class="text-align--center"></th>
+                                <th class="text-align--center" data-th-text="#{fintics.Asset.type}"></th>
+                                <th class="text-align--center" data-th-text="#{fintics.Asset.marketCap}"></th>
+                                <th class="text-align--center" data-th-text="#{fintics.Asset.per}"></th>
+                                <th class="text-align--center" data-th-text="#{fintics.Asset.roe}"></th>
+                                <th class="text-align--center" data-th-text="#{fintics.Asset.roa}"></th>
+                                <th></th>
                             </tr>
                             </thead>
                             <tbody>
@@ -1115,6 +1143,33 @@
                                             ">
                                     </span>
                                 </td>
+                                <td class="text-align--center">
+                                    <span data-duice-bind="balanceAsset" data-duice-property="type" class="font-size--smaller font-weight--bold"></span>
+                                </td>
+                                <td class="text-align--center">
+                                    <span data-duice-bind="balanceAsset" data-duice-property="marketCap" data-duice-format="number" class="font-size--smaller"></span>
+                                </td>
+                                <td class="text-align--center">
+                                    <span data-duice-bind="balanceAsset" data-duice-property="per" data-duice-format="number" class="font-size--smaller"></span>
+                                </td>
+                                <td class="text-align--center">
+                                    <span data-duice-bind="balanceAsset" data-duice-property="roe" data-duice-format="number" class="font-size--smaller"></span>
+                                </td>
+                                <td class="text-align--center">
+                                    <span data-duice-bind="balanceAsset" data-duice-property="roa" data-duice-format="number" class="font-size--smaller"></span>
+                                </td>
+                                <td class="text-align--right font-size--smaller">
+                                    <button type="button"
+                                            class="small"
+                                            data-duice-bind="balanceAsset.links"
+                                            data-duice-loop="link,status"
+                                            data-duice-execute="
+                                    this.dataset.url=link.url;
+                                    this.addEventListener('click', () => { _openLink(this.dataset.url,'_blank'); })">
+                                        <img class="icon" th:src="@{/static/image/icon-open.svg}" alt="link"/>
+                                        <span class="font-weight--bold" data-duice-bind="link" data-duice-property="name"></span>
+                                    </button>
+                                </td>
                             </tr>
                             <tr data-duice-bind="balance.balanceAssets" data-duice-execute="if(balance.balanceAssets.length === 0) this.hidden=false;" hidden>
                                 <td colspan="100%" class="text-align--center">No Data</td>
@@ -1143,7 +1198,7 @@
         <script th:inline="javascript">
             const assetSelect = {
                 dialog: new duice.dialog.Dialog(document.getElementById('assetSelect')),
-                brokerId: null,
+                exchangeId: null,
                 alreadySelectedAssetIds : null,
                 assetSearch: new duice.ObjectProxy({
                     key: 'assetName',
@@ -1155,8 +1210,8 @@
                 }),
                 assets: new duice.ArrayProxy([]),
                 selectedAssets: new duice.ArrayProxy([]),
-                open: async function(brokerId, alreadySelectedIds) {
-                    this.brokerId = brokerId;
+                open: async function(exchangeId, alreadySelectedIds) {
+                    this.exchangeId = exchangeId;
                     if(alreadySelectedIds) {
                         this.alreadySelectedAssetIds = alreadySelectedIds;
                     }else{
@@ -1167,10 +1222,11 @@
                     return this.dialog.open();
                 },
                 getAssets: function(page) {
-                    if(page) {
-                        this.assetSearch._page = page;
-                    }
+                    this.assetSearch._page = page || 0;
                     let url = new URL(`${_apiUrl}/v1/assets`, document.location.origin);
+                    if(this.exchangeId) {
+                        url.searchParams.append('assetId', this.exchangeId + '.');
+                    }
                     if(this.assetSearch.key && this.assetSearch.value) {
                         url.searchParams.append(this.assetSearch.key, this.assetSearch.value);
                     }
@@ -1299,7 +1355,7 @@
                                 <img class="icon" th:src="@{/static/image/icon-add.svg}" alt="add"/>
                             </button>
                         </td>
-                        <td class="text-align--center">
+                        <td>
                             <span data-duice-bind="asset" data-duice-property="assetId" class="font-weight--bold"></span>
                         </td>
                         <td>
@@ -1393,7 +1449,7 @@
                                 <img class="icon" th:src="@{/static/image/icon-remove.svg}" alt="remove"/>
                             </button>
                         </td>
-                        <td class="text-align--center">
+                        <td>
                             <span data-duice-bind="asset" data-duice-property="assetId" class="font-weight--bold"></span>
                         </td>
                         <td>
@@ -1442,5 +1498,7 @@
             </div>
         </div>
     </dialog>
-
+<h1>
+    <input id="test" type="datetime-local"/>
+</h1>
 </th:block>
