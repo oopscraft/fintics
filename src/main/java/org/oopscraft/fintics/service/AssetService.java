@@ -55,14 +55,13 @@ public class AssetService {
     }
 
     public Optional<AssetIndicator> getAssetIndicator(String assetId, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo) {
-        AssetEntity brokerAssetEntity = assetRepository.findById(assetId)
+        AssetEntity assetEntity = assetRepository.findById(assetId)
                 .orElse(null);
-        String assetName = (brokerAssetEntity != null ? brokerAssetEntity.getAssetName() : assetId);
+        String assetName = (assetEntity != null ? assetEntity.getAssetName() : assetId);
 
         // minute ohlcv
         LocalDateTime minuteDateTimeTo = Optional.ofNullable(dateTimeTo)
-                .orElse(assetOhlcvRepository.findMaxDateTimeByAssetIdAndType(assetId, Ohlcv.Type.MINUTE)
-                        .orElse(LocalDateTime.now()));
+                .orElse(LocalDateTime.now());
         LocalDateTime minuteDateTimeFrom = Optional.ofNullable(dateTimeFrom)
                 .orElse(minuteDateTimeTo.minusDays(1));
         List<Ohlcv> minuteOhlcvs = assetOhlcvRepository.findAllByAssetIdAndType(assetId, Ohlcv.Type.MINUTE, minuteDateTimeFrom, minuteDateTimeTo, Pageable.unpaged())
@@ -72,8 +71,7 @@ public class AssetService {
 
         // daily ohlcv
         LocalDateTime dailyDateTimeTo = Optional.ofNullable(dateTimeTo)
-                .orElse(assetOhlcvRepository.findMaxDateTimeByAssetIdAndType(assetId, Ohlcv.Type.DAILY)
-                        .orElse(LocalDateTime.now()));
+                .orElse(LocalDateTime.now());
         LocalDateTime dailyDateTimeFrom = Optional.ofNullable(dateTimeFrom)
                 .orElse(dailyDateTimeTo.minusMonths(1));
         List<Ohlcv> dailyOhlcvs = assetOhlcvRepository.findAllByAssetIdAndType(assetId, Ohlcv.Type.DAILY, dailyDateTimeFrom, dailyDateTimeTo, Pageable.unpaged())

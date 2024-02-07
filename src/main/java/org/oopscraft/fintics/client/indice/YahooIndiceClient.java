@@ -18,6 +18,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -33,8 +34,8 @@ public class YahooIndiceClient extends IndiceClient {
     private final ObjectMapper objectMapper;
 
     @Override
-    public List<Ohlcv> getMinuteOhlcvs(IndiceId symbol, LocalDateTime dateTime) {
-        return switch (symbol) {
+    public List<Ohlcv> getMinuteOhlcvs(IndiceId indiceId, LocalDateTime dateTime) {
+        return switch (indiceId) {
             case NDX -> getMinuteOhlcvs("^NDX", dateTime);
             case NDX_FUTURE -> getMinuteOhlcvs("NQ=F", dateTime);
             case SPX -> getMinuteOhlcvs("^GSPC", dateTime);
@@ -46,8 +47,8 @@ public class YahooIndiceClient extends IndiceClient {
     }
 
     @Override
-    public List<Ohlcv> getDailyOhlcvs(IndiceId symbol, LocalDateTime dateTime) {
-        return switch (symbol) {
+    public List<Ohlcv> getDailyOhlcvs(IndiceId indiceId, LocalDateTime dateTime) {
+        return switch (indiceId) {
             case NDX -> getDailyOhlcvs("^NDX", dateTime);
             case NDX_FUTURE -> getDailyOhlcvs("NQ=F", dateTime);
             case SPX -> getDailyOhlcvs("^GSPC", dateTime);
@@ -138,11 +139,11 @@ public class YahooIndiceClient extends IndiceClient {
                 Ohlcv ohlcv = Ohlcv.builder()
                         .dateTime(dateTime)
                         .type(type)
-                        .openPrice(openPrice)
-                        .highPrice(highPrice)
-                        .lowPrice(lowPrice)
-                        .closePrice(closePrice)
-                        .volume(volume)
+                        .openPrice(openPrice.setScale(2, RoundingMode.HALF_UP))
+                        .highPrice(highPrice.setScale(2, RoundingMode.HALF_UP))
+                        .lowPrice(lowPrice.setScale(2, RoundingMode.HALF_UP))
+                        .closePrice(closePrice.setScale(2, RoundingMode.HALF_UP))
+                        .volume(volume.setScale(2, RoundingMode.HALF_UP))
                         .build();
                 ohlcvMap.put(dateTime, ohlcv);
             }

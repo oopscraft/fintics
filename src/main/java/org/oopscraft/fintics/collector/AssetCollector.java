@@ -24,13 +24,13 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class AssetCollector {
+public class AssetCollector extends AbstractCollector {
 
     private final TradeRepository tradeRepository;
 
     private final TradeClientFactory brokerClientFactory;
 
-    private final AssetRepository brokerAssetRepository;
+    private final AssetRepository assetRepository;
 
     private final PlatformTransactionManager transactionManager;
 
@@ -39,14 +39,14 @@ public class AssetCollector {
     public void collect() {
         log.info("Start collect broker asset.");
         List<TradeEntity> tradeEntities = tradeRepository.findAll();
-        List<String> processedBrokerIds = new ArrayList<>();
+        List<String> completedTradeClientIds = new ArrayList<>();
         for (TradeEntity tradeEntity : tradeEntities) {
             try {
-                String brokerId = tradeEntity.getTradeClientId();
-                if(!processedBrokerIds.contains(brokerId)) {
+                String tradeClientId = tradeEntity.getTradeClientId();
+                if(!completedTradeClientIds.contains(tradeClientId)) {
                     Trade trade = Trade.from(tradeEntity);
-                    saveBrokerAssets(trade);
-                    processedBrokerIds.add(brokerId);
+                    saveAssets(trade);
+                    completedTradeClientIds.add(tradeClientId);
                 }
             } catch (Throwable e) {
                 log.warn(e.getMessage());
@@ -55,9 +55,9 @@ public class AssetCollector {
         log.info("End collect broker asset");
     }
 
-    protected void saveBrokerAssets(Trade trade) {
-        TradeClient brokerClient = brokerClientFactory.getObject(trade);
-        List<AssetEntity> brokerAssetEntities = brokerClient.getAssets().stream()
+    protected void saveAssets(Trade trade) {
+        TradeClient tradeClient = brokerClientFactory.getObject(trade);
+        List<AssetEntity> assetEntities = tradeClient.getAssets().stream()
                 .map(brokerAsset -> AssetEntity.builder()
                         .assetId(brokerAsset.getAssetId())
                         .assetName(brokerAsset.getAssetName())
@@ -69,33 +69,7 @@ public class AssetCollector {
                         .roa(brokerAsset.getRoa())
                         .build())
                 .collect(Collectors.toList());
-
-        // save
-        TransactionDefinition definition = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-        TransactionStatus status = transactionManager.getTransaction(definition);
-        try {
-            int count = 0;
-            for(AssetEntity brokerAssetEntity : brokerAssetEntities) {
-                count ++;
-                brokerAssetRepository.saveAndFlush(brokerAssetEntity);
-
-                // middle commit
-                if(count % 100 == 0) {
-                    transactionManager.commit(status);
-                    status = transactionManager.getTransaction(definition);
-                }
-            }
-
-            // final commit
-            transactionManager.commit(status);
-
-        } catch(Exception e) {
-            transactionManager.rollback(status);
-        } finally {
-            if(!status.isCompleted()) {
-                transactionManager.rollback(status);
-            }
-        }
+        saveEntities(assetEntities, transactionManager, assetRepository);
     }
 
 }

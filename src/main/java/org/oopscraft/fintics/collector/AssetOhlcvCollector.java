@@ -5,37 +5,40 @@ import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.fintics.FinticsProperties;
 import org.oopscraft.fintics.client.trade.TradeClient;
 import org.oopscraft.fintics.client.trade.TradeClientFactory;
-import org.oopscraft.fintics.dao.AssetOhlcvEntity;
-import org.oopscraft.fintics.dao.AssetOhlcvRepository;
-import org.oopscraft.fintics.dao.TradeEntity;
-import org.oopscraft.fintics.dao.TradeRepository;
+import org.oopscraft.fintics.dao.*;
+import org.oopscraft.fintics.model.AssetOhlcv;
 import org.oopscraft.fintics.model.Ohlcv;
 import org.oopscraft.fintics.model.Trade;
 import org.oopscraft.fintics.model.TradeAsset;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
 @Transactional
-public class AssetOhlcvCollector {
+public class AssetOhlcvCollector extends OhlcvCollector {
 
     private final FinticsProperties finticsProperties;
 
     private final TradeRepository tradeRepository;
 
-    private final TradeClientFactory brokerClientFactory;
+    private final TradeClientFactory tradeClientFactory;
 
-    private final AssetOhlcvRepository tradeAssetOhlcvRepository;
+    private final AssetOhlcvRepository assetOhlcvRepository;
+
+    private final PlatformTransactionManager transactionManager;
 
     @PersistenceContext
     private final EntityManager entityManager;
@@ -43,54 +46,71 @@ public class AssetOhlcvCollector {
     @Scheduled(initialDelay = 1_000, fixedDelay = 60_000)
     @Transactional
     public void collect() {
-        log.info("Start collect broker asset ohlcv.");
+        log.info("Start collect asset ohlcv.");
+        LocalDateTime dateTime = LocalDateTime.now();
         List<TradeEntity> tradeEntities = tradeRepository.findAll();
         for (TradeEntity tradeEntity : tradeEntities) {
             try {
                 Trade trade = Trade.from(tradeEntity);
                 for (TradeAsset tradeAsset : trade.getTradeAssets()) {
-                    saveAssetOhlcv(trade, tradeAsset);
-                    deletePastRetentionOhlcv(trade, tradeAsset);
+                    saveAssetMinuteOhlcvs(trade, tradeAsset, dateTime);
+                    saveAssetDailyOhlcvs(trade, tradeAsset, dateTime);
+                    deletePastRetentionOhlcvs(trade, tradeAsset);
                 }
             } catch (Throwable e) {
                 log.warn(e.getMessage());
             }
         }
-        log.info("End collect broker asset ohlcv");
+        log.info("End collect asset ohlcv");
     }
 
-    private void saveAssetOhlcv(Trade trade, TradeAsset tradeAsset) throws InterruptedException {
-        TradeClient brokerClient = brokerClientFactory.getObject(trade);
-        LocalDateTime dateTime = LocalDateTime.now();
+    private void saveAssetMinuteOhlcvs(Trade trade, TradeAsset tradeAsset, LocalDateTime dateTime) throws InterruptedException {
+        TradeClient tradeClient = tradeClientFactory.getObject(trade);
+        List<Ohlcv> minuteOhlcvs = tradeClient.getMinuteOhlcvs(tradeAsset, dateTime);
+        if(minuteOhlcvs.isEmpty()) {
+            return;
+        }
 
-        // minutes
-        List<Ohlcv> minuteOhlcvs = brokerClient.getMinuteOhlcvs(tradeAsset, dateTime);
-        Collections.reverse(minuteOhlcvs);
-        LocalDateTime minuteLastDateTime = tradeAssetOhlcvRepository.findMaxDateTimeByAssetIdAndType(tradeAsset.getAssetId(), Ohlcv.Type.MINUTE)
-                .orElse(getExpiredDateTime())
-                .minusMinutes(2);
-        List<AssetOhlcvEntity> minuteTradeAssetOhlcvEntities = minuteOhlcvs.stream()
-                .filter(ohlcv -> ohlcv.getDateTime().isAfter(minuteLastDateTime))
-                .limit(10)
-                .map(ohlcv -> toAssetOhlcvEntity(trade.getTradeClientId(), tradeAsset.getAssetId(), ohlcv))
-                .collect(Collectors.toList());
-        tradeAssetOhlcvRepository.saveAllAndFlush(minuteTradeAssetOhlcvEntities);
+        // current
+        List<AssetOhlcvEntity> minuteOhlcvEntities = minuteOhlcvs.stream()
+                .map(ohlcv -> toAssetOhlcvEntity(tradeAsset.getAssetId(), ohlcv))
+                .toList();
 
-        // daily
-        List<Ohlcv> dailyOhlcvs = brokerClient.getDailyOhlcvs(tradeAsset, dateTime);
-        Collections.reverse(dailyOhlcvs);
-        LocalDateTime dailyLastDateTime = tradeAssetOhlcvRepository.findMaxDateTimeByAssetIdAndType(tradeAsset.getAssetId(), Ohlcv.Type.DAILY)
-                .orElse(getExpiredDateTime())
-                .minusDays(2);
+        // previous
+        LocalDateTime dateTimeFrom = minuteOhlcvs.get(minuteOhlcvs.size()-1).getDateTime();
+        LocalDateTime dateTimeTo = minuteOhlcvs.get(0).getDateTime();
+        List<AssetOhlcvEntity> previousMinuteEntities = assetOhlcvRepository.findAllByAssetIdAndType(tradeAsset.getAssetId(), Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo, Pageable.unpaged());
+
+        // save new or changed
+        List<AssetOhlcvEntity> newOrChangedMinuteOhlcvEntities = extractNewOrChangedOhlcvEntities(minuteOhlcvEntities, previousMinuteEntities);
+        log.info("saveAssetMinuteOhlcvs[{}]:{}", tradeAsset.getAssetId(), newOrChangedMinuteOhlcvEntities.size());
+        saveEntities(newOrChangedMinuteOhlcvEntities, transactionManager, assetOhlcvRepository);
+    }
+
+    private void saveAssetDailyOhlcvs(Trade trade, TradeAsset tradeAsset, LocalDateTime dateTime) throws InterruptedException {
+        TradeClient tradeClient = tradeClientFactory.getObject(trade);
+        List<Ohlcv> dailyOhlcvs = tradeClient.getDailyOhlcvs(tradeAsset, dateTime);
+        if(dailyOhlcvs.isEmpty()) {
+            return;
+        }
+
+        // current
         List<AssetOhlcvEntity> dailyOhlcvEntities = dailyOhlcvs.stream()
-                .filter(ohlcv -> ohlcv.getDateTime().isAfter(dailyLastDateTime))
-                .limit(10)
-                .map(ohlcv -> toAssetOhlcvEntity(trade.getTradeClientId(), tradeAsset.getAssetId(), ohlcv))
-                .collect(Collectors.toList());
-        tradeAssetOhlcvRepository.saveAllAndFlush(dailyOhlcvEntities);
+                .map(ohlcv -> toAssetOhlcvEntity(tradeAsset.getAssetId(), ohlcv))
+                .toList();
+
+        // previous
+        LocalDateTime dateTimeFrom = dailyOhlcvs.get(dailyOhlcvs.size()-1).getDateTime();
+        LocalDateTime dateTimeTo = dailyOhlcvs.get(0).getDateTime();
+        List<AssetOhlcvEntity> previousDailyOhlcvEntities = assetOhlcvRepository.findAllByAssetIdAndType(tradeAsset.getAssetId(), Ohlcv.Type.DAILY, dateTimeFrom, dateTimeTo, Pageable.unpaged());
+
+        // save new or changed
+        List<AssetOhlcvEntity> newOrChangedDailyOhlcvEntities = extractNewOrChangedOhlcvEntities(dailyOhlcvEntities, previousDailyOhlcvEntities);
+        log.info("saveAssetDailyOhlcvs[{}]:{}", tradeAsset.getAssetId(), newOrChangedDailyOhlcvEntities.size());
+        saveEntities(newOrChangedDailyOhlcvEntities, transactionManager, assetOhlcvRepository);
     }
 
-    private AssetOhlcvEntity toAssetOhlcvEntity(String tradeClientId, String assetId, Ohlcv ohlcv) {
+    private AssetOhlcvEntity toAssetOhlcvEntity(String assetId, Ohlcv ohlcv) {
         return AssetOhlcvEntity.builder()
                 .assetId(assetId)
                 .dateTime(ohlcv.getDateTime())
@@ -103,18 +123,15 @@ public class AssetOhlcvCollector {
                 .build();
     }
 
-    private LocalDateTime getExpiredDateTime() {
-        return LocalDateTime.now().minusMonths(finticsProperties.getOhlcvRetentionMonths());
-    }
-
-    private void deletePastRetentionOhlcv(Trade trade, TradeAsset tradeAsset) {
+    private void deletePastRetentionOhlcvs(Trade trade, TradeAsset tradeAsset) {
+        LocalDateTime expiredDateTime = LocalDateTime.now().minusMonths(finticsProperties.getOhlcvRetentionMonths());
         entityManager.createQuery(
                         "delete" +
                                 " from AssetOhlcvEntity" +
                                 " where assetId = :assetId " +
                                 " and dateTime < :expiredDateTime")
                 .setParameter("assetId", tradeAsset.getAssetId())
-                .setParameter("expiredDateTime", getExpiredDateTime())
+                .setParameter("expiredDateTime", expiredDateTime)
                 .executeUpdate();
         entityManager.flush();
         entityManager.clear();

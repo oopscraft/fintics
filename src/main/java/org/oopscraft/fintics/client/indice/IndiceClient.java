@@ -8,8 +8,8 @@ import java.util.List;
 
 public abstract class IndiceClient {
 
-    public abstract List<Ohlcv> getMinuteOhlcvs(IndiceId symbol, LocalDateTime dateTime);
+    public abstract List<Ohlcv> getMinuteOhlcvs(IndiceId indiceId, LocalDateTime dateTime);
 
-    public abstract List<Ohlcv> getDailyOhlcvs(IndiceId symbol, LocalDateTime dateTime);
+    public abstract List<Ohlcv> getDailyOhlcvs(IndiceId indiceId, LocalDateTime dateTime);
 
 }

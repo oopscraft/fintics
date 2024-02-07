@@ -16,14 +16,6 @@ import java.util.Optional;
 @Repository
 public interface IndiceOhlcvRepository extends JpaRepository<IndiceOhlcvEntity, IndiceOhlcvEntity.Pk>, JpaSpecificationExecutor<IndiceOhlcvEntity> {
 
-    @Query("select max(a.dateTime) from IndiceOhlcvEntity a" +
-            " where a.indiceId = :indiceId" +
-            " and a.type = :type")
-    Optional<LocalDateTime> findMaxDateTimeByIndiceIdAndType(
-            @Param("indiceId") IndiceId indiceId,
-            @Param("type") Ohlcv.Type type
-    );
-
     @Query("select a from IndiceOhlcvEntity a" +
             " where a.indiceId = :indiceId" +
             " and a.type = :type" +

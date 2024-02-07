@@ -8,27 +8,32 @@ import org.oopscraft.fintics.dao.IndiceOhlcvEntity;
 import org.oopscraft.fintics.dao.IndiceOhlcvRepository;
 import org.oopscraft.fintics.model.IndiceId;
 import org.oopscraft.fintics.model.Ohlcv;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class IndiceOhlcvCollector {
+public class IndiceOhlcvCollector extends OhlcvCollector {
 
     private final FinticsProperties finticsProperties;
 
     private final IndiceClient indiceClient;
 
     private final IndiceOhlcvRepository indiceOhlcvRepository;
+
+    private final PlatformTransactionManager transactionManager;
 
     @PersistenceContext
     private final EntityManager entityManager;
@@ -37,10 +42,12 @@ public class IndiceOhlcvCollector {
     @Transactional
     public void collect() {
         log.info("Start collect indice ohlcv.");
-        for (IndiceId symbol : IndiceId.values()) {
+        LocalDateTime dateTime = LocalDateTime.now();
+        for (IndiceId indiceId: IndiceId.values()) {
             try {
-                saveIndiceOhlcv(symbol);
-                deletePastRetentionOhlcv(symbol);
+                saveIndiceMinuteOhlcvs(indiceId, dateTime);
+                saveIndiceDailyOhlcvs(indiceId, dateTime);
+                deletePastRetentionOhlcv(indiceId);
             } catch (Throwable e) {
                 log.warn(e.getMessage());
             }
@@ -48,34 +55,40 @@ public class IndiceOhlcvCollector {
         log.info("End collect indice ohlcv");
     }
 
-    private void saveIndiceOhlcv(IndiceId symbol) {
-        LocalDateTime dateTime = LocalDateTime.now();
-
-        // minute
-        List<Ohlcv> minuteOhlcvs = indiceClient.getMinuteOhlcvs(symbol, dateTime);
-        Collections.reverse(minuteOhlcvs);
-        LocalDateTime minuteLastDateTime = indiceOhlcvRepository.findMaxDateTimeByIndiceIdAndType(symbol, Ohlcv.Type.MINUTE)
-                .orElse(LocalDateTime.of(1,1,1,0,0,0))
-                .minusMinutes(2);
+    private void saveIndiceMinuteOhlcvs(IndiceId indiceId, LocalDateTime dateTime) throws InterruptedException {
+        // current
+        List<Ohlcv> minuteOhlcvs = indiceClient.getMinuteOhlcvs(indiceId, dateTime);
         List<IndiceOhlcvEntity> minuteOhlcvEntities = minuteOhlcvs.stream()
-                .filter(ohlcv -> ohlcv.getDateTime().isAfter(minuteLastDateTime))
-                .limit(10)
-                .map(ohlcv -> toIndiceOhlcvEntity(symbol, ohlcv))
-                .collect(Collectors.toList());
-        indiceOhlcvRepository.saveAllAndFlush(minuteOhlcvEntities);
+                .map(ohlcv -> toIndiceOhlcvEntity(indiceId, ohlcv))
+                .toList();
 
-        // daily
-        List<Ohlcv> dailyOhlcvs = indiceClient.getDailyOhlcvs(symbol, dateTime);
-        Collections.reverse(dailyOhlcvs);
-        LocalDateTime dailyLastDateTime = indiceOhlcvRepository.findMaxDateTimeByIndiceIdAndType(symbol, Ohlcv.Type.DAILY)
-                .orElse(LocalDateTime.of(1,1,1,0,0,0))
-                .minusDays(2);
+        // previous
+        LocalDateTime dateTimeFrom = minuteOhlcvs.get(minuteOhlcvs.size()-1).getDateTime();
+        LocalDateTime dateTimeTo = minuteOhlcvs.get(0).getDateTime();
+        List<IndiceOhlcvEntity> previousMinuteOhlcvEntities = indiceOhlcvRepository.findAllByIndiceIdAndType(indiceId, Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo, Pageable.unpaged());
+
+        // save new or changed
+        List<IndiceOhlcvEntity> newOrChangedMinuteOhlcvEntities = extractNewOrChangedOhlcvEntities(minuteOhlcvEntities, previousMinuteOhlcvEntities);
+        log.info("saveIndiceMinuteOhlcvs[{}]:{}", indiceId, newOrChangedMinuteOhlcvEntities.size());
+        saveEntities(newOrChangedMinuteOhlcvEntities, transactionManager, indiceOhlcvRepository);
+    }
+
+    private void saveIndiceDailyOhlcvs(IndiceId indiceId, LocalDateTime dateTime) throws InterruptedException {
+        // current
+        List<Ohlcv> dailyOhlcvs = indiceClient.getDailyOhlcvs(indiceId, dateTime);
         List<IndiceOhlcvEntity> dailyOhlcvEntities = dailyOhlcvs.stream()
-                .filter(ohlcv -> ohlcv.getDateTime().isAfter(dailyLastDateTime))
-                .limit(10)
-                .map(ohlcv -> toIndiceOhlcvEntity(symbol, ohlcv))
-                .collect(Collectors.toList());
-        indiceOhlcvRepository.saveAllAndFlush(dailyOhlcvEntities);
+                .map(ohlcv -> toIndiceOhlcvEntity(indiceId, ohlcv))
+                .toList();
+
+        // previous
+        LocalDateTime dateTimeFrom = dailyOhlcvs.get(dailyOhlcvs.size()-1).getDateTime();
+        LocalDateTime dateTimeTo = dailyOhlcvs.get(0).getDateTime();
+        List<IndiceOhlcvEntity> previousDailyOhlcvEntities = indiceOhlcvRepository.findAllByIndiceIdAndType(indiceId, Ohlcv.Type.DAILY, dateTimeFrom, dateTimeTo, Pageable.unpaged());
+
+        // save new or changed
+        List<IndiceOhlcvEntity> newOrChangedDailyOhlcvEntities = extractNewOrChangedOhlcvEntities(dailyOhlcvEntities, previousDailyOhlcvEntities);
+        log.info("saveIndiceDailyOhlcvs[{}]:{}", indiceId, newOrChangedDailyOhlcvEntities.size());
+        saveEntities(newOrChangedDailyOhlcvEntities, transactionManager, indiceOhlcvRepository);
     }
 
     private IndiceOhlcvEntity toIndiceOhlcvEntity(IndiceId indiceId, Ohlcv ohlcv) {
@@ -91,14 +104,15 @@ public class IndiceOhlcvCollector {
                 .build();
     }
 
-    private void deletePastRetentionOhlcv(IndiceId symbol) {
+    private void deletePastRetentionOhlcv(IndiceId indiceId) {
+        LocalDateTime expiredDateTime = LocalDateTime.now().minusMonths(finticsProperties.getOhlcvRetentionMonths());
         entityManager.createQuery(
                         "delete" +
                                 " from IndiceOhlcvEntity" +
-                                " where indiceId = :symbol " +
+                                " where indiceId = :indiceId " +
                                 " and dateTime < :expiredDateTime")
-                .setParameter("symbol", symbol)
-                .setParameter("expiredDateTime", LocalDateTime.now().minusMonths(finticsProperties.getOhlcvRetentionMonths()))
+                .setParameter("indiceId", indiceId)
+                .setParameter("expiredDateTime", expiredDateTime)
                 .executeUpdate();
         entityManager.flush();
         entityManager.clear();

@@ -58,7 +58,7 @@ class BrokerAssetCollectorTest extends CoreTestSupport {
                 .tradeClientConfig("test=test")
                 .build();
         // when
-        assetCollector.saveBrokerAssets(trade);
+        assetCollector.saveAssets(trade);
         // then
         List<AssetEntity> brokerAssetEntities = entityManager
                 .createQuery("select a from AssetEntity a", AssetEntity.class)

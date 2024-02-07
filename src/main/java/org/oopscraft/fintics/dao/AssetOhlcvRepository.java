@@ -15,14 +15,6 @@ import java.util.Optional;
 @Repository
 public interface AssetOhlcvRepository extends JpaRepository<AssetOhlcvEntity, AssetOhlcvEntity.Pk>, JpaSpecificationExecutor<AssetOhlcvEntity> {
 
-    @Query("select max(a.dateTime) from AssetOhlcvEntity a " +
-            " where a.assetId = :assetId" +
-            " and a.type = :type")
-    Optional<LocalDateTime> findMaxDateTimeByAssetIdAndType(
-            @Param("assetId")String assetId,
-            @Param("type") Ohlcv.Type type
-    );
-
     @Query("select a from AssetOhlcvEntity a " +
             " where a.assetId = :assetId" +
             " and a.type = :type" +

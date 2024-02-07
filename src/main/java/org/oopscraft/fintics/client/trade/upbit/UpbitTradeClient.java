@@ -180,11 +180,11 @@ public class UpbitTradeClient extends TradeClient {
                     return Ohlcv.builder()
                             .type(ohlcvType)
                             .dateTime(dateTime)
-                            .openPrice(row.getNumber("opening_price"))
-                            .highPrice(row.getNumber("high_price"))
-                            .lowPrice(row.getNumber("low_price"))
-                            .closePrice(row.getNumber("trade_price"))
-                            .volume(row.getNumber("candle_acc_trade_volume"))
+                            .openPrice(row.getNumber("opening_price").setScale(2, RoundingMode.HALF_UP))
+                            .highPrice(row.getNumber("high_price").setScale(2, RoundingMode.HALF_UP))
+                            .lowPrice(row.getNumber("low_price").setScale(2, RoundingMode.HALF_UP))
+                            .closePrice(row.getNumber("trade_price").setScale(2, RoundingMode.HALF_UP))
+                            .volume(row.getNumber("candle_acc_trade_volume").setScale(2, RoundingMode.HALF_UP))
                             .build();
                 })
                 .collect(Collectors.toList());
