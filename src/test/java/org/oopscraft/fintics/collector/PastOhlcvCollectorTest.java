@@ -45,11 +45,10 @@ class PastOhlcvCollectorTest extends CoreTestSupport {
         // given
         String yahooSymbol = "005930.KS";
         Ohlcv.Type type = Ohlcv.Type.MINUTE;
-        String interval = "1m";
-        LocalDateTime dateTimeFrom = LocalDateTime.now().minusWeeks(1);
+        LocalDateTime dateTimeFrom = LocalDateTime.now().minusWeeks(11);
         LocalDateTime dateTimeTo = LocalDateTime.now();
         // when
-        List<Ohlcv> ohlcvs = pastOhlcvCollector.getOhlcvs(yahooSymbol, type, interval, dateTimeFrom, dateTimeTo);
+        List<Ohlcv> ohlcvs = pastOhlcvCollector.getOhlcvs(yahooSymbol, type, dateTimeFrom, dateTimeTo);
         // then
         log.debug("ohlcvs.size():{}", ohlcvs.size());
         assertTrue(ohlcvs.size() > 0);

@@ -25,7 +25,7 @@ public class AssetEntity extends BaseEntity {
     @Column(name = "asset_name")
     private String assetName;
 
-    @Column(name = "exchange")
+    @Column(name = "exchange", length = 16)
     private String exchange;
 
     @Column(name = "type", length = 16)

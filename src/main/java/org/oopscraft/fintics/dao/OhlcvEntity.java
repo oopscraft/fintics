@@ -3,6 +3,7 @@ package org.oopscraft.fintics.dao;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.arch4j.core.data.BaseEntity;
+import org.oopscraft.arch4j.core.data.converter.BooleanToYNConverter;
 import org.oopscraft.fintics.model.Ohlcv;
 
 import javax.persistence.*;
@@ -40,5 +41,9 @@ public abstract class OhlcvEntity extends BaseEntity {
 
     @Column(name = "volume")
     private BigDecimal volume;
+
+    @Column(name = "interpolated")
+    @Convert(converter = BooleanToYNConverter.class)
+    private boolean interpolated;
 
 }

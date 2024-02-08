@@ -87,12 +87,11 @@ public class PastOhlcvCollector extends OhlcvCollector {
     void collectPastAssetMinuteOhlcvs(Asset asset) {
         // defines
         String yahooSymbol = convertToYahooSymbol(asset);
-        String interval = "1m";
         LocalDateTime dateTimeTo = getAssetMinDateTime(asset.getAssetId(), Ohlcv.Type.MINUTE)
                 .orElse(LocalDateTime.now());
         LocalDateTime dateTimeFrom = dateTimeTo.minusDays(1);
         // get minute ohlcvs
-        List<Ohlcv> ohlcvs = getOhlcvs(yahooSymbol, Ohlcv.Type.MINUTE, interval, dateTimeFrom, dateTimeTo);
+        List<Ohlcv> ohlcvs = getOhlcvs(yahooSymbol, Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo);
         // convert and save
         List<AssetOhlcvEntity> ohlcvEntities = ohlcvs.stream()
                 .map(ohlcv -> AssetOhlcvEntity.builder()
@@ -112,12 +111,11 @@ public class PastOhlcvCollector extends OhlcvCollector {
     void collectPastAssetDailyOhlcvs(Asset asset) {
         // defines
         String yahooSymbol = convertToYahooSymbol(asset);
-        String interval = "1d";
         LocalDateTime dateTimeTo = getAssetMinDateTime(asset.getAssetId(), Ohlcv.Type.DAILY)
                 .orElse(LocalDateTime.now());
         LocalDateTime dateTimeFrom = dateTimeTo.minusMonths(1);
         // get daily ohlcvs
-        List<Ohlcv> ohlcvs = getOhlcvs(yahooSymbol, Ohlcv.Type.DAILY, interval, dateTimeFrom, dateTimeTo);
+        List<Ohlcv> ohlcvs = getOhlcvs(yahooSymbol, Ohlcv.Type.DAILY, dateTimeFrom, dateTimeTo);
         // convert and save
         List<AssetOhlcvEntity> ohlcvEntities = ohlcvs.stream()
                 .map(ohlcv -> AssetOhlcvEntity.builder()
@@ -137,12 +135,11 @@ public class PastOhlcvCollector extends OhlcvCollector {
     void collectPastIndiceMinuteOhlcvs(IndiceId indiceId) {
         // defines
         String yahooSymbol = convertToYahooSymbol(indiceId);
-        String interval = "1m";
         LocalDateTime dateTimeTo = getIndiceMinDateTime(indiceId, Ohlcv.Type.MINUTE)
                 .orElse(LocalDateTime.now());
         LocalDateTime dateTimeFrom = dateTimeTo.minusDays(1);
         // get minute ohlcvs
-        List<Ohlcv> ohlcvs = getOhlcvs(yahooSymbol, Ohlcv.Type.MINUTE, interval, dateTimeFrom, dateTimeTo);
+        List<Ohlcv> ohlcvs = getOhlcvs(yahooSymbol, Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo);
         // convert and save
         List<IndiceOhlcvEntity> ohlcvEntities = ohlcvs.stream()
                 .map(ohlcv -> IndiceOhlcvEntity.builder()
@@ -162,12 +159,11 @@ public class PastOhlcvCollector extends OhlcvCollector {
     void collectPastIndiceDailyOhlcvs(IndiceId indiceId) {
         // defines
         String yahooSymbol = convertToYahooSymbol(indiceId);
-        String interval = "1d";
         LocalDateTime dateTimeTo = getIndiceMinDateTime(indiceId, Ohlcv.Type.DAILY)
                 .orElse(LocalDateTime.now());
         LocalDateTime dateTimeFrom = dateTimeTo.minusMonths(1);
         // get daily ohlcvs
-        List<Ohlcv> ohlcvs = getOhlcvs(yahooSymbol, Ohlcv.Type.DAILY, interval, dateTimeFrom, dateTimeTo);
+        List<Ohlcv> ohlcvs = getOhlcvs(yahooSymbol, Ohlcv.Type.DAILY, dateTimeFrom, dateTimeTo);
         // convert and save
         List<IndiceOhlcvEntity> ohlcvEntities = ohlcvs.stream()
                 .map(ohlcv -> IndiceOhlcvEntity.builder()
@@ -220,7 +216,7 @@ public class PastOhlcvCollector extends OhlcvCollector {
             case KOSPI -> yahooSymbol = "^KS11";
             case USD_KRW -> yahooSymbol = "KRW=X";
             case BITCOIN -> yahooSymbol = "BTC-USD";
-        };
+        }
         return yahooSymbol;
     }
 
@@ -233,27 +229,52 @@ public class PastOhlcvCollector extends OhlcvCollector {
         return yahooSymbol;
     }
 
-    List<Ohlcv> getOhlcvs(String yahooSymbol, Ohlcv.Type type, String interval, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo) {
+    List<Ohlcv> getOhlcvs(String yahooSymbol, Ohlcv.Type type, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo) {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
+        HttpHeaders headers = createYahooHeader();
 
+        // url
         String url = String.format("https://query1.finance.yahoo.com/v8/finance/chart/%s", yahooSymbol);
         url = UriComponentsBuilder.fromUriString(url)
                 .queryParam("symbol", yahooSymbol)
-                .queryParam("interval", interval)
+                .queryParam("interval", "-")
                 .queryParam("period1", dateTimeFrom.atZone(ZoneId.systemDefault()).toEpochSecond())
                 .queryParam("period2", dateTimeTo.atZone(ZoneId.systemDefault()).toEpochSecond())
                 .queryParam("corsDomain", "finance.yahoo.com")
                 .build()
                 .toUriString();
 
-        HttpHeaders headers = createYahooHeader();
-        RequestEntity<Void> requestEntity = RequestEntity
-                .get(url)
-                .headers(headers)
-                .build();
-        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+        // intervals
+        List<String> intervals = null;
+        switch(type) {
+            case MINUTE -> intervals = List.of("1m","2m","5m","15m","30m","60m","90m");
+            case DAILY -> intervals = List.of("1d","5d");
+        }
+
+        // try request
+        String interval = null;
+        ResponseEntity<String> responseEntity = null;
+        for(int i = 0; i < intervals.size(); i ++) {
+            interval = intervals.get(i);
+            try {
+                url = UriComponentsBuilder.fromUriString(url)
+                        .replaceQueryParam("interval", interval)
+                        .build()
+                        .toUriString();
+                RequestEntity<Void> requestEntity = RequestEntity
+                        .get(url)
+                        .headers(headers)
+                        .build();
+                responseEntity = restTemplate.exchange(requestEntity, String.class);
+            } catch(Throwable e) {
+                log.warn(e.getMessage());
+                continue;
+            }
+            break;
+        }
+
         JsonNode rootNode;
         try {
             rootNode = objectMapper.readTree(responseEntity.getBody());
@@ -306,6 +327,44 @@ public class PastOhlcvCollector extends OhlcvCollector {
                         .volume(volume.setScale(2, RoundingMode.HALF_UP))
                         .build();
                 ohlcvMap.put(dateTime, ohlcv);
+
+                // interpolates minute ohlcv
+                if(type == Ohlcv.Type.MINUTE) {
+                    int intervalMinutes = Integer.parseInt(interval.replace("m",""));
+                    for(int j = 0; j < intervalMinutes; j++) {
+                        LocalDateTime interpolatedDateTime = dateTime.plusMinutes(j);
+                        Ohlcv interpolatedOhlcv = Ohlcv.builder()
+                                .dateTime(interpolatedDateTime)
+                                .type(type)
+                                .openPrice(openPrice.setScale(2, RoundingMode.HALF_UP))
+                                .highPrice(highPrice.setScale(2, RoundingMode.HALF_UP))
+                                .lowPrice(lowPrice.setScale(2, RoundingMode.HALF_UP))
+                                .closePrice(closePrice.setScale(2, RoundingMode.HALF_UP))
+                                .volume(volume.setScale(2, RoundingMode.HALF_UP))
+                                .interpolated(true)
+                                .build();
+                        ohlcvMap.put(interpolatedDateTime, interpolatedOhlcv);
+                    }
+                }
+                // interpolates daily ohlcv
+                if(type == Ohlcv.Type.DAILY) {
+                    int intervalDays = Integer.parseInt(interval.replace("d",""));
+                    for(int j = 0; j < intervalDays; j++) {
+                        LocalDateTime interpolatedDateTime = dateTime.plusMinutes(j);
+                        Ohlcv interpolatedOhlcv = Ohlcv.builder()
+                                .dateTime(interpolatedDateTime)
+                                .type(type)
+                                .openPrice(openPrice.setScale(2, RoundingMode.HALF_UP))
+                                .highPrice(highPrice.setScale(2, RoundingMode.HALF_UP))
+                                .lowPrice(lowPrice.setScale(2, RoundingMode.HALF_UP))
+                                .closePrice(closePrice.setScale(2, RoundingMode.HALF_UP))
+                                .volume(volume.setScale(2, RoundingMode.HALF_UP))
+                                .interpolated(true)
+                                .build();
+                        ohlcvMap.put(interpolatedDateTime, interpolatedOhlcv);
+                    }
+                }
+
             }
         }
         List<Ohlcv> ohlcvs = new ArrayList<>(ohlcvMap.values());

@@ -34,6 +34,9 @@ public class Ohlcv {
     @Builder.Default
     private BigDecimal volume = BigDecimal.ZERO;
 
+    @Builder.Default
+    private boolean interpolated = false;
+
     public enum Type { MINUTE, DAILY }
 
     @Converter(autoApply = true)
@@ -59,6 +62,7 @@ public class Ohlcv {
                 .lowPrice(ohlcvEntity.getLowPrice())
                 .closePrice(ohlcvEntity.getClosePrice())
                 .volume(ohlcvEntity.getVolume())
+                .interpolated(ohlcvEntity.isInterpolated())
                 .build();
     }
 
