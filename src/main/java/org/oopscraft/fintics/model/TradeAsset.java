@@ -32,6 +32,7 @@ public class TradeAsset extends Asset {
         AssetEntity assetEntity = tradeAssetEntity.getAssetEntity();
         if(assetEntity != null) {
             tradeAsset.setAssetName(assetEntity.getAssetName());
+            tradeAsset.setExchange(assetEntity.getExchange());
             tradeAsset.setType(assetEntity.getType());
             tradeAsset.setMarketCap(assetEntity.getMarketCap());
             tradeAsset.setPer(assetEntity.getPer());

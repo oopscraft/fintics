@@ -9,7 +9,7 @@ import java.util.List;
 public abstract class KrTradeClientDefinition implements TradeClientDefinition {
 
     @Override
-    public String getExchangeId() {
+    public String getMarketId() {
         return "KR";
     }
 

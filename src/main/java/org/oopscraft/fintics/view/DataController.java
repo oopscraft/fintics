@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("data")
@@ -23,7 +22,7 @@ public class DataController {
         ModelAndView modelAndView = new ModelAndView("data.html");
         // exchange ids
         List<String> exchangeIds = TradeClientFactory.getTradeClientDefinitions().stream()
-                .map(TradeClientDefinition::getExchangeId)
+                .map(TradeClientDefinition::getMarketId)
                 .distinct()
                 .toList();
         modelAndView.addObject("exchangeIds", exchangeIds);

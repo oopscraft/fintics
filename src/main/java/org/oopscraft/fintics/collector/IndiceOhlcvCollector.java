@@ -1,5 +1,6 @@
 package org.oopscraft.fintics.collector;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.fintics.FinticsProperties;
@@ -40,19 +41,26 @@ public class IndiceOhlcvCollector extends OhlcvCollector {
 
     @Scheduled(initialDelay = 1_000, fixedDelay = 60_000)
     @Transactional
+    @Override
     public void collect() {
-        log.info("Start collect indice ohlcv.");
-        LocalDateTime dateTime = LocalDateTime.now();
-        for (IndiceId indiceId: IndiceId.values()) {
-            try {
-                saveIndiceMinuteOhlcvs(indiceId, dateTime);
-                saveIndiceDailyOhlcvs(indiceId, dateTime);
-                deletePastRetentionOhlcv(indiceId);
-            } catch (Throwable e) {
-                log.warn(e.getMessage());
+        try {
+            log.info("Start collect indice ohlcv.");
+            LocalDateTime dateTime = LocalDateTime.now();
+            for (IndiceId indiceId : IndiceId.values()) {
+                try {
+                    saveIndiceMinuteOhlcvs(indiceId, dateTime);
+                    saveIndiceDailyOhlcvs(indiceId, dateTime);
+                    deletePastRetentionOhlcv(indiceId);
+                } catch (Throwable e) {
+                    log.warn(e.getMessage());
+                }
             }
+            log.info("End collect indice ohlcv");
+        } catch(Throwable e) {
+            log.error(e.getMessage(), e);
+            // TODO send error alarm
+            throw new RuntimeException(e);
         }
-        log.info("End collect indice ohlcv");
     }
 
     private void saveIndiceMinuteOhlcvs(IndiceId indiceId, LocalDateTime dateTime) throws InterruptedException {

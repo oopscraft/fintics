@@ -22,6 +22,8 @@ public class Asset {
 
     private String assetName;
 
+    private String exchange;
+
     private Type type;
 
     private LocalDateTime dateTime;
@@ -49,10 +51,10 @@ public class Asset {
                 .map(value -> value.split("\\."))
                 .filter(array -> array.length > 1)
                 .map(array -> {
-                    String exchangeId = array[0];
+                    String marketId = array[0];
                     String symbol = array[1];
                     List<Link> links = new ArrayList<>();
-                    switch (exchangeId) {
+                    switch (marketId) {
                         case "KR" ->
                                 links.add(Link.of("Naver", "https://finance.naver.com/item/main.naver?code=" + symbol));
                         case "UPBIT" ->
@@ -74,8 +76,9 @@ public class Asset {
         return Asset.builder()
                 .assetId(assetEntity.getAssetId())
                 .assetName(assetEntity.getAssetName())
-                .dateTime(assetEntity.getDateTime())
+                .exchange(assetEntity.getExchange())
                 .type(assetEntity.getType())
+                .dateTime(assetEntity.getDateTime())
                 .marketCap(assetEntity.getMarketCap())
                 .issuedShares(assetEntity.getIssuedShares())
                 .per(assetEntity.getPer())

@@ -25,6 +25,9 @@ public class AssetEntity extends BaseEntity {
     @Column(name = "asset_name")
     private String assetName;
 
+    @Column(name = "exchange")
+    private String exchange;
+
     @Column(name = "type", length = 16)
     private Asset.Type type;
 

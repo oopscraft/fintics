@@ -20,7 +20,7 @@ public class IndiceIndicatorResponse extends IndicatorResponse {
         return IndiceIndicatorResponse.builder()
                 .indicatorName(indiceIndicator.getIndicatorName())
                 .indiceId(indiceIndicator.getIndiceId())
-                .indiceName(indiceIndicator.getIndiceId().getValue())
+                .indiceName(indiceIndicator.getIndiceId().getIndiceName())
                 .minuteOhlcvs(indiceIndicator.getMinuteOhlcvs())
                 .dailyOhlcvs(indiceIndicator.getDailyOhlcvs())
                 .build();

@@ -12,6 +12,8 @@ import java.util.List;
 @Slf4j
 public abstract class AbstractCollector {
 
+    public abstract void collect();
+
     protected <T, P> void saveEntities(List<T> entities, PlatformTransactionManager transactionManager, JpaRepository<T,P> jpaRepository) {
         TransactionDefinition definition = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         TransactionStatus status = transactionManager.getTransaction(definition);

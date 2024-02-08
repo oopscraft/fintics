@@ -13,7 +13,7 @@ public class IndiceIndicator extends Indicator {
     private IndiceId indiceId;
 
     String getIndiceName() {
-        return indiceId.getValue();
+        return indiceId.getIndiceName();
     }
 
     @Override

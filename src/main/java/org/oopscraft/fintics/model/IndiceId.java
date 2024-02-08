@@ -10,14 +10,14 @@ public enum IndiceId {
     USD_KRW("USD/KRW"),
     BITCOIN("Bitcoin");
 
-    private final String value;
+    private final String indiceName;
 
-    IndiceId(String value) {
-        this.value = value;
+    IndiceId(String indiceName) {
+        this.indiceName = indiceName;
     }
 
-    public String getValue() {
-        return value;
+    public String getIndiceName() {
+        return indiceName;
     }
 
 }

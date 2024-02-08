@@ -40,13 +40,13 @@ public abstract class KrTradeClient extends TradeClient {
     @Override
     public List<Asset> getAssets() {
         List<Asset> brokerAssets = new ArrayList<>();
-        brokerAssets.addAll(getStockBrokerAssetByMarketType("11")); // kospi
-        brokerAssets.addAll(getStockBrokerAssetByMarketType("12")); // kosdaq
-        brokerAssets.addAll(getEtfBrokerAssets());  // ETF
+        brokerAssets.addAll(getStockAssetsByExchangeType("11")); // kospi
+        brokerAssets.addAll(getStockAssetsByExchangeType("12")); // kosdaq
+        brokerAssets.addAll(getEtfAssets());  // ETF
         return brokerAssets;
     }
 
-    private List<Asset> getStockBrokerAssetByMarketType(String marketType) {
+    protected List<Asset> getStockAssetsByExchangeType(String exchangeType) {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .readTimeout(30_000)
@@ -67,7 +67,7 @@ public abstract class KrTradeClient extends TradeClient {
             put("FICS_CD", "");
             put("INDTP_CLSF_NO", "");
             put("STD_DT", "20230922");
-            put("CALTOT_MART_TPCD", marketType);
+            put("CALTOT_MART_TPCD", exchangeType);
             put("SECN_KACD", "99");
             put("AG_ORG_TPCD", "99");
             put("SETACC_MMDD", "99");
@@ -93,10 +93,19 @@ public abstract class KrTradeClient extends TradeClient {
             return o2MarketCap.compareTo(o1MarketCap);
         });
 
+        // exchange
+        String exchange;
+        switch(exchangeType) {
+            case "11" -> exchange = "KRX";
+            case "12" -> exchange = "KOSDAQ";
+            default -> throw new RuntimeException("invalid exchange type");
+        }
+
         return rows.stream()
                 .map(row -> Asset.builder()
                         .assetId(toAssetId(row.getString("SHOTN_ISIN")))
                         .assetName(row.getString("KOR_SECN_NM"))
+                        .exchange(exchange)
                         .type(Asset.Type.STOCK)
                         .dateTime(LocalDateTime.now())
                         .marketCap(toNumber(row.get("MARTP_TOTAMT"), null))
@@ -108,7 +117,7 @@ public abstract class KrTradeClient extends TradeClient {
                 .collect(Collectors.toList());
     }
 
-    protected List<Asset> getEtfBrokerAssets() {
+    protected List<Asset> getEtfAssets() {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .readTimeout(30_000)
@@ -168,6 +177,7 @@ public abstract class KrTradeClient extends TradeClient {
                     return Asset.builder()
                             .assetId(toAssetId(row.getString("SHOTN_ISIN")))
                             .assetName(row.getString("KOR_SECN_NM"))
+                            .exchange("KRX")
                             .type(Asset.Type.ETF)
                             .dateTime(LocalDateTime.now())
                             .marketCap(marketCap)
@@ -184,7 +194,7 @@ public abstract class KrTradeClient extends TradeClient {
         return headers;
     }
 
-    public static String createPayloadXml(String action, String task, Map<String,String> payloadMap) {
+    protected static String createPayloadXml(String action, String task, Map<String,String> payloadMap) {
         // Create a new Document
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder ;
@@ -270,7 +280,7 @@ public abstract class KrTradeClient extends TradeClient {
         return list;
     }
 
-    public static ValueMap convertXmlToMap(String responseXml) {
+    protected static ValueMap convertXmlToMap(String responseXml) {
         ValueMap map  = new ValueMap();
         InputSource inputSource;
         StringReader stringReader;
@@ -307,19 +317,19 @@ public abstract class KrTradeClient extends TradeClient {
         }
     }
 
-    public static String getIsin(String symbol) {
+    protected static String getIsin(String symbol) {
         ValueMap map = getSecInfo(symbol);
         return Optional.ofNullable(map.getString("ISIN"))
                 .orElseThrow();
     }
 
-    public static String getIssucoCustNo(String symbol) {
+    protected static String getIssucoCustNo(String symbol) {
         ValueMap map = getSecInfo(symbol);
         return Optional.ofNullable(map.getString("ISSUCO_CUSTNO"))
                 .orElseThrow();
     }
 
-    private static ValueMap getSecInfo(String symbol) {
+    protected static ValueMap getSecInfo(String symbol) {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .readTimeout(30_000)

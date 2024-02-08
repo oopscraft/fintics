@@ -14,7 +14,7 @@ public class Indice {
     public static Indice from(IndiceId indiceSymbol) {
         return Indice.builder()
                 .indiceId(indiceSymbol)
-                .indiceName(indiceSymbol.getValue())
+                .indiceName(indiceSymbol.getIndiceName())
                 .build();
     }
 

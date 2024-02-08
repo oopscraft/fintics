@@ -36,37 +36,45 @@ public class AssetCollector extends AbstractCollector {
 
     @Scheduled(initialDelay = 1_000, fixedDelay = 3600_000)
     @Transactional
+    @Override
     public void collect() {
-        log.info("Start collect broker asset.");
-        List<TradeEntity> tradeEntities = tradeRepository.findAll();
-        List<String> completedTradeClientIds = new ArrayList<>();
-        for (TradeEntity tradeEntity : tradeEntities) {
-            try {
-                String tradeClientId = tradeEntity.getTradeClientId();
-                if(!completedTradeClientIds.contains(tradeClientId)) {
-                    Trade trade = Trade.from(tradeEntity);
-                    saveAssets(trade);
-                    completedTradeClientIds.add(tradeClientId);
+        try {
+            log.info("Start collect broker asset.");
+            List<TradeEntity> tradeEntities = tradeRepository.findAll();
+            List<String> completedTradeClientIds = new ArrayList<>();
+            for (TradeEntity tradeEntity : tradeEntities) {
+                try {
+                    String tradeClientId = tradeEntity.getTradeClientId();
+                    if (!completedTradeClientIds.contains(tradeClientId)) {
+                        Trade trade = Trade.from(tradeEntity);
+                        saveAssets(trade);
+                        completedTradeClientIds.add(tradeClientId);
+                    }
+                } catch (Throwable e) {
+                    log.warn(e.getMessage());
                 }
-            } catch (Throwable e) {
-                log.warn(e.getMessage());
             }
+            log.info("End collect broker asset");
+        } catch(Throwable e) {
+            log.error(e.getMessage(), e);
+            // TODO send error alarm
+            throw new RuntimeException(e);
         }
-        log.info("End collect broker asset");
     }
 
     protected void saveAssets(Trade trade) {
         TradeClient tradeClient = brokerClientFactory.getObject(trade);
         List<AssetEntity> assetEntities = tradeClient.getAssets().stream()
-                .map(brokerAsset -> AssetEntity.builder()
-                        .assetId(brokerAsset.getAssetId())
-                        .assetName(brokerAsset.getAssetName())
-                        .type(brokerAsset.getType())
-                        .marketCap(brokerAsset.getMarketCap())
-                        .issuedShares(brokerAsset.getIssuedShares())
-                        .per(brokerAsset.getPer())
-                        .roe(brokerAsset.getRoe())
-                        .roa(brokerAsset.getRoa())
+                .map(asset -> AssetEntity.builder()
+                        .assetId(asset.getAssetId())
+                        .assetName(asset.getAssetName())
+                        .exchange(asset.getExchange())
+                        .type(asset.getType())
+                        .marketCap(asset.getMarketCap())
+                        .issuedShares(asset.getIssuedShares())
+                        .per(asset.getPer())
+                        .roe(asset.getRoe())
+                        .roa(asset.getRoa())
                         .build())
                 .collect(Collectors.toList());
         saveEntities(assetEntities, transactionManager, assetRepository);

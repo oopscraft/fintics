@@ -1,5 +1,6 @@
 package org.oopscraft.fintics.collector;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.fintics.FinticsProperties;
@@ -45,23 +46,28 @@ public class AssetOhlcvCollector extends OhlcvCollector {
 
     @Scheduled(initialDelay = 1_000, fixedDelay = 60_000)
     @Transactional
+    @Override
     public void collect() {
-        log.info("Start collect asset ohlcv.");
-        LocalDateTime dateTime = LocalDateTime.now();
-        List<TradeEntity> tradeEntities = tradeRepository.findAll();
-        for (TradeEntity tradeEntity : tradeEntities) {
-            try {
-                Trade trade = Trade.from(tradeEntity);
-                for (TradeAsset tradeAsset : trade.getTradeAssets()) {
-                    saveAssetMinuteOhlcvs(trade, tradeAsset, dateTime);
-                    saveAssetDailyOhlcvs(trade, tradeAsset, dateTime);
-                    deletePastRetentionOhlcvs(trade, tradeAsset);
+        try {
+            log.info("Start collect asset ohlcv.");
+            LocalDateTime dateTime = LocalDateTime.now();
+            List<TradeEntity> tradeEntities = tradeRepository.findAll();
+            for (TradeEntity tradeEntity : tradeEntities) {
+                try {
+                    Trade trade = Trade.from(tradeEntity);
+                    for (TradeAsset tradeAsset : trade.getTradeAssets()) {
+                        saveAssetMinuteOhlcvs(trade, tradeAsset, dateTime);
+                        saveAssetDailyOhlcvs(trade, tradeAsset, dateTime);
+                        deletePastRetentionOhlcvs(trade, tradeAsset);
+                    }
+                } catch (Throwable e) {
+                    log.warn(e.getMessage());
                 }
-            } catch (Throwable e) {
-                log.warn(e.getMessage());
             }
+            log.info("End collect asset ohlcv");
+        } catch (Throwable e) {
+            log.error(e.getMessage(), e);
         }
-        log.info("End collect asset ohlcv");
     }
 
     private void saveAssetMinuteOhlcvs(Trade trade, TradeAsset tradeAsset, LocalDateTime dateTime) throws InterruptedException {

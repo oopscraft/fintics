@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(classes = FinticsConfiguration.class)
 @RequiredArgsConstructor
-class BrokerAssetCollectorTest extends CoreTestSupport {
+class AssetCollectorTest extends CoreTestSupport {
 
     private final AssetCollector assetCollector;
 
