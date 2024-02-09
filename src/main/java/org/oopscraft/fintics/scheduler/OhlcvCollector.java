@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.collector;
+package org.oopscraft.fintics.scheduler;
 
 import lombok.RequiredArgsConstructor;
 import org.oopscraft.fintics.dao.OhlcvEntity;

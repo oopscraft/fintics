@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.collector;
+package org.oopscraft.fintics.scheduler;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +29,8 @@ class PastOhlcvCollectorTest extends CoreTestSupport {
 
     @PersistenceContext
     private final EntityManager entityManager;
+
+    private final LocalDateTime expiredDateTime = LocalDateTime.now().minusMonths(1);
 
     @Disabled
     @Test
@@ -63,7 +65,7 @@ class PastOhlcvCollectorTest extends CoreTestSupport {
                 .exchange("KRX")
                 .build();
         // when
-        pastOhlcvCollector.collectPastAssetMinuteOhlcvs(asset);
+        pastOhlcvCollector.collectPastAssetMinuteOhlcvs(asset, expiredDateTime);
         // then
         List<AssetOhlcvEntity> assetOhlcvEntities = entityManager.createQuery("select " +
                                 " a from AssetOhlcvEntity a " +
@@ -86,7 +88,7 @@ class PastOhlcvCollectorTest extends CoreTestSupport {
                 .exchange("KRX")
                 .build();
         // when
-        pastOhlcvCollector.collectPastAssetDailyOhlcvs(asset);
+        pastOhlcvCollector.collectPastAssetDailyOhlcvs(asset, expiredDateTime);
         // then
         List<AssetOhlcvEntity> assetOhlcvEntities = entityManager.createQuery("select " +
                                 " a from AssetOhlcvEntity a " +
@@ -106,7 +108,7 @@ class PastOhlcvCollectorTest extends CoreTestSupport {
         // given
         IndiceId indiceId = IndiceId.NDX_FUTURE;
         // when
-        pastOhlcvCollector.collectPastIndiceMinuteOhlcvs(indiceId);
+        pastOhlcvCollector.collectPastIndiceMinuteOhlcvs(indiceId, expiredDateTime);
         // then
         List<IndiceOhlcvEntity> indiceOhlcvEntities = entityManager.createQuery("select " +
                                 " a from IndiceOhlcvEntity a " +
@@ -126,7 +128,7 @@ class PastOhlcvCollectorTest extends CoreTestSupport {
         // given
         IndiceId indiceId = IndiceId.NDX_FUTURE;
         // when
-        pastOhlcvCollector.collectPastIndiceDailyOhlcvs(indiceId);
+        pastOhlcvCollector.collectPastIndiceDailyOhlcvs(indiceId, expiredDateTime);
         // then
         List<IndiceOhlcvEntity> indiceOhlcvEntities = entityManager.createQuery("select " +
                                 " a from IndiceOhlcvEntity a " +

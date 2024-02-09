@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.collector;
+package org.oopscraft.fintics.scheduler;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,7 +11,6 @@ import org.oopscraft.fintics.dao.TradeRepository;
 import org.oopscraft.fintics.model.Ohlcv;
 import org.oopscraft.fintics.model.Trade;
 import org.oopscraft.fintics.model.TradeAsset;
-import org.slf4j.MDC;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
