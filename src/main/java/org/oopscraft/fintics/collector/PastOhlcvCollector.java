@@ -103,6 +103,7 @@ public class PastOhlcvCollector extends OhlcvCollector {
                         .lowPrice(ohlcv.getLowPrice())
                         .closePrice(ohlcv.getClosePrice())
                         .volume(ohlcv.getVolume())
+                        .interpolated(ohlcv.isInterpolated())
                         .build())
                 .collect(Collectors.toList());
         saveEntities(ohlcvEntities, transactionManager, assetOhlcvRepository);
@@ -127,6 +128,7 @@ public class PastOhlcvCollector extends OhlcvCollector {
                         .lowPrice(ohlcv.getLowPrice())
                         .closePrice(ohlcv.getClosePrice())
                         .volume(ohlcv.getVolume())
+                        .interpolated(ohlcv.isInterpolated())
                         .build())
                 .collect(Collectors.toList());
         saveEntities(ohlcvEntities, transactionManager, assetOhlcvRepository);
@@ -151,6 +153,7 @@ public class PastOhlcvCollector extends OhlcvCollector {
                         .lowPrice(ohlcv.getLowPrice())
                         .closePrice(ohlcv.getClosePrice())
                         .volume(ohlcv.getVolume())
+                        .interpolated(ohlcv.isInterpolated())
                         .build())
                 .collect(Collectors.toList());
         saveEntities(ohlcvEntities, transactionManager, indiceOhlcvRepository);
@@ -175,6 +178,7 @@ public class PastOhlcvCollector extends OhlcvCollector {
                         .lowPrice(ohlcv.getLowPrice())
                         .closePrice(ohlcv.getClosePrice())
                         .volume(ohlcv.getVolume())
+                        .interpolated(ohlcv.isInterpolated())
                         .build())
                 .collect(Collectors.toList());
         saveEntities(ohlcvEntities, transactionManager, indiceOhlcvRepository);
