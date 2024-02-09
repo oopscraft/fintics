@@ -39,7 +39,7 @@ public abstract class TradeClient {
     public abstract Order amendOrder(Order order) throws InterruptedException;
 
     public final String toAssetId(String symbol) {
-        return String.format("%s.%s", this.definition.getMarketId(), symbol);
+        return String.format("%s.%s", this.definition.getMarket(), symbol);
     }
 
 }

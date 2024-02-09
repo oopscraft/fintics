@@ -8,7 +8,7 @@ public interface TradeClientDefinition extends Aware {
 
     String getTradeClientName();
 
-    String getMarketId();
+    String getMarket();
 
     Class<? extends TradeClient> getClassType();
 

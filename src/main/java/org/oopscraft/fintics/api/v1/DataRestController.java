@@ -6,11 +6,11 @@ import org.oopscraft.arch4j.web.support.PageableUtils;
 import org.oopscraft.fintics.api.v1.dto.AssetOhlcvResponse;
 import org.oopscraft.fintics.api.v1.dto.AssetResponse;
 import org.oopscraft.fintics.api.v1.dto.IndiceOhlcvResponse;
-import org.oopscraft.fintics.model.*;
+import org.oopscraft.fintics.model.Asset;
+import org.oopscraft.fintics.model.IndiceId;
+import org.oopscraft.fintics.model.Ohlcv;
 import org.oopscraft.fintics.service.DataService;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,9 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/data")
@@ -39,13 +37,11 @@ public class DataRestController {
             @RequestParam(value = "type", required = false) Asset.Type type,
             Pageable pageable
     ) {
-        Page<Asset> assetPage = dataService.getAssets(assetId, assetName, type, pageable);
-        List<AssetResponse> assetResponses = assetPage.getContent().stream()
+        List<AssetResponse> assetResponses = dataService.getAssets(assetId, assetName, type, pageable).stream()
                 .map(AssetResponse::from)
                 .toList();
-        long total = assetPage.getTotalElements();
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_RANGE, PageableUtils.toContentRange("asset", pageable, total))
+                .header(HttpHeaders.CONTENT_RANGE, PageableUtils.toContentRange("assets", pageable))
                 .body(assetResponses);
     }
 
@@ -53,15 +49,14 @@ public class DataRestController {
     public ResponseEntity<List<AssetOhlcvResponse>> getAssetOhlcvs(
             @RequestParam(value = "assetId", required = false) String assetId,
             @RequestParam(value = "type", required = false) Ohlcv.Type type,
+            @RequestParam(value = "interpolated", required = false) Boolean interpolated,
             Pageable pageable
     ) {
-        Page<AssetOhlcv> assetOhlcvPage = dataService.getAssetOhlcvs(assetId, type, pageable);
-        List<AssetOhlcvResponse> assetOhlcvResponses = assetOhlcvPage.getContent().stream()
+        List<AssetOhlcvResponse> assetOhlcvResponses = dataService.getAssetOhlcvs(assetId, type, interpolated, pageable).stream()
                 .map(AssetOhlcvResponse::from)
                 .toList();
-        long total = assetOhlcvPage.getTotalElements();
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_RANGE, PageableUtils.toContentRange("asset-ohlcv", pageable, total))
+                .header(HttpHeaders.CONTENT_RANGE, PageableUtils.toContentRange("asset-ohlcvs", pageable))
                 .body(assetOhlcvResponses);
     }
 
@@ -69,15 +64,14 @@ public class DataRestController {
     public ResponseEntity<List<IndiceOhlcvResponse>> getIndiceOhlcvs(
             @RequestParam(value = "indiceId", required = false) IndiceId indiceId,
             @RequestParam(value = "type", required = false) Ohlcv.Type type,
+            @RequestParam(value = "interpolated", required = false) Boolean interpolated,
             Pageable pageable
     ) {
-        Page<IndiceOhlcv> indiceOhlcvPage = dataService.getIndiceOhlcvs(indiceId, type, pageable);
-        List<IndiceOhlcvResponse> indiceOhlcvResponses = indiceOhlcvPage.getContent().stream()
+        List<IndiceOhlcvResponse> indiceOhlcvResponses = dataService.getIndiceOhlcvs(indiceId, type, interpolated, pageable).stream()
                 .map(IndiceOhlcvResponse::from)
                 .toList();
-        long total = indiceOhlcvPage.getTotalElements();
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_RANGE, PageableUtils.toContentRange("indice-ohlcv", pageable, total))
+                .header(HttpHeaders.CONTENT_RANGE, PageableUtils.toContentRange("indice-ohlcvs", pageable))
                 .body(indiceOhlcvResponses);
     }
 

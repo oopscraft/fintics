@@ -32,5 +32,7 @@ public abstract class OhlcvResponse {
     @Builder.Default
     private BigDecimal volume = BigDecimal.ZERO;
 
+    @Builder.Default
+    private boolean interpolated = false;
 
 }

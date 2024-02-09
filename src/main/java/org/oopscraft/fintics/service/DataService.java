@@ -1,11 +1,10 @@
 package org.oopscraft.fintics.service;
 
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import org.oopscraft.fintics.api.v1.dto.IndiceOhlcvResponse;
 import org.oopscraft.fintics.dao.*;
 import org.oopscraft.fintics.model.*;
-import org.springframework.data.domain.*;
-import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,73 +15,61 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class DataService {
 
-    private final AssetRepository assetRepository;
+    private final JPAQueryFactory jpaQueryFactory;
 
-    private final AssetOhlcvRepository assetOhlcvRepository;
-
-    private final IndiceOhlcvRepository indiceOhlcvRepository;
-
-    public Page<Asset> getAssets(String assetId, String assetName, Asset.Type type, Pageable pageable) {
-        // where
-        Specification<AssetEntity> specification = Specification.where(null);
-        specification = specification
-                .and(Optional.ofNullable(assetId).map(AssetSpecifications::containsAssetId).orElse(null))
-                .and(Optional.ofNullable(assetName).map(AssetSpecifications::containsAssetName).orElse(null))
-                .and(Optional.ofNullable(type).map(AssetSpecifications::equalType).orElse(null));
-
-        // sort
-        Sort sort = Sort.by(AssetEntity_.MARKET_CAP).descending();
-        pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
-
-        // find
-        Page<AssetEntity> assetEntityPage = assetRepository.findAll(specification, pageable);
-        List<Asset> assets = assetEntityPage.getContent().stream()
+    public List<Asset> getAssets(String assetId, String assetName, Asset.Type type, Pageable pageable) {
+        QAssetEntity qAssetEntity = QAssetEntity.assetEntity;
+        List<AssetEntity> assetEntities = jpaQueryFactory
+                .selectFrom(qAssetEntity)
+                .where(
+                        Optional.ofNullable(assetId).map(qAssetEntity.assetId::contains).orElse(null),
+                        Optional.ofNullable(assetName).map(qAssetEntity.assetName::contains).orElse(null),
+                        Optional.ofNullable(type).map(qAssetEntity.type::eq).orElse(null)
+                )
+                .orderBy(qAssetEntity.marketCap.desc())
+                .limit(pageable.getPageSize())
+                .offset(pageable.getOffset())
+                .fetch();
+        return assetEntities.stream()
                 .map(Asset::from)
-                .toList();
-        long total = assetEntityPage.getTotalElements();
-        return new PageImpl<>(assets, pageable, total);
+                .collect(Collectors.toList());
     }
 
-    public Page<AssetOhlcv> getAssetOhlcvs(String assetId, Ohlcv.Type type, Pageable pageable) {
-        // where
-        Specification<AssetOhlcvEntity> specification = Specification.where(null);
-        specification = specification
-                .and(Optional.ofNullable(assetId).map(AssetOhlcvSpecifications::equalAssetId).orElse(null))
-                .and(Optional.ofNullable(type).map(AssetOhlcvSpecifications::equalType).orElse(null));
-
-        // sort
-        Sort sort = Sort.by(AssetOhlcvEntity_.DATE_TIME).descending();
-        pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
-
-        // find
-        Page<AssetOhlcvEntity> assetOhlcvEntityPage = assetOhlcvRepository.findAll(specification, pageable);
-        List<AssetOhlcv> assetOhlcvs = assetOhlcvEntityPage.getContent().stream()
+    public List<AssetOhlcv> getAssetOhlcvs(String assetId, Ohlcv.Type type, Boolean interpolated, Pageable pageable) {
+        QAssetOhlcvEntity qAssetOhlcvEntity = QAssetOhlcvEntity.assetOhlcvEntity;
+        List<AssetOhlcvEntity> assetOhlcvEntities = jpaQueryFactory
+                .selectFrom(qAssetOhlcvEntity)
+                .where(
+                        Optional.ofNullable(assetId).map(qAssetOhlcvEntity.assetId::contains).orElse(null),
+                        Optional.ofNullable(type).map(qAssetOhlcvEntity.type::eq).orElse(null),
+                        Optional.ofNullable(interpolated).map(qAssetOhlcvEntity.interpolated::eq).orElse(null)
+                )
+                .orderBy(qAssetOhlcvEntity.dateTime.desc())
+                .limit(pageable.getPageSize())
+                .offset(pageable.getOffset())
+                .fetch();
+        return assetOhlcvEntities.stream()
                 .map(AssetOhlcv::from)
                 .collect(Collectors.toList());
-        long total =  assetOhlcvEntityPage.getTotalElements();
-        return new PageImpl<>(assetOhlcvs, pageable, total);
     }
 
-    public Page<IndiceOhlcv> getIndiceOhlcvs(IndiceId indiceId, Ohlcv.Type type, Pageable pageable) {
-        // where
-        Specification<IndiceOhlcvEntity> specification = Specification.where(null);
-        specification = specification
-                .and(Optional.ofNullable(indiceId).map(IndiceOhlcvSpecification::equalIndiceId).orElse(null))
-                .and(Optional.ofNullable(type).map(IndiceOhlcvSpecification::equalType).orElse(null));
-
-        // sort
-        Sort sort = Sort.by(IndiceOhlcvEntity_.DATE_TIME).descending();
-        pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
-
-        // find
-        Page<IndiceOhlcvEntity> indiceOhlcvEntityPage = indiceOhlcvRepository.findAll(specification, pageable);
-        List<IndiceOhlcv> indiceOhlcvs = indiceOhlcvEntityPage.getContent().stream()
+    public List<IndiceOhlcv> getIndiceOhlcvs(IndiceId indiceId, Ohlcv.Type type, Boolean interpolated, Pageable pageable) {
+        QIndiceOhlcvEntity qIndiceOhlcvEntity = QIndiceOhlcvEntity.indiceOhlcvEntity;
+        List<IndiceOhlcvEntity> indiceOhlcvEntities = jpaQueryFactory
+                .selectFrom(qIndiceOhlcvEntity)
+                .where(
+                        Optional.ofNullable(indiceId).map(qIndiceOhlcvEntity.indiceId::eq).orElse(null),
+                        Optional.ofNullable(type).map(qIndiceOhlcvEntity.type::eq).orElse(null),
+                        Optional.ofNullable(interpolated).map(qIndiceOhlcvEntity.interpolated::eq).orElse(null)
+                )
+                .orderBy(qIndiceOhlcvEntity.dateTime.desc())
+                .limit(pageable.getPageSize())
+                .offset(pageable.getOffset())
+                .fetch();
+        return indiceOhlcvEntities.stream()
                 .map(IndiceOhlcv::from)
                 .collect(Collectors.toList());
-        long total = indiceOhlcvEntityPage.getTotalElements();
-        return new PageImpl<>(indiceOhlcvs, pageable, total);
+
     }
-
-
 
 }

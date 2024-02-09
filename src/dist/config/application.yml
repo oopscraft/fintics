@@ -51,4 +51,3 @@ web:
 # fintics
 fintics:
   indice-client-class-name: org.oopscraft.fintics.client.indice.YahooIndiceClient
-  ohlcv-retention-months: 12

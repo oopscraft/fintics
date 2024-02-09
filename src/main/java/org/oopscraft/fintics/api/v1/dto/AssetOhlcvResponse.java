@@ -19,16 +19,17 @@ public class AssetOhlcvResponse extends OhlcvResponse {
 
     private String assetId;
     
-    public static AssetOhlcvResponse from(AssetOhlcv indiceOhlcv) {
+    public static AssetOhlcvResponse from(AssetOhlcv assetOhlcv) {
         return AssetOhlcvResponse.builder()
-                .assetId(indiceOhlcv.getAssetId())
-                .type(indiceOhlcv.getType())
-                .dateTime(indiceOhlcv.getDateTime())
-                .openPrice(indiceOhlcv.getOpenPrice())
-                .highPrice(indiceOhlcv.getOpenPrice())
-                .lowPrice(indiceOhlcv.getLowPrice())
-                .closePrice(indiceOhlcv.getClosePrice())
-                .volume(indiceOhlcv.getVolume())
+                .assetId(assetOhlcv.getAssetId())
+                .type(assetOhlcv.getType())
+                .dateTime(assetOhlcv.getDateTime())
+                .openPrice(assetOhlcv.getOpenPrice())
+                .highPrice(assetOhlcv.getOpenPrice())
+                .lowPrice(assetOhlcv.getLowPrice())
+                .closePrice(assetOhlcv.getClosePrice())
+                .volume(assetOhlcv.getVolume())
+                .interpolated(assetOhlcv.isInterpolated())
                 .build();
     }
 

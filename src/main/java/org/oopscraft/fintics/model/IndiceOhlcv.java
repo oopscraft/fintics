@@ -24,6 +24,7 @@ public class IndiceOhlcv extends Ohlcv {
                 .lowPrice(indiceOhlcvEntity.getLowPrice())
                 .closePrice(indiceOhlcvEntity.getClosePrice())
                 .volume(indiceOhlcvEntity.getVolume())
+                .interpolated(indiceOhlcvEntity.isInterpolated())
                 .build();
     }
 

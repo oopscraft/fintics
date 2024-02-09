@@ -24,7 +24,7 @@ public class UpbitTradeClientDefinition implements TradeClientDefinition {
     }
 
     @Override
-    public String getMarketId() {
+    public String getMarket() {
         return "UPBIT";
     }
 

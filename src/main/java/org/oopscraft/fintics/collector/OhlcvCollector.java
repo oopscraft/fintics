@@ -2,16 +2,10 @@ package org.oopscraft.fintics.collector;
 
 import lombok.RequiredArgsConstructor;
 import org.oopscraft.fintics.dao.OhlcvEntity;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @RequiredArgsConstructor

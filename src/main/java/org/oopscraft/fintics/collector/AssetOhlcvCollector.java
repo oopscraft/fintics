@@ -1,27 +1,23 @@
 package org.oopscraft.fintics.collector;
 
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.oopscraft.fintics.FinticsProperties;
 import org.oopscraft.fintics.client.trade.TradeClient;
 import org.oopscraft.fintics.client.trade.TradeClientFactory;
-import org.oopscraft.fintics.dao.*;
-import org.oopscraft.fintics.model.AssetOhlcv;
+import org.oopscraft.fintics.dao.AssetOhlcvEntity;
+import org.oopscraft.fintics.dao.AssetOhlcvRepository;
+import org.oopscraft.fintics.dao.TradeEntity;
+import org.oopscraft.fintics.dao.TradeRepository;
 import org.oopscraft.fintics.model.Ohlcv;
 import org.oopscraft.fintics.model.Trade;
 import org.oopscraft.fintics.model.TradeAsset;
+import org.slf4j.MDC;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -31,8 +27,6 @@ import java.util.List;
 @Transactional
 public class AssetOhlcvCollector extends OhlcvCollector {
 
-    private final FinticsProperties finticsProperties;
-
     private final TradeRepository tradeRepository;
 
     private final TradeClientFactory tradeClientFactory;
@@ -40,9 +34,6 @@ public class AssetOhlcvCollector extends OhlcvCollector {
     private final AssetOhlcvRepository assetOhlcvRepository;
 
     private final PlatformTransactionManager transactionManager;
-
-    @PersistenceContext
-    private final EntityManager entityManager;
 
     @Scheduled(initialDelay = 1_000, fixedDelay = 60_000)
     @Transactional
@@ -58,7 +49,6 @@ public class AssetOhlcvCollector extends OhlcvCollector {
                     for (TradeAsset tradeAsset : trade.getTradeAssets()) {
                         saveAssetMinuteOhlcvs(trade, tradeAsset, dateTime);
                         saveAssetDailyOhlcvs(trade, tradeAsset, dateTime);
-                        deletePastRetentionOhlcvs(trade, tradeAsset);
                     }
                 } catch (Throwable e) {
                     log.warn(e.getMessage());
@@ -127,20 +117,6 @@ public class AssetOhlcvCollector extends OhlcvCollector {
                 .closePrice(ohlcv.getClosePrice())
                 .volume(ohlcv.getVolume())
                 .build();
-    }
-
-    private void deletePastRetentionOhlcvs(Trade trade, TradeAsset tradeAsset) {
-        LocalDateTime expiredDateTime = LocalDateTime.now().minusMonths(finticsProperties.getOhlcvRetentionMonths());
-        entityManager.createQuery(
-                        "delete" +
-                                " from AssetOhlcvEntity" +
-                                " where assetId = :assetId " +
-                                " and dateTime < :expiredDateTime")
-                .setParameter("assetId", tradeAsset.getAssetId())
-                .setParameter("expiredDateTime", expiredDateTime)
-                .executeUpdate();
-        entityManager.flush();
-        entityManager.clear();
     }
 
 }

@@ -14,6 +14,4 @@ public final class FinticsProperties {
 
     private final String indiceClientClassName;
 
-    private final Integer ohlcvRetentionMonths;
-
 }
