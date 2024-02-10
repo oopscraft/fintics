@@ -297,7 +297,14 @@
                                 <td data-duice-bind="balanceAsset" data-duice-property="quantity" data-duice-format="number" class="text-align--right"></td>
                                 <td data-duice-bind="balanceAsset" data-duice-property="purchaseAmount" data-duice-format="number" class="text-align--right"></td>
                                 <td data-duice-bind="balanceAsset" data-duice-property="valuationAmount" data-duice-format="number" class="text-align--right"></td>
-                                <td data-duice-bind="balanceAsset" data-duice-property="profitAmount" data-duice-format="number" class="text-align--right"></td>
+                                <td data-duice-bind="balanceAsset" data-duice-property="profitAmount" data-duice-format="number" class="text-align--right"
+                                    data-duice-execute="
+                                    if(balanceAsset.profitAmount > 0) {
+                                        this.style.color='red';
+                                    }else{
+                                        this.style.color='blue';
+                                    }
+                                    "></td>
                             </tr>
                             <tr th:data-duice-bind="'tradeBalanceMap.get(\'' + ${trade.tradeId} + '\').balanceAssets'"
                                 th:data-duice-execute="'if(tradeBalanceMap.get(\'' + ${trade.tradeId} + '\').balanceAssets.length === 0) this.hidden=false;'" hidden>

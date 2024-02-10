@@ -1020,9 +1020,6 @@
             <h2>
                 <img class="icon" th:src="@{/static/image/icon-balance.svg}" alt="balance"/>
                 <span data-th-text="#{fintics.Balance}"></span>
-                <small>
-                    (<span data-duice-bind="balance" data-duice-property="accountNo"></span>)
-                </small>
             </h2>
             <div class="display--grid grid-template-columns--12 grid-gap--1em padding-y--1em s__padding-y--0">
                 <label class="grid-column--6 s__grid-column--12">
@@ -1106,7 +1103,7 @@
                                 data-duice-loop="balanceAsset,status"
                                 data-duice-execute="
                                     let length = trade.tradeAssets.filter(tradeAsset => {
-                                        return tradeAsset.symbol === balanceAsset.symbol;
+                                        return tradeAsset.assetId === balanceAsset.assetId;
                                     }).length;
                                     if(length === 0) {
                                         this.style.opacity=0.5;
