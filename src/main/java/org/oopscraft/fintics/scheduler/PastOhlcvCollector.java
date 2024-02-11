@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.oopscraft.arch4j.core.alarm.AlarmService;
 import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
 import org.oopscraft.fintics.FinticsProperties;
 import org.oopscraft.fintics.dao.*;
@@ -54,7 +55,6 @@ public class PastOhlcvCollector extends OhlcvCollector {
 
     @Scheduled(initialDelay = 60_000, fixedDelay = 60_000)
     @Transactional
-    @Override
     public void collect() {
         try {
             log.info("Start collect past asset ohlcv.");
@@ -71,6 +71,7 @@ public class PastOhlcvCollector extends OhlcvCollector {
                     }
                 } catch (Throwable e) {
                     log.warn(e.getMessage());
+                    sendSystemAlarm(this.getClass(), String.format("%s - %s", tradeEntity.getTradeName(), e.getMessage()));
                 }
             }
             // indice
@@ -80,12 +81,13 @@ public class PastOhlcvCollector extends OhlcvCollector {
                     collectPastIndiceDailyOhlcvs(indiceId, expiredDateTime);
                 } catch (Throwable e) {
                     log.warn(e.getMessage());
+                    sendSystemAlarm(this.getClass(), String.format("%s - %s", indiceId.getIndiceName(), e.getMessage()));
                 }
             }
             log.info("End collect past asset ohlcv");
         } catch(Throwable e) {
             log.error(e.getMessage(), e);
-            // TODO send alarm message
+            sendSystemAlarm(this.getClass(), e.getMessage());
             throw new RuntimeException(e);
         }
     }

@@ -12,6 +12,8 @@ import org.springframework.boot.context.properties.ConstructorBinding;
 @Getter
 public final class FinticsProperties {
 
+    private final String systemAlarmId;
+
     private final String indiceClientClassName;
 
     private final Integer ohlcvRetentionMonths;

@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class ExpiredOhlcvDeleter {
+public class ExpiredOhlcvDeleter extends AbstractScheduler {
 
     private final FinticsProperties finticsProperties;
 
@@ -35,7 +35,7 @@ public class ExpiredOhlcvDeleter {
             deleteExpiredIndiceOhlcvs(expiredDateTime);
         } catch(Throwable e) {
             log.error(e.getMessage(), e);
-            // TODO send error alarm
+            sendSystemAlarm(this.getClass(), e.getMessage());
             throw new RuntimeException(e);
         }
         log.info("End delete expired ohlcvs");

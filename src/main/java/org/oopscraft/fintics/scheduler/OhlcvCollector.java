@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RequiredArgsConstructor
-public abstract class OhlcvCollector extends AbstractCollector {
+public abstract class OhlcvCollector extends AbstractScheduler {
 
     protected <T extends OhlcvEntity> List<T> extractNewOrChangedOhlcvEntities(List<T> ohlcvEntities, List<T> previousOhlcvEntities) {
         return ohlcvEntities.stream()

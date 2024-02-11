@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class AssetCollector extends AbstractCollector {
+public class AssetCollector extends AbstractScheduler {
 
     private final TradeRepository tradeRepository;
 
@@ -33,7 +33,6 @@ public class AssetCollector extends AbstractCollector {
 
     @Scheduled(initialDelay = 1_000, fixedDelay = 3600_000)
     @Transactional
-    @Override
     public void collect() {
         try {
             log.info("Start collect broker asset.");
@@ -47,14 +46,14 @@ public class AssetCollector extends AbstractCollector {
                         saveAssets(trade);
                         completedTradeClientIds.add(tradeClientId);
                     }
-                } catch (Throwable e) {
+                } catch (Throwable e) {;
                     log.warn(e.getMessage());
                 }
             }
             log.info("End collect broker asset");
         } catch(Throwable e) {
             log.error(e.getMessage(), e);
-            // TODO send error alarm
+            sendSystemAlarm(this.getClass(), e.getMessage());
             throw new RuntimeException(e);
         }
     }

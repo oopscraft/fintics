@@ -36,7 +36,6 @@ public class AssetOhlcvCollector extends OhlcvCollector {
 
     @Scheduled(initialDelay = 1_000, fixedDelay = 60_000)
     @Transactional
-    @Override
     public void collect() {
         try {
             log.info("Start collect asset ohlcv.");
@@ -56,6 +55,7 @@ public class AssetOhlcvCollector extends OhlcvCollector {
             log.info("End collect asset ohlcv");
         } catch (Throwable e) {
             log.error(e.getMessage(), e);
+            sendSystemAlarm(this.getClass(), e.getMessage());
         }
     }
 

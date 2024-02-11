@@ -29,7 +29,6 @@ public class IndiceOhlcvCollector extends OhlcvCollector {
 
     @Scheduled(initialDelay = 1_000, fixedDelay = 60_000)
     @Transactional
-    @Override
     public void collect() {
         try {
             log.info("Start collect indice ohlcv.");
@@ -45,7 +44,7 @@ public class IndiceOhlcvCollector extends OhlcvCollector {
             log.info("End collect indice ohlcv");
         } catch(Throwable e) {
             log.error(e.getMessage(), e);
-            // TODO send error alarm
+            sendSystemAlarm(this.getClass(), e.getMessage());
             throw new RuntimeException(e);
         }
     }
