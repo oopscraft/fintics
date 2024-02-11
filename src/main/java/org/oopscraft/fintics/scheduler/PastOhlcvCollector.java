@@ -23,6 +23,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -365,7 +366,7 @@ public class PastOhlcvCollector extends OhlcvCollector {
                                 .highPrice(highPrice.setScale(2, RoundingMode.HALF_UP))
                                 .lowPrice(lowPrice.setScale(2, RoundingMode.HALF_UP))
                                 .closePrice(closePrice.setScale(2, RoundingMode.HALF_UP))
-                                .volume(volume.setScale(2, RoundingMode.HALF_UP))
+                                .volume(BigDecimal.ZERO)
                                 .interpolated(true)
                                 .build();
                         ohlcvMap.put(interpolatedDateTime, interpolatedOhlcv);
@@ -383,7 +384,7 @@ public class PastOhlcvCollector extends OhlcvCollector {
                                 .highPrice(highPrice.setScale(2, RoundingMode.HALF_UP))
                                 .lowPrice(lowPrice.setScale(2, RoundingMode.HALF_UP))
                                 .closePrice(closePrice.setScale(2, RoundingMode.HALF_UP))
-                                .volume(volume.setScale(2, RoundingMode.HALF_UP))
+                                .volume(BigDecimal.ZERO)
                                 .interpolated(true)
                                 .build();
                         ohlcvMap.put(interpolatedDateTime, interpolatedOhlcv);
