@@ -31,7 +31,7 @@ public class IndiceOhlcvCollector extends OhlcvCollector {
     @Transactional
     public void collect() {
         try {
-            log.info("Start collect indice ohlcv.");
+            log.info("IndiceOhlcvCollector - Start collect indice ohlcv.");
             LocalDateTime dateTime = LocalDateTime.now();
             for (IndiceId indiceId : IndiceId.values()) {
                 try {
@@ -41,7 +41,7 @@ public class IndiceOhlcvCollector extends OhlcvCollector {
                     log.warn(e.getMessage());
                 }
             }
-            log.info("End collect indice ohlcv");
+            log.info("IndiceOhlcvCollector - End collect indice ohlcv");
         } catch(Throwable e) {
             log.error(e.getMessage(), e);
             sendSystemAlarm(this.getClass(), e.getMessage());
@@ -63,7 +63,7 @@ public class IndiceOhlcvCollector extends OhlcvCollector {
 
         // save new or changed
         List<IndiceOhlcvEntity> newOrChangedMinuteOhlcvEntities = extractNewOrChangedOhlcvEntities(minuteOhlcvEntities, previousMinuteOhlcvEntities);
-        log.info("saveIndiceMinuteOhlcvs[{}]:{}", indiceId, newOrChangedMinuteOhlcvEntities.size());
+        log.info("IndiceOhlcvCollector - save indiceMinuteOhlcvEntities[{}]:{}", indiceId, newOrChangedMinuteOhlcvEntities.size());
         saveEntities(newOrChangedMinuteOhlcvEntities, transactionManager, indiceOhlcvRepository);
     }
 
@@ -81,7 +81,7 @@ public class IndiceOhlcvCollector extends OhlcvCollector {
 
         // save new or changed
         List<IndiceOhlcvEntity> newOrChangedDailyOhlcvEntities = extractNewOrChangedOhlcvEntities(dailyOhlcvEntities, previousDailyOhlcvEntities);
-        log.info("saveIndiceDailyOhlcvs[{}]:{}", indiceId, newOrChangedDailyOhlcvEntities.size());
+        log.info("IndiceOhlcvCollector - save indiceDailyOhlcvEntities[{}]:{}", indiceId, newOrChangedDailyOhlcvEntities.size());
         saveEntities(newOrChangedDailyOhlcvEntities, transactionManager, indiceOhlcvRepository);
     }
 

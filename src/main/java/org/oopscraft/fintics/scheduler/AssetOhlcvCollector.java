@@ -38,7 +38,7 @@ public class AssetOhlcvCollector extends OhlcvCollector {
     @Transactional
     public void collect() {
         try {
-            log.info("Start collect asset ohlcv.");
+            log.info("AssetOhlcvCollector - Start collect asset ohlcv.");
             LocalDateTime dateTime = LocalDateTime.now();
             List<TradeEntity> tradeEntities = tradeRepository.findAll();
             for (TradeEntity tradeEntity : tradeEntities) {
@@ -52,7 +52,7 @@ public class AssetOhlcvCollector extends OhlcvCollector {
                     log.warn(e.getMessage());
                 }
             }
-            log.info("End collect asset ohlcv");
+            log.info("AssetOhlcvCollector - End collect asset ohlcv");
         } catch (Throwable e) {
             log.error(e.getMessage(), e);
             sendSystemAlarm(this.getClass(), e.getMessage());
@@ -78,7 +78,7 @@ public class AssetOhlcvCollector extends OhlcvCollector {
 
         // save new or changed
         List<AssetOhlcvEntity> newOrChangedMinuteOhlcvEntities = extractNewOrChangedOhlcvEntities(minuteOhlcvEntities, previousMinuteEntities);
-        log.info("saveAssetMinuteOhlcvs[{}]:{}", tradeAsset.getAssetId(), newOrChangedMinuteOhlcvEntities.size());
+        log.info("AssetOhlcvCollector - save assetMinuteOhlcvEntities[{}]:{}", tradeAsset.getAssetId(), newOrChangedMinuteOhlcvEntities.size());
         saveEntities(newOrChangedMinuteOhlcvEntities, transactionManager, assetOhlcvRepository);
     }
 
@@ -101,7 +101,7 @@ public class AssetOhlcvCollector extends OhlcvCollector {
 
         // save new or changed
         List<AssetOhlcvEntity> newOrChangedDailyOhlcvEntities = extractNewOrChangedOhlcvEntities(dailyOhlcvEntities, previousDailyOhlcvEntities);
-        log.info("saveAssetDailyOhlcvs[{}]:{}", tradeAsset.getAssetId(), newOrChangedDailyOhlcvEntities.size());
+        log.info("AssetOhlcvCollector - save assetDailyOhlcvEntities[{}]:{}", tradeAsset.getAssetId(), newOrChangedDailyOhlcvEntities.size());
         saveEntities(newOrChangedDailyOhlcvEntities, transactionManager, assetOhlcvRepository);
     }
 

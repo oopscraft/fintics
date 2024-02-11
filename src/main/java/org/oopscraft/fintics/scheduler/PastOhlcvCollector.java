@@ -57,7 +57,7 @@ public class PastOhlcvCollector extends OhlcvCollector {
     @Transactional
     public void collect() {
         try {
-            log.info("Start collect past asset ohlcv.");
+            log.info("PastOhlcvCollector - Start collect past asset ohlcv.");
             // expired date time
             LocalDateTime expiredDateTime = LocalDateTime.now().minusMonths(finticsProperties.getOhlcvRetentionMonths());
             // asset
@@ -84,7 +84,7 @@ public class PastOhlcvCollector extends OhlcvCollector {
                     sendSystemAlarm(this.getClass(), String.format("%s - %s", indiceId.getIndiceName(), e.getMessage()));
                 }
             }
-            log.info("End collect past asset ohlcv");
+            log.info("PastOhlcvCollector - End collect past asset ohlcv");
         } catch(Throwable e) {
             log.error(e.getMessage(), e);
             sendSystemAlarm(this.getClass(), e.getMessage());
@@ -108,7 +108,7 @@ public class PastOhlcvCollector extends OhlcvCollector {
         // get minute ohlcvs
         List<Ohlcv> ohlcvs = getOhlcvs(yahooSymbol, Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo);
         // convert and save
-        List<AssetOhlcvEntity> ohlcvEntities = ohlcvs.stream()
+        List<AssetOhlcvEntity> assetMinuteOhlcvEntities = ohlcvs.stream()
                 .map(ohlcv -> AssetOhlcvEntity.builder()
                         .assetId(asset.getAssetId())
                         .dateTime(ohlcv.getDateTime())
@@ -121,7 +121,8 @@ public class PastOhlcvCollector extends OhlcvCollector {
                         .interpolated(ohlcv.isInterpolated())
                         .build())
                 .collect(Collectors.toList());
-        saveEntities(ohlcvEntities, transactionManager, assetOhlcvRepository);
+        log.info("PastOhlcvCollector - save assetMinuteOhlcvEntities[{}]:{}", asset.getAssetName(), assetMinuteOhlcvEntities.size());
+        saveEntities(assetMinuteOhlcvEntities, transactionManager, assetOhlcvRepository);
     }
 
     void collectPastAssetDailyOhlcvs(Asset asset, LocalDateTime expiredDateTime) {
@@ -141,7 +142,7 @@ public class PastOhlcvCollector extends OhlcvCollector {
         // get daily ohlcvs
         List<Ohlcv> ohlcvs = getOhlcvs(yahooSymbol, Ohlcv.Type.DAILY, dateTimeFrom, dateTimeTo);
         // convert and save
-        List<AssetOhlcvEntity> ohlcvEntities = ohlcvs.stream()
+        List<AssetOhlcvEntity> assetDailyOhlcvEntities = ohlcvs.stream()
                 .map(ohlcv -> AssetOhlcvEntity.builder()
                         .assetId(asset.getAssetId())
                         .dateTime(ohlcv.getDateTime())
@@ -154,7 +155,8 @@ public class PastOhlcvCollector extends OhlcvCollector {
                         .interpolated(ohlcv.isInterpolated())
                         .build())
                 .collect(Collectors.toList());
-        saveEntities(ohlcvEntities, transactionManager, assetOhlcvRepository);
+        log.info("PastOhlcvCollector - save assetDailyOhlcvEntities[{}]:{}", asset.getAssetName(), assetDailyOhlcvEntities.size());
+        saveEntities(assetDailyOhlcvEntities, transactionManager, assetOhlcvRepository);
     }
 
     void collectPastIndiceMinuteOhlcvs(IndiceId indiceId, LocalDateTime expiredDateTime) {
@@ -170,7 +172,7 @@ public class PastOhlcvCollector extends OhlcvCollector {
         // get minute ohlcvs
         List<Ohlcv> ohlcvs = getOhlcvs(yahooSymbol, Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo);
         // convert and save
-        List<IndiceOhlcvEntity> ohlcvEntities = ohlcvs.stream()
+        List<IndiceOhlcvEntity> indiceMinuteOhlcvEntities = ohlcvs.stream()
                 .map(ohlcv -> IndiceOhlcvEntity.builder()
                         .indiceId(indiceId)
                         .dateTime(ohlcv.getDateTime())
@@ -183,7 +185,8 @@ public class PastOhlcvCollector extends OhlcvCollector {
                         .interpolated(ohlcv.isInterpolated())
                         .build())
                 .collect(Collectors.toList());
-        saveEntities(ohlcvEntities, transactionManager, indiceOhlcvRepository);
+        log.info("PastOhlcvCollector - save indiceMinuteOhlcvEntities[{}]:{}", indiceId.getIndiceName(), indiceMinuteOhlcvEntities.size());
+        saveEntities(indiceMinuteOhlcvEntities, transactionManager, indiceOhlcvRepository);
     }
 
     void collectPastIndiceDailyOhlcvs(IndiceId indiceId, LocalDateTime expiredDateTime) {
@@ -199,7 +202,7 @@ public class PastOhlcvCollector extends OhlcvCollector {
         // get daily ohlcvs
         List<Ohlcv> ohlcvs = getOhlcvs(yahooSymbol, Ohlcv.Type.DAILY, dateTimeFrom, dateTimeTo);
         // convert and save
-        List<IndiceOhlcvEntity> ohlcvEntities = ohlcvs.stream()
+        List<IndiceOhlcvEntity> indiceDailyOhlcvEntities = ohlcvs.stream()
                 .map(ohlcv -> IndiceOhlcvEntity.builder()
                         .indiceId(indiceId)
                         .dateTime(ohlcv.getDateTime())
@@ -212,7 +215,8 @@ public class PastOhlcvCollector extends OhlcvCollector {
                         .interpolated(ohlcv.isInterpolated())
                         .build())
                 .collect(Collectors.toList());
-        saveEntities(ohlcvEntities, transactionManager, indiceOhlcvRepository);
+        log.info("PastOhlcvCollector - save indiceDailyOhlcvEntities[{}]:{}", indiceId.getIndiceName(), indiceDailyOhlcvEntities.size());
+        saveEntities(indiceDailyOhlcvEntities, transactionManager, indiceOhlcvRepository);
     }
 
     Optional<LocalDateTime> getAssetMinDateTime(String assetId, Ohlcv.Type type) {

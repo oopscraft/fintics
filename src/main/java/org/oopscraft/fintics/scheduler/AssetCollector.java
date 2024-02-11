@@ -35,7 +35,7 @@ public class AssetCollector extends AbstractScheduler {
     @Transactional
     public void collect() {
         try {
-            log.info("Start collect broker asset.");
+            log.info("AssetCollector - Start collect broker asset.");
             List<TradeEntity> tradeEntities = tradeRepository.findAll();
             List<String> completedTradeClientIds = new ArrayList<>();
             for (TradeEntity tradeEntity : tradeEntities) {
@@ -50,7 +50,7 @@ public class AssetCollector extends AbstractScheduler {
                     log.warn(e.getMessage());
                 }
             }
-            log.info("End collect broker asset");
+            log.info("AssetCollector - End collect broker asset");
         } catch(Throwable e) {
             log.error(e.getMessage(), e);
             sendSystemAlarm(this.getClass(), e.getMessage());
@@ -73,6 +73,7 @@ public class AssetCollector extends AbstractScheduler {
                         .roa(asset.getRoa())
                         .build())
                 .collect(Collectors.toList());
+        log.info("AssetCollector - save assetEntities:{}", assetEntities.size());
         saveEntities(assetEntities, transactionManager, assetRepository);
     }
 
