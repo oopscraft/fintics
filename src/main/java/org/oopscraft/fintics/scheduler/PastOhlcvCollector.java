@@ -93,8 +93,11 @@ public class PastOhlcvCollector extends OhlcvCollector {
     }
 
     void collectPastAssetMinuteOhlcvs(Asset asset, LocalDateTime expiredDateTime) {
-        // defines
+        // yahoo symbol(if not exists, skip)
         String yahooSymbol = convertToYahooSymbol(asset);
+        if(yahooSymbol == null) {
+            return;
+        }
         LocalDateTime dateTimeTo = getAssetMinDateTime(asset.getAssetId(), Ohlcv.Type.MINUTE)
                 .orElse(LocalDateTime.now());
         LocalDateTime dateTimeFrom = dateTimeTo.minusDays(1);
@@ -122,8 +125,12 @@ public class PastOhlcvCollector extends OhlcvCollector {
     }
 
     void collectPastAssetDailyOhlcvs(Asset asset, LocalDateTime expiredDateTime) {
-        // defines
+        // yahoo symbol(if not exist, skip)
         String yahooSymbol = convertToYahooSymbol(asset);
+        if(yahooSymbol == null) {
+            return;
+        }
+        // date time
         LocalDateTime dateTimeTo = getAssetMinDateTime(asset.getAssetId(), Ohlcv.Type.DAILY)
                 .orElse(LocalDateTime.now());
         LocalDateTime dateTimeFrom = dateTimeTo.minusMonths(1);
@@ -301,6 +308,11 @@ public class PastOhlcvCollector extends OhlcvCollector {
                 continue;
             }
             break;
+        }
+
+        // response body is null, return empty list
+        if(responseEntity == null) {
+            return new ArrayList<>();
         }
 
         JsonNode rootNode;
