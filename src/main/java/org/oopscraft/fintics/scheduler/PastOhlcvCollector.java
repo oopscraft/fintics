@@ -63,15 +63,15 @@ public class PastOhlcvCollector extends OhlcvCollector {
             // asset
             List<TradeEntity> tradeEntities = tradeRepository.findAll();
             for (TradeEntity tradeEntity : tradeEntities) {
-                try {
-                    Trade trade = Trade.from(tradeEntity);
-                    for (TradeAsset tradeAsset : trade.getTradeAssets()) {
+                Trade trade = Trade.from(tradeEntity);
+                for (TradeAsset tradeAsset : trade.getTradeAssets()) {
+                    try {
                         collectPastAssetMinuteOhlcvs(tradeAsset, expiredDateTime);
                         collectPastAssetDailyOhlcvs(tradeAsset, expiredDateTime);
+                    } catch (Throwable e) {
+                        log.warn(e.getMessage());
+                        sendSystemAlarm(this.getClass(), String.format("%s - %s", tradeEntity.getTradeName(), e.getMessage()));
                     }
-                } catch (Throwable e) {
-                    log.warn(e.getMessage());
-                    sendSystemAlarm(this.getClass(), String.format("%s - %s", tradeEntity.getTradeName(), e.getMessage()));
                 }
             }
             // indice
