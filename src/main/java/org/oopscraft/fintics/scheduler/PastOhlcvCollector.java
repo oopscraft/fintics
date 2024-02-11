@@ -304,7 +304,7 @@ public class PastOhlcvCollector extends OhlcvCollector {
                         .build();
                 responseEntity = restTemplate.exchange(requestEntity, String.class);
             } catch(Throwable e) {
-                log.warn(e.getMessage());
+                log.debug(e.getMessage());
                 continue;
             }
             break;
@@ -371,7 +371,7 @@ public class PastOhlcvCollector extends OhlcvCollector {
                 // interpolates minute ohlcv
                 if(type == Ohlcv.Type.MINUTE) {
                     int intervalMinutes = Integer.parseInt(interval.replace("m",""));
-                    for(int j = 0; j < intervalMinutes; j++) {
+                    for(int j = 1; j < intervalMinutes; j++) {
                         LocalDateTime interpolatedDateTime = dateTime.plusMinutes(j);
                         Ohlcv interpolatedOhlcv = Ohlcv.builder()
                                 .dateTime(interpolatedDateTime)
@@ -389,8 +389,8 @@ public class PastOhlcvCollector extends OhlcvCollector {
                 // interpolates daily ohlcv
                 if(type == Ohlcv.Type.DAILY) {
                     int intervalDays = Integer.parseInt(interval.replace("d",""));
-                    for(int j = 0; j < intervalDays; j++) {
-                        LocalDateTime interpolatedDateTime = dateTime.plusMinutes(j);
+                    for(int j = 1; j < intervalDays; j++) {
+                        LocalDateTime interpolatedDateTime = dateTime.plusDays(j);
                         Ohlcv interpolatedOhlcv = Ohlcv.builder()
                                 .dateTime(interpolatedDateTime)
                                 .type(type)
