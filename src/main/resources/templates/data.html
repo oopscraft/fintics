@@ -14,13 +14,6 @@
             _size: 20,
             _count: 0
         });
-        duice.ObjectProxy.onPropertyChanged(assetSearch, (event) => {
-            // ignore key changed
-            if(event.property === 'key') {
-                return;
-            }
-            getAssets();
-        });
         const assets = new duice.ArrayProxy([]);
 
         const assetOhlcvSearch = new duice.ObjectProxy({
@@ -33,9 +26,6 @@
             _size: 20,
             _count: 0
         });
-        duice.ObjectProxy.onPropertyChanged(assetOhlcvSearch, (event) => {
-            getAssetOhlcvs();
-        });
         const assetOhlcvs = new duice.ArrayProxy([]);
 
         const indiceOhlcvSearch = new duice.ObjectProxy({
@@ -47,9 +37,6 @@
             _page: 0,
             _size: 20,
             _count: 0
-        });
-        duice.ObjectProxy.onPropertyChanged(indiceOhlcvSearch, (event) => {
-            getIndiceOhlcvs();
         });
         const indiceOhlcvs = new duice.ArrayProxy([]);
 
@@ -236,13 +223,15 @@
                     <option value="ETF">ETF</option>
                 </select>
             </label>
-            <div class="grid-column--1">
+            <div class="grid-column--7 justify-self--end align-self--end">
+                <button onclick="getAssets();">
+                    <img class="icon" th:src="@{/static/image/icon-search.svg}" alt="search"/>
+                    <span data-th-text="#{web.global.search}">Search</span>
+                </button>
                 <button onclick="resetAssets();">
                     <img class="icon" th:src="@{/static/image/icon-reset.svg}" alt="reset"/>
                     <span data-th-text="#{web.global.reset}">Reset</span>
                 </button>
-            </div>
-            <div class="grid-column--6 justify-self--end align-self--end">
                 <duice-pagination
                         data-duice-bind="assetSearch"
                         data-duice-size-property="_size"
@@ -250,8 +239,8 @@
                         data-duice-count-property="_count"
                         data-duice-onclick="getAssets(this.dataset.page);"
                         data-duice-page-number-size="1"
-                        data-duice-prev-content="<button class='small'>Prev</button>"
-                        data-duice-next-content="<button class='small'>Next</button>">
+                        data-duice-prev-content="<button>Prev</button>"
+                        data-duice-next-content="<button>Next</button>">
                 </duice-pagination>
             </div>
         </form>
@@ -344,13 +333,15 @@
                 <span data-th-text="#{fintics.Ohlcv.interpolated}"></span>
                 <input type="checkbox" data-duice-bind="assetOhlcvSearch" data-duice-property="interpolated"/>
             </label>
-            <div class="grid-column--2">
+            <div class="grid-column--4 justify-self--end align-self--end">
+                <button onclick="getAssetOhlcvs();">
+                    <img class="icon" th:src="@{/static/image/icon-search.svg}" alt="search"/>
+                    <span data-th-text="#{web.global.search}">Search</span>
+                </button>
                 <button onclick="resetAssetOhlcvs();">
                     <img class="icon" th:src="@{/static/image/icon-reset.svg}" alt="reset"/>
                     <span data-th-text="#{web.global.reset}">Reset</span>
                 </button>
-            </div>
-            <div class="grid-column--2 justify-self--end align-self--end">
                 <duice-pagination
                         data-duice-bind="assetOhlcvSearch"
                         data-duice-size-property="_size"
@@ -358,8 +349,8 @@
                         data-duice-count-property="_count"
                         data-duice-onclick="getAssetOhlcvs(this.dataset.page);"
                         data-duice-page-number-size="1"
-                        data-duice-prev-content="<button class='small'>Prev</button>"
-                        data-duice-next-content="<button class='small'>Next</button>">
+                        data-duice-prev-content="<button>Prev</button>"
+                        data-duice-next-content="<button>Next</button>">
                 </duice-pagination>
             </div>
         </form>
@@ -441,13 +432,15 @@
                 <span data-th-text="#{fintics.Ohlcv.interpolated}"></span>
                 <input type="checkbox" data-duice-bind="indiceOhlcvSearch" data-duice-property="interpolated"/>
             </label>
-            <div class="grid-column--2">
+            <div class="grid-column--4 justify-self--end align-self--end">
+                <button onclick="getIndiceOhlcvs();">
+                    <img class="icon" th:src="@{/static/image/icon-search.svg}" alt="search"/>
+                    <span data-th-text="#{web.global.search}">Search</span>
+                </button>
                 <button onclick="resetIndiceOhlcvs();">
                     <img class="icon" th:src="@{/static/image/icon-reset.svg}" alt="reset"/>
                     <span data-th-text="#{web.global.reset}">Reset</span>
                 </button>
-            </div>
-            <div class="grid-column--2 justify-self--end align-self--end">
                 <duice-pagination
                         data-duice-bind="indiceOhlcvSearch"
                         data-duice-size-property="_size"
@@ -455,8 +448,8 @@
                         data-duice-count-property="_count"
                         data-duice-onclick="getIndiceOhlcvs(this.dataset.page);"
                         data-duice-page-number-size="1"
-                        data-duice-prev-content="<button class='small'>Prev</button>"
-                        data-duice-next-content="<button class='small'>Next</button>">
+                        data-duice-prev-content="<button>Prev</button>"
+                        data-duice-next-content="<button>Next</button>">
                 </duice-pagination>
             </div>
         </form>
