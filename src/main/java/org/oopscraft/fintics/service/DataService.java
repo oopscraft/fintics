@@ -7,6 +7,7 @@ import org.oopscraft.fintics.model.*;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -35,13 +36,15 @@ public class DataService {
                 .collect(Collectors.toList());
     }
 
-    public List<AssetOhlcv> getAssetOhlcvs(String assetId, Ohlcv.Type type, Boolean interpolated, Pageable pageable) {
+    public List<AssetOhlcv> getAssetOhlcvs(String assetId, Ohlcv.Type type, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo, Boolean interpolated, Pageable pageable) {
         QAssetOhlcvEntity qAssetOhlcvEntity = QAssetOhlcvEntity.assetOhlcvEntity;
         List<AssetOhlcvEntity> assetOhlcvEntities = jpaQueryFactory
                 .selectFrom(qAssetOhlcvEntity)
                 .where(
                         Optional.ofNullable(assetId).map(qAssetOhlcvEntity.assetId::contains).orElse(null),
                         Optional.ofNullable(type).map(qAssetOhlcvEntity.type::eq).orElse(null),
+                        Optional.ofNullable(dateTimeFrom).map(qAssetOhlcvEntity.dateTime::goe).orElse(null),
+                        Optional.ofNullable(dateTimeTo).map(qAssetOhlcvEntity.dateTime::loe).orElse(null),
                         Optional.ofNullable(interpolated).map(qAssetOhlcvEntity.interpolated::eq).orElse(null)
                 )
                 .orderBy(qAssetOhlcvEntity.dateTime.desc())
@@ -53,13 +56,15 @@ public class DataService {
                 .collect(Collectors.toList());
     }
 
-    public List<IndiceOhlcv> getIndiceOhlcvs(IndiceId indiceId, Ohlcv.Type type, Boolean interpolated, Pageable pageable) {
+    public List<IndiceOhlcv> getIndiceOhlcvs(IndiceId indiceId, Ohlcv.Type type, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo, Boolean interpolated, Pageable pageable) {
         QIndiceOhlcvEntity qIndiceOhlcvEntity = QIndiceOhlcvEntity.indiceOhlcvEntity;
         List<IndiceOhlcvEntity> indiceOhlcvEntities = jpaQueryFactory
                 .selectFrom(qIndiceOhlcvEntity)
                 .where(
                         Optional.ofNullable(indiceId).map(qIndiceOhlcvEntity.indiceId::eq).orElse(null),
                         Optional.ofNullable(type).map(qIndiceOhlcvEntity.type::eq).orElse(null),
+                        Optional.ofNullable(dateTimeFrom).map(qIndiceOhlcvEntity.dateTime::goe).orElse(null),
+                        Optional.ofNullable(dateTimeTo).map(qIndiceOhlcvEntity.dateTime::loe).orElse(null),
                         Optional.ofNullable(interpolated).map(qIndiceOhlcvEntity.interpolated::eq).orElse(null)
                 )
                 .orderBy(qIndiceOhlcvEntity.dateTime.desc())

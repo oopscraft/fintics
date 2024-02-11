@@ -23,6 +23,8 @@ public class AssetResponse {
 
     private Asset.Type type;
 
+    private String exchange;
+
     private LocalDateTime dateTime;
 
     private BigDecimal marketCap;
@@ -38,18 +40,19 @@ public class AssetResponse {
     @Builder.Default
     private List<LinkResponse> links = new ArrayList<>();
 
-    public static AssetResponse from(Asset assetAsset) {
+    public static AssetResponse from(Asset asset) {
         return AssetResponse.builder()
-                .assetId(assetAsset.getAssetId())
-                .assetName(assetAsset.getAssetName())
-                .type(assetAsset.getType())
-                .dateTime(assetAsset.getDateTime())
-                .marketCap(assetAsset.getMarketCap())
-                .issuedShares(assetAsset.getIssuedShares())
-                .per(assetAsset.getPer())
-                .roe(assetAsset.getRoe())
-                .roa(assetAsset.getRoa())
-                .links(LinkResponse.from(assetAsset.getLinks()))
+                .assetId(asset.getAssetId())
+                .assetName(asset.getAssetName())
+                .type(asset.getType())
+                .exchange(asset.getExchange())
+                .dateTime(asset.getDateTime())
+                .marketCap(asset.getMarketCap())
+                .issuedShares(asset.getIssuedShares())
+                .per(asset.getPer())
+                .roe(asset.getRoe())
+                .roa(asset.getRoa())
+                .links(LinkResponse.from(asset.getLinks()))
                 .build();
     }
 

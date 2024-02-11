@@ -69,6 +69,7 @@ public class UpbitTradeClient extends TradeClient {
                     return Asset.builder()
                             .assetId(toAssetId(map.getString("market")))
                             .assetName(map.getString("english_name"))
+                            .exchange("UPBIT")
                             .build();
                 })
                 .collect(Collectors.toList());
