@@ -21,9 +21,11 @@ public class AssetResponse {
 
     private String assetName;
 
-    private Asset.Type type;
+    private String market;
 
     private String exchange;
+
+    private String type;
 
     private LocalDateTime dateTime;
 
@@ -44,8 +46,9 @@ public class AssetResponse {
         return AssetResponse.builder()
                 .assetId(asset.getAssetId())
                 .assetName(asset.getAssetName())
-                .type(asset.getType())
+                .market(asset.getMarket())
                 .exchange(asset.getExchange())
+                .type(asset.getType())
                 .dateTime(asset.getDateTime())
                 .marketCap(asset.getMarketCap())
                 .issuedShares(asset.getIssuedShares())

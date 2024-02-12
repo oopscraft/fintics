@@ -18,14 +18,14 @@ public class DataService {
 
     private final JPAQueryFactory jpaQueryFactory;
 
-    public List<Asset> getAssets(String assetId, String assetName, Asset.Type type, Pageable pageable) {
+    public List<Asset> getAssets(String assetId, String assetName, String market, Pageable pageable) {
         QAssetEntity qAssetEntity = QAssetEntity.assetEntity;
         List<AssetEntity> assetEntities = jpaQueryFactory
                 .selectFrom(qAssetEntity)
                 .where(
                         Optional.ofNullable(assetId).map(qAssetEntity.assetId::contains).orElse(null),
                         Optional.ofNullable(assetName).map(qAssetEntity.assetName::contains).orElse(null),
-                        Optional.ofNullable(type).map(qAssetEntity.type::eq).orElse(null)
+                        Optional.ofNullable(market).map(qAssetEntity.market::eq).orElse(null)
                 )
                 .orderBy(qAssetEntity.marketCap.desc())
                 .limit(pageable.getPageSize())

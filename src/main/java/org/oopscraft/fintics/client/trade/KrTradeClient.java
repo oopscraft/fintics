@@ -39,11 +39,11 @@ public abstract class KrTradeClient extends TradeClient {
 
     @Override
     public List<Asset> getAssets() {
-        List<Asset> brokerAssets = new ArrayList<>();
-        brokerAssets.addAll(getStockAssetsByExchangeType("11")); // kospi
-        brokerAssets.addAll(getStockAssetsByExchangeType("12")); // kosdaq
-        brokerAssets.addAll(getEtfAssets());  // ETF
-        return brokerAssets;
+        List<Asset> assets = new ArrayList<>();
+        assets.addAll(getStockAssetsByExchangeType("11")); // kospi
+        assets.addAll(getStockAssetsByExchangeType("12")); // kosdaq
+        assets.addAll(getEtfAssets());  // ETF
+        return assets;
     }
 
     protected List<Asset> getStockAssetsByExchangeType(String exchangeType) {
@@ -93,7 +93,8 @@ public abstract class KrTradeClient extends TradeClient {
             return o2MarketCap.compareTo(o1MarketCap);
         });
 
-        // exchange
+        // market, exchange
+        String market = getDefinition().getMarket();
         String exchange;
         switch(exchangeType) {
             case "11" -> exchange = "KRX";
@@ -105,8 +106,9 @@ public abstract class KrTradeClient extends TradeClient {
                 .map(row -> Asset.builder()
                         .assetId(toAssetId(row.getString("SHOTN_ISIN")))
                         .assetName(row.getString("KOR_SECN_NM"))
+                        .market(market)
                         .exchange(exchange)
-                        .type(Asset.Type.STOCK)
+                        .type("STOCK")
                         .dateTime(LocalDateTime.now())
                         .marketCap(toNumber(row.get("MARTP_TOTAMT"), null))
                         .issuedShares(toNumber(row.get("TOT_ISSU_STKQTY"), null))
@@ -164,6 +166,11 @@ public abstract class KrTradeClient extends TradeClient {
             return o2MarketCap.compareTo(o1MarketCap);
         });
 
+        // market, exchange
+        String market = getDefinition().getMarket();
+        String exchange = "KRX";
+
+        // convert assets
         return rows.stream()
                 .map(row -> {
                     // market cap (etf is 1 krw unit)
@@ -177,8 +184,9 @@ public abstract class KrTradeClient extends TradeClient {
                     return Asset.builder()
                             .assetId(toAssetId(row.getString("SHOTN_ISIN")))
                             .assetName(row.getString("KOR_SECN_NM"))
-                            .exchange("KRX")
-                            .type(Asset.Type.ETF)
+                            .market(market)
+                            .exchange(exchange)
+                            .type("ETF")
                             .dateTime(LocalDateTime.now())
                             .marketCap(marketCap)
                             .build();

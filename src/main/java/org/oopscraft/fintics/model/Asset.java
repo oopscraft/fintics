@@ -22,9 +22,11 @@ public class Asset {
 
     private String assetName;
 
+    private String market;
+
     private String exchange;
 
-    private Type type;
+    private String type;
 
     private LocalDateTime dateTime;
 
@@ -65,17 +67,11 @@ public class Asset {
                 .orElse(new ArrayList<>());
     }
 
-    public enum Type {
-        STOCK, ETF
-    }
-
-    @Converter(autoApply = true)
-    public static class TypeConverter extends AbstractEnumConverter<Type> { }
-
     public static Asset from(AssetEntity assetEntity) {
         return Asset.builder()
                 .assetId(assetEntity.getAssetId())
                 .assetName(assetEntity.getAssetName())
+                .market(assetEntity.getMarket())
                 .exchange(assetEntity.getExchange())
                 .type(assetEntity.getType())
                 .dateTime(assetEntity.getDateTime())

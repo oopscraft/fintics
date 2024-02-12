@@ -144,11 +144,11 @@
             </div>
         </form>
         <div class="overflow-x--scroll">
-            <table class="width--100">
+            <table class="width--100 text-align--center">
                 <colgroup>
                     <col style="width:7em;"/>
                     <col style="width:10em;"/>
-                    <col style="width:6em;"/>
+                    <col style="width:10em;"/>
                     <col/>
                     <col/>
                     <col/>
@@ -184,7 +184,11 @@
                               data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></span>
                     </td>
                     <td>
-                        <span data-duice-bind="order" data-duice-property="type" class="font-size--smaller font-weight--bold"></span>
+                        <span data-duice-bind="order" data-duice-property="type" class="badge"
+                        data-duice-execute="
+                        if(order.type === 'BUY') this.classList.add('background-color--red');
+                        if(order.type === 'SELL') this.classList.add('background-color--blue');
+                        "></span>
                     </td>
                     <td>
                         <span data-duice-bind="order" data-duice-property="tradeName"></span>
@@ -199,7 +203,11 @@
                         <span data-duice-bind="order" data-duice-property="price" data-duice-format="number"></span>
                     </td>
                     <td>
-                        <span data-duice-bind="order" data-duice-property="result" class="font-size--smaller font-weight--bold"></span>
+                        <span data-duice-bind="order" data-duice-property="result" class="badge"
+                        data-duice-execute="
+                        if(order.result === 'COMPLETED') this.classList.add('background-color--green');
+                        if(order.result === 'FAILED') this.classList.add('background-color--red');
+                        "></span>
                     </td>
                     <td>
                         <span data-duice-bind="order" data-duice-property="errorMessage"></span>

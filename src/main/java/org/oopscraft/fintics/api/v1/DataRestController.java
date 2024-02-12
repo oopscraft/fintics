@@ -38,10 +38,10 @@ public class DataRestController {
     public ResponseEntity<List<AssetResponse>> getAssets(
             @RequestParam(value = "assetId", required = false) String assetId,
             @RequestParam(value = "assetName", required = false) String assetName,
-            @RequestParam(value = "type", required = false) Asset.Type type,
+            @RequestParam(value = "market", required = false) String market,
             Pageable pageable
     ) {
-        List<AssetResponse> assetResponses = dataService.getAssets(assetId, assetName, type, pageable).stream()
+        List<AssetResponse> assetResponses = dataService.getAssets(assetId, assetName, market, pageable).stream()
                 .map(AssetResponse::from)
                 .toList();
         return ResponseEntity.ok()

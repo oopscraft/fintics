@@ -606,7 +606,7 @@ public class KisTradeClient extends KrTradeClient {
                             .kind(orderKind)
                             .quantity(quantity)
                             .price(price)
-                            .brokerOrderId(clientOrderId)
+                            .clientOrderId(clientOrderId)
                             .build();
 
                 })
@@ -642,7 +642,7 @@ public class KisTradeClient extends KrTradeClient {
         payloadMap.put("CANO", accountNo.split("-")[0]);
         payloadMap.put("ACNT_PRDT_CD", accountNo.split("-")[1]);
         payloadMap.put("KRX_FWDG_ORD_ORGNO", "");
-        payloadMap.put("ORGN_ODNO", order.getBrokerOrderId());
+        payloadMap.put("ORGN_ODNO", order.getClientOrderId());
         payloadMap.put("ORD_DVSN", ordDvsn);
         payloadMap.put("RVSE_CNCL_DVSN_CD", "01");
         payloadMap.put("ORD_QTY", "0");

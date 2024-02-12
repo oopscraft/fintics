@@ -36,7 +36,7 @@ public class Order {
 
     private BigDecimal price;
 
-    private String brokerOrderId;
+    private String clientOrderId;
 
     private Result result;
 

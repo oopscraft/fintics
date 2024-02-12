@@ -11,6 +11,7 @@ import org.oopscraft.fintics.dao.TradeRepository;
 import org.oopscraft.fintics.model.Trade;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Controller;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,14 +26,13 @@ public class AssetCollector extends AbstractScheduler {
 
     private final TradeRepository tradeRepository;
 
-    private final TradeClientFactory brokerClientFactory;
+    private final TradeClientFactory tradeClientFactory;
 
     private final AssetRepository assetRepository;
 
     private final PlatformTransactionManager transactionManager;
 
     @Scheduled(initialDelay = 1_000, fixedDelay = 3600_000)
-    @Transactional
     public void collect() {
         try {
             log.info("AssetCollector - Start collect broker asset.");
@@ -59,11 +59,12 @@ public class AssetCollector extends AbstractScheduler {
     }
 
     protected void saveAssets(Trade trade) {
-        TradeClient tradeClient = brokerClientFactory.getObject(trade);
+        TradeClient tradeClient = tradeClientFactory.getObject(trade);
         List<AssetEntity> assetEntities = tradeClient.getAssets().stream()
                 .map(asset -> AssetEntity.builder()
                         .assetId(asset.getAssetId())
                         .assetName(asset.getAssetName())
+                        .market(asset.getMarket())
                         .exchange(asset.getExchange())
                         .type(asset.getType())
                         .marketCap(asset.getMarketCap())

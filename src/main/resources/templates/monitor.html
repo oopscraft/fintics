@@ -272,16 +272,17 @@
                         <canvas th:id="'tradeAssetMinuteOhlcvsChart-' + ${trade.tradeId}"></canvas>
                     </div>
                     <div class="overflow-y--auto overflow-x--auto border-top--1">
-                        <table class="width--100 font-size--smaller border--0" style="line-height:normal;">
+                        <table class="width--100 border--0 text-align--center font-size-smaller" style="line-height:normal;">
                             <colgroup>
-                                <col style="width:5rem;"/>
-                                <col style="width:3em;"/>
                                 <col/>
                                 <col/>
-                                <col style="width:5rem;"/>
+                                <col/>
+                                <col/>
+                                <col/>
+                                <col/>
                             </colgroup>
                             <thead>
-                            <tr>
+                            <tr class="font-size--smaller">
                                 <th data-th-text="#{fintics.BalanceAsset.assetId}"></th>
                                 <th data-th-text="#{fintics.BalanceAsset.assetName}"></th>
                                 <th data-th-text="#{fintics.BalanceAsset.quantity}" class="text-align--right"></th>
@@ -299,16 +300,13 @@
                                 <td data-duice-bind="balanceAsset" data-duice-property="valuationAmount" data-duice-format="number" class="text-align--right"></td>
                                 <td data-duice-bind="balanceAsset" data-duice-property="profitAmount" data-duice-format="number" class="text-align--right"
                                     data-duice-execute="
-                                    if(balanceAsset.profitAmount > 0) {
-                                        this.style.color='red';
-                                    }else{
-                                        this.style.color='blue';
-                                    }
+                                    if(balanceAsset.profitAmount > 0) this.classList.add('color--red');
+                                    if(balanceAsset.profitAmount < 0) this.classList.add('color--blue');
                                     "></td>
                             </tr>
                             <tr th:data-duice-bind="'tradeBalanceMap.get(\'' + ${trade.tradeId} + '\').balanceAssets'"
                                 th:data-duice-execute="'if(tradeBalanceMap.get(\'' + ${trade.tradeId} + '\').balanceAssets.length === 0) this.hidden=false;'" hidden>
-                                <td colspan="100%" class="text-align--center">No Data</td>
+                                <td colspan="100%" class="text-align--center font-size--smaller">No Data</td>
                             </tr>
                             </tbody>
                         </table>

@@ -69,6 +69,7 @@ public class UpbitTradeClient extends TradeClient {
                     return Asset.builder()
                             .assetId(toAssetId(map.getString("market")))
                             .assetName(map.getString("english_name"))
+                            .market(getDefinition().getMarket())
                             .exchange("UPBIT")
                             .build();
                 })
@@ -342,7 +343,7 @@ public class UpbitTradeClient extends TradeClient {
         ValueMap responseMap = responseEntity.getBody();
         log.info("{}", responseMap);
         if(responseMap != null) {
-            order.setBrokerOrderId(responseMap.getString("uuid"));
+            order.setClientOrderId(responseMap.getString("uuid"));
         }
 
         // return
@@ -396,7 +397,7 @@ public class UpbitTradeClient extends TradeClient {
                             .kind(orderType)
                             .quantity(quantity)
                             .price(price)
-                            .brokerOrderId(clientOrderId)
+                            .clientOrderId(clientOrderId)
                             .build();
                 })
                 .collect(Collectors.toList());
@@ -409,7 +410,7 @@ public class UpbitTradeClient extends TradeClient {
                 .insecure(true)
                 .build();
         String url = API_URL + "/v1/order";
-        String queryString = "uuid=" + order.getBrokerOrderId();
+        String queryString = "uuid=" + order.getClientOrderId();
         RequestEntity<Void> requestEntity = RequestEntity
                 .delete(url + "?" + queryString)
                 .headers(createHeaders(queryString))

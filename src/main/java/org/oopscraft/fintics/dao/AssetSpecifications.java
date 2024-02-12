@@ -15,9 +15,9 @@ public class AssetSpecifications {
                 criteriaBuilder.like(root.get(AssetEntity_.ASSET_NAME), '%' + assetName + '%');
     }
 
-    public static Specification<AssetEntity> equalType(Asset.Type type) {
+    public static Specification<AssetEntity> equalMarket(String market) {
         return ((root, query, criteriaBuilder) ->
-                criteriaBuilder.equal(root.get(AssetEntity_.TYPE), type));
+                criteriaBuilder.equal(root.get(AssetEntity_.MARKET), market));
     }
 
 }

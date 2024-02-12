@@ -20,7 +20,7 @@ public class AssetService {
 
     private final AssetOhlcvRepository assetOhlcvRepository;
 
-    public Page<Asset> getAssets(String assetId, String assetName, Asset.Type type, Pageable pageable) {
+    public Page<Asset> getAssets(String assetId, String assetName, String market, Pageable pageable) {
         // where
         Specification<AssetEntity> specification = Specification.where(null);
         specification = specification
@@ -30,8 +30,8 @@ public class AssetService {
                 .and(Optional.ofNullable(assetName)
                         .map(AssetSpecifications::containsAssetName)
                         .orElse(null))
-                .and(Optional.ofNullable(type)
-                        .map(AssetSpecifications::equalType)
+                .and(Optional.ofNullable(market)
+                        .map(AssetSpecifications::equalMarket)
                         .orElse(null));
 
         // sort

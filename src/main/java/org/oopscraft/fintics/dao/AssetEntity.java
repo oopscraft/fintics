@@ -3,9 +3,11 @@ package org.oopscraft.fintics.dao;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.arch4j.core.data.BaseEntity;
-import org.oopscraft.fintics.model.Asset;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -25,11 +27,14 @@ public class AssetEntity extends BaseEntity {
     @Column(name = "asset_name")
     private String assetName;
 
+    @Column(name = "market", length = 16)
+    private String market;
+
     @Column(name = "exchange", length = 16)
     private String exchange;
 
     @Column(name = "type", length = 16)
-    private Asset.Type type;
+    private String type;
 
     @Column(name = "date_time")
     private LocalDateTime dateTime;

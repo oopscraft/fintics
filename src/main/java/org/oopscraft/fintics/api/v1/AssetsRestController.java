@@ -38,10 +38,10 @@ public class AssetsRestController {
     public ResponseEntity<List<AssetResponse>> getAssets(
             @RequestParam(value = "assetId", required = false) String assetId,
             @RequestParam(value = "assetName", required = false) String assetName,
-            @RequestParam(value = "type", required = false) Asset.Type type,
+            @RequestParam(value = "market", required = false) String market,
             Pageable pageable
     ) {
-        Page<Asset> assetPage = assetService.getAssets(assetId, assetName, type, pageable);
+        Page<Asset> assetPage = assetService.getAssets(assetId, assetName, market, pageable);
         List<AssetResponse> assetResponses = assetPage.getContent().stream()
                 .map(AssetResponse::from)
                 .toList();
