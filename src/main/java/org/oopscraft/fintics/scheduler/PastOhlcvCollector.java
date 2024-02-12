@@ -354,6 +354,14 @@ public class PastOhlcvCollector extends OhlcvCollector {
                     case DAILY -> dateTime = dateTime.truncatedTo(ChronoUnit.DAYS);
                 }
 
+                // check date time is in range (holiday is not matched)
+                boolean inRange = (dateTime.isAfter(dateTimeFrom) || dateTime.isEqual(dateTimeFrom))
+                        && (dateTime.isBefore(dateTimeTo) || dateTime.isEqual(dateTimeTo));
+                if(!inRange) {
+                    continue;
+                }
+
+                // ohlcv value
                 BigDecimal openPrice = opens.get(i);
                 if(openPrice == null) {     // sometimes open price is null (data error)
                     continue;
