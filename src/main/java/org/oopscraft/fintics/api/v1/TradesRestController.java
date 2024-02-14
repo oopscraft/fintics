@@ -152,7 +152,7 @@ public class TradesRestController {
                 .toList();
         long count = orderPage.getTotalElements();
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_RANGE, PageableUtils.toContentRange("order", pageable, count))
+                .header(HttpHeaders.CONTENT_RANGE, PageableUtils.toContentRange("orders", pageable, count))
                 .body(orderResponses);
     }
 
@@ -162,6 +162,22 @@ public class TradesRestController {
                 .map(BalanceResponse::from)
                 .orElseThrow();
         return ResponseEntity.ok(balanceResponse);
+    }
+
+    @GetMapping("{tradeId}/simulates")
+    public ResponseEntity<List<SimulateResponse>> getTradeSimulates(
+            @PathVariable("tradeId") String tradeId,
+            @RequestParam(value = "status", required = false) Simulate.Status status,
+            @PageableDefault Pageable pageable
+    ){
+        Page<Simulate> simulatePage = tradeService.getSimulates(tradeId, status, pageable);
+        List<SimulateResponse> simulateResponses = simulatePage.getContent().stream()
+                .map(SimulateResponse::from)
+                .toList();
+        long total = simulatePage.getTotalElements();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_RANGE, PageableUtils.toContentRange("simulates", pageable, total))
+                .body(simulateResponses);
     }
 
 }

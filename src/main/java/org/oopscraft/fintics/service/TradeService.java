@@ -1,5 +1,6 @@
 package org.oopscraft.fintics.service;
 
+import groovyjarjarpicocli.CommandLine;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.data.IdGenerator;
@@ -9,6 +10,7 @@ import org.oopscraft.fintics.client.trade.TradeClientFactory;
 import org.oopscraft.fintics.dao.*;
 import org.oopscraft.fintics.model.Balance;
 import org.oopscraft.fintics.model.Order;
+import org.oopscraft.fintics.model.Simulate;
 import org.oopscraft.fintics.model.Trade;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
@@ -30,12 +32,14 @@ public class TradeService {
 
     private final OrderRepository orderRepository;
 
-    private final TradeClientFactory brokerClientFactory;
+    private final TradeClientFactory tradeClientFactory;
 
     private final AssetRepository assetRepository;
 
     @PersistenceContext
     private final EntityManager entityManager;
+
+    private final SimulateRepository simulateRepository;
 
     public List<Trade> getTrades() {
         return tradeRepository.findAll(Sort.by(TradeEntity_.TRADE_NAME)).stream()
@@ -132,7 +136,7 @@ public class TradeService {
     public Optional<Balance> getBalance(String tradeId) throws InterruptedException {
         Trade trade = getTrade(tradeId).orElseThrow();
         if(trade.getTradeClientId() != null) {
-            TradeClient tradeClient = brokerClientFactory.getObject(trade.getTradeClientId(), trade.getTradeClientConfig());
+            TradeClient tradeClient = tradeClientFactory.getObject(trade.getTradeClientId(), trade.getTradeClientConfig());
             Balance balance = tradeClient.getBalance();
             balance.getBalanceAssets().forEach(balanceAsset -> {
                 assetRepository.findById(balanceAsset.getAssetId()).ifPresent(assetEntity -> {
@@ -148,6 +152,21 @@ public class TradeService {
         }else{
             return Optional.empty();
         }
+    }
+
+    public Page<Simulate> getSimulates(String tradeId, Simulate.Status status, Pageable pageable) {
+        Specification<SimulateEntity> specification = Specification.where(null);
+        specification = specification
+                .and(SimulateSpecifications.equalTradeId(tradeId))
+                .and(Optional.ofNullable(status)
+                        .map(SimulateSpecifications::equalStatus)
+                        .orElse(null));
+        Page<SimulateEntity> simulateEntityPage = simulateRepository.findAll(specification, pageable);
+        List<Simulate> simulates = simulateEntityPage.getContent().stream()
+                .map(Simulate::from)
+                .toList();
+        long total = simulateEntityPage.getTotalElements();
+        return new PageImpl<>(simulates, pageable, total);
     }
 
 }

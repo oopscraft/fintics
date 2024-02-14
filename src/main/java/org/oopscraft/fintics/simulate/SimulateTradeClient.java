@@ -14,7 +14,6 @@ import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class SimulateTradeClient extends TradeClient {
@@ -39,16 +38,10 @@ public class SimulateTradeClient extends TradeClient {
     @Getter
     private final List<Order> orders = new ArrayList<>();
 
-    private Consumer<Order> onOrder;
-
     @Builder
     protected SimulateTradeClient(AssetOhlcvRepository assetOhlcvRepository) {
         super(null, new Properties());
         this.assetOhlcvRepository = assetOhlcvRepository;
-    }
-
-    public void onOrder(Consumer<Order> listener) {
-        this.onOrder = listener;
     }
 
     public void deposit(BigDecimal amount) {
@@ -244,11 +237,6 @@ public class SimulateTradeClient extends TradeClient {
 
         // save order
         orders.add(order);
-
-        // send message
-        if(this.onOrder != null) {
-            onOrder.accept(order);
-        }
 
         // return
         return order;

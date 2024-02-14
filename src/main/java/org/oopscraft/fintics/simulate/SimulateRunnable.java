@@ -19,12 +19,9 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
-import javax.imageio.stream.FileImageInputStream;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 
 public class SimulateRunnable implements Runnable {
 
@@ -110,11 +107,6 @@ public class SimulateRunnable implements Runnable {
             simulateTradeClient.deposit(investAmount);
             simulateTradeClient.setFeeRate(feeRate);
 
-            // add order listener
-            simulateTradeClient.onOrder(order -> {
-                sendMessage("order", order);
-            });
-
             // trade executor
             TradeExecutor tradeExecutor = tradeExecutorFactory.getObject();
             tradeExecutor.setLog(log);
@@ -131,6 +123,7 @@ public class SimulateRunnable implements Runnable {
                 }
 
                 log.info("== dateTime:{}", dateTime);
+                sendMessage("dateTime", dateTime.format(DateTimeFormatter.ISO_DATE_TIME));
                 TransactionStatus transactionStatus = null;
                 try {
                     simulateIndiceClient.setDateTime(dateTime);
@@ -150,10 +143,7 @@ public class SimulateRunnable implements Runnable {
                     // executes trade
                     tradeExecutor.execute(trade, dateTime, simulateIndiceClient, simulateTradeClient);
 
-                    // send message
-                    HashMap<String, String> status = new LinkedHashMap<>();
-                    status.put("dateTime", dateTime.format(DateTimeFormatter.ISO_DATE_TIME));
-                    sendMessage("status", status);
+                    // send balance message
                     sendMessage("balance", simulateTradeClient.getBalance());
 
                 } catch (InterruptedException e) {
@@ -192,14 +182,20 @@ public class SimulateRunnable implements Runnable {
 
     private void sendMessage(String destinationSuffix, Object object) {
         String destination =  String.format("/simulates/%s/%s", simulate.getSimulateId(), destinationSuffix);
-        String message = null;
-        try {
-            message = objectMapper.writeValueAsString(object);
-            messagingTemplate.convertAndSend(destination, message);
-        }catch( JsonProcessingException e) {
-            log.error("== object:{}", object);
-            log.error(e.getMessage(), e);
+        String message;
+        if (object == null) {
+            message = "";
+        } else if (object instanceof String) {
+            message = object.toString();
+        } else {
+            try {
+                message = objectMapper.writeValueAsString(object);
+            } catch (JsonProcessingException e) {
+                log.error(e.getMessage(), e);
+                message = e.getMessage();
+            }
         }
+        messagingTemplate.convertAndSend(destination, message);
     }
 
     public void onComplete(Runnable listener) {
