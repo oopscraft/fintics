@@ -27,6 +27,15 @@
         const orderOperators = new duice.ArrayProxy(/*[[${orderOperators}]]*/[]);
         const alarms = new duice.ArrayProxy(/*[[${alarms}]]*/[]);
 
+        // simulate
+        const simulateSearch = new duice.ObjectProxy({
+            status: null,
+            _page: 0,
+            _size: 20,
+            _count: 0
+        });
+        const simulates = new duice.ArrayProxy([]);
+
         // order
         const orderSearch = new duice.ObjectProxy({
             assetId: null,
@@ -151,6 +160,24 @@
             });
         }
 
+        function getSimulates(page) {
+            simulateSearch._page = page || 0;
+            let url = new URL(`${_apiUrl}/v1/trades/${tradeId}/simulates`, document.location.origin);
+            if(simulateSearch.status) {
+                url.searchParams.append('status', simulateSearch.status);
+            }
+            url.searchParams.append('_page', simulateSearch._page);
+            url.searchParams.append('_size', simulateSearch._size);
+            _fetch(url)
+            .then(response => {
+                simulateSearch._count = _parseTotalCount(response);
+                return response.json();
+            })
+            .then(responseBody => {
+                duice.ArrayProxy.assign(simulates, responseBody);
+            });
+        }
+
         function getOrders() {
             let url = new URL(`${_apiUrl}/v1/trades/${tradeId}/orders`, document.location.origin);
             if(orderSearch.assetId) {
@@ -194,6 +221,12 @@
                     document.getElementById('tradeTabButton'),
                     document.getElementById('tradeTabContent'),
                     () => {}),
+                duice.tabItem(
+                    document.getElementById('tradeSimulateTabButton'),
+                    document.getElementById('tradeSimulateTabContent'),
+                    () => {
+                        getSimulates();
+                    }),
                 duice.tabItem(
                     document.getElementById('tradeOrderTabButton'),
                     document.getElementById('tradeOrderTabContent'),
@@ -246,8 +279,12 @@
     <!-- ====================================== -->
     <div id="tabIndex" class="display--flex flex-wrap--nowrap overflow-x--scroll gap--1px margin-bottom--1px">
         <button id="tradeTabButton" type="button" class="tab">
-            <img class="icon" th:src="@{/static/image/icon-detail.svg}" alt="detail"/>
+            <img class="icon" th:src="@{/static/image/icon-detail.svg}" alt="trade"/>
             <span data-th-text="#{fintics.Trade}"></span>
+        </button>
+        <button id="tradeSimulateTabButton" type="button" class="tab">
+            <img class="icon" th:src="@{/static/image/icon-simulate.svg}" alt="simulate"/>
+            <span data-th-text="#{fintics.Simulate}"></span>
         </button>
         <button id="tradeOrderTabButton" type="button" class="tab">
             <img class="icon" th:src="@{/static/image/icon-order.svg}" alt="order"/>
@@ -508,9 +545,94 @@
         <!-- end: trade                             -->
         <!-- ====================================== -->
 
-        <!-- ================================== -->
-        <!-- start: order                       -->
-        <!-- ================================== -->
+        <!-- ====================================== -->
+        <!-- start: trade                           -->
+        <!-- ====================================== -->
+        <div id="tradeSimulateTabContent" class="border--1 padding--1em" style="min-height:400px;">
+            <h2>
+                <img class="icon" th:src="@{/static/image/icon-simulate.svg}" alt="simulate"/>
+                <span data-th-text="#{fintics.Simulate}"></span>
+            </h2>
+            <form onsubmit="return false;" class="display--grid grid-template-columns--12 grid-gap--1em margin-x--1em">
+            </form>
+            <table class="width--100">
+                <colgroup>
+                    <col style="width:7em;"/>
+                    <col style="width:10em;"/>
+                    <col style="width:10em;"/>
+                    <col style="width:10em;"/>
+                    <col/>
+                    <col style="width:10em;"/>
+                    <col style="width:10em;"/>
+                    <col style="width:10em;"/>
+                </colgroup>
+                <thead>
+                <tr>
+                    <th data-th-text="#{web.global.no}" class="text-align--center"></th>
+                    <th data-th-text="#{fintics.Simulate.startedAt}"></th>
+                    <th data-th-text="#{fintics.Simulate.endedAt}"></th>
+                    <th data-th-text="#{fintics.Simulate.status}"></th>
+                    <th data-th-text="#{fintics.Trade.tradeName}"></th>
+                    <th data-th-text="#{fintics.Simulate.dateTimeFrom}"></th>
+                    <th data-th-text="#{fintics.Simulate.dateTimeTo}"></th>
+                    <th>-</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr data-duice-bind="simulates" data-duice-loop="simulate,status">
+                    <td class="text-align--center">
+                        <span class="font-size--smaller"
+                              data-duice-bind="status"
+                              data-duice-execute="this.innerHTML=simulateSearch._count - (simulateSearch._size*simulateSearch._page + status.count) + 1;">
+                        </span>
+                    </td>
+                    <td>
+                        <span class="font-size--smaller"
+                              data-duice-bind="simulate"
+                              data-duice-property="startedAt"
+                              data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></span>
+                    </td>
+                    <td>
+                        <span class="font-size--smaller"
+                              data-duice-bind="simulate"
+                              data-duice-property="endedAt"
+                              data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></span>
+                    </td>
+                    <td>
+                        <span data-duice-bind="simulate" data-duice-property="status" class="font-size--smaller font-weight--bold"></span>
+                    </td>
+                    <td>
+                        <span data-duice-bind="simulate" data-duice-property="tradeName"></span>
+                    </td>
+                    <td>
+                        <span class="font-size--smaller"
+                              data-duice-bind="simulate"
+                              data-duice-property="dateTimeFrom"
+                              data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></span>
+                    </td>
+                    <td>
+                        <span class="font-size--smaller"
+                              data-duice-bind="simulate"
+                              data-duice-property="dateTimeTo"
+                              data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></span>
+                    </td>
+                    <td>
+                        <button>detail</button>
+                    </td>
+                </tr>
+                <tr data-duice-bind="simulates" data-duice-execute="if(simulates.length === 0) this.hidden=false;" hidden>
+                    <td colspan="100%" class="text-align--center">No Data</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <!-- ====================================== -->
+        <!-- end: trade                             -->
+        <!-- ====================================== -->
+
+        <!-- ====================================== -->
+        <!-- start: order                           -->
+        <!-- ====================================== -->
         <div id="tradeOrderTabContent" class="border--1 padding--1em" style="min-height:400px;">
             <h2>
                 <img class="icon" th:src="@{/static/image/icon-order.svg}" alt="order"/>
@@ -1271,8 +1393,20 @@
                 tabFolder.setActive(0);
             },
             open: async function(trade) {
-                let tradeJson = JSON.stringify(trade);
-                duice.ObjectProxy.assign(this.simulate.trade, JSON.parse(tradeJson));
+                let _this = this;
+                let url = new URL(`${_apiUrl}/v1/trades/${trade.tradeId}/simulates`, document.location.origin);
+                _fetch(url)
+                .then(response => response.json())
+                .then(simulates => {
+                    let runningSimulate = simulates.find(simulate => simulate.status === 'RUNNING');
+                    if (runningSimulate) {
+                        duice.ObjectProxy.assign(_this.simulate, runningSimulate);
+                        _this.listenSimulate();
+                    } else {
+                        let tradeJson = JSON.stringify(trade);
+                        duice.ObjectProxy.assign(_this.simulate.trade, JSON.parse(tradeJson));
+                    }
+                });
                 return this.dialog.open();
             },
             prepareSimulate: function() {
@@ -1380,36 +1514,38 @@
                     }
                     let data = await response.json();
                     this.simulate.simulateId = data.simulateId;
-
-                    // websocket
-                    let _this = this;
-                    this.log.value = '';
-                    _webSocketClient.unsubscribe(this.subscribeLog);
-                    this.subscribeLog = _webSocketClient.subscribe({
-                        destination: `/simulates/${_this.simulate.simulateId}/log`,
-                        listener: function (frame) {
-                            if (_this.log.value.length > 100_000) {
-                                _this.log.value = '';
-                            }
-                            _this.log.value += frame.body + '\n';
-                            _this.log.scrollTop = _this.log.scrollHeight;
+                    this.listenSimulate();
+                });
+            },
+            listenSimulate: function() {
+                // websocket
+                let _this = this;
+                this.log.value = '';
+                _webSocketClient.unsubscribe(this.subscribeLog);
+                this.subscribeLog = _webSocketClient.subscribe({
+                    destination: `/simulates/${_this.simulate.simulateId}/log`,
+                    listener: function (frame) {
+                        if (_this.log.value.length > 100_000) {
+                            _this.log.value = '';
                         }
-                    });
-                    _webSocketClient.unsubscribe(this.subscribeStatus);
-                    this.subscribeStatus = _webSocketClient.subscribe({
-                        destination: `/simulates/${_this.simulate.simulateId}/dateTime`,
-                        listener: function(frame) {
-                            _this.dateTime.value = frame.body;
-                        }
-                    });
-                    _webSocketClient.unsubscribe(this.subscribeBalance);
-                    this.subscribeBalance = _webSocketClient.subscribe({
-                        destination: `/simulates/${_this.simulate.simulateId}/balance`,
-                        listener: function(frame) {
-                            let balance = JSON.parse(frame.body);
-                            duice.ObjectProxy.assign(_this.simulate.balance, balance);
-                        }
-                    });
+                        _this.log.value += frame.body + '\n';
+                        _this.log.scrollTop = _this.log.scrollHeight;
+                    }
+                });
+                _webSocketClient.unsubscribe(this.subscribeStatus);
+                this.subscribeStatus = _webSocketClient.subscribe({
+                    destination: `/simulates/${_this.simulate.simulateId}/dateTime`,
+                    listener: function(frame) {
+                        _this.dateTime.value = frame.body;
+                    }
+                });
+                _webSocketClient.unsubscribe(this.subscribeBalance);
+                this.subscribeBalance = _webSocketClient.subscribe({
+                    destination: `/simulates/${_this.simulate.simulateId}/balance`,
+                    listener: function(frame) {
+                        let balance = JSON.parse(frame.body);
+                        duice.ObjectProxy.assign(_this.simulate.balance, balance);
+                    }
                 });
             },
             clearMarkOrderAtChart: function() {

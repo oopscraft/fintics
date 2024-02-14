@@ -155,12 +155,17 @@ public class TradeService {
     }
 
     public Page<Simulate> getSimulates(String tradeId, Simulate.Status status, Pageable pageable) {
+        // where
         Specification<SimulateEntity> specification = Specification.where(null);
         specification = specification
                 .and(SimulateSpecifications.equalTradeId(tradeId))
                 .and(Optional.ofNullable(status)
                         .map(SimulateSpecifications::equalStatus)
                         .orElse(null));
+        // sort
+        Sort sort = Sort.by(SimulateEntity_.STARTED_AT).descending();
+        pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+        // find
         Page<SimulateEntity> simulateEntityPage = simulateRepository.findAll(specification, pageable);
         List<Simulate> simulates = simulateEntityPage.getContent().stream()
                 .map(Simulate::from)
