@@ -44,6 +44,8 @@ public class SimulateService implements ApplicationListener<ContextClosedEvent> 
 
     private final Map<String,SimulateRunnable> simulateRunnableMap = new ConcurrentHashMap<>();
 
+    private final Map<String,Future<?>> simulateFutureMap = new ConcurrentHashMap<>();
+
     public Page<Simulate> getSimulates(String tradeId, Pageable pageable) {
         // where
         Specification<SimulateEntity> specification = Specification.where(null);
@@ -77,10 +79,12 @@ public class SimulateService implements ApplicationListener<ContextClosedEvent> 
         simulateRunnable.setSimulateLogAppender(simulateLogAppender);
         simulateRunnable.onComplete(() -> {
             this.simulateRunnableMap.remove(simulate.getSimulateId());
+            this.simulateFutureMap.remove(simulate.getSimulateId());
         });
 
-        simulateExecutor.submit(simulateRunnable);
+        Future<?> simulateFuture = simulateExecutor.submit(simulateRunnable);
         simulateRunnableMap.put(simulate.getSimulateId(), simulateRunnable);
+        simulateFutureMap.put(simulate.getSimulateId(), simulateFuture);
 
         // return
         return simulate;
@@ -95,6 +99,7 @@ public class SimulateService implements ApplicationListener<ContextClosedEvent> 
         // interrupt thread
         if(simulateRunnableMap.containsKey(simulateId)) {
             simulateRunnableMap.get(simulateId).setInterrupted(true);
+            simulateFutureMap.get(simulateId).cancel(true);
         }
     }
 

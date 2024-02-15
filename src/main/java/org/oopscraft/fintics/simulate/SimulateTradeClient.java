@@ -56,7 +56,7 @@ public class SimulateTradeClient extends TradeClient {
         // minutes
         List<Ohlcv> minuteOhlcvs = minuteOhlcvsMap.get(asset.getAssetId());
         if(minuteOhlcvs == null || minuteOhlcvs.isEmpty() || minuteOhlcvs.get(0).getDateTime().isBefore(dateTime)) {
-            minuteOhlcvs = assetOhlcvRepository.findAllByAssetIdAndType(asset.getAssetId(), Ohlcv.Type.MINUTE, dateTime.minusMonths(1), dateTime, Pageable.unpaged())
+            minuteOhlcvs = assetOhlcvRepository.findAllByAssetIdAndType(asset.getAssetId(), Ohlcv.Type.MINUTE, dateTime.minusMonths(1), dateTime.plusMonths(1), Pageable.unpaged())
                     .stream()
                     .map(Ohlcv::from)
                     .toList();
@@ -66,7 +66,7 @@ public class SimulateTradeClient extends TradeClient {
         // daily
         List<Ohlcv> dailyOhlcvs = dailyOhlcvsMap.get(asset.getAssetId());
         if(dailyOhlcvs == null || dailyOhlcvs.isEmpty() || dailyOhlcvs.get(0).getDateTime().isBefore(dateTime)) {
-            dailyOhlcvs = assetOhlcvRepository.findAllByAssetIdAndType(asset.getAssetId(), Ohlcv.Type.DAILY, dateTime.minusYears(1), dateTime, Pageable.unpaged())
+            dailyOhlcvs = assetOhlcvRepository.findAllByAssetIdAndType(asset.getAssetId(), Ohlcv.Type.DAILY, dateTime.minusYears(1), dateTime.plusYears(1), Pageable.unpaged())
                     .stream()
                     .map(Ohlcv::from)
                     .toList();
@@ -117,11 +117,12 @@ public class SimulateTradeClient extends TradeClient {
         loadOhlcvsIfNotExist(asset, dateTime);
         LocalDateTime dateTimeFrom = dateTime.truncatedTo(ChronoUnit.MINUTES);
         LocalDateTime dateTimeTo = dateTimeFrom.plusMinutes(1).minusNanos(1);
-        Ohlcv minuteOhlcv = minuteOhlcvsMap.get(asset.getAssetId()).stream()
+        List<Ohlcv> minuteOhlcvs = minuteOhlcvsMap.get(asset.getAssetId());
+        Ohlcv minuteOhlcv = minuteOhlcvs.stream()
                 .filter(ohlcv -> (ohlcv.getDateTime().isAfter(dateTimeFrom) || ohlcv.getDateTime().isEqual(dateTimeFrom))
                         && (ohlcv.getDateTime().isBefore(dateTimeTo) || ohlcv.getDateTime().isEqual(dateTimeTo)))
                 .findFirst()
-                .orElseThrow();
+                .orElse(null);
 
         BigDecimal price = minuteOhlcv.getClosePrice();
         BigDecimal bidPrice = minuteOhlcv.getLowPrice();

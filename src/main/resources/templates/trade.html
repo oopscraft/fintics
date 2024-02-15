@@ -1604,7 +1604,7 @@
                         let orders = JSON.parse(frame.body);
                         if(orders.length !== _this.simulate.orders.length) {
                             duice.ObjectProxy.assign(_this.simulate.orders, orders);
-                            _this.setMarkOrdersAtChart(orders);
+                            //_this.setMarkOrdersAtChart(orders);
                         }
                     }
                 });
