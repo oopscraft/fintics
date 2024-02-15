@@ -112,6 +112,7 @@ public class SimulateRunnable implements Runnable {
             tradeExecutor.setLog(log);
 
             // start
+            saveSimulate(simulate);
             for (LocalDateTime dateTime = dateTimeFrom.plusSeconds(interval); dateTime.isBefore(dateTimeTo); dateTime = dateTime.plusSeconds(interval)) {
                 // check interrupted
                 if (interrupted) {
@@ -146,6 +147,10 @@ public class SimulateRunnable implements Runnable {
                     // send balance message
                     sendMessage("balance", simulateTradeClient.getBalance());
                     sendMessage("orders", simulateTradeClient.getOrders());
+
+                    // save
+                    saveSimulate(simulate);
+                    transactionManager.commit(transactionStatus);
 
                 } catch (InterruptedException e) {
                     log.warn(e.getMessage(), e);
@@ -219,9 +224,12 @@ public class SimulateRunnable implements Runnable {
         simulateEntity.setStartedAt(simulate.getStartedAt());
         simulateEntity.setEndedAt(simulate.getEndedAt());
         simulateEntity.setStatus(simulate.getStatus());
-        simulateEntity.setBalanceData(toDataString(simulate.getBalance()));
-        simulateEntity.setOrdersData(toDataString(simulate.getOrders()));
-
+        try {
+            simulateEntity.setBalanceData(toDataString(simulateTradeClient.getBalance()));
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        simulateEntity.setOrdersData(toDataString(simulateTradeClient.getOrders()));
         simulateRepository.saveAndFlush(simulateEntity);
     }
 

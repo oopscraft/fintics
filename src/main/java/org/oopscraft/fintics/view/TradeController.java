@@ -6,6 +6,7 @@ import org.oopscraft.arch4j.core.alarm.AlarmSearch;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
 import org.oopscraft.fintics.client.trade.TradeClientFactory;
 import org.oopscraft.fintics.model.Order;
+import org.oopscraft.fintics.model.Simulate;
 import org.oopscraft.fintics.service.IndiceService;
 import org.oopscraft.fintics.trade.order.OrderOperatorFactory;
 import org.springframework.data.domain.Pageable;
@@ -39,8 +40,9 @@ public class TradeController {
         modelAndView.addObject("orderOperators", orderOperatorFactory.getOrderOperatorDefinitions());
         List<Alarm> alarms = alarmService.getAlarms(AlarmSearch.builder().build(), Pageable.unpaged()).getContent();
         modelAndView.addObject("alarms", alarms);
-        modelAndView.addObject("orderKinds", Order.Kind.values());
         modelAndView.addObject("indices", indiceService.getIndices());
+        modelAndView.addObject("simulateStatus", Simulate.Status.values());
+        modelAndView.addObject("orderKinds", Order.Kind.values());
         return modelAndView;
     }
 
