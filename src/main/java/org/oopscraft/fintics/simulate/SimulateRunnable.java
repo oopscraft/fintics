@@ -145,6 +145,7 @@ public class SimulateRunnable implements Runnable {
 
                     // send balance message
                     sendMessage("balance", simulateTradeClient.getBalance());
+                    sendMessage("orders", simulateTradeClient.getOrders());
 
                 } catch (InterruptedException e) {
                     log.warn(e.getMessage(), e);
@@ -182,20 +183,17 @@ public class SimulateRunnable implements Runnable {
 
     private void sendMessage(String destinationSuffix, Object object) {
         String destination =  String.format("/simulates/%s/%s", simulate.getSimulateId(), destinationSuffix);
-        String message;
-        if (object == null) {
-            message = "";
-        } else if (object instanceof String) {
-            message = object.toString();
-        } else {
+        String message = null;
+        if(object != null) {
             try {
                 message = objectMapper.writeValueAsString(object);
             } catch (JsonProcessingException e) {
+                message = object.toString();
                 log.error(e.getMessage(), e);
                 message = e.getMessage();
             }
+            messagingTemplate.convertAndSend(destination, message);
         }
-        messagingTemplate.convertAndSend(destination, message);
     }
 
     public void onComplete(Runnable listener) {

@@ -9,6 +9,8 @@ import org.oopscraft.fintics.dao.*;
 import org.oopscraft.fintics.model.*;
 import org.oopscraft.fintics.simulate.*;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -22,7 +24,7 @@ import java.util.concurrent.*;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class SimulateService {
+public class SimulateService implements ApplicationListener<ContextClosedEvent> {
 
     private final SimulateRepository simulateRepository;
 
@@ -85,9 +87,20 @@ public class SimulateService {
     }
 
     public synchronized void stopSimulate(String simulateId) {
+        // data status update
+        simulateRepository.findById(simulateId).ifPresent(simulateEntity -> {
+            simulateEntity.setStatus(Simulate.Status.STOPPING);
+            simulateRepository.saveAndFlush(simulateEntity);
+        });
+        // interrupt thread
         if(simulateRunnableMap.containsKey(simulateId)) {
             simulateRunnableMap.get(simulateId).setInterrupted(true);
         }
+    }
+
+    @Override
+    public void onApplicationEvent(ContextClosedEvent event) {
+        this.simulateExecutor.shutdownNow();
     }
 
 }

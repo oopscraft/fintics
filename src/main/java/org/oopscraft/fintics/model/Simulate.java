@@ -57,7 +57,7 @@ public class Simulate {
     @Builder.Default
     private List<Order> orders = new ArrayList<>();
 
-    public enum Status { WAITING, RUNNING, COMPLETED, STOPPED, FAILED }
+    public enum Status { WAITING, RUNNING, COMPLETED, STOPPING, STOPPED, FAILED }
 
     @Converter(autoApply = true)
     public static class StatusConverter extends AbstractEnumConverter<Status> {}

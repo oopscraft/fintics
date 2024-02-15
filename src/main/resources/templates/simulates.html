@@ -225,11 +225,13 @@
                     <img class="icon" th:src="@{/static/image/icon-search.svg}" alt="search"/>
                     <span data-th-text="#{web.global.search}"></span>
                 </button>
-                <button type="button" onclick="simulateDialog.runSimulate();">
+                <button type="button" onclick="simulateDialog.runSimulate();"
+                        data-duice-bind="simulateDialog.simulate" data-duice-if="simulateDialog.simulate.status !== 'RUNNING">
                     <img class="icon" th:src="@{/static/image/icon-run.svg}" alt="run"/>
                     <span data-th-text="#{web.global.run}"></span>
                 </button>
-                <button type="button" onclick="simulateDialog.stopSimulate();">
+                <button type="button" onclick="simulateDialog.stopSimulate();"
+                        data-duice-bind="simulateDialog.simulate" data-duice-if="simulateDialog.simulate.status === 'RUNNING'">
                     <img class="icon" th:src="@{/static/image/icon-stop.svg}" alt="stop"/>
                     <span data-th-text="#{web.global.stop}"></span>
                 </button>

@@ -1243,11 +1243,15 @@
                     <img class="icon" th:src="@{/static/image/icon-search.svg}" alt="search"/>
                     <span data-th-text="#{web.global.search}"></span>
                 </button>
-                <button type="button" onclick="simulateDialog.runSimulate();">
+                <button type="button" onclick="simulateDialog.runSimulate();"
+                        data-duice-bind="simulateDialog.simulate"
+                        data-duice-if="return simulateDialog.simulate.status !== 'RUNNING';">
                     <img class="icon" th:src="@{/static/image/icon-run.svg}" alt="run"/>
                     <span data-th-text="#{web.global.run}"></span>
                 </button>
-                <button type="button" onclick="simulateDialog.stopSimulate();">
+                <button type="button" onclick="simulateDialog.stopSimulate();"
+                        data-duice-bind="simulateDialog.simulate"
+                        data-duice-if="return simulateDialog.simulate.status === 'RUNNING';">
                     <img class="icon" th:src="@{/static/image/icon-stop.svg}" alt="stop"/>
                     <span data-th-text="#{web.global.stop}"></span>
                 </button>
@@ -1362,15 +1366,17 @@
                 dateTime: null,
                 balance: {
                     balanceAssets: []
-                }
+                },
+                orders: []
             }),
             assetMinuteOhlcvChart: null,
             assetDailyOhlcvChart: null,
             indiceMinuteOhlcvChart: null,
             indiceDailyOhlcvChart: null,
             subscribeLog: null,
-            subscribeStatus: null,
+            subscribeDateTime: null,
             subscribeBalance: null,
+            subscribeOrders: null,
             dateTime: document.getElementById('simulateDialog-dateTime'),
             log: document.getElementById('simulateDialog-log'),
             initialize: function() {
@@ -1514,6 +1520,7 @@
                     }
                     let data = await response.json();
                     this.simulate.simulateId = data.simulateId;
+                    this.simulate.status = 'RUNNING';
                     this.listenSimulate();
                 });
             },
@@ -1532,8 +1539,8 @@
                         _this.log.scrollTop = _this.log.scrollHeight;
                     }
                 });
-                _webSocketClient.unsubscribe(this.subscribeStatus);
-                this.subscribeStatus = _webSocketClient.subscribe({
+                _webSocketClient.unsubscribe(this.subscribeDateTime);
+                this.subscribeDateTime = _webSocketClient.subscribe({
                     destination: `/simulates/${_this.simulate.simulateId}/dateTime`,
                     listener: function(frame) {
                         _this.dateTime.value = frame.body;
@@ -1547,6 +1554,17 @@
                         duice.ObjectProxy.assign(_this.simulate.balance, balance);
                     }
                 });
+                _webSocketClient.unsubscribe(this.subscribeOrders);
+                this.subscribeOrders = _webSocketClient.subscribe({
+                    destination: `/simulates/${_this.simulate.simulateId}/orders`,
+                    listener: function(frame) {
+                        let orders = JSON.parse(frame.body);
+                        if(orders.length !== _this.simulate.orders.length) {
+                            duice.ObjectProxy.assign(_this.simulate.orders, orders);
+                            _this.setMarkOrdersAtChart(orders);
+                        }
+                    }
+                });
             },
             clearMarkOrderAtChart: function() {
                 this.assetMinuteOhlcvsChart.data.datasets.forEach((dataset) => {
@@ -1555,6 +1573,11 @@
                     dataset.pointBackgroundColor = new Array(dataset.data.length).fill(false);
                 });
                 this.assetMinuteOhlcvsChart.update();
+            },
+            setMarkOrdersAtChart: function(orders) {
+                orders.forEach(order => {
+                    this.setMarkOrderAtChart(order);
+                });
             },
             setMarkOrderAtChart: function(order) {
                 // find dataset
@@ -1587,6 +1610,7 @@
                     }
                 }).then(response => {
                     console.log(response);
+                    this.simulate.status = 'STOPPED';
                 });
             },
             close: function() {
