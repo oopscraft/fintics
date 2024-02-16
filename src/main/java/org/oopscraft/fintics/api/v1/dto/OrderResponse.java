@@ -7,6 +7,8 @@ import org.oopscraft.fintics.model.Order;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Builder
 @Getter
@@ -51,6 +53,12 @@ public class OrderResponse {
                 .result(order.getResult())
                 .errorMessage(order.getErrorMessage())
                 .build();
+    }
+
+    public static List<OrderResponse> from(List<Order> orders) {
+        return orders.stream()
+                .map(OrderResponse::from)
+                .collect(Collectors.toList());
     }
 
 }

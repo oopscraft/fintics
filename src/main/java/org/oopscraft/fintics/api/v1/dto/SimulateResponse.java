@@ -6,6 +6,8 @@ import org.oopscraft.fintics.model.Simulate;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Builder
 @Getter
@@ -39,6 +41,9 @@ public class SimulateResponse {
 
     private BalanceResponse balance;
 
+    @Builder.Default
+    private List<OrderResponse> orders = new ArrayList<>();
+
     public static SimulateResponse from(Simulate simulate) {
         return SimulateResponse.builder()
                 .simulateId(simulate.getSimulateId())
@@ -53,6 +58,7 @@ public class SimulateResponse {
                 .investAmount(simulate.getInvestAmount())
                 .feeRate(simulate.getFeeRate())
                 .balance(BalanceResponse.from(simulate.getBalance()))
+                .orders(OrderResponse.from(simulate.getOrders()))
                 .build();
     }
 

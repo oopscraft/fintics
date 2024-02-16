@@ -588,6 +588,8 @@
                     <col/>
                     <col/>
                     <col/>
+                    <col/>
+                    <col/>
                 </colgroup>
                 <thead>
                 <tr>
@@ -599,6 +601,8 @@
                     <th data-th-text="#{fintics.Simulate.dateTimeTo}"></th>
                     <th data-th-text="#{fintics.Simulate.investAmount}"></th>
                     <th data-th-text="#{fintics.Balance.totalAmount}"></th>
+                    <th data-th-text="#{fintics.BalanceAsset}"></th>
+                    <th data-th-text="#{fintics.Order}"></th>
                     <th>-</th>
                 </tr>
                 </thead>
@@ -641,6 +645,12 @@
                     </td>
                     <td>
                         <span data-duice-bind="simulate" data-duice-property="balance.totalAmount" data-duice-format="number"></span>
+                    </td>
+                    <td>
+                        <span data-duice-bind="simulate" data-duice-property="balance.balanceAssets.length" data-duice-format="number"></span>
+                    </td>
+                    <td>
+                        <span data-duice-bind="simulate" data-duice-property="orders.length" data-duice-format="number"></span>
                     </td>
                     <td>
                         <button type="button" class="small">
