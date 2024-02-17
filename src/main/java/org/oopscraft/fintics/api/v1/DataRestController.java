@@ -5,8 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.web.support.PageableUtils;
 import org.oopscraft.fintics.api.v1.dto.AssetOhlcvResponse;
 import org.oopscraft.fintics.api.v1.dto.AssetResponse;
+import org.oopscraft.fintics.api.v1.dto.DataSummaryResponse;
 import org.oopscraft.fintics.api.v1.dto.IndiceOhlcvResponse;
-import org.oopscraft.fintics.model.Asset;
+import org.oopscraft.fintics.model.DataSummary;
 import org.oopscraft.fintics.model.IndiceId;
 import org.oopscraft.fintics.model.Ohlcv;
 import org.oopscraft.fintics.service.DataService;
@@ -33,6 +34,13 @@ import java.util.Optional;
 public class DataRestController {
 
     private final DataService dataService;
+
+    @GetMapping("summary")
+    public ResponseEntity<DataSummaryResponse> getSummary() {
+        DataSummary dataSummary = dataService.getSummary();
+        DataSummaryResponse dataSummaryResponse = DataSummaryResponse.from(dataSummary);
+        return ResponseEntity.ok(dataSummaryResponse);
+    }
 
     @GetMapping("assets")
     public ResponseEntity<List<AssetResponse>> getAssets(

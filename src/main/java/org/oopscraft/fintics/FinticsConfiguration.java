@@ -1,5 +1,7 @@
 package org.oopscraft.fintics;
 
+import org.apache.ibatis.annotations.Mapper;
+import org.mybatis.spring.annotation.MapperScan;
 import org.oopscraft.arch4j.web.WebConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -21,6 +23,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableAutoConfiguration
 @EntityScan
 @EnableJpaRepositories
+@MapperScan(
+        annotationClass = Mapper.class,
+        nameGenerator = FullyQualifiedAnnotationBeanNameGenerator.class
+)
 @ConfigurationPropertiesScan
 @EnableScheduling
 @EnableCaching

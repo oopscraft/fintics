@@ -18,6 +18,21 @@ public class DataService {
 
     private final JPAQueryFactory jpaQueryFactory;
 
+    private final DataMapper dataMapper;
+
+    public DataSummary getSummary() {
+        List<DataSummary.AssetOhlcvStatistics> assetMinuteOhlcvStatistics = dataMapper.selectAssetOhlcvStatistics(Ohlcv.Type.MINUTE);
+        List<DataSummary.AssetOhlcvStatistics> assetDailyOhlcvStatistics = dataMapper.selectAssetOhlcvStatistics(Ohlcv.Type.DAILY);
+        List<DataSummary.IndiceOhlcvStatistics> indiceMinuteOhlcvStatistics = dataMapper.selectIndiceOhlcvStatistics(Ohlcv.Type.MINUTE);
+        List<DataSummary.IndiceOhlcvStatistics> indiceDailyOhlcvStatistics = dataMapper.selectIndiceOhlcvStatistics(Ohlcv.Type.DAILY);
+        return DataSummary.builder()
+                .assetMinuteOhlcvStatistics(assetMinuteOhlcvStatistics)
+                .assetDailyOhlcvStatistics(assetDailyOhlcvStatistics)
+                .indiceMinuteOhlcvStatistics(indiceMinuteOhlcvStatistics)
+                .indiceDailyOhlcvStatistics(indiceDailyOhlcvStatistics)
+                .build();
+    }
+
     public List<Asset> getAssets(String assetId, String assetName, String market, Pageable pageable) {
         QAssetEntity qAssetEntity = QAssetEntity.assetEntity;
         List<AssetEntity> assetEntities = jpaQueryFactory

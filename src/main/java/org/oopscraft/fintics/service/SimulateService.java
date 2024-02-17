@@ -32,7 +32,7 @@ public class SimulateService implements ApplicationListener<ContextClosedEvent> 
 
     private final SimpMessagingTemplate messagingTemplate;
 
-    private final BlockingQueue<Runnable> simulateQueue = new ArrayBlockingQueue<>(3);
+    private final BlockingQueue<Runnable> simulateQueue = new ArrayBlockingQueue<>(10);
 
     private final ThreadPoolExecutor simulateExecutor = new ThreadPoolExecutor(
             1,

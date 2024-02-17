@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.oopscraft.fintics.dao.DataMapper">
+
+    <cache eviction="FIFO" flushInterval="60000" size="512"/>
+
+    <select id="selectAssetOhlcvStatistics" resultType="org.oopscraft.fintics.model.DataSummary$AssetOhlcvStatistics">
+        <![CDATA[
+        SELECT      fao.asset_id as "assetId",
+                    (SELECT asset_name FROM fintics_asset WHERE asset_id = fao.asset_id) as "assetName",
+                    fao.type as "type",
+                    fao.min_date_time as "minDateTime",
+                    fao.max_date_time as "maxDateTime",
+                    fao.total_count as "totalCount",
+                    faoi.interpolated_min_date_time as "interpolatedMinDateTime",
+                    faoi.interpolated_max_date_time as "interpolatedMaxDateTime",
+                    faoi.interpolated_count as "interpolatedCount",
+                    faoo.original_min_date_time as "originalMinDateTime",
+                    faoo.original_max_date_time as "originalMaxDateTime",
+                    faoo.original_count as "originalCount"
+        FROM        (
+                    -- all
+                    SELECT 	DISTINCT
+                            asset_id,
+                            type,
+                            MIN(date_time) as min_date_time,
+                            MAX(date_time) as max_date_time,
+                            COUNT(*) as total_count
+                    FROM 	fintics_asset_ohlcv
+                    WHERE 	type = #{type}
+                    GROUP BY
+                            asset_id,
+                            type
+                    ) as fao
+        LEFT OUTER JOIN (
+                    -- interpolated
+                    SELECT 	DISTINCT
+                            asset_id,
+                            type,
+                            MIN(date_time) as interpolated_min_date_time,
+                            MAX(date_time) as interpolated_max_date_time,
+                            COUNT(*) as interpolated_count
+                    FROM 	fintics_asset_ohlcv fao
+                    WHERE 	type = #{type}
+                    AND 	interpolated = 'Y'
+                    GROUP BY
+                            asset_id,
+                            type
+                    ) as faoi
+        ON  faoi.asset_id = fao.asset_id and faoi.type = fao.type
+        LEFT OUTER JOIN (
+                    -- original
+                    SELECT 	DISTINCT
+                            asset_id,
+                            type,
+                            MIN(date_time) as original_min_date_time,
+                            MAX(date_time) as original_max_date_time,
+                            COUNT(*) as original_count
+                    FROM 	fintics_asset_ohlcv fao
+                    WHERE 	type = #{type}
+                      AND 	interpolated != 'Y'
+                    GROUP BY
+                            asset_id,
+                            type
+                ) as faoo
+        ON  faoo.asset_id = fao.asset_id and faoo.type = fao.type
+        ]]>
+    </select>
+
+    <select id="selectIndiceOhlcvStatistics" resultType="org.oopscraft.fintics.model.DataSummary$IndiceOhlcvStatistics">
+        <![CDATA[
+        SELECT      fio.indice_id as "indiceId",
+                    fio.type as "type",
+                    fio.min_date_time as "minDateTime",
+                    fio.max_date_time as "maxDateTime",
+                    fio.total_count as "totalCount",
+                    fioi.interpolated_min_date_time as "interpolatedMinDateTime",
+                    fioi.interpolated_max_date_time as "interpolatedMaxDateTime",
+                    fioi.interpolated_count as "interpolatedCount",
+                    fioo.original_min_date_time as "originalMinDateTime",
+                    fioo.original_max_date_time as "originalMaxDateTime",
+                    fioo.original_count as "originalCount"
+        FROM        (
+                    -- all
+                    SELECT 	DISTINCT
+                            indice_id,
+                            type,
+                            MIN(date_time) as min_date_time,
+                            MAX(date_time) as max_date_time,
+                            COUNT(*) as total_count
+                    FROM 	fintics_indice_ohlcv
+                    WHERE 	type = #{type}
+                    GROUP BY
+                            indice_id,
+                            type
+                    ) as fio
+        LEFT OUTER JOIN (
+                    -- interpolated
+                    SELECT 	DISTINCT
+                            indice_id,
+                            type,
+                            MIN(date_time) as interpolated_min_date_time,
+                            MAX(date_time) as interpolated_max_date_time,
+                            COUNT(*) as interpolated_count
+                    FROM 	fintics_indice_ohlcv fao
+                    WHERE 	type = #{type}
+                      AND 	interpolated = 'Y'
+                    GROUP BY
+                            indice_id,
+                            type
+                    ) as fioi
+        ON  fioi.indice_id = fio.indice_id and fioi.type = fio.type
+        LEFT OUTER JOIN (
+                    -- original
+                    SELECT 	DISTINCT
+                            indice_id,
+                            type,
+                            MIN(date_time) as original_min_date_time,
+                            MAX(date_time) as original_max_date_time,
+                            COUNT(*) as original_count
+                    FROM 	fintics_indice_ohlcv fao
+                    WHERE 	type = #{type}
+                      AND 	interpolated != 'Y'
+                    GROUP BY
+                            indice_id,
+                            type
+                    ) as fioo
+        ON  fioo.indice_id = fio.indice_id and fioo.type = fio.type
+        ]]>
+    </select>
+
+</mapper>
