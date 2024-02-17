@@ -169,24 +169,22 @@
                     <th data-th-text="#{fintics.Order.errorMessage}"></th>
                 </tr>
                 </thead>
-                <tbody>
+                <tbody class="font-size--smaller">
                 <tr data-duice-bind="orders" data-duice-loop="order,status">
                     <td class="text-align--center">
-                        <span class="font-size--smaller"
-                              data-duice-bind="status"
+                        <span data-duice-bind="status"
                               data-duice-execute="this.innerHTML=orderSearch._count - (orderSearch._size*orderSearch._page + status.count) + 1;">
                         </span>
                     </td>
                     <td>
-                        <span class="font-size--smaller"
-                              data-duice-bind="order"
+                        <span data-duice-bind="order"
                               data-duice-property="orderAt"
                               data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></span>
                     </td>
                     <td>
                         <span data-duice-bind="order" data-duice-property="type" class="badge"
                         data-duice-execute="
-                        if(order.type === 'BUY') this.classList.add('background-color--red');
+                        if(order.type === 'BUY') this.classList.add('background-color--green');
                         if(order.type === 'SELL') this.classList.add('background-color--blue');
                         "></span>
                     </td>
@@ -213,7 +211,7 @@
                         <span data-duice-bind="order" data-duice-property="errorMessage"></span>
                     </td>
                 </tr>
-                <tr data-duice-bind="orders" data-duice-execute="if(orders.length === 0) this.hidden=false;" hidden>
+                <tr data-duice-bind="orders" data-duice-if="return orders.length === 0;" hidden>
                     <td colspan="100%" class="text-align--center">No Data</td>
                 </tr>
                 </tbody>

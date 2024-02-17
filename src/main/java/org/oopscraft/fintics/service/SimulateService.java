@@ -46,12 +46,15 @@ public class SimulateService implements ApplicationListener<ContextClosedEvent> 
 
     private final Map<String,Future<?>> simulateFutureMap = new ConcurrentHashMap<>();
 
-    public Page<Simulate> getSimulates(String tradeId, Pageable pageable) {
+    public Page<Simulate> getSimulates(String tradeId, Simulate.Status status, Pageable pageable) {
         // where
         Specification<SimulateEntity> specification = Specification.where(null);
         specification = specification
                 .and(Optional.ofNullable(tradeId)
                         .map(SimulateSpecifications::equalTradeId)
+                        .orElse(null))
+                .and(Optional.ofNullable(status)
+                        .map(SimulateSpecifications::equalStatus)
                         .orElse(null));
 
         // sort
@@ -65,6 +68,11 @@ public class SimulateService implements ApplicationListener<ContextClosedEvent> 
                 .toList();
         long count = simulateEntityPage.getTotalElements();
         return new PageImpl<>(simulates, pageable, count);
+    }
+
+    public Optional<Simulate> getSimulate(String simulateId) {
+        return simulateRepository.findById(simulateId)
+                .map(Simulate::from);
     }
 
     public synchronized Simulate runSimulate(Simulate simulate) {

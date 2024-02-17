@@ -1,9 +1,6 @@
 package org.oopscraft.fintics.model;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import org.oopscraft.arch4j.core.data.converter.AbstractEnumConverter;
 import org.oopscraft.fintics.dao.OrderEntity;
 
@@ -12,10 +9,10 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+@Data
 @Builder
-@Getter
-@Setter
-@ToString
+@NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Order {
 
     private String orderId;

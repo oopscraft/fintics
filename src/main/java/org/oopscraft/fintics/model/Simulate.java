@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.data.converter.AbstractEnumConverter;
 import org.oopscraft.arch4j.core.support.ObjectMapperHolder;
 import org.oopscraft.fintics.dao.SimulateEntity;
@@ -18,6 +19,7 @@ import java.util.List;
 
 @Builder
 @Getter
+@Slf4j
 public class Simulate {
 
     @Setter
@@ -66,32 +68,32 @@ public class Simulate {
         ObjectMapper objectMapper = ObjectMapperHolder.getObject();
 
         // trade data
-        Trade trade = null;
+        Trade trade = new Trade();
         if(simulateEntity.getTradeData() != null) {
             try {
                 trade = objectMapper.readValue(simulateEntity.getTradeData(), Trade.class);
-            } catch (JsonProcessingException ignored) {
-                trade = new Trade();
+            } catch (JsonProcessingException e) {
+                log.debug(e.getMessage());
             }
         }
 
         // balance data
-        Balance balance = null;
+        Balance balance = new Balance();
         if(simulateEntity.getBalanceData() != null) {
             try {
                 balance = objectMapper.readValue(simulateEntity.getBalanceData(), Balance.class);
-            } catch (JsonProcessingException ignored) {
-                balance = new Balance();
+            } catch (JsonProcessingException e) {
+                log.debug(e.getMessage());
             }
         }
 
         // orders data
-        List<Order> orders = null;
+        List<Order> orders = new ArrayList<>();
         if(simulateEntity.getOrdersData() != null) {
             try {
                 orders = objectMapper.readValue(simulateEntity.getOrdersData(), new TypeReference<>(){});
-            } catch (JsonProcessingException ignored) {
-                orders = new ArrayList<>();
+            } catch (JsonProcessingException e) {
+                log.debug(e.getMessage());
             }
         }
 

@@ -33,9 +33,10 @@ public class SimulatesRestController {
     @GetMapping
     public ResponseEntity<List<SimulateResponse>> getSimulates(
             @RequestParam(value = "tradeId", required = false) String tradeId,
+            @RequestParam(value = "status", required = false) Simulate.Status status,
             @PageableDefault Pageable pageable
     ){
-        Page<Simulate> simulatePage = simulateService.getSimulates(tradeId, pageable);
+        Page<Simulate> simulatePage = simulateService.getSimulates(tradeId, status, pageable);
         List<SimulateResponse> simulateResponses = simulatePage.getContent().stream()
                 .map(SimulateResponse::from)
                 .toList();
@@ -43,6 +44,14 @@ public class SimulatesRestController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_RANGE, PageableUtils.toContentRange("simulate", pageable, count))
                 .body(simulateResponses);
+    }
+
+    @GetMapping("{simulateId}")
+    public ResponseEntity<SimulateResponse> getSimulate(@PathVariable("simulateId") String simulateId) {
+        SimulateResponse simulateResponse = simulateService.getSimulate(simulateId)
+                .map(SimulateResponse::from)
+                .orElseThrow();
+        return ResponseEntity.ok(simulateResponse);
     }
 
     @PostMapping
