@@ -37,7 +37,7 @@ public class SimulateResponse {
 
     private String holdCondition;
 
-    private String result;
+    private LocalDateTime dateTime;
 
     private BalanceResponse balance;
 
@@ -57,6 +57,7 @@ public class SimulateResponse {
                 .dateTimeTo(simulate.getDateTimeTo())
                 .investAmount(simulate.getInvestAmount())
                 .feeRate(simulate.getFeeRate())
+                .dateTime(simulate.getDateTime())
                 .balance(BalanceResponse.from(simulate.getBalance()))
                 .orders(OrderResponse.from(simulate.getOrders()))
                 .build();

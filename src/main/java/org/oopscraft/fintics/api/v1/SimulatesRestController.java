@@ -14,6 +14,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -55,6 +56,7 @@ public class SimulatesRestController {
     }
 
     @PostMapping
+    @Transactional
     public ResponseEntity<SimulateResponse> runSimulate(@RequestBody SimulateRequest simulateRequest) {
         Trade trade = simulateRequest.getTrade();
         LocalDateTime dateTimeFrom = simulateRequest.getDateTimeFrom()
@@ -82,8 +84,16 @@ public class SimulatesRestController {
     }
 
     @PutMapping("{simulateId}/stop")
+    @Transactional
     public ResponseEntity<Void> stopSimulate(@PathVariable("simulateId") String simulateId) {
         simulateService.stopSimulate(simulateId);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("{simulateId}")
+    @Transactional
+    public ResponseEntity<Void> deleteSimulate(@PathVariable("simulateId") String simulateId) {
+        simulateService.deleteSimulate(simulateId);
         return ResponseEntity.ok().build();
     }
 

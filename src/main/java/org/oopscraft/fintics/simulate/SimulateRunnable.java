@@ -82,7 +82,7 @@ public class SimulateRunnable implements Runnable {
     public void run() {
         simulate.setStatus(Simulate.Status.RUNNING);
         simulate.setStartedAt(LocalDateTime.now());
-        saveSimulate(simulate);
+        saveSimulate();
 
         if(this.simulateLogAppender != null) {
             log.addAppender(this.simulateLogAppender);
@@ -112,7 +112,7 @@ public class SimulateRunnable implements Runnable {
             tradeExecutor.setLog(log);
 
             // start
-            saveSimulate(simulate);
+            saveSimulate();
             for (LocalDateTime dateTime = dateTimeFrom.plusSeconds(interval); dateTime.isBefore(dateTimeTo); dateTime = dateTime.plusSeconds(interval)) {
                 // check interrupted
                 if (interrupted) {
@@ -149,7 +149,8 @@ public class SimulateRunnable implements Runnable {
                     sendMessage("orders", simulateTradeClient.getOrders());
 
                     // save
-                    saveSimulate(simulate);
+                    simulate.setDateTime(dateTime);
+                    saveSimulate();
                     transactionManager.commit(transactionStatus);
 
                 } catch (InterruptedException e) {
@@ -182,7 +183,7 @@ public class SimulateRunnable implements Runnable {
 
             // save history
             simulate.setEndedAt(LocalDateTime.now());
-            saveSimulate(simulate);
+            saveSimulate();
         }
     }
 
@@ -205,7 +206,7 @@ public class SimulateRunnable implements Runnable {
         this.onComplete = listener;
     }
 
-    public void saveSimulate(Simulate simulate) {
+    public void saveSimulate() {
         SimulateEntity simulateEntity = simulateRepository.findById(simulate.getSimulateId())
                 .orElse(null);
         if(simulateEntity == null) {
@@ -224,6 +225,7 @@ public class SimulateRunnable implements Runnable {
         simulateEntity.setStartedAt(simulate.getStartedAt());
         simulateEntity.setEndedAt(simulate.getEndedAt());
         simulateEntity.setStatus(simulate.getStatus());
+        simulateEntity.setDateTime(simulate.getDateTime());
         try {
             simulateEntity.setBalanceData(toDataString(simulateTradeClient.getBalance()));
         } catch (InterruptedException e) {

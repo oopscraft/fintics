@@ -9,6 +9,7 @@ import org.oopscraft.fintics.model.Trade;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextClosedEvent;
+import org.springframework.context.event.ContextStoppedEvent;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class TradeThreadManager implements ApplicationListener<ContextClosedEvent> {
+public class TradeThreadManager implements ApplicationListener<ContextStoppedEvent> {
 
     private final TradeRunnableFactory tradeRunnableFactory;
 
@@ -102,7 +103,7 @@ public class TradeThreadManager implements ApplicationListener<ContextClosedEven
     }
 
     @Override
-    public void onApplicationEvent(@NotNull ContextClosedEvent event) {
+    public void onApplicationEvent(@NotNull ContextStoppedEvent event) {
         log.info("Shutdown all trade trade.[{}]", event);
         tradeThreadGroup.interrupt();
     }

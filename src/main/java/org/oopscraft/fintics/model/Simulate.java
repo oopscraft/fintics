@@ -51,7 +51,8 @@ public class Simulate {
     @Builder.Default
     private BigDecimal feeRate = BigDecimal.ZERO;
 
-    private String result;
+    @Setter
+    private LocalDateTime dateTime;
 
     @Builder.Default
     private Balance balance = new Balance();
@@ -110,6 +111,7 @@ public class Simulate {
                 .dateTimeTo(simulateEntity.getDateTimeTo())
                 .investAmount(simulateEntity.getInvestAmount())
                 .feeRate(simulateEntity.getFeeRate())
+                .dateTime(simulateEntity.getDateTime())
                 .balance(balance)
                 .orders(orders)
                 .build();

@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.core.Context;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.oopscraft.arch4j.core.data.IdGenerator;
 import org.oopscraft.fintics.dao.*;
 import org.oopscraft.fintics.model.*;
@@ -11,10 +12,12 @@ import org.oopscraft.fintics.simulate.*;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextClosedEvent;
+import org.springframework.context.event.ContextStoppedEvent;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -24,7 +27,7 @@ import java.util.concurrent.*;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class SimulateService implements ApplicationListener<ContextClosedEvent> {
+public class SimulateService implements ApplicationListener<ContextStoppedEvent> {
 
     private final SimulateRepository simulateRepository;
 
@@ -35,8 +38,8 @@ public class SimulateService implements ApplicationListener<ContextClosedEvent> 
     private final BlockingQueue<Runnable> simulateQueue = new ArrayBlockingQueue<>(10);
 
     private final ThreadPoolExecutor simulateExecutor = new ThreadPoolExecutor(
-            1,
             3,
+            6,
            60,
             TimeUnit.SECONDS,
             simulateQueue
@@ -75,6 +78,7 @@ public class SimulateService implements ApplicationListener<ContextClosedEvent> 
                 .map(Simulate::from);
     }
 
+    @Transactional
     public synchronized Simulate runSimulate(Simulate simulate) {
         simulate.setSimulateId(IdGenerator.uuid());
 
@@ -89,7 +93,9 @@ public class SimulateService implements ApplicationListener<ContextClosedEvent> 
             this.simulateRunnableMap.remove(simulate.getSimulateId());
             this.simulateFutureMap.remove(simulate.getSimulateId());
         });
+        simulateRunnable.saveSimulate();
 
+        // submit
         Future<?> simulateFuture = simulateExecutor.submit(simulateRunnable);
         simulateRunnableMap.put(simulate.getSimulateId(), simulateRunnable);
         simulateFutureMap.put(simulate.getSimulateId(), simulateFuture);
@@ -98,6 +104,7 @@ public class SimulateService implements ApplicationListener<ContextClosedEvent> 
         return simulate;
     }
 
+    @Transactional
     public synchronized void stopSimulate(String simulateId) {
         // data status update
         simulateRepository.findById(simulateId).ifPresent(simulateEntity -> {
@@ -108,11 +115,20 @@ public class SimulateService implements ApplicationListener<ContextClosedEvent> 
         if(simulateRunnableMap.containsKey(simulateId)) {
             simulateRunnableMap.get(simulateId).setInterrupted(true);
             simulateFutureMap.get(simulateId).cancel(true);
+            simulateRunnableMap.remove(simulateId);
+            simulateFutureMap.remove(simulateId);
         }
     }
 
+    @Transactional
+    public void deleteSimulate(String simulateId) {
+        simulateRepository.deleteById(simulateId);
+        simulateRepository.flush();
+    }
+
     @Override
-    public void onApplicationEvent(ContextClosedEvent event) {
+    public void onApplicationEvent(@NotNull ContextStoppedEvent event) {
+        log.info("ContextStoppedEvent:{}", event);
         this.simulateExecutor.shutdownNow();
     }
 

@@ -58,6 +58,9 @@ public class SimulateEntity extends BaseEntity {
     @Column(name = "fee_rate")
     private BigDecimal feeRate;
 
+    @Column(name = "date_time")
+    private LocalDateTime dateTime;
+
     @Column(name = "balance_data")
     @Lob
     private String balanceData;

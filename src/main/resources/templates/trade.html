@@ -178,19 +178,28 @@
             });
         }
 
-        function createSimulate() {
-            simulateDialog.openForNew({
-                trade: trade
-            });
+        function resetSimulates() {
+            duice.ObjectProxy.reset(simulateSearch);
+            getSimulates();
+        }
+
+        function refreshSimulates() {
+            let page = simulateSearch._page;
+            getSimulates(page);
+        }
+
+        async function createSimulate() {
+            try {
+                await simulateDialog.openForNew({
+                    trade: trade
+                });
+            } finally {
+                refreshSimulates();
+            }
         }
 
         function getSimulate(simulateId) {
             simulateDialog.openForEdit(simulateId);
-        }
-
-        function resetSimulates() {
-            duice.ObjectProxy.reset(simulateSearch);
-            getSimulates();
         }
 
         function getOrders(page) {
@@ -596,6 +605,7 @@
                     <col/>
                     <col/>
                     <col/>
+                    <col/>
                 </colgroup>
                 <thead>
                 <tr>
@@ -606,6 +616,7 @@
                     <th data-th-text="#{fintics.Simulate.dateTimeFrom}"></th>
                     <th data-th-text="#{fintics.Simulate.dateTimeTo}"></th>
                     <th data-th-text="#{fintics.Simulate.investAmount}"></th>
+                    <th data-th-text="#{fintics.Simulate.dateTime}"></th>
                     <th data-th-text="#{fintics.Balance.totalAmount}"></th>
                     <th data-th-text="#{fintics.BalanceAsset}"></th>
                     <th data-th-text="#{fintics.Order}"></th>
@@ -648,6 +659,9 @@
                     </td>
                     <td>
                         <span data-duice-bind="simulate" data-duice-property="investAmount" data-duice-format="number"></span>
+                    </td>
+                    <td>
+                        <span data-duice-bind="simulate" data-duice-property="dateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></span>
                     </td>
                     <td>
                         <span data-duice-bind="simulate" data-duice-property="balance.totalAmount" data-duice-format="number"></span>
