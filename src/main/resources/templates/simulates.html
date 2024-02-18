@@ -453,7 +453,7 @@
                     <div class="display--grid grid-template-columns--12 grid-gap--1em padding-x--1em padding-y--1em s__padding-y--0">
                         <label class="grid-column--6">
                             <img class="icon" th:src="@{/static/image/icon-datetime.svg}" alt="datetime"/>
-                            <input type="text" id="simulateDialog-dateTime" class="font-weight--bold"/>
+                            <input type="datetime-local" id="simulateDialog-dateTime" class="font-weight--bold"/>
                         </label>
                         <label class="grid-column--6 justify-self--end">
                             <span data-th-text="#{fintics.Balance.totalAmount}" class="font-weight--bold"></span>
@@ -470,6 +470,7 @@
                                 <col/>
                                 <col/>
                                 <col/>
+                                <col/>
                             </colgroup>
                             <thead>
                             <tr>
@@ -479,7 +480,8 @@
                                 <th data-th-text="#{fintics.BalanceAsset.quantity}"></th>
                                 <th data-th-text="#{fintics.BalanceAsset.purchaseAmount}"></th>
                                 <th data-th-text="#{fintics.BalanceAsset.valuationAmount}"></th>
-                                <th data-th-text="#{fintics.BalanceAsset.profitAmount}" class="text-align--center"></thd>
+                                <th data-th-text="#{fintics.BalanceAsset.profitAmount}" class="text-align--center"></th>
+                                <th>-</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -510,6 +512,18 @@
                                           if(balanceAsset.profitAmount < 0) this.classList.add('color--blue');
                                           ">
                                     ></span>
+                                </td>
+                                <td>
+                                    <button type="button"
+                                            class="small"
+                                            data-duice-bind="balanceAsset.links"
+                                            data-duice-loop="link,status"
+                                            data-duice-execute="
+                                            this.dataset.url=link.url;
+                                            this.addEventListener('click', () => { _openLink(this.dataset.url,'_blank'); })">
+                                        <img class="icon" th:src="@{/static/image/icon-open.svg}" alt="link"/>
+                                        <span class="font-weight--bold" data-duice-bind="link" data-duice-property="name"></span>
+                                    </button>
                                 </td>
                             </tr>
                             <tr data-duice-bind="simulateDialog.simulate.balance.balanceAssets" data-duice-execute="if(simulateDialog.simulate.balance.balanceAssets.length === 0) this.hidden=false;" hidden>

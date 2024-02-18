@@ -909,16 +909,18 @@
                                 <col/>
                                 <col/>
                                 <col/>
+                                <col/>
                             </colgroup>
                             <thead>
                             <tr>
-                                <th data-th-text="#{web.global.no}" class="text-align--center"></th>
+                                <th data-th-text="#{web.global.no}"></th>
                                 <th data-th-text="#{fintics.BalanceAsset.assetId}"></th>
                                 <th data-th-text="#{fintics.BalanceAsset.assetName}"></th>
                                 <th data-th-text="#{fintics.BalanceAsset.quantity}"></th>
                                 <th data-th-text="#{fintics.BalanceAsset.purchaseAmount}"></th>
                                 <th data-th-text="#{fintics.BalanceAsset.valuationAmount}"></th>
-                                <th data-th-text="#{fintics.BalanceAsset.profitAmount}" class="text-align--center"></th>
+                                <th data-th-text="#{fintics.BalanceAsset.profitAmount}"></th>
+                                <th>-</th>
                             </tr>
                             </thead>
                             <tbody class="font-size--smaller">
@@ -959,6 +961,18 @@
                                           if(balanceAsset.profitAmount < 0) this.classList.add('color--blue');
                                           ">
                                     </span>
+                                </td>
+                                <td>
+                                    <button type="button"
+                                            class="small"
+                                            data-duice-bind="balanceAsset.links"
+                                            data-duice-loop="link,status"
+                                            data-duice-execute="
+                                            this.dataset.url=link.url;
+                                            this.addEventListener('click', () => { _openLink(this.dataset.url,'_blank'); })">
+                                        <img class="icon" th:src="@{/static/image/icon-open.svg}" alt="link"/>
+                                        <span class="font-weight--bold" data-duice-bind="link" data-duice-property="name"></span>
+                                    </button>
                                 </td>
                             </tr>
                             <tr data-duice-bind="balance.balanceAssets" data-duice-execute="if(balance.balanceAssets.length === 0) this.hidden=false;" hidden>
