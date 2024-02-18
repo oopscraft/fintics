@@ -53,9 +53,6 @@ public class DataSummaryResponse {
         private LocalDateTime interpolatedMinDateTime;
         private LocalDateTime interpolatedMaxDateTime;
         private Long interpolatedCount;
-        private LocalDateTime originalMinDateTime;
-        private LocalDateTime originalMaxDateTime;
-        private Long originalCount;
     }
 
     @Data
@@ -66,6 +63,7 @@ public class DataSummaryResponse {
     public static class AssetOhlcvStatisticsResponse extends OhlcvStatisticsResponse {
         private String assetId;
         private String assetName;
+        private boolean usedByTrade;
 
         public static AssetOhlcvStatisticsResponse from(DataSummary.AssetOhlcvStatistics assetOhlcvStatistics) {
             return AssetOhlcvStatisticsResponse.builder()
@@ -78,9 +76,7 @@ public class DataSummaryResponse {
                     .interpolatedMinDateTime(assetOhlcvStatistics.getInterpolatedMinDateTime())
                     .interpolatedMaxDateTime(assetOhlcvStatistics.getInterpolatedMaxDateTime())
                     .interpolatedCount(assetOhlcvStatistics.getInterpolatedCount())
-                    .originalMinDateTime(assetOhlcvStatistics.getOriginalMinDateTime())
-                    .originalMaxDateTime(assetOhlcvStatistics.getOriginalMaxDateTime())
-                    .originalCount(assetOhlcvStatistics.getOriginalCount())
+                    .usedByTrade(assetOhlcvStatistics.isUsedByTrade())
                     .build();
         }
     }
@@ -103,9 +99,6 @@ public class DataSummaryResponse {
                     .interpolatedMinDateTime(indiceOhlcvStatistics.getInterpolatedMinDateTime())
                     .interpolatedMaxDateTime(indiceOhlcvStatistics.getInterpolatedMaxDateTime())
                     .interpolatedCount(indiceOhlcvStatistics.getInterpolatedCount())
-                    .originalMinDateTime(indiceOhlcvStatistics.getOriginalMinDateTime())
-                    .originalMaxDateTime(indiceOhlcvStatistics.getOriginalMaxDateTime())
-                    .originalCount(indiceOhlcvStatistics.getOriginalCount())
                     .build();
         }
     }

@@ -80,7 +80,10 @@ public class SimulateService implements ApplicationListener<ContextStoppedEvent>
 
     @Transactional
     public synchronized Simulate runSimulate(Simulate simulate) {
-        simulate.setSimulateId(IdGenerator.uuid());
+        // new simulate
+        if(simulate.getSimulateId() == null) {
+            simulate.setSimulateId(IdGenerator.uuid());
+        }
 
         // add log appender
         Context context = ((Logger)log).getLoggerContext();

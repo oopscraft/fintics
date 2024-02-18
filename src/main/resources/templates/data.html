@@ -237,7 +237,7 @@
         </h2>
         <div class="padding--1em">
             <span class="font-weight--bold">AssetMinuteOhlcv</span>
-            <div class="overflow-y--scroll border-x--1" style="max-height:300px;">
+            <div class="overflow-y--scroll border-x--1" style="max-height:400px;">
                 <table class="width--100 border--0 text-align--center font-size--smaller">
                     <thead>
                     <tr>
@@ -250,13 +250,12 @@
                         <th>interpolatedMinDateTime</th>
                         <th>interpolatedMaxDateTime</th>
                         <th>interpolatedCount</th>
-                        <th>originalMinDateTime</th>
-                        <th>originalMaxDateTime</th>
-                        <th>originalCount</th>
+                        <th>usedByTrade</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr data-duice-bind="summary.assetMinuteOhlcvStatistics" data-duice-loop="assetMinuteOhlcvStatistics,status">
+                    <tr data-duice-bind="summary.assetMinuteOhlcvStatistics" data-duice-loop="assetMinuteOhlcvStatistics,status"
+                        data-duice-execute="if(!assetMinuteOhlcvStatistics.usedByTrade) this.classList.add('text-decoration--line-through');">
                         <td data-duice-bind="assetMinuteOhlcvStatistics" data-duice-property="assetId"></td>
                         <td data-duice-bind="assetMinuteOhlcvStatistics" data-duice-property="assetName"></td>
                         <td data-duice-bind="assetMinuteOhlcvStatistics" data-duice-property="type"></td>
@@ -266,9 +265,7 @@
                         <td data-duice-bind="assetMinuteOhlcvStatistics" data-duice-property="interpolatedMinDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
                         <td data-duice-bind="assetMinuteOhlcvStatistics" data-duice-property="interpolatedMaxDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
                         <td data-duice-bind="assetMinuteOhlcvStatistics" data-duice-property="interpolatedCount" data-duice-format="number"></td>
-                        <td data-duice-bind="assetMinuteOhlcvStatistics" data-duice-property="originalMinDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
-                        <td data-duice-bind="assetMinuteOhlcvStatistics" data-duice-property="originalMaxDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
-                        <td data-duice-bind="assetMinuteOhlcvStatistics" data-duice-property="originalCount" data-duice-format="number"></td>
+                        <td data-duice-bind="assetMinuteOhlcvStatistics" data-duice-property="usedByTrade"></td>
                     </tr>
                     <tr data-duice-bind="summary.assetMinuteOhlcvStatistics" data-duice-if="return summary.assetMinuteOhlcvStatistics.length === 0;">
                         <td colspan="100%" class="text-align--center">No Data</td>
@@ -279,7 +276,7 @@
         </div>
         <div class="padding--1em">
             <span class="font-weight--bold">AssetDailyOhlcv</span>
-            <div class="overflow-y--scroll border-x--1" style="max-height:300px;">
+            <div class="overflow-y--scroll border-x--1" style="max-height:400px;">
                 <table class="width--100 border--0 text-align--center font-size--smaller">
                     <thead>
                     <tr>
@@ -292,13 +289,12 @@
                         <th>interpolatedMinDateTime</th>
                         <th>interpolatedMaxDateTime</th>
                         <th>interpolatedCount</th>
-                        <th>originalMinDateTime</th>
-                        <th>originalMaxDateTime</th>
-                        <th>originalCount</th>
+                        <th>usedByTrade</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr data-duice-bind="summary.assetDailyOhlcvStatistics" data-duice-loop="assetDailyOhlcvStatistics,status">
+                    <tr data-duice-bind="summary.assetDailyOhlcvStatistics" data-duice-loop="assetDailyOhlcvStatistics,status"
+                        data-duice-execute="if(!assetDailyOhlcvStatistics.usedByTrade) this.classList.add('text-decoration--line-through');">
                         <td data-duice-bind="assetDailyOhlcvStatistics" data-duice-property="assetId"></td>
                         <td data-duice-bind="assetDailyOhlcvStatistics" data-duice-property="assetName"></td>
                         <td data-duice-bind="assetDailyOhlcvStatistics" data-duice-property="type"></td>
@@ -308,9 +304,7 @@
                         <td data-duice-bind="assetDailyOhlcvStatistics" data-duice-property="interpolatedMinDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
                         <td data-duice-bind="assetDailyOhlcvStatistics" data-duice-property="interpolatedMaxDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
                         <td data-duice-bind="assetDailyOhlcvStatistics" data-duice-property="interpolatedCount" data-duice-format="number"></td>
-                        <td data-duice-bind="assetDailyOhlcvStatistics" data-duice-property="originalMinDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
-                        <td data-duice-bind="assetDailyOhlcvStatistics" data-duice-property="originalMaxDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
-                        <td data-duice-bind="assetDailyOhlcvStatistics" data-duice-property="originalCount" data-duice-format="number"></td>
+                        <td data-duice-bind="assetDailyOhlcvStatistics" data-duice-property="usedByTrade"></td>
                     </tr>
                     <tr data-duice-bind="summary.assetDailyOhlcvStatistics" data-duice-if="return summary.assetDailyOhlcvStatistics.length === 0;">
                         <td colspan="100%" class="text-align--center">No Data</td>
@@ -321,7 +315,7 @@
         </div>
         <div class="padding--1em">
             <span class="font-weight--bold">IndiceMinuteOhlcv</span>
-            <div class="overflow-y--scroll border-x--1" style="max-height:300px;">
+            <div class="overflow-y--scroll border-x--1" style="max-height:400px;">
                 <table class="width--100 border--0 text-align--center font-size--smaller">
                     <thead>
                     <tr>
@@ -333,9 +327,6 @@
                         <th>interpolatedMinDateTime</th>
                         <th>interpolatedMaxDateTime</th>
                         <th>interpolatedCount</th>
-                        <th>originalMinDateTime</th>
-                        <th>originalMaxDateTime</th>
-                        <th>originalCount</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -348,9 +339,6 @@
                         <td data-duice-bind="indiceMinuteOhlcvStatistics" data-duice-property="interpolatedMinDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
                         <td data-duice-bind="indiceMinuteOhlcvStatistics" data-duice-property="interpolatedMaxDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
                         <td data-duice-bind="indiceMinuteOhlcvStatistics" data-duice-property="interpolatedCount" data-duice-format="number"></td>
-                        <td data-duice-bind="indiceMinuteOhlcvStatistics" data-duice-property="originalMinDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
-                        <td data-duice-bind="indiceMinuteOhlcvStatistics" data-duice-property="originalMaxDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
-                        <td data-duice-bind="indiceMinuteOhlcvStatistics" data-duice-property="originalCount" data-duice-format="number"></td>
                     </tr>
                     <tr data-duice-bind="summary.indiceMinuteOhlcvStatistics" data-duice-if="return summary.indiceMinuteOhlcvStatistics.length === 0;">
                         <td colspan="100%" class="text-align--center">No Data</td>
@@ -361,7 +349,7 @@
         </div>
         <div class="padding--1em">
             <span class="font-weight--bold">IndiceDailyOhlcv</span>
-            <div class="overflow-y--scroll border-x--1" style="max-height:300px;">
+            <div class="overflow-y--scroll border-x--1" style="max-height:400px;">
                 <table class="width--100 border--0 text-align--center font-size--smaller">
                     <thead>
                     <tr>
@@ -373,9 +361,6 @@
                         <th>interpolatedMinDateTime</th>
                         <th>interpolatedMaxDateTime</th>
                         <th>interpolatedCount</th>
-                        <th>originalMinDateTime</th>
-                        <th>originalMaxDateTime</th>
-                        <th>originalCount</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -388,9 +373,6 @@
                         <td data-duice-bind="indiceDailyOhlcvStatistics" data-duice-property="interpolatedMinDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
                         <td data-duice-bind="indiceDailyOhlcvStatistics" data-duice-property="interpolatedMaxDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
                         <td data-duice-bind="indiceDailyOhlcvStatistics" data-duice-property="interpolatedCount" data-duice-format="number"></td>
-                        <td data-duice-bind="indiceDailyOhlcvStatistics" data-duice-property="originalMinDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
-                        <td data-duice-bind="indiceDailyOhlcvStatistics" data-duice-property="originalMaxDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
-                        <td data-duice-bind="indiceDailyOhlcvStatistics" data-duice-property="originalCount" data-duice-format="number"></td>
                     </tr>
                     <tr data-duice-bind="summary.indiceDailyOhlcvStatistics" data-duice-if="return summary.indiceDailyOhlcvStatistics.length === 0;">
                         <td colspan="100%" class="text-align--center">No Data</td>

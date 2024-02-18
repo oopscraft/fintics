@@ -191,7 +191,11 @@
         async function createSimulate() {
             try {
                 await simulateDialog.openForNew({
-                    trade: trade
+                    trade: trade,
+                    dateTimeFrom: dateFns.startOfDay(dateFns.subDays(new Date(),3)).toISOString(),
+                    dateTimeTo: dateFns.endOfDay(Date()).toISOString(),
+                    investAmount: 10_000_000,
+                    feeRate: 0.01
                 });
             } finally {
                 refreshSimulates();

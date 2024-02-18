@@ -3,6 +3,7 @@ package org.oopscraft.fintics.scheduler;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
 import org.oopscraft.fintics.FinticsProperties;
+import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -21,7 +22,7 @@ public abstract class AbstractScheduler {
     @Autowired
     private AlarmService alarmService;
 
-    protected <T, P> void saveEntities(List<T> entities, PlatformTransactionManager transactionManager, JpaRepository<T,P> jpaRepository) {
+    protected <T, P> void saveEntities(String unitName, List<T> entities, PlatformTransactionManager transactionManager, JpaRepository<T,P> jpaRepository) {
         TransactionDefinition definition = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         TransactionStatus status = transactionManager.getTransaction(definition);
         try {
@@ -31,11 +32,13 @@ public abstract class AbstractScheduler {
                 jpaRepository.saveAndFlush(ohlcvEntity);
                 // middle commit
                 if (count % 100 == 0) {
+                    log.info("- {} chunk commit[{}]", unitName, count);
                     transactionManager.commit(status);
                     status = transactionManager.getTransaction(definition);
                 }
             }
             // final commit
+            log.info("- {} final commit[{}]", unitName, count);
             transactionManager.commit(status);
         } catch (Exception e) {
             transactionManager.rollback(status);

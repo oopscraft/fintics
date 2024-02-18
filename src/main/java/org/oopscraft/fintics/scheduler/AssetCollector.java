@@ -75,7 +75,7 @@ public class AssetCollector extends AbstractScheduler {
                         .build())
                 .collect(Collectors.toList());
         log.info("AssetCollector - save assetEntities:{}", assetEntities.size());
-        saveEntities(assetEntities, transactionManager, assetRepository);
+        saveEntities("assetEntities", assetEntities, transactionManager, assetRepository);
     }
 
 }

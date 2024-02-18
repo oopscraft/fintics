@@ -453,11 +453,11 @@
                     <div class="display--grid grid-template-columns--12 grid-gap--1em padding-x--1em padding-y--1em s__padding-y--0">
                         <label class="grid-column--6">
                             <img class="icon" th:src="@{/static/image/icon-datetime.svg}" alt="datetime"/>
-                            <input type="datetime-local" id="simulateDialog-dateTime" class="font-weight--bold"/>
+                            <input type="datetime-local" id="simulateDialog-dateTime" class="font-weight--bold" readonly/>
                         </label>
                         <label class="grid-column--6 justify-self--end">
                             <span data-th-text="#{fintics.Balance.totalAmount}" class="font-weight--bold"></span>
-                            <input class="font-weight--bold" type="number" data-duice-bind="simulateDialog.simulate.balance" data-duice-property="totalAmount" data-duice-format="number"/>
+                            <input class="font-weight--bold" type="number" data-duice-bind="simulateDialog.simulate.balance" data-duice-property="totalAmount" data-duice-format="number" readonly/>
                         </label>
                     </div>
                     <div class="overflow-y--scroll border-x--1" style="max-height:300px;">
@@ -665,25 +665,9 @@
                 );
                 resultTabFolder.setActive(0);
             },
-            open: async function(trade) {
-                let _this = this;
-                let url = new URL(`${_apiUrl}/v1/trades/${trade.tradeId}/simulates`, document.location.origin);
-                _fetch(url)
-                    .then(response => response.json())
-                    .then(simulates => {
-                        let runningSimulate = simulates.find(simulate => simulate.status === 'RUNNING');
-                        if (runningSimulate) {
-                            duice.ObjectProxy.assign(_this.simulate, runningSimulate);
-                            _this.listenSimulate();
-                        } else {
-                            let tradeJson = JSON.stringify(trade);
-                            duice.ObjectProxy.assign(_this.simulate.trade, JSON.parse(tradeJson));
-                        }
-                    });
-                return this.dialog.open();
-            },
             openForNew: function(simulate) {
                 duice.ObjectProxy.assign(this.simulate, simulate);
+                this.simulate.simulateId = null;
                 return this.dialog.open();
             },
             openForEdit: function(simulateId) {
@@ -825,7 +809,7 @@
                 this.subscribeDateTime = _webSocketClient.subscribe({
                     destination: `/simulates/${_this.simulate.simulateId}/dateTime`,
                     listener: function(frame) {
-                        _this.dateTime.value = frame.body;
+                        _this.dateTime.value = JSON.parse(frame.body);
                     }
                 });
                 _webSocketClient.unsubscribe(this.subscribeBalance);

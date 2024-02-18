@@ -18,9 +18,7 @@
                     faoi.interpolated_min_date_time as "interpolatedMinDateTime",
                     faoi.interpolated_max_date_time as "interpolatedMaxDateTime",
                     faoi.interpolated_count as "interpolatedCount",
-                    faoo.original_min_date_time as "originalMinDateTime",
-                    faoo.original_max_date_time as "originalMaxDateTime",
-                    faoo.original_count as "originalCount"
+                    fta.used_by_trade as "usedByTrade"
         FROM        (
                     -- all
                     SELECT 	DISTINCT
@@ -52,21 +50,12 @@
                     ) as faoi
         ON  faoi.asset_id = fao.asset_id and faoi.type = fao.type
         LEFT OUTER JOIN (
-                    -- original
-                    SELECT 	DISTINCT
-                            asset_id,
-                            type,
-                            MIN(date_time) as original_min_date_time,
-                            MAX(date_time) as original_max_date_time,
-                            COUNT(*) as original_count
-                    FROM 	fintics_asset_ohlcv fao
-                    WHERE 	type = #{type}
-                      AND 	interpolated != 'Y'
-                    GROUP BY
-                            asset_id,
-                            type
-                ) as faoo
-        ON  faoo.asset_id = fao.asset_id and faoo.type = fao.type
+        			SELECT  DISTINCT
+        					asset_id,
+        					true as used_by_trade
+        			FROM 	fintics_trade_asset fta
+        			) as fta
+        ON fta.asset_id = fao.asset_id
         ]]>
     </select>
 
@@ -79,10 +68,7 @@
                     fio.total_count as "totalCount",
                     fioi.interpolated_min_date_time as "interpolatedMinDateTime",
                     fioi.interpolated_max_date_time as "interpolatedMaxDateTime",
-                    fioi.interpolated_count as "interpolatedCount",
-                    fioo.original_min_date_time as "originalMinDateTime",
-                    fioo.original_max_date_time as "originalMaxDateTime",
-                    fioo.original_count as "originalCount"
+                    fioi.interpolated_count as "interpolatedCount"
         FROM        (
                     -- all
                     SELECT 	DISTINCT
@@ -113,22 +99,6 @@
                             type
                     ) as fioi
         ON  fioi.indice_id = fio.indice_id and fioi.type = fio.type
-        LEFT OUTER JOIN (
-                    -- original
-                    SELECT 	DISTINCT
-                            indice_id,
-                            type,
-                            MIN(date_time) as original_min_date_time,
-                            MAX(date_time) as original_max_date_time,
-                            COUNT(*) as original_count
-                    FROM 	fintics_indice_ohlcv fao
-                    WHERE 	type = #{type}
-                      AND 	interpolated != 'Y'
-                    GROUP BY
-                            indice_id,
-                            type
-                    ) as fioo
-        ON  fioo.indice_id = fio.indice_id and fioo.type = fio.type
         ]]>
     </select>
 

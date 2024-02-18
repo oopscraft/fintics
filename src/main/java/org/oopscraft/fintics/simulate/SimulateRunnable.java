@@ -194,7 +194,6 @@ public class SimulateRunnable implements Runnable {
             try {
                 message = objectMapper.writeValueAsString(object);
             } catch (JsonProcessingException e) {
-                message = object.toString();
                 log.error(e.getMessage(), e);
                 message = e.getMessage();
             }

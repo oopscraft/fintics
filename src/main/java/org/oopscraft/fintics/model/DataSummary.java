@@ -38,9 +38,6 @@ public class DataSummary {
         private LocalDateTime interpolatedMinDateTime;
         private LocalDateTime interpolatedMaxDateTime;
         private Long interpolatedCount;
-        private LocalDateTime originalMinDateTime;
-        private LocalDateTime originalMaxDateTime;
-        private Long originalCount;
     }
 
     @Data
@@ -51,6 +48,7 @@ public class DataSummary {
     public static class AssetOhlcvStatistics extends OhlcvStatistics implements Serializable {
         private String assetId;
         private String assetName;
+        private boolean usedByTrade;
     }
 
     @Data

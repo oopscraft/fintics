@@ -35,7 +35,6 @@ public class AssetOhlcvCollector extends OhlcvCollector {
     private final PlatformTransactionManager transactionManager;
 
     @Scheduled(initialDelay = 1_000, fixedDelay = 60_000)
-    @Transactional
     public void collect() {
         try {
             log.info("AssetOhlcvCollector - Start collect asset ohlcv.");
@@ -78,8 +77,9 @@ public class AssetOhlcvCollector extends OhlcvCollector {
 
         // save new or changed
         List<AssetOhlcvEntity> newOrChangedMinuteOhlcvEntities = extractNewOrChangedOhlcvEntities(minuteOhlcvEntities, previousMinuteEntities);
-        log.info("AssetOhlcvCollector - save assetMinuteOhlcvEntities[{}]:{}", tradeAsset.getAssetId(), newOrChangedMinuteOhlcvEntities.size());
-        saveEntities(newOrChangedMinuteOhlcvEntities, transactionManager, assetOhlcvRepository);
+        String unitName = String.format("assetMinuteOhlcvEntities[%s]", tradeAsset.getAssetName());
+        log.info("AssetOhlcvCollector - save {}:{}", unitName, newOrChangedMinuteOhlcvEntities.size());
+        saveEntities(unitName, newOrChangedMinuteOhlcvEntities, transactionManager, assetOhlcvRepository);
     }
 
     private void saveAssetDailyOhlcvs(Trade trade, TradeAsset tradeAsset, LocalDateTime dateTime) throws InterruptedException {
@@ -101,8 +101,9 @@ public class AssetOhlcvCollector extends OhlcvCollector {
 
         // save new or changed
         List<AssetOhlcvEntity> newOrChangedDailyOhlcvEntities = extractNewOrChangedOhlcvEntities(dailyOhlcvEntities, previousDailyOhlcvEntities);
-        log.info("AssetOhlcvCollector - save assetDailyOhlcvEntities[{}]:{}", tradeAsset.getAssetId(), newOrChangedDailyOhlcvEntities.size());
-        saveEntities(newOrChangedDailyOhlcvEntities, transactionManager, assetOhlcvRepository);
+        String unitName = String.format("assetDailyOhlcvEntities[%s]", tradeAsset.getAssetName());
+        log.info("AssetOhlcvCollector - save {}:{}", unitName, newOrChangedDailyOhlcvEntities.size());
+        saveEntities(unitName, newOrChangedDailyOhlcvEntities, transactionManager, assetOhlcvRepository);
     }
 
     private AssetOhlcvEntity toAssetOhlcvEntity(String assetId, Ohlcv ohlcv) {

@@ -28,7 +28,6 @@ public class IndiceOhlcvCollector extends OhlcvCollector {
     private final PlatformTransactionManager transactionManager;
 
     @Scheduled(initialDelay = 1_000, fixedDelay = 60_000)
-    @Transactional
     public void collect() {
         try {
             log.info("IndiceOhlcvCollector - Start collect indice ohlcv.");
@@ -63,8 +62,9 @@ public class IndiceOhlcvCollector extends OhlcvCollector {
 
         // save new or changed
         List<IndiceOhlcvEntity> newOrChangedMinuteOhlcvEntities = extractNewOrChangedOhlcvEntities(minuteOhlcvEntities, previousMinuteOhlcvEntities);
-        log.info("IndiceOhlcvCollector - save indiceMinuteOhlcvEntities[{}]:{}", indiceId, newOrChangedMinuteOhlcvEntities.size());
-        saveEntities(newOrChangedMinuteOhlcvEntities, transactionManager, indiceOhlcvRepository);
+        String unitName = String.format("indiceMinuteOhlcvEntities[%s]", indiceId);
+        log.info("IndiceOhlcvCollector - save {}:{}", unitName, newOrChangedMinuteOhlcvEntities.size());
+        saveEntities(unitName, newOrChangedMinuteOhlcvEntities, transactionManager, indiceOhlcvRepository);
     }
 
     private void saveIndiceDailyOhlcvs(IndiceId indiceId, LocalDateTime dateTime) {
@@ -81,8 +81,9 @@ public class IndiceOhlcvCollector extends OhlcvCollector {
 
         // save new or changed
         List<IndiceOhlcvEntity> newOrChangedDailyOhlcvEntities = extractNewOrChangedOhlcvEntities(dailyOhlcvEntities, previousDailyOhlcvEntities);
-        log.info("IndiceOhlcvCollector - save indiceDailyOhlcvEntities[{}]:{}", indiceId, newOrChangedDailyOhlcvEntities.size());
-        saveEntities(newOrChangedDailyOhlcvEntities, transactionManager, indiceOhlcvRepository);
+        String unitName = String.format("indiceDailyOhlcvEntities[%s]", indiceId);
+        log.info("IndiceOhlcvCollector - save {}:{}", unitName, newOrChangedDailyOhlcvEntities.size());
+        saveEntities(unitName, newOrChangedDailyOhlcvEntities, transactionManager, indiceOhlcvRepository);
     }
 
     private IndiceOhlcvEntity toIndiceOhlcvEntity(IndiceId indiceId, Ohlcv ohlcv) {
