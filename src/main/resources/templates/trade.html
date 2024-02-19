@@ -188,6 +188,14 @@
             getSimulates(page);
         }
 
+        function getSimulate(simulateId) {
+            try {
+                simulateDialog.openForEdit(simulateId);
+            } finally {
+                refreshSimulates();
+            }
+        }
+
         async function createSimulate() {
             try {
                 await simulateDialog.openForNew({
@@ -202,8 +210,34 @@
             }
         }
 
-        function getSimulate(simulateId) {
-            simulateDialog.openForEdit(simulateId);
+        function checkAllSimulates(checkElement) {
+            simulates.forEach(simulate => {
+                simulate._checked = checkElement.checked;
+            });
+        }
+
+        async function deleteSimulates() {
+            if(!simulates.find(simulate => simulate._checked)) {
+                await _alert(/*[[#{web.global.itemNotSelected(#{fintics.Simulate})}]]*/);
+                return false;
+            }
+            if(!await _confirm(/*[[#{web.global.deleteItemConfirm(#{fintics.Simulate})}]]*/'')) {
+                return false;
+            }
+            let simulateIds = simulates
+                .filter(simulate => simulate._checked)
+                .map(simulate => simulate.simulateId);
+            let requests = simulateIds.map(simulateId => {
+                let url = new URL(`${_apiUrl}/v1/simulates/${simulateId}`, document.location.origin);
+                return _fetch(url, { method: 'DELETE' });
+            });
+            Promise.all(requests).then(responses => {
+                if(responses.every(response => response.ok)) {
+                    _alert(/*[[#{web.global.deleteItemComplete(#{fintics.Simulate})}]]*/'').then(() => {
+                        refreshSimulates();
+                    });
+                }
+            });
         }
 
         function getOrders(page) {
@@ -594,14 +628,19 @@
                         <img class="icon" data-th-src="@{/static/image/icon-create.svg}" alt="create"/>
                         <span data-th-text="#{web.global.create}"></span>
                     </button>
+                    <button type="button" onclick="deleteSimulates();">
+                        <img class="icon" th:src="@{/static/image/icon-delete.svg}" alt="delete"/>
+                        <span data-th-text="#{web.global.delete}"></span>
+                    </button>
                 </div>
             </form>
             <table class="width--100 text-align--center">
                 <colgroup>
-                    <col style="width:7em;"/>
-                    <col style="width:12em;"/>
-                    <col style="width:12em;"/>
-                    <col style="width:10em;"/>
+                    <col style="width:1em;"/>
+                    <col style="width:5em;"/>
+                    <col/>
+                    <col/>
+                    <col/>
                     <col/>
                     <col/>
                     <col/>
@@ -613,6 +652,7 @@
                 </colgroup>
                 <thead>
                 <tr>
+                    <th><label><input type="checkbox" onchange="checkAllSimulates(this)"/></label></th>
                     <th data-th-text="#{web.global.no}" class="text-align--center"></th>
                     <th data-th-text="#{fintics.Simulate.startedAt}"></th>
                     <th data-th-text="#{fintics.Simulate.endedAt}"></th>
@@ -629,6 +669,11 @@
                 </thead>
                 <tbody class="font-size--smaller">
                 <tr data-duice-bind="simulates" data-duice-loop="simulate,status">
+                    <td>
+                        <label>
+                            <input type="checkbox" data-duice-bind="simulate" data-duice-property="_checked"/>
+                        </label>
+                    </td>
                     <td class="text-align--center">
                         <span data-duice-bind="status"
                               data-duice-execute="this.innerHTML=simulateSearch._count - (simulateSearch._size*simulateSearch._page + status.count) + 1;">
