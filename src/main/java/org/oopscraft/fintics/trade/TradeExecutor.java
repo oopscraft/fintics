@@ -150,7 +150,7 @@ public class TradeExecutor {
                 if (Objects.equals(holdConditionResult, previousHoldConditionResult)) {
                     holdConditionResultCount++;
                 } else {
-                    holdConditionResultCount = 0;
+                    holdConditionResultCount = 1;
                 }
                 holdConditionResultMap.put(tradeAsset.getAssetId(), holdConditionResult);
                 holdConditionResultCountMap.put(tradeAsset.getAssetId(), holdConditionResultCount);
@@ -167,7 +167,7 @@ public class TradeExecutor {
                     continue;
                 }
 
-                // calculate hold ratio
+                // calculate exceeded amount
                 BigDecimal totalAmount = balance.getTotalAmount();
                 BigDecimal holdRatio = tradeAsset.getHoldRatio();
                 BigDecimal holdRatioAmount = totalAmount
@@ -188,17 +188,24 @@ public class TradeExecutor {
                     continue;
                 }
 
-                // buy
+                // buy (exceedAmount is over zero)
                 if (exceededAmount.compareTo(BigDecimal.ZERO) > 0) {
                     BigDecimal price = orderBook.getAskPrice();
                     BigDecimal quantity = exceededAmount.divide(price, MathContext.DECIMAL32);
                     buyTradeAsset(tradeClient, trade, tradeAsset, quantity, price);
                 }
 
-                // sell
+                // sell (exceedAmount is under zero)
                 if (exceededAmount.compareTo(BigDecimal.ZERO) < 0) {
                     BigDecimal price = orderBook.getBidPrice();
                     BigDecimal quantity = exceededAmount.abs().divide(price, MathContext.DECIMAL32);
+                    // if holdConditionResult is zero, sell quantity is all
+                    if (holdConditionResult.compareTo(BigDecimal.ZERO) == 0) {
+                        BalanceAsset balanceAsset = balance.getBalanceAsset(tradeAsset.getAssetId()).orElse(null);
+                        if (balanceAsset != null) {
+                            quantity = balanceAsset.getOrderableQuantity();
+                        }
+                    }
                     sellTradeAsset(tradeClient, trade, tradeAsset, quantity, price);
                 }
 
@@ -308,6 +315,7 @@ public class TradeExecutor {
                 .quantity(quantity)
                 .price(price)
                 .build();
+        log.info("buyTradeAsset: {}", order);
         try {
             // check waiting order exists
             Order waitingOrder = tradeClient.getWaitingOrders().stream()
@@ -331,13 +339,8 @@ public class TradeExecutor {
             order.setResult(Order.Result.COMPLETED);
 
             // alarm
-            if (trade.isAlarmOnOrder()) {
-                if (trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
-                    String subject = String.format("[%s]", trade.getTradeName());
-                    String content = String.format("[%s] Buy %s", tradeAsset.getAssetName(), quantity);
-                    alarmService.sendAlarm(trade.getAlarmId(), subject, content);
-                }
-            }
+            sendOrderAlarmIfEnabled(trade, order);
+
         } catch (Throwable e) {
             order.setResult(Order.Result.FAILED);
             order.setErrorMessage(e.getMessage());
@@ -359,6 +362,7 @@ public class TradeExecutor {
                 .quantity(quantity)
                 .price(price)
                 .build();
+        log.info("sellTradeAsset: {}", order);
         try {
             // check waiting order exists
             Order waitingOrder = tradeClient.getWaitingOrders().stream()
@@ -382,13 +386,8 @@ public class TradeExecutor {
             order.setResult(Order.Result.COMPLETED);
 
             // alarm
-            if (trade.isAlarmOnOrder()) {
-                if (trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
-                    String subject = String.format("[%s]", trade.getTradeName());
-                    String content = String.format("[%s] Sell %s", tradeAsset.getAssetName(), quantity);
-                    alarmService.sendAlarm(trade.getAlarmId(), subject, content);
-                }
-            }
+            sendOrderAlarmIfEnabled(trade, order);
+
         } catch (Throwable e) {
             order.setResult(Order.Result.FAILED);
             order.setErrorMessage(e.getMessage());
@@ -415,6 +414,21 @@ public class TradeExecutor {
                         .result(order.getResult())
                         .errorMessage(order.getErrorMessage())
                         .build()));
+    }
+
+    private void sendOrderAlarmIfEnabled(Trade trade, Order order) {
+        if (trade.isAlarmOnOrder()) {
+            if (trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
+                String subject = String.format("[%s]", trade.getTradeName());
+                String content = String.format("[%s] %s(%s) - price: %s / quantity: %s",
+                        order.getAssetName(),
+                        order.getType(),
+                        order.getKind(),
+                        order.getPrice(),
+                        order.getQuantity());
+                alarmService.sendAlarm(trade.getAlarmId(), subject, content);
+            }
+        }
     }
 
 }

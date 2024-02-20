@@ -37,24 +37,11 @@ public class Balance {
     @Builder.Default
     private List<BalanceAsset> balanceAssets = new ArrayList<>();
 
-    public boolean hasBalanceAsset(String symbol) {
-        return balanceAssets.stream()
-                .anyMatch(e -> Objects.equals(e.getAssetId(), symbol));
-    }
-
-    public Optional<BalanceAsset> getBalanceAsset(String symbol) {
+    public Optional<BalanceAsset> getBalanceAsset(String assetId) {
         return balanceAssets.stream()
                 .filter(balanceAsset ->
-                    Objects.equals(balanceAsset.getAssetId(), symbol))
+                    Objects.equals(balanceAsset.getAssetId(), assetId))
                 .findFirst();
-    }
-
-    public void addBalanceAsset(BalanceAsset balanceAsset) {
-        this.balanceAssets.add(balanceAsset);
-    }
-
-    public void removeBalanceAsset(BalanceAsset balanceAsset) {
-        this.balanceAssets.remove(balanceAsset);
     }
 
 }
