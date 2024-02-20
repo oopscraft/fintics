@@ -8,6 +8,7 @@ import lombok.Builder;
 import org.oopscraft.fintics.model.*;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -47,7 +48,7 @@ public class HoldConditionExecutor {
         this.log = log;
     }
 
-    public Boolean execute() {
+    public BigDecimal execute() {
         ClassLoader classLoader = this.getClass().getClassLoader();
         GroovyClassLoader groovyClassLoader = new GroovyClassLoader(classLoader);
         Binding binding = new Binding();
@@ -69,6 +70,6 @@ public class HoldConditionExecutor {
         if(result == null) {
             return null;
         }
-        return (Boolean) result;
+        return new BigDecimal(result.toString());
     }
 }

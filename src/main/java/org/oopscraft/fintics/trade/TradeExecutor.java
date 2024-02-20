@@ -4,16 +4,24 @@ import ch.qos.logback.classic.Logger;
 import lombok.Builder;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
+import org.oopscraft.arch4j.core.data.IdGenerator;
 import org.oopscraft.fintics.client.indice.IndiceClient;
 import org.oopscraft.fintics.client.trade.TradeClient;
 import org.oopscraft.fintics.dao.AssetOhlcvRepository;
 import org.oopscraft.fintics.dao.IndiceOhlcvRepository;
+import org.oopscraft.fintics.dao.OrderEntity;
+import org.oopscraft.fintics.dao.OrderRepository;
 import org.oopscraft.fintics.model.*;
-import org.oopscraft.fintics.trade.order.OrderOperator;
-import org.oopscraft.fintics.trade.order.OrderOperatorFactory;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.transaction.support.TransactionTemplate;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
@@ -21,25 +29,28 @@ import java.util.stream.Collectors;
 
 public class TradeExecutor {
 
+    private final PlatformTransactionManager transactionManager;
+
     private final IndiceOhlcvRepository indiceOhlcvRepository;
 
     private final AssetOhlcvRepository assetOhlcvRepository;
 
-    private final OrderOperatorFactory orderOperatorFactory;
+    private final OrderRepository orderRepository;
 
     private final AlarmService alarmService;
 
     private Logger log = (Logger) LoggerFactory.getLogger(this.getClass());
 
-    private final Map<String,Boolean> holdConditionResultMap = new HashMap<>();
+    private final Map<String,BigDecimal> holdConditionResultMap = new HashMap<>();
 
     private final Map<String,Integer> holdConditionResultCountMap = new HashMap<>();
 
     @Builder
-    private TradeExecutor(IndiceOhlcvRepository indiceOhlcvRepository, AssetOhlcvRepository assetOhlcvRepository, OrderOperatorFactory orderOperatorFactory, AlarmService alarmService) {
+    private TradeExecutor(PlatformTransactionManager transactionManager, IndiceOhlcvRepository indiceOhlcvRepository, AssetOhlcvRepository assetOhlcvRepository, OrderRepository orderRepository, AlarmService alarmService) {
+        this.transactionManager = transactionManager;
         this.indiceOhlcvRepository = indiceOhlcvRepository;
         this.assetOhlcvRepository = assetOhlcvRepository;
-        this.orderOperatorFactory = orderOperatorFactory;
+        this.orderRepository = orderRepository;
         this.alarmService = alarmService;
     }
 
@@ -47,11 +58,11 @@ public class TradeExecutor {
         this.log = log;
     }
 
-    public void execute(Trade trade, LocalDateTime dateTime, IndiceClient indiceClient, TradeClient brokerClient) throws InterruptedException {
+    public void execute(Trade trade, LocalDateTime dateTime, IndiceClient indiceClient, TradeClient tradeClient) throws InterruptedException {
         log.info("Check trade - [{}]", trade.getTradeName());
 
         // check market opened
-        if(!brokerClient.isOpened(dateTime)) {
+        if(!tradeClient.isOpened(dateTime)) {
             log.info("Market not opened.");
             return;
         }
@@ -84,7 +95,7 @@ public class TradeExecutor {
         }
 
         // balance
-        Balance balance = brokerClient.getBalance();
+        Balance balance = tradeClient.getBalance();
 
         // checks buy condition
         for (TradeAsset tradeAsset : trade.getTradeAssets()) {
@@ -100,11 +111,11 @@ public class TradeExecutor {
                 log.info("Check asset - [{}({})]", tradeAsset.getAssetName(), tradeAsset.getAssetId());
 
                 // indicator
-                List<Ohlcv> minuteOhlcvs = brokerClient.getMinuteOhlcvs(tradeAsset, dateTime);
+                List<Ohlcv> minuteOhlcvs = tradeClient.getMinuteOhlcvs(tradeAsset, dateTime);
                 List<Ohlcv> previousMinuteOhlcvs = getPreviousAssetMinuteOhlcvs(trade.getTradeClientId(), tradeAsset.getAssetId(), minuteOhlcvs, dateTime);
                 minuteOhlcvs.addAll(previousMinuteOhlcvs);
 
-                List<Ohlcv> dailyOhlcvs = brokerClient.getDailyOhlcvs(tradeAsset, dateTime);
+                List<Ohlcv> dailyOhlcvs = tradeClient.getDailyOhlcvs(tradeAsset, dateTime);
                 List<Ohlcv> previousDailyOhlcvs = getPreviousAssetDailyOhlcvs(trade.getTradeClientId(), tradeAsset.getAssetId(), dailyOhlcvs, dateTime);
                 dailyOhlcvs.addAll(previousDailyOhlcvs);
 
@@ -118,7 +129,7 @@ public class TradeExecutor {
                 log.info("DailyOhlcvs({}):{}", assetIndicator.getDailyOhlcvs().size(), assetIndicator.getDailyOhlcvs().isEmpty() ? null : assetIndicator.getDailyOhlcvs().get(0));
 
                 // order book
-                OrderBook orderBook = brokerClient.getOrderBook(tradeAsset);
+                OrderBook orderBook = tradeClient.getOrderBook(tradeAsset);
 
                 // executes trade asset decider
                 HoldConditionExecutor holdConditionExecutor = HoldConditionExecutor.builder()
@@ -130,35 +141,67 @@ public class TradeExecutor {
                         .assetIndicator(assetIndicator)
                         .build();
                 holdConditionExecutor.setLog(log);
-                Boolean holdConditionResult = holdConditionExecutor.execute();
+                BigDecimal holdConditionResult = holdConditionExecutor.execute();
                 log.info("holdConditionResult: {}", holdConditionResult);
 
-                // order operator
-                OrderOperator orderOperator = orderOperatorFactory.getObject(trade, brokerClient, balance, orderBook);
-                orderOperator.setLog(log);
+                // check hold condition result and count
+                BigDecimal previousHoldConditionResult = holdConditionResultMap.get(tradeAsset.getAssetId());
+                int holdConditionResultCount = holdConditionResultCountMap.getOrDefault(tradeAsset.getAssetId(), 0);
+                if (Objects.equals(holdConditionResult, previousHoldConditionResult)) {
+                    holdConditionResultCount++;
+                } else {
+                    holdConditionResultCount = 0;
+                }
+                holdConditionResultMap.put(tradeAsset.getAssetId(), holdConditionResult);
+                holdConditionResultCountMap.put(tradeAsset.getAssetId(), holdConditionResultCount);
 
-                // 0. checks threshold exceeded
-                int consecutiveCountOfHoldConditionResult = getConsecutiveCountOfHoldConditionResult(tradeAsset.getAssetId(), holdConditionResult);
-                log.info("consecutiveCountOfHoldConditionResult: {}", consecutiveCountOfHoldConditionResult);
-                if (consecutiveCountOfHoldConditionResult < trade.getThreshold()) {
+                // checks threshold exceeded
+                log.info("holdConditionResultCount: {}", holdConditionResultCount);
+                if (holdConditionResultCount < trade.getThreshold()) {
                     log.info("Threshold has not been exceeded yet - threshold is {}", trade.getThreshold());
                     continue;
                 }
 
-                // 1. null is no operation
+                // null is no operation
                 if (holdConditionResult == null) {
                     continue;
                 }
 
-                // 2. buy asset
-                if (holdConditionResult.equals(Boolean.TRUE)) {
-                    orderOperator.buyTradeAsset(tradeAsset);
+                // calculate hold ratio
+                BigDecimal totalAmount = balance.getTotalAmount();
+                BigDecimal holdRatio = tradeAsset.getHoldRatio();
+                BigDecimal holdRatioAmount = totalAmount
+                        .divide(BigDecimal.valueOf(100), MathContext.DECIMAL32)
+                        .multiply(holdRatio)
+                        .setScale(2, RoundingMode.HALF_UP);
+                BigDecimal holdConditionResultAmount = holdRatioAmount
+                        .multiply(holdConditionResult)
+                        .setScale(2, RoundingMode.HALF_UP);
+                BigDecimal balanceAssetAmount = balance.getBalanceAsset(tradeAsset.getAssetId())
+                        .map(BalanceAsset::getValuationAmount)
+                        .orElse(BigDecimal.ZERO);
+                BigDecimal exceededAmount = holdConditionResultAmount.subtract(balanceAssetAmount);
+
+                // check change is over 10%(9%)
+                BigDecimal thresholdAmount = holdRatioAmount.multiply(BigDecimal.valueOf(0.09));
+                if(exceededAmount.abs().compareTo(thresholdAmount) < 0) {
+                    continue;
                 }
 
-                // 3. sell asset
-                else if (holdConditionResult.equals(Boolean.FALSE)) {
-                    orderOperator.sellTradeAsset(tradeAsset);
+                // buy
+                if (exceededAmount.compareTo(BigDecimal.ZERO) > 0) {
+                    BigDecimal price = orderBook.getAskPrice();
+                    BigDecimal quantity = exceededAmount.divide(price, MathContext.DECIMAL32);
+                    buyTradeAsset(tradeClient, trade, tradeAsset, quantity, price);
                 }
+
+                // sell
+                if (exceededAmount.compareTo(BigDecimal.ZERO) < 0) {
+                    BigDecimal price = orderBook.getBidPrice();
+                    BigDecimal quantity = exceededAmount.abs().divide(price, MathContext.DECIMAL32);
+                    sellTradeAsset(tradeClient, trade, tradeAsset, quantity, price);
+                }
+
             } catch (Throwable e) {
                 log.error(e.getMessage(), e);
                 sendErrorAlarmIfEnabled(trade, tradeAsset, e);
@@ -243,25 +286,6 @@ public class TradeExecutor {
                 .collect(Collectors.toList());
     }
 
-    private int getConsecutiveCountOfHoldConditionResult(String assetId, Boolean holdConditionResult) {
-        Boolean previousHoldConditionResult = holdConditionResultMap.get(assetId);
-        int holdConditionResultCount = holdConditionResultCountMap.getOrDefault(assetId, 0);
-
-        // increases match count
-        if(Objects.equals(holdConditionResult, previousHoldConditionResult)) {
-            holdConditionResultCount ++;
-        }else{
-            holdConditionResultCount = 1;
-        }
-
-        // store
-        holdConditionResultMap.put(assetId, holdConditionResult);
-        holdConditionResultCountMap.put(assetId, holdConditionResultCount);
-
-        // return
-        return holdConditionResultCount;
-    }
-
     private void sendErrorAlarmIfEnabled(Trade trade, TradeAsset tradeAsset, Throwable t) {
         if(trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
             if (trade.isAlarmOnError()) {
@@ -270,6 +294,127 @@ public class TradeExecutor {
                 alarmService.sendAlarm(trade.getAlarmId(), subject, content);
             }
         }
+    }
+
+    private void buyTradeAsset(TradeClient tradeClient, Trade trade, TradeAsset tradeAsset, BigDecimal quantity, BigDecimal price) throws InterruptedException {
+        Order order = Order.builder()
+                .orderId(IdGenerator.uuid())
+                .orderAt(LocalDateTime.now())
+                .type(Order.Type.BUY)
+                .kind(trade.getOrderKind())
+                .tradeId(tradeAsset.getTradeId())
+                .assetId(tradeAsset.getAssetId())
+                .assetName(tradeAsset.getAssetName())
+                .quantity(quantity)
+                .price(price)
+                .build();
+        try {
+            // check waiting order exists
+            Order waitingOrder = tradeClient.getWaitingOrders().stream()
+                    .filter(element ->
+                            Objects.equals(element.getSymbol(), order.getSymbol())
+                                    && element.getType() == order.getType())
+                    .findFirst()
+                    .orElse(null);
+            if (waitingOrder != null) {
+                // if limit type order, amend order
+                if (waitingOrder.getKind() == Order.Kind.LIMIT) {
+                    waitingOrder.setPrice(price);
+                    log.info("amend buy order:{}", waitingOrder);
+                    tradeClient.amendOrder(waitingOrder);
+                }
+                return;
+            }
+
+            // submit buy order
+            tradeClient.submitOrder(order);
+            order.setResult(Order.Result.COMPLETED);
+
+            // alarm
+            if (trade.isAlarmOnOrder()) {
+                if (trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
+                    String subject = String.format("[%s]", trade.getTradeName());
+                    String content = String.format("[%s] Buy %s", tradeAsset.getAssetName(), quantity);
+                    alarmService.sendAlarm(trade.getAlarmId(), subject, content);
+                }
+            }
+        } catch (Throwable e) {
+            order.setResult(Order.Result.FAILED);
+            order.setErrorMessage(e.getMessage());
+            throw e;
+        } finally {
+            saveTradeOrder(order);
+        }
+    }
+
+    private void sellTradeAsset(TradeClient tradeClient, Trade trade, TradeAsset tradeAsset, BigDecimal quantity, BigDecimal price) throws InterruptedException {
+        Order order = Order.builder()
+                .orderId(IdGenerator.uuid())
+                .orderAt(LocalDateTime.now())
+                .type(Order.Type.SELL)
+                .kind(trade.getOrderKind())
+                .tradeId(tradeAsset.getTradeId())
+                .assetId(tradeAsset.getAssetId())
+                .assetName(tradeAsset.getAssetName())
+                .quantity(quantity)
+                .price(price)
+                .build();
+        try {
+            // check waiting order exists
+            Order waitingOrder = tradeClient.getWaitingOrders().stream()
+                    .filter(element ->
+                            Objects.equals(element.getSymbol(), order.getSymbol())
+                                    && element.getType() == order.getType())
+                    .findFirst()
+                    .orElse(null);
+            if (waitingOrder != null) {
+                // if limit type order, amend order
+                if (waitingOrder.getKind() == Order.Kind.LIMIT) {
+                    waitingOrder.setPrice(price);
+                    log.info("amend sell order:{}", waitingOrder);
+                    tradeClient.amendOrder(waitingOrder);
+                }
+                return;
+            }
+
+            // submit sell order
+            tradeClient.submitOrder(order);
+            order.setResult(Order.Result.COMPLETED);
+
+            // alarm
+            if (trade.isAlarmOnOrder()) {
+                if (trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
+                    String subject = String.format("[%s]", trade.getTradeName());
+                    String content = String.format("[%s] Sell %s", tradeAsset.getAssetName(), quantity);
+                    alarmService.sendAlarm(trade.getAlarmId(), subject, content);
+                }
+            }
+        } catch (Throwable e) {
+            order.setResult(Order.Result.FAILED);
+            order.setErrorMessage(e.getMessage());
+            throw e;
+        } finally {
+            saveTradeOrder(order);
+        }
+    }
+
+    private void saveTradeOrder(Order order) {
+        DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager, transactionDefinition);
+        transactionTemplate.executeWithoutResult(transactionStatus ->
+                orderRepository.saveAndFlush(OrderEntity.builder()
+                        .orderId(order.getOrderId())
+                        .orderAt(order.getOrderAt())
+                        .type(order.getType())
+                        .tradeId(order.getTradeId())
+                        .assetId(order.getAssetId())
+                        .assetName(order.getAssetName())
+                        .kind(order.getKind())
+                        .quantity(order.getQuantity())
+                        .price(order.getPrice())
+                        .result(order.getResult())
+                        .errorMessage(order.getErrorMessage())
+                        .build()));
     }
 
 }

@@ -226,20 +226,29 @@ public class UpbitTradeClient extends TradeClient {
             String symbol = String.format("%s-%s", unitCurrency, currency);
             BigDecimal balance = row.getNumber("balance");
             BigDecimal averageBuyPrice = row.getNumber("avg_buy_price");
-            totalAmount = totalAmount.add(balance);
-            if(currency.equals(unitCurrency)) {
+            if("KRW".equals(currency) && "KRW".equals(unitCurrency)) {
+                totalAmount = totalAmount.add(balance);
                 cacheAmount = cacheAmount.add(balance);
+                valuationAmount = valuationAmount.add(balance);
             }else{
                 BigDecimal assetPurchaseAmount = averageBuyPrice.multiply(balance)
                         .setScale(0, RoundingMode.HALF_UP);
+                totalAmount = totalAmount.add(assetPurchaseAmount);
                 purchaseAmount = purchaseAmount.add(assetPurchaseAmount);
-                balanceAssets.add(BalanceAsset.builder()
+                BalanceAsset balanceAsset = BalanceAsset.builder()
                         .assetId(toAssetId(symbol))
                         .assetName(symbol)
                         .quantity(balance)
                         .orderableQuantity(balance)
                         .purchaseAmount(purchaseAmount)
-                        .build());
+                        .build();
+                // upbit 의 경우 평가 금액 확인 불가로 order book 재조회 후 산출
+                OrderBook orderBook = getOrderBook(balanceAsset);
+                BigDecimal assetValuationAmount = orderBook.getPrice().multiply(balance)
+                        .setScale(2, RoundingMode.HALF_UP);
+                balanceAsset.setValuationAmount(assetValuationAmount);
+                balanceAssets.add(balanceAsset);
+                valuationAmount = valuationAmount.add(assetValuationAmount);
             }
         }
         return Balance.builder()

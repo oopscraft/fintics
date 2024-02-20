@@ -24,7 +24,6 @@
         });
 
         const tradeClients = new duice.ArrayProxy(/*[[${tradeClients}]]*/[]);
-        const orderOperators = new duice.ArrayProxy(/*[[${orderOperators}]]*/[]);
         const alarms = new duice.ArrayProxy(/*[[${alarms}]]*/[]);
 
         // simulate
@@ -439,17 +438,6 @@
                             data-duice-property="tradeClientConfig"
                             class="border--1 font-size--smaller" style="height:7em;">
                     </duice-codemirror>
-                </label>
-                <label class="grid-column--6">
-                    <span data-th-text="#{fintics.Trade.orderOperator}" class="font-weight--bold tag-required"></span>
-                    <select data-duice-bind="trade"
-                            data-duice-property="orderOperatorId"
-                            data-duice-option="orderOperators"
-                            data-duice-option-value-property="orderOperatorId"
-                            data-duice-option-text-property="orderOperatorName"
-                            class="width--100">
-                        <option data-th-text="'- '+#{web.global.select}+' -'"></option>
-                    </select>
                 </label>
                 <label class="grid-column--6">
                     <span data-th-text="#{fintics.Trade.orderKind}" class="font-weight--bold tag-required"></span>

@@ -8,12 +8,10 @@ import org.oopscraft.fintics.client.trade.TradeClientFactory;
 import org.oopscraft.fintics.model.Order;
 import org.oopscraft.fintics.model.Simulate;
 import org.oopscraft.fintics.service.IndiceService;
-import org.oopscraft.fintics.trade.order.OrderOperatorFactory;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
@@ -28,8 +26,6 @@ public class TradeController {
 
     private final AlarmService alarmService;
 
-    private final OrderOperatorFactory orderOperatorFactory;
-
     private final IndiceService indiceService;
 
     @GetMapping
@@ -37,7 +33,6 @@ public class TradeController {
         ModelAndView modelAndView = new ModelAndView("trade.html");
         modelAndView.addObject("tradeId", tradeId);
         modelAndView.addObject("tradeClients", TradeClientFactory.getTradeClientDefinitions());
-        modelAndView.addObject("orderOperators", orderOperatorFactory.getOrderOperatorDefinitions());
         List<Alarm> alarms = alarmService.getAlarms(AlarmSearch.builder().build(), Pageable.unpaged()).getContent();
         modelAndView.addObject("alarms", alarms);
         modelAndView.addObject("indices", indiceService.getIndices());

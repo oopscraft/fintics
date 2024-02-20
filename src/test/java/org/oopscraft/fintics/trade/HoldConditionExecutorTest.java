@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
@@ -128,7 +129,7 @@ class HoldConditionExecutorTest {
         OrderBook orderBook = getTestOrderBook();
         List<IndiceIndicator> indiceIndicators = getTestIndiceIndicators();
         AssetIndicator assetIndicator = getTestAssetIndicator(tradeAsset);
-        trade.setHoldCondition("return true;");
+        trade.setHoldCondition("return 50;");
 
         // when
         HoldConditionExecutor tradeAssetDecider = HoldConditionExecutor.builder()
@@ -138,11 +139,11 @@ class HoldConditionExecutorTest {
                 .indiceIndicators(indiceIndicators)
                 .assetIndicator(assetIndicator)
                 .build();
-        Boolean result = tradeAssetDecider.execute();
+        BigDecimal result = tradeAssetDecider.execute();
 
         // then
         log.info("== result:{}", result);
-        assertTrue(result);
+        assertEquals(0, result.compareTo(BigDecimal.valueOf(50)));
     }
 
     @Test
@@ -162,7 +163,7 @@ class HoldConditionExecutorTest {
                 .indiceIndicators(indiceIndicators)
                 .assetIndicator(assetIndicator)
                 .build();
-        Boolean result = tradeAssetDecider.execute();
+        BigDecimal result = tradeAssetDecider.execute();
 
         // then
         log.info("== result:{}", result);
