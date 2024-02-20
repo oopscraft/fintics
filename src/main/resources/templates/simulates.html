@@ -415,19 +415,19 @@
                 </button>
                 <hr class="margin--1px"/>
             </div>
-            <div id="simulateDialog-assetTabContent" class="display--grid grid-template-columns--12">
-                <div class="grid-column--4" style="height:200px;">
+            <div id="simulateDialog-assetTabContent">
+                <div class="width--100" style="height:200px;">
                     <canvas id="simulateDialog-assetDailyOhlcvsChart"></canvas>
                 </div>
-                <div class="grid-column--8" style="height:200px;">
+                <div class="width--100" style="height:200px;">
                     <canvas id="simulateDialog-assetMinuteOhlcvsChart"></canvas>
                 </div>
             </div>
-            <div id="simulateDialog-indiceTabContent" class="display--grid grid-template-columns--12">
-                <div class="grid-column--4" style="height:200px;">
+            <div id="simulateDialog-indiceTabContent">
+                <div class="width--100" style="height:200px;">
                     <canvas id="simulateDialog-indiceDailyOhlcvsChart"></canvas>
                 </div>
-                <div class="grid-column--8" style="height:200px;">
+                <div class="width--100" style="height:200px;">
                     <canvas id="simulateDialog-indiceMinuteOhlcvsChart"></canvas>
                 </div>
             </div>
@@ -623,10 +623,10 @@
                 },
                 orders: []
             }),
-            assetMinuteOhlcvChart: null,
-            assetDailyOhlcvChart: null,
-            indiceMinuteOhlcvChart: null,
-            indiceDailyOhlcvChart: null,
+            assetMinuteOhlcvsChart: null,
+            assetDailyOhlcvsChart: null,
+            indiceMinuteOhlcvsChart: null,
+            indiceDailyOhlcvsChart: null,
             subscribeLog: null,
             subscribeDateTime: null,
             subscribeBalance: null,
@@ -674,22 +674,21 @@
                 return this.dialog.open();
             },
             openForEdit: function(simulateId) {
-                // let _this = this;
                 let url = new URL(`${_apiUrl}/v1/simulates/${simulateId}`, document.location.origin);
                 _fetch(url)
                     .then(response => response.json())
                     .then(async simulate => {
                         duice.ObjectProxy.assign(this.simulate, simulate);
                         await this.drawChart();
-                        // this.setMarkOrdersAtChart(this.simulate.orders);
                         this.listenSimulate();
                     });
                 return this.dialog.open();
             },
+            getDaysOfDateTimeFromTo: function() {
+                return dateFns.differenceInDays(this.simulate.dateTimeTo, this.simulate.dateTimeFrom);
+            },
             drawChart: function() {
-                // diff days
-                const diffDays = dateFns.differenceInDays(this.simulate.dateTimeTo, this.simulate.dateTimeFrom);
-
+                const daysOfDateTimeFromTo = this.getDaysOfDateTimeFromTo();
                 // asset indicator
                 const assetIndicatorPromises = this.simulate.trade.tradeAssets
                     .filter(tradeAsset => tradeAsset.enabled)
@@ -707,32 +706,38 @@
                     // asset chart
                     this.assetDailyOhlcvsChart.data.datasets.length = 0;
                     this.assetMinuteOhlcvsChart.data.datasets.length = 0;
+                    this.assetDailyOhlcvsChart.canvas.parentElement.style.display = 'none';
+                    this.assetMinuteOhlcvsChart.canvas.parentElement.style.display = 'none';
                     assetIndicators.forEach(assetIndicator => {
-                        // daily
-                        let dailyOhlcvs = assetIndicator['dailyOhlcvs'];
-                        let dailyTimeSeries = _createTimeSeries(dateFns.subMonths(dateFrom,1), dateTo, dailyOhlcvs);
-                        let dailyDataset = {
-                            assetId: assetIndicator.assetId,
-                            label: assetIndicator.assetName,
-                            data: dailyTimeSeries,
-                            borderWidth: 1,
-                            pointStyle: false
-                        };
-                        this.assetDailyOhlcvsChart.data.datasets.push(dailyDataset);
-
-                        // minute
-                        let minuteOhlcvs = assetIndicator['minuteOhlcvs'];
-                        let minuteTimeSeries = _createTimeSeries(dateFrom, dateTo, minuteOhlcvs);
-                        let minuteDataset = {
-                            assetId: assetIndicator.assetId,
-                            label: assetIndicator.assetName,
-                            data: minuteTimeSeries,
-                            borderWidth: 1,
-                            pointStyle: new Array(minuteTimeSeries.length).fill(false),
-                            pointBorderColor: new Array(minuteTimeSeries.length).fill(false),
-                            pointBackgroundColor: new Array(minuteTimeSeries.length).fill(false)
-                        };
-                        this.assetMinuteOhlcvsChart.data.datasets.push(minuteDataset);
+                        if (daysOfDateTimeFromTo > 30) {
+                            // daily
+                            let dailyOhlcvs = assetIndicator['dailyOhlcvs'];
+                            let dailyTimeSeries = _createTimeSeries(dateFns.subMonths(dateFrom,1), dateTo, dailyOhlcvs);
+                            let dailyDataset = {
+                                assetId: assetIndicator.assetId,
+                                label: assetIndicator.assetName,
+                                data: dailyTimeSeries,
+                                borderWidth: 1,
+                                pointStyle: false
+                            };
+                            this.assetDailyOhlcvsChart.data.datasets.push(dailyDataset);
+                            this.assetDailyOhlcvsChart.canvas.parentElement.style.display = 'block';
+                        } else {
+                            // minute
+                            let minuteOhlcvs = assetIndicator['minuteOhlcvs'];
+                            let minuteTimeSeries = _createTimeSeries(dateFrom, dateTo, minuteOhlcvs);
+                            let minuteDataset = {
+                                assetId: assetIndicator.assetId,
+                                label: assetIndicator.assetName,
+                                data: minuteTimeSeries,
+                                borderWidth: 1,
+                                pointStyle: new Array(minuteTimeSeries.length).fill(false),
+                                pointBorderColor: new Array(minuteTimeSeries.length).fill(false),
+                                pointBackgroundColor: new Array(minuteTimeSeries.length).fill(false)
+                            };
+                            this.assetMinuteOhlcvsChart.data.datasets.push(minuteDataset);
+                            this.assetMinuteOhlcvsChart.canvas.parentElement.style.display = 'block';
+                        }
                     });
                     this.assetDailyOhlcvsChart.update();
                     this.assetMinuteOhlcvsChart.update();
@@ -761,27 +766,34 @@
                     // indice chart
                     this.indiceDailyOhlcvsChart.data.datasets.length = 0;
                     this.indiceMinuteOhlcvsChart.data.datasets.length = 0;
+                    this.indiceDailyOhlcvsChart.canvas.parentElement.style.display = 'none';
+                    this.indiceMinuteOhlcvsChart.canvas.parentElement.style.display = 'none';
                     indiceIndicators.forEach(indiceIndicator => {
-                        // daily
-                        let dailyOhlcvs = indiceIndicator['dailyOhlcvs'];
-                        let dailyTimeSeries = _createTimeSeries(dateFns.subMonths(dateFrom,1) , dateTo, dailyOhlcvs);
-                        let dailyDataset = {
-                            label: indiceIndicator.indicatorName,
-                            data: dailyTimeSeries,
-                            borderWidth: 1,
-                            pointStyle: false
-                        };
-                        this.indiceDailyOhlcvsChart.data.datasets.push(dailyDataset);
-                        // minute
-                        let minuteOhlcvs = indiceIndicator['minuteOhlcvs'];
-                        let minuteTimeSeries = _createTimeSeries(dateFrom, dateTo, minuteOhlcvs);
-                        let minuteDataset = {
-                            label: indiceIndicator.indicatorName,
-                            data: minuteTimeSeries,
-                            borderWidth: 1,
-                            pointStyle: false
-                        };
-                        this.indiceMinuteOhlcvsChart.data.datasets.push(minuteDataset);
+                        if (daysOfDateTimeFromTo > 30) {
+                            // daily
+                            let dailyOhlcvs = indiceIndicator['dailyOhlcvs'];
+                            let dailyTimeSeries = _createTimeSeries(dateFns.subMonths(dateFrom,1) , dateTo, dailyOhlcvs);
+                            let dailyDataset = {
+                                label: indiceIndicator.indicatorName,
+                                data: dailyTimeSeries,
+                                borderWidth: 1,
+                                pointStyle: false
+                            };
+                            this.indiceDailyOhlcvsChart.data.datasets.push(dailyDataset);
+                            this.indiceDailyOhlcvsChart.canvas.parentElement.style.display = 'block';
+                        } else {
+                            // minute
+                            let minuteOhlcvs = indiceIndicator['minuteOhlcvs'];
+                            let minuteTimeSeries = _createTimeSeries(dateFrom, dateTo, minuteOhlcvs);
+                            let minuteDataset = {
+                                label: indiceIndicator.indicatorName,
+                                data: minuteTimeSeries,
+                                borderWidth: 1,
+                                pointStyle: false
+                            };
+                            this.indiceMinuteOhlcvsChart.data.datasets.push(minuteDataset);
+                            this.indiceMinuteOhlcvsChart.canvas.parentElement.style.display = 'block';
+                        }
                     });
                     this.indiceDailyOhlcvsChart.update();
                     this.indiceMinuteOhlcvsChart.update();
@@ -850,6 +862,14 @@
                 });
             },
             clearMarkOrdersAtChart: function() {
+                // daily
+                this.assetDailyOhlcvsChart.data.datasets.forEach((dataset) => {
+                    dataset.pointStyle = new Array(dataset.data.length).fill(false);
+                    dataset.pointBorderColor = new Array(dataset.data.length).fill(false);
+                    dataset.pointBackgroundColor = new Array(dataset.data.length).fill(false);
+                });
+                this.assetDailyOhlcvsChart.update();
+                // minute
                 this.assetMinuteOhlcvsChart.data.datasets.forEach((dataset) => {
                     dataset.pointStyle = new Array(dataset.data.length).fill(false);
                     dataset.pointBorderColor = new Array(dataset.data.length).fill(false);
@@ -858,31 +878,36 @@
                 this.assetMinuteOhlcvsChart.update();
             },
             setMarkOrdersAtChart: function(orders) {
+                const daysOfDateTimeFromTo = this.getDaysOfDateTimeFromTo();
+                let ohlcvsChart = null;
+                if (daysOfDateTimeFromTo > 0) {
+                    ohlcvsChart = this.assetDailyOhlcvsChart;
+                } else {
+                    ohlcvsChart = this.assetMinuteOhlcvsChart;
+                }
+                // mark order
                 orders.forEach(order => {
-                    this.setMarkOrderAtChart(order);
+                    // find dataset
+                    let dataset = ohlcvsChart.data.datasets.find((dataset) => dataset.assetId === order.assetId);
+                    // find index by order at
+                    let index = dataset.data.findIndex((ohlcv) => {
+                        return dateFns.isEqual(dateFns.startOfMinute(new Date(ohlcv.dateTime)), dateFns.startOfMinute(new Date(order.orderAt)));
+                    });
+                    // buy
+                    if(order.type === 'BUY') {
+                        dataset.pointStyle[index] = 'circle';
+                        dataset.pointBorderColor[index] = 'red';
+                        dataset.pointBackgroundColor[index] = 'red';
+                    }
+                    // sell
+                    if(order.type === 'SELL') {
+                        dataset.pointStyle[index] = 'rect';
+                        dataset.pointBorderColor[index] = 'blue';
+                        dataset.pointBackgroundColor[index] = 'blue';
+                    }
                 });
-            },
-            setMarkOrderAtChart: function(order) {
-                // find dataset
-                let dataset = this.assetMinuteOhlcvsChart.data.datasets.find((dataset) => dataset.assetId === order.assetId);
-                // find index by order at
-                let index = dataset.data.findIndex((ohlcv) => {
-                    return dateFns.isEqual(dateFns.startOfMinute(new Date(ohlcv.dateTime)), dateFns.startOfMinute(new Date(order.orderAt)));
-                });
-                // buy
-                if(order.type === 'BUY') {
-                    dataset.pointStyle[index] = 'circle';
-                    dataset.pointBorderColor[index] = 'red';
-                    dataset.pointBackgroundColor[index] = 'red';
-                }
-                // sell
-                if(order.type === 'SELL') {
-                    dataset.pointStyle[index] = 'rect';
-                    dataset.pointBorderColor[index] = 'blue';
-                    dataset.pointBackgroundColor[index] = 'blue';
-                }
                 // update
-                this.assetMinuteOhlcvsChart.update();
+                ohlcvsChart.update();
             },
             stopSimulate: function() {
                 let url = new URL(`${_apiUrl}/v1/simulates/${this.simulate.simulateId}/stop`, document.location.origin);
