@@ -1,3 +1,9 @@
+/**
+ * creates daily ohlcvs chart
+ * @param elementId
+ * @returns {On}
+ * @private
+ */
 function _createDailyOhlcvsChart(elementId) {
     return new Chart(document.getElementById(elementId), {
         type: 'line',
@@ -5,6 +11,7 @@ function _createDailyOhlcvsChart(elementId) {
             datasets: []
         },
         options: {
+            animation: false,
             maintainAspectRatio: false,
             parsing: {
                 xAxisKey: 'dateTime',
@@ -63,6 +70,12 @@ function _createDailyOhlcvsChart(elementId) {
     });
 }
 
+/**
+ * create minute ohlcvs chart
+ * @param elementId
+ * @returns {On}
+ * @private
+ */
 function _createMinuteOhlcvsChart(elementId) {
     return new Chart(document.getElementById(elementId), {
         type: 'line',
@@ -70,6 +83,7 @@ function _createMinuteOhlcvsChart(elementId) {
             datasets: []
         },
         options: {
+            animation: false,
             maintainAspectRatio: false,
             parsing: {
                 xAxisKey: 'dateTime',
@@ -128,6 +142,14 @@ function _createMinuteOhlcvsChart(elementId) {
     });
 }
 
+/**
+ * creates time series from ohlcv data
+ * @param dateFrom
+ * @param dateTo
+ * @param ohlcvs
+ * @returns {*}
+ * @private
+ */
 function _createTimeSeries(dateFrom, dateTo, ohlcvs) {
     let timeSeries = JSON.parse(JSON.stringify(ohlcvs)).reverse();
 

@@ -385,7 +385,7 @@
                 <input class="width--100" type="number" data-duice-bind="simulateDialog.simulate" data-duice-property="feeRate" data-duice-format="number(4)"/>
             </label>
             <div class="grid-column--12 justify-self--end">
-                <button type="button" onclick="simulateDialog.prepareSimulate();">
+                <button type="button" onclick="simulateDialog.drawChart();">
                     <img class="icon" th:src="@{/static/image/icon-search.svg}" alt="search"/>
                     <span data-th-text="#{web.global.search}"></span>
                 </button>
@@ -453,7 +453,7 @@
                     <div class="display--grid grid-template-columns--12 grid-gap--1em padding-x--1em padding-y--1em s__padding-y--0">
                         <label class="grid-column--6">
                             <img class="icon" th:src="@{/static/image/icon-datetime.svg}" alt="datetime"/>
-                            <input type="datetime-local" id="simulateDialog-dateTime" class="font-weight--bold" readonly/>
+                            <input type="datetime-local" data-duice-bind="simulateDialog.simulate" data-duice-property="dateTime" class="font-weight--bold" readonly/>
                         </label>
                         <label class="grid-column--6 justify-self--end">
                             <span data-th-text="#{fintics.Balance.totalAmount}" class="font-weight--bold"></span>
@@ -613,8 +613,8 @@
                 trade: {
                     tradeAssets: []
                 },
-                dateTimeFrom: dateFns.startOfDay(dateFns.subDays(new Date(),3)).toISOString(),
-                dateTimeTo: dateFns.endOfDay(Date()).toISOString(),
+                dateTimeFrom: null,
+                dateTimeTo: null,
                 investAmount: 10_000_000,
                 feeRate: 0.01,
                 dateTime: null,
@@ -639,6 +639,7 @@
                 this.indiceMinuteOhlcvsChart = _createMinuteOhlcvsChart('simulateDialog-indiceMinuteOhlcvsChart');
                 this.assetDailyOhlcvsChart = _createDailyOhlcvsChart('simulateDialog-assetDailyOhlcvsChart');
                 this.assetMinuteOhlcvsChart = _createMinuteOhlcvsChart('simulateDialog-assetMinuteOhlcvsChart');
+
                 // chart tab
                 let chartTabFolder = duice.tabFolder(
                     duice.tabItem(
@@ -665,23 +666,30 @@
                 );
                 resultTabFolder.setActive(0);
             },
-            openForNew: function(simulate) {
+            openForNew: async function(simulate) {
+                duice.ObjectProxy.clear(this.simulate, simulate);
                 duice.ObjectProxy.assign(this.simulate, simulate);
                 this.simulate.simulateId = null;
+                await this.drawChart();
                 return this.dialog.open();
             },
             openForEdit: function(simulateId) {
-                let _this = this;
+                // let _this = this;
                 let url = new URL(`${_apiUrl}/v1/simulates/${simulateId}`, document.location.origin);
                 _fetch(url)
                     .then(response => response.json())
-                    .then(simulate => {
-                        duice.ObjectProxy.assign(_this.simulate, simulate);
-                        _this.listenSimulate();
+                    .then(async simulate => {
+                        duice.ObjectProxy.assign(this.simulate, simulate);
+                        await this.drawChart();
+                        // this.setMarkOrdersAtChart(this.simulate.orders);
+                        this.listenSimulate();
                     });
                 return this.dialog.open();
             },
-            prepareSimulate: function() {
+            drawChart: function() {
+                // diff days
+                const diffDays = dateFns.differenceInDays(this.simulate.dateTimeTo, this.simulate.dateTimeFrom);
+
                 // asset indicator
                 const assetIndicatorPromises = this.simulate.trade.tradeAssets
                     .filter(tradeAsset => tradeAsset.enabled)
@@ -720,12 +728,21 @@
                             label: assetIndicator.assetName,
                             data: minuteTimeSeries,
                             borderWidth: 1,
-                            pointStyle: new Array(minuteTimeSeries.length).fill(false)
+                            pointStyle: new Array(minuteTimeSeries.length).fill(false),
+                            pointBorderColor: new Array(minuteTimeSeries.length).fill(false),
+                            pointBackgroundColor: new Array(minuteTimeSeries.length).fill(false)
                         };
                         this.assetMinuteOhlcvsChart.data.datasets.push(minuteDataset);
                     });
                     this.assetDailyOhlcvsChart.update();
                     this.assetMinuteOhlcvsChart.update();
+
+                    // mark order data point
+                    if(this.simulate.orders) {
+                        setTimeout(() => {
+                            this.setMarkOrdersAtChart(this.simulate.orders);
+                        }, 1000);
+                    }
                 });
 
                 // indice asset indicator
@@ -771,7 +788,7 @@
                 });
             },
             runSimulate: function() {
-                this.clearMarkOrderAtChart();
+                this.clearMarkOrdersAtChart();
                 let url = new URL(`${_apiUrl}/v1/simulates`, document.location.origin);
                 _fetch(url, {
                     method: 'POST',
@@ -809,7 +826,7 @@
                 this.subscribeDateTime = _webSocketClient.subscribe({
                     destination: `/simulates/${_this.simulate.simulateId}/dateTime`,
                     listener: function(frame) {
-                        _this.dateTime.value = JSON.parse(frame.body);
+                        _this.simulate.dateTime = JSON.parse(frame.body);
                     }
                 });
                 _webSocketClient.unsubscribe(this.subscribeBalance);
@@ -827,12 +844,12 @@
                         let orders = JSON.parse(frame.body);
                         if(orders.length !== _this.simulate.orders.length) {
                             duice.ObjectProxy.assign(_this.simulate.orders, orders);
-                            //_this.setMarkOrdersAtChart(orders);
+                            _this.setMarkOrdersAtChart(orders);
                         }
                     }
                 });
             },
-            clearMarkOrderAtChart: function() {
+            clearMarkOrdersAtChart: function() {
                 this.assetMinuteOhlcvsChart.data.datasets.forEach((dataset) => {
                     dataset.pointStyle = new Array(dataset.data.length).fill(false);
                     dataset.pointBorderColor = new Array(dataset.data.length).fill(false);

@@ -187,9 +187,9 @@
             getSimulates(page);
         }
 
-        function getSimulate(simulateId) {
+        async function getSimulate(simulateId) {
             try {
-                simulateDialog.openForEdit(simulateId);
+                await simulateDialog.openForEdit(simulateId);
             } finally {
                 refreshSimulates();
             }
@@ -197,10 +197,24 @@
 
         async function createSimulate() {
             try {
+                // date time from
+                const [startAtHours, startAtMinutes, startAtSeconds] = trade.startAt.split(':');
+                let dateTimeFrom = dateFns.subDays(new Date(),3);
+                dateTimeFrom = dateFns.setHours(dateTimeFrom, startAtHours);
+                dateTimeFrom = dateFns.setMinutes(dateTimeFrom, startAtMinutes);
+                dateTimeFrom = dateFns.setSeconds(dateTimeFrom, startAtSeconds);
+                // date time to
+                const [endAtHours, endAtMinutes, endAtSeconds] = trade.endAt.split(':');
+                let dateTimeTo = new Date();
+                dateTimeTo = dateFns.setHours(dateTimeTo, endAtHours);
+                dateTimeTo = dateFns.setMinutes(dateTimeTo, endAtMinutes);
+                dateTimeTo = dateFns.setSeconds(dateTimeTo, endAtSeconds);
+
+                // open simulate dialog
                 await simulateDialog.openForNew({
                     trade: trade,
-                    dateTimeFrom: dateFns.startOfDay(dateFns.subDays(new Date(),3)).toISOString(),
-                    dateTimeTo: dateFns.endOfDay(Date()).toISOString(),
+                    dateTimeFrom: dateTimeFrom.toISOString(),
+                    dateTimeTo: dateTimeTo.toISOString(),
                     investAmount: 10_000_000,
                     feeRate: 0.01
                 });
