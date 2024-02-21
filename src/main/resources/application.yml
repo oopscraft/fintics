@@ -4,6 +4,7 @@ spring:
     cache: false
   datasource:
     hikari:
+      transaction-isolation: TRANSACTION_READ_UNCOMMITTED
       leakDetectionThreshold: 300000
 
 # web

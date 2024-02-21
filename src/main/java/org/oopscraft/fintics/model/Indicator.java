@@ -107,7 +107,7 @@ public abstract class Indicator {
                 .build();
     }
 
-    public <C extends CalculateContext, R extends CalculateResult> List<R> calculate(Ohlcv.Type type, int period, C context) {
+    public <C extends CalculateContext, R extends CalculateResult> List<R> calculate(C context, Ohlcv.Type type, int period) {
         List<Ohlcv> ohlcvs = getOhlcvs(type, period);
         Collections.reverse(ohlcvs);
 

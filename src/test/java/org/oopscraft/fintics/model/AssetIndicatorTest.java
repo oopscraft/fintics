@@ -29,7 +29,7 @@ public class AssetIndicatorTest {
                 }})
                 .build();
 
-        List<Sma> results = assetIndicator.calculate(Ohlcv.Type.MINUTE, 1, SmaContext.DEFAULT);
+        List<Sma> results = assetIndicator.calculate(SmaContext.DEFAULT, Ohlcv.Type.MINUTE, 1);
         results.forEach(sma -> log.info("{}", sma));
     }
 

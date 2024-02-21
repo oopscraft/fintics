@@ -880,7 +880,7 @@
             setMarkOrdersAtChart: function(orders) {
                 const daysOfDateTimeFromTo = this.getDaysOfDateTimeFromTo();
                 let ohlcvsChart = null;
-                if (daysOfDateTimeFromTo > 0) {
+                if (daysOfDateTimeFromTo > 30) {
                     ohlcvsChart = this.assetDailyOhlcvsChart;
                 } else {
                     ohlcvsChart = this.assetMinuteOhlcvsChart;

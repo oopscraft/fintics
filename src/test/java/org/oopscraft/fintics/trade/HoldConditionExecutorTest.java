@@ -160,6 +160,7 @@ class HoldConditionExecutorTest {
         HoldConditionExecutor tradeAssetDecider = HoldConditionExecutor.builder()
                 .holdCondition(trade.getHoldCondition())
                 .dateTime(LocalDateTime.now())
+                .balance(new Balance())
                 .indiceIndicators(indiceIndicators)
                 .assetIndicator(assetIndicator)
                 .build();
