@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.math.BigDecimal;
@@ -53,7 +54,7 @@ public class PastOhlcvCollector extends OhlcvCollector {
 
     private final FinticsProperties finticsProperties;
 
-    @Scheduled(initialDelay = 60_000, fixedDelay = 60_000)
+    @Scheduled(initialDelay = 60_000, fixedDelay = 3600_000)
     public void collect() {
         try {
             log.info("PastOhlcvCollector - Start collect past asset ohlcv.");

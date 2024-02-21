@@ -15,6 +15,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,7 +33,12 @@ public class AssetCollector extends AbstractScheduler {
 
     private final PlatformTransactionManager transactionManager;
 
-    @Scheduled(initialDelay = 1_000, fixedDelay = 3600_000)
+    @Scheduled(initialDelay = 60_000, fixedDelay = Long.MAX_VALUE)
+    public void onStartup() {
+        collect();
+    }
+
+    @Scheduled(cron = "0 0 18 * * *")
     public void collect() {
         try {
             log.info("AssetCollector - Start collect broker asset.");
