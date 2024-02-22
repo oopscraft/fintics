@@ -113,6 +113,11 @@ public class SimulateTradeClient extends TradeClient {
     }
 
     @Override
+    public BigDecimal getPriceTick(Asset asset, BigDecimal price) throws InterruptedException {
+        return null;
+    }
+
+    @Override
     public OrderBook getOrderBook(Asset asset) throws InterruptedException {
         loadOhlcvsIfNotExist(asset, dateTime);
         LocalDateTime dateTimeFrom = dateTime.truncatedTo(ChronoUnit.MINUTES);

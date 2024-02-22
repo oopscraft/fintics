@@ -366,4 +366,32 @@ public abstract class KrTradeClient extends TradeClient {
         return convertXmlToMap(responseBody);
     }
 
+    /**
+     * https://securities.koreainvestment.com/main/customer/notice/Notice.jsp?&cmd=TF04ga000002&currentPage=1&num=39930
+     */
+    public BigDecimal getPriceTick(Asset asset, BigDecimal price) throws InterruptedException {
+        // etf, etn, elw
+        if(Arrays.asList("ETF","ETN","ELW").contains(asset.getType())) {
+            return BigDecimal.valueOf(5);
+        }
+        // default fallback (stock)
+        BigDecimal priceTick = null;
+        if (price.compareTo(BigDecimal.valueOf(2_000)) <= 0) {
+            priceTick = BigDecimal.valueOf(1);
+        } else if (price.compareTo(BigDecimal.valueOf(5_000)) <= 0) {
+            priceTick = BigDecimal.valueOf(5);
+        } else if (price.compareTo(BigDecimal.valueOf(20_000)) <= 0) {
+            priceTick = BigDecimal.valueOf(10);
+        } else if (price.compareTo(BigDecimal.valueOf(50_000)) <= 0) {
+            priceTick = BigDecimal.valueOf(50);
+        } else if (price.compareTo(BigDecimal.valueOf(200_000)) <= 0) {
+            priceTick = BigDecimal.valueOf(100);
+        } else if (price.compareTo(BigDecimal.valueOf(500_000)) <= 0) {
+            priceTick = BigDecimal.valueOf(500);
+        } else {
+            priceTick = BigDecimal.valueOf(1_000);
+        }
+        return priceTick;
+    }
+
 }

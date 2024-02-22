@@ -186,7 +186,7 @@ public class Tool {
      */
     public BigDecimal zScore(List<BigDecimal> values) {
         List<BigDecimal> zScores = zScores(values);
-        return values.get(0);
+        return zScores.get(0);
     }
 
     /**

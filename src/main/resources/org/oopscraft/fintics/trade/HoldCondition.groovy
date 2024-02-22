@@ -5,196 +5,167 @@ import org.oopscraft.fintics.model.*
 
 import java.time.LocalTime
 
-/**
- * analyze indicator
- * @param indicator indicator
- * @param ohlcvType ohlcvType
- * @param ohlcvPeriod period
- * @return result map
- */
-def analyzeIndicator(Indicator indicator, Ohlcv.Type ohlcvType, int ohlcvPeriod) {
-    // info
-    def name = indicator.getIndicatorName() + ':' + ohlcvType + ':' + ohlcvPeriod
+class Analysis {
+    List<Ohlcv> ohlcvs
+    Ohlcv ohlcv
+    List<Ema> shortEmas
+    Ema shortEma
+    List<Ema> longEmas
+    Ema longEma
+    List<Macd> macds
+    Macd macd
+    List<Rsi> rsis
+    Rsi rsi
+    List<Dmi> dmis
+    Dmi dmi
+    List<Obv> obvs
+    Obv obv
+    List<Co> cos
+    Co co
+}
 
+static def getAnalysis(Indicator indicator, Ohlcv.Type ohlcvType, int ohlcvPeriod) {
+    def analysis = new Analysis()
     // ohlcv
-    def ohlcvs = indicator.getOhlcvs(ohlcvType, ohlcvPeriod);
-    def prices = ohlcvs.collect{it.closePrice}
-    def price = prices.first()
-    def pricePctChange = tool.pctChange(prices.take(5))
-    log.debug("[{}] price: {}", name, price)
-    log.debug("[{}] pricePctChange: {}", name, pricePctChange)
-
-    // shortMa
-    def shortMas = indicator.calculate(EmaContext.of(10), ohlcvType, ohlcvPeriod)
-    def shortMa = shortMas.first()
-    def shortMaValues = shortMas.collect{it.value}
-    def shortMaValue = shortMaValues.first()
-    log.debug("[{}] shortMa: {}", name, shortMa)
-
-    // longMa
-    def longMas = indicator.calculate(EmaContext.of(30), ohlcvType, ohlcvPeriod)
-    def longMa = longMas.first()
-    def longMaValues = longMas.collect{it.value}
-    def longMaValue = longMaValues.first()
-    log.debug("[{}] longMa: {}", name, longMa)
-
+    analysis.ohlcvs = indicator.getOhlcvs(ohlcvType, ohlcvPeriod)
+    analysis.ohlcv = analysis.ohlcvs.first()
+    // shorEma
+    analysis.shortEmas = indicator.calculate(EmaContext.of(10), ohlcvType, ohlcvPeriod)
+    analysis.shortEma = analysis.shortEmas.first()
+    // longEma
+    analysis.longEmas = indicator.calculate(EmaContext.of(20), ohlcvType, ohlcvPeriod)
+    analysis.longEma = analysis.longEmas.first()
     // macd
-    def macds = indicator.calculate(MacdContext.DEFAULT, ohlcvType, ohlcvPeriod)
-    def macd = macds.first()
-    def macdValues = macds.collect{it.value}
-    def macdValue = macdValues.first()
-    def macdSignals = macds.collect{it.signal}
-    def macdSignal = macdSignals.first()
-    def macdOscillators = macds.collect{it.oscillator}
-    def macdOscillator = macdOscillators.first()
-    log.debug("[{}] macd: {}", name, macd)
-
+    analysis.macds = indicator.calculate(MacdContext.DEFAULT, ohlcvType, ohlcvPeriod)
+    analysis.macd = analysis.macds.first()
     // rsi
-    def rsis = indicator.calculate(RsiContext.DEFAULT, ohlcvType, ohlcvPeriod)
-    def rsi = rsis.first()
-    def rsiValues = rsis.collect{it.value}
-    def rsiValue = rsiValues.first()
-    def rsiSignals = rsis.collect{it.signal}
-    def rsiSignal = rsiSignals.first()
-    log.debug("[{}] rsi: {}", name, rsi)
-
+    analysis.rsis = indicator.calculate(RsiContext.DEFAULT, ohlcvType, ohlcvPeriod)
+    analysis.rsi = analysis.rsis.first()
     // dmi
-    def dmis = indicator.calculate(DmiContext.DEFAULT, ohlcvType, ohlcvPeriod)
-    def dmi = dmis.first()
-    def dmiPdis = dmis.collect{it.pdi}
-    def dmiPdi = dmiPdis.first()
-    def dmiMdis = dmis.collect{it.mdi}
-    def dmiMdi = dmiMdis.first()
-    def dmiAdxs = dmis.collect{it.adx}
-    def dmiAdx = dmiAdxs.first()
-    log.debug("[{}] dmi: {}", name, dmi)
-
+    analysis.dmis = indicator.calculate(DmiContext.DEFAULT, ohlcvType, ohlcvPeriod)
+    analysis.dmi = analysis.dmis.first()
     // obv
-    def obvs = indicator.calculate(ObvContext.DEFAULT, ohlcvType, ohlcvPeriod)
-    def obv = obvs.first()
-    def obvValues = obvs.collect{it.value}
-    def obvValue = obvValues.first()
-    def obvSignals = obv.collect{it.signal}
-    def obvSignal = obvSignals.first()
-    log.debug("[{}] obv:{}", name, obv)
-
+    analysis.obvs = indicator.calculate(ObvContext.DEFAULT, ohlcvType, ohlcvPeriod)
+    analysis.obv = analysis.obvs.first()
     // co
-    def cos = indicator.calculate(CoContext.DEFAULT, ohlcvType, ohlcvPeriod)
-    def co = cos.first()
-    def coValues = cos.collect{it.value}
-    def coValue = coValues.first()
-    def coSignals = cos.collect{it.signal}
-    def coSignal = coSignals.first()
-    log.debug("[{}] co: {}", name, co)
-
-    // result
-    def result = [:]
-    result.pricePctChange = (pricePctChange > 0 ? 100 : 0)
-    result.priceOverShortMa = (price > shortMaValue ? 100 : 0)
-    result.priceOverLongMaValue = (price > longMaValue ? 100 : 0)
-    result.shortMaValueOverLongMaValue = (shortMaValue > longMaValue ? 100 : 0)
-    result.macdValue = (macdValue > 0 ? 100 : 0)
-    result.macdValueOverSignal = (macdValue > macdSignal ? 100 : 0)
-    result.macdOscillator = (macdOscillator > 0 ? 100 : 0)
-    result.rsiValueOverSignal = (rsiValue > rsiSignal ? 100 : 0)
-    result.rsiValue = (rsiValue > 50 ? 100 : 0)
-    result.rsiValueOverBought = (rsiValue > 30 && rsiValue < rsiSignal ? 0 : 50)
-    result.rsiValueOverSell = (rsiValue < 30 && rsiValue > rsiSignal ? 100 : 50)
-    result.dmiPdiOverMdi = (dmiPdi > dmiMdi ? 100 : 0)
-    result.dmiAdx = (dmiAdx > 25 && dmiPdi > dmiMdi ? 100 : 0)
-    result.obvValueOverSignal = (obvValue > obvSignal ? 100 : 0)
-    result.coValueOverSignal = (coValue > coSignal ? 100 : 0)
-    result.coValue = (coValue > 0 ? 100 : 0)
-
+    analysis.cos = indicator.calculate(CoContext.DEFAULT, ohlcvType, ohlcvPeriod)
+    analysis.co = analysis.cos.first()
     // return
-    return result
+    return analysis
 }
 
-//=============================
-// defines
-//=============================
 def hold = null
-def assetId = assetIndicator.getAssetId()
-def assetName = assetIndicator.getAssetName()
-def assetAlias = "${assetName}(${assetId})"
-
-//=============================
-// analyze asset
-//=============================
-def assetAnalysis = [:]
-def assetAnalysisScores = []
-//assetAnalysis.minute = analyzeIndicator(assetIndicator, Ohlcv.Type.MINUTE, 1)
-//assetAnalysis.minute5 = analyzeIndicator(assetIndicator, Ohlcv.Type.MINUTE, 5)
-assetAnalysis.minute10 = analyzeIndicator(assetIndicator, Ohlcv.Type.MINUTE, 10)
-//assetAnalysis.minute30 = analyzeIndicator(assetIndicator, Ohlcv.Type.MINUTE, 30)
-assetAnalysis.minute60 = analyzeIndicator(assetIndicator, Ohlcv.Type.MINUTE, 60)
-assetAnalysis.daily = analyzeIndicator(assetIndicator, Ohlcv.Type.DAILY, 1)
-assetAnalysis.each { key, value ->
-    def average = value.values().average()
-    log.info("[{}] assetAnalysis.{}: {}", assetAlias, key, average)
-    assetAnalysisScores.add(average)
-}
-
-//=============================
-// analyze indice
-//=============================
-def indiceAnalysis = [:]
-def indiceAnalysisScores = []
-
-// USD/KRW (inverse)
-//indiceAnalysis.usdKrw = analyzeIndicator(indiceIndicators['USD_KRW'], Ohlcv.Type.MINUTE, 60)
-//indiceAnalysisScores.add(100 - (indiceAnalysis.usdKrw.values().average() as Number))
-
-// KOSPI
-//indiceAnalysis.kospi = analyzeIndicator(indiceIndicators['KOSPI'], Ohlcv.Type.MINUTE, 60)
-//indiceAnalysisScores.add(indiceAnalysis.kospi.values().average())
-
-// Nasdaq Future
-//indiceAnalysis.ndxFuture = analyzeIndicator(indiceIndicators['NDX_FUTURE'], Ohlcv.Type.MINUTE, 60)
-//indiceAnalysisScores.add(indiceAnalysis.ndxFuture.values().average())
-
-// logging
-indiceAnalysis.each { key, value ->
-    def average = value.values().average()
-    log.info("[{}] indiceAnalysis.{}: {}", assetAlias, key, average)
-}
-
-//=============================
-// decide hold
-//=============================
-def totalScores = []
-totalScores.addAll(assetAnalysisScores)
-totalScores.addAll(indiceAnalysisScores)
-
-// buy
-if(totalScores.average() > 70 && assetAnalysisScores.every{it > 50}) {
-    log.info("[{}] TotalScore over 70", assetAlias)
+def ohlcvs = assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 1)
+def prices = ohlcvs.collect{it.closePrice}
+log.info("###### prices: {}", prices)
+def zScore = tool.zScore(prices.take(10))
+log.info("########## zScore:{}", zScore)
+if(zScore < -2.0) {
     hold = 1
 }
-
-// sell
-if(totalScores.average() < 50) {
-    log.info("[{}] TotalScore is under 50", assetAlias)
+if(zScore > 0.0) {
     hold = 0
 }
+return hold
 
-//=============================
-// post processor
-//=============================
-// 1. early trading session, detect price dislocation(over-estimated gap-up/gap-down)
-//if(dateTime.toLocalTime().isBefore(LocalTime.of(9,30))) {
-//    log.info("[{}] filter price pctChange before 9:30", assetAlias)
-//    def yesterdayClosePrice = assetIndicator.getOhlcvs(Ohlcv.Type.DAILY,1)[1].closePrice
-//    def currentClosePrice = assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE,1).first().closePrice
-//    def initialPricePctChange = tool.pctChange([currentClosePrice, yesterdayClosePrice])
-//    log.info("[{}] closePricePctChange: {} -> {} ({}%)", assetAlias, yesterdayClosePrice, currentClosePrice, initialPricePctChange)
-//    if(initialPricePctChange.abs() > 2.0) {
-//        log.warn("[{}] initialPricePctChange is over 1.0%, skip process", assetAlias)
-//        hold = null
+//static def getMomentumScores(Analysis analysis) {
+//    def scores = [:]
+//    // ema
+//    scores.emaShortOverLong = analysis.shortEma.value > analysis.longEma.value ? 100 : 0
+//    // macd
+//    scores.maceValue = analysis.macd.value > 0 ? 100 : 0
+//    scores.macdValueOverSignal = analysis.macd.value > analysis.macd.signal ? 100 : 0
+//    scores.macdOscillator = analysis.macd.oscillator > 0 ? 100 : 0
+//    // rsi
+//    scores.rsiValue = analysis.rsi.value > 50 ? 100 : 0
+//    scores.rsiValueOverSignal = analysis.rsi.value > analysis.rsi.signal ? 100 : 0
+//    // dmi
+//    scores.dmiPdiOverMdi = analysis.dmi.pdi > analysis.dmi.mdi ? 100 : 0
+//    scores.dmiAdx = analysis.dmi.adx > 25 && analysis.dmi.pdi > analysis.dmi.mdi ? 100 : 0
+//    // obv
+//    scores.obvValueOverSignal = analysis.obv.value > analysis.obv.signal ? 100 : 0
+//    // co
+//    scores.coValue = analysis.co.value > 0 ? 100 : 0
+//    scores.coValueOverSignal = analysis.co.value > analysis.co.signal ? 100 : 0
+//    // return
+//    return scores
+//}
+//
+////def getDirectionScores(Analysis analysis) {
+////    def scores = getMomentumScores(analysis)
+////    def prices = analysis.ohlcvs.collect{it.closePrice}
+////    def price = prices.first()
+////    scores.pricePctChange = tool.pctChange(prices.take(5)) > 0.1 ? 100 : 0
+////    scores.priceOverShortEma = price > analysis.shortEma.value ? 100 : 0
+////    // return
+////    return scores
+////}
+//
+//// define
+//def hold = null
+//def assetId = assetIndicator.getAssetId()
+//def assetName = assetIndicator.getAssetName()
+//def assetAlias = "${assetName}(${assetId})"
+//def time = dateTime.toLocalTime()
+//
+//// analysis
+////def analysisMinute = getAnalysis(assetIndicator, Ohlcv.Type.MINUTE, 1)
+//def analysisMinute5 = getAnalysis(assetIndicator, Ohlcv.Type.MINUTE, 1)
+////def analysisMinute10 = getAnalysis(assetIndicator, Ohlcv.Type.MINUTE, 10)
+////def analysisDaily = getAnalysis(assetIndicator, Ohlcv.Type.DAILY, 1)
+//
+//// analysis score
+//def analysisScoresMinute5 = getMomentumScores(analysisMinute5)
+////def analysisScoresMinute10 = getMomentumScores(analysisMinute10)
+////def analysisScoresDaily = getMomentumScores(analysisDaily)
+//def analysisScoreMinute5 = analysisScoresMinute5.values().average()
+////def analysisScoreMinute10 = analysisScoresMinute10.values().average()
+////def analysisScoreDaily = analysisScoresDaily.values().average()
+////log.info("[{}] momentumScoresMinute5: {}", assetAlias, analysisScoresMinute60)
+////log.info("[{}] momentumScoresDaily: {}", assetAlias,  anallysisScoresDaily)
+////log.info("[{}] momentumScore: {}", assetAlias, momentumScore)
+//
+//// default buy
+//if (analysisScoreMinute5 > 70) {
+//    hold = 1
+//}
+//
+//// default sell
+//if (analysisScoreMinute5 < 60) {
+//    hold = 0
+//}
+
+// middle term
+if (time.isAfter(LocalTime.of(12,00))) {
+//    if (analysisScoreMinute5 > 70) {
+       hold = null
+//    }
+    if (analysisScoreMinute5 < 60) {
+        hold = 0
+    }
+}
+
+// middle term
+//if (time.isAfter(LocalTime.of(2,30))) {
+//    if (analysisScoreMinute5 > 70) {
+//       hold = 1
+//    }
+//    if (analysisScoreMinute5 < 60) {
+//        hold = 0
 //    }
 //}
 
-//==============================
+// post process
+if (time.isAfter(LocalTime.of(15,15))) {
+    hold = 0
+//    if(analysisScoreDaily > 70) {
+//        hold = 1
+//    }
+//    if(analysisScoreDaily < 60) {
+//        hold = 0
+//    }
+}
+
 // return
-//==============================
 return hold
+

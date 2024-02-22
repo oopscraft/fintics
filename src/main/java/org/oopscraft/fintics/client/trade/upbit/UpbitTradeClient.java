@@ -140,6 +140,11 @@ public class UpbitTradeClient extends TradeClient {
     }
 
     @Override
+    public BigDecimal getPriceTick(Asset asset, BigDecimal price) throws InterruptedException {
+        return null;
+    }
+
+    @Override
     public List<Ohlcv> getMinuteOhlcvs(Asset asset, LocalDateTime dateTime) throws InterruptedException {
         return getOhlcvs(asset, Ohlcv.Type.MINUTE);
     }

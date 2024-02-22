@@ -3,6 +3,7 @@ package org.oopscraft.fintics.client.trade;
 import lombok.Getter;
 import org.oopscraft.fintics.model.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Properties;
@@ -29,6 +30,8 @@ public abstract class TradeClient {
     public abstract List<Ohlcv> getDailyOhlcvs(Asset asset, LocalDateTime dateTime) throws InterruptedException;
 
     public abstract OrderBook getOrderBook(Asset asset) throws InterruptedException;
+
+    public abstract BigDecimal getPriceTick(Asset asset, BigDecimal price) throws InterruptedException;
 
     public abstract Balance getBalance() throws InterruptedException;
 

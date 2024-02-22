@@ -7,6 +7,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.oopscraft.fintics.model.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -101,6 +102,34 @@ class KrTradeClientTest {
         // then
         log.info("assets.size:{}", assets.size());
         assertTrue(assets.size() > 0);
+    }
+
+    @Test
+    void getPriceTickWithEtf() throws InterruptedException {
+        // given
+        Asset asset = Asset.builder()
+                .assetId("test")
+                .type("ETF")
+                .build();
+        BigDecimal price = BigDecimal.valueOf(30_000);
+        // when
+        BigDecimal etfPriceTick = krTradeClient.getPriceTick(asset, price);
+        // then
+        assertTrue(etfPriceTick.compareTo(BigDecimal.valueOf(5)) == 0);
+    }
+
+    @Test
+    void getPriceTickStock() throws InterruptedException {
+        // given
+        Asset asset = Asset.builder()
+                .assetId("test")
+                .type("STOCK")
+                .build();
+        BigDecimal price = BigDecimal.valueOf(200_000);
+        // when
+        BigDecimal etfPriceTick = krTradeClient.getPriceTick(asset, price);
+        // then
+        assertTrue(etfPriceTick.compareTo(BigDecimal.valueOf(100)) == 0);
     }
 
 }

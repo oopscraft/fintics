@@ -191,6 +191,10 @@ public class TradeExecutor {
                 // buy (exceedAmount is over zero)
                 if (exceededAmount.compareTo(BigDecimal.ZERO) > 0) {
                     BigDecimal price = orderBook.getAskPrice();
+                    BigDecimal priceTick = tradeClient.getPriceTick(tradeAsset, price);
+                    if(priceTick != null) {
+                        price = price.min(orderBook.getBidPrice().add(priceTick));
+                    }
                     BigDecimal quantity = exceededAmount.divide(price, MathContext.DECIMAL32);
                     buyTradeAsset(tradeClient, trade, tradeAsset, quantity, price);
                 }
@@ -198,6 +202,10 @@ public class TradeExecutor {
                 // sell (exceedAmount is under zero)
                 if (exceededAmount.compareTo(BigDecimal.ZERO) < 0) {
                     BigDecimal price = orderBook.getBidPrice();
+                    BigDecimal priceTick = tradeClient.getPriceTick(tradeAsset, price);
+                    if(priceTick != null) {
+                        price = price.max(orderBook.getAskPrice().subtract(priceTick));
+                    }
                     BigDecimal quantity = exceededAmount.abs().divide(price, MathContext.DECIMAL32);
                     // if holdConditionResult is zero, sell quantity is all
                     if (holdConditionResult.compareTo(BigDecimal.ZERO) == 0) {
