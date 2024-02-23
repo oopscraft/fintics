@@ -1,6 +1,11 @@
 package org.oopscraft.fintics.trade;
 
 import com.mitchtalmadge.asciidata.graph.ASCIIGraph;
+import org.oopscraft.fintics.calculator.CalculateContext;
+import org.oopscraft.fintics.calculator.CalculateResult;
+import org.oopscraft.fintics.calculator.Calculator;
+import org.oopscraft.fintics.calculator.CalculatorFactory;
+import org.oopscraft.fintics.model.Ohlcv;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -11,6 +16,20 @@ import java.util.List;
 import java.util.function.Supplier;
 
 public class Tool {
+
+    public <C extends CalculateContext, R extends CalculateResult> List<R> calculate(List<Ohlcv> ohlcvs, C context) {
+        // series
+        List<Ohlcv> series = new ArrayList<>(ohlcvs);
+        Collections.reverse(series);
+
+        // calculate
+        Calculator<C,R> calculator = CalculatorFactory.getCalculator(context);
+        List<R> calculateResults =  calculator.calculate(series);
+
+        // reverse and return
+        Collections.reverse(calculateResults);
+        return calculateResults;
+    }
 
     /**
      * calculates sum value

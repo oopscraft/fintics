@@ -3,6 +3,7 @@ package org.oopscraft.fintics.trade
 import org.oopscraft.fintics.calculator.*
 import org.oopscraft.fintics.model.*
 
+import java.time.LocalDate
 import java.time.LocalTime
 
 class Analysis {
@@ -54,18 +55,47 @@ static def getAnalysis(Indicator indicator, Ohlcv.Type ohlcvType, int ohlcvPerio
     return analysis
 }
 
+// dateTime.toLocalTime().getHour()
+
 def hold = null
-def ohlcvs = assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 1)
-def prices = ohlcvs.collect{it.closePrice}
-log.info("###### prices: {}", prices)
-def zScore = tool.zScore(prices.take(10))
-log.info("########## zScore:{}", zScore)
-if(zScore < -2.0) {
+def ohlcvs = assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 1).findAll{it.dateTime.toLocalDate().equals(dateTime.toLocalDate())}
+def period = 30 //ohlcvs.size()
+def prices = ohlcvs.collect{it.lowPrice}
+def priceZScore = tool.zScore(prices.take(period))
+def volumes = ohlcvs.collect{it.volume}
+def volumeZScore = tool.zScore(volumes.take(period))
+
+// macd
+def macds = tool.calculate(ohlcvs, MacdContext.DEFAULT)
+def macd = macds.first()
+def macdValue = macd.value
+def macdSignal = macd.signal
+def macdOscillator = macd.oscillator
+log.info("macd: {}", macd)
+
+
+
+if (priceZScore > 1.5) {
     hold = 1
 }
-if(zScore > 0.0) {
+if (priceZScore < 0.0) {
     hold = 0
 }
+
+if(dateTime.toLocalTime().isBefore(LocalTime.of(9,10))) {
+    hold = null
+}
+
+if (dateTime.toLocalTime().isAfter(LocalTime.of(12,0))) {
+    if (hold == 1) {
+        hold = null
+    }
+}
+
+if (dateTime.toLocalTime().isAfter(LocalTime.of(15,10))) {
+    hold = 0
+}
+
 return hold
 
 //static def getMomentumScores(Analysis analysis) {
