@@ -17,18 +17,51 @@ import java.util.function.Supplier;
 
 public class Tool {
 
-    public <C extends CalculateContext, R extends CalculateResult> List<R> calculate(List<Ohlcv> ohlcvs, C context) {
-        // series
-        List<Ohlcv> series = new ArrayList<>(ohlcvs);
-        Collections.reverse(series);
+    /**
+     * calculate exponential Moving average
+     * @param values data points (time descending)
+     * @return exponential moving average
+     */
+    public List<BigDecimal> emas(List<BigDecimal> values) {
+        List<BigDecimal> series = new ArrayList<>(values);
+        List<BigDecimal> emas = new ArrayList<>();
+        int period = series.size();
+        BigDecimal multiplier = BigDecimal.valueOf(2.0)
+                .divide(BigDecimal.valueOf(period + 1), MathContext.DECIMAL32);
+        BigDecimal ema = series.isEmpty() ? BigDecimal.ZERO : series.get(0);
+        emas.add(ema);
+        for (int i = 1; i < series.size(); i++) {
+            BigDecimal emaDiff = series.get(i).subtract(ema);
+            ema = emaDiff
+                    .multiply(multiplier, MathContext.DECIMAL32)
+                    .add(ema);
+            emas.add(ema);
+        }
+        return emas;
+    }
 
-        // calculate
-        Calculator<C,R> calculator = CalculatorFactory.getCalculator(context);
-        List<R> calculateResults =  calculator.calculate(series);
-
-        // reverse and return
-        Collections.reverse(calculateResults);
-        return calculateResults;
+    /**
+     * calculate simple moving average
+     * @param values data points (time descending)
+     * @return simple moving average
+     */
+    public List<BigDecimal> smas(List<BigDecimal> values) {
+        List<BigDecimal> series = new ArrayList<>(values);
+        List<BigDecimal> smas = new ArrayList<>();
+        int period = series.size();
+        for(int i = 0; i < series.size(); i ++) {
+            List<BigDecimal> periodSeries = series.subList(
+                    Math.max(i - period + 1, 0),
+                    i + 1
+            );
+            BigDecimal sum = BigDecimal.ZERO;
+            for(BigDecimal value : periodSeries) {
+                sum = sum.add(value);
+            }
+            BigDecimal sma = sum.divide(BigDecimal.valueOf(periodSeries.size()), MathContext.DECIMAL32);
+            smas.add(sma);
+        }
+        return smas;
     }
 
     /**
