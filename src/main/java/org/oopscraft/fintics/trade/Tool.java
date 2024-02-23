@@ -1,15 +1,9 @@
 package org.oopscraft.fintics.trade;
 
 import com.mitchtalmadge.asciidata.graph.ASCIIGraph;
-import org.oopscraft.fintics.calculator.CalculateContext;
-import org.oopscraft.fintics.calculator.CalculateResult;
-import org.oopscraft.fintics.calculator.Calculator;
-import org.oopscraft.fintics.calculator.CalculatorFactory;
-import org.oopscraft.fintics.model.Ohlcv;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -24,6 +18,7 @@ public class Tool {
      */
     public List<BigDecimal> emas(List<BigDecimal> values) {
         List<BigDecimal> series = new ArrayList<>(values);
+        Collections.reverse(series);
         List<BigDecimal> emas = new ArrayList<>();
         int period = series.size();
         BigDecimal multiplier = BigDecimal.valueOf(2.0)
@@ -37,6 +32,7 @@ public class Tool {
                     .add(ema);
             emas.add(ema);
         }
+        Collections.reverse(emas);
         return emas;
     }
 
@@ -47,6 +43,7 @@ public class Tool {
      */
     public List<BigDecimal> smas(List<BigDecimal> values) {
         List<BigDecimal> series = new ArrayList<>(values);
+        Collections.reverse(series);
         List<BigDecimal> smas = new ArrayList<>();
         int period = series.size();
         for(int i = 0; i < series.size(); i ++) {
@@ -61,6 +58,7 @@ public class Tool {
             BigDecimal sma = sum.divide(BigDecimal.valueOf(periodSeries.size()), MathContext.DECIMAL32);
             smas.add(sma);
         }
+        Collections.reverse(smas);
         return smas;
     }
 

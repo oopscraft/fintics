@@ -83,36 +83,40 @@ def ohlcvs = assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 1).findAll{it.dateTime.
 
 // price
 def prices = ohlcvs.collect{it.closePrice}
+def priceZScore = tool.zScore(prices.take(20))
 def priceEmas = tool.emas(prices.take(20))
-def priceZScore = tool.zScore(priceEmas.take(20))
-log.info("[{}] priceEmas: {}", assetName, priceEmas)
+def pricePctChange = tool.pctChange(priceEmas.take(20))
 log.info("[{}] priceZScore: {}", assetName, priceZScore)
+log.info("[{}] pricePctChange: {}", assetName, pricePctChange)
+log.info("[{}] priceEmas: {}", assetName, priceEmas)
 
 // volume
 def volumes = ohlcvs.collect{it.volume}
+def volumeZScore = tool.zScore(volumes.take(20))
 def volumeEmas = tool.emas(volumes.take(20))
-def volumeZScore = tool.zScore(volumeEmas.take(20))
-log.info("[{}] volumeEmas: {}", assetName, volumes)
+def volumePctChange = tool.pctChange(prices.take(20))
 log.info("[{}] volumeZScore: {}", assetName, volumeZScore)
+log.info("[{}] volumePctChange: {}", assetName, volumePctChange)
+log.info("[{}] volumeEmas: {}", assetName, volumes)
 
 // analysis
-def analysis = getAnalysis(assetIndicator, Ohlcv.Type.MINUTE, 1)
-def analysisScore = analysis.getScore()
-log.info("[{}] analysis: {}", assetName, analysis)
-log.info("[{}] analysisScore(): {}", assetName, analysisScore)
+//def analysis = getAnalysis(assetIndicator, Ohlcv.Type.MINUTE, 1)
+//def analysisScore = analysis.getScore()
+//log.info("[{}] analysis: {}", assetName, analysis)
+//log.info("[{}] analysisScore(): {}", assetName, analysisScore)
 
 // buy
-if(priceZScore > 2.0) {
-    if (analysisScore > 75) {
+if(priceZScore > 2.0 && pricePctChange > 0.0) {
+//    if (analysisScore > 75) {
         hold = 1
-    }
+//    }
 }
 
 // sell
-if(priceZScore < -2.0) {
-    if (analysisScore < 50) {
+if(priceZScore < -2.0 && pricePctChange < 0.0) {
+//    if (analysisScore < 50) {
         hold = 0
-    }
+//    }
 }
 
 // time range
