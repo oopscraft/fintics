@@ -29,42 +29,43 @@ class Analysis {
 }
 
 
-def getAnalysis(Indicator indicator, Ohlcv.Type ohlcvType, int ohlcvPeriod) {
+def getAnalysis(Ohlcv.Type ohlcvType, int ohlcvPeriod) {
     def analysis = new Analysis()
+    def ohlcvs = assetIndicator.getOhlcvs(ohlcvType, ohlcvPeriod)
 
     // ema
-    def shortEmas = indicator.calculate(EmaContext.of(10), ohlcvType, ohlcvPeriod)
-    def longEmas = indicator.calculate(EmaContext.of(30), ohlcvType, ohlcvPeriod)
+    def shortEmas = tool.calculate(ohlcvs, EmaContext.of(10))
+    def longEmas = tool.calculate(ohlcvs, EmaContext.of(30))
     def shortEma = shortEmas.first()
     def longEma = longEmas.first()
     analysis.emaValueShortOverLong = (shortEma.value > longEma.value ? 100 : 0)
 
     // macd
-    def macds = indicator.calculate(MacdContext.DEFAULT, ohlcvType, ohlcvPeriod)
+    def macds = tool.calculate(ohlcvs, MacdContext.DEFAULT)
     def macd = macds.first()
     analysis.macdValue = (macd.value > 0 ? 100 : 0)
     analysis.macdValueOverSignal = (macd.value > macd.signal ? 100 : 0)
     analysis.macdOscillator = (macd.oscillator > 0 ? 100 : 0)
 
     // rsi
-    def rsis = indicator.calculate(RsiContext.DEFAULT, ohlcvType, ohlcvPeriod)
+    def rsis = tool.calculate(ohlcvs, RsiContext.DEFAULT)
     def rsi = rsis.first()
     analysis.rsiValue = (rsi.value > 0 ? 100 : 0)
     analysis.rsiValueOverSignal = (rsi.value > rsi.signal ? 100 : 0)
 
     // dmi
-    def dmis = indicator.calculate(DmiContext.DEFAULT, ohlcvType, ohlcvPeriod)
+    def dmis = tool.calculate(ohlcvs, DmiContext.DEFAULT)
     def dmi = dmis.first()
     analysis.dmiPdiOverMdi = (dmi.pdi > dmi.mdi ? 100 : 0)
     analysis.dmiAdx = (dmi.adx > 20 && dmi.pdi > dmi.mdi ? 100 : 0)
 
     // obv
-    def obvs = indicator.calculate(ObvContext.DEFAULT, ohlcvType, ohlcvPeriod)
+    def obvs = tool.calculate(ohlcvs, ObvContext.DEFAULT)
     def obv = obvs.first()
     analysis.obvValueOverSignal = (obv.value > obv.signal ? 100 : 0)
 
     // co
-    def cos = indicator.calculate(CoContext.DEFAULT, ohlcvType, ohlcvPeriod)
+    def cos = tool.calculate(ohlcvs, CoContext.DEFAULT)
     def co = cos.first()
     analysis.coValue = (co.value > 0 ? 100 : 0)
     analysis.coValueOverSignal = (co.value > co.signal ? 100 : 0)
@@ -84,20 +85,7 @@ def ohlcvs = assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 1).findAll{it.dateTime.
 // price
 def prices = ohlcvs.collect{it.closePrice}
 def priceZScore = tool.zScore(prices.take(20))
-def priceEmas = tool.emas(prices.take(20))
-def pricePctChange = tool.pctChange(priceEmas.take(20))
 log.info("[{}] priceZScore: {}", assetName, priceZScore)
-log.info("[{}] pricePctChange: {}", assetName, pricePctChange)
-log.info("[{}] priceEmas: {}", assetName, priceEmas)
-
-// volume
-def volumes = ohlcvs.collect{it.volume}
-def volumeZScore = tool.zScore(volumes.take(20))
-def volumeEmas = tool.emas(volumes.take(20))
-def volumePctChange = tool.pctChange(prices.take(20))
-log.info("[{}] volumeZScore: {}", assetName, volumeZScore)
-log.info("[{}] volumePctChange: {}", assetName, volumePctChange)
-log.info("[{}] volumeEmas: {}", assetName, volumes)
 
 // analysis
 //def analysis = getAnalysis(assetIndicator, Ohlcv.Type.MINUTE, 1)
@@ -106,17 +94,19 @@ log.info("[{}] volumeEmas: {}", assetName, volumes)
 //log.info("[{}] analysisScore(): {}", assetName, analysisScore)
 
 // buy
-if(priceZScore > 2.0 && pricePctChange > 0.0) {
-//    if (analysisScore > 75) {
+if(priceZScore > 2.0) {
+    def analysis = getAnalysis(Ohlcv.Type.MINUTE, 1)
+    if (analysis.getScore() > 75) {
         hold = 1
-//    }
+    }
 }
 
 // sell
-if(priceZScore < -2.0 && pricePctChange < 0.0) {
-//    if (analysisScore < 50) {
+if(priceZScore < -2.0) {
+    def analysis = getAnalysis(Ohlcv.Type.MINUTE, 1)
+    if (analysis.getScore() < 50) {
         hold = 0
-//    }
+    }
 }
 
 // time range
