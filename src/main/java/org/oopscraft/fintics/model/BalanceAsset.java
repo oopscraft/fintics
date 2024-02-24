@@ -4,6 +4,8 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -27,5 +29,11 @@ public class BalanceAsset extends Asset {
     private BigDecimal valuationAmount;
 
     private BigDecimal profitAmount;
+
+    public BigDecimal getProfitPercentage() {
+        return getProfitAmount().divide(getPurchaseAmount(), MathContext.DECIMAL32)
+                .multiply(BigDecimal.valueOf(100))
+                .setScale(2, RoundingMode.HALF_UP);
+    }
 
 }

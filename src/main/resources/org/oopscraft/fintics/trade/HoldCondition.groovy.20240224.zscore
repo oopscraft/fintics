@@ -35,13 +35,9 @@ class Analysis {
 }
 
 
-def getAnalysis(Ohlcv.Type ohlcvType, int ohlcvPeriod) {
+def getAnalysis(List<Ohlcv> ohlcvs) {
     def analysis = new Analysis()
-    def pctChangePeriod = 3
-
-    // ohlcv
-    def ohlcvs = assetIndicator.getOhlcvs(ohlcvType, ohlcvPeriod)
-//            .findAll{it.dateTime.toLocalDate().equals(dateTime.toLocalDate())}
+    def pctChangePeriod = 10
 
     // ema
     def shortEmas = tool.calculate(ohlcvs, EmaContext.of(10))
@@ -96,68 +92,66 @@ def getAnalysis(Ohlcv.Type ohlcvType, int ohlcvPeriod) {
     return analysis
 }
 
-
-// defines
 def hold = null
 def assetId = assetIndicator.getAssetId()
 def assetName = "${assetIndicator.getAssetName()}(${assetId})"
 
-// analysis
-def analysis = [:]
-//analysis.minute = getAnalysis(Ohlcv.Type.MINUTE, 1)
-//analysis.minute3 = getAnalysis(Ohlcv.Type.MINUTE, 5)
-analysis.minute10 = getAnalysis(Ohlcv.Type.MINUTE, 10)
-analysis.minute60 = getAnalysis(Ohlcv.Type.MINUTE, 60)
-analysis.daily = getAnalysis(Ohlcv.Type.DAILY, 1)
+// for test
+if (dateTime.toLocalTime().isAfter(LocalTime.of(11,0))) {
+    BalanceAsset balanceAsset = balance.getBalanceAsset(assetId).orElse(null)
+    if(balanceAsset == null) {
+        return null
+    }
+}
 
-// analysis scores
-def analysisScores = []
-analysis.each(it -> {
-    def key = it.getKey()
-    def value = it.getValue() as Analysis
-    analysisScores.add(value.getScore())
-})
-log.info("[{}] analysisScore: {}", assetName, analysisScores)
+def ohlcvs = assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 1).findAll{it.dateTime.toLocalDate().equals(dateTime.toLocalDate())}
+def prices = ohlcvs.collect{it.closePrice}
+def priceZScore = tool.zScore(prices.take(20))
+log.info("priceZScore: {}", priceZScore)
 
-// analysis scores average
-def analysisScore = analysisScores.average()
-
+def analysisPeriod = dateTime.getHour() - 8
+analysisPeriod = 1
+def analysisOhlcvs = assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, analysisPeriod)
+        .findAll{it.dateTime.toLocalDate().equals(dateTime.toLocalDate())}
+def analysis = getAnalysis(analysisOhlcvs)
+def analysisScore = analysis.getScore()
 
 // buy
-if(analysisScore > 70) {
+if (priceZScore > 2.0 && analysisScore > 70) {
     hold = 1
 }
 
-if(analysisScore < 60) {
+// check
+if (priceZScore < 0.0 && analysisScore < 60) {
     BalanceAsset balanceAsset = balance.getBalanceAsset(assetId).orElse(null)
     log.info("######## balanceAsset: {}", balanceAsset)
     if(balanceAsset != null) {
         def profitPercentage = balanceAsset.getProfitPercentage();
         log.info("########## profitPercentage: {}", profitPercentage)
-        if(profitPercentage > 1.0) {
+        if(profitPercentage > 0.5) {
             hold = 0
         }
     }
 }
 
 // sell
-if(analysisScore < 50) {
+if (priceZScore < -2.0 && analysisScore < 50) {
     hold = 0
 }
 
-//if(dateTime.toLocalTime().isBefore(LocalTime.of(9,10))) {
+//if (dateTime.toLocalTime().isBefore(LocalTime.of(9,20))) {
 //    hold = null
 //}
-//
-//if (dateTime.toLocalTime().isAfter(LocalTime.of(12,0))) {
-//    if (hold == 1) {
-//        hold = null
-//    }
-//}
 
-//if (dateTime.toLocalTime().isAfter(LocalTime.of(15,10))) {
-//    hold = 0
-//}
+if (dateTime.toLocalTime().isAfter(LocalTime.of(11,0))) {
+    if (hold == 1) {
+        hold = null
+    }
+}
 
-// return
+if (dateTime.toLocalTime().isAfter(LocalTime.of(15,10))) {
+    hold = 0
+}
+
 return hold
+

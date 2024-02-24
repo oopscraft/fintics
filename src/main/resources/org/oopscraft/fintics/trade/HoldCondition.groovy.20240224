@@ -1,5 +1,3 @@
-package org.oopscraft.fintics.trade
-
 import groovy.transform.ToString
 import org.oopscraft.fintics.calculator.*
 import org.oopscraft.fintics.model.*
@@ -11,19 +9,15 @@ import java.time.LocalTime
 class Analysis {
     def emaValueShortOverLong
     def macdValue
-    def macdValuePctChange
     def macdValueOverSignal
     def macdOscillator
     def rsiValue
-    def rsiValuePctChange
     def rsiValueOverSignal
     def dmiPdiOverMdi
     def dmiAdx
     def obvValueOverSignal
-    def obvValuePctChange
     def coValue
     def coValueOverSignal
-    def coValuePctChange
 
     def getScore() {
         def average = this.properties.values()
@@ -35,13 +29,9 @@ class Analysis {
 }
 
 
-def getAnalysis(Ohlcv.Type ohlcvType, int ohlcvPeriod) {
+def getAnalysis(ohlcvType, ohlcvPeriod) {
     def analysis = new Analysis()
-    def pctChangePeriod = 3
-
-    // ohlcv
-    def ohlcvs = assetIndicator.getOhlcvs(ohlcvType, ohlcvPeriod)
-//            .findAll{it.dateTime.toLocalDate().equals(dateTime.toLocalDate())}
+    def ohlcvs = assetIndicator.getOhlcvs(ohlcvType, ohlcvPeriod).findAll{it.dateTime.toLocalDate().equals(dateTime.toLocalDate())}
 
     // ema
     def shortEmas = tool.calculate(ohlcvs, EmaContext.of(10))
@@ -53,21 +43,15 @@ def getAnalysis(Ohlcv.Type ohlcvType, int ohlcvPeriod) {
     // macd
     def macds = tool.calculate(ohlcvs, MacdContext.DEFAULT)
     def macd = macds.first()
-    def macdValues = macds.collect{it.value}
-    def macdValuePctChange = tool.pctChange(macdValues.take(pctChangePeriod))
     analysis.macdValue = (macd.value > 0 ? 100 : 0)
     analysis.macdValueOverSignal = (macd.value > macd.signal ? 100 : 0)
     analysis.macdOscillator = (macd.oscillator > 0 ? 100 : 0)
-    analysis.macdValuePctChange = (macdValuePctChange > 0 ? 100 : 0)
 
     // rsi
     def rsis = tool.calculate(ohlcvs, RsiContext.DEFAULT)
     def rsi = rsis.first()
-    def rsiValues = rsis.collect{it.value}
-    def rsiValuePctChange = tool.pctChange(rsiValues.take(pctChangePeriod))
     analysis.rsiValue = (rsi.value > 0 ? 100 : 0)
     analysis.rsiValueOverSignal = (rsi.value > rsi.signal ? 100 : 0)
-    analysis.rsiValuePctChange = (rsiValuePctChange > 0 ? 100 : 0)
 
     // dmi
     def dmis = tool.calculate(ohlcvs, DmiContext.DEFAULT)
@@ -78,24 +62,17 @@ def getAnalysis(Ohlcv.Type ohlcvType, int ohlcvPeriod) {
     // obv
     def obvs = tool.calculate(ohlcvs, ObvContext.DEFAULT)
     def obv = obvs.first()
-    def obvValues = obvs.collect{it.value}
-    def obvValuePctChange = tool.pctChange(obvValues.take(pctChangePeriod))
     analysis.obvValueOverSignal = (obv.value > obv.signal ? 100 : 0)
-    analysis.obvValuePctChange = (obvValuePctChange > 0 ? 100 : 0)
 
     // co
     def cos = tool.calculate(ohlcvs, CoContext.DEFAULT)
     def co = cos.first()
-    def coValues = cos.collect{it.value}
-    def coValuePctChange = tool.pctChange(coValues.take(pctChangePeriod))
     analysis.coValue = (co.value > 0 ? 100 : 0)
     analysis.coValueOverSignal = (co.value > co.signal ? 100 : 0)
-    analysis.coValuePctChange = (coValuePctChange > 0 ? 100 : 0)
 
     // return
     return analysis
 }
-
 
 // defines
 def hold = null
@@ -104,11 +81,9 @@ def assetName = "${assetIndicator.getAssetName()}(${assetId})"
 
 // analysis
 def analysis = [:]
-//analysis.minute = getAnalysis(Ohlcv.Type.MINUTE, 1)
-//analysis.minute3 = getAnalysis(Ohlcv.Type.MINUTE, 5)
 analysis.minute10 = getAnalysis(Ohlcv.Type.MINUTE, 10)
-analysis.minute60 = getAnalysis(Ohlcv.Type.MINUTE, 60)
-analysis.daily = getAnalysis(Ohlcv.Type.DAILY, 1)
+//analysis.minute60 = getAnalysis(Ohlcv.Type.MINUTE, 60)
+//analysis.daily = getAnalysis(Ohlcv.Type.DAILY, 1)
 
 // analysis scores
 def analysisScores = []
@@ -122,42 +97,41 @@ log.info("[{}] analysisScore: {}", assetName, analysisScores)
 // analysis scores average
 def analysisScore = analysisScores.average()
 
-
 // buy
-if(analysisScore > 70) {
+if(analysisScore > 80) {
     hold = 1
 }
 
-if(analysisScore < 60) {
+if(analysisScore < 70) {
     BalanceAsset balanceAsset = balance.getBalanceAsset(assetId).orElse(null)
     log.info("######## balanceAsset: {}", balanceAsset)
     if(balanceAsset != null) {
         def profitPercentage = balanceAsset.getProfitPercentage();
         log.info("########## profitPercentage: {}", profitPercentage)
-        if(profitPercentage > 1.0) {
+        if(profitPercentage > 0.5) {
             hold = 0
         }
     }
 }
 
 // sell
-if(analysisScore < 50) {
+if(analysisScore < 60) {
     hold = 0
 }
 
-//if(dateTime.toLocalTime().isBefore(LocalTime.of(9,10))) {
-//    hold = null
-//}
-//
-//if (dateTime.toLocalTime().isAfter(LocalTime.of(12,0))) {
-//    if (hold == 1) {
-//        hold = null
-//    }
-//}
+if(dateTime.toLocalTime().isBefore(LocalTime.of(9,10))) {
+    hold = null
+}
 
-//if (dateTime.toLocalTime().isAfter(LocalTime.of(15,10))) {
-//    hold = 0
-//}
+if (dateTime.toLocalTime().isAfter(LocalTime.of(12,0))) {
+    if (hold == 1) {
+        hold = null
+    }
+}
+
+if (dateTime.toLocalTime().isAfter(LocalTime.of(15,10))) {
+    hold = 0
+}
 
 // return
 return hold
