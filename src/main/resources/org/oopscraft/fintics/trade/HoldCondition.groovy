@@ -1,100 +1,91 @@
-package org.oopscraft.fintics.trade
-
 import groovy.transform.ToString
 import org.oopscraft.fintics.calculator.*
 import org.oopscraft.fintics.model.*
 
 import java.math.RoundingMode
-import java.time.LocalTime
 
 @ToString(includeNames = true)
 class Analysis {
+    List<Ohlcv> ohlcvs
+    List<Ema> shortEmas
+    List<Ema> longEmas
+    List<Macd> macds
+    List<Rsi> rsis
+    List<Dmi> dmis
+    List<Obv> obvs
+    List<Co> cos
+}
+
+def getAnalysis(List<Ohlcv> ohlcvs) {
+    def analysis = new Analysis()
+    analysis.ohlcvs = ohlcvs
+    analysis.shortEmas = tool.calculate(ohlcvs, EmaContext.of(5))
+    analysis.longEmas = tool.calculate(ohlcvs, EmaContext.of(20))
+    analysis.macds = tool.calculate(ohlcvs, MacdContext.DEFAULT)
+    analysis.rsis = tool.calculate(ohlcvs, RsiContext.DEFAULT)
+    analysis.dmis = tool.calculate(ohlcvs, DmiContext.DEFAULT)
+    analysis.obvs = tool.calculate(ohlcvs, ObvContext.DEFAULT)
+    analysis.cos = tool.calculate(ohlcvs, CoContext.DEFAULT)
+    return analysis
+}
+
+@ToString(includeNames = true)
+class MomentumScore {
     def emaValueShortOverLong
     def macdValue
-    def macdValuePctChange
+    def macdSignal
     def macdValueOverSignal
     def macdOscillator
     def rsiValue
-    def rsiValuePctChange
+    def rsiSignal
     def rsiValueOverSignal
     def dmiPdiOverMdi
     def dmiAdx
     def obvValueOverSignal
-    def obvValuePctChange
     def coValue
-    def coValueOverSignal
-    def coValuePctChange
-
-    def getScore() {
-        def average = this.properties.values()
-                .findAll{it instanceof Number}
-                .average()
-        return BigDecimal.valueOf(average)
-                .setScale(2, RoundingMode.HALF_UP)
-    }
+    def coSignal
 }
 
-
-def getAnalysis(Ohlcv.Type ohlcvType, int ohlcvPeriod) {
-    def analysis = new Analysis()
-    def pctChangePeriod = 3
-
-    // ohlcv
-    def ohlcvs = assetIndicator.getOhlcvs(ohlcvType, ohlcvPeriod)
-//            .findAll{it.dateTime.toLocalDate().equals(dateTime.toLocalDate())}
-
+static def getMomentumScore(Analysis analysis) {
+    def momentumScore = new MomentumScore()
     // ema
-    def shortEmas = tool.calculate(ohlcvs, EmaContext.of(10))
-    def longEmas = tool.calculate(ohlcvs, EmaContext.of(20))
-    def shortEma = shortEmas.first()
-    def longEma = longEmas.first()
-    analysis.emaValueShortOverLong = (shortEma.value > longEma.value ? 100 : 0)
-
+    def shortEma = analysis.shortEmas.first()
+    def longEma = analysis.longEmas.first()
+    momentumScore.emaValueShortOverLong = shortEma.value > longEma.value ? 100 : 0
     // macd
-    def macds = tool.calculate(ohlcvs, MacdContext.DEFAULT)
-    def macd = macds.first()
-    def macdValues = macds.collect{it.value}
-    def macdValuePctChange = tool.pctChange(macdValues.take(pctChangePeriod))
-    analysis.macdValue = (macd.value > 0 ? 100 : 0)
-    analysis.macdValueOverSignal = (macd.value > macd.signal ? 100 : 0)
-    analysis.macdOscillator = (macd.oscillator > 0 ? 100 : 0)
-    analysis.macdValuePctChange = (macdValuePctChange > 0 ? 100 : 0)
-
+    def macd = analysis.macds.first()
+    momentumScore.macdValue = macd.value > 0 ? 100 : 0
+    momentumScore.macdSignal = macd.value > 0 ? 100 : 0
+    momentumScore.macdOscillator = macd.oscillator > 0 ? 100 : 0
+    momentumScore.macdValueOverSignal = macd.value > macd.oscillator ? 100 : 0
     // rsi
-    def rsis = tool.calculate(ohlcvs, RsiContext.DEFAULT)
-    def rsi = rsis.first()
-    def rsiValues = rsis.collect{it.value}
-    def rsiValuePctChange = tool.pctChange(rsiValues.take(pctChangePeriod))
-    analysis.rsiValue = (rsi.value > 0 ? 100 : 0)
-    analysis.rsiValueOverSignal = (rsi.value > rsi.signal ? 100 : 0)
-    analysis.rsiValuePctChange = (rsiValuePctChange > 0 ? 100 : 0)
-
+    def rsi = analysis.rsis.first()
+    momentumScore.rsiValue = rsi.value > 50 ? 100 : 0
+    momentumScore.rsiSignal = rsi.signal > 50 ? 100 : 0
+    momentumScore.rsiValueOverSignal = rsi.value > rsi.signal ? 100 : 0
     // dmi
-    def dmis = tool.calculate(ohlcvs, DmiContext.DEFAULT)
-    def dmi = dmis.first()
-    analysis.dmiPdiOverMdi = (dmi.pdi > dmi.mdi ? 100 : 0)
-    analysis.dmiAdx = (dmi.adx > 20 && dmi.pdi > dmi.mdi ? 100 : 0)
-
+    def dmi = analysis.dmis.first()
+    momentumScore.dmiPdiOverMdi = dmi.pdi > dmi.mdi ? 100 : 0
+    momentumScore.dmiAdx = dmi.adx > 20 && dmi.pdi > dmi.mdi ? 100 : 0
     // obv
-    def obvs = tool.calculate(ohlcvs, ObvContext.DEFAULT)
-    def obv = obvs.first()
-    def obvValues = obvs.collect{it.value}
-    def obvValuePctChange = tool.pctChange(obvValues.take(pctChangePeriod))
-    analysis.obvValueOverSignal = (obv.value > obv.signal ? 100 : 0)
-    analysis.obvValuePctChange = (obvValuePctChange > 0 ? 100 : 0)
-
+    def obv = analysis.obvs.first()
+    momentumScore.obvValueOverSignal = obv.value > obv.signal ? 100 : 0
     // co
-    def cos = tool.calculate(ohlcvs, CoContext.DEFAULT)
-    def co = cos.first()
-    def coValues = cos.collect{it.value}
-    def coValuePctChange = tool.pctChange(coValues.take(pctChangePeriod))
-    analysis.coValue = (co.value > 0 ? 100 : 0)
-    analysis.coValueOverSignal = (co.value > co.signal ? 100 : 0)
-    analysis.coValuePctChange = (coValuePctChange > 0 ? 100 : 0)
-
+    def co = analysis.cos.first()
+    momentumScore.coValue = co.value > 0 ? 100 : 0
+    momentumScore.coSignal = co.signal > 0 ? 100 : 0
     // return
-    return analysis
+    return momentumScore
 }
+
+static def getScoreAverage(score) {
+    def average = score.properties.values()
+            .findAll{it instanceof Number}
+            .average()
+    return BigDecimal.valueOf(average)
+            .setScale(2, RoundingMode.HALF_UP)
+}
+
 
 
 // defines
@@ -102,62 +93,133 @@ def hold = null
 def assetId = assetIndicator.getAssetId()
 def assetName = "${assetIndicator.getAssetName()}(${assetId})"
 
-// analysis
-def analysis = [:]
-//analysis.minute = getAnalysis(Ohlcv.Type.MINUTE, 1)
-//analysis.minute3 = getAnalysis(Ohlcv.Type.MINUTE, 5)
-analysis.minute10 = getAnalysis(Ohlcv.Type.MINUTE, 10)
-analysis.minute60 = getAnalysis(Ohlcv.Type.MINUTE, 60)
-analysis.daily = getAnalysis(Ohlcv.Type.DAILY, 1)
 
-// analysis scores
-def analysisScores = []
-analysis.each(it -> {
-    def key = it.getKey()
-    def value = it.getValue() as Analysis
-    analysisScores.add(value.getScore())
-})
-log.info("[{}] analysisScore: {}", assetName, analysisScores)
-
-// analysis scores average
-def analysisScore = analysisScores.average()
+// ohlcv
+List<Ohlcv> ohlcvs = assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 1)
+def prices = ohlcvs.collect{it.closePrice}
+def price = prices.first()
+def priceSma = tool.sma(prices.take(20))
+def priceZScore = tool.zScore(prices.take(20))
 
 
-// buy
-if(analysisScore > 70) {
-    hold = 1
-}
-
-if(analysisScore < 60) {
-    BalanceAsset balanceAsset = balance.getBalanceAsset(assetId).orElse(null)
-    log.info("######## balanceAsset: {}", balanceAsset)
-    if(balanceAsset != null) {
-        def profitPercentage = balanceAsset.getProfitPercentage();
-        log.info("########## profitPercentage: {}", profitPercentage)
-        if(profitPercentage > 1.0) {
-            hold = 0
-        }
+if (price > priceSma) {
+    if(priceZScore < 0.5) {
+        hold = 1
+    }
+    if(priceZScore > 1.5) {
+        hold = 0
     }
 }
 
-// sell
-if(analysisScore < 50) {
+// fallback
+if (price < priceSma) {
     hold = 0
 }
 
-//if(dateTime.toLocalTime().isBefore(LocalTime.of(9,10))) {
-//    hold = null
+// return
+return hold
+
+////====================================
+//// momentum
+////====================================
+//// analysis
+//def analysises = [
+//        minute: getAnalysis(assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 10)),
+////        hourly : getAnalysis(assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 60)),
+////        daily : getAnalysis(assetIndicator.getOhlcvs(Ohlcv.Type.DAILY, 1))
+//]
+//// momentum score
+//def momentumScores = [
+//        minute: getMomentumScore(analysises.minute),
+////        hourly: getMomentumScore(analysises.hourly),
+////        daily: getMomentumScore(analysises.daily)
+//]
+//def momentumScoreAverage = momentumScores.collect{it.value.getAverage()}.average()
+//momentumScores.each{key, value ->
+//    log.info("[{}] momentumScores.{}: {}", assetName, key, value)
 //}
+//log.info("[{}] momentumScoreAverage: {}", assetName, momentumScoreAverage)
 //
-//if (dateTime.toLocalTime().isAfter(LocalTime.of(12,0))) {
-//    if (hold == 1) {
-//        hold = null
-//    }
+//// rsi
+//def rsis = tool.calculate(ohlcvs, RsiContext.DEFAULT)
+//def rsi = rsis.first()
+//def rsiValue = rsi.value
+//def rsiSignal = rsi.signal
+//log.info("======== rsiValue: {}", rsiValue)
+//log.info("======== rsiSignal: {}", rsiSignal)
+
+//if(momentumScoreAverage > 50) {
+    if (priceZScore > 2.0) {
+        if (buyScoreAverage > 70) {
+            hold = 1
+        }
+    }
+    if (priceZScore < -2.0) {
+        if (sellScoreAverage > 70) {
+            hold = 0
+        }
+    }
 //}
 
-//if (dateTime.toLocalTime().isAfter(LocalTime.of(15,10))) {
-//    hold = 0
+// sell
+//if(balanceAsset != null) {
+//    if (momentumScoreAverage < 50) {
+//        hold = 0
+//    }
 //}
 
 // return
 return hold
+
+
+////===================================
+//// phase-1
+////===================================
+//if (dateTime.toLocalTime().isAfter(LocalTime.of(9,10))) {
+//    // default buy
+//    if (priceZScore > 1.5) {
+//        if (momentumScoreAverage > 70) {
+//            hold = 1
+//        }
+//    }
+//    // default sell
+//    if (priceZScore < -1.5) {
+//        if (momentumScoreAverage < 50) {
+//            hold = 0
+//        }
+//    }
+//}
+//
+////====================================
+//// phase-2
+////====================================
+//if (dateTime.toLocalTime().isAfter(LocalTime.of(11,0))) {
+//    if (hold == 1) {
+//        hold = null
+//    }
+//}
+//
+////====================================
+//// phase-3
+////====================================
+//if (dateTime.toLocalTime().isAfter(LocalTime.of(15,10))) {
+//    // buy
+//    if (longMomentumScoreAverage > 70) {
+//        hold = 1
+//    }
+//    // sell
+//    if (longMomentumScoreAverage < 50) {
+//        hold = 0
+//    }
+//}
+//
+////====================================
+//// default fallback
+////====================================
+//if(longMomentumScoreAverage < 50) {
+//     hold = 0
+//}
+//
+//// return
+//return hold
+

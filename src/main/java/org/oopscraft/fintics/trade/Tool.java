@@ -63,6 +63,11 @@ public class Tool {
         return emas;
     }
 
+    public BigDecimal ema(List<BigDecimal> values) {
+        List<BigDecimal> emas = emas(values);
+        return emas.get(0);
+    }
+
     /**
      * calculate simple moving average
      * @param values data points (time descending)
@@ -87,6 +92,11 @@ public class Tool {
         }
         Collections.reverse(smas);
         return smas;
+    }
+
+    public BigDecimal sma(List<BigDecimal> values) {
+        List<BigDecimal> smas = smas(values);
+        return smas.get(0);
     }
 
     /**
