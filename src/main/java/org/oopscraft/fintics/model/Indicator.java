@@ -30,15 +30,17 @@ public abstract class Indicator {
     private final List<Ohlcv> dailyOhlcvs = new ArrayList<>();
 
     public List<Ohlcv> getOhlcvs(Ohlcv.Type type, int period) {
+        List<Ohlcv> ohlcvs;
         switch(type) {
             case MINUTE -> {
-                return resampleOhlcvs(minuteOhlcvs, period);
+                ohlcvs = resampleOhlcvs(minuteOhlcvs, period);
             }
             case DAILY -> {
-                return resampleOhlcvs(dailyOhlcvs, period);
+                ohlcvs = resampleOhlcvs(dailyOhlcvs, period);
             }
             default -> throw new IllegalArgumentException("invalid Ohlcv type");
         }
+        return Collections.unmodifiableList(ohlcvs);
     }
 
     private List<Ohlcv> resampleOhlcvs(List<Ohlcv> ohlcvs, int period) {
@@ -105,19 +107,6 @@ public abstract class Indicator {
                 .closePrice(closePrice)
                 .volume(volume)
                 .build();
-    }
-
-    public <C extends CalculateContext, R extends CalculateResult> List<R> calculate(C context, Ohlcv.Type type, int period) {
-        List<Ohlcv> ohlcvs = getOhlcvs(type, period);
-        Collections.reverse(ohlcvs);
-
-        // calculate
-        Calculator<C,R> calculator = CalculatorFactory.getCalculator(context);
-        List<R> calculateResults =  calculator.calculate(ohlcvs);
-
-        // reverse and return
-        Collections.reverse(calculateResults);
-        return calculateResults;
     }
 
 }

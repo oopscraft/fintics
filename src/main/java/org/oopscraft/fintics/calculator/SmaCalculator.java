@@ -18,7 +18,7 @@ public class SmaCalculator extends Calculator<SmaContext, Sma> {
                 .map(Ohlcv::getClosePrice)
                 .toList();
 
-        return smas(closePrices, getContext().getPeriod()).stream()
+        return smas(closePrices, getContext().getPeriod(), getContext().getMathContext()).stream()
                 .map(value -> Sma.builder()
                         .value(value)
                         .build())

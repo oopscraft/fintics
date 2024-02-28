@@ -44,9 +44,9 @@ public class DmiCalculator extends Calculator<DmiContext, Dmi> {
         }
 
         // average
-        pdms = emas(pdms, getContext().getPeriod());
-        mdms = emas(mdms, getContext().getPeriod());
-        trs = emas(trs, getContext().getPeriod());
+        pdms = emas(pdms, getContext().getPeriod(), getContext().getMathContext());
+        mdms = emas(mdms, getContext().getPeriod(), getContext().getMathContext());
+        trs = emas(trs, getContext().getPeriod(), getContext().getMathContext());
 
         List<BigDecimal> pdis = new ArrayList<>();
         List<BigDecimal> mdis = new ArrayList<>();
@@ -63,7 +63,7 @@ public class DmiCalculator extends Calculator<DmiContext, Dmi> {
         }
 
         // average
-        dxs = emas(dxs, getContext().getPeriod());
+        dxs = emas(dxs, getContext().getPeriod(), getContext().getMathContext());
 
         // dmi
         List<Dmi> dmis = new ArrayList<>();

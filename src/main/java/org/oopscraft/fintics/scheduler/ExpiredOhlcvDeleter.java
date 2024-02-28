@@ -26,7 +26,7 @@ public class ExpiredOhlcvDeleter extends AbstractScheduler {
 
     private final PlatformTransactionManager transactionManager;
 
-    @Scheduled(initialDelay = 600_000, fixedDelay = 3600_000)
+    @Scheduled(cron = "0 0 18 * * *")
     public void deleteExpiredOhlcvs() {
         log.info("Start delete expired ohlcvs.");
         try {

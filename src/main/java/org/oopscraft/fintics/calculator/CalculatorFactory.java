@@ -10,6 +10,7 @@ public class CalculatorFactory {
     private final static Map<Class<?>, Class<?>> registry = new LinkedHashMap<>(){{
         put(SmaContext.class, SmaCalculator.class);
         put(EmaContext.class, EmaCalculator.class);
+        put(BbContext.class, BbCalculator.class);
         put(MacdContext.class, MacdCalculator.class);
         put(RsiContext.class, RsiCalculator.class);
         put(DmiContext.class, DmiCalculator.class);

@@ -34,7 +34,7 @@ public class ObvCalculator extends Calculator<ObvContext, Obv> {
         }
 
         // signal
-        List<BigDecimal> signals = emas(obvValues, getContext().getSignalPeriod()).stream()
+        List<BigDecimal> signals = emas(obvValues, getContext().getSignalPeriod(), getContext().getMathContext()).stream()
                 .map(value -> value.setScale(0, RoundingMode.HALF_UP))
                 .collect(Collectors.toList());
 

@@ -18,7 +18,7 @@ public class EmaCalculator extends Calculator<EmaContext, Ema> {
                 .map(Ohlcv::getClosePrice)
                 .toList();
 
-        List<BigDecimal> emaValues = this.emas(closePrices, getContext().getPeriod());
+        List<BigDecimal> emaValues = emas(closePrices, getContext().getPeriod(), getContext().getMathContext());
 
         return emaValues.stream()
                 .map(emaValue -> Ema.builder()

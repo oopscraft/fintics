@@ -36,8 +36,8 @@ public class CoCalculator extends Calculator<CoContext, Co> {
         }
 
         // values
-        List<BigDecimal> shortEmas = emas(adValues, getContext().getShortPeriod());
-        List<BigDecimal> longEmas = emas(adValues, getContext().getLongPeriod());
+        List<BigDecimal> shortEmas = emas(adValues, getContext().getShortPeriod(), getContext().getMathContext());
+        List<BigDecimal> longEmas = emas(adValues, getContext().getLongPeriod(), getContext().getMathContext());
         List<BigDecimal> values = new ArrayList<>();
         for(int i = 0; i < shortEmas.size(); i ++) {
             BigDecimal value = shortEmas.get(i).subtract(longEmas.get(i));
@@ -45,7 +45,7 @@ public class CoCalculator extends Calculator<CoContext, Co> {
         }
 
         // signal
-        List<BigDecimal> signals = emas(values, getContext().getSignalPeriod());
+        List<BigDecimal> signals = emas(values, getContext().getSignalPeriod(), getContext().getMathContext());
 
         // chaikin's oscillator
         List<Co> cos = new ArrayList<>();

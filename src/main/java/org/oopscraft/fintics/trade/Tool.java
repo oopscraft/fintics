@@ -39,67 +39,6 @@ public class Tool {
     }
 
     /**
-     * calculate exponential Moving average
-     * @param values data points (time descending)
-     * @return exponential moving average
-     */
-    public List<BigDecimal> emas(List<BigDecimal> values) {
-        List<BigDecimal> series = new ArrayList<>(values);
-        Collections.reverse(series);
-        List<BigDecimal> emas = new ArrayList<>();
-        int period = series.size();
-        BigDecimal multiplier = BigDecimal.valueOf(2.0)
-                .divide(BigDecimal.valueOf(period + 1), MathContext.DECIMAL32);
-        BigDecimal ema = series.isEmpty() ? BigDecimal.ZERO : series.get(0);
-        emas.add(ema);
-        for (int i = 1; i < series.size(); i++) {
-            BigDecimal emaDiff = series.get(i).subtract(ema);
-            ema = emaDiff
-                    .multiply(multiplier, MathContext.DECIMAL32)
-                    .add(ema);
-            emas.add(ema);
-        }
-        Collections.reverse(emas);
-        return emas;
-    }
-
-    public BigDecimal ema(List<BigDecimal> values) {
-        List<BigDecimal> emas = emas(values);
-        return emas.get(0);
-    }
-
-    /**
-     * calculate simple moving average
-     * @param values data points (time descending)
-     * @return simple moving average
-     */
-    public List<BigDecimal> smas(List<BigDecimal> values) {
-        List<BigDecimal> series = new ArrayList<>(values);
-        Collections.reverse(series);
-        List<BigDecimal> smas = new ArrayList<>();
-        int period = series.size();
-        for(int i = 0; i < series.size(); i ++) {
-            List<BigDecimal> periodSeries = series.subList(
-                    Math.max(i - period + 1, 0),
-                    i + 1
-            );
-            BigDecimal sum = BigDecimal.ZERO;
-            for(BigDecimal value : periodSeries) {
-                sum = sum.add(value);
-            }
-            BigDecimal sma = sum.divide(BigDecimal.valueOf(periodSeries.size()), MathContext.DECIMAL32);
-            smas.add(sma);
-        }
-        Collections.reverse(smas);
-        return smas;
-    }
-
-    public BigDecimal sma(List<BigDecimal> values) {
-        List<BigDecimal> smas = smas(values);
-        return smas.get(0);
-    }
-
-    /**
      * calculates sum value
      * @param values data points (time descending)
      * @return sum of all data points values
@@ -248,7 +187,8 @@ public class Tool {
         Collections.reverse(series);
 
         BigDecimal mean = mean(series);
-        BigDecimal std = std(series);
+        List<BigDecimal> stds = Calculator.stds(series, series.size(), MathContext.DECIMAL32);
+        BigDecimal std = stds.get(stds.size() - 1);
 
         List<BigDecimal> zScores = new ArrayList<>();
         for(BigDecimal value : series) {

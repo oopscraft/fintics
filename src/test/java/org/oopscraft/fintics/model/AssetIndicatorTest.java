@@ -17,23 +17,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class AssetIndicatorTest {
 
     @Test
-    void calculate() {
-        AssetIndicator assetIndicator = AssetIndicator.builder()
-                .minuteOhlcvs(new ArrayList<Ohlcv>(){{
-                    add(Ohlcv.builder()
-                            .closePrice(BigDecimal.ONE)
-                            .build());
-                    add(Ohlcv.builder()
-                            .closePrice(BigDecimal.TEN)
-                            .build());
-                }})
-                .build();
-
-        List<Sma> results = assetIndicator.calculate(SmaContext.DEFAULT, Ohlcv.Type.MINUTE, 1);
-        results.forEach(sma -> log.info("{}", sma));
-    }
-
-    @Test
     void getOhlcvs() {
         // given
         LocalDateTime now = LocalDateTime.now();

@@ -90,7 +90,7 @@ public class RsiCalculator extends Calculator<RsiContext, Rsi> {
         }
 
         // signals
-        List<BigDecimal> signals = emas(rsiValues, getContext().getSignalPeriod()).stream()
+        List<BigDecimal> signals = emas(rsiValues, getContext().getSignalPeriod(), getContext().getMathContext()).stream()
                 .map(value -> value.setScale(2, RoundingMode.HALF_UP))
                 .collect(Collectors.toList());
 

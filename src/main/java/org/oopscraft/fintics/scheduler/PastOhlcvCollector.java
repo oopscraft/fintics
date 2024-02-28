@@ -54,7 +54,7 @@ public class PastOhlcvCollector extends OhlcvCollector {
 
     private final FinticsProperties finticsProperties;
 
-    @Scheduled(initialDelay = 60_000, fixedDelay = 3600_000)
+    @Scheduled(cron = "0 0 18 * * *")
     public void collect() {
         try {
             log.info("PastOhlcvCollector - Start collect past asset ohlcv.");
