@@ -39,97 +39,6 @@ public class Tool {
     }
 
     /**
-     * calculates sum value
-     * @param values data points (time descending)
-     * @return sum of all data points values
-     */
-    public BigDecimal sum(List<BigDecimal> values) {
-        return values.stream()
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-
-    /**
-     * calculates mean(average) values
-     * @param values data points (time descending)
-     * @return mean(average) value
-     */
-    public BigDecimal mean(List<BigDecimal> values) {
-        if(values.isEmpty()) {
-            return BigDecimal.ZERO;
-        }
-        List<BigDecimal> series = new ArrayList<>(values);
-        return series.stream()
-                .reduce(BigDecimal.ZERO, BigDecimal::add)
-                .divide(BigDecimal.valueOf(series.size()), MathContext.DECIMAL32);
-    }
-
-    /**
-     * calculates min value
-     * @param values data points (time descending)
-     * @return min value
-     */
-    public BigDecimal min(List<BigDecimal> values) {
-        return values.stream()
-                .min(BigDecimal::compareTo)
-                .orElse(BigDecimal.ZERO);
-    }
-
-    /**
-     * calculates max value
-     * @param values data point (time descending)
-     * @return max value
-     */
-    public BigDecimal max(List<BigDecimal> values) {
-        return values.stream()
-                .max(BigDecimal::compareTo)
-                .orElse(BigDecimal.ZERO);
-    }
-
-    /**
-     * calculates median value
-     * @param values data points (time descenting)
-     * @return median value
-     */
-    public BigDecimal median(List<BigDecimal> values) {
-        if(values.isEmpty()) {
-            return BigDecimal.ZERO;
-        }
-        List<BigDecimal> sortedValues = new ArrayList<>(values);
-        Collections.sort(sortedValues);
-        int size = sortedValues.size();
-        if (size % 2 == 1) {
-            return sortedValues.get(size / 2);
-        } else {
-            BigDecimal leftMiddle = sortedValues.get(size / 2 - 1);
-            BigDecimal rightMiddle = sortedValues.get(size / 2);
-            return leftMiddle.add(rightMiddle)
-                    .divide(BigDecimal.valueOf(2), MathContext.DECIMAL32);
-        }
-    }
-
-    /**
-     * calculates standard deviation
-     * @param values each data point (time descending)
-     * @return standard deviation
-     */
-    public BigDecimal std(List<BigDecimal> values) {
-        if(values.isEmpty()) {
-            return BigDecimal.ZERO;
-        }
-        List<BigDecimal> series = new ArrayList<>(values);
-        Collections.reverse(series);
-        BigDecimal mean = series.stream()
-                .reduce(BigDecimal.ZERO, BigDecimal::add)
-                .divide(BigDecimal.valueOf(series.size()), MathContext.DECIMAL32);
-        BigDecimal sumSquaredDeviations = series.stream()
-                .map(x -> x.subtract(mean).pow(2))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        BigDecimal variance = sumSquaredDeviations
-                .divide(BigDecimal.valueOf(series.size()), MathContext.DECIMAL32);
-        return BigDecimal.valueOf(Math.sqrt(variance.doubleValue()));
-    }
-
-    /**
      * calculates percentage of change at each data point
      * @param values data points (time descending)
      * @return percentage of change
@@ -214,6 +123,75 @@ public class Tool {
     public BigDecimal zScore(List<BigDecimal> values) {
         List<BigDecimal> zScores = zScores(values);
         return zScores.get(0);
+    }
+
+    /**
+     * calculates sum value
+     * @param values data points (time descending)
+     * @return sum of all data points values
+     */
+    public BigDecimal sum(List<BigDecimal> values) {
+        return values.stream()
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    /**
+     * calculates mean(average) values
+     * @param values data points (time descending)
+     * @return mean(average) value
+     */
+    public BigDecimal mean(List<BigDecimal> values) {
+        if(values.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+        List<BigDecimal> series = new ArrayList<>(values);
+        return series.stream()
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .divide(BigDecimal.valueOf(series.size()), MathContext.DECIMAL32);
+    }
+
+    /**
+     * calculates min value
+     * @param values data points (time descending)
+     * @return min value
+     */
+    public BigDecimal min(List<BigDecimal> values) {
+        return values.stream()
+                .min(BigDecimal::compareTo)
+                .orElse(BigDecimal.ZERO);
+    }
+
+    /**
+     * calculates max value
+     * @param values data point (time descending)
+     * @return max value
+     */
+    public BigDecimal max(List<BigDecimal> values) {
+        return values.stream()
+                .max(BigDecimal::compareTo)
+                .orElse(BigDecimal.ZERO);
+    }
+
+    /**
+     * calculates median value
+     * @param values data points (time descenting)
+     * @return median value
+     */
+    public BigDecimal median(List<BigDecimal> values) {
+        if(values.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+        List<BigDecimal> sortedValues = new ArrayList<>(values);
+        Collections.sort(sortedValues);
+        int size = sortedValues.size();
+        if (size % 2 == 1) {
+            return sortedValues.get(size / 2);
+        } else {
+            BigDecimal leftMiddle = sortedValues.get(size / 2 - 1);
+            BigDecimal rightMiddle = sortedValues.get(size / 2);
+            return leftMiddle.add(rightMiddle)
+                    .divide(BigDecimal.valueOf(2), MathContext.DECIMAL32);
+        }
     }
 
     /**
