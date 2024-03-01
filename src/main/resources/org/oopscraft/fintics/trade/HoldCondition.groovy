@@ -1,8 +1,9 @@
 import groovy.transform.ToString
 import org.oopscraft.fintics.calculator.*
-import org.oopscraft.fintics.model.*
+import org.oopscraft.fintics.model.BalanceAsset
+import org.oopscraft.fintics.model.Ohlcv
 
-import java.math.RoundingMode
+import java.time.LocalTime
 
 @ToString(includeNames = true)
 class Analysis {
@@ -16,9 +17,8 @@ class Analysis {
     List<Co> cos
 }
 
-def getAnalysis(Indicator indicator, Ohlcv.Type ohlcvType, int ohlcvPeriod) {
+def getAnalysis(List<Ohlcv> ohlcvs) {
     def analysis = new Analysis()
-    def ohlcvs = indicator.getOhlcvs(ohlcvType, ohlcvPeriod)
     analysis.ohlcvs = ohlcvs
     analysis.emas = tool.calculate(ohlcvs, EmaContext.DEFAULT)
     analysis.bbs = tool.calculate(ohlcvs, BbContext.DEFAULT)
@@ -31,7 +31,8 @@ def getAnalysis(Indicator indicator, Ohlcv.Type ohlcvType, int ohlcvPeriod) {
 }
 
 @ToString(includeNames = true)
-class HoldScore {
+class Score {
+    def pricePctChange
     def emaValuePctChange
     def emaPriceOverValue
     def bbMbbPctChange
@@ -53,29 +54,41 @@ class HoldScore {
     def coValue
     def coValuePctChange
     def coValueOverSignal
+
+    def getAverage() {
+        return this.properties.values()
+                .findAll{it instanceof Number}
+                .average()
+    }
 }
 
-def getHoldScore(Analysis analysis) {
-    def holdScore = new HoldScore()
+def getScore(Analysis analysis) {
+    def score = new Score()
     def period = 10
+
     // ohlcv
     def ohlcvs = analysis.ohlcvs.take(period)
     def ohlcv = ohlcvs.first()
-    def closePrice = ohlcv.closePrice
+    def prices = ohlcvs.collect{it.closePrice}
+    def pricePctChange =  tool.pctChange(prices)
+    score.pricePctChange = pricePctChange > 0 ? 100 : 0
+
     // ema
     def emas = analysis.emas.take(period)
+    def ema = emas.first()
     def emaValues = emas.collect{it.value}
-    def emaValue = emaValues.first()
     def emaValuePctChange = tool.pctChange(emaValues)
-    holdScore.emaValuePctChange = emaValuePctChange > 0 ? 100 : 0
-    holdScore.emaPriceOverValue = closePrice > emaValue ? 100 : 0
+    score.emaPriceOverValue = ohlcv.closePrice > ema.value ? 100 : 0
+    score.emaValuePctChange = emaValuePctChange > 0 ? 100 : 0
+
     // bb
     def bbs = analysis.bbs.take(period)
+    def bb = bbs.first()
     def bbMbbs = bbs.collect{it.mbb}
-    def bbMbb = bbMbbs.first()
     def bbMbbPctChange = tool.pctChange(bbMbbs)
-    holdScore.bbMbbPctChange = bbMbbPctChange > 0 ? 100 : 0
-    holdScore.bbPriceOverMbb = closePrice > bbMbb ? 100 : 0
+    score.bbMbbPctChange = bbMbbPctChange > 0 ? 100 : 0
+    score.bbPriceOverMbb = ohlcv.closePrice > bb.mbb ? 100 : 0
+
     // macd
     def macds = analysis.macds.take(period)
     def macdValues = macds.collect{it.value}
@@ -86,20 +99,22 @@ def getHoldScore(Analysis analysis) {
     def macdOscillator = macdOscillators.first()
     def macdValuePctChange = tool.pctChange(macdValues)
     def macdOscillatorPctChange = tool.pctChange(macdOscillators)
-    holdScore.macdValue = macdValue > 0 ? 100 : 0
-//    holdScore.macdValuePctChange = macdValuePctChange > 0 ? 100 : 0
-    holdScore.macdValueOverSignal = macdValue > macdSignal ? 100 : 0
-    holdScore.macdOscillator = macdOscillator > 0 ? 100 : 0
-//    holdScore.macdOscillatorPctChange = macdOscillatorPctChange > 0 ? 100 : 0
+    score.macdValue = macdValue > 0 ? 100 : 0
+    score.macdValuePctChange = macdValuePctChange > 0 ? 100 : 0
+    score.macdValueOverSignal = macdValue > macdSignal ? 100 : 0
+    score.macdOscillator = macdOscillator > 0 ? 100 : 0
+    score.macdOscillatorPctChange = macdOscillatorPctChange > 0 ? 100 : 0
+
     // rsi
     def rsis = analysis.rsis.take(period)
     def rsiValues = rsis.collect{it.value}
     def rsiValue = rsiValues.first()
     def rsiSignals = rsis.collect{it.signal}
     def rsiSignal = rsiSignals.first()
-    holdScore.rsiValue = rsiValue > 50 ? 100 : 0
-//    holdScore.rsiValuePctChange = tool.pctChange(rsiValues)
-    holdScore.rsiValueOverSignal = rsiValue > rsiSignal ? 100 : 0
+    score.rsiValue = rsiValue > 50 ? 100 : 0
+    score.rsiValuePctChange = tool.pctChange(rsiValues)
+    score.rsiValueOverSignal = rsiValue > rsiSignal ? 100 : 0
+
     // dmi
     def dmis = analysis.dmis.take(period)
     def dmiPdis = dmis.collect{it.pdi}
@@ -110,10 +125,11 @@ def getHoldScore(Analysis analysis) {
     def dmiMdiPctChange = tool.pctChange(dmiMdis)
     def dmiAdxs = dmis.collect{it.adx}
     def dmiAdxPctChange = tool.pctChange(dmiAdxs)
-//    holdScore.dmiPdiPctChange = dmiPdiPctChange > 0 ? 100 : 0
-//    holdScore.dmiMdiPctChange = dmiMdiPctChange < 0 ? 100 : 0
-    holdScore.dmiPdiOverMdi = dmiPdi > dmiMdi ? 100 : 0
-    holdScore.dmiAdxPctChange = dmiPdiPctChange > 0 && dmiAdxPctChange > 0 ? 100 : 0
+    score.dmiPdiPctChange = dmiPdiPctChange > 0 ? 100 : 0
+    score.dmiMdiPctChange = dmiMdiPctChange < 0 ? 100 : 0
+    score.dmiPdiOverMdi = dmiPdi > dmiMdi ? 100 : 0
+    score.dmiAdxPctChange = dmiPdiPctChange > 0 && dmiAdxPctChange > 0 ? 100 : 0
+
     // co
     def obvs = analysis.obvs.take(period)
     def obvValues = obvs.collect{it.value}
@@ -121,8 +137,9 @@ def getHoldScore(Analysis analysis) {
     def obvSignals = obvs.collect{it.signal}
     def obvSignal = obvSignals.first()
     def obvValuePctChange = tool.pctChange(obvValues)
-//    holdScore.obvValuePctChange = obvValuePctChange > 0 ? 100 : 0
-    holdScore.obvValueOverSignal = obvValue > obvSignal ? 100 : 0
+    score.obvValuePctChange = obvValuePctChange > 0 ? 100 : 0
+    score.obvValueOverSignal = obvValue > obvSignal ? 100 : 0
+
     // co
     def cos = analysis.cos.take(period)
     def coValues = cos.collect{it.value}
@@ -130,114 +147,128 @@ def getHoldScore(Analysis analysis) {
     def coValuePctChange = tool.pctChange(coValues)
     def coSignals = cos.collect{it.signal}
     def coSignal = coSignals.first()
-    holdScore.coValue = coValue > 0 ? 100 : 0
-//    holdScore.coValuePctChange = coValuePctChange > 0 ? 100 : 0
-    holdScore.coValueOverSignal = coValue > coSignal ? 100 : 0
+    score.coValue = coValue > 0 ? 100 : 0
+    score.coValuePctChange = coValuePctChange > 0 ? 100 : 0
+    score.coValueOverSignal = coValue > coSignal ? 100 : 0
+
     // return
-    return holdScore
+    return score
 }
 
-static def getScoreAverage(score) {
-    return score.properties.values()
-            .findAll{it instanceof Number}
-            .average()
-}
 
-//===============================
+//================================
 // defines
-//===============================
+//================================
 def hold = null
 def assetId = assetIndicator.getAssetId()
 def assetName = "${assetIndicator.getAssetName()}(${assetId})"
 
-////===============================
-//// skip (for performance)
-////===============================
-//if (priceZScore.abs() < 1.5) {
-//    log.info("[{}] skip under price z-score[{}]", assetName, priceZScore)
-//    return null
+// ohlcv
+List<Ohlcv> ohlcvs = assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 1)
+//        .findAll{it.dateTime.toLocalDate().equals(dateTime.toLocalDate())}
+def prices = ohlcvs.collect{it.closePrice}.take(20)
+def price = prices.first()
+//def zScores = tool.zScores(prices)
+//def zScore = zScores.first()
+//log.info("====== zScore: {}", zScore)
+
+// fast ma
+List<Sma> fastMas = tool.calculate(ohlcvs, SmaContext.of(20)).take(20)
+def fastMaValues = fastMas.collect{it.value}
+def fastMaValue = fastMaValues.first()
+def fastMaValuePctChange = tool.pctChange(fastMaValues.take(20))
+
+// slow ma
+List<Sma> slowMas = tool.calculate(ohlcvs, SmaContext.of(60)).take(60)
+def slowMaValues = slowMas.collect{it.value}
+def slowMaValue = slowMaValues.first()
+def slowMaValuePctChange = tool.pctChange(slowMaValues.take(60))
+
+// zScore
+def fastZScores = tool.zScores(prices.take(20))
+def slowZScores = tool.zScores(prices.drop(1).take(20))
+def fastZScore = fastZScores.first()
+def slowZScore = slowZScores.first()
+log.info("fastZScore:{}", fastZScore)
+log.info("slowZScore:{}", slowZScore)
+
+// analysis
+def getSlowScoreAverage() {
+    def analysis = getAnalysis(assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 60))
+    def score = getScore(analysis)
+    def scoreAverage = score.getAverage()
+    return scoreAverage
+}
+def getFastScoreAverage() {
+    def analysis = getAnalysis(assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 3))
+    def score = getScore(analysis)
+    def scoreAverage = score.getAverage()
+    return scoreAverage
+}
+
+def getLongScoreAverage() {
+    def analysis = getAnalysis(assetIndicator.getOhlcvs(Ohlcv.Type.DAILY, 1))
+    def score = getScore(analysis)
+    def scoreAverage = score.getAverage()
+    return scoreAverage
+}
+
+//def fastScoreAverage = getFastScoreAverage()
+//def slowScoreAverage = getSlowScoreAverage()
+def longScoreAverage = getLongScoreAverage()
+
+//if (fastScoreAverage > slowScoreAverage) {
+    if (fastZScore > 1.5 && slowZScore > 2.0) {
+        if (price > slowMaValue) {
+            hold = 1
+        }
+    }
 //}
 
-//===============================
-// asset hold score
-//===============================
-def assetAnalysises = [
-        minute: getAnalysis(assetIndicator, Ohlcv.Type.MINUTE, 3),
-        hourly: getAnalysis(assetIndicator, Ohlcv.Type.MINUTE, 60),
-        daily: getAnalysis(assetIndicator, Ohlcv.Type.DAILY, 1)
-]
-def assetHoldScores = [
-        minute: getHoldScore(assetAnalysises.minute),
-        hourly: getHoldScore(assetAnalysises.hourly),
-        daily: getHoldScore(assetAnalysises.daily)
-]
-assetHoldScores.each{key, value ->
-    log.info("[{}] assetHoldScore.{}: {}", assetName, key, value)
-}
-def assetHoldScoreAverage = assetHoldScores
-        .collect{getScoreAverage(it.value)}
-        .average()
-log.info("[{}] assetHoldScoreAverage: {}", assetName, assetHoldScoreAverage)
-
-//================================
-// indice asset score
-//================================
-//def indiceAnalysises = [
-//        kospi: getAnalysis(indiceIndicators['KOSPI'], Ohlcv.Type.DAILY, 1)
-//]
-//def indiceHoldScores = [
-//        kospi: getHoldScore(indiceAnalysises.kospi)
-//]
-//def indiceHoldScoreAverage = indiceHoldScores
-//        .collect{getScoreAverage(it.value)}
-//        .average()
-
-//================================
-// total score
-//================================
-def holdScoreAverage = [
-        assetHoldScoreAverage,
-//        indiceHoldScoreAverage
-].average()
-log.info("[{}] holdScoreAverage: {}", assetName, holdScoreAverage)
-
-
-def ohlcvs = assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 1)
-//def fastMas = tool.calculate(ohlcvs, SmaContext.of(20))
-//def fastMaValue = fastMas.first().value
-//def slowMas = tool.calculate(ohlcvs, SmaContext.of(60))
-//def slowMaValue = slowMas.first().value
-//def rsis = tool.calculate(ohlcvs, RsiContext.DEFAULT)
-//def rsi = rsis.first()
-//def rsiValue = rsi.value
-//def rsiSignal = rsi.signal
-
-
-//================================
-// decide hold
-//================================
-// buy
-if (getScoreAverage(assetHoldScores.daily) > 50) {
-    def avg = tool.mean([getScoreAverage(assetHoldScores.minute), getScoreAverage(assetHoldScores.hourly)])
-    if (avg > 60) {
-//        if (tool.isDescending([getScoreAverage(assetHoldScores.minute), getScoreAverage(assetHoldScores.hourly)])) {
-            hold = 1
-//        }
-    }
-    if (avg < 40) {
-//        if (tool.isDescending([getScoreAverage(assetHoldScores.minute), getScoreAverage(assetHoldScores.hourly)])) {
+//if (fastScoreAverage < slowScoreAverage) {
+    if (fastZScore < -1.5 && slowZScore < -2.0) {
+        if (price < slowMaValue) {
             hold = 0
-//        }
+        }
     }
-}
+//}
 
-// sell
-if (getScoreAverage(assetHoldScores.daily) < 50) {
+// fallback
+//if ( [slowScoreAverage, longScoreAverage].average() > 70) {
+//    hold = 1
+//}
+if ( [longScoreAverage].average() < 50) {
     hold = 0
 }
 
-//================================
+BalanceAsset balanceAsset = balance.getBalanceAsset(assetId).orElse(null)
+if (balanceAsset != null) {
+    if(balanceAsset.getProfitPercentage() > 0.5) {
+        if (price < fastMaValue) {
+            hold = 0
+        }
+    }
+//    if(balanceAsset.getProfitPercentage() < -0.5) {
+//        hold = 0
+//    }
+}
+
+if (dateTime.toLocalTime().isAfter(LocalTime.of(15,10))) {
+    if ( [longScoreAverage].average() > 70) {
+        hold = 1
+    } else {
+        hold = 0
+    }
+}
+
+// fallback
+//if (slowMaValuePctChange < 0) {
+//    hold = 0
+//}
+
 // return
-//================================
 return hold
+
+
+
 
