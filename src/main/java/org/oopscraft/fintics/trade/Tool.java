@@ -195,6 +195,20 @@ public class Tool {
     }
 
     /**
+     * check values are crossed
+     * @param values1 values 1
+     * @param values2 values 2
+     * @return is value is cross
+     */
+    public Boolean isCross(List<BigDecimal> values1, List<BigDecimal> values2) {
+        BigDecimal minValues1 = min(values1);
+        BigDecimal maxValues1 = max(values1);
+        BigDecimal minValues2 = min(values2);
+        BigDecimal maxValues2 = max(values2);
+        return maxValues1.compareTo(minValues2) >= 0 || maxValues2.compareTo(minValues1) >= 0;
+    }
+
+    /**
      * check elements is ascending
      * @param values values
      * @return result
