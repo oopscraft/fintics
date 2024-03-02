@@ -1,3 +1,5 @@
+package org.oopscraft.fintics.trade.old
+
 import org.oopscraft.fintics.calculator.*
 import org.oopscraft.fintics.model.*
 
