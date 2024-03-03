@@ -26,8 +26,8 @@ class Analysis {
 
     Analysis(List<Ohlcv> ohlcvs) {
         this.ohlcvs = ohlcvs
-        this.fastEmas = Tool.calculate(ohlcvs, EmaContext.of(10))
-        this.slowEmas = Tool.calculate(ohlcvs, EmaContext.of(20))
+        this.fastEmas = Tool.calculate(ohlcvs, EmaContext.of(5))
+        this.slowEmas = Tool.calculate(ohlcvs, EmaContext.of(10))
         this.bbs = Tool.calculate(ohlcvs, BbContext.DEFAULT)
         this.macds = Tool.calculate(ohlcvs, MacdContext.DEFAULT)
         this.rsis = Tool.calculate(ohlcvs, RsiContext.DEFAULT)
@@ -38,10 +38,6 @@ class Analysis {
 
     def getMomentumScore() {
         def score = new Score()
-        // ema
-        def fastEma = this.fastEmas.first()
-        def slowEma = this.slowEmas.first()
-        score.emaValueFastOverSlow = fastEma.value > slowEma.value ? 100 : 0
         // macd
         def macd = this.macds.first()
         score.macdValue = macd.value > 0 ? 100 : 0
@@ -52,6 +48,16 @@ class Analysis {
         def rsi = this.rsis.first()
         score.rsiValue = rsi.value > 50 ? 100 : 0
         score.rsiValueOverSignal = rsi.value > 50 && rsi.value > rsi.signal ? 100 : 0
+        // return
+        return score
+    }
+
+    def getDirectionScore() {
+        def score = new Score()
+        // ema
+        def fastEma = this.fastEmas.first()
+        def slowEma = this.slowEmas.first()
+        score.emaValueFastOverSlow = fastEma.value > slowEma.value ? 100 : 0
         // return
         return score
     }
@@ -80,11 +86,11 @@ def hold = null
 def assetId = assetIndicator.getAssetId()
 def assetName = "${assetIndicator.getAssetName()}(${assetId})"
 def ohlcvType = Ohlcv.Type.MINUTE
-def ohlcvPeriod = 3
+def ohlcvPeriod = 5
 
 // ohlcv
 List<Ohlcv> ohlcvs = assetIndicator.getOhlcvs(ohlcvType, ohlcvPeriod)
-        //.findAll{it.dateTime.toLocalDate().equals(dateTime.toLocalDate())}
+//.findAll{it.dateTime.toLocalDate().equals(dateTime.toLocalDate())}
 def prices = ohlcvs.collect{it.closePrice}
 def price = prices.first()
 List<Ema> priceMas = Tool.calculate(ohlcvs, EmaContext.of(60))
@@ -100,61 +106,27 @@ def priceMa = priceMas.first()
 
 def analysis = new Analysis(ohlcvs)
 def momentumScore = analysis.getMomentumScore()
-//def longAnalysis = new Analysis(assetIndicator.getOhlcvs(Ohlcv.Type.DAILY, 1))
-//def longMomentumScore = longAnalysis.getMomentumScore()
-//def pastAnalysis = new Analysis(ohlcvs.drop(20))
-//def pastMomentumScore = pastAnalysis.getMomentumScore()
-def dailyAnalysis = new Analysis(assetIndicator.getOhlcvs(Ohlcv.Type.DAILY, 1))
-def dailyMomentumScore = dailyAnalysis.getMomentumScore()
+def longAnalysis = new Analysis(assetIndicator.getOhlcvs(Ohlcv.Type.DAILY, 1))
+def longMomentumScore = longAnalysis.getMomentumScore()
+def pastAnalysis = new Analysis(ohlcvs.drop(20))
+def pastMomentumScore = pastAnalysis.getMomentumScore()
 
-// 단기 지표 상승 시 매수
-if (momentumScore.getAverage() > 70) {
+if (longMomentumScore.getAverage() > 70) {
+    if (price < priceMa.value) {
+//        hold = 1
+    }
+}
+
+if (analysis.getOverboughtScore().getAverage() > 50) {
+    hold = 0
+}
+if (analysis.getOversoldScore().getAverage() > 50) {
     hold = 1
 }
 
-// 단기 지표 하락 시 매도
-if (momentumScore.getAverage() < 50) {
+if (longMomentumScore.getAverage() < 30) {
     hold = 0
 }
-
-// 과매수 시 매도
-if (analysis.getOverboughtScore().getAverage() > 70) {
-    hold = 0
-}
-
-// 과매도 시 매수
-if (analysis.getOversoldScore().getAverage() > 70) {
-    hold = 1
-}
-
-// fallback. 가격 이동 평균 이상 으로는 매수 하지 않음
-if (price > priceMa.value) {
-    log.info("가격 이동 평균 이상")
-    hold = null
-}
-
-// fallback. 장기 지표가 좋지 않을 경우 매도
-if (dailyMomentumScore.getAverage() < 50) {
-    hold = 0
-}
-
-
-//if (longMomentumScore.getAverage() > 70) {
-//    if (price < priceMa.value) {
-////        hold = 1
-//    }
-//}
-//
-//if (analysis.getOverboughtScore().getAverage() > 50) {
-//    hold = 0
-//}
-//if (analysis.getOversoldScore().getAverage() > 50) {
-//    hold = 1
-//}
-//
-//if (longMomentumScore.getAverage() < 50) {
-//    hold = 0
-//}
 
 
 //def diffScore = momentumScore.getAverage() - pastMomentumScore.getAverage()

@@ -58,7 +58,6 @@ public class HoldConditionExecutor {
         binding.setVariable("balance", balance);
         binding.setVariable("indiceIndicators", indiceIndicators);
         binding.setVariable("assetIndicator", assetIndicator);
-        binding.setVariable("tool", new Tool());
         GroovyShell groovyShell = new GroovyShell(groovyClassLoader, binding);
 
         if(holdCondition == null || holdCondition.isBlank()) {

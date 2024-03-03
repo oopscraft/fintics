@@ -24,7 +24,7 @@ public class Tool {
      * @param <R> return type
      * @return technical indicator results
      */
-    public <C extends CalculateContext, R extends CalculateResult> List<R> calculate(List<Ohlcv> ohlcvs, C context) {
+    public static <C extends CalculateContext, R extends CalculateResult> List<R> calculate(List<Ohlcv> ohlcvs, C context) {
         // series
         List<Ohlcv> series = new ArrayList<>(ohlcvs);
         Collections.reverse(series);
@@ -43,7 +43,7 @@ public class Tool {
      * @param values data points (time descending)
      * @return percentage of change
      */
-    public List<BigDecimal> pctChanges(List<BigDecimal> values) {
+    public static List<BigDecimal> pctChanges(List<BigDecimal> values) {
         if(values.isEmpty()) {
             return new ArrayList<>();
         }
@@ -78,7 +78,7 @@ public class Tool {
      * @param values each data point (time descending)
      * @return sum of all percentage of change
      */
-    public BigDecimal pctChange(List<BigDecimal> values) {
+    public static BigDecimal pctChange(List<BigDecimal> values) {
         List<BigDecimal> pctChanges = pctChanges(values);
         return sum(pctChanges);
     }
@@ -88,7 +88,7 @@ public class Tool {
      * @param values data point values (time descending)
      * @return z-score list at each data point
      */
-    public List<BigDecimal> zScores(List<BigDecimal> values) {
+    public static List<BigDecimal> zScores(List<BigDecimal> values) {
         if(values.isEmpty()) {
             return new ArrayList<BigDecimal>();
         }
@@ -120,7 +120,7 @@ public class Tool {
      * @param values data point values (time descending)
      * @return current z-score(first)
      */
-    public BigDecimal zScore(List<BigDecimal> values) {
+    public static BigDecimal zScore(List<BigDecimal> values) {
         List<BigDecimal> zScores = zScores(values);
         return zScores.get(0);
     }
@@ -130,7 +130,7 @@ public class Tool {
      * @param values data points (time descending)
      * @return sum of all data points values
      */
-    public BigDecimal sum(List<BigDecimal> values) {
+    public static BigDecimal sum(List<BigDecimal> values) {
         return values.stream()
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
@@ -140,7 +140,7 @@ public class Tool {
      * @param values data points (time descending)
      * @return mean(average) value
      */
-    public BigDecimal mean(List<BigDecimal> values) {
+    public static BigDecimal mean(List<BigDecimal> values) {
         if(values.isEmpty()) {
             return BigDecimal.ZERO;
         }
@@ -155,7 +155,7 @@ public class Tool {
      * @param values data points (time descending)
      * @return min value
      */
-    public BigDecimal min(List<BigDecimal> values) {
+    public static BigDecimal min(List<BigDecimal> values) {
         return values.stream()
                 .min(BigDecimal::compareTo)
                 .orElse(BigDecimal.ZERO);
@@ -166,7 +166,7 @@ public class Tool {
      * @param values data point (time descending)
      * @return max value
      */
-    public BigDecimal max(List<BigDecimal> values) {
+    public static BigDecimal max(List<BigDecimal> values) {
         return values.stream()
                 .max(BigDecimal::compareTo)
                 .orElse(BigDecimal.ZERO);
@@ -177,7 +177,7 @@ public class Tool {
      * @param values data points (time descenting)
      * @return median value
      */
-    public BigDecimal median(List<BigDecimal> values) {
+    public static BigDecimal median(List<BigDecimal> values) {
         if(values.isEmpty()) {
             return BigDecimal.ZERO;
         }
@@ -200,7 +200,7 @@ public class Tool {
      * @param values2 values 2
      * @return is value is cross
      */
-    public Boolean isCross(List<BigDecimal> values1, List<BigDecimal> values2) {
+    public static Boolean isCross(List<BigDecimal> values1, List<BigDecimal> values2) {
         BigDecimal minValues1 = min(values1);
         BigDecimal maxValues1 = max(values1);
         BigDecimal minValues2 = min(values2);
@@ -213,7 +213,7 @@ public class Tool {
      * @param values values
      * @return result
      */
-    public Boolean isAscending(List<BigDecimal> values) {
+    public static Boolean isAscending(List<BigDecimal> values) {
         for (int i = 1; i < values.size(); i++) {
             if (values.get(i).compareTo(values.get(i - 1)) < 0) {
                 return false;
@@ -227,7 +227,7 @@ public class Tool {
      * @param values values
      * @return result
      */
-    public Boolean isDescending(List<BigDecimal> values) {
+    public static Boolean isDescending(List<BigDecimal> values) {
         for (int i = 1; i < values.size(); i++) {
             if (values.get(i).compareTo(values.get(i - 1)) > 0) {
                 return false;
@@ -242,7 +242,7 @@ public class Tool {
      * @param values data point
      * @return ascii chart string
      */
-    public Supplier<String> graph(String title, List<BigDecimal> values) {
+    public static Supplier<String> graph(String title, List<BigDecimal> values) {
         return new Supplier<String>() {
             @Override
             public String get() {
@@ -272,7 +272,7 @@ public class Tool {
      * @param values values
      * @return ascii table string
      */
-    public Supplier<String> table(String title, List<BigDecimal> values) {
+    public static Supplier<String> table(String title, List<BigDecimal> values) {
         return new Supplier<String>() {
             @Override
             public String get() {

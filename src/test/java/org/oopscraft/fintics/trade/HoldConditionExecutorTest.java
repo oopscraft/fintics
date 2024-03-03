@@ -7,6 +7,8 @@ import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
 import org.oopscraft.fintics.model.*;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -76,13 +78,18 @@ class HoldConditionExecutorTest {
     }
 
     String loadGroovyFileAsString(String fileName) {
-        String filePath = "org/oopscraft/fintics/trade/" + fileName;
+        String filePath = null;
+        try {
+            filePath = new File(".").getCanonicalPath() + "/src/main/groovy/" + fileName;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         StringBuilder stringBuilder = new StringBuilder();
-        try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(filePath)) {
+        try (InputStream inputStream = new FileInputStream(new File(filePath))) {
             IOUtils.readLines(inputStream, StandardCharsets.UTF_8).forEach(line -> {
                 stringBuilder.append(line).append(LineSeparator.LF);
             });
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
         return stringBuilder.toString();
