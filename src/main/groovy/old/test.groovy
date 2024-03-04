@@ -117,10 +117,10 @@ if (longMomentumScore.getAverage() > 70) {
     }
 }
 
-if (analysis.getOverboughtScore().getAverage() > 50) {
+if (analysis.getPostOverboughtScore().getAverage() > 50) {
     hold = 0
 }
-if (analysis.getOversoldScore().getAverage() > 50) {
+if (analysis.getPostOversoldScore().getAverage() > 50) {
     hold = 1
 }
 

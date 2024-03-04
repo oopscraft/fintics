@@ -19,8 +19,7 @@ public class ToolTest {
         }
 
         // when
-        Tool tool = new Tool();
-        log.info("###############{}", tool.graph("Test Graph", rows));
+        log.info("###############{}", Tool.graph("Test Graph", rows));
     }
 
 }

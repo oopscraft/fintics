@@ -60,7 +60,10 @@ class Analysis {
         def score = new Score()
         // rsi
         def rsi = this.rsis.first()
-        score.rsiValueOver70 = rsi.value > 70 ? 100 : 0
+        score.rsiValue = rsi.value >= 70 ? 100 : 0
+        // bb
+        def bb = this.bbs.first()
+//        score.bbPercentB = bb.percentB >= 100 ? 100 : 0
         // return
         return score
     }
@@ -69,162 +72,82 @@ class Analysis {
         def score = new Score()
         // rsi
         def rsi = this.rsis.first()
-        score.rsiValueUnder30 = rsi.value < 30 ? 100 : 0
+        score.rsiValue = rsi.value <= 30 ? 100 : 0
+        // bb
+        def bb = this.bbs.first()
+//        score.bbPercentB = bb.percentB <= 0 ? 100 : 0
         // return
         return score
     }
 }
 
+//==========================
 // defines
+//==========================
 def hold = null
 def assetId = assetIndicator.getAssetId()
 def assetName = "${assetIndicator.getAssetName()}(${assetId})"
-def ohlcvType = Ohlcv.Type.MINUTE
-def ohlcvPeriod = 3
-
-// ohlcv
-List<Ohlcv> ohlcvs = assetIndicator.getOhlcvs(ohlcvType, ohlcvPeriod)
-        //.findAll{it.dateTime.toLocalDate().equals(dateTime.toLocalDate())}
-def prices = ohlcvs.collect{it.closePrice}
-def price = prices.first()
-List<Ema> priceMas = Tool.calculate(ohlcvs, EmaContext.of(60))
-def priceMa = priceMas.first()
-
-//def prices = ohlcvs.collect{it.closePrice}
-//def price = prices.first()
-//def priceZScore = Tool.zScore(prices.take(20))
-//log.info("[{}] priceZScore: {}", assetName, priceZScore)
-//if (priceZScore.abs() < 1.0) {
-//    return null
-//}
-
-def analysis = new Analysis(ohlcvs)
-def momentumScore = analysis.getMomentumScore()
-//def longAnalysis = new Analysis(assetIndicator.getOhlcvs(Ohlcv.Type.DAILY, 1))
-//def longMomentumScore = longAnalysis.getMomentumScore()
-//def pastAnalysis = new Analysis(ohlcvs.drop(20))
-//def pastMomentumScore = pastAnalysis.getMomentumScore()
-def dailyAnalysis = new Analysis(assetIndicator.getOhlcvs(Ohlcv.Type.DAILY, 1))
-def dailyMomentumScore = dailyAnalysis.getMomentumScore()
-
-// 단기 지표 상승 시 매수
-if (momentumScore.getAverage() > 70) {
-    hold = 1
-}
-
-// 단기 지표 하락 시 매도
-if (momentumScore.getAverage() < 50) {
-    hold = 0
-}
-
-// 과매수 시 매도
-if (analysis.getOverboughtScore().getAverage() > 70) {
-    hold = 0
-}
-
-// 과매도 시 매수
-if (analysis.getOversoldScore().getAverage() > 70) {
-    hold = 1
-}
-
-// fallback. 가격 이동 평균 이상 으로는 매수 하지 않음
-if (price > priceMa.value) {
-    log.info("가격 이동 평균 이상")
-    hold = null
-}
-
-// fallback. 장기 지표가 좋지 않을 경우 매도
-if (dailyMomentumScore.getAverage() < 50) {
-    hold = 0
-}
-
-
-//if (longMomentumScore.getAverage() > 70) {
-//    if (price < priceMa.value) {
-////        hold = 1
-//    }
-//}
-//
-//if (analysis.getOverboughtScore().getAverage() > 50) {
-//    hold = 0
-//}
-//if (analysis.getOversoldScore().getAverage() > 50) {
-//    hold = 1
-//}
-//
-//if (longMomentumScore.getAverage() < 50) {
-//    hold = 0
-//}
-
-
-//def diffScore = momentumScore.getAverage() - pastMomentumScore.getAverage()
-//if (diffScore > 20) {
-//    hold = 1
-//}
-//if (diffScore < -20) {
-//    hold = 0
-//}
-
-
-
-
-
-//def fastAnalysis = new Analysis(ohlcvs)
-//def fastMomentumScore = fastAnalysis.getMomentumScore()
-//def slowAnalysis = new Analysis(ohlcvs.drop(10))
-//def slowMomentumScore = slowAnalysis.getMomentumScore()
-//
-//
-//
-//if (fastMomentumScore.getAverage() > slowMomentumScore.getAverage()) {
-//    hold = 1
-//}
-//
-//if (fastMomentumScore.getAverage() < slowMomentumScore.getAverage()) {
-//    hold = 0
-//}
-
-//def scoreAverage = [fastMomentumScore.getAverage(), slowMomentumScore.getAverage()].average()
-//if (scoreAverage > 70) {
-//    hold = 1
-//}
-//if (scoreAverage < 30) {
-//    hold = 0
-//}
-
-
-
 
 // analysis
-//def analysis = new Analysis(ohlcvs)
-//def momentumScore = analysis.getMomentumScore()
-//def directionScore = analysis.getDirectionScore()
-//def overboughtScore = analysis.getOverboughtScore()
-//def oversoldScore = analysis.getOversoldScore()
+def fastAnalysis = new Analysis(assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 1))
+def slowAnalysis = new Analysis(assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 5))
+def dailyAnalysis = new Analysis(assetIndicator.getOhlcvs(Ohlcv.Type.DAILY, 1))
 
-// default buy
-//if (momentumScore.getAverage() > 70) {
-//    if (directionScore.getAverage() > 70) {
-//        hold = 1
-//    }
-//}
+// range of price change
+def minuteOhlcvs = assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 1)
+def dailyOhlcvs = assetIndicator.getOhlcvs(Ohlcv.Type.DAILY, 1)
+def pricePctChange = Tool.pctChange([
+        minuteOhlcvs.first().closePrice,
+        dailyOhlcvs.first().openPrice
+])
+def highPricePctChangeAverage = dailyOhlcvs.take(14)
+        .collect{(it.highPrice-it.openPrice)/it.closePrice*100}
+        .average()
+def lowPricePctChangeAverage = dailyOhlcvs.take(14)
+        .collect{(it.lowPrice-it.openPrice)/it.closePrice*100}
+        .average()
+log.info("[{}] pricePctChange: {}", assetName, pricePctChange)
+log.info("[{}] highPricePctChangeAverage: {}", assetName, highPricePctChangeAverage)
+log.info("[{}] lowPricePctChangeAverage: {}", assetName, lowPricePctChangeAverage)
 
-// buy
-//if (directionScore.getAverage() > 50) {
-//    hold = 1
-//}
+//==============================================
+// 단기 상승 시작 시
+//==============================================
+if (fastAnalysis.getMomentumScore().getAverage() > 70) {
+    // 평균 하락 폭 보다 더 하락한 경우 매수
+    if (pricePctChange < lowPricePctChangeAverage) {
+        hold = 1
+    }
+    // 중기 과매도 구간 이면 매수
+    if (slowAnalysis.getOversoldScore().getAverage() > 50) {
+        hold = 1
+    }
+}
 
-// sell
-//if (directionScore.getAverage() < 50) {
-//    hold = 0
-//}
+//===============================================
+// 단기 하락 시작 시
+//===============================================
+if (fastAnalysis.getMomentumScore().getAverage() < 30) {
+    // 평균 상승 폭 더 상승한 경우 경우 매도
+    if (pricePctChange > highPricePctChangeAverage) {
+        hold = 0
+    }
+    // 중기 과매수 구간 이면 매도
+    if (slowAnalysis.getOverboughtScore().getAverage() > 50) {
+        hold = 0
+    }
+}
 
+//==============================================
+// fallback - daily momentum 미달인 경우 모두 매도
+//==============================================
+if (dailyAnalysis.getMomentumScore().getAverage() < 50) {
+    log.info("[{}] fallback - daily momentum is under 50", assetName)
+    hold = 0
+}
 
-// default sell
-//if (momentumScore.getAverage() < 30) {
-//    hold = 0
-//}
-
+//==============================================
 // return
+//==============================================
 return hold
 
