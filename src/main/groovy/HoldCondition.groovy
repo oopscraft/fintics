@@ -91,6 +91,7 @@ def assetName = "${assetIndicator.getAssetName()}(${assetId})"
 // analysis
 def fastAnalysis = new Analysis(assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 1))
 def slowAnalysis = new Analysis(assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 5))
+def hourlyAnalysis = new Analysis(assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 60))
 def dailyAnalysis = new Analysis(assetIndicator.getOhlcvs(Ohlcv.Type.DAILY, 1))
 
 // range of price change
@@ -141,7 +142,11 @@ if (fastAnalysis.getMomentumScore().getAverage() < 30) {
 //==============================================
 // fallback - daily momentum 미달인 경우 모두 매도
 //==============================================
-if (dailyAnalysis.getMomentumScore().getAverage() < 50) {
+def marketMomentumScoreAverage = [
+        hourlyAnalysis.getMomentumScore().getAverage(),
+        dailyAnalysis.getMomentumScore().getAverage()
+].average()
+if (marketMomentumScoreAverage < 50) {
     log.info("[{}] fallback - daily momentum is under 50", assetName)
     hold = 0
 }
