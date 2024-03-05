@@ -9,24 +9,24 @@ import java.time.LocalTime
 class Analysis {
     List<Ohlcv> ohlcvs
     List<Ema> emas
-    List<Bb> bbs
+    List<BollingerBand> bbs
     List<Macd> macds
     List<Rsi> rsis
     List<Dmi> dmis
     List<Obv> obvs
-    List<Co> cos
+    List<ChaikinOscillator> cos
 }
 
 def getAnalysis(List<Ohlcv> ohlcvs) {
     def analysis = new Analysis()
     analysis.ohlcvs = ohlcvs
     analysis.emas = tool.calculate(ohlcvs, EmaContext.DEFAULT)
-    analysis.bbs = tool.calculate(ohlcvs, BbContext.DEFAULT)
+    analysis.bbs = tool.calculate(ohlcvs, BollingerBandContext.DEFAULT)
     analysis.macds = tool.calculate(ohlcvs, MacdContext.DEFAULT)
     analysis.rsis = tool.calculate(ohlcvs, RsiContext.DEFAULT)
     analysis.dmis = tool.calculate(ohlcvs, DmiContext.DEFAULT)
     analysis.obvs = tool.calculate(ohlcvs, ObvContext.DEFAULT)
-    analysis.cos = tool.calculate(ohlcvs, CoContext.DEFAULT)
+    analysis.cos = tool.calculate(ohlcvs, ChaikinOscillatorContext.DEFAULT)
     return analysis
 }
 
@@ -84,10 +84,10 @@ def getScore(Analysis analysis) {
     // bb
     def bbs = analysis.bbs.take(period)
     def bb = bbs.first()
-    def bbMbbs = bbs.collect{it.mbb}
+    def bbMbbs = bbs.collect{it.getMiddle}
     def bbMbbPctChange = tool.pctChange(bbMbbs)
     score.bbMbbPctChange = bbMbbPctChange > 0 ? 100 : 0
-    score.bbPriceOverMbb = ohlcv.closePrice > bb.mbb ? 100 : 0
+    score.bbPriceOverMbb = ohlcv.closePrice > bb.getMiddle ? 100 : 0
 
     // macd
     def macds = analysis.macds.take(period)

@@ -17,23 +17,23 @@ class Analysis {
     List<Ohlcv> ohlcvs
     List<Ema> fastEmas
     List<Ema> slowEmas
-    List<Bb> bbs
+    List<BollingerBand> bbs
     List<Macd> macds
     List<Rsi> rsis
     List<Dmi> dmis
     List<Obv> obvs
-    List<Co> cos
+    List<ChaikinOscillator> cos
 
     Analysis(List<Ohlcv> ohlcvs) {
         this.ohlcvs = ohlcvs
         this.fastEmas = Tool.calculate(ohlcvs, EmaContext.of(5))
         this.slowEmas = Tool.calculate(ohlcvs, EmaContext.of(10))
-        this.bbs = Tool.calculate(ohlcvs, BbContext.DEFAULT)
+        this.bbs = Tool.calculate(ohlcvs, BollingerBandContext.DEFAULT)
         this.macds = Tool.calculate(ohlcvs, MacdContext.DEFAULT)
         this.rsis = Tool.calculate(ohlcvs, RsiContext.DEFAULT)
         this.dmis = Tool.calculate(ohlcvs, DmiContext.DEFAULT)
         this.obvs = Tool.calculate(ohlcvs, ObvContext.DEFAULT)
-        this.cos = Tool.calculate(ohlcvs, CoContext.DEFAULT)
+        this.cos = Tool.calculate(ohlcvs, ChaikinOscillatorContext.DEFAULT)
     }
 
     def getMomentumScore() {

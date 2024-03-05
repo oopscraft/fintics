@@ -80,7 +80,7 @@ def analyzeIndicator(Indicator indicator, Ohlcv.Type ohlcvType, int ohlcvPeriod)
     log.debug("[{}] obv:{}", name, obv)
 
     // co
-    def cos = indicator.calculate(ohlcvType, ohlcvPeriod, CoContext.DEFAULT)
+    def cos = indicator.calculate(ohlcvType, ohlcvPeriod, ChaikinOscillatorContext.DEFAULT)
     def co = cos.first()
     def coValues = cos.collect{it.value}
     def coValue = coValues.first()

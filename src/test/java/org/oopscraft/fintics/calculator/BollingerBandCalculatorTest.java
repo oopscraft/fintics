@@ -13,13 +13,13 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Slf4j
-public class BbCalculatorTest extends AbstractCalculatorTest {
+public class BollingerBandCalculatorTest extends AbstractCalculatorTest {
 
     @Test
     void test() {
         // given
         List<Map<String,String>> inputRows = readTsv(
-                "org/oopscraft/fintics/calculator/BbCalculatorTest.tsv",
+                "org/oopscraft/fintics/calculator/BollingerBandCalculatorTest.tsv",
                 new String[]{"dateTime","open","high","low","close","ubb","mbb","lbb","bandWidth","percentB"}
         );
         List<Ohlcv> ohlcvs = inputRows.stream()
@@ -36,12 +36,12 @@ public class BbCalculatorTest extends AbstractCalculatorTest {
         Collections.reverse(ohlcvs);
 
         // when
-        List<Bb> bbs = new BbCalculator(BbContext.DEFAULT)
+        List<BollingerBand> bollingerBands = new BollingerBandCalculator(BollingerBandContext.DEFAULT)
                 .calculate(ohlcvs);
 
         // then
-        for(int i = 0, size = bbs.size(); i < size; i ++) {
-            Bb bb = bbs.get(i);
+        for(int i = 0, size = bollingerBands.size(); i < size; i ++) {
+            BollingerBand bollingerBand = bollingerBands.get(i);
             Ohlcv ohlcv = ohlcvs.get(i);
             Map<String,String> inputRow = inputRows.get(i);
             BigDecimal originOpenPrice = new BigDecimal(inputRow.get("open").replaceAll(",",""));
@@ -57,7 +57,7 @@ public class BbCalculatorTest extends AbstractCalculatorTest {
 
             log.info("[{}] {},{},{},{}|{},{},{},{},{} / {},{},{},{}|{},{},{},{},{}", i,
                     originOpenPrice, originHighPrice, originLowPrice, originClosePrice, originUbb, originMbb, originLbb, originBandWidth, originPercentB,
-                    ohlcv.getOpenPrice(), ohlcv.getHighPrice(), ohlcv.getLowPrice(), ohlcv.getClosePrice(), bb.getUbb(), bb.getMbb(), bb.getLbb(), bb.getBandWidth(), bb.getPercentB());
+                    ohlcv.getOpenPrice(), ohlcv.getHighPrice(), ohlcv.getLowPrice(), ohlcv.getClosePrice(), bollingerBand.getUpper(), bollingerBand.getMiddle(), bollingerBand.getLower(), bollingerBand.getBandWidth(), bollingerBand.getPercentB());
 
             // 초반 데이터는 데이터 부족으로 불일치함.
             if(i < (26*3) + 1) {

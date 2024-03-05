@@ -3,25 +3,23 @@ package org.oopscraft.fintics.calculator;
 import org.oopscraft.fintics.model.Ohlcv;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-public class BbCalculator extends Calculator<BbContext, Bb> {
+public class BollingerBandCalculator extends Calculator<BollingerBandContext, BollingerBand> {
 
-    public BbCalculator(BbContext context) {
+    public BollingerBandCalculator(BollingerBandContext context) {
         super(context);
     }
 
     @Override
-    public List<Bb> calculate(List<Ohlcv> series) {
+    public List<BollingerBand> calculate(List<Ohlcv> series) {
         List<BigDecimal> closePrices = series.stream()
                 .map(Ohlcv::getClosePrice)
                 .toList();
 
-        List<Bb> bbs = new ArrayList<Bb>();
+        List<BollingerBand> bbs = new ArrayList<BollingerBand>();
         BigDecimal stdMultiplier = BigDecimal.valueOf(getContext().getStdMultiplier());
 
         for (int i = 0; i < closePrices.size(); i ++) {
@@ -52,10 +50,10 @@ public class BbCalculator extends Calculator<BbContext, Bb> {
                         .multiply(BigDecimal.valueOf(100));
             }
 
-            Bb bb = Bb.builder()
-                    .mbb(mbb.setScale(2, RoundingMode.HALF_UP))
-                    .ubb(ubb.setScale(2, RoundingMode.HALF_UP))
-                    .lbb(lbb.setScale(2, RoundingMode.HALF_UP))
+            BollingerBand bb = BollingerBand.builder()
+                    .middle(mbb.setScale(2, RoundingMode.HALF_UP))
+                    .upper(ubb.setScale(2, RoundingMode.HALF_UP))
+                    .lower(lbb.setScale(2, RoundingMode.HALF_UP))
                     .bandWidth(bandWidth.setScale(2, RoundingMode.HALF_UP))
                     .percentB(percentB.setScale(2, RoundingMode.HALF_UP))
                     .build();

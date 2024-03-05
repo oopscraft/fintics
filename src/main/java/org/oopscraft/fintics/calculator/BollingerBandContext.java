@@ -5,16 +5,16 @@ import lombok.experimental.SuperBuilder;
 
 @SuperBuilder
 @Getter
-public class BbContext extends CalculateContext {
+public class BollingerBandContext extends CalculateContext {
 
-    public static final BbContext DEFAULT = BbContext.of(20, 2);
+    public static final BollingerBandContext DEFAULT = BollingerBandContext.of(20, 2);
 
     private final int period;
 
     private final int stdMultiplier;
 
-    public static BbContext of(int period, int stdMultiplier) {
-        return BbContext.builder()
+    public static BollingerBandContext of(int period, int stdMultiplier) {
+        return BollingerBandContext.builder()
                 .period(period)
                 .stdMultiplier(stdMultiplier)
                 .build();

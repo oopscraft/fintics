@@ -11,7 +11,7 @@ def getIndicatorData(Indicator indicator, Ohlcv.Type ohlcvType, int ohlcvPeriod)
     result.rsis = indicator.calculate(ohlcvType, ohlcvPeriod, RsiContext.DEFAULT)
     result.dmis = indicator.calculate(ohlcvType, ohlcvPeriod, DmiContext.DEFAULT)
     result.obvs = indicator.calculate(ohlcvType, ohlcvPeriod, ObvContext.DEFAULT)
-    result.cos = indicator.calculate(ohlcvType, ohlcvPeriod, CoContext.DEFAULT)
+    result.cos = indicator.calculate(ohlcvType, ohlcvPeriod, ChaikinOscillatorContext.DEFAULT)
     return result
 }
 

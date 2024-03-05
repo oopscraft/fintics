@@ -10,12 +10,12 @@ public class CalculatorFactory {
     private final static Map<Class<?>, Class<?>> registry = new LinkedHashMap<>(){{
         put(SmaContext.class, SmaCalculator.class);
         put(EmaContext.class, EmaCalculator.class);
-        put(BbContext.class, BbCalculator.class);
+        put(BollingerBandContext.class, BollingerBandCalculator.class);
         put(MacdContext.class, MacdCalculator.class);
         put(RsiContext.class, RsiCalculator.class);
         put(DmiContext.class, DmiCalculator.class);
         put(ObvContext.class, ObvCalculator.class);
-        put(CoContext.class, CoCalculator.class);
+        put(ChaikinOscillatorContext.class, ChaikinOscillatorCalculator.class);
     }};
 
     public static <C extends CalculateContext, R extends CalculateResult, T extends Calculator<C,R>> T getCalculator(C context) {

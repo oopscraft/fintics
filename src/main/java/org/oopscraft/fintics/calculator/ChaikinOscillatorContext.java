@@ -5,9 +5,9 @@ import lombok.experimental.SuperBuilder;
 
 @SuperBuilder
 @Getter
-public class CoContext extends CalculateContext {
+public class ChaikinOscillatorContext extends CalculateContext {
 
-    public static final CoContext DEFAULT = CoContext.of(3, 10, 9);
+    public static final ChaikinOscillatorContext DEFAULT = ChaikinOscillatorContext.of(3, 10, 9);
 
     private final int shortPeriod;
 
@@ -15,8 +15,8 @@ public class CoContext extends CalculateContext {
 
     private final int signalPeriod;
 
-    public static CoContext of(int shortPeriod, int longPeriod, int signalPeriod) {
-        return CoContext.builder()
+    public static ChaikinOscillatorContext of(int shortPeriod, int longPeriod, int signalPeriod) {
+        return ChaikinOscillatorContext.builder()
                 .shortPeriod(shortPeriod)
                 .longPeriod(longPeriod)
                 .signalPeriod(signalPeriod)

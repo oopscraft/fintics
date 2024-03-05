@@ -9,13 +9,13 @@ import java.math.BigDecimal;
 @Builder
 @Getter
 @ToString
-public class Bb implements CalculateResult {
+public class BollingerBand implements CalculateResult {
 
-    private BigDecimal mbb;
+    private BigDecimal middle;
 
-    private BigDecimal ubb;
+    private BigDecimal upper;
 
-    private BigDecimal lbb;
+    private BigDecimal lower;
 
     private BigDecimal bandWidth;
 

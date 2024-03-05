@@ -7,14 +7,14 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CoCalculator extends Calculator<CoContext, Co> {
+public class ChaikinOscillatorCalculator extends Calculator<ChaikinOscillatorContext, ChaikinOscillator> {
 
-    public CoCalculator(CoContext context) {
+    public ChaikinOscillatorCalculator(ChaikinOscillatorContext context) {
         super(context);
     }
 
     @Override
-    public List<Co> calculate(List<Ohlcv> series) {
+    public List<ChaikinOscillator> calculate(List<Ohlcv> series) {
         // ad values
         List<BigDecimal> adValues = new ArrayList<>();
         BigDecimal adValue = BigDecimal.ZERO;
@@ -48,9 +48,9 @@ public class CoCalculator extends Calculator<CoContext, Co> {
         List<BigDecimal> signals = emas(values, getContext().getSignalPeriod(), getContext().getMathContext());
 
         // chaikin's oscillator
-        List<Co> cos = new ArrayList<>();
+        List<ChaikinOscillator> cos = new ArrayList<>();
         for(int i = 0; i < values.size(); i ++) {
-            Co co = Co.builder()
+            ChaikinOscillator co = ChaikinOscillator.builder()
                     .value(values.get(i).setScale(2, RoundingMode.HALF_UP))
                     .signal(signals.get(i).setScale(2, RoundingMode.HALF_UP))
                     .build();

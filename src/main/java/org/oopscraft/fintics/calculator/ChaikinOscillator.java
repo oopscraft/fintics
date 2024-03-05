@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 @Builder
 @Getter
 @ToString
-public class Co implements CalculateResult {
+public class ChaikinOscillator implements CalculateResult {
 
     private final BigDecimal value;
 

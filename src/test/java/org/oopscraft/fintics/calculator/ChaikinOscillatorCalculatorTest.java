@@ -13,13 +13,13 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Slf4j
-public class CoCalculatorTest extends AbstractCalculatorTest {
+public class ChaikinOscillatorCalculatorTest extends AbstractCalculatorTest {
 
     @Test
     void test() {
         // given
         List<Map<String,String>> inputRows = readTsv(
-                "org/oopscraft/fintics/calculator/CoCalculatorTest.tsv",
+                "org/oopscraft/fintics/calculator/ChaikinOscillatorCalculatorTest.tsv",
                 new String[]{"dateTime","open","high","low","close","volume","CO","Signal"}
         );
         List<Ohlcv> ohlcvs = inputRows.stream()
@@ -37,12 +37,12 @@ public class CoCalculatorTest extends AbstractCalculatorTest {
         Collections.reverse(ohlcvs);
 
         // when
-        List<Co> cos = new CoCalculator(CoContext.DEFAULT)
+        List<ChaikinOscillator> chaikinOscillators = new ChaikinOscillatorCalculator(ChaikinOscillatorContext.DEFAULT)
                 .calculate(ohlcvs);
 
         // then
-        for(int i = 0, size = cos.size(); i < size; i ++) {
-            Co co = cos.get(i);
+        for(int i = 0, size = chaikinOscillators.size(); i < size; i ++) {
+            ChaikinOscillator chaikinOscillator = chaikinOscillators.get(i);
             Ohlcv ohlcv = ohlcvs.get(i);
             Map<String,String> inputRow = inputRows.get(i);
             BigDecimal originOpenPrice = new BigDecimal(inputRow.get("open").replaceAll(",",""));
@@ -55,11 +55,11 @@ public class CoCalculatorTest extends AbstractCalculatorTest {
 
             log.info("[{}] {},{},{},{},{},{},{} / {},{},{},{},{},{},{}", i,
                     originOpenPrice, originHighPrice, originLowPrice, originClosePrice, originVolume, originCo, originSignal,
-                    ohlcv.getOpenPrice(), ohlcv.getHighPrice(), ohlcv.getLowPrice(), ohlcv.getClosePrice(), ohlcv.getVolume(), co.getValue(), co.getSignal());
+                    ohlcv.getOpenPrice(), ohlcv.getHighPrice(), ohlcv.getLowPrice(), ohlcv.getClosePrice(), ohlcv.getVolume(), chaikinOscillator.getValue(), chaikinOscillator.getSignal());
 
             // assert
-            assertEquals(originCo.doubleValue(), co.getValue().doubleValue(), 0.1);
-            assertEquals(originSignal.doubleValue(), co.getSignal().doubleValue(), 0.1);
+            assertEquals(originCo.doubleValue(), chaikinOscillator.getValue().doubleValue(), 0.1);
+            assertEquals(originSignal.doubleValue(), chaikinOscillator.getSignal().doubleValue(), 0.1);
         }
 
     }
