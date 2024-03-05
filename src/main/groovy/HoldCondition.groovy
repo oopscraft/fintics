@@ -1,11 +1,167 @@
 import groovy.transform.ToString
-import org.hibernate.annotations.common.reflection.XMember
 import org.oopscraft.fintics.calculator.*
-import org.oopscraft.fintics.model.BalanceAsset
 import org.oopscraft.fintics.model.Ohlcv
 import org.oopscraft.fintics.trade.Tool
 
-import java.time.LocalTime
+
+interface Scorable {
+    def getAverage()
+}
+
+@ToString(includeNames = true)
+class Score extends LinkedHashMap<String, BigDecimal> implements Scorable {
+    def getAverage() {
+        return this.values().average()
+    }
+}
+
+class ScoreGroup extends LinkedHashMap<String, Scorable> implements Scorable {
+    def getAverage() {
+        return this.values().collect{it.getAverage()}.average()
+    }
+    @Override
+    String toString() {
+        return this.join('\n')
+    }
+}
+
+interface Analyzable {
+    Scorable getMomentumScore()
+    Scorable getOverboughtScore()
+    Scorable getOversoldScore()
+}
+
+class Analysis implements Analyzable {
+    List<Ohlcv> ohlcvs
+    List<Ema> fastEmas
+    List<Ema> middleEmas
+    List<Ema> slowEmas
+    List<BollingerBand> bollingerBands
+    List<Macd> macds
+    List<Rsi> rsis
+    List<Dmi> dmis
+    List<Obv> obvs
+    List<ChaikinOscillator> chaikinOscillator
+
+    Analysis(List<Ohlcv> ohlcvs) {
+        this.ohlcvs = ohlcvs
+        this.fastEmas = Tool.calculate(ohlcvs, EmaContext.of(10))
+        this.middleEmas = Tool.calculate(ohlcvs, EmaContext.of(20))
+        this.slowEmas = Tool.calculate(ohlcvs, EmaContext.of(60))
+        this.bollingerBands = Tool.calculate(ohlcvs, BollingerBandContext.DEFAULT)
+        this.macds = Tool.calculate(ohlcvs, MacdContext.DEFAULT)
+        this.rsis = Tool.calculate(ohlcvs, RsiContext.DEFAULT)
+        this.dmis = Tool.calculate(ohlcvs, DmiContext.DEFAULT)
+        this.obvs = Tool.calculate(ohlcvs, ObvContext.DEFAULT)
+        this.chaikinOscillator = Tool.calculate(ohlcvs, ChaikinOscillatorContext.DEFAULT)
+    }
+
+    @Override
+    Scorable getMomentumScore() {
+        def score = new Score()
+        // define
+        def ohlcv = this.ohlcvs.first()
+        // ema
+        def fastEma = this.fastEmas.first()
+        def slowEma = this.middleEmas.first()
+        score.emaValueFastOverSlow = fastEma.value > slowEma.value ? 100 : 0
+        // bollinger band
+        def bollingerBand = this.bollingerBands.first()
+        score.bollingerBandPriceOverMiddle = ohlcv.closePrice > bollingerBand.middle ? 100 : 0
+        // macd
+        def macd = this.macds.first()
+        score.macdValue = macd.value > 0 ? 100 : 0
+        score.macdValueOverSignal = macd.value > 0 && macd.value > macd.signal ? 100 : 0
+        score.macdOscillator = macd.oscillator > 0 ? 100 : 0
+        // rsi
+        def rsi = this.rsis.first()
+        score.rsiValue = rsi.value > 50 ? 100 : 0
+        score.rsiValueOverSignal = rsi.value > 50 && rsi.value > rsi.signal ? 100 : 0
+        // dmi
+        def dmi = this.dmis.first()
+        score.dmiPdiOverMdi = dmi.pdi > dmi.mdi ? 100 : 0
+        score.dmiAdx = dmi.adx > 25 && dmi.pdi > dmi.mdi ? 100 : 0
+        // obv
+        def obv = this.obvs.first()
+        score.obvValueOverSignal = obv.value > obv.signal ? 100 : 0
+        // co
+        def chaikinOscillator = this.chaikinOscillator.first()
+        score.coValue = chaikinOscillator.value > 0 ? 100 : 0
+        score.coValueOverSignal = chaikinOscillator.value > chaikinOscillator.signal ? 100 : 0
+        // return
+        return score
+    }
+
+    @Override
+    Scorable getOverboughtScore() {
+        def score = new Score()
+        // rsi
+        def rsi = this.rsis.first()
+        score.rsiValue = rsi.value >= 70 ? 100 : 0
+        // bollinger band
+//        def bollingerBand = this.bollingerBands.first()
+//        score.bollingerBandPercentB = bollingerBand.percentB >= 100 ? 100 : 0
+        // return
+        return score
+    }
+
+    @Override
+    Scorable getOversoldScore() {
+        def score = new Score()
+        // rsi
+        def rsi = this.rsis.first()
+        score.rsiValue = rsi.value <= 30 ? 100 : 0
+        // bollinger band
+//        def bollingerBand = this.bollingerBands.first()
+//        score.bollingerBandPercentB = bollingerBand.percentB <= 0 ? 100 : 0
+        // return
+        return score
+    }
+
+    @Override
+    String toString() {
+        return [momentumScore: "${this.getMomentumScore().getAverage()}",
+                overboughtScore: "${this.getOverboughtScore().getAverage()}",
+                oversoldScore: "${this.getOversoldScore().getAverage()}"
+        ].toString()
+    }
+}
+
+class AnalysisGroup extends LinkedHashMap<String,Analysis> implements Analyzable {
+
+    AnalysisGroup(Map map) {
+        super(map)
+    }
+
+    @Override
+    Scorable getMomentumScore() {
+        def scoreGroup = new ScoreGroup()
+        this.each{it -> scoreGroup.put(it.key, it.value.getMomentumScore())}
+        return scoreGroup
+    }
+
+    @Override
+    Scorable getOverboughtScore() {
+        def scoreGroup = new ScoreGroup()
+        this.each{it -> scoreGroup.put(it.key, it.value.getOverboughtScore())}
+        return scoreGroup
+    }
+
+    @Override
+    Scorable getOversoldScore() {
+        def scoreGroup = new ScoreGroup()
+        this.each{it -> scoreGroup.put(it.key, it.value.getOversoldScore())}
+        return scoreGroup
+    }
+
+    @Override
+    String toString() {
+        return [momentumScore: "${this.getMomentumScore().getAverage()}",
+                overboughtScore: "${this.getOverboughtScore().getAverage()}",
+                oversoldScore: "${this.getOversoldScore().getAverage()}"
+        ].toString() + super.toString()
+    }
+}
 
 //==========================
 // defines
@@ -13,102 +169,90 @@ import java.time.LocalTime
 def hold = null
 def assetId = assetIndicator.getAssetId()
 def assetName = "${assetIndicator.getAssetName()}(${assetId})"
-List<Ohlcv> minuteOhlcvs = assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 1)
+
+// ohlcv
+List<Ohlcv> ohlcvs = assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 1)
+def analysis = new Analysis(ohlcvs)
+
+// daily
 List<Ohlcv> dailyOhlcvs = assetIndicator.getOhlcvs(Ohlcv.Type.DAILY, 1)
-def prices = minuteOhlcvs.collect{it.closePrice}
-def zScores = Tool.zScores(prices.take(20))
+def dailyAnalysis = new Analysis(dailyOhlcvs)
 
-// bollinger band
-List<BollingerBand> bollingerBands = Tool.calculate(assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 5), BollingerBandContext.DEFAULT)
-def middles = bollingerBands.collect{it.middle}
-def uppers = bollingerBands.collect{it.upper}
-def lowers = bollingerBands.collect{it.lower}
+// wave
+def waveAnalysis = new AnalysisGroup(
+        minute5: new Analysis(assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 5))
+)
 
+// tide
+def tideAnalysis = new AnalysisGroup(
+        hourly: new Analysis(assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 60)),
+        daily: new Analysis(assetIndicator.getOhlcvs(Ohlcv.Type.DAILY, 1))
+)
 
-if (zScores.first() > 2.0) {
-    hold = 1
+//=============================
+// additional
+//=============================
+// price change percentage
+def pricePctChange = Tool.pctChange([
+        ohlcvs.first().closePrice,
+        dailyOhlcvs.first().openPrice
+])
+// high price change average
+def highPricePctChangeAverage = dailyOhlcvs.take(14)
+        .collect{(it.highPrice-it.openPrice)/it.closePrice*100}
+        .average()
+// low price change average
+def lowPricePctChangeAverage = dailyOhlcvs.take(14)
+        .collect{(it.lowPrice-it.openPrice)/it.closePrice*100}
+        .average()
+
+//=============================
+// logging
+//=============================
+log.info("[{}] analysis: {}", assetName, analysis)
+log.info("[{}] dailyAnalysis: {}", assetName, dailyAnalysis)
+log.info("[{}] waveAnalysis: {}", assetName, waveAnalysis)
+log.info("[{}] tideAnalysis: {}", assetName, tideAnalysis)
+log.info("[{}] pricePctChange: {}", assetName, pricePctChange)
+log.info("[{}] highPricePctChangeAverage: {}", assetName, highPricePctChangeAverage)
+log.info("[{}] lowPricePctChangeAverage: {}", assetName, lowPricePctChangeAverage)
+
+//=============================
+// trade
+//=============================
+// buy
+if (analysis.getMomentumScore().getAverage() >= 70) {
+    // oversold
+    if (waveAnalysis.getOversoldScore().getAverage() >= 50) {
+        hold = 1
+    }
+    // alt-1. 금일 하락 분이 최근 평균 이상 이면 매수
+    if (pricePctChange < lowPricePctChangeAverage) {
+        hold = 1
+    }
 }
 
-if (zScores.first() < -2.0) {
+// sell
+if (analysis.getMomentumScore().getAverage() <= 30) {
+    // overbought
+    if (waveAnalysis.getOverboughtScore().getAverage() >= 50) {
+        hold = 0
+    }
+    // alt-1. 금일 상승 분이 최근 평균 이상 이면 매도
+    if (pricePctChange > highPricePctChangeAverage) {
+        hold = 0
+    }
+}
+
+//==============================
+// default fallback
+//==============================
+if (tideAnalysis.getMomentumScore().getAverage() <= 50) {
     hold = 0
 }
 
-
+//==============================
+// return
+//==============================
 return hold
 
-
-
-//// analysis
-//def fastAnalysis = new Analysis(assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 1))
-//def slowAnalysis = new Analysis(assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 5))
-//def hourlyAnalysis = new Analysis(assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 60))
-//def dailyAnalysis = new Analysis(assetIndicator.getOhlcvs(Ohlcv.Type.DAILY, 1))
-//
-//// range of price change
-//def minuteOhlcvs = assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 1)
-//def dailyOhlcvs = assetIndicator.getOhlcvs(Ohlcv.Type.DAILY, 1)
-//def price = minuteOhlcvs.first().closePrice
-//def pricePctChange = Tool.pctChange([
-//        minuteOhlcvs.first().closePrice,
-//        dailyOhlcvs.first().openPrice
-//])
-//def highPricePctChangeAverage = dailyOhlcvs.take(14)
-//        .collect{(it.highPrice-it.openPrice)/it.closePrice*100}
-//        .average()
-//def lowPricePctChangeAverage = dailyOhlcvs.take(14)
-//        .collect{(it.lowPrice-it.openPrice)/it.closePrice*100}
-//        .average()
-//List<Ohlcv> todayOhlcvs = minuteOhlcvs.findAll{it.dateTime.toLocalDate().equals(dateTime.toLocalDate())}
-//def todayHighPrice = todayOhlcvs.collect{it.closePrice}.max()
-//def todayLowPrice = todayOhlcvs.collect{it.closePrice}.min()
-//def todayMiddlePrice = (todayHighPrice + todayLowPrice)/2
-//
-//log.info("[{}] pricePctChange: {}", assetName, pricePctChange)
-//log.info("[{}] highPricePctChangeAverage: {}", assetName, highPricePctChangeAverage)
-//log.info("[{}] lowPricePctChangeAverage: {}", assetName, lowPricePctChangeAverage)
-//
-////==============================================
-//// 단기 상승 시작 시
-////==============================================
-//if (fastAnalysis.getMomentumScore().getAverage() > 70) {
-//    // 평균 하락 폭 보다 더 하락한 경우 매수
-//    if (pricePctChange < lowPricePctChangeAverage) {
-//        hold = 1
-//    }
-//    // 중기 과매도 구간 이면 매수
-//    if (slowAnalysis.getOversoldScore().getAverage() > 50) {
-//        hold = 1
-//    }
-//}
-//
-////===============================================
-//// 단기 하락 시작 시
-////===============================================
-//if (fastAnalysis.getMomentumScore().getAverage() < 30) {
-//    // 평균 상승 폭 더 상승한 경우 경우 매도
-//    if (pricePctChange > highPricePctChangeAverage) {
-//        hold = 0
-//    }
-//    // 중기 과매수 구간 이면 매도
-//    if (slowAnalysis.getOverboughtScore().getAverage() > 50) {
-//        hold = 0
-//    }
-//}
-//
-////==============================================
-//// fallback - daily momentum 미달인 경우 모두 매도
-////==============================================
-//def marketMomentumScoreAverage = [
-//        hourlyAnalysis.getMomentumScore().getAverage(),
-//        dailyAnalysis.getMomentumScore().getAverage()
-//].average()
-//if (marketMomentumScoreAverage < 50) {
-//    log.info("[{}] fallback - daily momentum is under 50", assetName)
-//    hold = 0
-//}
-//
-////==============================================
-//// return
-////==============================================
-//return hold
-//

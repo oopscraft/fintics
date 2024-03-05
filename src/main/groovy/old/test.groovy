@@ -105,11 +105,11 @@ def priceMa = priceMas.first()
 //}
 
 def analysis = new Analysis(ohlcvs)
-def momentumScore = analysis.getMomentumScore()
+def momentumScore = analysis.getMomentumScores()
 def longAnalysis = new Analysis(assetIndicator.getOhlcvs(Ohlcv.Type.DAILY, 1))
-def longMomentumScore = longAnalysis.getMomentumScore()
+def longMomentumScore = longAnalysis.getMomentumScores()
 def pastAnalysis = new Analysis(ohlcvs.drop(20))
-def pastMomentumScore = pastAnalysis.getMomentumScore()
+def pastMomentumScore = pastAnalysis.getMomentumScores()
 
 if (longMomentumScore.getAverage() > 70) {
     if (price < priceMa.value) {

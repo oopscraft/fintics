@@ -133,7 +133,7 @@ assetAnalysisMap.minute30 = analyzeIndicator(assetIndicator, OhlcvType.MINUTE, 3
 assetAnalysisMap.minute60 = analyzeIndicator(assetIndicator, OhlcvType.MINUTE, 60)
 assetAnalysisMap.daily = analyzeIndicator(assetIndicator, OhlcvType.DAILY, 1)
 assetAnalysisMap.each { key, value ->
-    def average = value.values().average()
+    def average = value.values().getAverage()
     log.debug("[{}] assetAnalysisMap.{}: {}", assetAlias, key, average)
     analysisAverages.add(average)
     assetAnalysisAverages.add(average)
@@ -147,11 +147,11 @@ def indiceAnalysisAverages = []
 
 // USD/KRW
 indiceAnalysisMap.usdKrw = analyzeIndicator(indiceIndicators['USD_KRW'], OhlcvType.MINUTE, 60)
-analysisAverages.add(indiceAnalysisMap.usdKrw.values().average())
+analysisAverages.add(indiceAnalysisMap.usdKrw.values().getAverage())
 
 // logging
 indiceAnalysisMap.each { key, value ->
-    def average = value.values().average()
+    def average = value.values().getAverage()
     log.debug("[{}] indiceAnalysisMap.{}: {}", assetAlias, key, average)
     indiceAnalysisAverages.add(average)
 }

@@ -134,7 +134,7 @@ assetAnalysisMap.minute30 = analyzeIndicator(assetIndicator, Ohlcv.Type.MINUTE, 
 assetAnalysisMap.minute60 = analyzeIndicator(assetIndicator, Ohlcv.Type.MINUTE, 60)
 assetAnalysisMap.daily = analyzeIndicator(assetIndicator, Ohlcv.Type.DAILY, 1)
 assetAnalysisMap.each { key, value ->
-    def average = value.values().average()
+    def average = value.values().getAverage()
     log.debug("[{}] assetAnalysisMap.{}: {}", assetAlias, key, average)
     analysisAverages.add(average)
     assetAnalysisAverages.add(average)
@@ -160,7 +160,7 @@ def indiceAnalysisAverages = []
 
 // logging
 indiceAnalysisMap.each { key, value ->
-    def average = value.values().average()
+    def average = value.values().getAverage()
     log.debug("[{}] indiceAnalysisMap.{}: {}", assetAlias, key, average)
     indiceAnalysisAverages.add(average)
 }

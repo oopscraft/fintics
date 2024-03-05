@@ -23,7 +23,7 @@ public class TradeLogAppender extends AppenderBase<ILoggingEvent> {
         this.trade = trade;
         this.messagingTemplate = messagingTemplate;
         layout = new PatternLayout();
-        layout.setPattern("%d{yyyy-MM-dd HH:mm:ss} %-5level [%thread] - %msg");
+        layout.setPattern("%d{yyyy-MM-dd HH:mm:ss} %-5level [%.-12thread] - %msg");
         layout.setContext(context);
         layout.start();
     }
