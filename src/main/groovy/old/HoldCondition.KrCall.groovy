@@ -216,8 +216,8 @@ def indiceScores = [
 
 // total score average
 def totalScores = [
-        assetScores.hourly.getAverage(),
-        assetScores.daily.getAverage(),
+        assetScores.hourly.getScore(),
+        assetScores.daily.getScore(),
 //        indiceScores.kospi.getAverage()
 ]
 def totalScoreAverage = totalScores.average()
