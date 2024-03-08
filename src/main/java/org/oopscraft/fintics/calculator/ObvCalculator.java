@@ -6,7 +6,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class ObvCalculator extends Calculator<ObvContext, Obv> {
 
@@ -36,12 +35,13 @@ public class ObvCalculator extends Calculator<ObvContext, Obv> {
         // signal
         List<BigDecimal> signals = emas(obvValues, getContext().getSignalPeriod(), getContext().getMathContext()).stream()
                 .map(value -> value.setScale(0, RoundingMode.HALF_UP))
-                .collect(Collectors.toList());
+                .toList();
 
         // obv
         List<Obv> obvs = new ArrayList<>();
         for(int i = 0; i < obvValues.size(); i ++) {
             Obv obv = Obv.builder()
+                    .dateTime(series.get(i).getDateTime())
                     .value(obvValues.get(i))
                     .signal(signals.get(i))
                     .build();

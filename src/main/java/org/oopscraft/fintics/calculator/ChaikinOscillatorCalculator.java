@@ -18,15 +18,14 @@ public class ChaikinOscillatorCalculator extends Calculator<ChaikinOscillatorCon
         // ad values
         List<BigDecimal> adValues = new ArrayList<>();
         BigDecimal adValue = BigDecimal.ZERO;
-        for (int i = 0; i < series.size(); i++) {
-            Ohlcv ohlcv = series.get(i);
+        for (Ohlcv ohlcv : series) {
             BigDecimal closeLowDiff = ohlcv.getClosePrice().subtract(ohlcv.getLowPrice());
             BigDecimal highCloseDiff = ohlcv.getHighPrice().subtract(ohlcv.getClosePrice());
             BigDecimal highLowDiff = ohlcv.getHighPrice().subtract(ohlcv.getLowPrice());
             BigDecimal mfm;
-            if(highLowDiff.compareTo(BigDecimal.ZERO) == 0) {
+            if (highLowDiff.compareTo(BigDecimal.ZERO) == 0) {
                 mfm = BigDecimal.ZERO;
-            }else{
+            } else {
                 mfm = closeLowDiff.subtract(highCloseDiff)
                         .divide(highLowDiff, getContext().getMathContext());
             }
@@ -51,6 +50,7 @@ public class ChaikinOscillatorCalculator extends Calculator<ChaikinOscillatorCon
         List<ChaikinOscillator> cos = new ArrayList<>();
         for(int i = 0; i < values.size(); i ++) {
             ChaikinOscillator co = ChaikinOscillator.builder()
+                    .dateTime(series.get(i).getDateTime())
                     .value(values.get(i).setScale(2, RoundingMode.HALF_UP))
                     .signal(signals.get(i).setScale(2, RoundingMode.HALF_UP))
                     .build();

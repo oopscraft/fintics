@@ -22,6 +22,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
@@ -59,17 +61,17 @@ public class TradeExecutor {
     }
 
     public void execute(Trade trade, LocalDateTime dateTime, IndiceClient indiceClient, TradeClient tradeClient) throws InterruptedException {
-        log.info("Check trade - [{}]", trade.getTradeName());
+        log.info("[{}] Check trade", trade.getTradeName());
 
         // check market opened
         if(!tradeClient.isOpened(dateTime)) {
-            log.info("Market not opened.");
+            log.info("[{}] Market not opened.", trade.getTradeName());
             return;
         }
 
         // checks start,end time
         if (!isOperatingTime(trade, dateTime)) {
-            log.info("Not operating time - [{}] {} ~ {}", trade.getTradeName(), trade.getStartAt(), trade.getEndAt());
+            log.info("[{}] Not operating time - {} ~ {}", trade.getTradeName(), trade.getStartAt(), trade.getEndAt());
             return;
         }
 
@@ -108,7 +110,7 @@ public class TradeExecutor {
                 }
 
                 // logging
-                log.info("Check asset - [{}({})]", tradeAsset.getAssetName(), tradeAsset.getAssetId());
+                log.info("[{}] Check asset", tradeAsset.getAssetName());
 
                 // indicator
                 List<Ohlcv> minuteOhlcvs = tradeClient.getMinuteOhlcvs(tradeAsset, dateTime);
@@ -125,8 +127,8 @@ public class TradeExecutor {
                         .minuteOhlcvs(minuteOhlcvs)
                         .dailyOhlcvs(dailyOhlcvs)
                         .build();
-                log.info("MinuteOhlcvs({}):{}", assetIndicator.getMinuteOhlcvs().size(), assetIndicator.getMinuteOhlcvs().isEmpty() ? null : assetIndicator.getMinuteOhlcvs().get(0));
-                log.info("DailyOhlcvs({}):{}", assetIndicator.getDailyOhlcvs().size(), assetIndicator.getDailyOhlcvs().isEmpty() ? null : assetIndicator.getDailyOhlcvs().get(0));
+                log.info("[{}] MinuteOhlcvs({}):{}", tradeAsset.getAssetName(), assetIndicator.getMinuteOhlcvs().size(), assetIndicator.getMinuteOhlcvs().isEmpty() ? null : assetIndicator.getMinuteOhlcvs().get(0));
+                log.info("[{}] DailyOhlcvs({}):{}", tradeAsset.getAssetName(), assetIndicator.getDailyOhlcvs().size(), assetIndicator.getDailyOhlcvs().isEmpty() ? null : assetIndicator.getDailyOhlcvs().get(0));
 
                 // order book
                 OrderBook orderBook = tradeClient.getOrderBook(tradeAsset);
@@ -141,8 +143,10 @@ public class TradeExecutor {
                         .assetIndicator(assetIndicator)
                         .build();
                 holdConditionExecutor.setLog(log);
+                Instant startTime = Instant.now();
                 BigDecimal holdConditionResult = holdConditionExecutor.execute();
-                log.info("holdConditionResult: {}", holdConditionResult);
+                log.info("[{}] Rule script execution elapsed:{}", tradeAsset.getAssetName(), Duration.between(startTime, Instant.now()));
+                log.info("[{}] holdConditionResult: {}", tradeAsset.getAssetName(), holdConditionResult);
 
                 // check hold condition result and count
                 BigDecimal previousHoldConditionResult = holdConditionResultMap.get(tradeAsset.getAssetId());
@@ -156,9 +160,9 @@ public class TradeExecutor {
                 holdConditionResultCountMap.put(tradeAsset.getAssetId(), holdConditionResultCount);
 
                 // checks threshold exceeded
-                log.info("holdConditionResultCount: {}", holdConditionResultCount);
+                log.info("[{}] holdConditionResultCount: {}", tradeAsset.getAssetName(), holdConditionResultCount);
                 if (holdConditionResultCount < trade.getThreshold()) {
-                    log.info("Threshold has not been exceeded yet - threshold is {}", trade.getThreshold());
+                    log.info("[{}] Threshold has not been exceeded yet - threshold is {}", tradeAsset.getAssetName(), trade.getThreshold());
                     continue;
                 }
 
@@ -323,7 +327,7 @@ public class TradeExecutor {
                 .quantity(quantity)
                 .price(price)
                 .build();
-        log.info("buyTradeAsset: {}", order);
+        log.info("[{}] buyTradeAsset: {}", tradeAsset.getAssetName(), order);
         try {
             // check waiting order exists
             Order waitingOrder = tradeClient.getWaitingOrders().stream()
@@ -336,7 +340,7 @@ public class TradeExecutor {
                 // if limit type order, amend order
                 if (waitingOrder.getKind() == Order.Kind.LIMIT) {
                     waitingOrder.setPrice(price);
-                    log.info("amend buy order:{}", waitingOrder);
+                    log.info("[{}] amend buy order:{}", tradeAsset.getAssetName(), waitingOrder);
                     tradeClient.amendOrder(waitingOrder);
                 }
                 return;
@@ -370,7 +374,7 @@ public class TradeExecutor {
                 .quantity(quantity)
                 .price(price)
                 .build();
-        log.info("sellTradeAsset: {}", order);
+        log.info("[{}] sellTradeAsset: {}", tradeAsset.getAssetName(), order);
         try {
             // check waiting order exists
             Order waitingOrder = tradeClient.getWaitingOrders().stream()
@@ -383,7 +387,7 @@ public class TradeExecutor {
                 // if limit type order, amend order
                 if (waitingOrder.getKind() == Order.Kind.LIMIT) {
                     waitingOrder.setPrice(price);
-                    log.info("amend sell order:{}", waitingOrder);
+                    log.info("[{}] amend sell order:{}", tradeAsset.getAssetName(), waitingOrder);
                     tradeClient.amendOrder(waitingOrder);
                 }
                 return;

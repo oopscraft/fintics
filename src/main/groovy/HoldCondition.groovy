@@ -16,10 +16,13 @@ interface Scorable extends Comparable<Number> {
     }
 }
 
-@ToString(includeNames = true)
 class Score extends LinkedHashMap<String, BigDecimal> implements Scorable {
     Number getAverage() {
         return this.values().empty ? 0 : this.values().average() as Number
+    }
+    @Override
+    String toString() {
+        return super.toString()
     }
 }
 
@@ -27,10 +30,9 @@ class ScoreGroup extends LinkedHashMap<String, Scorable> implements Scorable {
     Number getAverage() {
         return this.values().collect{it.getAverage()}.average() as Number
     }
-
     @Override
     String toString() {
-        return this.join("\n")
+        return super.toString()
     }
 }
 
@@ -106,7 +108,9 @@ class Analysis implements Analyzable {
         def score = new Score()
         // rsi
         def rsi = this.rsis.first()
-        score.rsiValue = rsi.value <= 30 ? 100 : 0
+        def rsiValues = this.rsis.collect{it.value}
+        def rsiValueOversold = rsiValues.take(10).any{it <= 30}
+        score.rsiValue = rsiValueOversold && rsi.value > 30 ? 100 : 0
         // return
         return score
     }
@@ -116,7 +120,9 @@ class Analysis implements Analyzable {
         def score = new Score()
         // rsi
         def rsi = this.rsis.first()
-        score.rsiValue = rsi.value >= 70 ? 100 : 0
+        def rsiValues = this.rsis.collect{it.value}
+        def rsiValueOverbought = rsiValues.take(10).any{it >= 70}
+        score.rsiValue = rsiValueOverbought && rsi.value < 70 ? 100 : 0
         // return
         return score
     }
@@ -170,51 +176,48 @@ class AnalysisGroup extends LinkedHashMap<String,Analysis> implements Analyzable
 // defines
 //==========================
 def hold = null
-def assetId = assetIndicator.getAssetId()
-def assetName = "${assetIndicator.getAssetName()}(${assetId})"
 
 // default
 List<Ohlcv> ohlcvs = assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 1)
 def priceZScore = Tool.zScore(ohlcvs.take(20).collect{it.closePrice})
 if (priceZScore.abs() < 1.0) {
-    log.info("[{}] skip - price z-score is under 1.0", assetName)
+    log.info("skip - price z-score is under 1.0")
     return null
 }
 def analysis = new Analysis(ohlcvs)
 
 // wave
-def waveAnalysis = new AnalysisGroup(
-        minute5: new Analysis(assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 5)),
-        minute10: new Analysis(assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 10))
-)
+def waveAnalysis = new Analysis(assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 5))
 
 // tide
 def tideAnalysis = new AnalysisGroup(
-        hourly: new Analysis(assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 60)),
+        hourly: new Analysis(assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 30)),
         daily: new Analysis(assetIndicator.getOhlcvs(Ohlcv.Type.DAILY, 1))
 )
 
 //=============================
 // logging
 //=============================
-log.info("[{}] analysis: {}", assetName, analysis)
-log.info("[{}] waveAnalysis: {}", assetName, waveAnalysis)
-log.info("[{}] tideAnalysis: {}", assetName, tideAnalysis)
+log.info("analysis: {}", analysis)
+log.info("waveAnalysis: {}", waveAnalysis)
+log.info("tideAnalysis: {}", tideAnalysis)
 
 //=============================
 // trade
 //=============================
 // buy
 if (analysis.getMomentumScore() >= 75) {
-    // 과매도 구간 이면 매수
+    // overbought
     if (waveAnalysis.getOversoldScore() >= 50) {
+        log.info("waveAnalysis.oversoldScore: {}", waveAnalysis.getOversoldScore())
         hold = 1
     }
 }
 // sell
 if (analysis.getMomentumScore() <= 25) {
-    // 과매수 구간 이면 매도
+    // oversold
     if (waveAnalysis.getOverboughtScore() >= 50) {
+        log.info("waveAnalysis.overboughtScore: {}", waveAnalysis.getOverboughtScore())
         hold = 0
     }
 }
@@ -223,6 +226,7 @@ if (analysis.getMomentumScore() <= 25) {
 // fallback
 //==============================
 if (tideAnalysis.getMomentumScore() <= 25) {
+    log.info("fallback - tideMomentumScore under {}", tideAnalysis.getMomentumScore())
     hold = 0
 }
 

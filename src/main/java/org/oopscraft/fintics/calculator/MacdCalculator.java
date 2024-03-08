@@ -43,6 +43,7 @@ public class MacdCalculator extends Calculator<MacdContext, Macd> {
         List<Macd> macds = new ArrayList<>();
         for(int i = 0; i < values.size(); i ++ ) {
             Macd macd = Macd.builder()
+                    .dateTime(series.get(i).getDateTime())
                     .value(values.get(i))
                     .signal(signals.get(i))
                     .oscillator(oscillators.get(i))

@@ -3,8 +3,8 @@ package org.oopscraft.fintics.calculator;
 import org.oopscraft.fintics.model.Ohlcv;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class SmaCalculator extends Calculator<SmaContext, Sma> {
 
@@ -17,12 +17,15 @@ public class SmaCalculator extends Calculator<SmaContext, Sma> {
         List<BigDecimal> closePrices = series.stream()
                 .map(Ohlcv::getClosePrice)
                 .toList();
-
-        return smas(closePrices, getContext().getPeriod(), getContext().getMathContext()).stream()
-                .map(value -> Sma.builder()
-                        .value(value)
-                        .build())
-                .collect(Collectors.toList());
+        List<BigDecimal> smaValues = smas(closePrices, getContext().getPeriod(), getContext().getMathContext());
+        List<Sma> smas = new ArrayList<>();
+        for (int i = 0; i < smaValues.size(); i ++ ) {
+            smas.add(Sma.builder()
+                    .dateTime(series.get(i).getDateTime())
+                    .value(smaValues.get(i))
+                    .build());
+        }
+        return smas;
     }
 
 }

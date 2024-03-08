@@ -69,9 +69,10 @@ public class DmiCalculator extends Calculator<DmiContext, Dmi> {
         List<Dmi> dmis = new ArrayList<>();
         for(int i = 0, size = series.size(); i < size; i ++) {
             Dmi dmi = Dmi.builder()
-                    .adx(dxs.get(i))
+                    .dateTime(series.get(i).getDateTime())
                     .pdi(pdis.get(i))
                     .mdi(mdis.get(i))
+                    .adx(dxs.get(i))
                     .build();
             dmis.add(dmi);
         }

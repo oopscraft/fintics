@@ -3,8 +3,8 @@ package org.oopscraft.fintics.calculator;
 import org.oopscraft.fintics.model.Ohlcv;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class EmaCalculator extends Calculator<EmaContext, Ema> {
 
@@ -17,14 +17,15 @@ public class EmaCalculator extends Calculator<EmaContext, Ema> {
         List<BigDecimal> closePrices = series.stream()
                 .map(Ohlcv::getClosePrice)
                 .toList();
-
         List<BigDecimal> emaValues = emas(closePrices, getContext().getPeriod(), getContext().getMathContext());
-
-        return emaValues.stream()
-                .map(emaValue -> Ema.builder()
-                        .value(emaValue)
-                        .build())
-                .collect(Collectors.toList());
+        List<Ema> emas = new ArrayList<>();
+        for (int i = 0; i < emaValues.size(); i ++ ) {
+            emas.add(Ema.builder()
+                    .dateTime(series.get(i).getDateTime())
+                    .value(emaValues.get(i))
+                    .build());
+        }
+        return emas;
     }
 
 }

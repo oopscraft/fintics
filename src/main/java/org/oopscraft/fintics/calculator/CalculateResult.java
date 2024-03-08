@@ -1,10 +1,18 @@
 package org.oopscraft.fintics.calculator;
 
-import lombok.Getter;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
-public interface CalculateResult {
+@SuperBuilder
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public abstract class CalculateResult {
+
+    protected LocalDateTime dateTime;
 
 }

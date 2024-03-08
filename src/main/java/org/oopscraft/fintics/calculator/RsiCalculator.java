@@ -7,7 +7,6 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class RsiCalculator extends Calculator<RsiContext, Rsi> {
 
@@ -57,7 +56,7 @@ public class RsiCalculator extends Calculator<RsiContext, Rsi> {
                     i + 1
             );
 
-            // 기간(period)+1 이전 평균은 정확한 기간평균이 아님으로 중립(50.00)으로 설정
+            // The average before period +1 is not an accurate period average, so it is set to neutral (50.00)
             if(i < getContext().getPeriod() + 1) {
                 rsiValues.add(BigDecimal.valueOf(50.00));
                 continue;
@@ -76,12 +75,12 @@ public class RsiCalculator extends Calculator<RsiContext, Rsi> {
                 continue;
             }
 
-            // Calculate Relative Strength (RS)
+            // calculate relative Strength (RS)
             BigDecimal rs = avgLoss.compareTo(BigDecimal.ZERO) == 0 ? BigDecimal.ZERO
                     : avgGain.divide(avgLoss, MathContext.DECIMAL128)
                     .setScale(5, RoundingMode.HALF_UP);
 
-            // Calculate RSI
+            // calculate RSI
             BigDecimal rsiValue = rs
                     .divide(rs.add(BigDecimal.valueOf(1)), MathContext.DECIMAL32)
                     .multiply(BigDecimal.valueOf(100))
@@ -92,12 +91,13 @@ public class RsiCalculator extends Calculator<RsiContext, Rsi> {
         // signals
         List<BigDecimal> signals = emas(rsiValues, getContext().getSignalPeriod(), getContext().getMathContext()).stream()
                 .map(value -> value.setScale(2, RoundingMode.HALF_UP))
-                .collect(Collectors.toList());
+                .toList();
 
         // rsi
         List<Rsi> rsis = new ArrayList<>();
         for(int i = 0; i < rsiValues.size(); i ++ ) {
             Rsi rsi = Rsi.builder()
+                    .dateTime(series.get(i).getDateTime())
                     .value(rsiValues.get(i))
                     .signal(signals.get(i))
                     .build();

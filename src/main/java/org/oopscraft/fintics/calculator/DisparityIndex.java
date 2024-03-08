@@ -1,15 +1,17 @@
 package org.oopscraft.fintics.calculator;
 
-import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 
-@Builder
+@SuperBuilder
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
 @Getter
-@ToString
-public class DisparityIndex implements CalculateResult {
+public class DisparityIndex extends CalculateResult {
 
     private BigDecimal value;
 

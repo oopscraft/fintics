@@ -1,15 +1,15 @@
 package org.oopscraft.fintics.calculator;
 
-import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 
-@Builder
+@SuperBuilder
 @Getter
 @ToString
-public class Ema implements CalculateResult {
+public class Ema extends CalculateResult {
 
     private final BigDecimal value;
 

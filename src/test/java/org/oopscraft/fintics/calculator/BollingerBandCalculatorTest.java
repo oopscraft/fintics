@@ -57,7 +57,7 @@ public class BollingerBandCalculatorTest extends AbstractCalculatorTest {
 
             log.info("[{}] {},{},{},{}|{},{},{},{},{} / {},{},{},{}|{},{},{},{},{}", i,
                     originOpenPrice, originHighPrice, originLowPrice, originClosePrice, originUbb, originMbb, originLbb, originBandWidth, originPercentB,
-                    ohlcv.getOpenPrice(), ohlcv.getHighPrice(), ohlcv.getLowPrice(), ohlcv.getClosePrice(), bollingerBand.getUpper(), bollingerBand.getMiddle(), bollingerBand.getLower(), bollingerBand.getBandWidth(), bollingerBand.getPercentB());
+                    ohlcv.getOpenPrice(), ohlcv.getHighPrice(), ohlcv.getLowPrice(), ohlcv.getClosePrice(), bollingerBand.getUpper(), bollingerBand.getMiddle(), bollingerBand.getLower(), bollingerBand.getWidth(), bollingerBand.getPercentB());
 
             // 초반 데이터는 데이터 부족으로 불일치함.
             if(i < (26*3) + 1) {

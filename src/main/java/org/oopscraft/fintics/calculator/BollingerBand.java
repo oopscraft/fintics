@@ -1,15 +1,17 @@
 package org.oopscraft.fintics.calculator;
 
-import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 
-@Builder
+@SuperBuilder
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
 @Getter
-@ToString
-public class BollingerBand implements CalculateResult {
+public class BollingerBand extends CalculateResult {
 
     private BigDecimal middle;
 
@@ -17,7 +19,7 @@ public class BollingerBand implements CalculateResult {
 
     private BigDecimal lower;
 
-    private BigDecimal bandWidth;
+    private BigDecimal width;
 
     private BigDecimal percentB;
 

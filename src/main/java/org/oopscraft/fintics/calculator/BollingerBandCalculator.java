@@ -19,7 +19,7 @@ public class BollingerBandCalculator extends Calculator<BollingerBandContext, Bo
                 .map(Ohlcv::getClosePrice)
                 .toList();
 
-        List<BollingerBand> bbs = new ArrayList<BollingerBand>();
+        List<BollingerBand> bbs = new ArrayList<>();
         BigDecimal stdMultiplier = BigDecimal.valueOf(getContext().getStdMultiplier());
 
         for (int i = 0; i < closePrices.size(); i ++) {
@@ -36,9 +36,9 @@ public class BollingerBandCalculator extends Calculator<BollingerBandContext, Bo
             BigDecimal ubb = mbb.add(std.multiply(stdMultiplier));
             BigDecimal lbb = mbb.subtract(std.multiply(stdMultiplier));
 
-            BigDecimal bandWidth = BigDecimal.ZERO;
+            BigDecimal width = BigDecimal.ZERO;
             if (mbb.compareTo(BigDecimal.ZERO) != 0) {
-                bandWidth = ubb.subtract(lbb)
+                width = ubb.subtract(lbb)
                         .divide(mbb, getContext().getMathContext());
             }
 
@@ -51,16 +51,16 @@ public class BollingerBandCalculator extends Calculator<BollingerBandContext, Bo
             }
 
             BollingerBand bb = BollingerBand.builder()
+                    .dateTime(series.get(i).getDateTime())
                     .middle(mbb.setScale(2, RoundingMode.HALF_UP))
                     .upper(ubb.setScale(2, RoundingMode.HALF_UP))
                     .lower(lbb.setScale(2, RoundingMode.HALF_UP))
-                    .bandWidth(bandWidth.setScale(2, RoundingMode.HALF_UP))
+                    .width(width.setScale(2, RoundingMode.HALF_UP))
                     .percentB(percentB.setScale(2, RoundingMode.HALF_UP))
                     .build();
             bbs.add(bb);
         }
 
-        // return
         return bbs;
     }
 

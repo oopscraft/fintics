@@ -1,31 +1,20 @@
 package org.oopscraft.fintics.calculator;
 
-import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
-@Builder
+@SuperBuilder
 @Getter
 @ToString
-public class Dmi implements CalculateResult {
+public class Dmi extends CalculateResult {
 
-    @Builder.Default
-    private BigDecimal pdi = BigDecimal.ZERO;
+    private BigDecimal pdi;
 
-    @Builder.Default
-    private BigDecimal mdi = BigDecimal.ZERO;
+    private BigDecimal mdi;
 
-    @Builder.Default
-    private BigDecimal adx = BigDecimal.ZERO;
-
-    public Dmi setScale(int scale, RoundingMode roundingMode) {
-        pdi = pdi.setScale(scale, roundingMode);
-        mdi = mdi.setScale(scale, roundingMode);
-        adx = adx.setScale(scale, roundingMode);
-        return this;
-    }
+    private BigDecimal adx;
 
 }

@@ -5,12 +5,13 @@ import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyShell;
 import lombok.Builder;
-import org.oopscraft.fintics.model.*;
+import org.oopscraft.fintics.model.AssetIndicator;
+import org.oopscraft.fintics.model.Balance;
+import org.oopscraft.fintics.model.IndiceIndicator;
+import org.oopscraft.fintics.model.OrderBook;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
-import java.time.Duration;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -59,13 +60,10 @@ public class HoldConditionExecutor {
         binding.setVariable("indiceIndicators", indiceIndicators);
         binding.setVariable("assetIndicator", assetIndicator);
         GroovyShell groovyShell = new GroovyShell(groovyClassLoader, binding);
-
         if(holdCondition == null || holdCondition.isBlank()) {
             return null;
         }
-        Instant startTime = Instant.now();
         Object result = groovyShell.evaluate(holdCondition);
-        log.info("Elapsed:{}", Duration.between(startTime, Instant.now()));
         if(result == null) {
             return null;
         }

@@ -1,16 +1,17 @@
 package org.oopscraft.fintics.calculator;
 
-import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
-import org.oopscraft.fintics.calculator.CalculateResult;
+import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 
-@Builder
+@SuperBuilder
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
 @Getter
-@ToString
-public class Obv implements CalculateResult {
+public class Obv extends CalculateResult {
 
     private final BigDecimal value;
 

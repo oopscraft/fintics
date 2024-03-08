@@ -77,12 +77,7 @@ public class SimulateTradeClient extends TradeClient {
     @Override
     public boolean isOpened(LocalDateTime dateTime) throws InterruptedException {
         DayOfWeek dayOfWeek = dateTime.getDayOfWeek();
-        if(dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
-            return false;
-        }
-
-        // default true
-        return true;
+        return dayOfWeek != DayOfWeek.SATURDAY && dayOfWeek != DayOfWeek.SUNDAY;
     }
 
     @Override

@@ -1,31 +1,22 @@
 package org.oopscraft.fintics.calculator;
 
-import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
-@Builder
+@SuperBuilder
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
 @Getter
-@ToString
-public class Macd implements CalculateResult {
+public class Macd extends CalculateResult {
 
-    @Builder.Default
-    private BigDecimal value = BigDecimal.ZERO;
+    private BigDecimal value;
 
-    @Builder.Default
-    private BigDecimal signal = BigDecimal.ZERO;
+    private BigDecimal signal;
 
-    @Builder.Default
-    private BigDecimal oscillator = BigDecimal.ZERO;
-
-    public Macd setScale(int scale, RoundingMode roundingMode) {
-        value = value.setScale(scale, roundingMode);
-        signal = signal.setScale(scale, roundingMode);
-        oscillator = oscillator.setScale(scale, roundingMode);
-        return this;
-    }
+    private BigDecimal oscillator;
 
 }

@@ -3,10 +3,8 @@ package org.oopscraft.fintics.calculator;
 import org.oopscraft.fintics.model.Ohlcv;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class DisparityIndexCalculator extends Calculator<DisparityIndexContext, DisparityIndex> {
 
@@ -31,6 +29,7 @@ public class DisparityIndexCalculator extends Calculator<DisparityIndexContext, 
                     .divide(currentEma, getContext().getMathContext())
                     .multiply(BigDecimal.valueOf(100));
             disparityIndexes.add(DisparityIndex.builder()
+                    .dateTime(series.get(i).getDateTime())
                     .value(disparityIndexValue)
                     .build());
         }

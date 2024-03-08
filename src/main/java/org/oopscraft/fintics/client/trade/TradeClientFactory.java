@@ -1,6 +1,7 @@
 package org.oopscraft.fintics.client.trade;
 
 import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
 import org.oopscraft.arch4j.core.data.pbe.PbePropertiesUtil;
 import org.oopscraft.fintics.model.Trade;
 import org.springframework.beans.BeansException;
@@ -19,7 +20,7 @@ public class TradeClientFactory implements BeanPostProcessor {
     private static final List<TradeClientDefinition> tradeClientDefinitions = new ArrayList<>();
 
     @Override
-    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+    public Object postProcessAfterInitialization(@NotNull Object bean, @NotNull String beanName) throws BeansException {
         if(bean instanceof TradeClientDefinition) {
             tradeClientDefinitions.add((TradeClientDefinition) bean);
         }
