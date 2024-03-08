@@ -191,7 +191,7 @@ def waveAnalysis = new Analysis(assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 5))
 
 // tide
 def tideAnalysis = new AnalysisGroup(
-        hourly: new Analysis(assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 30)),
+        hourly: new Analysis(assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 60)),
         daily: new Analysis(assetIndicator.getOhlcvs(Ohlcv.Type.DAILY, 1))
 )
 
@@ -225,7 +225,11 @@ if (analysis.getMomentumScore() <= 25) {
 //==============================
 // fallback
 //==============================
-if (tideAnalysis.getMomentumScore() <= 25) {
+if (tideAnalysis.getMomentumScore() >= 75) {
+    log.info("forward - tideMomentumScore over {}", tideAnalysis.getMomentumScore())
+    hold = 1
+}
+if (tideAnalysis.getMomentumScore() <= 50) {
     log.info("fallback - tideMomentumScore under {}", tideAnalysis.getMomentumScore())
     hold = 0
 }
