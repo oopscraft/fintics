@@ -32,29 +32,29 @@ public class BollingerBandCalculator extends Calculator<BollingerBandContext, Bo
             BigDecimal std = stds.get(stds.size()-1);
 
             List<BigDecimal> smas = smas(periodClosePrices, periodClosePrices.size(), getContext().getMathContext());
-            BigDecimal mbb = smas.get(smas.size()-1);
-            BigDecimal ubb = mbb.add(std.multiply(stdMultiplier));
-            BigDecimal lbb = mbb.subtract(std.multiply(stdMultiplier));
+            BigDecimal middle = smas.get(smas.size()-1);
+            BigDecimal upper = middle.add(std.multiply(stdMultiplier));
+            BigDecimal lower = middle.subtract(std.multiply(stdMultiplier));
 
             BigDecimal width = BigDecimal.ZERO;
-            if (mbb.compareTo(BigDecimal.ZERO) != 0) {
-                width = ubb.subtract(lbb)
-                        .divide(mbb, getContext().getMathContext());
+            if (middle.compareTo(BigDecimal.ZERO) != 0) {
+                width = upper.subtract(lower)
+                        .divide(middle, getContext().getMathContext());
             }
 
             BigDecimal percentB = BigDecimal.ZERO;
-            BigDecimal diffUbbLbb = ubb.subtract(lbb);
-            if (diffUbbLbb.compareTo(BigDecimal.ZERO) != 0) {
-                percentB = (closePrices.get(i).subtract(lbb))
-                        .divide(diffUbbLbb, getContext().getMathContext())
+            BigDecimal diffUpperLower = upper.subtract(lower);
+            if (diffUpperLower.compareTo(BigDecimal.ZERO) != 0) {
+                percentB = (closePrices.get(i).subtract(lower))
+                        .divide(diffUpperLower, getContext().getMathContext())
                         .multiply(BigDecimal.valueOf(100));
             }
 
             BollingerBand bb = BollingerBand.builder()
                     .dateTime(series.get(i).getDateTime())
-                    .middle(mbb.setScale(2, RoundingMode.HALF_UP))
-                    .upper(ubb.setScale(2, RoundingMode.HALF_UP))
-                    .lower(lbb.setScale(2, RoundingMode.HALF_UP))
+                    .middle(middle)
+                    .upper(upper)
+                    .lower(lower)
                     .width(width.setScale(2, RoundingMode.HALF_UP))
                     .percentB(percentB.setScale(2, RoundingMode.HALF_UP))
                     .build();
