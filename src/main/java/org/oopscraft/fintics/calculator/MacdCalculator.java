@@ -3,6 +3,7 @@ package org.oopscraft.fintics.calculator;
 import org.oopscraft.fintics.model.Ohlcv;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,9 +45,9 @@ public class MacdCalculator extends Calculator<MacdContext, Macd> {
         for(int i = 0; i < values.size(); i ++ ) {
             Macd macd = Macd.builder()
                     .dateTime(series.get(i).getDateTime())
-                    .value(values.get(i))
-                    .signal(signals.get(i))
-                    .oscillator(oscillators.get(i))
+                    .value(values.get(i).setScale(2, RoundingMode.HALF_UP))
+                    .signal(signals.get(i).setScale(2, RoundingMode.HALF_UP))
+                    .oscillator(oscillators.get(i).setScale(2, RoundingMode.HALF_UP))
                     .build();
             macds.add(macd);
         }

@@ -3,6 +3,7 @@ package org.oopscraft.fintics.calculator;
 import org.oopscraft.fintics.model.Ohlcv;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,9 +71,9 @@ public class DmiCalculator extends Calculator<DmiContext, Dmi> {
         for(int i = 0, size = series.size(); i < size; i ++) {
             Dmi dmi = Dmi.builder()
                     .dateTime(series.get(i).getDateTime())
-                    .pdi(pdis.get(i))
-                    .mdi(mdis.get(i))
-                    .adx(dxs.get(i))
+                    .pdi(pdis.get(i).setScale(2, RoundingMode.HALF_UP))
+                    .mdi(mdis.get(i).setScale(2, RoundingMode.HALF_UP))
+                    .adx(dxs.get(i).setScale(2, RoundingMode.HALF_UP))
                     .build();
             dmis.add(dmi);
         }

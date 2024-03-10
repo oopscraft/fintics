@@ -42,8 +42,8 @@ public class ObvCalculator extends Calculator<ObvContext, Obv> {
         for(int i = 0; i < obvValues.size(); i ++) {
             Obv obv = Obv.builder()
                     .dateTime(series.get(i).getDateTime())
-                    .value(obvValues.get(i))
-                    .signal(signals.get(i))
+                    .value(obvValues.get(i).setScale(0, RoundingMode.HALF_UP))
+                    .signal(signals.get(i).setScale(0, RoundingMode.HALF_UP))
                     .build();
             obvs.add(obv);
         }
