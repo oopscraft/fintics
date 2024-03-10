@@ -3,14 +3,8 @@ import org.oopscraft.fintics.calculator.*
 import org.oopscraft.fintics.model.Ohlcv
 import org.oopscraft.fintics.trade.Tool
 
-interface Scorable extends Comparable<Number> {
+interface Scorable {
     Number getAverage()
-    default int compareTo(@NotNull Number o) {
-        return Double.compare(this.getAverage().doubleValue(), o.doubleValue())
-    }
-    default int compareTo(@NotNull Scorable o) {
-        return Double.compare(this.getAverage().doubleValue(), o.getAverage().doubleValue())
-    }
 }
 
 class Score extends LinkedHashMap<String, BigDecimal> implements Scorable {
@@ -34,7 +28,7 @@ class ScoreGroup extends LinkedHashMap<String, Scorable> implements Scorable {
 }
 
 interface Analyzable {
-    BigDecimal getZScore()
+    BigDecimal getPriceZScore()
     Scorable getVolatilityScore()
     Scorable getMomentumScore()
     Scorable getPostOversoldScore()
@@ -55,7 +49,7 @@ class Analysis implements Analyzable {
     }
 
     @Override
-    BigDecimal getZScore() {
+    BigDecimal getPriceZScore() {
         def closePrices = ohlcvs.take(20).collect{it.closePrice}
         def zScores = Tool.zScores(closePrices)
         return zScores.first()
@@ -116,8 +110,8 @@ class AnalysisGroup extends LinkedHashMap<String,Analysis> implements Analyzable
     }
 
     @Override
-    BigDecimal getZScore() {
-        return this.values().collect{it.getZScore()}.average() as BigDecimal
+    BigDecimal getPriceZScore() {
+        return this.values().collect{it.getPriceZScore()}.average() as BigDecimal
     }
 
     @Override
@@ -164,6 +158,10 @@ def analysis = new Analysis(ohlcvs)
 
 // wave analysis
 def waveAnalysis = new Analysis(assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 5))
+log.info("waveAnalysis.volatilityScore: {}", waveAnalysis.getVolatilityScore())
+log.info("waveAnalysis.momentumScore: {}", waveAnalysis.getMomentumScore())
+log.info("waveAnalysis.postOversoldScore: {}", waveAnalysis.getPostOversoldScore())
+log.info("waveAnalysis.postOverboughtScore: {}", waveAnalysis.getPostOverboughtScore())
 
 // tide analysis - not reference
 def tideAnalysis = new AnalysisGroup(
@@ -171,32 +169,32 @@ def tideAnalysis = new AnalysisGroup(
 )
 
 // move up
-if (analysis.getZScore() >= 2.0) {
-    if (waveAnalysis.getVolatilityScore() > 70) {
-        if (waveAnalysis.getMomentumScore() > 70) {
+if (analysis.getPriceZScore() >= 2.0) {
+    if (waveAnalysis.getVolatilityScore().getAverage() > 70) {
+        if (waveAnalysis.getMomentumScore().getAverage() > 70) {
             hold = 1
         }
-        if (waveAnalysis.getPostOversoldScore() > 70) {
+        if (waveAnalysis.getPostOversoldScore().getAverage() > 70) {
             hold = 1
         }
     }
 }
 
 // move down
-if (analysis.getZScore() <= -2.0) {
-    if (waveAnalysis.getVolatilityScore() > 70) {
-        if (waveAnalysis.getMomentumScore() < 30) {
+if (analysis.getPriceZScore() <= -2.0) {
+    if (waveAnalysis.getVolatilityScore().getAverage() > 70) {
+        if (waveAnalysis.getMomentumScore().getAverage() < 30) {
             hold = 0
         }
-        if (waveAnalysis.getPostOverboughtScore() > 70) {
+        if (waveAnalysis.getPostOverboughtScore().getAverage() > 70) {
             hold = 0
         }
     }
 }
 
 // fallback
-if (tideAnalysis.getMomentumScore() < 30) {
-    hold = 0
+if (tideAnalysis.getMomentumScore().getAverage() < 30) {
+//    hold = 0
 }
 
 // return
