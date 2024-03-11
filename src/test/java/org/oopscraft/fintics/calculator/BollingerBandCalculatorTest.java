@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.oopscraft.fintics.model.Ohlcv;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -54,22 +55,25 @@ public class BollingerBandCalculatorTest extends AbstractCalculatorTest {
             BigDecimal originBandWidth = new BigDecimal(inputRow.get("bandWidth").replaceAll(",",""));
             BigDecimal originPercentB = new BigDecimal(inputRow.get("percentB").replaceAll("[,|%]",""));
 
+            log.info("[{}] {},{},{}({},{}) / {},{},{}({},{})", i,
+                    originUbb, originMbb, originLbb, originBandWidth, originPercentB,
+                    bollingerBand.getUpper().setScale(2, RoundingMode.HALF_UP),
+                    bollingerBand.getMiddle().setScale(2, RoundingMode.HALF_UP),
+                    bollingerBand.getLower().setScale(2, RoundingMode.HALF_UP),
+                    bollingerBand.getWidth(),
+                    bollingerBand.getPercentB());
 
-            log.info("[{}] {},{},{},{}|{},{},{},{},{} / {},{},{},{}|{},{},{},{},{}", i,
-                    originOpenPrice, originHighPrice, originLowPrice, originClosePrice, originUbb, originMbb, originLbb, originBandWidth, originPercentB,
-                    ohlcv.getOpenPrice(), ohlcv.getHighPrice(), ohlcv.getLowPrice(), ohlcv.getClosePrice(), bollingerBand.getUpper(), bollingerBand.getMiddle(), bollingerBand.getLower(), bollingerBand.getWidth(), bollingerBand.getPercentB());
-
-            // 초반 데이터는 데이터 부족으로 불일치함.
+            // skip initial block
             if(i < (26*3) + 1) {
                 continue;
             }
 
-            // assert TODO 증권사별로 기준이 조금씩 다른듯.(증권사들 끼리도 맞지 않음)
-//            assertEquals(originUbb.doubleValue(), bb.getUbb().doubleValue(), 0.1);
-//            assertEquals(originMbb.doubleValue(), bb.getMbb().doubleValue(), 0.1);
-//            assertEquals(originLbb.doubleValue(), bb.getLbb().doubleValue(), 0.1);
-//            assertEquals(originBandWidth.doubleValue(), bb.getBandWidth().doubleValue(), 0.1);
-//            assertEquals(originPercentB.doubleValue(), bb.getPercentB().doubleValue(), 0.1);
+            // assert
+            assertEquals(originUbb.doubleValue(), bollingerBand.getUpper().doubleValue(), 0.1);
+            assertEquals(originMbb.doubleValue(), bollingerBand.getMiddle().doubleValue(), 0.1);
+            assertEquals(originLbb.doubleValue(), bollingerBand.getLower().doubleValue(), 0.1);
+            assertEquals(originBandWidth.doubleValue(), bollingerBand.getWidth().doubleValue(), 0.01);
+            assertEquals(originPercentB.doubleValue(), bollingerBand.getPercentB().doubleValue(), 1);
         }
 
     }

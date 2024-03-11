@@ -11,10 +11,10 @@ import java.math.BigDecimal;
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 @Getter
-public class StochasticSlow extends CalculateResult {
+public class Atr extends CalculateResult {
 
-    private BigDecimal slowK;
+    private final BigDecimal value;
 
-    private BigDecimal slowD;
+    private final BigDecimal signal;
 
 }

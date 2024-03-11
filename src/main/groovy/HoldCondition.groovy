@@ -28,11 +28,11 @@ class ScoreGroup extends LinkedHashMap<String, Scorable> implements Scorable {
 }
 
 interface Analyzable {
-    BigDecimal getPriceZScore()
+    Scorable getBullishMomentumScore()
+    Scorable getBearishMomentumScore()
     Scorable getVolatilityScore()
-    Scorable getMomentumScore()
-    Scorable getPostOversoldScore()
-    Scorable getPostOverboughtScore()
+    Scorable getUnderEstimateScore()
+    Scorable getOverEstimateScore()
 }
 
 class Analysis implements Analyzable {
@@ -49,10 +49,23 @@ class Analysis implements Analyzable {
     }
 
     @Override
-    BigDecimal getPriceZScore() {
-        def closePrices = ohlcvs.take(20).collect{it.closePrice}
-        def zScores = Tool.zScores(closePrices)
-        return zScores.first()
+    Scorable getBullishMomentumScore() {
+        def score = new Score()
+        // macd
+        def macd = this.macds.first()
+        score.macdOscillator = macd.oscillator > 0 ? 100 : 0
+        // return
+        return score
+    }
+
+    @Override
+    Scorable getBearishMomentumScore() {
+        def score = new Score()
+        // macd
+        def macd = this.macds.first()
+        score.macdOscillator = macd.oscillator < 0 ? 100 : 0
+        // return
+        return score
     }
 
     @Override
@@ -65,17 +78,7 @@ class Analysis implements Analyzable {
     }
 
     @Override
-    Scorable getMomentumScore() {
-        def score = new Score()
-        // macd
-        def macd = this.macds.first()
-        score.macdOscillator = macd.oscillator > 0 ? 100 : 0
-        // return
-        return score
-    }
-
-    @Override
-    Scorable getPostOversoldScore() {
+    Scorable getUnderEstimateScore() {
         def score = new Score()
         // rsi
         def rsi = this.rsis.first()
@@ -85,7 +88,7 @@ class Analysis implements Analyzable {
     }
 
     @Override
-    Scorable getPostOverboughtScore() {
+    Scorable getOverEstimateScore() {
         def score = new Score()
         // rsi
         def rsi = this.rsis.first()
@@ -96,9 +99,11 @@ class Analysis implements Analyzable {
 
     @Override
     String toString() {
-        return [momentumScore: "${this.getMomentumScore().getAverage()}",
-                oversoldScore: "${this.getPostOversoldScore().getAverage()}",
-                overboughtScore: "${this.getPostOverboughtScore().getAverage()}"
+        return [bullishMomentumScore: "${this.getBullishMomentumScore().getAverage()}",
+                bearishMomentumScore: "${this.getBearishMomentumScore().getAverage()}",
+                volatilityScore: "${this.getVolatilityScore().getAverage()}",
+                underEstimateScore: "${this.getUnderEstimateScore().getAverage()}",
+                overEstimateScore: "${this.getOverEstimateScore().getAverage()}"
         ].toString()
     }
 }
@@ -110,8 +115,17 @@ class AnalysisGroup extends LinkedHashMap<String,Analysis> implements Analyzable
     }
 
     @Override
-    BigDecimal getPriceZScore() {
-        return this.values().collect{it.getPriceZScore()}.average() as BigDecimal
+    Scorable getBullishMomentumScore() {
+        def scoreGroup = new ScoreGroup()
+        this.each{it -> scoreGroup.put(it.key, it.value.getBullishMomentumScore())}
+        return scoreGroup
+    }
+
+    @Override
+    Scorable getBearishMomentumScore() {
+        def scoreGroup = new ScoreGroup()
+        this.each{it -> scoreGroup.put(it.key, it.value.getBearishMomentumScore())}
+        return scoreGroup
     }
 
     @Override
@@ -122,31 +136,26 @@ class AnalysisGroup extends LinkedHashMap<String,Analysis> implements Analyzable
     }
 
     @Override
-    Scorable getMomentumScore() {
+    Scorable getUnderEstimateScore() {
         def scoreGroup = new ScoreGroup()
-        this.each{it -> scoreGroup.put(it.key, it.value.getMomentumScore())}
+        this.each{it -> scoreGroup.put(it.key, it.value.getUnderEstimateScore())}
         return scoreGroup
     }
 
     @Override
-    Scorable getPostOversoldScore() {
+    Scorable getOverEstimateScore() {
         def scoreGroup = new ScoreGroup()
-        this.each{it -> scoreGroup.put(it.key, it.value.getPostOversoldScore())}
-        return scoreGroup
-    }
-
-    @Override
-    Scorable getPostOverboughtScore() {
-        def scoreGroup = new ScoreGroup()
-        this.each{it -> scoreGroup.put(it.key, it.value.getPostOverboughtScore())}
+        this.each{it -> scoreGroup.put(it.key, it.value.getOverEstimateScore())}
         return scoreGroup
     }
 
     @Override
     String toString() {
-        return [momentumScore: "${this.getMomentumScore().getAverage()}",
-                oversoldScore: "${this.getPostOversoldScore().getAverage()}",
-                overboughtScore: "${this.getPostOverboughtScore().getAverage()}"
+        return [bullishMomentumScore: "${this.getBullishMomentumScore().getAverage()}",
+                bearishMomentumScore: "${this.getBearishMomentumScore().getAverage()}",
+                volatilityScore: "${this.getVolatilityScore().getAverage()}",
+                underEstimateScore: "${this.getUnderEstimateScore().getAverage()}",
+                overEstimateScore: "${this.getOverEstimateScore().getAverage()}"
         ].toString() + super.toString()
     }
 }
@@ -158,44 +167,50 @@ def analysis = new Analysis(ohlcvs)
 
 // wave analysis
 def waveAnalysis = new Analysis(assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 5))
-log.info("waveAnalysis.volatilityScore: {}", waveAnalysis.getVolatilityScore())
-log.info("waveAnalysis.momentumScore: {}", waveAnalysis.getMomentumScore())
-log.info("waveAnalysis.postOversoldScore: {}", waveAnalysis.getPostOversoldScore())
-log.info("waveAnalysis.postOverboughtScore: {}", waveAnalysis.getPostOverboughtScore())
 
-// tide analysis - not reference
+// tide analysis
 def tideAnalysis = new AnalysisGroup(
         daily: new Analysis(assetIndicator.getOhlcvs(Ohlcv.Type.DAILY,1))
 )
 
+// logging
+log.info("analysis.bullishMomentum: {}", analysis.getBullishMomentumScore())
+log.info("analysis.bearishMomentum: {}", analysis.getBearishMomentumScore())
+log.info("waveAnalysis.volatility: {}", waveAnalysis.getVolatilityScore())
+log.info("waveAnalysis.bullishMomentum: {}", waveAnalysis.getBullishMomentumScore())
+log.info("waveAnalysis.bearishMomentum: {}", waveAnalysis.getBearishMomentumScore())
+log.info("waveAnalysis.underEstimate: {}", waveAnalysis.getUnderEstimateScore())
+log.info("waveAnalysis.overEstimate: {}", waveAnalysis.getOverEstimateScore())
+
 // move up
-if (analysis.getPriceZScore() >= 2.0) {
-    if (waveAnalysis.getVolatilityScore().getAverage() > 70) {
-        if (waveAnalysis.getMomentumScore().getAverage() > 70) {
-            hold = 1
-        }
-        if (waveAnalysis.getPostOversoldScore().getAverage() > 70) {
-            hold = 1
-        }
-    }
+if (analysis.getBullishMomentumScore().getAverage() > 70) {
+//    if (waveAnalysis.getVolatilityScore().getAverage() > 70) {
+//        if (waveAnalysis.getBullishMomentumScore().getAverage() > 70) {
+//            if (waveAnalysis.getUnderEstimateScore().getAverage() > 70) {
+                hold = 1
+//            }
+//        }
+//    }
 }
 
 // move down
-if (analysis.getPriceZScore() <= -2.0) {
-    if (waveAnalysis.getVolatilityScore().getAverage() > 70) {
-        if (waveAnalysis.getMomentumScore().getAverage() < 30) {
-            hold = 0
-        }
-        if (waveAnalysis.getPostOverboughtScore().getAverage() > 70) {
-            hold = 0
-        }
-    }
+if (analysis.getBearishMomentumScore().getAverage() > 70) {
+//    if (waveAnalysis.getVolatilityScore().getAverage() > 70) {
+//        if (waveAnalysis.getBearishMomentumScore().getAverage() > 70) {
+//            if (waveAnalysis.getOverEstimateScore() > 70) {
+                hold = 0
+//            }
+//        }
+//    }
 }
 
-// fallback
-if (tideAnalysis.getMomentumScore().getAverage() < 30) {
-//    hold = 0
-}
+//// fallback
+//if (tideAnalysis.getMomentumScore().getAverage() < 30) {
+//    //hold = 0
+//}
+//if (tideAnalysis.getCircuitBreakerScore().getAverage() > 70) {
+//    //hold = 0
+//}
 
 // return
 return hold

@@ -11,12 +11,12 @@ public class BollingerBandContext extends CalculateContext {
 
     private final int period;
 
-    private final int stdMultiplier;
+    private final int sdMultiplier;
 
-    public static BollingerBandContext of(int period, int stdMultiplier) {
+    public static BollingerBandContext of(int period, int sdMultiplier) {
         return BollingerBandContext.builder()
                 .period(period)
-                .stdMultiplier(stdMultiplier)
+                .sdMultiplier(sdMultiplier)
                 .build();
     }
 

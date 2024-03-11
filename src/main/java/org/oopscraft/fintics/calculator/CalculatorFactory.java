@@ -16,8 +16,8 @@ public class CalculatorFactory {
         put(DmiContext.class, DmiCalculator.class);
         put(ObvContext.class, ObvCalculator.class);
         put(ChaikinOscillatorContext.class, ChaikinOscillatorCalculator.class);
-        put(DisparityIndexContext.class, DisparityIndexCalculator.class);
-        put(StochasticSlowContext.class, StochasticSlowCalculator.class);
+        put(AtrContext.class, AtrCalculator.class);
+        put(CciContext.class, CciCalculator.class);
     }};
 
     public static <C extends CalculateContext, R extends CalculateResult, T extends Calculator<C,R>> T getCalculator(C context) {

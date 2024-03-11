@@ -3,6 +3,7 @@ package org.oopscraft.fintics.calculator;
 import org.oopscraft.fintics.model.Ohlcv;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,26 +16,22 @@ public class BollingerBandCalculator extends Calculator<BollingerBandContext, Bo
 
     @Override
     public List<BollingerBand> calculate(List<Ohlcv> series) {
+        int period = getContext().getPeriod();
+        BigDecimal sdMultiplier = BigDecimal.valueOf(getContext().getSdMultiplier());
+        MathContext mathContext = getContext().getMathContext();
+
         List<BigDecimal> closePrices = series.stream()
                 .map(Ohlcv::getClosePrice)
                 .toList();
+        List<BigDecimal> smas = smas(closePrices, period, mathContext);
+        List<BigDecimal> sds = sds(closePrices, period, mathContext);
 
-        List<BollingerBand> bbs = new ArrayList<>();
-        BigDecimal stdMultiplier = BigDecimal.valueOf(getContext().getStdMultiplier());
-
-        for (int i = 0; i < closePrices.size(); i ++) {
-            List<BigDecimal> periodClosePrices = closePrices.subList(
-                    Math.max(i - getContext().getPeriod(), 0),
-                    i + 1
-            );
-
-            List<BigDecimal> stds = stds(periodClosePrices, periodClosePrices.size(), getContext().getMathContext());
-            BigDecimal std = stds.get(stds.size()-1);
-
-            List<BigDecimal> smas = smas(periodClosePrices, periodClosePrices.size(), getContext().getMathContext());
-            BigDecimal middle = smas.get(smas.size()-1);
-            BigDecimal upper = middle.add(std.multiply(stdMultiplier));
-            BigDecimal lower = middle.subtract(std.multiply(stdMultiplier));
+        List<BollingerBand> bollingerBands = new ArrayList<>();
+        for (int i = 0; i < series.size(); i ++) {
+            BigDecimal sd = sds.get(i);
+            BigDecimal middle = smas.get(i);
+            BigDecimal upper = middle.add(sd.multiply(sdMultiplier));
+            BigDecimal lower = middle.subtract(sd.multiply(sdMultiplier));
 
             BigDecimal width = BigDecimal.ZERO;
             if (middle.compareTo(BigDecimal.ZERO) != 0) {
@@ -50,7 +47,7 @@ public class BollingerBandCalculator extends Calculator<BollingerBandContext, Bo
                         .multiply(BigDecimal.valueOf(100));
             }
 
-            BollingerBand bb = BollingerBand.builder()
+            BollingerBand bollingerBand = BollingerBand.builder()
                     .dateTime(series.get(i).getDateTime())
                     .middle(middle)
                     .upper(upper)
@@ -58,10 +55,9 @@ public class BollingerBandCalculator extends Calculator<BollingerBandContext, Bo
                     .width(width.setScale(2, RoundingMode.HALF_UP))
                     .percentB(percentB.setScale(2, RoundingMode.HALF_UP))
                     .build();
-            bbs.add(bb);
+            bollingerBands.add(bollingerBand);
         }
-
-        return bbs;
+        return bollingerBands;
     }
 
 }

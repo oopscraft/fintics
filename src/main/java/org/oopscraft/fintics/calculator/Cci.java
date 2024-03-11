@@ -11,8 +11,10 @@ import java.math.BigDecimal;
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 @Getter
-public class DisparityIndex extends CalculateResult {
+public class Cci extends CalculateResult {
 
-    private BigDecimal value;
+    private final BigDecimal value;
+
+    private final BigDecimal signal;
 
 }

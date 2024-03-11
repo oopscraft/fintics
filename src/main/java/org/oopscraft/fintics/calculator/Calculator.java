@@ -54,7 +54,7 @@ public abstract class Calculator<C extends CalculateContext, R extends Calculate
         return smas;
     }
 
-    public static List<BigDecimal> stds(List<BigDecimal> series, int period, MathContext mathContext) {
+    public static List<BigDecimal> sds(List<BigDecimal> series, int period, MathContext mathContext) {
         List<BigDecimal> stds = new ArrayList<>();
         for (int i = 0; i < series.size(); i ++) {
             List<BigDecimal> periodSeries = series.subList(
@@ -73,6 +73,24 @@ public abstract class Calculator<C extends CalculateContext, R extends Calculate
             stds.add(std);
         }
         return stds;
+    }
+
+    public static List<BigDecimal> ads(List<BigDecimal> series, int period, MathContext mathContext) {
+        List<BigDecimal> ads = new ArrayList<>();
+        for (int i = 0; i < series.size(); i ++) {
+            List<BigDecimal> periodSeries = series.subList(
+                    Math.max(i - period + 1, 0),
+                    i + 1
+            );
+            BigDecimal sum = periodSeries.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal mean = sum.divide(BigDecimal.valueOf(periodSeries.size()), mathContext);
+            BigDecimal sumOfAbsoluteDifferences = periodSeries.stream()
+                    .map(value -> value.subtract(mean).abs())
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal ad = sumOfAbsoluteDifferences.divide(BigDecimal.valueOf(periodSeries.size()), mathContext);
+            ads.add(ad);
+        }
+        return ads;
     }
 
 }

@@ -96,7 +96,7 @@ public class Tool {
         Collections.reverse(series);
 
         BigDecimal mean = mean(series);
-        List<BigDecimal> stds = Calculator.stds(series, series.size(), MathContext.DECIMAL32);
+        List<BigDecimal> stds = Calculator.sds(series, series.size(), MathContext.DECIMAL32);
         BigDecimal std = stds.get(stds.size() - 1);
 
         List<BigDecimal> zScores = new ArrayList<>();
