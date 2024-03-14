@@ -168,9 +168,10 @@ public class TradesRestController {
     public ResponseEntity<List<SimulateResponse>> getTradeSimulates(
             @PathVariable("tradeId") String tradeId,
             @RequestParam(value = "status", required = false) Simulate.Status status,
+            @RequestParam(value = "favorite", required = false) Boolean favorite,
             @PageableDefault Pageable pageable
     ){
-        Page<Simulate> simulatePage = tradeService.getSimulates(tradeId, status, pageable);
+        Page<Simulate> simulatePage = tradeService.getSimulates(tradeId, status, favorite, pageable);
         List<SimulateResponse> simulateResponses = simulatePage.getContent().stream()
                 .map(SimulateResponse::from)
                 .toList();

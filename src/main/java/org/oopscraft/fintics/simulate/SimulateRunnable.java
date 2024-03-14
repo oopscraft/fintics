@@ -20,6 +20,8 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -225,6 +227,20 @@ public class SimulateRunnable implements Runnable {
         simulateEntity.setEndedAt(simulate.getEndedAt());
         simulateEntity.setStatus(simulate.getStatus());
         simulateEntity.setDateTime(simulate.getDateTime());
+
+        try {
+            BigDecimal investAmount = simulateEntity.getInvestAmount();
+            BigDecimal balanceTotalAmount = simulateTradeClient.getBalance().getTotalAmount();
+            BigDecimal profitAmount = balanceTotalAmount.subtract(investAmount);
+            BigDecimal profitPercentage = profitAmount.divide(investAmount, MathContext.DECIMAL32)
+                    .multiply(BigDecimal.valueOf(100))
+                    .setScale(2, RoundingMode.FLOOR);
+            simulateEntity.setProfitAmount(profitAmount);
+            simulateEntity.setProfitPercentage(profitPercentage);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
         try {
             simulateEntity.setBalanceData(toDataString(simulateTradeClient.getBalance()));
         } catch (InterruptedException e) {

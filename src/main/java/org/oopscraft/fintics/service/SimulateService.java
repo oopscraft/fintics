@@ -6,12 +6,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.oopscraft.arch4j.core.data.IdGenerator;
-import org.oopscraft.fintics.dao.*;
-import org.oopscraft.fintics.model.*;
-import org.oopscraft.fintics.simulate.*;
-import org.springframework.context.ApplicationContext;
+import org.oopscraft.fintics.dao.SimulateEntity;
+import org.oopscraft.fintics.dao.SimulateEntity_;
+import org.oopscraft.fintics.dao.SimulateRepository;
+import org.oopscraft.fintics.dao.SimulateSpecifications;
+import org.oopscraft.fintics.model.Simulate;
+import org.oopscraft.fintics.simulate.SimulateLogAppender;
+import org.oopscraft.fintics.simulate.SimulateRunnable;
+import org.oopscraft.fintics.simulate.SimulateRunnableFactory;
 import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.ContextStoppedEvent;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
@@ -49,7 +52,7 @@ public class SimulateService implements ApplicationListener<ContextStoppedEvent>
 
     private final Map<String,Future<?>> simulateFutureMap = new ConcurrentHashMap<>();
 
-    public Page<Simulate> getSimulates(String tradeId, Simulate.Status status, Pageable pageable) {
+    public Page<Simulate> getSimulates(String tradeId, Simulate.Status status, Boolean favorite, Pageable pageable) {
         // where
         Specification<SimulateEntity> specification = Specification.where(null);
         specification = specification
@@ -58,6 +61,9 @@ public class SimulateService implements ApplicationListener<ContextStoppedEvent>
                         .orElse(null))
                 .and(Optional.ofNullable(status)
                         .map(SimulateSpecifications::equalStatus)
+                        .orElse(null))
+                .and(Optional.ofNullable(favorite)
+                        .map(SimulateSpecifications::equalFavorite)
                         .orElse(null));
 
         // sort
@@ -121,6 +127,15 @@ public class SimulateService implements ApplicationListener<ContextStoppedEvent>
             simulateRunnableMap.remove(simulateId);
             simulateFutureMap.remove(simulateId);
         }
+    }
+
+    @Transactional
+    public Simulate modifySimulate(Simulate simulate) {
+         SimulateEntity simulateEntity = simulateRepository.findById(simulate.getSimulateId()).orElseThrow();
+         simulateEntity.setStatus(simulate.getStatus());
+         simulateEntity.setFavorite(simulate.isFavorite());
+         SimulateEntity savedSimulateEntity = simulateRepository.saveAndFlush(simulateEntity);
+         return Simulate.from(savedSimulateEntity);
     }
 
     @Transactional

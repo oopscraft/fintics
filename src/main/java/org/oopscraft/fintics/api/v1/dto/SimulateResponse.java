@@ -39,6 +39,14 @@ public class SimulateResponse {
 
     private LocalDateTime dateTime;
 
+    private boolean favorite;
+
+    private BigDecimal totalAmount;
+
+    private BigDecimal profitAmount;
+
+    private BigDecimal profitPercentage;
+
     private BalanceResponse balance;
 
     @Builder.Default
@@ -58,6 +66,10 @@ public class SimulateResponse {
                 .investAmount(simulate.getInvestAmount())
                 .feeRate(simulate.getFeeRate())
                 .dateTime(simulate.getDateTime())
+                .favorite(simulate.isFavorite())
+                .totalAmount(simulate.getTotalAmount())
+                .profitAmount(simulate.getProfitAmount())
+                .profitPercentage(simulate.getProfitPercentage())
                 .balance(BalanceResponse.from(simulate.getBalance()))
                 .orders(OrderResponse.from(simulate.getOrders()))
                 .build();

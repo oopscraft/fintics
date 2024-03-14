@@ -9,6 +9,7 @@
         const simulateSearch = new duice.ObjectProxy({
             tradeId: null,
             status: null,
+            favorite: null,
             _page: 0,
             _size: 20,
             _count: 0
@@ -21,15 +22,18 @@
         const trades = new duice.ArrayProxy([]);
 
         function getSimulates(page) {
-            if(page) {
+            if (page) {
                 simulateSearch._page = page;
             }
             let url = new URL(`${_apiUrl}/v1/simulates`, document.location.origin);
-            if(simulateSearch.tradeId) {
+            if (simulateSearch.tradeId) {
                 url.searchParams.append('tradeId', simulateSearch.tradeId);
             }
-            if(simulateSearch.status) {
+            if (simulateSearch.status) {
                 url.searchParams.append('status', simulateSearch.status);
+            }
+            if (simulateSearch.favorite) {
+                url.searchParams.append('favorite', simulateSearch.favorite);
             }
             url.searchParams.append('_page', simulateSearch._page);
             url.searchParams.append('_size', simulateSearch._size);
@@ -59,6 +63,19 @@
             } finally {
                 refreshSimulates();
             }
+        }
+
+        function saveSimulateFavorite(simulateId, favorite) {
+            let url = `${_apiUrl}/v1/simulates/${simulateId}`;
+            _fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    favorite: favorite
+                })
+            });
         }
 
         function checkAllSimulates(checkElement) {
@@ -142,13 +159,17 @@
                             th:text="${status}"></option>
                 </select>
             </label>
+            <label class="grid-column--1 align-self--center">
+                <input type="checkbox" data-duice-bind="simulateSearch" data-duice-property="favorite"/>
+                <span data-th-text="#{fintics.Simulate.favorite}"></span>
+            </label>
             <div class="grid-column--1 s__grid-column--12">
                 <button type="button" onclick="resetSimulates();">
                     <img class="icon" th:src="@{/static/image/icon-reset.svg}" alt="reset"/>
                     <span data-th-text="#{web.global.reset}"></span>
                 </button>
             </div>
-            <div class="grid-column--6 justify-self--end">
+            <div class="grid-column--5 justify-self--end">
                 <button type="button" onclick="deleteSimulates();">
                     <img class="icon" th:src="@{/static/image/icon-delete.svg}" alt="delete"/>
                     <span data-th-text="#{web.global.delete}"></span>
@@ -158,7 +179,10 @@
         <table class="width--100 text-align--center">
             <colgroup>
                 <col style="width:1em;"/>
-                <col style="width:5em;"/>
+                <col/>
+                <col/>
+                <col/>
+                <col/>
                 <col/>
                 <col/>
                 <col/>
@@ -176,15 +200,18 @@
             <tr>
                 <th><label><input type="checkbox" onchange="checkAllSimulates(this)"/></label></th>
                 <th data-th-text="#{web.global.no}" class="text-align--center"></th>
+                <th data-th-text="#{fintics.Simulate.favorite}"></th>
                 <th data-th-text="#{fintics.Simulate.startedAt}"></th>
                 <th data-th-text="#{fintics.Simulate.endedAt}"></th>
                 <th data-th-text="#{fintics.Simulate.status}"></th>
                 <th data-th-text="#{fintics.Trade.tradeName}"></th>
                 <th data-th-text="#{fintics.Simulate.dateTimeFrom}"></th>
                 <th data-th-text="#{fintics.Simulate.dateTimeTo}"></th>
-                <th data-th-text="#{fintics.Simulate.investAmount}"></th>
                 <th data-th-text="#{fintics.Simulate.dateTime}"></th>
+                <th data-th-text="#{fintics.Simulate.investAmount}"></th>
                 <th data-th-text="#{fintics.Balance.totalAmount}"></th>
+                <th data-th-text="#{fintics.Simulate.profitAmount}"></th>
+                <th data-th-text="#{fintics.Simulate.profitPercentage}"></th>
                 <th data-th-text="#{fintics.BalanceAsset}"></th>
                 <th data-th-text="#{fintics.Order}"></th>
                 <th>-</th>
@@ -201,6 +228,13 @@
                     <span data-duice-bind="status"
                           data-duice-execute="this.innerHTML=simulateSearch._count - (simulateSearch._size*simulateSearch._page + status.count) + 1;">
                     </span>
+                </td>
+                <td>
+                    <label>
+                        <input type="checkbox" data-duice-bind="simulate" data-duice-property="favorite"
+                               data-duice-execute="this.dataset.simulateId=simulate.simulateId;"
+                               onchange="saveSimulateFavorite(this.dataset.simulateId, this.checked);"/>
+                    </label>
                 </td>
                 <td>
                     <span data-duice-bind="simulate"
@@ -225,21 +259,28 @@
                 <td>
                     <span data-duice-bind="simulate"
                           data-duice-property="dateTimeFrom"
-                          data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></span>
+                          data-duice-format="date('yyyy-MM-dd')"></span>
                 </td>
                 <td>
                     <span data-duice-bind="simulate"
                           data-duice-property="dateTimeTo"
-                          data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></span>
+                          data-duice-format="date('yyyy-MM-dd')"></span>
+                </td>
+                <td>
+                    <span data-duice-bind="simulate" data-duice-property="dateTime" data-duice-format="date('yyyy-MM-dd')"></span>
                 </td>
                 <td>
                     <span data-duice-bind="simulate" data-duice-property="investAmount" data-duice-format="number"></span>
                 </td>
                 <td>
-                    <span data-duice-bind="simulate" data-duice-property="dateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></span>
+                    <span data-duice-bind="simulate" data-duice-property="balance.totalAmount" data-duice-format="number"></span>
                 </td>
                 <td>
-                    <span data-duice-bind="simulate" data-duice-property="balance.totalAmount" data-duice-format="number"></span>
+                    <span data-duice-bind="simulate" data-duice-property="profitAmount" data-duice-format="number"></span>
+                </td>
+                <td>
+                    <span data-duice-bind="simulate" data-duice-property="profitPercentage" data-duice-format="number(2)"></span>
+                    %
                 </td>
                 <td>
                     <span data-duice-bind="simulate" data-duice-property="balance.balanceAssets.length" data-duice-format="number"></span>

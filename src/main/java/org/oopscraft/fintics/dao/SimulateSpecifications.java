@@ -15,4 +15,9 @@ public class SimulateSpecifications {
                 criteriaBuilder.equal(root.get(SimulateEntity_.STATUS), status);
     }
 
+    public static Specification<SimulateEntity> equalFavorite(Boolean favorite) {
+        return (root, query, criteriaBuilder) ->
+                criteriaBuilder.equal(root.get(SimulateEntity_.FAVORITE), favorite);
+    }
+
 }

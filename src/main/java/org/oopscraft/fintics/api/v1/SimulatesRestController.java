@@ -35,9 +35,10 @@ public class SimulatesRestController {
     public ResponseEntity<List<SimulateResponse>> getSimulates(
             @RequestParam(value = "tradeId", required = false) String tradeId,
             @RequestParam(value = "status", required = false) Simulate.Status status,
+            @RequestParam(value = "favorite", required = false) Boolean favorite,
             @PageableDefault Pageable pageable
     ){
-        Page<Simulate> simulatePage = simulateService.getSimulates(tradeId, status, pageable);
+        Page<Simulate> simulatePage = simulateService.getSimulates(tradeId, status, favorite, pageable);
         List<SimulateResponse> simulateResponses = simulatePage.getContent().stream()
                 .map(SimulateResponse::from)
                 .toList();
@@ -88,6 +89,20 @@ public class SimulatesRestController {
     public ResponseEntity<Void> stopSimulate(@PathVariable("simulateId") String simulateId) {
         simulateService.stopSimulate(simulateId);
         return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("{simulateId}")
+    @Transactional
+    public ResponseEntity<SimulateResponse> modifySimulate(@PathVariable("simulateId") String simulateId, @RequestBody SimulateRequest simulateRequest) {
+        Simulate simulate = simulateService.getSimulate(simulateId).orElseThrow();
+        if (simulateRequest.getFavorite() != null) {
+            simulate.setFavorite(simulateRequest.getFavorite());
+        }
+        if (simulateRequest.getStatus() != null) {
+            simulate.setStatus(simulateRequest.getStatus());
+        }
+        Simulate savedSimulate = simulateService.modifySimulate(simulate);
+        return ResponseEntity.ok(SimulateResponse.from(savedSimulate));
     }
 
     @DeleteMapping("{simulateId}")

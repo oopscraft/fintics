@@ -1,6 +1,5 @@
 package org.oopscraft.fintics.service;
 
-import groovyjarjarpicocli.CommandLine;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.data.IdGenerator;
@@ -154,13 +153,16 @@ public class TradeService {
         }
     }
 
-    public Page<Simulate> getSimulates(String tradeId, Simulate.Status status, Pageable pageable) {
+    public Page<Simulate> getSimulates(String tradeId, Simulate.Status status, Boolean favorite, Pageable pageable) {
         // where
         Specification<SimulateEntity> specification = Specification.where(null);
         specification = specification
                 .and(SimulateSpecifications.equalTradeId(tradeId))
                 .and(Optional.ofNullable(status)
                         .map(SimulateSpecifications::equalStatus)
+                        .orElse(null))
+                .and(Optional.ofNullable(favorite)
+                        .map(SimulateSpecifications::equalFavorite)
                         .orElse(null));
         // sort
         Sort sort = Sort.by(SimulateEntity_.STARTED_AT).descending();

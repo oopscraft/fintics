@@ -52,7 +52,19 @@ public class Simulate {
     private BigDecimal feeRate = BigDecimal.ZERO;
 
     @Setter
+    private boolean favorite;
+
+    @Setter
     private LocalDateTime dateTime;
+
+    @Setter
+    private BigDecimal totalAmount;
+
+    @Setter
+    private BigDecimal profitAmount;
+
+    @Setter
+    private BigDecimal profitPercentage;
 
     @Builder.Default
     private Balance balance = new Balance();
@@ -112,6 +124,10 @@ public class Simulate {
                 .investAmount(simulateEntity.getInvestAmount())
                 .feeRate(simulateEntity.getFeeRate())
                 .dateTime(simulateEntity.getDateTime())
+                .favorite(simulateEntity.isFavorite())
+                .totalAmount(simulateEntity.getTotalAmount())
+                .profitAmount(simulateEntity.getProfitAmount())
+                .profitPercentage(simulateEntity.getProfitPercentage())
                 .balance(balance)
                 .orders(orders)
                 .build();

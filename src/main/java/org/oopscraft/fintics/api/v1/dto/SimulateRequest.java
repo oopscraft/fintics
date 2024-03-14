@@ -24,4 +24,8 @@ public class SimulateRequest {
 
     private BigDecimal feeRate;
 
+    private Simulate.Status status;
+
+    private Boolean favorite;
+
 }

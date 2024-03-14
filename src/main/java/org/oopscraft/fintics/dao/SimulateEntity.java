@@ -4,6 +4,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.arch4j.core.data.BaseEntity;
 import org.oopscraft.arch4j.core.data.converter.AbstractEnumConverter;
+import org.oopscraft.arch4j.core.data.converter.BooleanToYNConverter;
 import org.oopscraft.fintics.model.*;
 
 import javax.persistence.*;
@@ -58,8 +59,21 @@ public class SimulateEntity extends BaseEntity {
     @Column(name = "fee_rate")
     private BigDecimal feeRate;
 
+    @Column(name = "favorite")
+    @Convert(converter = BooleanToYNConverter.class)
+    private boolean favorite;
+
     @Column(name = "date_time")
     private LocalDateTime dateTime;
+
+    @Column(name = "total_amount")
+    private BigDecimal totalAmount;
+
+    @Column(name = "profit_amount")
+    private BigDecimal profitAmount;
+
+    @Column(name = "profit_percentage")
+    private BigDecimal profitPercentage;
 
     @Column(name = "balance_data")
     @Lob
@@ -68,5 +82,6 @@ public class SimulateEntity extends BaseEntity {
     @Column(name = "orders_data")
     @Lob
     private String ordersData;
+
 
 }
