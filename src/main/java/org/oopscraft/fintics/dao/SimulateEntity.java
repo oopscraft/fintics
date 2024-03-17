@@ -83,5 +83,8 @@ public class SimulateEntity extends BaseEntity {
     @Lob
     private String ordersData;
 
+    @Column(name = "report_data")
+    @Lob
+    private String reportData;
 
 }

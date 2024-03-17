@@ -228,6 +228,7 @@ public class SimulateRunnable implements Runnable {
         simulateEntity.setStatus(simulate.getStatus());
         simulateEntity.setDateTime(simulate.getDateTime());
 
+        // balance data
         try {
             BigDecimal investAmount = simulateEntity.getInvestAmount();
             BigDecimal balanceTotalAmount = simulateTradeClient.getBalance().getTotalAmount();
@@ -241,12 +242,18 @@ public class SimulateRunnable implements Runnable {
             throw new RuntimeException(e);
         }
 
+        // order data
         try {
             simulateEntity.setBalanceData(toDataString(simulateTradeClient.getBalance()));
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
         simulateEntity.setOrdersData(toDataString(simulateTradeClient.getOrders()));
+
+        // TODO report data
+
+
+        // save
         simulateRepository.saveAndFlush(simulateEntity);
     }
 
