@@ -272,7 +272,12 @@ def tideAnalysis = new AnalysisGroup (
 //================================
 if (priceZScore > 1.5 && analysis.getBullishScore().getAverage() > 70) {
     if (waveAnalysis.getVolatilityScore().getAverage() > 70) {
+        // momentum
         if (waveAnalysis.getBullishScore().getAverage() > 70) {
+            hold = 1
+        }
+        // oversold
+        if (waveAnalysis.getOversoldScore().getAverage() > 70) {
             hold = 1
         }
     }
