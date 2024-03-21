@@ -52,8 +52,8 @@ public class BollingerBandCalculator extends Calculator<BollingerBandContext, Bo
                     .middle(middle)
                     .upper(upper)
                     .lower(lower)
-                    .width(width.setScale(2, RoundingMode.HALF_UP))
-                    .percentB(percentB.setScale(2, RoundingMode.HALF_UP))
+                    .width(width)
+                    .percentB(percentB)
                     .build();
             bollingerBands.add(bollingerBand);
         }

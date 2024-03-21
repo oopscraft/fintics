@@ -41,8 +41,8 @@ public class SimulateService implements ApplicationListener<ContextStoppedEvent>
     private final BlockingQueue<Runnable> simulateQueue = new ArrayBlockingQueue<>(10);
 
     private final ThreadPoolExecutor simulateExecutor = new ThreadPoolExecutor(
-            3,
-            6,
+            5,
+            5,
            60,
             TimeUnit.SECONDS,
             simulateQueue

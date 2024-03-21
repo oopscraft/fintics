@@ -7,7 +7,7 @@ import org.oopscraft.fintics.trade.Tool
 import java.time.LocalTime
 
 def hold = null
-List<Ohlcv> ohlcvs = assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 3)
+List<Ohlcv> ohlcvs = assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 10)
 def ohlcv = ohlcvs.first()
 def priceZScore = Tool.zScore(ohlcvs.take(10).collect{it.closePrice})
 
@@ -55,23 +55,40 @@ Atr prevAtr = atrs.get(1)
 def trailingStop = ohlcv.closePrice < prevOhlcv.highPrice - (prevAtr.value * 2.0)
 log.info("- trailing stop: {}", trailingStop)
 
+// tide macd
+List<Macd> tideMacds = Tool.calculate(assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 60), MacdContext.DEFAULT)
+def tideMacd = tideMacds.first()
+
 
 // test
+if (priceZScore.abs() < 1.0) {
+    return null
+}
 log.info("====== {}", macdOscillatorPctChange)
-if (priceZScore > 2.0) {
-    if (dmi.adx > 20) {
-        if (macd.oscillator > 0) {
-            hold = 1
-        }
+
+
+if (dmi.adx > 25) {
+    if (macd.oscillator > 0) {
+        hold = 1
     }
+
 }
-if (priceZScore < -2.0) {
-    if (dmi.adx > 20) {
-        if (macd.oscillator < 0) {
-            hold = 0
-        }
-    }
+if (macd.oscillator < 0) {
+    hold = 0
 }
+
+
+
+if (trailingStop) {
+    hold = 0
+}
+
+if (tideMacd.value < 0 || tideMacd.oscillator < 0) {
+    hold = 0
+}
+
+
+
 
 
 //if (trailingStop) {

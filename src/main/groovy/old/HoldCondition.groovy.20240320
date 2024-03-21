@@ -29,7 +29,7 @@ class ScoreGroup extends LinkedHashMap<String, Scorable> implements Scorable {
 }
 
 interface Analyzable {
-    BigDecimal getAveragePrice()
+    BigDecimal getBasePrice()
     Scorable getBullishScore()
     Scorable getBearishScore()
     Scorable getVolatilityScore()
@@ -83,7 +83,7 @@ class Analysis implements Analyzable {
     }
 
     @Override
-    BigDecimal getAveragePrice() {
+    BigDecimal getBasePrice() {
         return ohlcvs.take(120).collect{it.closePrice}.average() as BigDecimal
     }
 
@@ -128,9 +128,9 @@ class Analysis implements Analyzable {
         def score = new Score()
         // dmi
         score.dmiAdx = dmi.adx > 25 ? 100 : 0
-//        // atr (over average)
-//        def averageAtr = atrs.take(60).collect{it.value}.average() as BigDecimal
-//        score.atrValueOverAverage = atr.value > averageAtr ? 100 : 0
+        // atr (over average)
+        def averageAtr = atrs.take(60).collect{it.value}.average() as BigDecimal
+        score.atrValueOverAverage = atr.value > averageAtr ? 100 : 0
         // return
         return score
     }
@@ -180,8 +180,8 @@ class AnalysisGroup extends LinkedHashMap<String,Analysis> implements Analyzable
     }
 
     @Override
-    BigDecimal getAveragePrice() {
-        return this.values().collect{it.getAveragePrice()}.average() as BigDecimal
+    BigDecimal getBasePrice() {
+        return this.values().collect{it.getBasePrice()}.average() as BigDecimal
     }
 
     @Override
@@ -234,7 +234,7 @@ class AnalysisGroup extends LinkedHashMap<String,Analysis> implements Analyzable
 //================================
 // default
 def hold = null
-List<Ohlcv> ohlcvs = assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 1).findAll{it.dateTime.toLocalDate().isEqual(dateTime.toLocalDate())}
+List<Ohlcv> ohlcvs = assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 1)
 def ohlcv = ohlcvs.first()
 def priceZScores = Tool.zScores(ohlcvs.take(10).collect{it.closePrice})
 def priceZScore = priceZScores.first()
@@ -246,6 +246,7 @@ def waveAnalysis = new Analysis(assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 3))
 
 // tide
 def tideAnalysis = new AnalysisGroup(
+        hourly: new Analysis(assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 60)),
         daily: new Analysis(assetIndicator.getOhlcvs(Ohlcv.Type.DAILY, 1))
 )
 
@@ -258,6 +259,7 @@ if (priceZScore > 1.5 && analysis.getBullishScore().getAverage() > 70) {
     if (waveAnalysis.getBullishScore().getAverage() > 70) {
         // volatility
         if (waveAnalysis.getVolatilityScore().getAverage() > 70) {
+            // default
             hold = 1
         }
     }
@@ -266,14 +268,18 @@ if (priceZScore > 1.5 && analysis.getBullishScore().getAverage() > 70) {
 if (priceZScore < -1.5 && analysis.getBearishScore().getAverage() > 70) {
     // wave is bearish
     if (waveAnalysis.getBearishScore().getAverage() > 70) {
-        // momentum is week
-        if (waveAnalysis.getMomentumScore().getAverage() < 50) {
+        // default
+        hold = 0
+
+        // filter - momentum exists, wait
+        if (waveAnalysis.getMomentumScore().getAverage() > 50) {
+            hold = null
+        }
+
+        // trailing stop
+        if (waveAnalysis.getTrailingStopScore(4).getAverage() > 70) {
             hold = 0
         }
-    }
-    // trailing stop
-    if (waveAnalysis.getTrailingStopScore(3).getAverage() > 70) {
-        hold = 0
     }
 }
 
@@ -284,11 +290,11 @@ if (priceZScore < -1.5 && analysis.getBearishScore().getAverage() > 70) {
 if (tideAnalysis.getBearishScore().getAverage() > 70) {
     hold = 0
 }
-// TODO decide overnight
+// decide overnight
 if (dateTime.toLocalTime().isAfter(LocalTime.of(15,20))) {
     // overshooting (price over average)
-    if (ohlcv.closePrice > waveAnalysis.getAveragePrice()) {
-//        hold = 0
+    if (ohlcv.closePrice > waveAnalysis.getBasePrice()) {
+        hold = 0
     }
 }
 
