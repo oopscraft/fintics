@@ -1,7 +1,6 @@
 package org.oopscraft.fintics.model;
 
 import lombok.*;
-import org.oopscraft.fintics.client.trade.TradeClientFactory;
 import org.oopscraft.fintics.dao.TradeEntity;
 
 import java.time.LocalTime;
@@ -34,7 +33,9 @@ public class Trade {
 
     private String tradeClientConfig;
 
-    private String holdCondition;
+    private String ruleConfig;
+
+    private String ruleScript;
 
     private String orderOperatorId;
 
@@ -60,7 +61,8 @@ public class Trade {
                 .endAt(tradeEntity.getEndAt())
                 .tradeClientId(tradeEntity.getTradeClientId())
                 .tradeClientConfig(tradeEntity.getTradeClientConfig())
-                .holdCondition(tradeEntity.getHoldCondition())
+                .ruleConfig(tradeEntity.getRuleConfig())
+                .ruleScript(tradeEntity.getRuleScript())
                 .orderOperatorId(tradeEntity.getOrderOperatorId())
                 .orderKind(tradeEntity.getOrderKind())
                 .alarmId(tradeEntity.getAlarmId())

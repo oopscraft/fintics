@@ -31,7 +31,9 @@ public class TradeRequest {
 
     private String tradeClientConfig;
 
-    private String holdCondition;
+    private String ruleConfig;
+
+    private String ruleScript;
 
     private String orderOperatorId;
 

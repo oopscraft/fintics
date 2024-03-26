@@ -33,7 +33,9 @@ public class TradeResponse {
 
     private String tradeClientConfig;
 
-    private String holdCondition;
+    private String ruleConfig;
+
+    private String ruleScript;
 
     private String orderOperatorId;
 
@@ -59,7 +61,8 @@ public class TradeResponse {
                 .endAt(trade.getEndAt())
                 .tradeClientId(trade.getTradeClientId())
                 .tradeClientConfig(trade.getTradeClientConfig())
-                .holdCondition(trade.getHoldCondition())
+                .ruleConfig(trade.getRuleConfig())
+                .ruleScript(trade.getRuleScript())
                 .orderOperatorId(trade.getOrderOperatorId())
                 .orderKind(trade.getOrderKind())
                 .alarmId(trade.getAlarmId())

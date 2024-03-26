@@ -65,7 +65,8 @@ public class TradesRestController {
                 .endAt(tradeRequest.getEndAt())
                 .tradeClientId(tradeRequest.getTradeClientId())
                 .tradeClientConfig(tradeRequest.getTradeClientConfig())
-                .holdCondition(tradeRequest.getHoldCondition())
+                .ruleConfig(tradeRequest.getRuleConfig())
+                .ruleScript(tradeRequest.getRuleScript())
                 .orderOperatorId(tradeRequest.getOrderOperatorId())
                 .orderKind(tradeRequest.getOrderKind())
                 .alarmId(tradeRequest.getAlarmId())
@@ -106,7 +107,8 @@ public class TradesRestController {
         trade.setEndAt(tradeRequest.getEndAt());
         trade.setTradeClientId(tradeRequest.getTradeClientId());
         trade.setTradeClientConfig(tradeRequest.getTradeClientConfig());
-        trade.setHoldCondition(tradeRequest.getHoldCondition());
+        trade.setRuleConfig(tradeRequest.getRuleConfig());
+        trade.setRuleScript(tradeRequest.getRuleScript());
         trade.setOrderOperatorId(tradeRequest.getOrderOperatorId());
         trade.setOrderKind(tradeRequest.getOrderKind());
         trade.setAlarmId(tradeRequest.getAlarmId());

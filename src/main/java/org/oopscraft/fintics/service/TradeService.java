@@ -72,7 +72,8 @@ public class TradeService {
             String clientProperties = PbePropertiesUtil.encode(trade.getTradeClientConfig());
             tradeEntity.setTradeClientConfig(clientProperties);
         }
-        tradeEntity.setHoldCondition(trade.getHoldCondition());
+        tradeEntity.setRuleConfig(trade.getRuleConfig());
+        tradeEntity.setRuleScript(trade.getRuleScript());
         tradeEntity.setOrderOperatorId(trade.getOrderOperatorId());
         tradeEntity.setOrderKind(trade.getOrderKind());
         tradeEntity.setAlarmId(trade.getAlarmId());

@@ -134,8 +134,9 @@ public class TradeExecutor {
                 OrderBook orderBook = tradeClient.getOrderBook(tradeAsset);
 
                 // executes trade asset decider
-                HoldConditionExecutor holdConditionExecutor = HoldConditionExecutor.builder()
-                        .holdCondition(trade.getHoldCondition())
+                RuleScriptExecutor holdConditionExecutor = RuleScriptExecutor.builder()
+                        .ruleConfig(trade.getRuleConfig())
+                        .ruleScript(trade.getRuleScript())
                         .dateTime(dateTime)
                         .orderBook(orderBook)
                         .balance(balance)

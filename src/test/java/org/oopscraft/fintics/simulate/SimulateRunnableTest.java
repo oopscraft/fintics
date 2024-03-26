@@ -93,7 +93,7 @@ class SimulateRunnableTest extends CoreTestSupport {
                 .endAt(LocalTime.of(15,30,0))
                 .orderOperatorId("SIMPLE")
                 .orderKind(Order.Kind.MARKET)
-                .holdCondition(loadHoldCondition("groovy/old/HoldCondition.KospiCall.groovy"))
+                .ruleScript(loadHoldCondition("groovy/old/HoldCondition.KospiCall.groovy"))
                 .build();
         List<TradeAsset> tradeAssets = new ArrayList<>();
         TradeAsset tradeAsset = TradeAsset.builder()

@@ -50,9 +50,13 @@ public class TradeEntity extends BaseEntity {
     @Lob
     private String tradeClientConfig;
 
-    @Column(name = "hold_condition")
+    @Column(name = "rule_config")
     @Lob
-    private String holdCondition;
+    private String ruleConfig;
+
+    @Column(name = "rule_script")
+    @Lob
+    private String ruleScript;
 
     @Column(name = "order_operator_id")
     private String orderOperatorId;

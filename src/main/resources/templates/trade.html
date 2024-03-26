@@ -586,15 +586,25 @@
                     </div>
                 </div>
                 <div class="grid-column--12">
+                    <div>
+                        <span data-th-text="#{fintics.Trade.ruleConfig}" class="font-weight--bold width--100"></span>
+                    </div>
+                    <duice-codemirror class="font-size--smaller"
+                                      data-duice-bind="trade"
+                                      data-duice-property="ruleConfig"
+                                      data-duice-theme="dracula">
+                    </duice-codemirror>
+                </div>
+                <div class="grid-column--12">
                     <div class="display--flex justify-content--space-between margin--1px padding--1px">
                         <div>
-                            <span data-th-text="#{fintics.Trade.holdCondition}" class="font-weight--bold width--100"></span>
+                            <span data-th-text="#{fintics.Trade.ruleScript}" class="font-weight--bold width--100"></span>
                             <small class="font-weight--bold">(Groovy Script)</small>
                         </div>
                     </div>
                     <duice-codemirror class="font-size--smaller" style="height:100vh;"
                                       data-duice-bind="trade"
-                                      data-duice-property="holdCondition"
+                                      data-duice-property="ruleScript"
                                       data-duice-mode="groovy"
                                       data-duice-theme="dracula">
                     </duice-codemirror>

@@ -1,6 +1,5 @@
 package org.oopscraft.fintics.trade;
 
-import ch.qos.logback.classic.Logger;
 import com.github.javaparser.utils.LineSeparator;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
@@ -21,10 +20,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
-class HoldConditionExecutorTest {
+class RuleScriptExecutorTest {
 
     Trade getTestTrade() {
         return Trade.builder()
@@ -136,11 +134,13 @@ class HoldConditionExecutorTest {
         OrderBook orderBook = getTestOrderBook();
         List<IndiceIndicator> indiceIndicators = getTestIndiceIndicators();
         AssetIndicator assetIndicator = getTestAssetIndicator(tradeAsset);
-        trade.setHoldCondition("return 50;");
+        trade.setRuleConfig("");
+        trade.setRuleScript("return 50;");
 
         // when
-        HoldConditionExecutor tradeAssetDecider = HoldConditionExecutor.builder()
-                .holdCondition(trade.getHoldCondition())
+        RuleScriptExecutor tradeAssetDecider = RuleScriptExecutor.builder()
+                .ruleConfig(trade.getRuleConfig())
+                .ruleScript(trade.getRuleScript())
                 .dateTime(LocalDateTime.now())
                 .orderBook(orderBook)
                 .indiceIndicators(indiceIndicators)
@@ -160,12 +160,15 @@ class HoldConditionExecutorTest {
         TradeAsset tradeAsset = getTestTradeAsset();
         List<IndiceIndicator> indiceIndicators = getTestIndiceIndicators();
         AssetIndicator assetIndicator = getTestAssetIndicator(tradeAsset);
-        String holdCondition = loadGroovyFileAsString("HoldCondition.groovy");
-        trade.setHoldCondition(holdCondition);
+        String ruleConfig = "";
+        String ruleScript = loadGroovyFileAsString("RuleScript.BreakoutStrategy.groovy");
+        trade.setRuleConfig(ruleConfig);
+        trade.setRuleScript(ruleScript);
 
         // when
-        HoldConditionExecutor tradeAssetDecider = HoldConditionExecutor.builder()
-                .holdCondition(trade.getHoldCondition())
+        RuleScriptExecutor tradeAssetDecider = RuleScriptExecutor.builder()
+                .ruleConfig(trade.getRuleConfig())
+                .ruleScript(trade.getRuleScript())
                 .dateTime(LocalDateTime.now())
                 .balance(new Balance())
                 .indiceIndicators(indiceIndicators)
