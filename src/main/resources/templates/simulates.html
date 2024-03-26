@@ -402,10 +402,16 @@
                     </div>
                 </div>
                 <label class="grid-column--6 s__grid-column--12">
+                    <span data-th-text="#{fintics.Trade.ruleConfig}" class="width--100 font-weight--bold"></span>
+                    <duice-codemirror class="font-size--smaller"
+                                      data-duice-bind="trade"
+                                      data-duice-property="ruleConfig"
+                                      data-duice-theme="dracula">
+                    </duice-codemirror>
                     <span data-th-text="#{fintics.Trade.ruleScript}" class="width--100 font-weight--bold"></span>
-                    <duice-codemirror class="font-size--smaller" style="height:300px;"
+                    <duice-codemirror class="font-size--smaller" style="height:200px"
                                       data-duice-bind="simulateDialog.simulate.trade"
-                                      data-duice-property="holdCondition"
+                                      data-duice-property="ruleScript"
                                       data-duice-mode="groovy"
                                       data-duice-theme="dracula">
                     </duice-codemirror>
