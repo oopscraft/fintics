@@ -48,11 +48,13 @@ class Analysis implements Analyzable {
     ChaikinOscillator chaikinOscillator
     List<Cci> ccis
     Cci cci
+    List<StochasticSlow> stochasticSlows
+    StochasticSlow stochasticSlow
 
     Analysis(List<Ohlcv> ohlcvs) {
         this.ohlcvs = ohlcvs
         this.ohlcv = this.ohlcvs.first()
-        this.emas = Tool.calculate(ohlcvs, EmaContext.of(60))
+        this.emas = Tool.calculate(ohlcvs, EmaContext.of(30))
         this.ema = this.emas.first()
         this.macds = Tool.calculate(ohlcvs, MacdContext.DEFAULT)
         this.macd = this.macds.first()
@@ -70,6 +72,8 @@ class Analysis implements Analyzable {
         this.chaikinOscillator = this.chaikinOscillators.first()
         this.ccis = Tool.calculate(ohlcvs, CciContext.DEFAULT)
         this.cci = ccis.first()
+        this.stochasticSlows = Tool.calculate(ohlcvs, StochasticSlowContext.DEFAULT)
+        this.stochasticSlow = stochasticSlows.first()
     }
 
     @Override
@@ -85,7 +89,7 @@ class Analysis implements Analyzable {
         // cci
         score.cciValueOverSignal = cci.value > cci.signal ? 100 : 0
         // chaikin oscillator
-        score.chaikinOscillator = chaikinOscillator.value > chaikinOscillator.signal ? 100 : 0
+        score.chaikinOscillatorValueOverSignal = chaikinOscillator.value > chaikinOscillator.signal ? 100 : 0
         // return
         return score
     }
@@ -103,7 +107,7 @@ class Analysis implements Analyzable {
         // cci
         score.cciValueUnderSignal = cci.value < cci.signal ? 100 : 0
         // chaikin oscillator
-        score.chaikinOscillator = chaikinOscillator.value < chaikinOscillator.signal ? 100 : 0
+        score.chaikinOscillatorValueUnderSignal = chaikinOscillator.value < chaikinOscillator.signal ? 100 : 0
         // return
         return score
     }
@@ -113,7 +117,6 @@ class Analysis implements Analyzable {
         def score = new Score()
         // dmi
         score.dmiAdx = dmi.adx > 25 ? 100 : 0
-        score.dmiPdiMdi = dmi.pdi > 25 || dmi.mdi > 25 ? 100 : 0
         // return
         return score
     }
@@ -169,10 +172,8 @@ def waveOhlcvType = config['waveOhlcvType'] as Ohlcv.Type
 def waveOhlcvPeriod = config['waveOhlcvPeriod'] as Integer
 def tideOhlcvType = config['tideOhlcvType'] as Ohlcv.Type
 def tideOhlcvPeriod = config['tideOhlcvPeriod'] as Integer
-log.info("waveOhlcvType: {}", waveOhlcvType)
-log.info("waveOhlcvPeriod: {}", waveOhlcvPeriod)
-log.info("tideOhlcvType: {}", tideOhlcvType)
-log.info("tideOhlcvPeriod: {}", tideOhlcvPeriod)
+log.info("waveOhlcvType(Period): {}({})", waveOhlcvType, waveOhlcvPeriod)
+log.info("tideOhlcvType(Period): {}({})", tideOhlcvType, tideOhlcvPeriod)
 
 // default
 def hold = null
@@ -202,6 +203,7 @@ if (priceZScore > 1.5 && analysis.getBullishScore().getAverage() > 70) {
         if (waveAnalysis.getVolatilityScore().getAverage() < 70) {
             hold = null
         }
+        // overbought
     }
 }
 // sell
@@ -210,7 +212,7 @@ if (priceZScore < -1.5 && analysis.getBearishScore().getAverage() > 70) {
     if (waveAnalysis.getBearishScore().getAverage() > 70) {
         // default
         hold = 0
-        // momentum is week
+        // momentum
         if (waveAnalysis.getMomentumScore().getAverage() > 70) {
             hold = null
         }

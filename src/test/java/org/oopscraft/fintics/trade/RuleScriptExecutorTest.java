@@ -184,35 +184,4 @@ class RuleScriptExecutorTest {
         log.info("== result:{}", result);
     }
 
-    @Test
-    void testRuleScriptTripleScreen() {
-        // given
-        Trade trade = getTestTrade();
-        TradeAsset tradeAsset = getTestTradeAsset();
-        List<IndiceIndicator> indiceIndicators = getTestIndiceIndicators();
-        AssetIndicator assetIndicator = getTestAssetIndicator(tradeAsset);
-        StringBuilder ruleConfig = new StringBuilder();
-        ruleConfig.append("waveOhlcvType=MINUTE").append("\n");
-        ruleConfig.append("waveOhlcvPeriod=3").append("\n");
-        ruleConfig.append("tideOhlcvType=DAILY").append("\n");
-        ruleConfig.append("tideOhlcvPeriod=1").append("\n");
-        String ruleScript = loadGroovyFileAsString("RuleScript.TripleScreen.groovy");
-        trade.setRuleConfig(ruleConfig.toString());
-        trade.setRuleScript(ruleScript);
-
-        // when
-        RuleScriptExecutor tradeAssetDecider = RuleScriptExecutor.builder()
-                .ruleConfig(trade.getRuleConfig())
-                .ruleScript(trade.getRuleScript())
-                .dateTime(LocalDateTime.now())
-                .balance(new Balance())
-                .indiceIndicators(indiceIndicators)
-                .assetIndicator(assetIndicator)
-                .build();
-        BigDecimal result = tradeAssetDecider.execute();
-
-        // then
-        log.info("== result:{}", result);
-    }
-
 }
