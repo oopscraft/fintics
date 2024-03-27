@@ -45,16 +45,18 @@ public class SimulateTradeClient extends TradeClient {
         this.assetOhlcvRepository = assetOhlcvRepository;
     }
 
-    public void deposit(BigDecimal amount) {
+    public synchronized void deposit(BigDecimal amount) {
         balance.setCashAmount(balance.getCashAmount().add(amount));
     }
 
-    public void withdraw(BigDecimal amount) {
+    public synchronized void withdraw(BigDecimal amount) {
         balance.setCashAmount(balance.getCashAmount().subtract(amount));
     }
 
-    public void deductFee(BigDecimal amount) {
-        BigDecimal feeAmount = amount.multiply(feeRate).setScale(2, RoundingMode.CEILING);
+    public synchronized void deductFee(BigDecimal amount) {
+        BigDecimal feeAmount = amount
+                .multiply(feeRate.divide(BigDecimal.valueOf(100), MathContext.DECIMAL32))
+                .setScale(2, RoundingMode.CEILING);
         balance.setCashAmount(balance.getCashAmount().subtract(feeAmount));
     }
 

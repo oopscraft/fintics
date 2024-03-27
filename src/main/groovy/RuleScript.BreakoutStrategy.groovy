@@ -203,7 +203,6 @@ if (priceZScore > 1.5 && analysis.getBullishScore().getAverage() > 70) {
         if (waveAnalysis.getVolatilityScore().getAverage() < 70) {
             hold = null
         }
-        // overbought
     }
 }
 // sell
