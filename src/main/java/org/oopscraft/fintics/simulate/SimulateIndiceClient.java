@@ -17,20 +17,17 @@ public class SimulateIndiceClient extends IndiceClient {
 
     private final IndiceOhlcvRepository indiceOhlcvRepository;
 
-    private final AssetOhlcvRepository brokerAssetOhlcvRepository;
-
     @Setter
     @Getter
     private LocalDateTime dateTime = LocalDateTime.now();
 
-    private Map<IndiceId,List<Ohlcv>> minuteOhlcvsMap = new HashMap<>();
+    private final Map<IndiceId,List<Ohlcv>> minuteOhlcvsMap = new HashMap<>();
 
-    private Map<IndiceId,List<Ohlcv>> dailyOhlcvsMap = new HashMap<>();
+    private final Map<IndiceId,List<Ohlcv>> dailyOhlcvsMap = new HashMap<>();
 
     @Builder
-    protected SimulateIndiceClient(IndiceOhlcvRepository indiceOhlcvRepository, AssetOhlcvRepository brokerAssetOhlcvRepository) {
+    protected SimulateIndiceClient(IndiceOhlcvRepository indiceOhlcvRepository) {
         this.indiceOhlcvRepository = indiceOhlcvRepository;
-        this.brokerAssetOhlcvRepository = brokerAssetOhlcvRepository;
     }
 
     private void loadOhlcvs(IndiceId indiceId, LocalDateTime dateTime) {

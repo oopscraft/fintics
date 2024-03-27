@@ -23,6 +23,8 @@ interface Analyzable {
     Scorable getBearishScore()
     Scorable getVolatilityScore()
     Scorable getMomentumScore()
+    Scorable getUnderestimateScore()
+    Scorable getOverestimateScore()
     Scorable getTrailingStopScore(multiplier)
     BigDecimal getAveragePrice()
 }
@@ -48,6 +50,8 @@ class Analysis implements Analyzable {
     ChaikinOscillator chaikinOscillator
     List<Cci> ccis
     Cci cci
+    List<StochasticSlow> stochasticSlows
+    StochasticSlow stochasticSlow
 
     Analysis(List<Ohlcv> ohlcvs) {
         this.ohlcvs = ohlcvs
@@ -70,6 +74,8 @@ class Analysis implements Analyzable {
         this.chaikinOscillator = this.chaikinOscillators.first()
         this.ccis = Tool.calculate(ohlcvs, CciContext.DEFAULT)
         this.cci = ccis.first()
+        this.stochasticSlows = Tool.calculate(ohlcvs, StochasticSlowContext.DEFAULT)
+        this.stochasticSlow = stochasticSlows.first()
     }
 
     @Override
@@ -136,6 +142,28 @@ class Analysis implements Analyzable {
     }
 
     @Override
+    Scorable getUnderestimateScore() {
+        def score = new Score()
+        // cci
+        score.cciValue = cci.value < 0 ? 100 : 0
+        // stochastic slow
+        score.stochasticSlowSlowK = stochasticSlow.slowK < 50 ? 100 : 0
+        // return
+        return score
+    }
+
+    @Override
+    Scorable getOverestimateScore() {
+        def score = new Score()
+        // cci
+        score.cciValue = cci.value > 0 ? 100 : 0
+        // stochastic slow
+        score.stochasticSlowSlowK = stochasticSlow.slowK > 50 ? 100 : 0
+        // return
+        return score
+    }
+
+    @Override
     Scorable getTrailingStopScore(multiplier) {
         def score = new Score()
         // ATR based trailing stop loss
@@ -194,8 +222,8 @@ def tideAnalysis = new Analysis(assetIndicator.getOhlcvs(tideOhlcvType, tideOhlc
 //================================
 // buy
 if (priceZScore > 1.5 && analysis.getBullishScore().getAverage() > 70) {
-    // wave is bullish
-    if (waveAnalysis.getBullishScore().getAverage() > 70) {
+    // wave is underestimated
+    if (waveAnalysis.getUnderestimateScore().getAverage() > 70) {
         // default
         hold = 1
         // volatility
@@ -206,17 +234,13 @@ if (priceZScore > 1.5 && analysis.getBullishScore().getAverage() > 70) {
 }
 // sell
 if (priceZScore < -1.5 && analysis.getBearishScore().getAverage() > 70) {
-    // wave is bearish
-    if (waveAnalysis.getBearishScore().getAverage() > 70) {
+    // wave is overestimated
+    if (waveAnalysis.getOverestimateScore().getAverage() > 70) {
         // default
         hold = 0
         // momentum is week
         if (waveAnalysis.getMomentumScore().getAverage() > 70) {
             hold = null
-        }
-        // trailing stop
-        if (waveAnalysis.getTrailingStopScore(3).getAverage() > 70) {
-            hold = 0
         }
     }
 }
@@ -226,6 +250,10 @@ if (priceZScore < -1.5 && analysis.getBearishScore().getAverage() > 70) {
 //================================
 // tide is bearish, disable
 if (tideAnalysis.getBearishScore().getAverage() > 70) {
+    hold = 0
+}
+// trailing stop
+if (waveAnalysis.getTrailingStopScore(3).getAverage() > 70) {
     hold = 0
 }
 

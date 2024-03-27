@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.math.RoundingMode;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -50,6 +51,11 @@ public class SimulateTradeClient extends TradeClient {
 
     public void withdraw(BigDecimal amount) {
         balance.setCashAmount(balance.getCashAmount().subtract(amount));
+    }
+
+    public void deductFee(BigDecimal amount) {
+        BigDecimal feeAmount = amount.multiply(feeRate).setScale(2, RoundingMode.CEILING);
+        balance.setCashAmount(balance.getCashAmount().subtract(feeAmount));
     }
 
     private void loadOhlcvsIfNotExist(Asset asset, LocalDateTime dateTime) {
@@ -210,6 +216,9 @@ public class SimulateTradeClient extends TradeClient {
                 balanceAsset.setPurchasePrice(holdBuyPurchasePrice);
                 balanceAsset.setPurchaseAmount(holdPurchaseAmount);
             }
+
+            // deduct fee
+            deductFee(buyAmount);
         }
 
         // sell
@@ -234,6 +243,9 @@ public class SimulateTradeClient extends TradeClient {
 
             // deposit
             deposit(sellAmount);
+
+            // deduct fee
+            deductFee(sellAmount);
         }
 
         // save order
