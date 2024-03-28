@@ -201,7 +201,7 @@ def tideAnalysis = new Analysis(assetIndicator.getOhlcvs(tideOhlcvType, tideOhlc
 // trade
 //================================
 // buy
-if (priceZScore > 1.5 && analysis.getBullishScore().getAverage() > 70) {
+if (priceZScore > 1.0 && analysis.getBullishScore().getAverage() > 70) {
     // wave is bullish
     if (waveAnalysis.getBullishScore().getAverage() > 70) {
         // default
@@ -213,7 +213,7 @@ if (priceZScore > 1.5 && analysis.getBullishScore().getAverage() > 70) {
     }
 }
 // sell
-if (priceZScore < -1.5 && analysis.getBearishScore().getAverage() > 70) {
+if (priceZScore < -1.0 && analysis.getBearishScore().getAverage() > 70) {
     // wave is bearish
     if (waveAnalysis.getBearishScore().getAverage() > 70) {
         // default

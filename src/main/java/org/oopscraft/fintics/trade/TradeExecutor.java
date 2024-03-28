@@ -43,9 +43,9 @@ public class TradeExecutor {
 
     private Logger log = (Logger) LoggerFactory.getLogger(this.getClass());
 
-    private final Map<String,BigDecimal> holdConditionResultMap = new HashMap<>();
+    private final Map<String,BigDecimal> ruleScriptResultMap = new HashMap<>();
 
-    private final Map<String,Integer> holdConditionResultCountMap = new HashMap<>();
+    private final Map<String,Integer> ruleScriptResultCountMap = new HashMap<>();
 
     @Builder
     private TradeExecutor(PlatformTransactionManager transactionManager, IndiceOhlcvRepository indiceOhlcvRepository, AssetOhlcvRepository assetOhlcvRepository, OrderRepository orderRepository, AlarmService alarmService) {
@@ -134,7 +134,7 @@ public class TradeExecutor {
                 OrderBook orderBook = tradeClient.getOrderBook(tradeAsset);
 
                 // executes trade asset decider
-                RuleScriptExecutor holdConditionExecutor = RuleScriptExecutor.builder()
+                RuleScriptExecutor ruleScriptExecutor = RuleScriptExecutor.builder()
                         .ruleConfig(trade.getRuleConfig())
                         .ruleScript(trade.getRuleScript())
                         .dateTime(dateTime)
@@ -143,32 +143,32 @@ public class TradeExecutor {
                         .indiceIndicators(indiceIndicators)
                         .assetIndicator(assetIndicator)
                         .build();
-                holdConditionExecutor.setLog(log);
+                ruleScriptExecutor.setLog(log);
                 Instant startTime = Instant.now();
-                BigDecimal holdConditionResult = holdConditionExecutor.execute();
+                BigDecimal ruleScriptResult = ruleScriptExecutor.execute();
                 log.info("[{}] Rule script execution elapsed:{}", tradeAsset.getAssetName(), Duration.between(startTime, Instant.now()));
-                log.info("[{}] holdConditionResult: {}", tradeAsset.getAssetName(), holdConditionResult);
+                log.info("[{}] ruleScriptResult: {}", tradeAsset.getAssetName(), ruleScriptResult);
 
-                // check hold condition result and count
-                BigDecimal previousHoldConditionResult = holdConditionResultMap.get(tradeAsset.getAssetId());
-                int holdConditionResultCount = holdConditionResultCountMap.getOrDefault(tradeAsset.getAssetId(), 0);
-                if (Objects.equals(holdConditionResult, previousHoldConditionResult)) {
-                    holdConditionResultCount++;
+                // check rule script result and count
+                BigDecimal previousRuleScriptResult = ruleScriptResultMap.get(tradeAsset.getAssetId());
+                int ruleScriptResultCount = ruleScriptResultCountMap.getOrDefault(tradeAsset.getAssetId(), 0);
+                if (Objects.equals(ruleScriptResult, previousRuleScriptResult)) {
+                    ruleScriptResultCount++;
                 } else {
-                    holdConditionResultCount = 1;
+                    ruleScriptResultCount = 1;
                 }
-                holdConditionResultMap.put(tradeAsset.getAssetId(), holdConditionResult);
-                holdConditionResultCountMap.put(tradeAsset.getAssetId(), holdConditionResultCount);
+                ruleScriptResultMap.put(tradeAsset.getAssetId(), ruleScriptResult);
+                ruleScriptResultCountMap.put(tradeAsset.getAssetId(), ruleScriptResultCount);
 
                 // checks threshold exceeded
-                log.info("[{}] holdConditionResultCount: {}", tradeAsset.getAssetName(), holdConditionResultCount);
-                if (holdConditionResultCount < trade.getThreshold()) {
+                log.info("[{}] ruleScriptResultCount: {}", tradeAsset.getAssetName(), ruleScriptResultCount);
+                if (ruleScriptResultCount < trade.getThreshold()) {
                     log.info("[{}] Threshold has not been exceeded yet - threshold is {}", tradeAsset.getAssetName(), trade.getThreshold());
                     continue;
                 }
 
                 // null is no operation
-                if (holdConditionResult == null) {
+                if (ruleScriptResult == null) {
                     continue;
                 }
 
@@ -180,7 +180,7 @@ public class TradeExecutor {
                         .multiply(holdRatio)
                         .setScale(2, RoundingMode.HALF_UP);
                 BigDecimal holdConditionResultAmount = holdRatioAmount
-                        .multiply(holdConditionResult)
+                        .multiply(ruleScriptResult)
                         .setScale(2, RoundingMode.HALF_UP);
                 BigDecimal balanceAssetAmount = balance.getBalanceAsset(tradeAsset.getAssetId())
                         .map(BalanceAsset::getValuationAmount)
@@ -213,7 +213,7 @@ public class TradeExecutor {
                     }
                     BigDecimal quantity = exceededAmount.abs().divide(price, MathContext.DECIMAL32);
                     // if holdConditionResult is zero, sell quantity is all
-                    if (holdConditionResult.compareTo(BigDecimal.ZERO) == 0) {
+                    if (ruleScriptResult.compareTo(BigDecimal.ZERO) == 0) {
                         BalanceAsset balanceAsset = balance.getBalanceAsset(tradeAsset.getAssetId()).orElse(null);
                         if (balanceAsset != null) {
                             quantity = balanceAsset.getOrderableQuantity();
