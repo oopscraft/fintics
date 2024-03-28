@@ -116,7 +116,14 @@ class Analysis implements Analyzable {
     Scorable getVolatilityScore() {
         def score = new Score()
         // dmi
-        score.dmiAdx = dmi.adx > 25 ? 100 : 0
+        def dmiAdxAverage = dmis.take(60).collect{it.adx}.average() as BigDecimal
+        score.dmiAdx = dmi.adx > dmiAdxAverage ? 100 : 0
+        // atr
+        def atrValueAverage = atrs.take(60).collect{it.value}.average() as BigDecimal
+        score.atrValue = atr.value > atrValueAverage ? 100 : 0
+        // bollinger band
+        def bollingerBandWidthAverage = bollingerBands.take(60).collect{it.width}.average() as BigDecimal
+        score.bollingerBandWidth = bollingerBand.width > bollingerBandWidthAverage ? 100 : 0
         // return
         return score
     }

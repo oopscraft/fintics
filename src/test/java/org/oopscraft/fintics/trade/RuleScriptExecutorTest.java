@@ -154,7 +154,7 @@ class RuleScriptExecutorTest {
     }
 
     @Test
-    void testRuleScriptBreakoutStrategy() {
+    void testRuleScript() {
         // given
         Trade trade = getTestTrade();
         TradeAsset tradeAsset = getTestTradeAsset();
@@ -165,7 +165,7 @@ class RuleScriptExecutorTest {
         ruleConfig.append("waveOhlcvPeriod=3").append("\n");
         ruleConfig.append("tideOhlcvType=DAILY").append("\n");
         ruleConfig.append("tideOhlcvPeriod=1").append("\n");
-        String ruleScript = loadGroovyFileAsString("RuleScript.BreakoutStrategy.groovy");
+        String ruleScript = loadGroovyFileAsString("RuleScript.groovy");
         trade.setRuleConfig(ruleConfig.toString());
         trade.setRuleScript(ruleScript);
 
