@@ -19,12 +19,12 @@ class Score extends LinkedHashMap<String, BigDecimal> implements Scorable {
 }
 
 interface Analyzable {
+    BigDecimal getZScore()
     Scorable getBullishScore()
     Scorable getBearishScore()
     Scorable getVolatilityScore()
     Scorable getUnderestimateScore()
     Scorable getOverestimateScore()
-    Scorable getTrailingStopScore(multiplier)
 }
 
 class Analysis implements Analyzable {
@@ -34,8 +34,6 @@ class Analysis implements Analyzable {
     Macd macd
     List<Dmi> dmis
     Dmi dmi
-    List<Atr> atrs
-    Atr atr
 
     Analysis(List<Ohlcv> ohlcvs) {
         this.ohlcvs = ohlcvs
@@ -44,8 +42,12 @@ class Analysis implements Analyzable {
         this.macd = this.macds.first()
         this.dmis = Tool.calculate(ohlcvs, DmiContext.DEFAULT)
         this.dmi = this.dmis.first()
-        this.atrs = Tool.calculate(ohlcvs, AtrContext.DEFAULT)
-        this.atr = this.atrs.first()
+    }
+
+    @Override
+    BigDecimal getZScore() {
+        def zScores = Tool.zScores(ohlcvs.take(10).collect{it.closePrice})
+        return zScores.first()
     }
 
     @Override
@@ -96,17 +98,6 @@ class Analysis implements Analyzable {
     }
 
     @Override
-    Scorable getTrailingStopScore(multiplier) {
-        def score = new Score()
-        // ATR based trailing stop loss
-        Ohlcv prevOhlcv = ohlcvs.get(1)
-        Atr prevAtr = atrs.get(1)
-        score.atrValue = ohlcv.closePrice < prevOhlcv.highPrice - (prevAtr.value * multiplier) ? 100 : 0
-        // return
-        return score
-    }
-
-    @Override
     String toString() {
         return [
                 bullishScore: "${this.getBullishScore()}",
@@ -144,7 +135,7 @@ log.info("tideAnalysis: {}", tideAnalysis)
 // trade
 //================================
 // buy
-if (waveAnalysis.getBullishScore().getAverage() > 70) {
+if (waveAnalysis.getZScore() > 1.5 && waveAnalysis.getBullishScore().getAverage() > 70) {
     if (waveAnalysis.getVolatilityScore().getAverage() > 70) {
         if (waveAnalysis.getUnderestimateScore().getAverage() > 70) {
             hold = 1
@@ -152,7 +143,7 @@ if (waveAnalysis.getBullishScore().getAverage() > 70) {
     }
 }
 // sell
-if (waveAnalysis.getBearishScore().getAverage() > 70) {
+if (waveAnalysis.getZScore() < -1.5 && waveAnalysis.getBearishScore().getAverage() > 70) {
     if (waveAnalysis.getVolatilityScore().getAverage() > 70) {
         if (waveAnalysis.getOverestimateScore().getAverage() > 70) {
             hold = 0
@@ -163,10 +154,6 @@ if (waveAnalysis.getBearishScore().getAverage() > 70) {
 //================================
 // fallback
 //================================
-// wave trailing stop
-if (waveAnalysis.getTrailingStopScore(3).getAverage() > 70) {
-    hold = 0
-}
 // tide is bearish, disable
 if (tideAnalysis.getBearishScore().getAverage() > 70) {
     hold= 0
