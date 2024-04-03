@@ -618,7 +618,7 @@ public class KisTradeClient extends KrTradeClient {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
-        String url = apiUrl + "/uapi/domestic-stock/v1/trading/order-cash";
+        String url = apiUrl + "/uapi/domestic-stock/v1/trading/order-rvsecncl";
         HttpHeaders headers = createHeaders();
 
         // trId
