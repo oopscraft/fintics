@@ -5,8 +5,8 @@ import lombok.Builder;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
 import org.oopscraft.arch4j.core.data.IdGenerator;
-import org.oopscraft.fintics.client.indice.IndiceClient;
-import org.oopscraft.fintics.client.trade.TradeClient;
+import org.oopscraft.fintics.model.indice.IndiceClient;
+import org.oopscraft.fintics.model.broker.BrokerClient;
 import org.oopscraft.fintics.dao.AssetOhlcvRepository;
 import org.oopscraft.fintics.dao.IndiceOhlcvRepository;
 import org.oopscraft.fintics.dao.OrderEntity;
@@ -60,7 +60,7 @@ public class TradeExecutor {
         this.log = log;
     }
 
-    public void execute(Trade trade, LocalDateTime dateTime, IndiceClient indiceClient, TradeClient tradeClient) throws InterruptedException {
+    public void execute(Trade trade, LocalDateTime dateTime, IndiceClient indiceClient, BrokerClient tradeClient) throws InterruptedException {
         log.info("[{}] Check trade", trade.getTradeName());
 
         // check market opened
@@ -114,11 +114,11 @@ public class TradeExecutor {
 
                 // indicator
                 List<Ohlcv> minuteOhlcvs = tradeClient.getMinuteOhlcvs(tradeAsset, dateTime);
-                List<Ohlcv> previousMinuteOhlcvs = getPreviousAssetMinuteOhlcvs(trade.getTradeClientId(), tradeAsset.getAssetId(), minuteOhlcvs, dateTime);
+                List<Ohlcv> previousMinuteOhlcvs = getPreviousAssetMinuteOhlcvs(trade.getBrokerId(), tradeAsset.getAssetId(), minuteOhlcvs, dateTime);
                 minuteOhlcvs.addAll(previousMinuteOhlcvs);
 
                 List<Ohlcv> dailyOhlcvs = tradeClient.getDailyOhlcvs(tradeAsset, dateTime);
-                List<Ohlcv> previousDailyOhlcvs = getPreviousAssetDailyOhlcvs(trade.getTradeClientId(), tradeAsset.getAssetId(), dailyOhlcvs, dateTime);
+                List<Ohlcv> previousDailyOhlcvs = getPreviousAssetDailyOhlcvs(trade.getBrokerId(), tradeAsset.getAssetId(), dailyOhlcvs, dateTime);
                 dailyOhlcvs.addAll(previousDailyOhlcvs);
 
                 AssetIndicator assetIndicator = AssetIndicator.builder()
@@ -316,7 +316,7 @@ public class TradeExecutor {
         }
     }
 
-    private void buyTradeAsset(TradeClient tradeClient, Trade trade, TradeAsset tradeAsset, BigDecimal quantity, BigDecimal price) throws InterruptedException {
+    private void buyTradeAsset(BrokerClient tradeClient, Trade trade, TradeAsset tradeAsset, BigDecimal quantity, BigDecimal price) throws InterruptedException {
         Order order = Order.builder()
                 .orderId(IdGenerator.uuid())
                 .orderAt(LocalDateTime.now())
@@ -363,7 +363,7 @@ public class TradeExecutor {
         }
     }
 
-    private void sellTradeAsset(TradeClient tradeClient, Trade trade, TradeAsset tradeAsset, BigDecimal quantity, BigDecimal price) throws InterruptedException {
+    private void sellTradeAsset(BrokerClient tradeClient, Trade trade, TradeAsset tradeAsset, BigDecimal quantity, BigDecimal price) throws InterruptedException {
         Order order = Order.builder()
                 .orderId(IdGenerator.uuid())
                 .orderAt(LocalDateTime.now())

@@ -17,5 +17,5 @@ web:
 # fintics
 fintics:
   system-alarm-id: fintics
-  indice-client-class-name: org.oopscraft.fintics.client.indice.YahooIndiceClient
+  indice-client-class-name: org.oopscraft.fintics.model.indice.YahooIndiceClient
   ohlcv-retention-months: 3

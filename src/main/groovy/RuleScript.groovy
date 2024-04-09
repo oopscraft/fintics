@@ -23,6 +23,7 @@ interface Analyzable {
     Scorable getBullishScore()
     Scorable getBearishScore()
     Scorable getVolatilityScore()
+    Scorable getMomentumScore()
     Scorable getUnderestimateScore()
     Scorable getOverestimateScore()
 }
@@ -34,6 +35,20 @@ class Analysis implements Analyzable {
     Macd macd
     List<Dmi> dmis
     Dmi dmi
+    List<Rsi> rsis
+    Rsi rsi
+    List<Atr> atrs
+    Atr atr
+    List<BollingerBand> bollingerBands
+    BollingerBand bollingerBand
+    List<Obv> obvs
+    Obv obv
+    List<ChaikinOscillator> chaikinOscillators
+    ChaikinOscillator chaikinOscillator
+    List<Cci> ccis
+    Cci cci
+    List<StochasticSlow> stochasticSlows
+    StochasticSlow stochasticSlow
 
     Analysis(List<Ohlcv> ohlcvs) {
         this.ohlcvs = ohlcvs
@@ -42,6 +57,20 @@ class Analysis implements Analyzable {
         this.macd = this.macds.first()
         this.dmis = Tool.calculate(ohlcvs, DmiContext.DEFAULT)
         this.dmi = this.dmis.first()
+        this.rsis = Tool.calculate(ohlcvs, RsiContext.DEFAULT)
+        this.rsi = rsis.first()
+        this.atrs = Tool.calculate(ohlcvs, AtrContext.DEFAULT)
+        this.atr = atrs.first()
+        this.bollingerBands = Tool.calculate(ohlcvs, BollingerBandContext.DEFAULT)
+        this.bollingerBand = bollingerBands.first()
+        this.obvs = Tool.calculate(ohlcvs, ObvContext.DEFAULT)
+        this.obv = obvs.first()
+        this.chaikinOscillators = Tool.calculate(ohlcvs, ChaikinOscillatorContext.DEFAULT)
+        this.chaikinOscillator = chaikinOscillators.first()
+        this.ccis = Tool.calculate(ohlcvs, CciContext.DEFAULT)
+        this.cci = ccis.first()
+        this.stochasticSlows = Tool.calculate(ohlcvs, StochasticSlowContext.DEFAULT)
+        this.stochasticSlow = stochasticSlows.first()
     }
 
     @Override
@@ -56,6 +85,20 @@ class Analysis implements Analyzable {
         // macd
         score.macdValueOverSignal = macd.value > macd.signal ? 100 : 0
         score.macdOscillator = macd.oscillator > 0 ? 100 : 0
+        // dmi
+        score.dmiPdiOverMdi = dmi.pdi > dmi.mdi ? 100 : 0
+        // rsi
+        score.rsiValueOverSignal = rsi.value > rsi.signal ? 100 : 0
+        // bollinger band
+        score.bollingerBandPriceOverMiddle = ohlcv.closePrice > bollingerBand.middle ? 100 : 0
+        // obv
+        score.obvValueOverSignal = obv.value > obv.signal ? 100 : 0
+        // chaikin oscillator
+        score.chaikinOscillatorValueOverSignal = chaikinOscillator.value > chaikinOscillator.signal ? 100 : 0
+        // cci
+        score.cciValueOverSignal = cci.value > cci.signal ? 100 : 0
+        // stochastic slow
+        score.stochasticSlowKOverD = stochasticSlow.slowK > stochasticSlow.slowD ? 100 : 0
         // return
         return score
     }
@@ -66,6 +109,20 @@ class Analysis implements Analyzable {
         // macd
         score.macdValueUnderSignal = macd.value < macd.signal ? 100 : 0
         score.macdOscillator = macd.oscillator < 0 ? 100 : 0
+        // dmi
+        score.dmiValuePdiUnderMdi = dmi.pdi < dmi.mdi ? 100 : 0
+        // rsi
+        score.rsiValueUnderSignal = rsi.value < rsi.signal ? 100 : 0
+        // bollinger band
+        score.bollingerBandPriceUnderMiddle = ohlcv.closePrice < bollingerBand.middle ? 100 : 0
+        // obv
+        score.obvValueUnderSignal = obv.value < obv.signal ? 100 : 0
+        // chaikin oscillator
+        score.chaikinOscillatorValueUnderSignal = chaikinOscillator.value < chaikinOscillator.signal ? 100 : 0
+        // cci
+        score.cciValueUnderSignal = cci.value < cci.signal ? 100 : 0
+        // stochastic slow
+        score.stochasticSlowKUnderD = stochasticSlow.slowK < stochasticSlow.slowD ? 100 : 0
         // return
         return score
     }
@@ -75,6 +132,17 @@ class Analysis implements Analyzable {
         def score = new Score()
         // dmi
         score.dmiAdx = dmi.adx > 25 ? 100 : 0
+        // return
+        return score
+    }
+
+    @Override
+    Scorable getMomentumScore() {
+        def score = new Score()
+        // macd
+        score.macdValue = macd.value > 0 ? 100 : 0
+        // rsi
+        score.rsiValue = rsi.value > 50 ? 100 : 0
         // return
         return score
     }
@@ -103,6 +171,7 @@ class Analysis implements Analyzable {
                 bullishScore: "${this.getBullishScore()}",
                 bearishScore: "${this.getBearishScore()}",
                 volatilityScore: "${this.getVolatilityScore()}",
+                momentumScore: "${this.getMomentumScore()}",
                 underestimateScore: "${this.getUnderestimateScore()}",
                 overestimateScore: "${this.getOverestimateScore()}"
         ].toString()
@@ -122,6 +191,8 @@ log.info("tideOhlcvType(Period): {}({})", tideOhlcvType, tideOhlcvPeriod)
 
 // default
 def hold = null
+List<Ohlcv> ohlcvs = assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 1)
+def analysis = new Analysis(ohlcvs)
 
 // wave
 def waveAnalysis = new Analysis(assetIndicator.getOhlcvs(waveOhlcvType, waveOhlcvPeriod))
@@ -135,18 +206,32 @@ log.info("tideAnalysis: {}", tideAnalysis)
 // trade
 //================================
 // buy
-if (waveAnalysis.getZScore() > 1.5 && waveAnalysis.getBullishScore().getAverage() > 70) {
-    if (waveAnalysis.getVolatilityScore().getAverage() > 70) {
-        if (waveAnalysis.getUnderestimateScore().getAverage() > 70) {
-            hold = 1
+if (analysis.getZScore() > 1.5 && analysis.getBullishScore().getAverage() > 70) {
+    if (waveAnalysis.getBullishScore().getAverage() > 70) {
+        // default
+        hold = 1
+        // volatility
+        if (waveAnalysis.getVolatilityScore().getAverage() < 70) {
+            hold = null
+        }
+        // overestimate
+        if (waveAnalysis.getOverestimateScore().getAverage() > 70) {
+            hold = null
         }
     }
 }
 // sell
-if (waveAnalysis.getZScore() < -1.5 && waveAnalysis.getBearishScore().getAverage() > 70) {
-    if (waveAnalysis.getVolatilityScore().getAverage() > 70) {
-        if (waveAnalysis.getOverestimateScore().getAverage() > 70) {
-            hold = 0
+if (analysis.getZScore() < -1.5 && analysis.getBearishScore().getAverage() > 70) {
+    if (waveAnalysis.getBearishScore().getAverage() > 70) {
+        // default
+        hold = 0
+        // momentum
+        if (waveAnalysis.getMomentumScore().getAverage() > 70) {
+            hold = null
+        }
+        // underestimate
+        if (waveAnalysis.getUnderestimateScore().getAverage() > 70) {
+            hold = null
         }
     }
 }
@@ -156,11 +241,10 @@ if (waveAnalysis.getZScore() < -1.5 && waveAnalysis.getBearishScore().getAverage
 //================================
 // tide is bearish, disable
 if (tideAnalysis.getBearishScore().getAverage() > 70) {
-    hold= 0
+    hold = 0
 }
 
 //================================
 // return
 //================================
 return hold
-

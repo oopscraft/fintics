@@ -27,15 +27,11 @@ public class TradeRequest {
 
     private LocalTime endAt;
 
-    private String tradeClientId;
+    private String brokerId;
 
-    private String tradeClientConfig;
+    private String ruleId;
 
     private String ruleConfig;
-
-    private String ruleScript;
-
-    private String orderOperatorId;
 
     private Order.Kind orderKind;
 

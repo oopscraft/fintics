@@ -63,11 +63,9 @@ public class TradesRestController {
                 .threshold(tradeRequest.getThreshold())
                 .startAt(tradeRequest.getStartAt())
                 .endAt(tradeRequest.getEndAt())
-                .tradeClientId(tradeRequest.getTradeClientId())
-                .tradeClientConfig(tradeRequest.getTradeClientConfig())
+                .brokerId(tradeRequest.getBrokerId())
+                .ruleId(tradeRequest.getRuleId())
                 .ruleConfig(tradeRequest.getRuleConfig())
-                .ruleScript(tradeRequest.getRuleScript())
-                .orderOperatorId(tradeRequest.getOrderOperatorId())
                 .orderKind(tradeRequest.getOrderKind())
                 .alarmId(tradeRequest.getAlarmId())
                 .alarmOnError(tradeRequest.isAlarmOnError())
@@ -105,11 +103,9 @@ public class TradesRestController {
         trade.setThreshold(tradeRequest.getThreshold());
         trade.setStartAt(tradeRequest.getStartAt());
         trade.setEndAt(tradeRequest.getEndAt());
-        trade.setTradeClientId(tradeRequest.getTradeClientId());
-        trade.setTradeClientConfig(tradeRequest.getTradeClientConfig());
+        trade.setBrokerId(tradeRequest.getBrokerId());
+        trade.setRuleId(tradeRequest.getRuleId());
         trade.setRuleConfig(tradeRequest.getRuleConfig());
-        trade.setRuleScript(tradeRequest.getRuleScript());
-        trade.setOrderOperatorId(tradeRequest.getOrderOperatorId());
         trade.setOrderKind(tradeRequest.getOrderKind());
         trade.setAlarmId(tradeRequest.getAlarmId());
         trade.setAlarmOnError(tradeRequest.isAlarmOnError());

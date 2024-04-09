@@ -32,8 +32,6 @@ class AssetCollectorTest extends CoreTestSupport {
         // given
         TradeEntity tradeEntity = TradeEntity.builder()
                 .tradeId("test")
-                .tradeClientId("KIS")
-                .tradeClientConfig("test=test")
                 .enabled(true)
                 .build();
         entityManager.persist(tradeEntity);
@@ -54,8 +52,7 @@ class AssetCollectorTest extends CoreTestSupport {
     void saveBrokerAssets() {
         // given
         Trade trade = Trade.builder()
-                .tradeClientId("KIS")
-                .tradeClientConfig("test=test")
+                .tradeId("test")
                 .build();
         // when
         assetCollector.saveAssets(trade);

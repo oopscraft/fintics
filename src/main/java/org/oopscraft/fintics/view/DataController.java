@@ -1,8 +1,9 @@
 package org.oopscraft.fintics.view;
 
 import lombok.RequiredArgsConstructor;
-import org.oopscraft.fintics.client.trade.TradeClientDefinition;
-import org.oopscraft.fintics.client.trade.TradeClientFactory;
+import org.oopscraft.fintics.model.broker.BrokerClientDefinition;
+import org.oopscraft.fintics.model.broker.BrokerClientDefinitionRegistry;
+import org.oopscraft.fintics.model.broker.BrokerClientFactory;
 import org.oopscraft.fintics.model.Asset;
 import org.oopscraft.fintics.model.IndiceId;
 import org.oopscraft.fintics.service.TradeService;
@@ -16,19 +17,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Controller
-@RequestMapping("data")
-@PreAuthorize("hasAuthority('DATA')")
 @RequiredArgsConstructor
 public class DataController {
 
     private final TradeService tradeService;
 
+    private final BrokerClientDefinitionRegistry brokerClientDefinitionRegistry;
+
     @GetMapping
+    @RequestMapping("data")
+    @PreAuthorize("hasAuthority('DATA')")
     public ModelAndView getData() {
         ModelAndView modelAndView = new ModelAndView("data.html");
         // markets
-        List<String> markets = TradeClientFactory.getTradeClientDefinitions().stream()
-                .map(TradeClientDefinition::getMarket)
+        List<String> markets = brokerClientDefinitionRegistry.getBrokerClientDefinitions().stream()
+                .map(BrokerClientDefinition::getExchangeId)
                 .distinct()
                 .toList();
         modelAndView.addObject("markets", markets);

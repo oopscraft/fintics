@@ -29,15 +29,11 @@ public class TradeResponse {
 
     private LocalTime endAt;
 
-    private String tradeClientId;
+    private String brokerId;
 
-    private String tradeClientConfig;
+    private String ruleId;
 
     private String ruleConfig;
-
-    private String ruleScript;
-
-    private String orderOperatorId;
 
     private Order.Kind orderKind;
 
@@ -59,11 +55,9 @@ public class TradeResponse {
                 .threshold(trade.getThreshold())
                 .startAt(trade.getStartAt())
                 .endAt(trade.getEndAt())
-                .tradeClientId(trade.getTradeClientId())
-                .tradeClientConfig(trade.getTradeClientConfig())
+                .brokerId(trade.getBrokerId())
+                .ruleId(trade.getRuleId())
                 .ruleConfig(trade.getRuleConfig())
-                .ruleScript(trade.getRuleScript())
-                .orderOperatorId(trade.getOrderOperatorId())
                 .orderKind(trade.getOrderKind())
                 .alarmId(trade.getAlarmId())
                 .alarmOnError(trade.isAlarmOnError())

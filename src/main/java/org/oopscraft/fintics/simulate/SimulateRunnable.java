@@ -32,7 +32,7 @@ public class SimulateRunnable implements Runnable {
 
     private final SimulateIndiceClient simulateIndiceClient;
 
-    private final SimulateTradeClient simulateTradeClient;
+    private final SimulateBrokerClient simulateTradeClient;
 
     private final TradeExecutorFactory tradeExecutorFactory;
 
@@ -60,7 +60,7 @@ public class SimulateRunnable implements Runnable {
     protected SimulateRunnable(
             Simulate simulate,
             SimulateIndiceClient simulateIndiceClient,
-            SimulateTradeClient simulateTradeClient,
+            SimulateBrokerClient simulateTradeClient,
             TradeExecutorFactory tradeExecutorFactory,
             PlatformTransactionManager transactionManager,
             SimulateRepository simulateRepository,

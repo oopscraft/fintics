@@ -1,8 +1,8 @@
 package org.oopscraft.fintics.trade;
 
 import lombok.RequiredArgsConstructor;
-import org.oopscraft.fintics.client.trade.TradeClientFactory;
-import org.oopscraft.fintics.client.indice.IndiceClient;
+import org.oopscraft.fintics.model.broker.BrokerClientFactory;
+import org.oopscraft.fintics.model.indice.IndiceClient;
 import org.oopscraft.fintics.dao.TradeRepository;
 import org.oopscraft.fintics.model.Trade;
 import org.springframework.stereotype.Component;
@@ -18,7 +18,7 @@ public class TradeRunnableFactory {
 
     private final IndiceClient indiceClient;
 
-    private final TradeClientFactory brokerClientFactory;
+    private final BrokerClientFactory brokerClientFactory;
 
     private final PlatformTransactionManager transactionManager;
 

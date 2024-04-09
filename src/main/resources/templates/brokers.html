@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="_web.html">
+<th:block layout:fragment="_content">
+    <script th:inline="javascript">
+        const brokerClientDefinitions = new duice.ArrayProxy(/*[[${brokerClientDefinitions}]]*/[]);
+        const brokerSearch = new duice.ObjectProxy({
+            key: 'brokerName',
+            value: null,
+            _page: 0,
+            _size: 20,
+            _count: 0
+        });
+        const brokers = new duice.ArrayProxy([]);
+        const broker = new duice.ObjectProxy({
+            brokerId: null,
+            brokerName: null
+        });
+        duice.ObjectProxy.onPropertyChanged(broker, event => {
+            if(event.getProperty() === 'brokerClientId') {
+                let brokerClientId = event.getValue();
+                broker.brokerClientConfig = brokerClientDefinitions
+                    .find(item => item['brokerClientId'] === brokerClientId)
+                    ?.configTemplate;
+            }
+        });
+
+        function getBrokers(page) {
+            if(page) {
+                brokerSearch._page = page;
+            }
+            let url = new URL(`${_apiUrl}/v1/brokers`, document.location.origin);
+            if (brokerSearch.key && brokerSearch.value) {
+                url.searchParams.append(brokerSearch.key, brokerSearch.value);
+            }
+            url.searchParams.append('_page', brokerSearch._page);
+            url.searchParams.append('_size', brokerSearch._size);
+            _fetch(url)
+                .then(response => {
+                    brokerSearch._count = _parseTotalCount(response);
+                    return response.json()
+                })
+                .then(data => {
+                    duice.ArrayProxy.assign(brokers, data);
+                });
+        }
+
+        function resetBrokers() {
+            duice.ObjectProxy.reset(brokerSearch);
+            getBrokers();
+        }
+
+        function getBroker(brokerId) {
+            let url = new URL(`${_apiUrl}/v1/brokers/${brokerId}`, document.location.origin);
+            _fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    duice.ObjectProxy.assign(broker, data);
+                    broker._new = false;
+                });
+        }
+
+        function createBroker() {
+            duice.ObjectProxy.clear(broker);
+            duice.ObjectProxy.assign(broker, {
+                _new: true
+            });
+        }
+
+        async function saveBroker() {
+            // checks broker name
+            if(_isEmpty(broker.brokerName)) {
+                await _alert(/*[[#{web.global.itemEmpty(#{fintics.Broker.brokerName})}]]*/'');
+                duice.ObjectProxy.focus(broker, 'brokerName');
+                return false;
+            }
+
+            // call save
+            _confirm(/*[[#{web.global.saveItemConfirm(#{fintics.Broker})}]]*/'').then(result => {
+                if (result) {
+                    let url;
+                    let method;
+                    if (!broker.brokerId) {
+                        url = `${_apiUrl}/v1/brokers`;
+                        method = 'POST';
+                    } else {
+                        url = `${_apiUrl}/v1/brokers/${broker.brokerId}`;
+                        method = 'PUT';
+                    }
+                    _fetch(new URL(url, document.location.origin), {
+                        method: method,
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(broker)
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (response.ok) {
+                                _alert(/*[[#{web.global.saveItemComplete(#{fintics.Broker})}]]*/'').then(() => {
+                                    getBrokers();
+                                    getBroker(data.brokerId);
+                                });
+                            }
+                        });
+                }
+            });
+        }
+
+        function deleteBroker() {
+            _confirm(/*[[#{web.global.deleteItemConfirm(#{fintics.Broker})}]]*/'').then(result => {
+                if (result) {
+                    let url = new URL(`${_apiUrl}/v1/brokers/${broker.brokerId}`, document.location.origin);
+                    _fetch(url, {
+                        method: 'DELETE'
+                    }).then(response => {
+                        if (response.ok) {
+                            _alert(/*[[#{web.global.deleteItemComplete(#{fintics.Broker})}]]*/'').then(() => {
+                                getBrokers();
+                                duice.ObjectProxy.clear(broker);
+                            });
+                        }
+                    })
+                }
+            });
+        }
+
+        // DOM content loaded listener
+        document.addEventListener('DOMContentLoaded',()=> {
+            getBrokers();
+        });
+    </script>
+
+    <!-- ====================================== -->
+    <!-- start: title                           -->
+    <!-- ====================================== -->
+    <h1 id="title">
+        <img class="icon" th:src="@{/static/image/icon-broker.svg}" alt="broker"/>
+        <span data-th-text="#{fintics.Broker}"></span>
+    </h1>
+    <!-- ====================================== -->
+    <!-- end: title                             -->
+    <!-- ====================================== -->
+
+    <!-- ====================================== -->
+    <!-- start: broker content                  -->
+    <!-- ====================================== -->
+    <div id="brokerContent" class="display--grid grid-template-columns--12 grid-gap--1em">
+
+        <!-- ====================================== -->
+        <!-- start: broker list                     -->
+        <!-- ====================================== -->
+        <div id="brokerList" class="grid-column--5 s__grid-column--12">
+            <div class="display--grid grid-gap--1em border--1 padding--1em">
+                <h2>
+                    <img class="icon" th:src="@{/static/image/icon-list.svg}" alt="list"/>
+                    <span data-th-text="#{fintics.Broker}+' '+#{web.global.list}"></span>
+                </h2>
+                <form onsubmit="return false;" class="display--grid grid-template-columns--12 grid-gap--1em padding-y--1em s__padding-y--0">
+                    <label class="grid-column--4">
+                        <select class="width--100" data-duice-bind="brokerSearch" data-duice-property="key">
+                            <option value="brokerName" th:text="#{fintics.Broker.brokerName}"></option>
+                        </select>
+                    </label>
+                    <label class="grid-column--8">
+                        <input class="width--100" type="text" data-duice-bind="brokerSearch" data-duice-property="value"
+                               th:placeholder="#{web.global.keyword}"/>
+                    </label>
+                    <div class="grid-column--12 justify-self--end">
+                        <button type="button" onclick="getBrokers();">
+                            <img class="icon" th:src="@{/static/image/icon-search.svg}" alt="reset"/>
+                            <span data-th-text="#{web.global.search}"></span>
+                        </button>
+                        <button type="button" onclick="resetBrokers();">
+                            <img class="icon" th:src="@{/static/image/icon-reset.svg}" alt="reset"/>
+                            <span data-th-text="#{web.global.reset}"></span>
+                        </button>
+                    </div>
+                </form>
+                <div class="overflow-x--auto padding-y--1em s__padding-y--0">
+                    <table class="width--100">
+                        <colgroup>
+                            <col style="width:10%;"/>
+                            <col/>
+                        </colgroup>
+                        <thead>
+                        <tr>
+                            <th data-th-text="#{web.global.no}" class="text-align--center"></th>
+                            <th data-th-text="#{fintics.Broker.brokerName}"></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr data-duice-bind="brokers" data-duice-loop="broker,status"
+                            data-duice-selected-item-class="selected" data-duice-execute="
+                        this.dataset.brokerId=broker.brokerId;
+                        " onclick="getBroker(this.dataset.brokerId);" class="link">
+                            <td class="text-align--center">
+                                <span data-duice-bind="status" data-duice-property="count" class="text-align--center"></span>
+                            </td>
+                            <td>
+                                <span data-duice-bind="broker" data-duice-property="brokerName"></span>
+                            </td>
+                        </tr>
+                        <tr data-duice-bind="brokers"
+                            data-duice-if="return brokers.length === 0" hidden>
+                            <td colspan="100%" class="text-align--center">No Data</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="display--grid grid-template-columns--3 grid-gap--1em padding-y--1em s__padding--0">
+                    <div class="grid-column--1 font-size--smaller">
+                        <span data-th-text="#{web.global.total}"></span>
+                        <span data-duice-bind="brokerSearch" data-duice-property="_count"
+                              data-duice-format="number(0)"></span>
+                        <span data-th-text="#{web.global.rows}"></span>
+                    </div>
+                    <div class="grid-column--1 justify-self--center">
+                        <duice-pagination
+                                data-duice-bind="brokerSearch"
+                                data-duice-size-property="_size"
+                                data-duice-page-property="_page"
+                                data-duice-count-property="_count"
+                                data-duice-onclick="getBrokers(this.dataset.page);">
+                        </duice-pagination>
+                    </div>
+                    <div class="grid-column--1 justify-self--end">
+                        <button type="button" onclick="createBroker();">
+                            <img class="icon" th:src="@{/static/image/icon-create.svg}" alt="create"/>
+                            <span data-th-text="#{web.global.create}"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- ====================================== -->
+        <!-- end: broker list                       -->
+        <!-- ====================================== -->
+
+        <!-- ====================================== -->
+        <!-- start: broker detail                   -->
+        <!-- ====================================== -->
+        <div id="brokerDetail" class="grid-column--7 s__grid-column--12">
+            <div class="display--grid grid-gap--1em border--1 padding--1em">
+                <h2>
+                    <img class="icon" th:src="@{/static/image/icon-detail.svg}" alt="detail"/>
+                    <span data-th-text="#{fintics.Broker}+' '+#{web.global.detail}"></span>
+                </h2>
+                <form onsubmit="return false;" class="display--grid grid-template-columns--12 grid-gap--1em padding-y--1em s__padding-y--0">
+                    <label class="grid-column--12">
+                        <span data-th-text="#{fintics.Broker.brokerName}"
+                              class="font-weight--bold tag-required"></span>
+                        <input type="text" data-duice-bind="broker" data-duice-property="brokerName"
+                               class="width--100"/>
+                    </label>
+                    <label class="grid-column--12">
+                        <span data-th-text="#{fintics.Broker.brokerClientId}" class="font-weight--bold"></span>
+                        <select data-duice-bind="broker" data-duice-property="brokerClientId"
+                                data-duice-option="brokerClientDefinitions"
+                                data-duice-option-value-property="brokerClientId"
+                                data-duice-option-text-property="brokerClientName"
+                                class="width--100">
+                            <option data-th-text="'- ' + #{web.global.select} + ' -'"></option>
+                        </select>
+                    </label>
+                    <label class="grid-column--12">
+                        <span data-th-text="#{fintics.Broker.brokerClientConfig}" class="font-weight--bold"></span>
+                        <duice-codemirror
+                                data-duice-bind="broker"
+                                data-duice-property="brokerClientConfig"
+                                data-duice-theme="dracula">
+                        </duice-codemirror>
+                    </label>
+                </form>
+                <div class="display--grid grid-template-columns--2 grid-gap--1em padding-y--1em s__padding-y--0">
+                    <div class="grid-column--1">
+                    </div>
+                    <div class="grid-column--1 justify-self--end">
+                        <button type="button" onclick="deleteBroker();"
+                                th:classappend="!${#authorization.expression('hasAuthority(''ADMIN_VARIABLE_EDIT'')')}?'locked'"
+                                data-duice-bind="broker"
+                                data-duice-execute="(broker.brokerId && !broker._new) ? this.disabled=false : this.disabled=true;">
+                            <img class="icon" th:src="@{/static/image/icon-delete.svg}" alt="delete"/>
+                            <span data-th-text="#{web.global.delete}"></span>
+                        </button>
+                        <button type="button" onclick="saveBroker();"
+                                th:classappend="!${#authorization.expression('hasAuthority(''ADMIN_VARIABLE_EDIT'')')}?'locked'"
+                                data-duice-bind="broker"
+                                data-duice-execute="(broker.brokerId || broker._new) ? this.disabled=false : this.disabled=true;">
+                            <img class="icon" th:src="@{/static/image/icon-save.svg}" alt="save"/>
+                            <span data-th-text="#{web.global.save}"></span>
+                        </button>
+                    </div>
+                </div>
+                <div class="text-align--right padding-y--1em font-size--smaller font-style--italic">
+                    Last Updated At
+                    <span data-duice-bind="broker" data-duice-property="systemUpdatedAt" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></span>
+                    By
+                    <span data-duice-bind="broker" data-duice-property="systemUpdatedBy"></span>
+                </div>
+            </div>
+        </div>
+        <!-- ====================================== -->
+        <!-- end: broker detail                     -->
+        <!-- ====================================== -->
+
+    </div>
+    <!-- ====================================== -->
+    <!-- end: broker content                  -->
+    <!-- ====================================== -->
+
+</th:block>

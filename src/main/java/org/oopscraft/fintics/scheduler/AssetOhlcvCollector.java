@@ -2,12 +2,10 @@ package org.oopscraft.fintics.scheduler;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.oopscraft.fintics.client.trade.TradeClient;
-import org.oopscraft.fintics.client.trade.TradeClientFactory;
-import org.oopscraft.fintics.dao.AssetOhlcvEntity;
-import org.oopscraft.fintics.dao.AssetOhlcvRepository;
-import org.oopscraft.fintics.dao.TradeEntity;
-import org.oopscraft.fintics.dao.TradeRepository;
+import org.oopscraft.fintics.dao.*;
+import org.oopscraft.fintics.model.Broker;
+import org.oopscraft.fintics.model.broker.BrokerClient;
+import org.oopscraft.fintics.model.broker.BrokerClientFactory;
 import org.oopscraft.fintics.model.Ohlcv;
 import org.oopscraft.fintics.model.Trade;
 import org.oopscraft.fintics.model.TradeAsset;
@@ -28,7 +26,9 @@ public class AssetOhlcvCollector extends OhlcvCollector {
 
     private final TradeRepository tradeRepository;
 
-    private final TradeClientFactory tradeClientFactory;
+    private final BrokerRepository brokerRepository;
+
+    private final BrokerClientFactory tradeClientFactory;
 
     private final AssetOhlcvRepository assetOhlcvRepository;
 
@@ -59,7 +59,10 @@ public class AssetOhlcvCollector extends OhlcvCollector {
     }
 
     private void saveAssetMinuteOhlcvs(Trade trade, TradeAsset tradeAsset, LocalDateTime dateTime) throws InterruptedException {
-        TradeClient tradeClient = tradeClientFactory.getObject(trade);
+        Broker broker = brokerRepository.findById(trade.getBrokerId())
+                .map(Broker::from)
+                .orElseThrow();
+        BrokerClient tradeClient = tradeClientFactory.getObject(broker);
         List<Ohlcv> minuteOhlcvs = tradeClient.getMinuteOhlcvs(tradeAsset, dateTime);
         if(minuteOhlcvs.isEmpty()) {
             return;
@@ -83,7 +86,10 @@ public class AssetOhlcvCollector extends OhlcvCollector {
     }
 
     private void saveAssetDailyOhlcvs(Trade trade, TradeAsset tradeAsset, LocalDateTime dateTime) throws InterruptedException {
-        TradeClient tradeClient = tradeClientFactory.getObject(trade);
+        Broker broker = brokerRepository.findById(trade.getBrokerId())
+                .map(Broker::from)
+                .orElseThrow();
+        BrokerClient tradeClient = tradeClientFactory.getObject(broker);
         List<Ohlcv> dailyOhlcvs = tradeClient.getDailyOhlcvs(tradeAsset, dateTime);
         if(dailyOhlcvs.isEmpty()) {
             return;

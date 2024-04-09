@@ -39,7 +39,7 @@ public class SimulateRunnableFactory {
                 .indiceOhlcvRepository(indiceOhlcvRepository)
                 .build();
 
-        SimulateTradeClient simulateTradeClient = SimulateTradeClient.builder()
+        SimulateBrokerClient simulateTradeClient = SimulateBrokerClient.builder()
                 .assetOhlcvRepository(assetOhlcvRepository)
                 .build();
 

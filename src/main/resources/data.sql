@@ -11,24 +11,32 @@ insert into `core_authority` (`authority_id`,`system_required`,`authority_name`)
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_SIMULATES','Y','Simulates API Access Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_TRADES','Y','Trades API Access Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_TRADES_EDIT','Y','Trades Edit API Authority');
+insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_STRATEGIES','Y','Strategies API Access Authority');
+insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_BROKERS','Y','Brokers API Access Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_DATA','Y','Data Access API Authority');
-insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('MONITOR','Y','Monitor Access Authority');
+insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('MONITORS','Y','Monitor Access Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('TRADES','Y','Trades Access Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('TRADE','Y','Trade Access Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('TRADE_EDIT','Y','Trade Edit Authority');
+insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('STRATEGIES','Y','Strategies Access Authority');
+insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('BROKERS','Y','Brokers Access Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('ORDERS','Y','Orders Access Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('SIMULATES','Y','Simulates Access Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('DATA','Y','Data Access Authority');
 
 -- core_role
 insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
-    ('MONITOR','Y','Monitor Access Role','N','Y');
+    ('MONITORS','Y','Monitors Access Role','N','Y');
 insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
     ('TRADES','Y','Trades Access Role','N','Y');
 insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
     ('TRADE','Y','Trade Access Role','N','N');
 insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
     ('TRADE_EDIT','Y','Trade Edit Role','N','N');
+insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
+    ('STRATEGIES','Y','Strategies Access Role','N','N');
+insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
+    ('BROKERS','Y','Brokers Access Role','N','N');
 insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
     ('ORDERS','Y','Orders Access Role','N','Y');
 insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
@@ -38,18 +46,24 @@ insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`au
 
 -- core_role_authority
 insert into `core_role_authority` (`role_id`,`authority_id`) values
-    ('MONITOR','MONITOR'),
-    ('MONITOR','API_ASSETS'),
-    ('MONITOR','API_TRADES');
+    ('MONITORS','MONITORS'),
+    ('MONITORS','API_ASSETS'),
+    ('MONITORS','API_TRADES');
 insert into `core_role_authority` (`role_id`,`authority_id`) values
     ('TRADES','TRADES'),
     ('TRADES','API_TRADES');
 insert into `core_role_authority` (`role_id`,`authority_id`) values
-    ('TRADE','TRADE'),
+    ('TRADE','TRADES'),
     ('TRADE','API_TRADES');
 insert into `core_role_authority` (`role_id`,`authority_id`) values
     ('TRADE_EDIT','TRADE_EDIT'),
     ('TRADE_EDIT','API_TRADES_EDIT');
+insert into `core_role_authority` (`role_id`,`authority_id`) values
+    ('STRATEGIES','STRATEGIES'),
+    ('STRATEGIES','API_STRATEGIES');
+insert into `core_role_authority` (`role_id`,`authority_id`) values
+    ('BROKERS','BROKERS'),
+    ('BROKERS','API_BROKERS');
 insert into `core_role_authority` (`role_id`,`authority_id`) values
     ('ORDERS','ORDERS'),
     ('ORDERS','API_ORDERS');
@@ -59,23 +73,31 @@ insert into `core_role_authority` (`role_id`,`authority_id`) values
 
 -- core_menu
 insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`sort`,`icon`) values
-    ('monitor','Y',null,'Monitor','/monitor',1,'/static/image/icon-monitor.svg');
+    ('monitors','Y',null,'Monitor','/monitor',1,'/static/image/icon-monitor.svg');
 insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
-    ('monitor','ko','모니터');
+    ('monitors','ko','모니터');
 insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`sort`,`icon`) values
-    ('trade','Y',null,'Trades','/trades',2,'/static/image/icon-trade.svg');
+    ('trades','Y',null,'Trades','/trades',2,'/static/image/icon-trade.svg');
 insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
-    ('trade','ko','트레이드');
+    ('trades','ko','트레이드');
 insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`sort`,`icon`) values
-    ('order','Y',null,'Orders','/orders',3,'/static/image/icon-order.svg');
+    ('strategies','Y',null,'Strategies','/strategies',3,'/static/image/icon-strategy.svg');
 insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
-    ('order','ko','거래이력');
+    ('strategies','ko','전략');
 insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`sort`,`icon`) values
-    ('simulate','Y',null,'Simulates','/simulates',4,'/static/image/icon-simulate.svg');
+    ('brokers','Y',null,'Brokers','/brokers',4,'/static/image/icon-broker.svg');
 insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
-    ('simulate','ko','시뮬레이션');
+    ('brokers','ko','브로커');
 insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`sort`,`icon`) values
-    ('data','Y',null,'Data','/data',5,'/static/image/icon-data.svg');
+    ('orders','Y',null,'Orders','/orders',5,'/static/image/icon-order.svg');
+insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
+    ('orders','ko','거래이력');
+insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`sort`,`icon`) values
+    ('simulates','Y',null,'Simulates','/simulates',6,'/static/image/icon-simulate.svg');
+insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
+    ('simulates','ko','시뮬레이션');
+insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`sort`,`icon`) values
+    ('data','Y',null,'Data','/data',7,'/static/image/icon-data.svg');
 insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
     ('data','ko','데이터');
 insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`target`,`sort`,`icon`) values
@@ -98,17 +120,22 @@ insert into `fintics_asset`
     ('UPBIT.KRW-BTC','Bitcoin',null),
     ('UPBIT.KRW-ETH','Ethereum',null);
 
+-- fintics_broker
+insert into `fintics_broker`
+    (`broker_id`,`broker_name`,`broker_client_id`,`broker_client_config`) values
+    ('ca5f55cd88694715bcb4c478710d9a68','Korea Investment Test','KIS',null),
+    ('a135ee9a276f4edf81d6e1b6b9d31e39','Upbit Test','UPBIT',null);
+
+-- fintics_rule
+insert into `fintics_strategy`
+    (`strategy_id`,`strategy_name`,`language`,`script`) values
+    ('7c94187b346f4727a0f2478fdc53064f','Test Rule','GROOVY','return null');
+
 -- fintics_trade: 한국투자증권 모의투자 - 지수ETF
 insert into `fintics_trade`
-    (`trade_id`,`trade_name`,`enabled`,`interval`,`threshold`,`start_at`,`end_at`,`trade_client_id`,`trade_client_config`,`alarm_id`,`rule_script`, `order_operator_id`, `order_kind`) values
+    (`trade_id`,`trade_name`,`enabled`,`interval`,`threshold`,`start_at`,`end_at`,`broker_id`,`strategy_id`,`strategy_config`,`alarm_id`,`order_kind`) values
     ('06c228451ce0400fa57bb36f0568d7cb','한국투자증권 모의투자 - 지수ETF','N','60','3','09:00','15:30',
-     'KIS','production=false
-apiUrl=https://openapivts.koreainvestment.com:29443
-appKey=[Application Key]
-appSecret=[Application Secret]
-accountNo=[Account Number]
-',null,'
-','SIMPLE','LIMIT');
+     'ca5f55cd88694715bcb4c478710d9a68','7c94187b346f4727a0f2478fdc53064f', null, null, 'LIMIT');
 insert into `fintics_trade_asset`
     (`trade_id`,`asset_id`,`enabled`, `hold_ratio`)
 values
@@ -117,15 +144,9 @@ values
 
 -- fintics_trade: 한국투자증권 모의투자 - 지수ETF(인버스)
 insert into `fintics_trade`
-(`trade_id`,`trade_name`,`enabled`,`interval`,`threshold`,`start_at`,`end_at`,`trade_client_id`,`trade_client_config`,`alarm_id`,`rule_script`,`order_operator_id`,`order_kind`) values
+    (`trade_id`,`trade_name`,`enabled`,`interval`,`threshold`,`start_at`,`end_at`,`broker_id`,`strategy_id`,`strategy_config`,`alarm_id`,`order_kind`) values
     ('7af6bc641eef4254b12dd9fa1d43384d','한국투자증권 모의투자 - 지수ETF(인버스)','N','60','3','09:00','15:30',
-     'KIS','production=false
-apiUrl=https://openapivts.koreainvestment.com:29443
-appKey=[Application Key]
-appSecret=[Application Secret]
-accountNo=[Account Number]
-',null,'
-','SIMPLE','LIMIT');
+     'ca5f55cd88694715bcb4c478710d9a68','7c94187b346f4727a0f2478fdc53064f', null, null, 'LIMIT');
 insert into `fintics_trade_asset`
     (`trade_id`,`asset_id`,`enabled`, `hold_ratio`)
 values
@@ -134,12 +155,9 @@ values
 
 -- fintics_trade: 업비트 API(장시간 외 트레이드 테스트용)
 insert into `fintics_trade`
-(`trade_id`,`trade_name`,`enabled`,`interval`,`threshold`,`start_at`,`end_at`,`trade_client_id`,`trade_client_config`,`alarm_id`,`rule_script`,`order_operator_id`,`order_kind`) values
+    (`trade_id`,`trade_name`,`enabled`,`interval`,`threshold`,`start_at`,`end_at`,`broker_id`,`strategy_id`,`strategy_config`,`alarm_id`,`order_kind`) values
     ('81c6a451d6da49449faa2b5b7e66041b','코인놀이방(24시간 테스트용)','N','30','3','00:00','23:59',
-     'UPBIT','accessKey=[Access Key]
-secretKey=[Secret Key]',null,'
-
-','SIMPLE','LIMIT');
+     'ca5f55cd88694715bcb4c478710d9a68','7c94187b346f4727a0f2478fdc53064f', null, null, 'LIMIT');
 insert into `fintics_trade_asset`
     (`trade_id`,`asset_id`,`enabled`, `hold_ratio`) values
     ('81c6a451d6da49449faa2b5b7e66041b','UPBIT.KRW-BTC','N','20'),

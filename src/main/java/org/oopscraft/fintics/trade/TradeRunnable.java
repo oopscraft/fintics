@@ -4,9 +4,11 @@ import ch.qos.logback.classic.Logger;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import org.oopscraft.fintics.client.indice.IndiceClient;
-import org.oopscraft.fintics.client.trade.TradeClient;
-import org.oopscraft.fintics.client.trade.TradeClientFactory;
+import org.oopscraft.fintics.dao.BrokerRepository;
+import org.oopscraft.fintics.model.Broker;
+import org.oopscraft.fintics.model.indice.IndiceClient;
+import org.oopscraft.fintics.model.broker.BrokerClient;
+import org.oopscraft.fintics.model.broker.BrokerClientFactory;
 import org.oopscraft.fintics.dao.TradeRepository;
 import org.oopscraft.fintics.model.Trade;
 import org.slf4j.LoggerFactory;
@@ -27,11 +29,13 @@ public class TradeRunnable implements Runnable {
 
     private final TradeRepository tradeRepository;
 
+    private final BrokerRepository brokerRepository;
+
     private final TradeExecutor tradeExecutor;
 
     private final IndiceClient indiceClient;
 
-    private final TradeClientFactory brokerClientFactory;
+    private final BrokerClientFactory brokerClientFactory;
 
     private final PlatformTransactionManager transactionManager;
 
@@ -49,14 +53,16 @@ public class TradeRunnable implements Runnable {
         String tradeId,
         Integer interval,
         TradeRepository tradeRepository,
+        BrokerRepository brokerRepository,
         TradeExecutor tradeExecutor,
         IndiceClient indiceClient,
-        TradeClientFactory brokerClientFactory,
+        BrokerClientFactory brokerClientFactory,
         PlatformTransactionManager transactionManager
     ){
         this.tradeId = tradeId;
         this.interval = interval;
         this.tradeRepository = tradeRepository;
+        this.brokerRepository = brokerRepository;
         this.tradeExecutor = tradeExecutor;
         this.indiceClient = indiceClient;
         this.brokerClientFactory = brokerClientFactory;
@@ -93,7 +99,10 @@ public class TradeRunnable implements Runnable {
                 Trade trade = tradeRepository.findById(tradeId)
                         .map(Trade::from)
                         .orElseThrow();
-                TradeClient brokerClient = brokerClientFactory.getObject(trade);
+                Broker broker = brokerRepository.findById(trade.getBrokerId())
+                        .map(Broker::from)
+                        .orElseThrow();
+                BrokerClient brokerClient = brokerClientFactory.getObject(broker);
                 tradeExecutor.execute(trade, dateTime, indiceClient, brokerClient);
 
                 // end transaction

@@ -3,14 +3,10 @@ package org.oopscraft.fintics.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.data.IdGenerator;
-import org.oopscraft.arch4j.core.data.pbe.PbePropertiesUtil;
-import org.oopscraft.fintics.client.trade.TradeClient;
-import org.oopscraft.fintics.client.trade.TradeClientFactory;
 import org.oopscraft.fintics.dao.*;
-import org.oopscraft.fintics.model.Balance;
-import org.oopscraft.fintics.model.Order;
-import org.oopscraft.fintics.model.Simulate;
-import org.oopscraft.fintics.model.Trade;
+import org.oopscraft.fintics.model.*;
+import org.oopscraft.fintics.model.broker.BrokerClient;
+import org.oopscraft.fintics.model.broker.BrokerClientFactory;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -31,7 +27,9 @@ public class TradeService {
 
     private final OrderRepository orderRepository;
 
-    private final TradeClientFactory tradeClientFactory;
+    private final BrokerService brokerService;
+
+    private final BrokerClientFactory brokerClientFactory;
 
     private final AssetRepository assetRepository;
 
@@ -67,14 +65,9 @@ public class TradeService {
         tradeEntity.setThreshold(trade.getThreshold());
         tradeEntity.setStartAt(trade.getStartAt());
         tradeEntity.setEndAt(trade.getEndAt());
-        tradeEntity.setTradeClientId(trade.getTradeClientId());
-        if(trade.getTradeClientConfig() != null) {
-            String clientProperties = PbePropertiesUtil.encode(trade.getTradeClientConfig());
-            tradeEntity.setTradeClientConfig(clientProperties);
-        }
-        tradeEntity.setRuleConfig(trade.getRuleConfig());
-        tradeEntity.setRuleScript(trade.getRuleScript());
-        tradeEntity.setOrderOperatorId(trade.getOrderOperatorId());
+        tradeEntity.setBrokerId(trade.getBrokerId());
+        tradeEntity.setStrategyId(trade.getRuleId());
+        tradeEntity.setStrategyConfig(trade.getRuleConfig());
         tradeEntity.setOrderKind(trade.getOrderKind());
         tradeEntity.setAlarmId(trade.getAlarmId());
         tradeEntity.setAlarmOnError(trade.isAlarmOnError());
@@ -135,9 +128,10 @@ public class TradeService {
 
     public Optional<Balance> getBalance(String tradeId) throws InterruptedException {
         Trade trade = getTrade(tradeId).orElseThrow();
-        if(trade.getTradeClientId() != null) {
-            TradeClient tradeClient = tradeClientFactory.getObject(trade.getTradeClientId(), trade.getTradeClientConfig());
-            Balance balance = tradeClient.getBalance();
+        if(trade.getBrokerId() != null) {
+            Broker broker = brokerService.getBroker(trade.getBrokerId()).orElseThrow();
+            BrokerClient brokerClient = brokerClientFactory.getObject(broker);
+            Balance balance = brokerClient.getBalance();
             balance.getBalanceAssets().forEach(balanceAsset -> {
                 assetRepository.findById(balanceAsset.getAssetId()).ifPresent(assetEntity -> {
                     balanceAsset.setType(assetEntity.getType());

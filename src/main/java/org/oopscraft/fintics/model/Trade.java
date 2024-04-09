@@ -29,9 +29,9 @@ public class Trade {
 
     private LocalTime endAt;
 
-    private String tradeClientId;
+    private String brokerId;
 
-    private String tradeClientConfig;
+    private String ruleId;
 
     private String ruleConfig;
 
@@ -59,11 +59,9 @@ public class Trade {
                 .threshold(tradeEntity.getThreshold())
                 .startAt(tradeEntity.getStartAt())
                 .endAt(tradeEntity.getEndAt())
-                .tradeClientId(tradeEntity.getTradeClientId())
-                .tradeClientConfig(tradeEntity.getTradeClientConfig())
-                .ruleConfig(tradeEntity.getRuleConfig())
-                .ruleScript(tradeEntity.getRuleScript())
-                .orderOperatorId(tradeEntity.getOrderOperatorId())
+                .brokerId(tradeEntity.getBrokerId())
+                .ruleId(tradeEntity.getStrategyId())
+                .ruleConfig(tradeEntity.getStrategyConfig())
                 .orderKind(tradeEntity.getOrderKind())
                 .alarmId(tradeEntity.getAlarmId())
                 .alarmOnError(tradeEntity.isAlarmOnError())

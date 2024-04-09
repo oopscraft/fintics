@@ -63,8 +63,8 @@ class SimulateTradeClientTest extends CoreTestSupport {
         entityManager.flush();
     }
 
-    SimulateTradeClient createSimulateClient() {
-        return SimulateTradeClient.builder()
+    SimulateBrokerClient createSimulateClient() {
+        return SimulateBrokerClient.builder()
                 .assetOhlcvRepository(assetOhlcvRepository)
                 .build();
     }
@@ -76,7 +76,7 @@ class SimulateTradeClientTest extends CoreTestSupport {
         long amount = 1234;
 
         // when
-        SimulateTradeClient tradeClient = createSimulateClient();
+        SimulateBrokerClient tradeClient = createSimulateClient();
         tradeClient.deposit(BigDecimal.valueOf(amount));
 
         // then
@@ -92,7 +92,7 @@ class SimulateTradeClientTest extends CoreTestSupport {
                 .build();
 
         // when
-        SimulateTradeClient tradeClient = createSimulateClient();
+        SimulateBrokerClient tradeClient = createSimulateClient();
         tradeClient.setDateTime(NOW.minusMinutes(1));
         OrderBook orderBook = tradeClient.getOrderBook(asset);
 
@@ -109,7 +109,7 @@ class SimulateTradeClientTest extends CoreTestSupport {
                 .build();
 
         // when
-        SimulateTradeClient tradeClient = createSimulateClient();
+        SimulateBrokerClient tradeClient = createSimulateClient();
         tradeClient.setDateTime(NOW.minusMinutes(1));
         Balance balance = tradeClient.getBalance();
 
@@ -126,7 +126,7 @@ class SimulateTradeClientTest extends CoreTestSupport {
                 .build();
 
         // when
-        SimulateTradeClient tradeClient = createSimulateClient();
+        SimulateBrokerClient tradeClient = createSimulateClient();
         tradeClient.deposit(BigDecimal.valueOf(1000));
         tradeClient.setDateTime(NOW.minusMinutes(2));
         tradeClient.submitOrder(Order.builder()
