@@ -33,8 +33,8 @@ import java.util.stream.Collectors;
 
 public abstract class KrBrokerClient extends BrokerClient {
 
-    public KrBrokerClient(BrokerClientDefinition definition, Properties config) {
-        super(definition, config);
+    public KrBrokerClient(BrokerClientDefinition definition, Properties properties) {
+        super(definition, properties);
     }
 
     @Override

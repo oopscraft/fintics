@@ -25,7 +25,7 @@ public class KisBrokerClientDefinition extends KrBrokerClientDefinition {
     }
 
     @Override
-    public String getConfigTemplate() {
+    public String getPropertiesTemplate() {
         StringJoiner template = new StringJoiner("\n");
         template.add("production=false");
         template.add("apiUrl=https://openapivts.koreainvestment.com:29443");

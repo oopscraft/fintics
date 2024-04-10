@@ -31,9 +31,9 @@ public class TradeResponse {
 
     private String brokerId;
 
-    private String ruleId;
+    private String strategyId;
 
-    private String ruleConfig;
+    private String strategyVariables;
 
     private Order.Kind orderKind;
 
@@ -56,8 +56,8 @@ public class TradeResponse {
                 .startAt(trade.getStartAt())
                 .endAt(trade.getEndAt())
                 .brokerId(trade.getBrokerId())
-                .ruleId(trade.getRuleId())
-                .ruleConfig(trade.getRuleConfig())
+                .strategyId(trade.getStrategyId())
+                .strategyVariables(trade.getStrategyVariables())
                 .orderKind(trade.getOrderKind())
                 .alarmId(trade.getAlarmId())
                 .alarmOnError(trade.isAlarmOnError())

@@ -17,7 +17,9 @@ public class Strategy {
 
     private String strategyName;
 
-    private Language language;
+    private Strategy.Language language;
+
+    private String variables;
 
     private String script;
 
@@ -28,12 +30,13 @@ public class Strategy {
     @Converter(autoApply = true)
     public static class LanguageConverter extends AbstractEnumConverter<Language> {}
 
-    public static Strategy from(StrategyEntity ruleEntity) {
+    public static Strategy from(StrategyEntity strategyEntity) {
         return Strategy.builder()
-                .strategyId(ruleEntity.getStrategyId())
-                .strategyName(ruleEntity.getStrategyName())
-                .language(ruleEntity.getLanguage())
-                .script(ruleEntity.getScript())
+                .strategyId(strategyEntity.getStrategyId())
+                .strategyName(strategyEntity.getStrategyName())
+                .language(strategyEntity.getLanguage())
+                .variables(strategyEntity.getVariables())
+                .script(strategyEntity.getScript())
                 .build();
     }
 

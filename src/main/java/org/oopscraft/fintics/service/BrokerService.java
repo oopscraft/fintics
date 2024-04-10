@@ -12,6 +12,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -40,6 +41,7 @@ public class BrokerService {
                 .map(Broker::from);
     }
 
+    @Transactional
     public Broker saveBroker(Broker broker) {
         BrokerEntity brokerEntity;
         if (broker.getBrokerId() == null) {
@@ -52,13 +54,14 @@ public class BrokerService {
         }
         brokerEntity.setBrokerName(broker.getBrokerName());
         brokerEntity.setBrokerClientId(broker.getBrokerClientId());
-        if (broker.getBrokerClientConfig() != null) {
-            brokerEntity.setBrokerClientConfig(PbePropertiesUtil.encode(broker.getBrokerClientConfig()));
+        if (broker.getBrokerClientProperties() != null) {
+            brokerEntity.setBrokerClientProperties(PbePropertiesUtil.encode(broker.getBrokerClientProperties()));
         }
         BrokerEntity savedBrokerEntity = brokerRepository.saveAndFlush(brokerEntity);
         return Broker.from(savedBrokerEntity);
     }
 
+    @Transactional
     public void deleteBroker(String brokerId) {
         BrokerEntity brokerEntity = brokerRepository.findById(brokerId)
                         .orElseThrow();

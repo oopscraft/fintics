@@ -29,9 +29,9 @@ public class TradeRequest {
 
     private String brokerId;
 
-    private String ruleId;
+    private String strategyId;
 
-    private String ruleConfig;
+    private String strategyVariables;
 
     private Order.Kind orderKind;
 

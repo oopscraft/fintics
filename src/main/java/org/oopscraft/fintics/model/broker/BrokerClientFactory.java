@@ -21,8 +21,8 @@ public class BrokerClientFactory {
         try {
             Class<? extends BrokerClient> clientClass = brokerClientDefinition.getClassType().asSubclass(BrokerClient.class);
             Constructor<? extends BrokerClient> constructor = clientClass.getConstructor(BrokerClientDefinition.class, Properties.class);
-            Properties config = loadPropertiesFromString(broker.getBrokerClientConfig());
-            return constructor.newInstance(brokerClientDefinition, config);
+            Properties properties = loadPropertiesFromString(broker.getBrokerClientProperties());
+            return constructor.newInstance(brokerClientDefinition, properties);
         } catch (NoSuchMethodException e) {
             throw new IllegalArgumentException(e);
         } catch (Exception e) {

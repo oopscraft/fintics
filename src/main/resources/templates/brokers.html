@@ -21,9 +21,9 @@
         duice.ObjectProxy.onPropertyChanged(broker, event => {
             if(event.getProperty() === 'brokerClientId') {
                 let brokerClientId = event.getValue();
-                broker.brokerClientConfig = brokerClientDefinitions
+                broker.brokerClientProperties = brokerClientDefinitions
                     .find(item => item['brokerClientId'] === brokerClientId)
-                    ?.configTemplate;
+                    ?.propertiesTemplate;
             }
         });
 
@@ -264,10 +264,10 @@
                         </select>
                     </label>
                     <label class="grid-column--12">
-                        <span data-th-text="#{fintics.Broker.brokerClientConfig}" class="font-weight--bold"></span>
+                        <span data-th-text="#{fintics.Broker.brokerClientProperties}" class="font-weight--bold"></span>
                         <duice-codemirror class="border--1"
                                 data-duice-bind="broker"
-                                data-duice-property="brokerClientConfig">
+                                data-duice-property="brokerClientProperties">
                         </duice-codemirror>
                     </label>
                 </form>

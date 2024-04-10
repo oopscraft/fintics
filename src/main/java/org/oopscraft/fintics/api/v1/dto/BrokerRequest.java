@@ -14,6 +14,6 @@ public class BrokerRequest {
 
     private String brokerClientId;
 
-    private String brokerClientConfig;
+    private String brokerClientProperties;
 
 }

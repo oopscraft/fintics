@@ -2,13 +2,11 @@ package org.oopscraft.fintics.api.v1;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.oopscraft.arch4j.core.data.IdGenerator;
 import org.oopscraft.arch4j.web.support.PageableUtils;
 import org.oopscraft.fintics.api.v1.dto.BrokerRequest;
 import org.oopscraft.fintics.api.v1.dto.BrokerResponse;
 import org.oopscraft.fintics.model.Broker;
 import org.oopscraft.fintics.service.BrokerService;
-import org.springdoc.core.converters.models.DefaultPageable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -16,7 +14,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.function.EntityResponse;
 
 import java.util.List;
 
@@ -58,7 +55,7 @@ public class BrokersRestController {
         Broker broker = Broker.builder()
                 .brokerName(brokerRequest.getBrokerName())
                 .brokerClientId(brokerRequest.getBrokerClientId())
-                .brokerClientConfig(brokerRequest.getBrokerClientConfig())
+                .brokerClientProperties(brokerRequest.getBrokerClientProperties())
                 .build();
         Broker savedBroker = brokerService.saveBroker(broker);
         return ResponseEntity.ok(BrokerResponse.from(savedBroker));
@@ -70,7 +67,7 @@ public class BrokersRestController {
         Broker broker = brokerService.getBroker(brokerId).orElseThrow();
         broker.setBrokerName(brokerRequest.getBrokerName());
         broker.setBrokerClientId(brokerRequest.getBrokerClientId());
-        broker.setBrokerClientConfig(brokerRequest.getBrokerClientConfig());
+        broker.setBrokerClientProperties(brokerRequest.getBrokerClientProperties());
         Broker savedBroker = brokerService.saveBroker(broker);
         return ResponseEntity.ok(BrokerResponse.from(savedBroker));
     }

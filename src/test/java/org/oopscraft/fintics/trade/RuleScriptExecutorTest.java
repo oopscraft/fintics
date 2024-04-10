@@ -134,12 +134,12 @@ class RuleScriptExecutorTest {
         OrderBook orderBook = getTestOrderBook();
         List<IndiceIndicator> indiceIndicators = getTestIndiceIndicators();
         AssetIndicator assetIndicator = getTestAssetIndicator(tradeAsset);
-        trade.setRuleConfig("");
+        trade.setStrategyVariables("");
         trade.setRuleScript("return 50;");
 
         // when
-        RuleScriptExecutor tradeAssetDecider = RuleScriptExecutor.builder()
-                .ruleConfig(trade.getRuleConfig())
+        StrategyExecutor tradeAssetDecider = StrategyExecutor.builder()
+                .ruleConfig(trade.getStrategyVariables())
                 .ruleScript(trade.getRuleScript())
                 .dateTime(LocalDateTime.now())
                 .orderBook(orderBook)
@@ -166,12 +166,12 @@ class RuleScriptExecutorTest {
         ruleConfig.append("tideOhlcvType=DAILY").append("\n");
         ruleConfig.append("tideOhlcvPeriod=1").append("\n");
         String ruleScript = loadGroovyFileAsString("RuleScript.groovy");
-        trade.setRuleConfig(ruleConfig.toString());
+        trade.setStrategyVariables(ruleConfig.toString());
         trade.setRuleScript(ruleScript);
 
         // when
-        RuleScriptExecutor tradeAssetDecider = RuleScriptExecutor.builder()
-                .ruleConfig(trade.getRuleConfig())
+        StrategyExecutor tradeAssetDecider = StrategyExecutor.builder()
+                .ruleConfig(trade.getStrategyVariables())
                 .ruleScript(trade.getRuleScript())
                 .dateTime(LocalDateTime.now())
                 .balance(new Balance())

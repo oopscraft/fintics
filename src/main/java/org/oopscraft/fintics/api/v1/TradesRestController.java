@@ -64,8 +64,8 @@ public class TradesRestController {
                 .startAt(tradeRequest.getStartAt())
                 .endAt(tradeRequest.getEndAt())
                 .brokerId(tradeRequest.getBrokerId())
-                .ruleId(tradeRequest.getRuleId())
-                .ruleConfig(tradeRequest.getRuleConfig())
+                .strategyId(tradeRequest.getStrategyId())
+                .strategyVariables(tradeRequest.getStrategyVariables())
                 .orderKind(tradeRequest.getOrderKind())
                 .alarmId(tradeRequest.getAlarmId())
                 .alarmOnError(tradeRequest.isAlarmOnError())
@@ -102,8 +102,8 @@ public class TradesRestController {
         trade.setStartAt(tradeRequest.getStartAt());
         trade.setEndAt(tradeRequest.getEndAt());
         trade.setBrokerId(tradeRequest.getBrokerId());
-        trade.setRuleId(tradeRequest.getRuleId());
-        trade.setRuleConfig(tradeRequest.getRuleConfig());
+        trade.setStrategyId(tradeRequest.getStrategyId());
+        trade.setStrategyVariables(tradeRequest.getStrategyVariables());
         trade.setOrderKind(tradeRequest.getOrderKind());
         trade.setAlarmId(tradeRequest.getAlarmId());
         trade.setAlarmOnError(tradeRequest.isAlarmOnError());

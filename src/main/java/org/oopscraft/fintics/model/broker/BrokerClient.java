@@ -14,15 +14,11 @@ public abstract class BrokerClient {
     private BrokerClientDefinition definition;
 
     @Getter
-    private final Properties config;
+    private final Properties properties;
 
     public BrokerClient(BrokerClientDefinition definition, Properties config) {
         this.definition = definition;
-        this.config = config;
-    }
-
-    public BrokerClient(Properties config) {
-        this.config = config;
+        this.properties = config;
     }
 
     public abstract boolean isOpened(LocalDateTime dateTime) throws InterruptedException;

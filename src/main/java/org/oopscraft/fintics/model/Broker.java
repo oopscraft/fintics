@@ -15,14 +15,14 @@ public class Broker {
 
     private String brokerClientId;
 
-    private String brokerClientConfig;
+    private String brokerClientProperties;
 
     public static Broker from(BrokerEntity brokerEntity) {
         return Broker.builder()
                 .brokerId(brokerEntity.getBrokerId())
                 .brokerName(brokerEntity.getBrokerName())
                 .brokerClientId(brokerEntity.getBrokerClientId())
-                .brokerClientConfig(brokerEntity.getBrokerClientConfig())
+                .brokerClientProperties(brokerEntity.getBrokerClientProperties())
                 .build();
     }
 

@@ -36,7 +36,7 @@ class KrTradeClientTest {
         }
 
         @Override
-        public String getConfigTemplate() {
+        public String getPropertiesTemplate() {
             return null;
         }
     };

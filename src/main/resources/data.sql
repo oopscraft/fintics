@@ -130,7 +130,7 @@ insert into `fintics_asset`
 
 -- fintics_broker
 insert into `fintics_broker`
-    (`broker_id`,`broker_name`,`broker_client_id`,`broker_client_config`) values
+    (`broker_id`,`broker_name`,`broker_client_id`,`broker_client_properties`) values
     ('ca5f55cd88694715bcb4c478710d9a68','Korea Investment Test','KIS',null),
     ('a135ee9a276f4edf81d6e1b6b9d31e39','Upbit Test','UPBIT',null);
 
@@ -141,7 +141,7 @@ insert into `fintics_strategy`
 
 -- fintics_trade: 한국투자증권 모의투자 - 지수ETF
 insert into `fintics_trade`
-    (`trade_id`,`trade_name`,`enabled`,`interval`,`threshold`,`start_at`,`end_at`,`broker_id`,`strategy_id`,`strategy_config`,`alarm_id`,`order_kind`) values
+    (`trade_id`,`trade_name`,`enabled`,`interval`,`threshold`,`start_at`,`end_at`,`broker_id`,`strategy_id`,`strategy_variables`,`alarm_id`,`order_kind`) values
     ('06c228451ce0400fa57bb36f0568d7cb','한국투자증권 모의투자 - 지수ETF','N','60','3','09:00','15:30',
      'ca5f55cd88694715bcb4c478710d9a68','7c94187b346f4727a0f2478fdc53064f', null, null, 'LIMIT');
 insert into `fintics_trade_asset`
@@ -152,7 +152,7 @@ values
 
 -- fintics_trade: 한국투자증권 모의투자 - 지수ETF(인버스)
 insert into `fintics_trade`
-    (`trade_id`,`trade_name`,`enabled`,`interval`,`threshold`,`start_at`,`end_at`,`broker_id`,`strategy_id`,`strategy_config`,`alarm_id`,`order_kind`) values
+    (`trade_id`,`trade_name`,`enabled`,`interval`,`threshold`,`start_at`,`end_at`,`broker_id`,`strategy_id`,`strategy_variables`,`alarm_id`,`order_kind`) values
     ('7af6bc641eef4254b12dd9fa1d43384d','한국투자증권 모의투자 - 지수ETF(인버스)','N','60','3','09:00','15:30',
      'ca5f55cd88694715bcb4c478710d9a68','7c94187b346f4727a0f2478fdc53064f', null, null, 'LIMIT');
 insert into `fintics_trade_asset`
@@ -163,7 +163,7 @@ values
 
 -- fintics_trade: 업비트 API(장시간 외 트레이드 테스트용)
 insert into `fintics_trade`
-    (`trade_id`,`trade_name`,`enabled`,`interval`,`threshold`,`start_at`,`end_at`,`broker_id`,`strategy_id`,`strategy_config`,`alarm_id`,`order_kind`) values
+    (`trade_id`,`trade_name`,`enabled`,`interval`,`threshold`,`start_at`,`end_at`,`broker_id`,`strategy_id`,`strategy_variables`,`alarm_id`,`order_kind`) values
     ('81c6a451d6da49449faa2b5b7e66041b','코인놀이방(24시간 테스트용)','N','30','3','00:00','23:59',
      'ca5f55cd88694715bcb4c478710d9a68','7c94187b346f4727a0f2478fdc53064f', null, null, 'LIMIT');
 insert into `fintics_trade_asset`

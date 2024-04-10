@@ -66,8 +66,8 @@ public class TradeService {
         tradeEntity.setStartAt(trade.getStartAt());
         tradeEntity.setEndAt(trade.getEndAt());
         tradeEntity.setBrokerId(trade.getBrokerId());
-        tradeEntity.setStrategyId(trade.getRuleId());
-        tradeEntity.setStrategyConfig(trade.getRuleConfig());
+        tradeEntity.setStrategyId(trade.getStrategyId());
+        tradeEntity.setStrategyVariables(trade.getStrategyVariables());
         tradeEntity.setOrderKind(trade.getOrderKind());
         tradeEntity.setAlarmId(trade.getAlarmId());
         tradeEntity.setAlarmOnError(trade.isAlarmOnError());

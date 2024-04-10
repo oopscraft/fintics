@@ -26,6 +26,10 @@ public class StrategyEntity extends BaseEntity {
     @Column(name = "language", length = 16)
     private Strategy.Language language;
 
+    @Column(name = "variables")
+    @Lob
+    private String variables;
+
     @Column(name = "script")
     @Lob
     private String script;

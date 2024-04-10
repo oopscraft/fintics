@@ -43,10 +43,10 @@ public class UpbitBrokerClient extends BrokerClient {
 
     private final ObjectMapper objectMapper;
 
-    public UpbitBrokerClient(BrokerClientDefinition definition, Properties config) {
-        super(definition, config);
-        this.accessKey = config.getProperty("accessKey");
-        this.secretKey = config.getProperty("secretKey");
+    public UpbitBrokerClient(BrokerClientDefinition definition, Properties properties) {
+        super(definition, properties);
+        this.accessKey = properties.getProperty("accessKey");
+        this.secretKey = properties.getProperty("secretKey");
         this.objectMapper = new ObjectMapper();
     }
 

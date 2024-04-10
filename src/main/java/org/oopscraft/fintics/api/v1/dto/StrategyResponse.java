@@ -12,16 +12,19 @@ public class StrategyResponse {
 
     private String ruleName;
 
-    private String language;
+    private Strategy.Language language;
+
+    private String variables;
 
     private String script;
 
-    public static StrategyResponse from(Strategy rule) {
+    public static StrategyResponse from(Strategy strategy) {
         return StrategyResponse.builder()
-                .ruleId(rule.getStrategyId())
-                .ruleName(rule.getStrategyName())
-                .language(rule.getScript())
-                .script(rule.getScript())
+                .ruleId(strategy.getStrategyId())
+                .ruleName(strategy.getStrategyName())
+                .language(strategy.getLanguage())
+                .variables(strategy.getVariables())
+                .script(strategy.getScript())
                 .build();
     }
 

@@ -134,8 +134,8 @@ public class TradeExecutor {
                 OrderBook orderBook = tradeClient.getOrderBook(tradeAsset);
 
                 // executes trade asset decider
-                RuleScriptExecutor ruleScriptExecutor = RuleScriptExecutor.builder()
-                        .ruleConfig(trade.getRuleConfig())
+                StrategyExecutor ruleScriptExecutor = StrategyExecutor.builder()
+                        .ruleConfig(trade.getStrategyVariables())
                         .ruleScript(trade.getRuleScript())
                         .dateTime(dateTime)
                         .orderBook(orderBook)

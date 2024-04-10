@@ -25,8 +25,8 @@ public class BrokerEntity extends BaseEntity {
     @Column(name = "broker_client_id", length = 32)
     private String brokerClientId;
 
-    @Column(name = "broker_client_config")
+    @Column(name = "broker_client_properties")
     @Lob
-    private String brokerClientConfig;
+    private String brokerClientProperties;
 
 }

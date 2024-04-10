@@ -2,16 +2,17 @@ package org.oopscraft.fintics.api.v1.dto;
 
 import lombok.Builder;
 import lombok.Data;
+import org.oopscraft.fintics.model.Strategy;
 
 @Data
 @Builder
 public class StrategyRequest {
 
-    private String strategyId;
-
     private String strategyName;
 
-    private String language;
+    private Strategy.Language language;
+
+    private String variables;
 
     private String script;
 

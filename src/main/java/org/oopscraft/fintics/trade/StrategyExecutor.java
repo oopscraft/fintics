@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-public class RuleScriptExecutor {
+public class StrategyExecutor {
 
     private final String ruleConfig;
 
@@ -40,7 +40,7 @@ public class RuleScriptExecutor {
     private Logger log = (Logger) LoggerFactory.getLogger(this.getClass());
 
     @Builder
-    protected RuleScriptExecutor(String ruleConfig, String ruleScript, LocalDateTime dateTime, OrderBook orderBook, Balance balance, List<IndiceIndicator> indiceIndicators, AssetIndicator assetIndicator) {
+    protected StrategyExecutor(String ruleConfig, String ruleScript, LocalDateTime dateTime, OrderBook orderBook, Balance balance, List<IndiceIndicator> indiceIndicators, AssetIndicator assetIndicator) {
         this.ruleConfig = ruleConfig;
         this.ruleScript = ruleScript;
         this.dateTime = dateTime;

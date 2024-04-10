@@ -38,13 +38,13 @@ public class KisBrokerClient extends KrBrokerClient {
 
     private final ObjectMapper objectMapper;
 
-    public KisBrokerClient(BrokerClientDefinition definition, Properties config) {
-        super(definition, config);
-        this.production = Boolean.parseBoolean(config.getProperty("production"));
-        this.apiUrl = config.getProperty("apiUrl");
-        this.appKey = config.getProperty("appKey");
-        this.appSecret = config.getProperty("appSecret");
-        this.accountNo = config.getProperty("accountNo");
+    public KisBrokerClient(BrokerClientDefinition definition, Properties properties) {
+        super(definition, properties);
+        this.production = Boolean.parseBoolean(properties.getProperty("production"));
+        this.apiUrl = properties.getProperty("apiUrl");
+        this.appKey = properties.getProperty("appKey");
+        this.appSecret = properties.getProperty("appSecret");
+        this.accountNo = properties.getProperty("accountNo");
         this.objectMapper = new ObjectMapper();
     }
 

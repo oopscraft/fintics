@@ -10,7 +10,7 @@ public interface BrokerClientDefinition extends Aware {
 
     Class<? extends BrokerClient> getClassType();
 
-    String getConfigTemplate();
+    String getPropertiesTemplate();
 
     String getExchangeId();
 

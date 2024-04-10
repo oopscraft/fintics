@@ -31,9 +31,9 @@ public class Trade {
 
     private String brokerId;
 
-    private String ruleId;
+    private String strategyId;
 
-    private String ruleConfig;
+    private String strategyVariables;
 
     private String ruleScript;
 
@@ -60,8 +60,8 @@ public class Trade {
                 .startAt(tradeEntity.getStartAt())
                 .endAt(tradeEntity.getEndAt())
                 .brokerId(tradeEntity.getBrokerId())
-                .ruleId(tradeEntity.getStrategyId())
-                .ruleConfig(tradeEntity.getStrategyConfig())
+                .strategyId(tradeEntity.getStrategyId())
+                .strategyVariables(tradeEntity.getStrategyVariables())
                 .orderKind(tradeEntity.getOrderKind())
                 .alarmId(tradeEntity.getAlarmId())
                 .alarmOnError(tradeEntity.isAlarmOnError())

@@ -26,7 +26,7 @@ public class UpbitBrokerClientDefinition implements BrokerClientDefinition {
     }
 
     @Override
-    public String getConfigTemplate() {
+    public String getPropertiesTemplate() {
         StringJoiner template = new StringJoiner("\n");
         template.add("accessKey=[Access Key]");
         template.add("secretKey=[Secret Key]");
