@@ -2,7 +2,9 @@ package org.oopscraft.fintics.api.v1;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.oopscraft.arch4j.core.data.IdGenerator;
 import org.oopscraft.arch4j.web.support.PageableUtils;
+import org.oopscraft.fintics.api.v1.dto.BrokerRequest;
 import org.oopscraft.fintics.api.v1.dto.BrokerResponse;
 import org.oopscraft.fintics.model.Broker;
 import org.oopscraft.fintics.service.BrokerService;
@@ -19,15 +21,14 @@ import org.springframework.web.servlet.function.EntityResponse;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/brokers")
-@PreAuthorize("hasAuthority('API_BROKERS')")
 @Tag(name = "brokers", description = "Brokers")
 @RequiredArgsConstructor
 public class BrokersRestController {
 
     private final BrokerService brokerService;
 
-    @GetMapping
+    @GetMapping("/api/v1/brokers")
+    @PreAuthorize("hasAuthority('API_BROKERS')")
     public ResponseEntity<List<BrokerResponse>> getBrokers(
             @RequestParam(value = "brokerName", required = false) String brokerName,
             @PageableDefault Pageable pageable
@@ -42,12 +43,43 @@ public class BrokersRestController {
                 .body(brokerResponses);
     }
 
-    @GetMapping("{brokerId}")
+    @GetMapping("/api/v1/brokers/{brokerId}")
+    @PreAuthorize("hasAuthority('API_BROKERS')")
     public ResponseEntity<BrokerResponse> getBroker(@PathVariable("brokerId") String brokerId) {
         BrokerResponse brokerResponse = brokerService.getBroker(brokerId)
                 .map(BrokerResponse::from)
                 .orElseThrow();
         return ResponseEntity.ok(brokerResponse);
+    }
+
+    @PostMapping("/api/v1/brokers")
+    @PreAuthorize("hasAuthority('API_BROKERS_EDIT')")
+    public ResponseEntity<BrokerResponse> createBroker(@RequestBody BrokerRequest brokerRequest) {
+        Broker broker = Broker.builder()
+                .brokerName(brokerRequest.getBrokerName())
+                .brokerClientId(brokerRequest.getBrokerClientId())
+                .brokerClientConfig(brokerRequest.getBrokerClientConfig())
+                .build();
+        Broker savedBroker = brokerService.saveBroker(broker);
+        return ResponseEntity.ok(BrokerResponse.from(savedBroker));
+    }
+
+    @PutMapping("/api/v1/brokers/{brokerId}")
+    @PreAuthorize("hasAuthority('API_BROKERS_EDIT')")
+    public ResponseEntity<BrokerResponse> modifyBroker(@PathVariable("brokerId")String brokerId, @RequestBody BrokerRequest brokerRequest) {
+        Broker broker = brokerService.getBroker(brokerId).orElseThrow();
+        broker.setBrokerName(brokerRequest.getBrokerName());
+        broker.setBrokerClientId(brokerRequest.getBrokerClientId());
+        broker.setBrokerClientConfig(brokerRequest.getBrokerClientConfig());
+        Broker savedBroker = brokerService.saveBroker(broker);
+        return ResponseEntity.ok(BrokerResponse.from(savedBroker));
+    }
+
+    @DeleteMapping("/api/v1/brokers/{brokerId}")
+    @PreAuthorize("hasAuthority('API_BROKERS_EDIT')")
+    public ResponseEntity<Void> deleteBroker(@PathVariable("brokerId")String brokerId) {
+        brokerService.deleteBroker(brokerId);
+        return ResponseEntity.ok().build();
     }
 
 }

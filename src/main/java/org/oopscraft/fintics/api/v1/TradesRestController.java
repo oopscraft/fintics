@@ -22,9 +22,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/v1/trades")
 @RequiredArgsConstructor
-@PreAuthorize("hasAuthority('API_TRADES')")
 @Tag(name = "trade", description = "Trade operations")
 @Slf4j
 public class TradesRestController {
@@ -35,7 +33,8 @@ public class TradesRestController {
 
     private final SimulateService simulateService;
 
-    @GetMapping
+    @GetMapping("/api/v1/trades")
+    @PreAuthorize("hasAuthority('API_TRADES')")
     public ResponseEntity<List<TradeResponse>> getTrades() {
         List<TradeResponse> tradeResponses = tradeService.getTrades().stream()
                 .map(TradeResponse::from)
@@ -43,7 +42,8 @@ public class TradesRestController {
         return ResponseEntity.ok(tradeResponses);
     }
 
-    @GetMapping("{tradeId}")
+    @GetMapping("/api/v1/trades/{tradeId}")
+    @PreAuthorize("hasAuthority('API_TRADES')")
     public ResponseEntity<TradeResponse> getTrade(@PathVariable("tradeId")String tradeId) {
         TradeResponse tradeResponse = tradeService.getTrade(tradeId)
                 .map(TradeResponse::from)
@@ -51,7 +51,7 @@ public class TradesRestController {
         return ResponseEntity.ok(tradeResponse);
     }
 
-    @PostMapping
+    @PostMapping("/api/v1/trades")
     @Transactional
     @PreAuthorize("hasAuthority('API_TRADES_EDIT')")
     public ResponseEntity<TradeResponse> createTrade(@RequestBody TradeRequest tradeRequest) {
@@ -71,7 +71,6 @@ public class TradesRestController {
                 .alarmOnError(tradeRequest.isAlarmOnError())
                 .alarmOnOrder(tradeRequest.isAlarmOnOrder())
                 .build();
-
         List<TradeAsset> tradeAssets = tradeRequest.getTradeAssets().stream()
                 .map(tradeAssetRequest ->
                         TradeAsset.builder()
@@ -83,13 +82,12 @@ public class TradesRestController {
                                 .build())
                 .collect(Collectors.toList());
         trade.setTradeAssets(tradeAssets);
-
         Trade savedTrade = tradeService.saveTrade(trade);
         TradeResponse savedTradeResponse = TradeResponse.from(savedTrade);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedTradeResponse);
     }
 
-    @PutMapping("{tradeId}")
+    @PutMapping("/api/v1/trades/{tradeId}")
     @Transactional
     @PreAuthorize("hasAuthority('API_TRADES_EDIT')")
     public ResponseEntity<TradeResponse> modifyTrade(
@@ -110,7 +108,6 @@ public class TradesRestController {
         trade.setAlarmId(tradeRequest.getAlarmId());
         trade.setAlarmOnError(tradeRequest.isAlarmOnError());
         trade.setAlarmOnOrder(tradeRequest.isAlarmOnOrder());
-
         List<TradeAsset> tradeAssets = tradeRequest.getTradeAssets().stream()
                 .map(tradeAssetRequest ->
                         TradeAsset.builder()
@@ -122,7 +119,6 @@ public class TradesRestController {
                                 .build())
                 .collect(Collectors.toList());
         trade.setTradeAssets(tradeAssets);
-
         Trade savedTrade = tradeService.saveTrade(trade);
         TradeResponse savedTradeResponse = TradeResponse.from(savedTrade);
         return ResponseEntity.ok(savedTradeResponse);
@@ -136,7 +132,8 @@ public class TradesRestController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("{tradeId}/orders")
+    @GetMapping("/api/v1/trades/{tradeId}/orders")
+    @PreAuthorize("hasAuthority('API_TRADES')")
     public ResponseEntity<List<OrderResponse>> getOrders(
             @PathVariable("tradeId")String tradeId,
             @RequestParam(value = "assetId", required = false) String assetId,
@@ -154,7 +151,8 @@ public class TradesRestController {
                 .body(orderResponses);
     }
 
-    @GetMapping("{tradeId}/balance")
+    @GetMapping("/api/v1/trades/{tradeId}/balance")
+    @PreAuthorize("hasAuthority('API_TRADES')")
     public ResponseEntity<BalanceResponse> getTradeBalance(@PathVariable("tradeId") String tradeId) throws InterruptedException {
         BalanceResponse balanceResponse = tradeService.getBalance(tradeId)
                 .map(BalanceResponse::from)
@@ -162,7 +160,8 @@ public class TradesRestController {
         return ResponseEntity.ok(balanceResponse);
     }
 
-    @GetMapping("{tradeId}/simulates")
+    @GetMapping("/api/v1/trades/{tradeId}/simulates")
+    @PreAuthorize("hasAuthority('API_TRADES')")
     public ResponseEntity<List<SimulateResponse>> getTradeSimulates(
             @PathVariable("tradeId") String tradeId,
             @RequestParam(value = "status", required = false) Simulate.Status status,

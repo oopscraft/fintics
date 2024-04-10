@@ -1,6 +1,8 @@
 package org.oopscraft.fintics.service;
 
 import lombok.RequiredArgsConstructor;
+import org.oopscraft.arch4j.core.data.IdGenerator;
+import org.oopscraft.arch4j.core.data.pbe.PbePropertiesUtil;
 import org.oopscraft.fintics.dao.BrokerEntity;
 import org.oopscraft.fintics.dao.BrokerRepository;
 import org.oopscraft.fintics.dao.BrokerSpecifications;
@@ -25,7 +27,6 @@ public class BrokerService {
         specification = specification.and(Optional.ofNullable(brokerName)
                                 .map(BrokerSpecifications::containsBrokerName)
                                 .orElse(null));
-
         Page<BrokerEntity> brokerEntityPage = brokerRepository.findAll(specification, pageable);
         List<Broker> brokers = brokerEntityPage.getContent().stream()
                 .map(Broker::from)
@@ -37,6 +38,32 @@ public class BrokerService {
     public Optional<Broker> getBroker(String brokerId) {
         return brokerRepository.findById(brokerId)
                 .map(Broker::from);
+    }
+
+    public Broker saveBroker(Broker broker) {
+        BrokerEntity brokerEntity;
+        if (broker.getBrokerId() == null) {
+            brokerEntity = BrokerEntity.builder()
+                    .brokerId(IdGenerator.uuid())
+                    .build();
+        } else {
+            brokerEntity = brokerRepository.findById(broker.getBrokerId())
+                    .orElseThrow();
+        }
+        brokerEntity.setBrokerName(broker.getBrokerName());
+        brokerEntity.setBrokerClientId(broker.getBrokerClientId());
+        if (broker.getBrokerClientConfig() != null) {
+            brokerEntity.setBrokerClientConfig(PbePropertiesUtil.encode(broker.getBrokerClientConfig()));
+        }
+        BrokerEntity savedBrokerEntity = brokerRepository.saveAndFlush(brokerEntity);
+        return Broker.from(savedBrokerEntity);
+    }
+
+    public void deleteBroker(String brokerId) {
+        BrokerEntity brokerEntity = brokerRepository.findById(brokerId)
+                        .orElseThrow();
+        brokerRepository.delete(brokerEntity);
+        brokerRepository.flush();
     }
 
 }

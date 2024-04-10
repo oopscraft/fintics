@@ -98,12 +98,10 @@
                     })
                         .then(response => response.json())
                         .then(data => {
-                            if (response.ok) {
-                                _alert(/*[[#{web.global.saveItemComplete(#{fintics.Broker})}]]*/'').then(() => {
-                                    getBrokers();
-                                    getBroker(data.brokerId);
-                                });
-                            }
+                            _alert(/*[[#{web.global.saveItemComplete(#{fintics.Broker})}]]*/'').then(() => {
+                                getBrokers();
+                                getBroker(data.brokerId);
+                            });
                         });
                 }
             });
@@ -267,10 +265,9 @@
                     </label>
                     <label class="grid-column--12">
                         <span data-th-text="#{fintics.Broker.brokerClientConfig}" class="font-weight--bold"></span>
-                        <duice-codemirror
+                        <duice-codemirror class="border--1"
                                 data-duice-bind="broker"
-                                data-duice-property="brokerClientConfig"
-                                data-duice-theme="dracula">
+                                data-duice-property="brokerClientConfig">
                         </duice-codemirror>
                     </label>
                 </form>

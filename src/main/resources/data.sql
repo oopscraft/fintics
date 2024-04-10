@@ -11,15 +11,18 @@ insert into `core_authority` (`authority_id`,`system_required`,`authority_name`)
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_SIMULATES','Y','Simulates API Access Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_TRADES','Y','Trades API Access Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_TRADES_EDIT','Y','Trades Edit API Authority');
-insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_STRATEGIES','Y','Strategies API Access Authority');
+insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_STRATEGIES','Y','Strategies API Authority');
+insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_STRATEGIES_EDIT','Y','Strategies Edit API Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_BROKERS','Y','Brokers API Access Authority');
+insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_BROKERS_EDIT','Y','Brokers Edit API Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_DATA','Y','Data Access API Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('MONITORS','Y','Monitor Access Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('TRADES','Y','Trades Access Authority');
-insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('TRADE','Y','Trade Access Authority');
-insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('TRADE_EDIT','Y','Trade Edit Authority');
+insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('TRADES_EDIT','Y','Trade Edit Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('STRATEGIES','Y','Strategies Access Authority');
+insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('STRATEGIES_EDIT','Y','Strategies Edit Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('BROKERS','Y','Brokers Access Authority');
+insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('BROKERS_EDIT','Y','Brokers Edit Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('ORDERS','Y','Orders Access Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('SIMULATES','Y','Simulates Access Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('DATA','Y','Data Access Authority');
@@ -30,13 +33,15 @@ insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`au
 insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
     ('TRADES','Y','Trades Access Role','N','Y');
 insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
-    ('TRADE','Y','Trade Access Role','N','N');
-insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
-    ('TRADE_EDIT','Y','Trade Edit Role','N','N');
+    ('TRADES_EDIT','Y','Trades Edit Role','N','N');
 insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
     ('STRATEGIES','Y','Strategies Access Role','N','N');
 insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
+    ('STRATEGIES_EDIT','Y','Strategies Edit Role','N','N');
+insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
     ('BROKERS','Y','Brokers Access Role','N','N');
+insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
+    ('BROKERS_EDIT','Y','Brokers Edit Role','N','N');
 insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
     ('ORDERS','Y','Orders Access Role','N','Y');
 insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
@@ -53,17 +58,20 @@ insert into `core_role_authority` (`role_id`,`authority_id`) values
     ('TRADES','TRADES'),
     ('TRADES','API_TRADES');
 insert into `core_role_authority` (`role_id`,`authority_id`) values
-    ('TRADE','TRADES'),
-    ('TRADE','API_TRADES');
-insert into `core_role_authority` (`role_id`,`authority_id`) values
-    ('TRADE_EDIT','TRADE_EDIT'),
-    ('TRADE_EDIT','API_TRADES_EDIT');
+    ('TRADES_EDIT','TRADES_EDIT'),
+    ('TRADES_EDIT','API_TRADES_EDIT');
 insert into `core_role_authority` (`role_id`,`authority_id`) values
     ('STRATEGIES','STRATEGIES'),
     ('STRATEGIES','API_STRATEGIES');
 insert into `core_role_authority` (`role_id`,`authority_id`) values
+    ('STRATEGIES_EDIT','STRATEGIES_EDIT'),
+    ('STRATEGIES_EDIT','API_STRATEGIES_EDIT');
+insert into `core_role_authority` (`role_id`,`authority_id`) values
     ('BROKERS','BROKERS'),
     ('BROKERS','API_BROKERS');
+insert into `core_role_authority` (`role_id`,`authority_id`) values
+    ('BROKERS_EDIT','BROKERS_EDIT'),
+    ('BROKERS_EDIT','API_BROKERS_EDIT');
 insert into `core_role_authority` (`role_id`,`authority_id`) values
     ('ORDERS','ORDERS'),
     ('ORDERS','API_ORDERS');
