@@ -214,10 +214,10 @@ if (analysis.getZScore() > 1.5 && analysis.getBullishScore().getAverage() > 70) 
         if (waveAnalysis.getVolatilityScore().getAverage() < 70) {
             hold = null
         }
-        // overestimate
-        if (waveAnalysis.getOverestimateScore().getAverage() > 70) {
-            hold = null
-        }
+//        // overestimate
+//        if (waveAnalysis.getOverestimateScore().getAverage() > 70) {
+//            hold = null
+//        }
     }
 }
 // sell
@@ -229,10 +229,10 @@ if (analysis.getZScore() < -1.5 && analysis.getBearishScore().getAverage() > 70)
         if (waveAnalysis.getMomentumScore().getAverage() > 70) {
             hold = null
         }
-        // underestimate
-        if (waveAnalysis.getUnderestimateScore().getAverage() > 70) {
-            hold = null
-        }
+//        // underestimate
+//        if (waveAnalysis.getUnderestimateScore().getAverage() > 70) {
+//            hold = null
+//        }
     }
 }
 

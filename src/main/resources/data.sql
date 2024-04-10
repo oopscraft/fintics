@@ -91,7 +91,7 @@ insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
 insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`sort`,`icon`) values
     ('strategies','Y',null,'Strategies','/strategies',3,'/static/image/icon-strategy.svg');
 insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
-    ('strategies','ko','전략');
+    ('strategies','ko','매매전략');
 insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`sort`,`icon`) values
     ('brokers','Y',null,'Brokers','/brokers',4,'/static/image/icon-broker.svg');
 insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values

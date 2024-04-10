@@ -18,14 +18,15 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequestMapping("/api/v1/brokers")
+@PreAuthorize("hasAuthority('API_BROKERS')")
 @Tag(name = "brokers", description = "Brokers")
 @RequiredArgsConstructor
 public class BrokersRestController {
 
     private final BrokerService brokerService;
 
-    @GetMapping("/api/v1/brokers")
-    @PreAuthorize("hasAuthority('API_BROKERS')")
+    @GetMapping
     public ResponseEntity<List<BrokerResponse>> getBrokers(
             @RequestParam(value = "brokerName", required = false) String brokerName,
             @PageableDefault Pageable pageable
@@ -40,8 +41,7 @@ public class BrokersRestController {
                 .body(brokerResponses);
     }
 
-    @GetMapping("/api/v1/brokers/{brokerId}")
-    @PreAuthorize("hasAuthority('API_BROKERS')")
+    @GetMapping("{brokerId}")
     public ResponseEntity<BrokerResponse> getBroker(@PathVariable("brokerId") String brokerId) {
         BrokerResponse brokerResponse = brokerService.getBroker(brokerId)
                 .map(BrokerResponse::from)
@@ -49,7 +49,7 @@ public class BrokersRestController {
         return ResponseEntity.ok(brokerResponse);
     }
 
-    @PostMapping("/api/v1/brokers")
+    @PostMapping
     @PreAuthorize("hasAuthority('API_BROKERS_EDIT')")
     public ResponseEntity<BrokerResponse> createBroker(@RequestBody BrokerRequest brokerRequest) {
         Broker broker = Broker.builder()
@@ -61,7 +61,7 @@ public class BrokersRestController {
         return ResponseEntity.ok(BrokerResponse.from(savedBroker));
     }
 
-    @PutMapping("/api/v1/brokers/{brokerId}")
+    @PutMapping("{brokerId}")
     @PreAuthorize("hasAuthority('API_BROKERS_EDIT')")
     public ResponseEntity<BrokerResponse> modifyBroker(@PathVariable("brokerId")String brokerId, @RequestBody BrokerRequest brokerRequest) {
         Broker broker = brokerService.getBroker(brokerId).orElseThrow();
@@ -72,7 +72,7 @@ public class BrokersRestController {
         return ResponseEntity.ok(BrokerResponse.from(savedBroker));
     }
 
-    @DeleteMapping("/api/v1/brokers/{brokerId}")
+    @DeleteMapping("{brokerId}")
     @PreAuthorize("hasAuthority('API_BROKERS_EDIT')")
     public ResponseEntity<Void> deleteBroker(@PathVariable("brokerId")String brokerId) {
         brokerService.deleteBroker(brokerId);

@@ -19,14 +19,15 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequestMapping("/api/v1/strategies")
+@PreAuthorize("hasAuthority('API_STRATEGIES')")
 @Tag(name = "strategies", description = "Strategies")
 @RequiredArgsConstructor
 public class StrategiesRestController {
 
     private final StrategyService strategyService;
 
-    @GetMapping("/api/v1/strategies")
-    @PreAuthorize("hasAuthority('API_STRATEGIES')")
+    @GetMapping
     public ResponseEntity<List<StrategyResponse>> getStrategies(
             @RequestParam(value = "strategyName", required = false) String strategyName,
             @PageableDefault Pageable pageable
@@ -41,8 +42,7 @@ public class StrategiesRestController {
                 .body(strategyResponses);
     }
 
-    @GetMapping("/api/v1/strategies/{strategyId}")
-    @PreAuthorize("hasAuthority('API_STRATEGIES')")
+    @GetMapping("{strategyId}")
     public ResponseEntity<StrategyResponse> getStrategy(@PathVariable("strategyId")String strategyId) {
         StrategyResponse ruleResponse = strategyService.getStrategy(strategyId)
                 .map(StrategyResponse::from)
@@ -50,9 +50,9 @@ public class StrategiesRestController {
         return ResponseEntity.ok(ruleResponse);
     }
 
-    @PostMapping("/api/v1/strategies")
-    @Transactional
+    @PostMapping
     @PreAuthorize("hasAuthority('API_STRATEGIES_EDIT')")
+    @Transactional
     public ResponseEntity<StrategyResponse> createStrategy(@RequestBody StrategyRequest strategyRequest) {
         Strategy strategy = Strategy.builder()
                 .strategyName(strategyRequest.getStrategyName())
@@ -64,9 +64,9 @@ public class StrategiesRestController {
         return ResponseEntity.ok(StrategyResponse.from(savedStrategy));
     }
 
-    @PutMapping("/api/v1/strategies/{strategyId}")
-    @Transactional
+    @PutMapping("{strategyId}")
     @PreAuthorize("hasAuthority('API_STRATEGIES_EDIT')")
+    @Transactional
     public ResponseEntity<StrategyResponse> modifyStrategy(@PathVariable("strategyId")String strategyId, @RequestBody StrategyRequest strategyRequest) {
         Strategy strategy = strategyService.getStrategy(strategyId).orElseThrow();
         strategy.setStrategyName(strategyRequest.getStrategyName());
@@ -77,9 +77,9 @@ public class StrategiesRestController {
         return ResponseEntity.ok(StrategyResponse.from(savedStrategy));
     }
 
-    @DeleteMapping("/api/v1/strategies/{strategyId}")
-    @Transactional
+    @DeleteMapping("{strategyId}")
     @PreAuthorize("hasAuthority('API_STRATEGIES_EDIT')")
+    @Transactional
     public void deleteStrategy(@PathVariable("strategyId") String strategyId) {
         strategyService.deleteStrategy(strategyId);
     }

@@ -2,402 +2,152 @@
 <html lang="en"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="admin/_admin.html">
+      layout:decorate="_web.html">
 <th:block layout:fragment="_content">
     <script th:inline="javascript">
-        // alarm search condition
-        const alarmSearch = new duice.ObjectProxy({
-            key: 'alarmId',
+        const strategySearch = new duice.ObjectProxy({
+            key: 'strategyName',
             value: null,
             _page: 0,
             _size: 20,
             _count: 0
         });
+        const strategies = new duice.ArrayProxy([]);
 
-        // alarm list
-        const alarms = new duice.ArrayProxy([]);
-
-        // alarm
-        const alarm = new duice.ObjectProxy({
-            alarmId: null,
-        });
-        duice.ObjectProxy.setDisableAll(alarm, true);
-        duice.ObjectProxy.onPropertyChanging(alarm, async event => {
-            if (event.getProperty() === 'alarmId') {
-                if (!await validateAlarmId(event.getValue())) {
-                    duice.ObjectProxy.focus(alarm, 'alarmId');
-                    return false;
-                }
-            }
-            return true;
-        });
-        duice.ObjectProxy.onPropertyChanged(alarm, event => {
-            console.log(event);
-            if(event.getProperty() === 'alarmClientId') {
-                let alarmClientId = event.getValue();
-                alarm.alarmClientConfig = alarmClientDefinitions
-                    .find(item => item['alarmClientId'] === alarmClientId)
-                    ?.alarmClientConfigTemplate;
-            }
-        });
-
-        // alarm client definitions
-        const alarmClientDefinitions = new duice.ArrayProxy(/*[[${alarmClientDefinitions}]]*/[]);
-
-        function getAlarms(page) {
+        function getStrategies(page) {
             if(page) {
-                alarmSearch._page = page;
+                strategySearch._page = page;
             }
-            let url = new URL(/*[[@{/admin/alarm/get-alarms}]]*/'', document.location.origin);
-            if (alarmSearch.key && alarmSearch.value) {
-                url.searchParams.append(alarmSearch.key, alarmSearch.value);
+            let url = new URL(`${_apiUrl}/v1/strategies`, document.location.origin);
+            if (strategySearch.key != null && strategySearch.value != null) {
+                url.searchParams.append(strategySearch.key, strategySearch.value);
             }
-            url.searchParams.append('_page', alarmSearch._page);
-            url.searchParams.append('_size', alarmSearch._size);
+            url.searchParams.append('_page', strategySearch._page);
+            url.searchParams.append('_size', strategySearch._size);
             _fetch(url)
-                .then(response => response.json())
+                .then(response => {
+                    strategySearch._count = _parseTotalCount(response);
+                    return response.json();
+                })
                 .then(data => {
-                    duice.ArrayProxy.clear(alarms);
-                    duice.ArrayProxy.assign(alarms, data.content);
-                    alarmSearch._count = data['totalElements'];
-
-                    // select current item
-                    duice.ArrayProxy.selectItem(alarms, alarms.findIndex(item => item.alarmId === alarm.alarmId));
+                    duice.ArrayProxy.assign(strategies, data);
                 });
         }
 
-        function resetAlarms() {
-            duice.ObjectProxy.reset(alarmSearch);
-            getAlarms();
+        function resetStrategies() {
+            duice.ObjectProxy.reset(strategySearch);
+            getStrategies();
         }
 
-        function getAlarm(alarmId) {
-            let url = new URL(/*[[@{/admin/alarm/get-alarm}]]*/'', document.location.origin);
-            url.searchParams.append('alarmId', alarmId);
-            _fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    duice.ObjectProxy.assign(alarm, data);
-                    duice.ObjectProxy.setDisableAll(alarm, false);
-                    duice.ObjectProxy.setReadonly(alarm, 'alarmId', true);
-                    alarm._new = false;
-                });
+        function createStrategy() {
+            document.location.href = `${_rootUrl}/s`
         }
 
-        function createAlarm() {
-            duice.ObjectProxy.clear(alarm);
-            duice.ObjectProxy.assign(alarm, {
-                _new: true
-            });
-            duice.ObjectProxy.setDisableAll(alarm, false);
-            duice.ObjectProxy.setReadonly(alarm, 'alarmId', false);
-            duice.ObjectProxy.focus(alarm, 'alarmId');
-        }
-
-        async function validateAlarmId(alarmId) {
-            // check blank
-            if (!alarmId) {
-                await _alert(/*[[#{web.global.itemEmpty(#{core.alarm.Alarm.alarmId})}]]*/'');
-                duice.ObjectProxy.focus(alarm, 'alarmId');
-                return false;
-            }
-
-            // check duplicated id
-            let url = new URL(/*[[@{/admin/alarm/get-alarm}]]*/'', document.location.origin);
-            url.searchParams.append('alarmId', alarmId);
-            let response = await _fetch(url, {}, true);
-            if (response.ok) {
-                let alarm = await response.json();
-                if (alarm) {
-                    await _alert(/*[[#{web.global.itemAlreadyExist(#{core.alarm.Alarm.alarmId})}]]*/'');
-                    return false;
-                }
-            }
-
-            // return true
-            return true;
-        }
-
-        async function saveAlarm() {
-
-            // if new, checks id
-            if (alarm._new) {
-                if (!await validateAlarmId(alarm.alarmId)) {
-                    return false;
-                }
-            }
-
-            // checks alarm name
-            if(_isEmpty(alarm.alarmName)) {
-                await _alert(/*[[#{web.global.itemEmpty(#{core.alarm.Alarm.alarmName})}]]*/'');
-                duice.ObjectProxy.focus(alarm, 'alarmName');
-                return false;
-            }
-
-            // call save
-            _confirm(/*[[#{web.global.saveItemConfirm(#{core.alarm.Alarm})}]]*/'').then(result => {
-                if (result) {
-                    let url = new URL(/*[[@{/admin/alarm/save-alarm}]]*/'', document.location.origin);
-                    _fetch(url, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(alarm)
-                    }).then(response => {
-                        if (response.ok) {
-                            _alert(/*[[#{web.global.saveItemComplete(#{core.alarm.Alarm})}]]*/'').then(() => {
-                                getAlarms();
-                                getAlarm(alarm.alarmId);
-                            });
-                        }
-                    });
-                }
-            });
-        }
-
-        function deleteAlarm() {
-            _confirm(/*[[#{web.global.deleteItemConfirm(#{core.alarm.Alarm})}]]*/'').then(result => {
-                if (result) {
-                    let url = new URL(/*[[@{/admin/alarm/delete-alarm}]]*/'', document.location.origin);
-                    url.searchParams.append('alarmId', alarm.alarmId);
-                    _fetch(url).then(response => {
-                        if (response.ok) {
-                            _alert(/*[[#{web.global.deleteItemComplete(#{core.alarm.Alarm})}]]*/'').then(() => {
-                                getAlarms();
-                                duice.ObjectProxy.clear(alarm);
-                            });
-                        }
-                    })
-                }
-            });
-        }
-
-        function testAlarm() {
-            _confirm(/*[[#{web.global.sendItemConfirm(#{web.global.test} + ' ' + #{core.alarm.Alarm})}]]*/'').then(result => {
-                if (result) {
-                    let url = new URL(/*[[@{/admin/alarm/test-alarm}]]*/'', document.location.origin);
-                    _fetch(url, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(alarm)
-                    }).then(response => {
-                        if (response.ok) {
-                            _alert(/*[[#{web.global.sendItemComplete(#{web.global.test} + ' ' + #{core.alarm.Alarm})}]]*/'').then(() => {
-                                getAlarms();
-                                getAlarm(alarm.alarmId);
-                            });
-                        }
-                    });
-                }
-            });
-        }
-
-        // DOM content loaded listener
-        document.addEventListener('DOMContentLoaded',()=> {
-            getAlarms();
+        document.addEventListener('DOMContentLoaded', () => {
+            getStrategies();
         });
+
     </script>
+    <style th:inline="css">
+    </style>
 
     <!-- ====================================== -->
     <!-- start: title                           -->
     <!-- ====================================== -->
     <h1 id="title">
-        <img class="icon" th:src="@{/static/image/icon-alarm.svg}" alt="alarm"/>
-        <span data-th-text="#{web.admin.alarm}"></span>
+        <img class="icon" th:src="@{/static/image/icon-strategy.svg}" alt="strategy"/>
+        <span data-th-text="#{fintics.Strategy}"></span>
     </h1>
     <!-- ====================================== -->
     <!-- end: title                             -->
     <!-- ====================================== -->
 
-    <!-- ====================================== -->
-    <!-- start: alarm content                -->
-    <!-- ====================================== -->
-    <div id="alarmContent" class="display--grid grid-template-columns--12 grid-gap--1em">
-
-        <!-- ====================================== -->
-        <!-- start: alarm list                   -->
-        <!-- ====================================== -->
-        <div id="alarmList" class="grid-column--5 s__grid-column--12">
-            <div class="display--grid grid-gap--1em border--1 padding--1em">
-                <h2>
-                    <img class="icon" th:src="@{/static/image/icon-list.svg}" alt="list"/>
-                    <span data-th-text="#{core.alarm.Alarm}+' '+#{web.global.list}"></span>
-                </h2>
-                <form onsubmit="return false;" class="display--grid grid-template-columns--12 grid-gap--1em padding-y--1em s__padding-y--0">
-                    <label class="grid-column--4">
-                        <select class="width--100" data-duice-bind="alarmSearch" data-duice-property="key">
-                            <option value="alarmId" th:text="#{core.alarm.Alarm.alarmId}"></option>
-                            <option value="alarmName" th:text="#{core.alarm.Alarm.alarmName}"></option>
-                        </select>
-                    </label>
-                    <label class="grid-column--8">
-                        <input class="width--100" type="text" data-duice-bind="alarmSearch" data-duice-property="value"
-                               th:placeholder="#{web.global.keyword}"/>
-                    </label>
-                    <div class="grid-column--12 justify-self--end">
-                        <button type="submit" onclick="getAlarms();">
-                            <img class="icon" th:src="@{/static/image/icon-search.svg}" alt="search"/>
-                            <span data-th-text="#{web.global.search}">Search</span>
-                        </button>
-                        <button type="button" onclick="resetAlarms();">
-                            <img class="icon" th:src="@{/static/image/icon-reset.svg}" alt="reset"/>
-                            <span data-th-text="#{web.global.reset}">Reset</span>
-                        </button>
-                    </div>
-                </form>
-                <div class="overflow-x--auto padding-y--1em s__padding-y--0">
-                    <table class="width--100">
-                        <colgroup>
-                            <col style="width:5rem;"/>
-                            <col/>
-                            <col/>
-                        </colgroup>
-                        <thead>
-                        <tr>
-                            <th data-th-text="#{web.global.no}" class="text-align--center"></th>
-                            <th data-th-text="#{core.alarm.Alarm.alarmId}"></th>
-                            <th data-th-text="#{core.alarm.Alarm.alarmName}"></th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr data-duice-bind="alarms" data-duice-loop="alarm,status"
-                            data-duice-selected-item-class="selected" data-duice-execute="
-                        this.dataset.alarmId=alarm.alarmId;
-                        " onclick="getAlarm(this.dataset.alarmId);" class="link">
-                            <td>
-                                <span data-duice-bind="status" data-duice-property="count"
-                                    class="text-align--center"></span>
-                            </td>
-                            <td>
-                                <span data-duice-bind="alarm" data-duice-property="alarmId"></span>
-                            </td>
-                            <td>
-                                <span data-duice-bind="alarm" data-duice-property="alarmName"></span>
-                            </td>
-                        </tr>
-                        <tr data-duice-bind="alarms"
-                            data-duice-execute="if(alarms.length === 0) this.hidden=false;" hidden>
-                            <td colspan="100%" class="text-align--center">No Data</td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="display--grid grid-template-columns--3 grid-gap--1em padding-y--1em s__padding--0">
-                    <div class="grid-column--1 font-size--smaller">
-                        <span data-th-text="#{web.global.total}"></span>
-                        <span data-duice-bind="alarmSearch" data-duice-property="_count"
-                              data-duice-format="number(0)"></span>
-                        <span data-th-text="#{web.global.rows}"></span>
-                    </div>
-                    <div class="grid-column--1 justify-self--center">
-                        <duice-pagination
-                                data-duice-bind="alarmSearch"
-                                data-duice-size-property="_size"
-                                data-duice-page-property="_page"
-                                data-duice-count-property="_count"
-                                data-duice-onclick="getAlarms(this.dataset.page);">
-                        </duice-pagination>
-                    </div>
-                    <div class="grid-column--1 justify-self--end">
-                        <button type="button" onclick="createAlarm();">
-                            <img class="icon" th:src="@{/static/image/icon-create.svg}" alt="create"/>
-                            <span data-th-text="#{web.global.create}"></span>
-                        </button>
-                    </div>
-                </div>
+    <!-- ================================== -->
+    <!-- start: strategy                       -->
+    <!-- ================================== -->
+    <div class="border--1 padding--1em" style="min-height:400px;">
+        <form onsubmit="return false;" class="display--grid grid-template-columns--12 grid-gap--1em margin-x--1em">
+            <label class="grid-column--2 s__grid-column--12">
+                <select class="width--100" data-duice-bind="strategySearch" data-duice-property="key">
+                    <option value="strategyName" data-th-text="#{fintics.Strategy.strategyName}"></option>
+                </select>
+            </label>
+            <label class="grid-column--2 s__grid-column--12">
+                <input class="width--100" type="text" data-duice-bind="strategySearch" data-duice-property="value"
+                       th:placeholder="#{web.global.keyword}"/>
+            </label>
+            <div class="grid-column--8 s__grid-column--12 justify-self--end">
+                <button type="button" onclick="getStrategies();">
+                    <img class="icon" th:src="@{/static/image/icon-search.svg}" alt="reset"/>
+                    <span data-th-text="#{web.global.search}"></span>
+                </button>
+                <button type="button" onclick="resetStrategies();">
+                    <img class="icon" th:src="@{/static/image/icon-reset.svg}" alt="reset"/>
+                    <span data-th-text="#{web.global.reset}"></span>
+                </button>
+            </div>
+        </form>
+        <div class="overflow-x--scroll">
+            <table class="width--100 text-align--center">
+                <colgroup>
+                    <col style="width:10em;"/>
+                    <col/>
+                    <col style="width:20em;"/>
+                </colgroup>
+                <thead>
+                <tr>
+                    <th data-th-text="#{web.global.no}" class="text-align--center"></th>
+                    <th data-th-text="#{fintics.Strategy.strategyName}"></th>
+                    <th data-th-text="#{fintics.Strategy.language}"></th>
+                </tr>
+                </thead>
+                <tbody class="font-size--smaller">
+                <tr data-duice-bind="strategies" data-duice-loop="strategy,status">
+                    <td class="text-align--center">
+                        <span data-duice-bind="status"
+                              data-duice-execute="this.innerHTML=strategySearch._count - (strategySearch._size*strategySearch._page + status.count) + 1;">
+                        </span>
+                    </td>
+                    <td>
+                        <a href="" data-duice-bind="strategy" data-duice-execute="this.href=`${_rootUrl}/strategy?strategyId=${strategy.strategyId}`;">
+                            <span data-duice-bind="strategy" data-duice-property="strategyName"></span>
+                        </a>
+                    </td>
+                    <td>
+                        <span data-duice-bind="strategy" data-duice-property="language" class="badge"></span>
+                    </td>
+                </tr>
+                <tr data-duice-bind="strategies" data-duice-if="return strategies.length === 0;" hidden>
+                    <td colspan="100%" class="text-align--center">No Data</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="display--grid grid-template-columns--12 padding--1em">
+            <div class="grid-column--4 font-size--smaller">
+                <span data-th-text="#{web.global.total}"></span>
+                <span data-duice-bind="strategySearch" data-duice-property="_count" data-duice-format="number(0)"></span>
+                <span data-th-text="#{web.global.rows}"></span>
+            </div>
+            <div class="grid-column--4 justify-self--center">
+                <duice-pagination
+                        data-duice-bind="strategySearch"
+                        data-duice-size-property="_size"
+                        data-duice-page-property="_page"
+                        data-duice-count-property="_count"
+                        data-duice-onclick="getStrategies(this.dataset.page);">
+                </duice-pagination>
+            </div>
+            <div class="grid-column--4 justify-self--end">
+                <button type="button" onclick="createStrategy();">
+                    <img class="icon" th:src="@{/static/image/icon-create.svg}" alt="create"/>
+                    <span data-th-text="#{web.global.create}"></span>
+                </button>
             </div>
         </div>
-        <!-- ====================================== -->
-        <!-- end: alarm list                     -->
-        <!-- ====================================== -->
-
-        <!-- ====================================== -->
-        <!-- start: alarm detail                 -->
-        <!-- ====================================== -->
-        <div id="alarmDetail" class="grid-column--7 s__grid-column--12">
-            <div class="display--grid grid-gap--1em border--1 padding--1em">
-                <h2>
-                    <img class="icon" th:src="@{/static/image/icon-detail.svg}" alt="detail"/>
-                    <span data-th-text="#{core.alarm.Alarm}+' '+#{web.global.detail}"></span>
-                </h2>
-                <form onsubmit="return false;" class="display--grid grid-template-columns--12 grid-gap--1em padding-y--1em s__padding-y--0">
-                    <label class="grid-column--6 s__grid-column--12">
-                        <span data-th-text="#{core.alarm.Alarm.alarmId}"
-                              class="font-weight--bold tag-required"></span>
-                        <input type="text" data-duice-bind="alarm" data-duice-property="alarmId"
-                               class="width--100 font-weight--bold"/>
-                    </label>
-                    <label class="grid-column--6 s__grid-column--12">
-                        <span data-th-text="#{core.alarm.Alarm.alarmName}"
-                              class="font-weight--bold tag-required"></span>
-                        <input type="text" data-duice-bind="alarm" data-duice-property="alarmName"
-                               class="width--100"/>
-                    </label>
-                    <label class="grid-column--6 s__grid-column--12">
-                        <span data-th-text="#{core.alarm.Alarm.alarmClientId}" class="font-weight--bold"></span>
-                        <select data-duice-bind="alarm" data-duice-property="alarmClientId"
-                                data-duice-option="alarmClientDefinitions"
-                                data-duice-option-value-property="alarmClientId"
-                                data-duice-option-text-property="alarmClientName"
-                                class="width--100">
-                            <option data-th-text="'- ' + #{web.global.select} + ' -'"></option>
-                        </select>
-                    </label>
-                    <label class="grid-column--12">
-                        <span data-th-text="#{core.alarm.Alarm.alarmClientConfig}" class="font-weight--bold"></span>
-                        <duice-codemirror
-                                data-duice-bind="alarm"
-                                data-duice-property="alarmClientConfig"
-                                data-duice-theme="dracula">
-                        </duice-codemirror>
-                    </label>
-                </form>
-                <div class="display--grid grid-template-columns--2 grid-gap--1em padding-y--1em s__padding-y--0">
-                    <div class="grid-column--1">
-                        <button type="button" onclick="testAlarm();"
-                                th:classappend="!${#authorization.expression('hasAuthority(''ADMIN_VARIABLE_EDIT'')')}?'locked'"
-                                data-duice-bind="alarm"
-                                data-duice-execute="(alarm.alarmId && !alarm._new) ? this.disabled=false : this.disabled=true;">
-                            <img class="icon" th:src="@{/static/image/icon-test.svg}" alt="test"/>
-                            <span data-th-text="#{web.global.test}"></span>
-                        </button>
-                    </div>
-                    <div class="grid-column--1 justify-self--end">
-                        <button type="button" onclick="deleteAlarm();"
-                                th:classappend="!${#authorization.expression('hasAuthority(''ADMIN_VARIABLE_EDIT'')')}?'locked'"
-                                data-duice-bind="alarm"
-                                data-duice-execute="(alarm.alarmId && !alarm._new) ? this.disabled=false : this.disabled=true;">
-                            <img class="icon" th:src="@{/static/image/icon-delete.svg}" alt="delete"/>
-                            <span data-th-text="#{web.global.delete}"></span>
-                        </button>
-                        <button type="button" onclick="saveAlarm();"
-                                th:classappend="!${#authorization.expression('hasAuthority(''ADMIN_VARIABLE_EDIT'')')}?'locked'"
-                                data-duice-bind="alarm"
-                                data-duice-execute="(alarm.alarmId || alarm._new) ? this.disabled=false : this.disabled=true;">
-
-                            <img class="icon" th:src="@{/static/image/icon-save.svg}" alt="save"/>
-                            <span data-th-text="#{web.global.save}"></span>
-                        </button>
-                    </div>
-                </div>
-                <div class="text-align--right padding-y--1em font-size--smaller font-style--italic">
-                    Last Updated At
-                    <span data-duice-bind="alarm" data-duice-property="systemUpdatedAt" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></span>
-                    By
-                    <span data-duice-bind="alarm" data-duice-property="systemUpdatedBy"></span>
-                </div>
-            </div>
-        </div>
-        <!-- ====================================== -->
-        <!-- end: alarm detail                   -->
-        <!-- ====================================== -->
-
     </div>
-    <!-- ====================================== -->
-    <!-- end: alarm content                  -->
-    <!-- ====================================== -->
+    <!-- ================================== -->
+    <!-- end: strategy                       -->
+    <!-- ================================== -->
 
 </th:block>

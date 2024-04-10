@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Controller
+@RequestMapping("monitor")
+@PreAuthorize("hasAuthority('MONITORS')")
 @RequiredArgsConstructor
 public class MonitorsController {
 
@@ -23,8 +25,6 @@ public class MonitorsController {
     private final TradeService tradeService;
 
     @GetMapping
-    @RequestMapping("monitor")
-    @PreAuthorize("hasAuthority('MONITORS')")
     public ModelAndView getMonitor() {
         ModelAndView modelAndView = new ModelAndView("monitors.html");
         List<Indice> indices = indiceService.getIndices();

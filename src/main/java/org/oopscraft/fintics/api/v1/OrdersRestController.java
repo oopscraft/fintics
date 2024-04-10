@@ -22,8 +22,8 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/orders")
-@RequiredArgsConstructor
 @PreAuthorize("hasAuthority('API_ORDERS')")
+@RequiredArgsConstructor
 @Tag(name = "order", description = "Order operations")
 @Slf4j
 public class OrdersRestController {

@@ -23,10 +23,10 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/indices")
+@PreAuthorize("hasAuthority('API_INDICES')")
 @RequiredArgsConstructor
 @Slf4j
-@PreAuthorize("hasAuthority('API_INDICES')")
-@Tag(name = "indice", description = "Indice operations")
+@Tag(name = "indices", description = "Indices")
 public class IndicesRestController {
 
     private final static String INDICE_REST_CONTROLLER_GET_INDICE_INDICATOR = "IndiceRestController.getIndiceIndicator";

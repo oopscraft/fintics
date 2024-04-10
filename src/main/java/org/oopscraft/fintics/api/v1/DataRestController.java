@@ -1,5 +1,6 @@
 package org.oopscraft.fintics.api.v1;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.web.support.PageableUtils;
@@ -31,6 +32,7 @@ import java.util.Optional;
 @PreAuthorize("hasAuthority('API_DATA')")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "data", description = "Data")
 public class DataRestController {
 
     private final DataService dataService;

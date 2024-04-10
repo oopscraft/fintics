@@ -24,9 +24,9 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/simulates")
-@RequiredArgsConstructor
 @PreAuthorize("hasAuthority('API_SIMULATES')")
-@Tag(name = "simulate", description = "Simulates trade")
+@RequiredArgsConstructor
+@Tag(name = "simulate", description = "Simulates")
 public class SimulatesRestController {
 
     private final SimulateService simulateService;
@@ -57,6 +57,7 @@ public class SimulatesRestController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('API_SIMULATES_EDIT')")
     @Transactional
     public ResponseEntity<SimulateResponse> runSimulate(@RequestBody SimulateRequest simulateRequest) {
         Trade trade = simulateRequest.getTrade();
@@ -68,7 +69,6 @@ public class SimulatesRestController {
                 .toLocalDateTime();
         BigDecimal investAmount = simulateRequest.getInvestAmount();
         BigDecimal feeRate = simulateRequest.getFeeRate();
-
         Simulate simulate = Simulate.builder()
                 .trade(trade)
                 .tradeId(trade.getTradeId())
@@ -79,12 +79,12 @@ public class SimulatesRestController {
                 .feeRate(feeRate)
                 .build();
         simulate = simulateService.runSimulate(simulate);
-
         SimulateResponse simulateResponse = SimulateResponse.from(simulate);
         return ResponseEntity.ok(simulateResponse);
     }
 
     @PutMapping("{simulateId}/stop")
+    @PreAuthorize("hasAuthority('API_SIMULATES_EDIT')")
     @Transactional
     public ResponseEntity<Void> stopSimulate(@PathVariable("simulateId") String simulateId) {
         simulateService.stopSimulate(simulateId);
@@ -92,6 +92,7 @@ public class SimulatesRestController {
     }
 
     @PutMapping("{simulateId}")
+    @PreAuthorize("hasAuthority('API_SIMULATES_EDIT')")
     @Transactional
     public ResponseEntity<SimulateResponse> modifySimulate(@PathVariable("simulateId") String simulateId, @RequestBody SimulateRequest simulateRequest) {
         Simulate simulate = simulateService.getSimulate(simulateId).orElseThrow();
@@ -106,6 +107,7 @@ public class SimulatesRestController {
     }
 
     @DeleteMapping("{simulateId}")
+    @PreAuthorize("hasAuthority('API_SIMULATES_EDIT')")
     @Transactional
     public ResponseEntity<Void> deleteSimulate(@PathVariable("simulateId") String simulateId) {
         simulateService.deleteSimulate(simulateId);

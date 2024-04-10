@@ -1,5 +1,6 @@
 package org.oopscraft.fintics.api.v1;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.web.support.PageableUtils;
@@ -26,6 +27,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/v1/assets")
 @PreAuthorize("hasAuthority('API_ASSETS')")
+@Tag(name = "assets", description = "Assets")
 @RequiredArgsConstructor
 @Slf4j
 public class AssetsRestController {

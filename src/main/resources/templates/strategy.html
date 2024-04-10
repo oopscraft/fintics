@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="_web.html">
+<th:block layout:fragment="_content">
+    <script th:inline="javascript">
+        const strategyId = /*[[${strategyId}]]*/'';
+        const strategy = new duice.ObjectProxy({});
+
+        function getStrategy(strategyId) {
+            let url = new URL(`${_apiUrl}/v1/strategies/${strategyId}`, document.location.origin);
+            _fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    duice.ObjectProxy.assign(strategy, data);
+                });
+        }
+
+        async function saveStrategy() {
+            if(!strategy.strategyName) {
+                await _alert(/*[[#{web.global.itemEmpty(#{fintics.Strategy.strategyName})}]]*/'');
+                duice.ObjectProxy.focus(strategy, 'strategyName');
+                return false;
+            }
+            if(!strategy.language) {
+                await _alert(/*[[#{web.global.itemEmpty(#{fintics.Strategy.language})}]]*/'');
+                duice.ObjectProxy.focus(strategy, 'language');
+                return false;
+            }
+            _confirm(/*[[#{web.global.saveItemConfirm(#{fintics.Strategy})}]]*/'')
+                .then(result => {
+                    if (result) {
+                        let url;
+                        let method;
+                        if(!strategyId) {
+                            url = `${_apiUrl}/v1/strategies`;
+                            method = 'POST';
+                        }else{
+                            url = `${_apiUrl}/v1/strategies/${strategy.strategyId}`;
+                            method = 'PUT';
+                        }
+                        _fetch(new URL(url, document.location.origin), {
+                            method: method,
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(strategy)
+                        }).then(response => response.json())
+                            .then(data => {
+                                _alert(/*[[#{web.global.saveItemComplete(#{fintics.Strategy})}]]*/'')
+                                    .then(() => {
+                                        if(strategy.strategyId) {
+                                            duice.ObjectProxy.clear(strategy);
+                                            duice.ObjectProxy.assign(strategy, data);
+                                        }else{
+                                            document.location.href = `${_rootUrl}/strategies/${data.tradeId}`;
+                                        }
+                                    });
+                            });
+                    }
+                });
+        }
+
+        function deleteStrategy() {
+
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if(strategyId) {
+                getStrategy(strategyId);
+            }
+        });
+    </script>
+    <style th:inline="css">
+        #simulateLog {
+            padding-top: 0.5em;
+            line-height: 1.2em;
+            background-color: #222;
+            color: white;
+            font-family: monospace;
+            font-size: smaller;
+        }
+    </style>
+
+    <!-- ====================================== -->
+    <!-- start: title                           -->
+    <!-- ====================================== -->
+    <h1 id="title">
+        <img class="icon" th:src="@{/static/image/icon-strategy.svg}" alt="variable"/>
+        <span data-th-text="#{fintics.Strategy}"></span>
+        <span data-duice-bind="strategy" data-duice-property="strategyName"></span>
+    </h1>
+    <!-- ====================================== -->
+    <!-- end: title                             -->
+    <!-- ====================================== -->
+
+    <!-- ====================================== -->
+    <!-- start: strategy                        -->
+    <!-- ====================================== -->
+    <div class="border--1 padding--1em">
+        <form class="display--grid grid-template-columns--12 grid-gap--1em grid-column-gap--2em padding-y--1em s__padding-y--0">
+            <label class="grid-column--6">
+                <span data-th-text="#{fintics.Strategy.strategyName}" class="font-weight--bold tag-required"></span>
+                <input type="text" data-duice-bind="strategy" data-duice-property="strategyName"
+                       class="width--100 font-weight--bold"/>
+            </label>
+            <label class="grid-column--6">
+                <span data-th-text="#{fintics.Strategy.language}" class="font-weight--bold tag-required"></span>
+                <select data-duice-bind="strategy" data-duice-property="language" class="width--100">
+                    <option data-th-text="'- ' + #{web.global.select} + ' -'"></option>
+                    <option th:each="language : ${languages}" th:value="${language}" th:text="${language}"></option>
+                </select>
+            </label>
+            <div class="grid-column--12">
+                <div>
+                    <span data-th-text="#{fintics.Strategy.variables}" class="font-weight--bold width--100"></span>
+                </div>
+                <duice-codemirror class="font-size--smaller"
+                                  data-duice-bind="strategy"
+                                  data-duice-property="variables"
+                                  data-duice-theme="dracula">
+                </duice-codemirror>
+            </div>
+            <div class="grid-column--12">
+                <div class="display--flex justify-content--space-between margin--1px padding--1px">
+                    <div>
+                        <span data-th-text="#{fintics.Strategy.script}" class="font-weight--bold width--100"></span>
+                    </div>
+                </div>
+                <duice-codemirror class="font-size--smaller" style="height:100vh;"
+                                  data-duice-bind="strategy"
+                                  data-duice-property="script"
+                                  data-duice-mode="groovy"
+                                  data-duice-theme="dracula">
+                </duice-codemirror>
+            </div>
+            <div class="grid-column--12 justify-self--end">
+                <button type="button"
+                        data-duice-bind="trade"
+                        data-duice-execute="this.disabled=(trade._new);"
+                        th:classappend="!${#authorization.expression('hasAuthority(''STRATEGIES_EDIT'')')}?'locked'"
+                        onclick="deleteStrategy();">
+                    <img class="icon" th:src="@{/static/image/icon-delete.svg}" alt="save"/>
+                    <span data-th-text="#{web.global.delete}"></span>
+                </button>
+                <button type="button"
+                        data-duice-bind="trade"
+                        th:classappend="!${#authorization.expression('hasAuthority(''STRATEGIES_EDIT'')')}?'locked'"
+                        onclick="saveStrategy();">
+                    <img class="icon" th:src="@{/static/image/icon-save.svg}" alt="save"/>
+                    <span data-th-text="#{web.global.save}"></span>
+                </button>
+            </div>
+        </form>
+    </div>
+    <!-- ====================================== -->
+    <!-- end: strategy                          -->
+    <!-- ====================================== -->
+
+</th:block>

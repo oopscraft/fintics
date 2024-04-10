@@ -15,14 +15,14 @@ import java.util.List;
 import java.util.Map;
 
 @Controller
+@RequestMapping("brokers")
+@PreAuthorize("hasAuthority('BROKERS')")
 @RequiredArgsConstructor
 public class BrokersController {
 
     private final BrokerClientDefinitionRegistry brokerClientDefinitionRegistry;
 
     @GetMapping
-    @RequestMapping("brokers")
-    @PreAuthorize("hasAuthority('BROKERS')")
     public ModelAndView getStrategies() {
         ModelAndView modelAndView = new ModelAndView("brokers.html");
         List<BrokerClientDefinition> brokerClientDefinitions = brokerClientDefinitionRegistry.getBrokerClientDefinitions();

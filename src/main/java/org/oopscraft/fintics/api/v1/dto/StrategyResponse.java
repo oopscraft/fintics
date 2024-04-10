@@ -8,9 +8,9 @@ import org.oopscraft.fintics.model.Strategy;
 @Getter
 public class StrategyResponse {
 
-    private String ruleId;
+    private String strategyId;
 
-    private String ruleName;
+    private String strategyName;
 
     private Strategy.Language language;
 
@@ -20,8 +20,8 @@ public class StrategyResponse {
 
     public static StrategyResponse from(Strategy strategy) {
         return StrategyResponse.builder()
-                .ruleId(strategy.getStrategyId())
-                .ruleName(strategy.getStrategyName())
+                .strategyId(strategy.getStrategyId())
+                .strategyName(strategy.getStrategyName())
                 .language(strategy.getLanguage())
                 .variables(strategy.getVariables())
                 .script(strategy.getScript())

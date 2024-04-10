@@ -14,13 +14,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Controller
+@RequestMapping("simulates")
+@PreAuthorize("hasAuthority('SIMULATES')")
 @RequiredArgsConstructor
 public class SimulatesController {
 
     private final TradeRepository tradeRepository;
 
-    @GetMapping("simulates")
-    @PreAuthorize("hasAuthority('SIMULATES')")
+    @GetMapping
     public ModelAndView getSimulates() {
         return new ModelAndView("simulates.html");
     }

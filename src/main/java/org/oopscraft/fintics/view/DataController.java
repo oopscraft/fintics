@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Controller
+@RequestMapping("data")
+@PreAuthorize("hasAuthority('DATA')")
 @RequiredArgsConstructor
 public class DataController {
 
@@ -25,8 +27,6 @@ public class DataController {
     private final BrokerClientDefinitionRegistry brokerClientDefinitionRegistry;
 
     @GetMapping
-    @RequestMapping("data")
-    @PreAuthorize("hasAuthority('DATA')")
     public ModelAndView getData() {
         ModelAndView modelAndView = new ModelAndView("data.html");
         // markets

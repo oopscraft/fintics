@@ -8,12 +8,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 @Controller
+@RequestMapping("orders")
+@PreAuthorize("hasAuthority('ORDERS')")
 @RequiredArgsConstructor
 public class OrdersController {
 
     @GetMapping
-    @RequestMapping("orders")
-    @PreAuthorize("hasAuthority('ORDERS')")
     public ModelAndView getOrders() {
         return new ModelAndView("orders.html");
     }
