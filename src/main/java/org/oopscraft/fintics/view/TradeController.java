@@ -4,9 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.oopscraft.arch4j.core.alarm.Alarm;
 import org.oopscraft.arch4j.core.alarm.AlarmSearch;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
+import org.oopscraft.fintics.model.Broker;
 import org.oopscraft.fintics.model.Order;
 import org.oopscraft.fintics.model.Simulate;
+import org.oopscraft.fintics.model.Strategy;
+import org.oopscraft.fintics.service.BrokerService;
 import org.oopscraft.fintics.service.IndiceService;
+import org.oopscraft.fintics.service.StrategyService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -27,12 +31,20 @@ public class TradeController {
 
     private final IndiceService indiceService;
 
+    private final BrokerService brokerService;
+
+    private final StrategyService strategyService;
+
     @GetMapping
     public ModelAndView getTrade(@RequestParam(value="tradeId", required = false) String tradeId) {
         ModelAndView modelAndView = new ModelAndView("trade.html");
         modelAndView.addObject("tradeId", tradeId);
         List<Alarm> alarms = alarmService.getAlarms(AlarmSearch.builder().build(), Pageable.unpaged()).getContent();
         modelAndView.addObject("alarms", alarms);
+        List<Broker> brokers =  brokerService.getBrokers(null, Pageable.unpaged()).getContent();
+        modelAndView.addObject("brokers", brokers);
+        List<Strategy> strategies = strategyService.getStrategies(null, Pageable.unpaged()).getContent();
+        modelAndView.addObject("strategies", strategies);
         modelAndView.addObject("indices", indiceService.getIndices());
         modelAndView.addObject("simulateStatus", Simulate.Status.values());
         modelAndView.addObject("orderKinds", Order.Kind.values());

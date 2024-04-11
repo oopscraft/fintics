@@ -6,7 +6,10 @@
 <th:block layout:fragment="_content">
     <script th:inline="javascript">
         const strategyId = /*[[${strategyId}]]*/'';
-        const strategy = new duice.ObjectProxy({});
+        const strategy = new duice.ObjectProxy({
+            strategyId: null,
+            strategyName: null
+        });
 
         function getStrategy(strategyId) {
             let url = new URL(`${_apiUrl}/v1/strategies/${strategyId}`, document.location.origin);
@@ -54,7 +57,7 @@
                                             duice.ObjectProxy.clear(strategy);
                                             duice.ObjectProxy.assign(strategy, data);
                                         }else{
-                                            document.location.href = `${_rootUrl}/strategies/${data.tradeId}`;
+                                            document.location.href = `${_rootUrl}/strategy?strategyId=${data.strategyId}`;
                                         }
                                     });
                             });
@@ -62,8 +65,18 @@
                 });
         }
 
-        function deleteStrategy() {
-
+        async function deleteStrategy() {
+            if (await _confirm(/*[[#{web.global.deleteItemConfirm(#{fintics.Strategy})}]]*/'')) {
+                let url = new URL(`${_apiUrl}/v1/strategies/${strategy.strategyId}`, document.location.origin);
+                _fetch(url, {
+                    method: 'DELETE'
+                }).then(async response => {
+                    if (response.ok) {
+                        await _alert(/*[[#{web.global.deleteItemComplete(#{fintics.Strategy})}]]*/'');
+                        document.location.href = `${_rootUrl}/strategies`;
+                    }
+                });
+            }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -116,10 +129,9 @@
                 <div>
                     <span data-th-text="#{fintics.Strategy.variables}" class="font-weight--bold width--100"></span>
                 </div>
-                <duice-codemirror class="font-size--smaller"
+                <duice-codemirror class="font-size--smaller border--1"
                                   data-duice-bind="strategy"
-                                  data-duice-property="variables"
-                                  data-duice-theme="dracula">
+                                  data-duice-property="variables">
                 </duice-codemirror>
             </div>
             <div class="grid-column--12">
@@ -137,15 +149,14 @@
             </div>
             <div class="grid-column--12 justify-self--end">
                 <button type="button"
-                        data-duice-bind="trade"
-                        data-duice-execute="this.disabled=(trade._new);"
+                        data-duice-bind="strategy"
                         th:classappend="!${#authorization.expression('hasAuthority(''STRATEGIES_EDIT'')')}?'locked'"
                         onclick="deleteStrategy();">
                     <img class="icon" th:src="@{/static/image/icon-delete.svg}" alt="save"/>
                     <span data-th-text="#{web.global.delete}"></span>
                 </button>
                 <button type="button"
-                        data-duice-bind="trade"
+                        data-duice-bind="strategy"
                         th:classappend="!${#authorization.expression('hasAuthority(''STRATEGIES_EDIT'')')}?'locked'"
                         onclick="saveStrategy();">
                     <img class="icon" th:src="@{/static/image/icon-save.svg}" alt="save"/>

@@ -9,6 +9,7 @@ import lombok.Setter;
 import org.oopscraft.fintics.dao.SimulateEntity;
 import org.oopscraft.fintics.dao.SimulateRepository;
 import org.oopscraft.fintics.model.Simulate;
+import org.oopscraft.fintics.model.Strategy;
 import org.oopscraft.fintics.model.Trade;
 import org.oopscraft.fintics.trade.TradeExecutor;
 import org.oopscraft.fintics.trade.TradeExecutorFactory;
@@ -92,6 +93,7 @@ public class SimulateRunnable implements Runnable {
         }
         try {
             Trade trade = simulate.getTrade();
+            Strategy strategy = simulate.getStrategy();
 
             // disable alarm
             trade.setAlarmId(null);
@@ -144,7 +146,7 @@ public class SimulateRunnable implements Runnable {
                     transactionStatus = transactionManager.getTransaction(transactionDefinition);
 
                     // executes trade
-                    tradeExecutor.execute(trade, dateTime, simulateIndiceClient, simulateTradeClient);
+                    tradeExecutor.execute(trade, strategy, dateTime, simulateIndiceClient, simulateTradeClient);
 
                     // send balance message
                     sendMessage("balance", simulateTradeClient.getBalance());

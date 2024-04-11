@@ -41,6 +41,8 @@ public class Simulate {
 
     private final Trade trade;
 
+    private final Strategy strategy;
+
     private final LocalDateTime dateTimeFrom;
 
     private final LocalDateTime dateTimeTo;
@@ -90,6 +92,16 @@ public class Simulate {
             }
         }
 
+        // strategy data
+        Strategy strategy = new Strategy();
+        if (simulateEntity.getStrategyData() != null) {
+            try {
+                strategy = objectMapper.readValue(simulateEntity.getStrategyData(), Strategy.class);
+            } catch (JsonProcessingException e) {
+                log.debug(e.getMessage());
+            }
+        }
+
         // balance data
         Balance balance = new Balance();
         if(simulateEntity.getBalanceData() != null) {
@@ -119,6 +131,7 @@ public class Simulate {
                 .tradeId(simulateEntity.getTradeId())
                 .tradeName(simulateEntity.getTradeName())
                 .trade(trade)
+                .strategy(strategy)
                 .dateTimeFrom(simulateEntity.getDateTimeFrom())
                 .dateTimeTo(simulateEntity.getDateTimeTo())
                 .investAmount(simulateEntity.getInvestAmount())

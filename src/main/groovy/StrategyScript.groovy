@@ -182,10 +182,10 @@ class Analysis implements Analyzable {
 // define
 //================================
 // config
-def waveOhlcvType = config['waveOhlcvType'] as Ohlcv.Type
-def waveOhlcvPeriod = config['waveOhlcvPeriod'] as Integer
-def tideOhlcvType = config['tideOhlcvType'] as Ohlcv.Type
-def tideOhlcvPeriod = config['tideOhlcvPeriod'] as Integer
+def waveOhlcvType = variables['waveOhlcvType'] as Ohlcv.Type
+def waveOhlcvPeriod = variables['waveOhlcvPeriod'] as Integer
+def tideOhlcvType = variables['tideOhlcvType'] as Ohlcv.Type
+def tideOhlcvPeriod = variables['tideOhlcvPeriod'] as Integer
 log.info("waveOhlcvType(Period): {}({})", waveOhlcvType, waveOhlcvPeriod)
 log.info("tideOhlcvType(Period): {}({})", tideOhlcvType, tideOhlcvPeriod)
 

@@ -21,6 +21,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/simulates")
@@ -60,7 +61,26 @@ public class SimulatesRestController {
     @PreAuthorize("hasAuthority('API_SIMULATES_EDIT')")
     @Transactional
     public ResponseEntity<SimulateResponse> runSimulate(@RequestBody SimulateRequest simulateRequest) {
-        Trade trade = simulateRequest.getTrade();
+        TradeRequest tradeRequest = simulateRequest.getTrade();
+        Trade trade = Trade.builder()
+                .tradeId(tradeRequest.getTradeId())
+                .tradeName(tradeRequest.getTradeName())
+                .interval(tradeRequest.getInterval())
+                .threshold(tradeRequest.getThreshold())
+                .startAt(tradeRequest.getStartAt())
+                .endAt(tradeRequest.getEndAt())
+                .strategyVariables(tradeRequest.getStrategyVariables())
+                .build();
+        List<TradeAsset> tradeAssets = tradeRequest.getTradeAssets().stream()
+                .map(tradeAssetResponse -> TradeAsset.builder()
+                        .tradeId(tradeRequest.getTradeId())
+                        .assetId(tradeAssetResponse.getAssetId())
+                        .assetName(tradeAssetResponse.getAssetName())
+                        .enabled(tradeAssetResponse.isEnabled())
+                        .holdRatio(tradeAssetResponse.getHoldRatio())
+                        .build())
+                .collect(Collectors.toList());
+        trade.setTradeAssets(tradeAssets);
         LocalDateTime dateTimeFrom = simulateRequest.getDateTimeFrom()
                 .withZoneSameInstant(ZoneId.systemDefault())
                 .toLocalDateTime();

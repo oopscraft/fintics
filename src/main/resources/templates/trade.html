@@ -7,24 +7,36 @@
     <script th:src="@{/static/fintics.js?version={version}(version=${_scriptVersion})}"></script>
     <script th:inline="javascript">
         const tradeId = /*[[${tradeId}]]*/'';
+        const alarms = new duice.ArrayProxy(/*[[${alarms}]]*/[]);
+        const brokers = new duice.ArrayProxy(/*[[${brokers}]]*/[]);
+        const strategies = new duice.ArrayProxy(/*[[${strategies}]]*/[]);
+
+        // strategy
+        const strategy = new duice.ObjectProxy({});
+        duice.ObjectProxy.setReadonlyAll(strategy, true);
+
+        // trade
         const trade = new duice.ObjectProxy({
             tradeId: null,
             tradeName: null,
             interval: null,
             threshold: null,
-            tradeClientId: null,
-            tradeClientConfig: null,
+            brokerId: null,
             tradeAssets: []
         });
-
-        duice.ObjectProxy.onPropertyChanged(trade, event => {
-            if(event.property === 'brokerId') {
-                trade.tradeClientConfig = tradeClients.find(it => it.tradeClientId === event.value)?.configTemplate;
+        duice.ObjectProxy.onPropertyChanged(trade, async event => {
+            if (event.getProperty() === 'strategyId') {
+                let strategyId = event.getValue();
+                if (strategyId) {
+                    await getStrategy(strategyId);
+                    if(!trade.strategyVariables) {
+                        trade.strategyVariables = strategy.variables;
+                    }
+                } else {
+                    duice.ObjectProxy.clear(strategy);
+                }
             }
         });
-
-        const tradeClients = new duice.ArrayProxy(/*[[${tradeClients}]]*/[]);
-        const alarms = new duice.ArrayProxy(/*[[${alarms}]]*/[]);
 
         // simulate
         const simulateSearch = new duice.ObjectProxy({
@@ -63,12 +75,25 @@
         });
         duice.ObjectProxy.setReadonlyAll(balance, true);
 
-        function getTrade() {
+        async function getTrade() {
             let url = new URL(`${_apiUrl}/v1/trades/${tradeId}`, document.location.origin);
             _fetch(url)
                 .then(response => response.json())
                 .then(data => {
                     duice.ObjectProxy.assign(trade, data);
+                    let strategyId = data['strategyId'];
+                    if (strategyId) {
+                        getStrategy(strategyId);
+                    }
+                });
+        }
+
+        async function getStrategy(strategyId) {
+            let url = new URL(`${_apiUrl}/v1/strategies/${strategyId}`, document.location.origin);
+            await _fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    duice.ObjectProxy.assign(strategy, data);
                 });
         }
 
@@ -77,7 +102,7 @@
             trade.tradeAssets.forEach(tradeAsset => {
                 disabledAssetIds.push(tradeAsset.assetId);
             });
-            let tradeClient = tradeClients.find(tradeClient => tradeClient.tradeClientId === trade.tradeClientId);
+            let tradeClient = brokers.find(tradeClient => tradeClient.tradeClientId === trade.tradeClientId);
             let selectedAssets = await assetSelect.open(tradeClient.market, disabledAssetIds);
             selectedAssets.forEach(asset => {
                 trade.tradeAssets.push({
@@ -219,6 +244,7 @@
                 // open simulate dialog
                 await simulateDialog.openForNew({
                     trade: trade,
+                    strategy: strategy,
                     dateTimeFrom: dateTimeFrom.toISOString(),
                     dateTimeTo: dateTimeTo.toISOString(),
                     investAmount: 10_000_000,
@@ -451,26 +477,7 @@
                         <span data-th-text="#{fintics.Trade.alarmOnOrder}" class="font-weight--bold"></span>
                     </label>
                 </div>
-                <label class="grid-column--12">
-                    <span data-th-text="#{fintics.Trade.tradeClientId}" class="font-weight--bold width--100"></span>
-                    <select data-duice-bind="trade"
-                            data-duice-property="tradeClientId"
-                            data-duice-option="tradeClients"
-                            data-duice-option-value-property="tradeClientId"
-                            data-duice-option-text-property="tradeClientName"
-                            class="width--100">
-                        <option data-th-text="'- '+#{web.global.select}+' -'"></option>
-                    </select>
-                </label>
-                <label class="grid-column--12">
-                    <span data-th-text="#{fintics.Trade.tradeClientConfig}"
-                          class="font-weight--bold width--100"></span>
-                    <duice-codemirror
-                            data-duice-bind="trade"
-                            data-duice-property="tradeClientConfig"
-                            class="border--1 font-size--smaller" style="height:7em;">
-                    </duice-codemirror>
-                </label>
+
                 <label class="grid-column--6">
                     <span data-th-text="#{fintics.Trade.orderKind}" class="font-weight--bold tag-required"></span>
                     <select data-duice-bind="trade" data-duice-property="orderKind" class="width--100">
@@ -585,26 +592,46 @@
                         </table>
                     </div>
                 </div>
+                <label class="grid-column--12">
+                    <span data-th-text="#{fintics.Broker}" class="font-weight--bold width--100"></span>
+                    <select data-duice-bind="trade"
+                            data-duice-property="brokerId"
+                            data-duice-option="brokers"
+                            data-duice-option-value-property="brokerId"
+                            data-duice-option-text-property="brokerName"
+                            class="width--100">
+                        <option data-th-text="'- '+#{web.global.select}+' -'"></option>
+                    </select>
+                </label>
+                <label class="grid-column--12">
+                    <span data-th-text="#{fintics.Strategy}" class="font-weight--bold width--100"></span>
+                    <select data-duice-bind="trade"
+                            data-duice-property="strategyId"
+                            data-duice-option="strategies"
+                            data-duice-option-value-property="strategyId"
+                            data-duice-option-text-property="strategyName"
+                            class="width--100">
+                        <option data-th-text="'- '+#{web.global.select}+' -'" value></option>
+                    </select>
+                </label>
                 <div class="grid-column--12">
                     <div>
-                        <span data-th-text="#{fintics.Trade.ruleConfig}" class="font-weight--bold width--100"></span>
+                        <span data-th-text="#{fintics.Trade.strategyVariables}" class="font-weight--bold width--100"></span>
                     </div>
-                    <duice-codemirror class="font-size--smaller"
+                    <duice-codemirror class="font-size--smaller border--1"
                                       data-duice-bind="trade"
-                                      data-duice-property="ruleConfig"
-                                      data-duice-theme="dracula">
+                                      data-duice-property="strategyVariables">
                     </duice-codemirror>
                 </div>
                 <div class="grid-column--12">
                     <div class="display--flex justify-content--space-between margin--1px padding--1px">
                         <div>
-                            <span data-th-text="#{fintics.Trade.ruleScript}" class="font-weight--bold width--100"></span>
-                            <small class="font-weight--bold">(Groovy Script)</small>
+                            <span data-th-text="#{fintics.Strategy.script}" class="font-weight--bold width--100"></span>
                         </div>
                     </div>
                     <duice-codemirror class="font-size--smaller" style="height:100vh;"
-                                      data-duice-bind="trade"
-                                      data-duice-property="ruleScript"
+                                      data-duice-bind="strategy"
+                                      data-duice-property="script"
                                       data-duice-mode="groovy"
                                       data-duice-theme="dracula">
                     </duice-codemirror>
@@ -613,14 +640,14 @@
                     <button type="button"
                             data-duice-bind="trade"
                             data-duice-execute="this.disabled=(trade._new);"
-                            th:classappend="!${#authorization.expression('hasAuthority(''TRADE_EDIT'')')}?'locked'"
+                            th:classappend="!${#authorization.expression('hasAuthority(''TRADES_EDIT'')')}?'locked'"
                             onclick="deleteTrade();">
                         <img class="icon" th:src="@{/static/image/icon-delete.svg}" alt="save"/>
                         <span data-th-text="#{web.global.delete}"></span>
                     </button>
                     <button type="button"
                             data-duice-bind="trade"
-                            th:classappend="!${#authorization.expression('hasAuthority(''TRADE_EDIT'')')}?'locked'"
+                            th:classappend="!${#authorization.expression('hasAuthority(''TRADES_EDIT'')')}?'locked'"
                             onclick="saveTrade();">
                         <img class="icon" th:src="@{/static/image/icon-save.svg}" alt="save"/>
                         <span data-th-text="#{web.global.save}"></span>

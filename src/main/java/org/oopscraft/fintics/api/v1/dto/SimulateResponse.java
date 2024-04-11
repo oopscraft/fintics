@@ -27,6 +27,8 @@ public class SimulateResponse {
 
     private TradeResponse trade;
 
+    private StrategyResponse strategy;
+
     private LocalDateTime dateTimeFrom;
 
     private LocalDateTime dateTimeTo;
@@ -61,6 +63,7 @@ public class SimulateResponse {
                 .tradeId(simulate.getTradeId())
                 .tradeName(simulate.getTradeName())
                 .trade(TradeResponse.from(simulate.getTrade()))
+                .strategy(StrategyResponse.from(simulate.getStrategy()))
                 .dateTimeFrom(simulate.getDateTimeFrom())
                 .dateTimeTo(simulate.getDateTimeTo())
                 .investAmount(simulate.getInvestAmount())

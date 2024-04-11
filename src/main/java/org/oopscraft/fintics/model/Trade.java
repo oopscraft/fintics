@@ -35,10 +35,6 @@ public class Trade {
 
     private String strategyVariables;
 
-    private String ruleScript;
-
-    private String orderOperatorId;
-
     private Order.Kind orderKind;
 
     private String alarmId;

@@ -14,7 +14,9 @@ import java.util.List;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class SimulateRequest {
 
-    private Trade trade;
+    private TradeRequest trade;
+
+    private StrategyRequest strategy;
 
     private ZonedDateTime dateTimeFrom;
 

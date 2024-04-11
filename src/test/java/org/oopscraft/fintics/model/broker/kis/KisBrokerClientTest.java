@@ -7,8 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.oopscraft.arch4j.core.support.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
 import org.oopscraft.fintics.model.*;
-import org.oopscraft.fintics.model.broker.kis.KisBrokerClient;
-import org.oopscraft.fintics.model.broker.kis.KisBrokerClientDefinition;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.math.BigDecimal;
@@ -23,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @SpringBootTest(classes = FinticsConfiguration.class)
 @RequiredArgsConstructor
 @Slf4j
-class KisTradeClientTest extends CoreTestSupport {
+class KisBrokerClientTest extends CoreTestSupport {
 
     private static final String production;
 

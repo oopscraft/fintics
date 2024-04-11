@@ -6,9 +6,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.oopscraft.fintics.model.*;
-import org.oopscraft.fintics.model.broker.KrBrokerClient;
-import org.oopscraft.fintics.model.broker.KrBrokerClientDefinition;
-import org.oopscraft.fintics.model.broker.BrokerClient;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -17,7 +14,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
-class KrTradeClientTest {
+class KrBrokerClientTest {
 
     KrBrokerClientDefinition krTradeClientDefinition = new KrBrokerClientDefinition() {
         @Override

@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Controller
-@RequestMapping("monitor")
+@RequestMapping("monitors")
 @PreAuthorize("hasAuthority('MONITORS')")
 @RequiredArgsConstructor
 public class MonitorsController {

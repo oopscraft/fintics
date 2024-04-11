@@ -17,7 +17,7 @@ public class BrokerClientFactory {
     private final BrokerClientDefinitionRegistry brokerClientDefinitionRegistry;
 
     public BrokerClient getObject(Broker broker) {
-        BrokerClientDefinition brokerClientDefinition = brokerClientDefinitionRegistry.getBrokerClientDefinition(broker.getBrokerId()).orElseThrow();
+        BrokerClientDefinition brokerClientDefinition = brokerClientDefinitionRegistry.getBrokerClientDefinition(broker.getBrokerClientId()).orElseThrow();
         try {
             Class<? extends BrokerClient> clientClass = brokerClientDefinition.getClassType().asSubclass(BrokerClient.class);
             Constructor<? extends BrokerClient> constructor = clientClass.getConstructor(BrokerClientDefinition.class, Properties.class);

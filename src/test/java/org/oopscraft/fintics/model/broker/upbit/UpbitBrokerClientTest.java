@@ -4,8 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.oopscraft.fintics.model.*;
-import org.oopscraft.fintics.model.broker.upbit.UpbitBrokerClient;
-import org.oopscraft.fintics.model.broker.upbit.UpbitBrokerClientDefinition;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -14,7 +12,7 @@ import java.util.List;
 import java.util.Properties;
 
 @Slf4j
-class UpbitTradeClientTest {
+class UpbitBrokerClientTest {
 
     private static final String accessKey;
 

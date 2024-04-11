@@ -6,10 +6,7 @@ import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyShell;
 import lombok.Builder;
 import org.oopscraft.arch4j.core.data.pbe.PbePropertiesUtil;
-import org.oopscraft.fintics.model.AssetIndicator;
-import org.oopscraft.fintics.model.Balance;
-import org.oopscraft.fintics.model.IndiceIndicator;
-import org.oopscraft.fintics.model.OrderBook;
+import org.oopscraft.fintics.model.*;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
@@ -23,9 +20,9 @@ import java.util.stream.Collectors;
 
 public class StrategyExecutor {
 
-    private final String ruleConfig;
+    private final Strategy strategy;
 
-    private final String ruleScript;
+    private final String variables;
 
     private final LocalDateTime dateTime;
 
@@ -40,9 +37,9 @@ public class StrategyExecutor {
     private Logger log = (Logger) LoggerFactory.getLogger(this.getClass());
 
     @Builder
-    protected StrategyExecutor(String ruleConfig, String ruleScript, LocalDateTime dateTime, OrderBook orderBook, Balance balance, List<IndiceIndicator> indiceIndicators, AssetIndicator assetIndicator) {
-        this.ruleConfig = ruleConfig;
-        this.ruleScript = ruleScript;
+    protected StrategyExecutor(Strategy strategy, String variables, LocalDateTime dateTime, OrderBook orderBook, Balance balance, List<IndiceIndicator> indiceIndicators, AssetIndicator assetIndicator) {
+        this.strategy = strategy;
+        this.variables = variables;
         this.dateTime = dateTime;
         this.orderBook = orderBook;
         this.balance = balance;
@@ -60,7 +57,7 @@ public class StrategyExecutor {
         ClassLoader classLoader = this.getClass().getClassLoader();
         GroovyClassLoader groovyClassLoader = new GroovyClassLoader(classLoader);
         Binding binding = new Binding();
-        binding.setVariable("config", loadRuleConfigAsProperties(ruleConfig));
+        binding.setVariable("variables", loadRuleConfigAsProperties(variables));
         binding.setVariable("log", log);
         binding.setVariable("dateTime", dateTime);
         binding.setVariable("orderBook", orderBook);
@@ -68,10 +65,7 @@ public class StrategyExecutor {
         binding.setVariable("indiceIndicators", indiceIndicators);
         binding.setVariable("assetIndicator", assetIndicator);
         GroovyShell groovyShell = new GroovyShell(groovyClassLoader, binding);
-        if(ruleScript == null || ruleScript.isBlank()) {
-            return null;
-        }
-        Object result = groovyShell.evaluate(ruleScript);
+        Object result = groovyShell.evaluate(strategy.getScript());
         if(result == null) {
             return null;
         }
@@ -80,7 +74,7 @@ public class StrategyExecutor {
 
     private Properties loadRuleConfigAsProperties(String propertiesString) {
         Properties properties = new Properties();
-        if (ruleConfig != null && !ruleConfig.isBlank()) {
+        if (propertiesString != null && !propertiesString.isBlank()) {
             try {
                 properties.load(new StringReader(propertiesString));
             } catch (IOException e) {

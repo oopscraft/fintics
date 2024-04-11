@@ -91,9 +91,7 @@ class SimulateRunnableTest extends CoreTestSupport {
                 .threshold(3)
                 .startAt(LocalTime.of(9,0,0))
                 .endAt(LocalTime.of(15,30,0))
-                .orderOperatorId("SIMPLE")
                 .orderKind(Order.Kind.MARKET)
-                .ruleScript(loadHoldCondition("groovy/old/HoldCondition.KospiCall.groovy"))
                 .build();
         List<TradeAsset> tradeAssets = new ArrayList<>();
         TradeAsset tradeAsset = TradeAsset.builder()
@@ -103,9 +101,13 @@ class SimulateRunnableTest extends CoreTestSupport {
                 .holdRatio(BigDecimal.valueOf(30))
                 .build();
         trade.getTradeAssets().add(tradeAsset);
+        Strategy strategy = Strategy.builder()
+                .script("return null")
+                .build();
         Simulate simulate = Simulate.builder()
                 .simulateId(IdGenerator.uuid())
                 .trade(trade)
+                .strategy(strategy)
                 .dateTimeFrom(LocalDateTime.of(2023,12,4,0,0))
                 .dateTimeTo(LocalDateTime.of(2023,12,4,23,59))
                 .investAmount(BigDecimal.valueOf(10_000_000))

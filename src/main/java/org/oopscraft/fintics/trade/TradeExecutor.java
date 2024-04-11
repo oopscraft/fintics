@@ -43,9 +43,9 @@ public class TradeExecutor {
 
     private Logger log = (Logger) LoggerFactory.getLogger(this.getClass());
 
-    private final Map<String,BigDecimal> ruleScriptResultMap = new HashMap<>();
+    private final Map<String,BigDecimal> strategyResultMap = new HashMap<>();
 
-    private final Map<String,Integer> ruleScriptResultCountMap = new HashMap<>();
+    private final Map<String,Integer> strategyResultCountMap = new HashMap<>();
 
     @Builder
     private TradeExecutor(PlatformTransactionManager transactionManager, IndiceOhlcvRepository indiceOhlcvRepository, AssetOhlcvRepository assetOhlcvRepository, OrderRepository orderRepository, AlarmService alarmService) {
@@ -60,7 +60,7 @@ public class TradeExecutor {
         this.log = log;
     }
 
-    public void execute(Trade trade, LocalDateTime dateTime, IndiceClient indiceClient, BrokerClient tradeClient) throws InterruptedException {
+    public void execute(Trade trade, Strategy strategy, LocalDateTime dateTime, IndiceClient indiceClient, BrokerClient tradeClient) throws InterruptedException {
         log.info("[{}] Check trade", trade.getTradeName());
 
         // check market opened
@@ -134,41 +134,41 @@ public class TradeExecutor {
                 OrderBook orderBook = tradeClient.getOrderBook(tradeAsset);
 
                 // executes trade asset decider
-                StrategyExecutor ruleScriptExecutor = StrategyExecutor.builder()
-                        .ruleConfig(trade.getStrategyVariables())
-                        .ruleScript(trade.getRuleScript())
+                StrategyExecutor strategyExecutor = StrategyExecutor.builder()
+                        .strategy(strategy)
+                        .variables(trade.getStrategyVariables())
                         .dateTime(dateTime)
                         .orderBook(orderBook)
                         .balance(balance)
                         .indiceIndicators(indiceIndicators)
                         .assetIndicator(assetIndicator)
                         .build();
-                ruleScriptExecutor.setLog(log);
+                strategyExecutor.setLog(log);
                 Instant startTime = Instant.now();
-                BigDecimal ruleScriptResult = ruleScriptExecutor.execute();
+                BigDecimal strategyResult = strategyExecutor.execute();
                 log.info("[{}] Rule script execution elapsed:{}", tradeAsset.getAssetName(), Duration.between(startTime, Instant.now()));
-                log.info("[{}] ruleScriptResult: {}", tradeAsset.getAssetName(), ruleScriptResult);
+                log.info("[{}] ruleScriptResult: {}", tradeAsset.getAssetName(), strategyResult);
 
                 // check rule script result and count
-                BigDecimal previousRuleScriptResult = ruleScriptResultMap.get(tradeAsset.getAssetId());
-                int ruleScriptResultCount = ruleScriptResultCountMap.getOrDefault(tradeAsset.getAssetId(), 0);
-                if (Objects.equals(ruleScriptResult, previousRuleScriptResult)) {
-                    ruleScriptResultCount++;
+                BigDecimal previousRuleScriptResult = strategyResultMap.get(tradeAsset.getAssetId());
+                int strategyResultCount = strategyResultCountMap.getOrDefault(tradeAsset.getAssetId(), 0);
+                if (Objects.equals(strategyResult, previousRuleScriptResult)) {
+                    strategyResultCount++;
                 } else {
-                    ruleScriptResultCount = 1;
+                    strategyResultCount = 1;
                 }
-                ruleScriptResultMap.put(tradeAsset.getAssetId(), ruleScriptResult);
-                ruleScriptResultCountMap.put(tradeAsset.getAssetId(), ruleScriptResultCount);
+                strategyResultMap.put(tradeAsset.getAssetId(), strategyResult);
+                strategyResultCountMap.put(tradeAsset.getAssetId(), strategyResultCount);
 
                 // checks threshold exceeded
-                log.info("[{}] ruleScriptResultCount: {}", tradeAsset.getAssetName(), ruleScriptResultCount);
-                if (ruleScriptResultCount < trade.getThreshold()) {
+                log.info("[{}] strategyResultCount: {}", tradeAsset.getAssetName(), strategyResultCount);
+                if (strategyResultCount < trade.getThreshold()) {
                     log.info("[{}] Threshold has not been exceeded yet - threshold is {}", tradeAsset.getAssetName(), trade.getThreshold());
                     continue;
                 }
 
                 // null is no operation
-                if (ruleScriptResult == null) {
+                if (strategyResult == null) {
                     continue;
                 }
 
@@ -180,7 +180,7 @@ public class TradeExecutor {
                         .multiply(holdRatio)
                         .setScale(2, RoundingMode.HALF_UP);
                 BigDecimal holdConditionResultAmount = holdRatioAmount
-                        .multiply(ruleScriptResult)
+                        .multiply(strategyResult)
                         .setScale(2, RoundingMode.HALF_UP);
                 BigDecimal balanceAssetAmount = balance.getBalanceAsset(tradeAsset.getAssetId())
                         .map(BalanceAsset::getValuationAmount)
@@ -213,7 +213,7 @@ public class TradeExecutor {
                     }
                     BigDecimal quantity = exceededAmount.abs().divide(price, MathContext.DECIMAL32);
                     // if holdConditionResult is zero, sell quantity is all
-                    if (ruleScriptResult.compareTo(BigDecimal.ZERO) == 0) {
+                    if (strategyResult.compareTo(BigDecimal.ZERO) == 0) {
                         BalanceAsset balanceAsset = balance.getBalanceAsset(tradeAsset.getAssetId()).orElse(null);
                         if (balanceAsset != null) {
                             quantity = balanceAsset.getOrderableQuantity();

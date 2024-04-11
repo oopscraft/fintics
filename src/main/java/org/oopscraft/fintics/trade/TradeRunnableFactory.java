@@ -1,6 +1,8 @@
 package org.oopscraft.fintics.trade;
 
 import lombok.RequiredArgsConstructor;
+import org.oopscraft.fintics.dao.BrokerRepository;
+import org.oopscraft.fintics.dao.StrategyRepository;
 import org.oopscraft.fintics.model.broker.BrokerClientFactory;
 import org.oopscraft.fintics.model.indice.IndiceClient;
 import org.oopscraft.fintics.dao.TradeRepository;
@@ -13,6 +15,10 @@ import org.springframework.transaction.PlatformTransactionManager;
 public class TradeRunnableFactory {
 
     private final TradeRepository tradeRepository;
+
+    private final StrategyRepository strategyRepository;
+
+    private final BrokerRepository brokerRepository;
 
     private final TradeExecutorFactory tradeExecutorFactory;
 
@@ -27,6 +33,8 @@ public class TradeRunnableFactory {
                 .tradeId(trade.getTradeId())
                 .interval(trade.getInterval())
                 .tradeRepository(tradeRepository)
+                .strategyRepository(strategyRepository)
+                .brokerRepository(brokerRepository)
                 .tradeExecutor(tradeExecutorFactory.getObject())
                 .indiceClient(indiceClient)
                 .brokerClientFactory(brokerClientFactory)

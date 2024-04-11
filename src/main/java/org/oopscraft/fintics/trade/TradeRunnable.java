@@ -5,7 +5,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.oopscraft.fintics.dao.BrokerRepository;
+import org.oopscraft.fintics.dao.StrategyRepository;
 import org.oopscraft.fintics.model.Broker;
+import org.oopscraft.fintics.model.Strategy;
 import org.oopscraft.fintics.model.indice.IndiceClient;
 import org.oopscraft.fintics.model.broker.BrokerClient;
 import org.oopscraft.fintics.model.broker.BrokerClientFactory;
@@ -28,6 +30,8 @@ public class TradeRunnable implements Runnable {
     private final Integer interval;
 
     private final TradeRepository tradeRepository;
+
+    private final StrategyRepository strategyRepository;
 
     private final BrokerRepository brokerRepository;
 
@@ -53,6 +57,7 @@ public class TradeRunnable implements Runnable {
         String tradeId,
         Integer interval,
         TradeRepository tradeRepository,
+        StrategyRepository strategyRepository,
         BrokerRepository brokerRepository,
         TradeExecutor tradeExecutor,
         IndiceClient indiceClient,
@@ -62,6 +67,7 @@ public class TradeRunnable implements Runnable {
         this.tradeId = tradeId;
         this.interval = interval;
         this.tradeRepository = tradeRepository;
+        this.strategyRepository = strategyRepository;
         this.brokerRepository = brokerRepository;
         this.tradeExecutor = tradeExecutor;
         this.indiceClient = indiceClient;
@@ -99,11 +105,14 @@ public class TradeRunnable implements Runnable {
                 Trade trade = tradeRepository.findById(tradeId)
                         .map(Trade::from)
                         .orElseThrow();
+                Strategy strategy = strategyRepository.findById(trade.getStrategyId())
+                        .map(Strategy::from)
+                        .orElseThrow();
                 Broker broker = brokerRepository.findById(trade.getBrokerId())
                         .map(Broker::from)
                         .orElseThrow();
                 BrokerClient brokerClient = brokerClientFactory.getObject(broker);
-                tradeExecutor.execute(trade, dateTime, indiceClient, brokerClient);
+                tradeExecutor.execute(trade, strategy, dateTime, indiceClient, brokerClient);
 
                 // end transaction
                 transactionManager.commit(transactionStatus);

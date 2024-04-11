@@ -22,7 +22,7 @@ import java.util.stream.IntStream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Slf4j
-class RuleScriptExecutorTest {
+class StrategyExecutorTest {
 
     Trade getTestTrade() {
         return Trade.builder()
@@ -135,12 +135,13 @@ class RuleScriptExecutorTest {
         List<IndiceIndicator> indiceIndicators = getTestIndiceIndicators();
         AssetIndicator assetIndicator = getTestAssetIndicator(tradeAsset);
         trade.setStrategyVariables("");
-        trade.setRuleScript("return 50;");
+        Strategy strategy = Strategy.builder()
+                .script("return 1")
+                .build();
 
         // when
         StrategyExecutor tradeAssetDecider = StrategyExecutor.builder()
-                .ruleConfig(trade.getStrategyVariables())
-                .ruleScript(trade.getRuleScript())
+                .strategy(strategy)
                 .dateTime(LocalDateTime.now())
                 .orderBook(orderBook)
                 .indiceIndicators(indiceIndicators)
@@ -150,35 +151,36 @@ class RuleScriptExecutorTest {
 
         // then
         log.info("== result:{}", result);
-        assertEquals(0, result.compareTo(BigDecimal.valueOf(50)));
+        assertEquals(0, result.compareTo(BigDecimal.valueOf(1)));
     }
 
     @Test
-    void testRuleScript() {
+    void testStrategyScript() {
         // given
         Trade trade = getTestTrade();
         TradeAsset tradeAsset = getTestTradeAsset();
         List<IndiceIndicator> indiceIndicators = getTestIndiceIndicators();
         AssetIndicator assetIndicator = getTestAssetIndicator(tradeAsset);
-        StringBuilder ruleConfig = new StringBuilder();
-        ruleConfig.append("waveOhlcvType=MINUTE").append("\n");
-        ruleConfig.append("waveOhlcvPeriod=3").append("\n");
-        ruleConfig.append("tideOhlcvType=DAILY").append("\n");
-        ruleConfig.append("tideOhlcvPeriod=1").append("\n");
-        String ruleScript = loadGroovyFileAsString("RuleScript.groovy");
-        trade.setStrategyVariables(ruleConfig.toString());
-        trade.setRuleScript(ruleScript);
+        String strategyScript = loadGroovyFileAsString("StrategyScript.groovy");
+        Strategy strategy = Strategy.builder()
+                        .script(strategyScript)
+                        .build();
+        StringBuilder strategyVariables = new StringBuilder();
+        strategyVariables.append("waveOhlcvType=MINUTE").append("\n");
+        strategyVariables.append("waveOhlcvPeriod=3").append("\n");
+        strategyVariables.append("tideOhlcvType=DAILY").append("\n");
+        strategyVariables.append("tideOhlcvPeriod=1").append("\n");
 
         // when
-        StrategyExecutor tradeAssetDecider = StrategyExecutor.builder()
-                .ruleConfig(trade.getStrategyVariables())
-                .ruleScript(trade.getRuleScript())
+        StrategyExecutor strategyExecutor = StrategyExecutor.builder()
+                .strategy(strategy)
+                .variables(strategyVariables.toString())
                 .dateTime(LocalDateTime.now())
                 .balance(new Balance())
                 .indiceIndicators(indiceIndicators)
                 .assetIndicator(assetIndicator)
                 .build();
-        BigDecimal result = tradeAssetDecider.execute();
+        BigDecimal result = strategyExecutor.execute();
 
         // then
         log.info("== result:{}", result);

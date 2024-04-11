@@ -47,6 +47,10 @@ public class SimulateEntity extends BaseEntity {
     @Lob
     private String tradeData;
 
+    @Column(name = "strategy_data")
+    @Lob
+    private String strategyData;
+
     @Column(name = "date_time_from")
     private LocalDateTime dateTimeFrom;
 
