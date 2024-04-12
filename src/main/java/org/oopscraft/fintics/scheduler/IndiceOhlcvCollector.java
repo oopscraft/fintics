@@ -2,7 +2,7 @@ package org.oopscraft.fintics.scheduler;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.oopscraft.fintics.model.indice.IndiceClient;
+import org.oopscraft.fintics.client.indice.IndiceClient;
 import org.oopscraft.fintics.dao.IndiceOhlcvEntity;
 import org.oopscraft.fintics.dao.IndiceOhlcvRepository;
 import org.oopscraft.fintics.model.IndiceId;

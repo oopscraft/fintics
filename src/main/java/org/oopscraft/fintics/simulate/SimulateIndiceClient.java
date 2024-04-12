@@ -3,7 +3,7 @@ package org.oopscraft.fintics.simulate;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import org.oopscraft.fintics.model.indice.IndiceClient;
+import org.oopscraft.fintics.client.indice.IndiceClient;
 import org.oopscraft.fintics.dao.IndiceOhlcvRepository;
 import org.oopscraft.fintics.model.*;
 import org.springframework.data.domain.Pageable;

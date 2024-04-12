@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.model.broker.kis;
+package org.oopscraft.fintics.client.broker.kis;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -7,8 +7,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
 import org.oopscraft.arch4j.core.support.ValueMap;
-import org.oopscraft.fintics.model.broker.BrokerClientDefinition;
-import org.oopscraft.fintics.model.broker.KrBrokerClient;
+import org.oopscraft.fintics.client.broker.BrokerClientDefinition;
+import org.oopscraft.fintics.client.broker.KrBrokerClient;
 import org.oopscraft.fintics.model.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;

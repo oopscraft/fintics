@@ -1,7 +1,7 @@
-package org.oopscraft.fintics.model.broker.upbit;
+package org.oopscraft.fintics.client.broker.upbit;
 
-import org.oopscraft.fintics.model.broker.BrokerClient;
-import org.oopscraft.fintics.model.broker.BrokerClientDefinition;
+import org.oopscraft.fintics.client.broker.BrokerClient;
+import org.oopscraft.fintics.client.broker.BrokerClientDefinition;
 import org.springframework.stereotype.Component;
 
 import java.util.StringJoiner;
@@ -34,7 +34,7 @@ public class UpbitBrokerClientDefinition implements BrokerClientDefinition {
     }
 
     @Override
-    public String getExchangeId() {
+    public String getMarket() {
         return "UPBIT";
     }
 

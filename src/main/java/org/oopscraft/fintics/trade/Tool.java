@@ -90,7 +90,7 @@ public class Tool {
      */
     public static List<BigDecimal> zScores(List<BigDecimal> values) {
         if(values.isEmpty()) {
-            return new ArrayList<BigDecimal>();
+            return new ArrayList<>();
         }
         List<BigDecimal> series = new ArrayList<>(values);
         Collections.reverse(series);
@@ -174,7 +174,7 @@ public class Tool {
 
     /**
      * calculates median value
-     * @param values data points (time descenting)
+     * @param values data points (time descending)
      * @return median value
      */
     public static BigDecimal median(List<BigDecimal> values) {
@@ -243,7 +243,7 @@ public class Tool {
      * @return ascii chart string
      */
     public static Supplier<String> graph(String title, List<BigDecimal> values) {
-        return new Supplier<String>() {
+        return new Supplier<>() {
             @Override
             public String get() {
                 // make series
@@ -259,6 +259,7 @@ public class Tool {
                 String graph = ASCIIGraph.fromSeries(doubles).withNumRows(10).plot();
                 return String.format("\n%s\n%s", title, graph);
             }
+
             @Override
             public String toString() {
                 return get();
@@ -273,12 +274,13 @@ public class Tool {
      * @return ascii table string
      */
     public static Supplier<String> table(String title, List<BigDecimal> values) {
-        return new Supplier<String>() {
+        return new Supplier<>() {
             @Override
             public String get() {
                 // TODO
                 return null;
             }
+
             @Override
             public String toString() {
                 return get();

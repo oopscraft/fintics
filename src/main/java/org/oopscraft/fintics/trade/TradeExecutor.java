@@ -5,8 +5,8 @@ import lombok.Builder;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
 import org.oopscraft.arch4j.core.data.IdGenerator;
-import org.oopscraft.fintics.model.indice.IndiceClient;
-import org.oopscraft.fintics.model.broker.BrokerClient;
+import org.oopscraft.fintics.client.indice.IndiceClient;
+import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.dao.AssetOhlcvRepository;
 import org.oopscraft.fintics.dao.IndiceOhlcvRepository;
 import org.oopscraft.fintics.dao.OrderEntity;
@@ -114,11 +114,11 @@ public class TradeExecutor {
 
                 // indicator
                 List<Ohlcv> minuteOhlcvs = tradeClient.getMinuteOhlcvs(tradeAsset, dateTime);
-                List<Ohlcv> previousMinuteOhlcvs = getPreviousAssetMinuteOhlcvs(trade.getBrokerId(), tradeAsset.getAssetId(), minuteOhlcvs, dateTime);
+                List<Ohlcv> previousMinuteOhlcvs = getPreviousAssetMinuteOhlcvs(tradeAsset.getAssetId(), minuteOhlcvs, dateTime);
                 minuteOhlcvs.addAll(previousMinuteOhlcvs);
 
                 List<Ohlcv> dailyOhlcvs = tradeClient.getDailyOhlcvs(tradeAsset, dateTime);
-                List<Ohlcv> previousDailyOhlcvs = getPreviousAssetDailyOhlcvs(trade.getBrokerId(), tradeAsset.getAssetId(), dailyOhlcvs, dateTime);
+                List<Ohlcv> previousDailyOhlcvs = getPreviousAssetDailyOhlcvs(tradeAsset.getAssetId(), dailyOhlcvs, dateTime);
                 dailyOhlcvs.addAll(previousDailyOhlcvs);
 
                 AssetIndicator assetIndicator = AssetIndicator.builder()
@@ -272,7 +272,7 @@ public class TradeExecutor {
                 .collect(Collectors.toList());
     }
 
-    private List<Ohlcv> getPreviousAssetMinuteOhlcvs(String tradeClientId, String assetId, List<Ohlcv> ohlcvs, LocalDateTime dateTime) {
+    private List<Ohlcv> getPreviousAssetMinuteOhlcvs(String assetId, List<Ohlcv> ohlcvs, LocalDateTime dateTime) {
         LocalDateTime dateTimeFrom = dateTime.minusWeeks(1);
         LocalDateTime dateTimeTo = ohlcvs.isEmpty() ? dateTime : ohlcvs.get(ohlcvs.size()-1).getDateTime().minusMinutes(1);
         if(dateTimeTo.isBefore(dateTimeFrom)) {
@@ -289,7 +289,7 @@ public class TradeExecutor {
                 .collect(Collectors.toList());
     }
 
-    private List<Ohlcv> getPreviousAssetDailyOhlcvs(String tradeClientId, String assetId, List<Ohlcv> ohlcvs, LocalDateTime dateTime) {
+    private List<Ohlcv> getPreviousAssetDailyOhlcvs(String assetId, List<Ohlcv> ohlcvs, LocalDateTime dateTime) {
         LocalDateTime dateTimeFrom = dateTime.minusYears(1);
         LocalDateTime dateTimeTo = ohlcvs.isEmpty() ? dateTime : ohlcvs.get(ohlcvs.size()-1).getDateTime().minusDays(1);
         if(dateTimeTo.isBefore(dateTimeFrom)) {

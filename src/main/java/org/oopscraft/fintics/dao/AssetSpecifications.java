@@ -1,6 +1,5 @@
 package org.oopscraft.fintics.dao;
 
-import org.oopscraft.fintics.model.Asset;
 import org.springframework.data.jpa.domain.Specification;
 
 public class AssetSpecifications {

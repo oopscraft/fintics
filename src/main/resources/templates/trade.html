@@ -9,6 +9,7 @@
         const tradeId = /*[[${tradeId}]]*/'';
         const alarms = new duice.ArrayProxy(/*[[${alarms}]]*/[]);
         const brokers = new duice.ArrayProxy(/*[[${brokers}]]*/[]);
+        const brokerClientDefinitions = new duice.ArrayProxy(/*[[${brokerClientDefinitions}]]*/[]);
         const strategies = new duice.ArrayProxy(/*[[${strategies}]]*/[]);
 
         // strategy
@@ -102,8 +103,10 @@
             trade.tradeAssets.forEach(tradeAsset => {
                 disabledAssetIds.push(tradeAsset.assetId);
             });
-            let tradeClient = brokers.find(tradeClient => tradeClient.tradeClientId === trade.tradeClientId);
-            let selectedAssets = await assetSelect.open(tradeClient.market, disabledAssetIds);
+            let broker = brokers.find(broker => broker.brokerId === trade.brokerId);
+            let brokerClientDefinition = brokerClientDefinitions.find(brokerClientDefinition => brokerClientDefinition.brokerClientId === broker.brokerClientId);
+            let market = brokerClientDefinition.market;
+            let selectedAssets = await assetSelect.open(market, disabledAssetIds);
             selectedAssets.forEach(asset => {
                 trade.tradeAssets.push({
                     assetId: asset.assetId,

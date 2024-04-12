@@ -3,7 +3,7 @@ package org.oopscraft.fintics.simulate;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import org.oopscraft.fintics.model.broker.BrokerClient;
+import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.dao.AssetOhlcvRepository;
 import org.oopscraft.fintics.model.*;
 import org.springframework.data.domain.Pageable;

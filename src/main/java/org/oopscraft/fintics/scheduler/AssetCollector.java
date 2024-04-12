@@ -4,8 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.fintics.dao.*;
 import org.oopscraft.fintics.model.Broker;
-import org.oopscraft.fintics.model.broker.BrokerClient;
-import org.oopscraft.fintics.model.broker.BrokerClientFactory;
+import org.oopscraft.fintics.client.broker.BrokerClient;
+import org.oopscraft.fintics.client.broker.BrokerClientFactory;
 import org.oopscraft.fintics.model.Trade;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -24,13 +24,13 @@ public class AssetCollector extends AbstractScheduler {
 
     private final BrokerRepository brokerRepository;
 
-    private final BrokerClientFactory tradeClientFactory;
+    private final BrokerClientFactory brokerClientFactory;
 
     private final AssetRepository assetRepository;
 
     private final PlatformTransactionManager transactionManager;
 
-    @Scheduled(initialDelay = 60_000, fixedDelay = Long.MAX_VALUE)
+    @Scheduled(initialDelay = 10_000, fixedDelay = Long.MAX_VALUE)
     public void onStartup() {
         collect();
     }
@@ -40,14 +40,14 @@ public class AssetCollector extends AbstractScheduler {
         try {
             log.info("AssetCollector - Start collect broker asset.");
             List<TradeEntity> tradeEntities = tradeRepository.findAll();
-            List<String> completedTradeClientIds = new ArrayList<>();
+            List<String> completedBrokerIds = new ArrayList<>();
             for (TradeEntity tradeEntity : tradeEntities) {
                 try {
-                    String tradeClientId = tradeEntity.getBrokerId();
-                    if (!completedTradeClientIds.contains(tradeClientId)) {
+                    String brokerId = tradeEntity.getBrokerId();
+                    if (!completedBrokerIds.contains(brokerId)) {
                         Trade trade = Trade.from(tradeEntity);
                         saveAssets(trade);
-                        completedTradeClientIds.add(tradeClientId);
+                        completedBrokerIds.add(brokerId);
                     }
                 } catch (Throwable e) {
                     log.warn(e.getMessage());
@@ -65,8 +65,8 @@ public class AssetCollector extends AbstractScheduler {
         Broker broker = brokerRepository.findById(trade.getBrokerId())
                 .map(Broker::from)
                 .orElseThrow();
-        BrokerClient tradeClient = tradeClientFactory.getObject(broker);
-        List<AssetEntity> assetEntities = tradeClient.getAssets().stream()
+        BrokerClient brokerClient = brokerClientFactory.getObject(broker);
+        List<AssetEntity> assetEntities = brokerClient.getAssets().stream()
                 .map(asset -> AssetEntity.builder()
                         .assetId(asset.getAssetId())
                         .assetName(asset.getAssetName())

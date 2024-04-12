@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.model.broker.ebest;
+package org.oopscraft.fintics.client.broker.ebest;
 
 /**
  * TODO

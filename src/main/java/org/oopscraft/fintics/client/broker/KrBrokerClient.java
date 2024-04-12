@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.model.broker;
+package org.oopscraft.fintics.client.broker;
 
 import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
 import org.oopscraft.arch4j.core.support.ValueMap;
@@ -94,7 +94,7 @@ public abstract class KrBrokerClient extends BrokerClient {
         });
 
         // market, exchange
-        String market = getDefinition().getExchangeId();
+        String market = getDefinition().getMarket();
         String exchange;
         switch(exchangeType) {
             case "11" -> exchange = "KRX";
@@ -167,7 +167,7 @@ public abstract class KrBrokerClient extends BrokerClient {
         });
 
         // market, exchange
-        String market = getDefinition().getExchangeId();
+        String market = getDefinition().getMarket();
         String exchange = "KRX";
 
         // convert assets

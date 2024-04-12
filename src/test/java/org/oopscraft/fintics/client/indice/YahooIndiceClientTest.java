@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.model.indice;
+package org.oopscraft.fintics.client.indice;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -9,7 +9,7 @@ import org.oopscraft.arch4j.core.support.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
 import org.oopscraft.fintics.model.IndiceId;
 import org.oopscraft.fintics.model.Ohlcv;
-import org.oopscraft.fintics.model.indice.YahooIndiceClient;
+import org.oopscraft.fintics.client.indice.YahooIndiceClient;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDateTime;

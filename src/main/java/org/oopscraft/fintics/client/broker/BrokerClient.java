@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.model.broker;
+package org.oopscraft.fintics.client.broker;
 
 import lombok.Getter;
 import org.oopscraft.fintics.model.*;
@@ -42,7 +42,7 @@ public abstract class BrokerClient {
     public abstract Order amendOrder(Order order) throws InterruptedException;
 
     public final String toAssetId(String symbol) {
-        return String.format("%s.%s", this.definition.getExchangeId(), symbol);
+        return String.format("%s.%s", this.definition.getMarket(), symbol);
     }
 
 }

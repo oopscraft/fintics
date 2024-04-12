@@ -1,10 +1,13 @@
-package org.oopscraft.fintics.model.broker;
+package org.oopscraft.fintics.client.broker;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.oopscraft.fintics.client.broker.BrokerClient;
+import org.oopscraft.fintics.client.broker.KrBrokerClient;
+import org.oopscraft.fintics.client.broker.KrBrokerClientDefinition;
 import org.oopscraft.fintics.model.*;
 
 import java.math.BigDecimal;

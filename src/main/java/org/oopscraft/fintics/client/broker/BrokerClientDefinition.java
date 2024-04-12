@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.model.broker;
+package org.oopscraft.fintics.client.broker;
 
 import org.springframework.beans.factory.Aware;
 
@@ -12,6 +12,6 @@ public interface BrokerClientDefinition extends Aware {
 
     String getPropertiesTemplate();
 
-    String getExchangeId();
+    String getMarket();
 
 }

@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.model.broker.kis;
+package org.oopscraft.fintics.client.broker.kis;
 
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.support.RestTemplateBuilder;

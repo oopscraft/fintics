@@ -2,10 +2,8 @@ package org.oopscraft.fintics.model;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.oopscraft.arch4j.core.data.converter.AbstractEnumConverter;
 import org.oopscraft.fintics.dao.AssetEntity;
 
-import javax.persistence.Converter;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -53,10 +51,10 @@ public class Asset {
                 .map(value -> value.split("\\."))
                 .filter(array -> array.length > 1)
                 .map(array -> {
-                    String marketId = array[0];
+                    String market = array[0];
                     String symbol = array[1];
                     List<Link> links = new ArrayList<>();
-                    switch (marketId) {
+                    switch (market) {
                         case "KR" ->
                                 links.add(Link.of("Naver", "https://finance.naver.com/item/main.naver?code=" + symbol));
                         case "UPBIT" ->

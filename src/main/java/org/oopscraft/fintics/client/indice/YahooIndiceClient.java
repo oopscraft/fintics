@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.model.indice;
+package org.oopscraft.fintics.client.indice;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -26,7 +26,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Component
-@ConditionalOnProperty(prefix = "fintics", name = "indice-client-class-name", havingValue="org.oopscraft.fintics.model.indice.YahooIndiceClient")
+@ConditionalOnProperty(prefix = "fintics", name = "indice-client-class-name", havingValue="org.oopscraft.fintics.client.indice.YahooIndiceClient")
 @RequiredArgsConstructor
 @Slf4j
 public class YahooIndiceClient extends IndiceClient {

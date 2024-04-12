@@ -1,6 +1,7 @@
-package org.oopscraft.fintics.model.broker;
+package org.oopscraft.fintics.client.broker;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.data.pbe.PbePropertiesUtil;
 import org.oopscraft.fintics.model.Broker;
 import org.springframework.stereotype.Component;
@@ -12,6 +13,7 @@ import java.util.*;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class BrokerClientFactory {
 
     private final BrokerClientDefinitionRegistry brokerClientDefinitionRegistry;
@@ -32,10 +34,12 @@ public class BrokerClientFactory {
 
     private static Properties loadPropertiesFromString(String propertiesString) {
         Properties properties = new Properties();
-        try {
-            properties.load(new StringReader(propertiesString));
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Invalid properties string", e);
+        if (propertiesString != null && !propertiesString.isBlank()) {
+            try {
+                properties.load(new StringReader(propertiesString));
+            } catch (IOException ignore) {
+                log.warn(ignore.getMessage());
+            }
         }
         properties = PbePropertiesUtil.decode(properties);
         properties = PbePropertiesUtil.unwrapDecryptedMark(properties);

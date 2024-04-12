@@ -1,7 +1,7 @@
-package org.oopscraft.fintics.model.broker.kis;
+package org.oopscraft.fintics.client.broker.kis;
 
-import org.oopscraft.fintics.model.broker.BrokerClient;
-import org.oopscraft.fintics.model.broker.KrBrokerClientDefinition;
+import org.oopscraft.fintics.client.broker.BrokerClient;
+import org.oopscraft.fintics.client.broker.KrBrokerClientDefinition;
 import org.springframework.stereotype.Component;
 
 import java.util.StringJoiner;

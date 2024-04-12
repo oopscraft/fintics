@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.oopscraft.arch4j.core.alarm.Alarm;
 import org.oopscraft.arch4j.core.alarm.AlarmSearch;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
+import org.oopscraft.fintics.client.broker.BrokerClientDefinition;
+import org.oopscraft.fintics.client.broker.BrokerClientDefinitionRegistry;
 import org.oopscraft.fintics.model.Broker;
 import org.oopscraft.fintics.model.Order;
 import org.oopscraft.fintics.model.Simulate;
@@ -35,6 +37,8 @@ public class TradeController {
 
     private final StrategyService strategyService;
 
+    private final BrokerClientDefinitionRegistry brokerClientDefinitionRegistry;
+
     @GetMapping
     public ModelAndView getTrade(@RequestParam(value="tradeId", required = false) String tradeId) {
         ModelAndView modelAndView = new ModelAndView("trade.html");
@@ -43,6 +47,8 @@ public class TradeController {
         modelAndView.addObject("alarms", alarms);
         List<Broker> brokers =  brokerService.getBrokers(null, Pageable.unpaged()).getContent();
         modelAndView.addObject("brokers", brokers);
+        List<BrokerClientDefinition> brokerClientDefinitions = brokerClientDefinitionRegistry.getBrokerClientDefinitions();
+        modelAndView.addObject("brokerClientDefinitions", brokerClientDefinitions);
         List<Strategy> strategies = strategyService.getStrategies(null, Pageable.unpaged()).getContent();
         modelAndView.addObject("strategies", strategies);
         modelAndView.addObject("indices", indiceService.getIndices());

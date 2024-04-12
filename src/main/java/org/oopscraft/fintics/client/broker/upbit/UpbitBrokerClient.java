@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.model.broker.upbit;
+package org.oopscraft.fintics.client.broker.upbit;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -10,8 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.data.IdGenerator;
 import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
 import org.oopscraft.arch4j.core.support.ValueMap;
-import org.oopscraft.fintics.model.broker.BrokerClient;
-import org.oopscraft.fintics.model.broker.BrokerClientDefinition;
+import org.oopscraft.fintics.client.broker.BrokerClientDefinition;
+import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.model.*;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
@@ -69,8 +69,8 @@ public class UpbitBrokerClient extends BrokerClient {
                     return Asset.builder()
                             .assetId(toAssetId(map.getString("market")))
                             .assetName(map.getString("english_name"))
-                            .market(getDefinition().getExchangeId())
-                            .exchange("UPBIT")
+                            .market(getDefinition().getMarket())
+                            .exchange(getDefinition().getMarket())
                             .build();
                 })
                 .collect(Collectors.toList());

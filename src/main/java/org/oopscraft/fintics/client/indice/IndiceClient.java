@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.model.indice;
+package org.oopscraft.fintics.client.indice;
 
 import org.oopscraft.fintics.model.IndiceId;
 import org.oopscraft.fintics.model.Ohlcv;

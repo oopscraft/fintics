@@ -81,7 +81,7 @@ insert into `core_role_authority` (`role_id`,`authority_id`) values
 
 -- core_menu
 insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`sort`,`icon`) values
-    ('monitors','Y',null,'Monitor','/monitor',1,'/static/image/icon-monitor.svg');
+    ('monitors','Y',null,'Monitors','/monitors',1,'/static/image/icon-monitor.svg');
 insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
     ('monitors','ko','모니터');
 insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`sort`,`icon`) values
@@ -134,7 +134,7 @@ insert into `fintics_broker`
     ('ca5f55cd88694715bcb4c478710d9a68','Korea Investment Test','KIS',null),
     ('a135ee9a276f4edf81d6e1b6b9d31e39','Upbit Test','UPBIT',null);
 
--- fintics_rule
+-- fintics_strategy
 insert into `fintics_strategy`
     (`strategy_id`,`strategy_name`,`language`,`script`) values
     ('7c94187b346f4727a0f2478fdc53064f','Test Rule','GROOVY','return null');
@@ -165,7 +165,7 @@ values
 insert into `fintics_trade`
     (`trade_id`,`trade_name`,`enabled`,`interval`,`threshold`,`start_at`,`end_at`,`broker_id`,`strategy_id`,`strategy_variables`,`alarm_id`,`order_kind`) values
     ('81c6a451d6da49449faa2b5b7e66041b','코인놀이방(24시간 테스트용)','N','30','3','00:00','23:59',
-     'ca5f55cd88694715bcb4c478710d9a68','7c94187b346f4727a0f2478fdc53064f', null, null, 'LIMIT');
+     'a135ee9a276f4edf81d6e1b6b9d31e39','7c94187b346f4727a0f2478fdc53064f', null, null, 'LIMIT');
 insert into `fintics_trade_asset`
     (`trade_id`,`asset_id`,`enabled`, `hold_ratio`) values
     ('81c6a451d6da49449faa2b5b7e66041b','UPBIT.KRW-BTC','N','20'),
