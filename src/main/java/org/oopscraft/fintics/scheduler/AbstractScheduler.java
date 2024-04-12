@@ -34,7 +34,7 @@ public abstract class AbstractScheduler {
                 count++;
                 jpaRepository.saveAndFlush(ohlcvEntity);
                 // middle commit
-                if (count % 10 == 0) {
+                if (count % 100 == 0) {
                     log.info("- {} chunk commit[{}]", unitName, count);
                     transactionManager.commit(status);
                     status = transactionManager.getTransaction(definition);
