@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-public abstract class OhlcvResponse {
+public class OhlcvResponse {
 
     private Ohlcv.Type type;
 
@@ -34,5 +34,18 @@ public abstract class OhlcvResponse {
 
     @Builder.Default
     private boolean interpolated = false;
+
+    public static OhlcvResponse from(Ohlcv ohlcv) {
+        return OhlcvResponse.builder()
+                .dateTime(ohlcv.getDateTime())
+                .type(ohlcv.getType())
+                .openPrice(ohlcv.getOpenPrice())
+                .highPrice(ohlcv.getHighPrice())
+                .lowPrice(ohlcv.getLowPrice())
+                .closePrice(ohlcv.getClosePrice())
+                .volume(ohlcv.getVolume())
+                .interpolated(ohlcv.isInterpolated())
+                .build();
+    }
 
 }

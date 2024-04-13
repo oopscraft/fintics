@@ -5,6 +5,9 @@ import org.oopscraft.arch4j.core.alarm.AlarmService;
 import org.oopscraft.fintics.dao.AssetOhlcvRepository;
 import org.oopscraft.fintics.dao.IndiceOhlcvRepository;
 import org.oopscraft.fintics.dao.OrderRepository;
+import org.oopscraft.fintics.service.AssetService;
+import org.oopscraft.fintics.service.IndiceService;
+import org.oopscraft.fintics.service.OrderService;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -14,20 +17,20 @@ public class TradeExecutorFactory {
 
     private final PlatformTransactionManager transactionManager;
 
-    private final IndiceOhlcvRepository indiceOhlcvRepository;
+    private final IndiceService indiceService;
 
-    private final AssetOhlcvRepository assetOhlcvRepository;
+    private final AssetService assetService;
 
-    private final OrderRepository orderRepository;
+    private final OrderService orderService;
 
     private final AlarmService alarmService;
 
     public TradeExecutor getObject() {
         return TradeExecutor.builder()
                 .transactionManager(transactionManager)
-                .indiceOhlcvRepository(indiceOhlcvRepository)
-                .assetOhlcvRepository(assetOhlcvRepository)
-                .orderRepository(orderRepository)
+                .indiceService(indiceService)
+                .assetService(assetService)
+                .orderService(orderService)
                 .alarmService(alarmService)
                 .build();
     }

@@ -30,23 +30,22 @@ public class StrategyExecutor {
 
     private final Balance balance;
 
-    private final Map<String, IndiceIndicator> indiceIndicators;
+    private final Map<String, IndiceProfile> indiceProfiles;
 
-    private final AssetIndicator assetIndicator;
+    private final AssetProfile assetProfile;
 
     private Logger log = (Logger) LoggerFactory.getLogger(this.getClass());
 
     @Builder
-    protected StrategyExecutor(Strategy strategy, String variables, LocalDateTime dateTime, OrderBook orderBook, Balance balance, List<IndiceIndicator> indiceIndicators, AssetIndicator assetIndicator) {
+    protected StrategyExecutor(Strategy strategy, String variables, LocalDateTime dateTime, OrderBook orderBook, Balance balance, List<IndiceProfile> indiceProfiles, AssetProfile assetProfile) {
         this.strategy = strategy;
         this.variables = variables;
         this.dateTime = dateTime;
         this.orderBook = orderBook;
         this.balance = balance;
-        this.indiceIndicators = indiceIndicators.stream()
-                .collect(Collectors.toMap(indiceIndicator ->
-                        indiceIndicator.getIndiceId().name(), indiceIndicator -> indiceIndicator));
-        this.assetIndicator = assetIndicator;
+        this.indiceProfiles = indiceProfiles.stream()
+                .collect(Collectors.toMap(indiceProfile -> indiceProfile.getTarget().getIndiceId().name(), indiceProfile -> indiceProfile));
+        this.assetProfile = assetProfile;
     }
 
     public void setLog(Logger log) {
@@ -62,8 +61,8 @@ public class StrategyExecutor {
         binding.setVariable("dateTime", dateTime);
         binding.setVariable("orderBook", orderBook);
         binding.setVariable("balance", balance);
-        binding.setVariable("indiceIndicators", indiceIndicators);
-        binding.setVariable("assetIndicator", assetIndicator);
+        binding.setVariable("indiceProfiles", indiceProfiles);
+        binding.setVariable("assetProfile", assetProfile);
         GroovyShell groovyShell = new GroovyShell(groovyClassLoader, binding);
         Object result = groovyShell.evaluate(strategy.getScript());
         if(result == null) {

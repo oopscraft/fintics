@@ -9,7 +9,7 @@ import org.oopscraft.fintics.FinticsConfiguration;
 import org.oopscraft.fintics.dao.AssetOhlcvEntity;
 import org.oopscraft.fintics.dao.IndiceOhlcvEntity;
 import org.oopscraft.fintics.model.Asset;
-import org.oopscraft.fintics.model.IndiceId;
+import org.oopscraft.fintics.model.Indice;
 import org.oopscraft.fintics.model.Ohlcv;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -106,7 +106,7 @@ class PastOhlcvCollectorTest extends CoreTestSupport {
     @Test
     void collectPastIndiceMinuteOhlcvs() {
         // given
-        IndiceId indiceId = IndiceId.NDX_FUTURE;
+        Indice.Id indiceId = Indice.Id.NDX_FUTURE;
         // when
         pastOhlcvCollector.collectPastIndiceMinuteOhlcvs(indiceId, expiredDateTime);
         // then
@@ -126,7 +126,7 @@ class PastOhlcvCollectorTest extends CoreTestSupport {
     @Test
     void collectPastIndiceDailyOhlcvs() {
         // given
-        IndiceId indiceId = IndiceId.NDX_FUTURE;
+        Indice.Id indiceId = Indice.Id.NDX_FUTURE;
         // when
         pastOhlcvCollector.collectPastIndiceDailyOhlcvs(indiceId, expiredDateTime);
         // then

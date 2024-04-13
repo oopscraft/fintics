@@ -5,13 +5,12 @@ import lombok.Builder;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
 import org.oopscraft.arch4j.core.data.IdGenerator;
-import org.oopscraft.fintics.client.indice.IndiceClient;
 import org.oopscraft.fintics.client.broker.BrokerClient;
-import org.oopscraft.fintics.dao.AssetOhlcvRepository;
-import org.oopscraft.fintics.dao.IndiceOhlcvRepository;
-import org.oopscraft.fintics.dao.OrderEntity;
-import org.oopscraft.fintics.dao.OrderRepository;
+import org.oopscraft.fintics.client.indice.IndiceClient;
 import org.oopscraft.fintics.model.*;
+import org.oopscraft.fintics.service.AssetService;
+import org.oopscraft.fintics.service.IndiceService;
+import org.oopscraft.fintics.service.OrderService;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -27,17 +26,16 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class TradeExecutor {
 
     private final PlatformTransactionManager transactionManager;
 
-    private final IndiceOhlcvRepository indiceOhlcvRepository;
+    private final IndiceService indiceService;
 
-    private final AssetOhlcvRepository assetOhlcvRepository;
+    private final AssetService assetService;
 
-    private final OrderRepository orderRepository;
+    private final OrderService orderService;
 
     private final AlarmService alarmService;
 
@@ -48,11 +46,11 @@ public class TradeExecutor {
     private final Map<String,Integer> strategyResultCountMap = new HashMap<>();
 
     @Builder
-    private TradeExecutor(PlatformTransactionManager transactionManager, IndiceOhlcvRepository indiceOhlcvRepository, AssetOhlcvRepository assetOhlcvRepository, OrderRepository orderRepository, AlarmService alarmService) {
+    private TradeExecutor(PlatformTransactionManager transactionManager, IndiceService indiceService, AssetService assetService, OrderService orderService, AlarmService alarmService) {
         this.transactionManager = transactionManager;
-        this.indiceOhlcvRepository = indiceOhlcvRepository;
-        this.assetOhlcvRepository = assetOhlcvRepository;
-        this.orderRepository = orderRepository;
+        this.indiceService = indiceService;
+        this.assetService = assetService;
+        this.orderService = orderService;
         this.alarmService = alarmService;
     }
 
@@ -75,25 +73,27 @@ public class TradeExecutor {
             return;
         }
 
-        // indice indicators
-        List<IndiceIndicator> indiceIndicators = new ArrayList<>();
-        for(IndiceId indiceId : IndiceId.values()) {
+        // indice profiles
+        List<Indice> indices = indiceService.getIndices();
+        List<IndiceProfile> indiceProfiles = new ArrayList<>();
+        for(Indice indice : indices) {
             // minute ohlcvs
-            List<Ohlcv> minuteOhlcvs = indiceClient.getMinuteOhlcvs(indiceId, dateTime);
-            List<Ohlcv> previousMinuteOhlcvs = getPreviousIndiceMinuteOhlcvs(indiceId, minuteOhlcvs, dateTime);
+            List<Ohlcv> minuteOhlcvs = indiceClient.getMinuteOhlcvs(indice.getIndiceId(), dateTime);
+            List<Ohlcv> previousMinuteOhlcvs = getPreviousIndiceMinuteOhlcvs(indice.getIndiceId(), minuteOhlcvs, dateTime);
             minuteOhlcvs.addAll(previousMinuteOhlcvs);
 
             // daily ohlcvs
-            List<Ohlcv> dailyOhlcvs = indiceClient.getDailyOhlcvs(indiceId, dateTime);
-            List<Ohlcv> previousDailyOhlcvs = getPreviousIndiceDailyOhlcvs(indiceId, dailyOhlcvs, dateTime);
+            List<Ohlcv> dailyOhlcvs = indiceClient.getDailyOhlcvs(indice.getIndiceId(), dateTime);
+            List<Ohlcv> previousDailyOhlcvs = getPreviousIndiceDailyOhlcvs(indice.getIndiceId(), dailyOhlcvs, dateTime);
             dailyOhlcvs.addAll(previousDailyOhlcvs);
 
-            // add indicator
-            indiceIndicators.add(IndiceIndicator.builder()
-                    .indiceId(indiceId)
+            // indice profile
+            IndiceProfile indiceProfile = IndiceProfile.builder()
+                    .target(indice)
                     .minuteOhlcvs(minuteOhlcvs)
                     .dailyOhlcvs(dailyOhlcvs)
-                    .build());
+                    .build();
+            indiceProfiles.add(indiceProfile);
         }
 
         // balance
@@ -112,36 +112,39 @@ public class TradeExecutor {
                 // logging
                 log.info("[{}] Check asset", tradeAsset.getAssetName());
 
-                // indicator
+                // minute ohlcvs
                 List<Ohlcv> minuteOhlcvs = tradeClient.getMinuteOhlcvs(tradeAsset, dateTime);
                 List<Ohlcv> previousMinuteOhlcvs = getPreviousAssetMinuteOhlcvs(tradeAsset.getAssetId(), minuteOhlcvs, dateTime);
                 minuteOhlcvs.addAll(previousMinuteOhlcvs);
 
+                // daily ohlcvs
                 List<Ohlcv> dailyOhlcvs = tradeClient.getDailyOhlcvs(tradeAsset, dateTime);
                 List<Ohlcv> previousDailyOhlcvs = getPreviousAssetDailyOhlcvs(tradeAsset.getAssetId(), dailyOhlcvs, dateTime);
                 dailyOhlcvs.addAll(previousDailyOhlcvs);
 
-                AssetIndicator assetIndicator = AssetIndicator.builder()
-                        .assetId(tradeAsset.getAssetId())
-                        .assetName(tradeAsset.getAssetName())
+                // asset profile
+                AssetProfile assetProfile = AssetProfile.builder()
+                        .target(tradeAsset)
                         .minuteOhlcvs(minuteOhlcvs)
                         .dailyOhlcvs(dailyOhlcvs)
                         .build();
-                log.info("[{}] MinuteOhlcvs({}):{}", tradeAsset.getAssetName(), assetIndicator.getMinuteOhlcvs().size(), assetIndicator.getMinuteOhlcvs().isEmpty() ? null : assetIndicator.getMinuteOhlcvs().get(0));
-                log.info("[{}] DailyOhlcvs({}):{}", tradeAsset.getAssetName(), assetIndicator.getDailyOhlcvs().size(), assetIndicator.getDailyOhlcvs().isEmpty() ? null : assetIndicator.getDailyOhlcvs().get(0));
+
+                // logging
+                log.info("[{}] MinuteOhlcvs({}):{}", tradeAsset.getAssetName(), assetProfile.getMinuteOhlcvs().size(), assetProfile.getMinuteOhlcvs().isEmpty() ? null : assetProfile.getMinuteOhlcvs().get(0));
+                log.info("[{}] DailyOhlcvs({}):{}", tradeAsset.getAssetName(), assetProfile.getDailyOhlcvs().size(), assetProfile.getDailyOhlcvs().isEmpty() ? null : assetProfile.getDailyOhlcvs().get(0));
 
                 // order book
                 OrderBook orderBook = tradeClient.getOrderBook(tradeAsset);
 
                 // executes trade asset decider
                 StrategyExecutor strategyExecutor = StrategyExecutor.builder()
+                        .indiceProfiles(indiceProfiles)
+                        .assetProfile(assetProfile)
                         .strategy(strategy)
                         .variables(trade.getStrategyVariables())
                         .dateTime(dateTime)
                         .orderBook(orderBook)
                         .balance(balance)
-                        .indiceIndicators(indiceIndicators)
-                        .assetIndicator(assetIndicator)
                         .build();
                 strategyExecutor.setLog(log);
                 Instant startTime = Instant.now();
@@ -237,39 +240,22 @@ public class TradeExecutor {
         return time.isAfter(trade.getStartAt()) && time.isBefore(trade.getEndAt());
     }
 
-    private List<Ohlcv> getPreviousIndiceMinuteOhlcvs(IndiceId indiceId, List<Ohlcv> ohlcvs, LocalDateTime dateTime) {
+    private List<Ohlcv> getPreviousIndiceMinuteOhlcvs(Indice.Id indiceId, List<Ohlcv> ohlcvs, LocalDateTime dateTime) {
         LocalDateTime dateTimeFrom = dateTime.minusWeeks(1);
         LocalDateTime dateTimeTo = ohlcvs.isEmpty() ? dateTime : ohlcvs.get(ohlcvs.size()-1).getDateTime().minusMinutes(1);
         if(dateTimeTo.isBefore(dateTimeFrom)) {
             return new ArrayList<>();
         }
-        return indiceOhlcvRepository.findAllByIndiceIdAndType(
-                        indiceId,
-                        Ohlcv.Type.MINUTE,
-                        dateTimeFrom,
-                        dateTimeTo,
-                        PageRequest.of(0, 1000)
-                ).stream()
-                .map(Ohlcv::from)
-                .collect(Collectors.toList());
+        return indiceService.getIndiceOhlcvs(indiceId, Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo, PageRequest.of(0, 1000));
     }
 
-    private List<Ohlcv> getPreviousIndiceDailyOhlcvs(IndiceId indiceId, List<Ohlcv> ohlcvs, LocalDateTime dateTime) {
+    private List<Ohlcv> getPreviousIndiceDailyOhlcvs(Indice.Id indiceId, List<Ohlcv> ohlcvs, LocalDateTime dateTime) {
         LocalDateTime dateTimeFrom = dateTime.minusYears(1);
         LocalDateTime dateTimeTo = ohlcvs.isEmpty() ? dateTime : ohlcvs.get(ohlcvs.size()-1).getDateTime().minusDays(1);
         if(dateTimeTo.isBefore(dateTimeFrom)) {
             return new ArrayList<>();
         }
-        return indiceOhlcvRepository.findAllByIndiceIdAndType(
-                        indiceId,
-                        Ohlcv.Type.MINUTE,
-                        dateTimeFrom,
-                        dateTimeTo,
-                        PageRequest.of(0, 360)
-                )
-                .stream()
-                .map(Ohlcv::from)
-                .collect(Collectors.toList());
+        return indiceService.getIndiceOhlcvs(indiceId, Ohlcv.Type.DAILY, dateTimeFrom, dateTimeTo, PageRequest.of(0, 360));
     }
 
     private List<Ohlcv> getPreviousAssetMinuteOhlcvs(String assetId, List<Ohlcv> ohlcvs, LocalDateTime dateTime) {
@@ -278,15 +264,7 @@ public class TradeExecutor {
         if(dateTimeTo.isBefore(dateTimeFrom)) {
             return new ArrayList<>();
         }
-        return assetOhlcvRepository.findAllByAssetIdAndType(
-                        assetId,
-                        Ohlcv.Type.MINUTE,
-                        dateTimeFrom,
-                        dateTimeTo,
-                        PageRequest.of(0, 1000))
-                .stream()
-                .map(Ohlcv::from)
-                .collect(Collectors.toList());
+        return assetService.getAssetOhlcvs(assetId, Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo, PageRequest.of(0, 1000));
     }
 
     private List<Ohlcv> getPreviousAssetDailyOhlcvs(String assetId, List<Ohlcv> ohlcvs, LocalDateTime dateTime) {
@@ -295,15 +273,7 @@ public class TradeExecutor {
         if(dateTimeTo.isBefore(dateTimeFrom)) {
             return new ArrayList<>();
         }
-        return assetOhlcvRepository.findAllByAssetIdAndType(
-                        assetId,
-                        Ohlcv.Type.MINUTE,
-                        dateTimeFrom,
-                        dateTimeTo,
-                        PageRequest.of(0, 360)
-                ).stream()
-                .map(Ohlcv::from)
-                .collect(Collectors.toList());
+        return assetService.getAssetOhlcvs(assetId, Ohlcv.Type.DAILY, dateTimeFrom, dateTimeTo, PageRequest.of(0, 360));
     }
 
     private void sendErrorAlarmIfEnabled(Trade trade, TradeAsset tradeAsset, Throwable t) {
@@ -414,19 +384,7 @@ public class TradeExecutor {
         DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager, transactionDefinition);
         transactionTemplate.executeWithoutResult(transactionStatus ->
-                orderRepository.saveAndFlush(OrderEntity.builder()
-                        .orderId(order.getOrderId())
-                        .orderAt(order.getOrderAt())
-                        .type(order.getType())
-                        .tradeId(order.getTradeId())
-                        .assetId(order.getAssetId())
-                        .assetName(order.getAssetName())
-                        .kind(order.getKind())
-                        .quantity(order.getQuantity())
-                        .price(order.getPrice())
-                        .result(order.getResult())
-                        .errorMessage(order.getErrorMessage())
-                        .build()));
+                orderService.saveOrder(order));
     }
 
     private void sendOrderAlarmIfEnabled(Trade trade, Order order) {

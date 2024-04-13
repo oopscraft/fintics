@@ -3,7 +3,7 @@ package org.oopscraft.fintics.api.v1.dto;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.fintics.model.DataSummary;
-import org.oopscraft.fintics.model.IndiceId;
+import org.oopscraft.fintics.model.Indice;
 import org.oopscraft.fintics.model.Ohlcv;
 
 import java.time.LocalDateTime;
@@ -87,7 +87,8 @@ public class DataSummaryResponse {
     @NoArgsConstructor
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public static class IndiceOhlcvStatisticsResponse extends OhlcvStatisticsResponse {
-        private IndiceId indiceId;
+
+        private String indiceId;
 
         public static IndiceOhlcvStatisticsResponse from(DataSummary.IndiceOhlcvStatistics indiceOhlcvStatistics) {
             return IndiceOhlcvStatisticsResponse.builder()
@@ -99,6 +100,56 @@ public class DataSummaryResponse {
                     .interpolatedMinDateTime(indiceOhlcvStatistics.getInterpolatedMinDateTime())
                     .interpolatedMaxDateTime(indiceOhlcvStatistics.getInterpolatedMaxDateTime())
                     .interpolatedCount(indiceOhlcvStatistics.getInterpolatedCount())
+                    .build();
+        }
+    }
+
+    @Data
+    @EqualsAndHashCode(callSuper = true)
+    @NoArgsConstructor
+    @SuperBuilder
+    @AllArgsConstructor(access = AccessLevel.PROTECTED)
+    public static class IndiceOhlcvResponse extends OhlcvResponse {
+
+        private Indice.Id indiceId;
+
+        public static IndiceOhlcvResponse from(DataSummary.IndiceOhlcv indiceOhlcv) {
+            return IndiceOhlcvResponse.builder()
+                    .indiceId(indiceOhlcv.getIndiceId())
+                    .type(indiceOhlcv.getType())
+                    .dateTime(indiceOhlcv.getDateTime())
+                    .openPrice(indiceOhlcv.getOpenPrice())
+                    .highPrice(indiceOhlcv.getOpenPrice())
+                    .lowPrice(indiceOhlcv.getLowPrice())
+                    .closePrice(indiceOhlcv.getClosePrice())
+                    .volume(indiceOhlcv.getVolume())
+                    .interpolated(indiceOhlcv.isInterpolated())
+                    .build();
+        }
+    }
+
+    @Data
+    @EqualsAndHashCode(callSuper = true)
+    @NoArgsConstructor
+    @SuperBuilder
+    @AllArgsConstructor
+    public static class AssetOhlcvResponse extends OhlcvResponse {
+
+        private String brokerId;
+
+        private String assetId;
+
+        public static AssetOhlcvResponse from(DataSummary.AssetOhlcv assetOhlcv) {
+            return AssetOhlcvResponse.builder()
+                    .assetId(assetOhlcv.getAssetId())
+                    .type(assetOhlcv.getType())
+                    .dateTime(assetOhlcv.getDateTime())
+                    .openPrice(assetOhlcv.getOpenPrice())
+                    .highPrice(assetOhlcv.getOpenPrice())
+                    .lowPrice(assetOhlcv.getLowPrice())
+                    .closePrice(assetOhlcv.getClosePrice())
+                    .volume(assetOhlcv.getVolume())
+                    .interpolated(assetOhlcv.isInterpolated())
                     .build();
         }
     }

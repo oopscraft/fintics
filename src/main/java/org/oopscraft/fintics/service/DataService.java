@@ -51,7 +51,7 @@ public class DataService {
                 .collect(Collectors.toList());
     }
 
-    public List<AssetOhlcv> getAssetOhlcvs(String assetId, Ohlcv.Type type, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo, Boolean interpolated, Pageable pageable) {
+    public List<DataSummary.AssetOhlcv> getAssetOhlcvs(String assetId, Ohlcv.Type type, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo, Boolean interpolated, Pageable pageable) {
         QAssetOhlcvEntity qAssetOhlcvEntity = QAssetOhlcvEntity.assetOhlcvEntity;
         List<AssetOhlcvEntity> assetOhlcvEntities = jpaQueryFactory
                 .selectFrom(qAssetOhlcvEntity)
@@ -67,11 +67,11 @@ public class DataService {
                 .offset(pageable.getOffset())
                 .fetch();
         return assetOhlcvEntities.stream()
-                .map(AssetOhlcv::from)
+                .map(DataSummary.AssetOhlcv::from)
                 .collect(Collectors.toList());
     }
 
-    public List<IndiceOhlcv> getIndiceOhlcvs(IndiceId indiceId, Ohlcv.Type type, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo, Boolean interpolated, Pageable pageable) {
+    public List<DataSummary.IndiceOhlcv> getIndiceOhlcvs(Indice.Id indiceId, Ohlcv.Type type, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo, Boolean interpolated, Pageable pageable) {
         QIndiceOhlcvEntity qIndiceOhlcvEntity = QIndiceOhlcvEntity.indiceOhlcvEntity;
         List<IndiceOhlcvEntity> indiceOhlcvEntities = jpaQueryFactory
                 .selectFrom(qIndiceOhlcvEntity)
@@ -87,7 +87,7 @@ public class DataService {
                 .offset(pageable.getOffset())
                 .fetch();
         return indiceOhlcvEntities.stream()
-                .map(IndiceOhlcv::from)
+                .map(DataSummary.IndiceOhlcv::from)
                 .collect(Collectors.toList());
 
     }

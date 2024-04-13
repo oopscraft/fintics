@@ -1,6 +1,6 @@
 package org.oopscraft.fintics.dao;
 
-import org.oopscraft.fintics.model.IndiceId;
+import org.oopscraft.fintics.model.Indice;
 import org.oopscraft.fintics.model.Ohlcv;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,7 +22,7 @@ public interface IndiceOhlcvRepository extends JpaRepository<IndiceOhlcvEntity, 
             " and a.dateTime between :dateTimeFrom and :dateTimeTo" +
             " order by a.dateTime desc")
     List<IndiceOhlcvEntity> findAllByIndiceIdAndType(
-            @Param("indiceId") IndiceId indiceId,
+            @Param("indiceId") Indice.Id indiceId,
             @Param("type") Ohlcv.Type type,
             @Param("dateTimeFrom") LocalDateTime dateTimeFrom,
             @Param("dateTimeTo") LocalDateTime dateTimeTo,

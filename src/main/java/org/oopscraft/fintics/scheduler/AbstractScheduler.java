@@ -34,16 +34,18 @@ public abstract class AbstractScheduler {
                 count++;
                 jpaRepository.saveAndFlush(ohlcvEntity);
                 // middle commit
-                if (count % 100 == 0) {
-                    log.info("- {} chunk commit[{}]", unitName, count);
+                if (count % 10 == 0) {
+                    log.debug("- {} chunk commit[{}]", unitName, count);
                     transactionManager.commit(status);
                     status = transactionManager.getTransaction(definition);
                 }
             }
             // final commit
-            log.info("- {} final commit[{}]", unitName, count);
+            log.debug("- {} final commit[{}]", unitName, count);
             transactionManager.commit(status);
+            log.info("- {} saved[{}]", unitName, count);
         } catch (Exception e) {
+            log.error(e.getMessage(), e);
             transactionManager.rollback(status);
         } finally {
             if (!status.isCompleted()) {

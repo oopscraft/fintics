@@ -1,6 +1,12 @@
 package org.oopscraft.fintics.trade.old
 
-import org.oopscraft.fintics.calculator.*
+import org.oopscraft.fintics.indicator.*
+import org.oopscraft.fintics.indicator.chaikinoscillator.ChaikinOscillatorContext
+import org.oopscraft.fintics.indicator.dmi.DmiContext
+import org.oopscraft.fintics.indicator.ema.EmaContext
+import org.oopscraft.fintics.indicator.macd.MacdContext
+import org.oopscraft.fintics.indicator.obv.ObvContext
+import org.oopscraft.fintics.indicator.rsi.RsiContext
 import org.oopscraft.fintics.model.*
 
 /**
@@ -10,9 +16,9 @@ import org.oopscraft.fintics.model.*
  * @param period period
  * @return result map
  */
-def analyzeIndicator(Indicator indicator, Ohlcv.Type ohlcvType, int period) {
+def analyzeIndicator(Profile indicator, Ohlcv.Type ohlcvType, int period) {
     // info
-    def name = indicator.getIndicatorName() + ':' + ohlcvType + ':' + period
+    def name = indicator.getProfileName() + ':' + ohlcvType + ':' + period
     def pctChangePeriod = 10
 
     // shortMa

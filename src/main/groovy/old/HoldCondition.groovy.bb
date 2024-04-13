@@ -1,5 +1,5 @@
-import org.oopscraft.fintics.calculator.Bb
-import org.oopscraft.fintics.calculator.BbContext
+import org.oopscraft.fintics.indicator.Bb
+import org.oopscraft.fintics.indicator.BbContext
 import org.oopscraft.fintics.model.Ohlcv
 
 // defines

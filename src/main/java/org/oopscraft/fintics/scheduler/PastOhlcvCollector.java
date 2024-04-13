@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.oopscraft.arch4j.core.alarm.AlarmService;
 import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
 import org.oopscraft.fintics.FinticsProperties;
 import org.oopscraft.fintics.dao.*;
@@ -17,15 +16,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -75,13 +71,13 @@ public class PastOhlcvCollector extends OhlcvCollector {
                 }
             }
             // indice
-            for (IndiceId indiceId : IndiceId.values()) {
+            for (Indice.Id indiceId : Indice.Id.values()) {
                 try {
                     collectPastIndiceMinuteOhlcvs(indiceId, expiredDateTime);
                     collectPastIndiceDailyOhlcvs(indiceId, expiredDateTime);
                 } catch (Throwable e) {
                     log.warn(e.getMessage());
-                    sendSystemAlarm(this.getClass(), String.format("%s - %s", indiceId.getIndiceName(), e.getMessage()));
+                    sendSystemAlarm(this.getClass(), String.format("%s - %s", indiceId, e.getMessage()));
                 }
             }
             log.info("PastOhlcvCollector - End collect past asset ohlcv");
@@ -161,7 +157,7 @@ public class PastOhlcvCollector extends OhlcvCollector {
         saveEntities(unitName, assetDailyOhlcvEntities, transactionManager, assetOhlcvRepository);
     }
 
-    void collectPastIndiceMinuteOhlcvs(IndiceId indiceId, LocalDateTime expiredDateTime) {
+    void collectPastIndiceMinuteOhlcvs(Indice.Id indiceId, LocalDateTime expiredDateTime) {
         // defines
         String yahooSymbol = convertToYahooSymbol(indiceId);
         LocalDateTime dateTimeTo = getIndiceMinDateTime(indiceId, Ohlcv.Type.MINUTE)
@@ -192,7 +188,7 @@ public class PastOhlcvCollector extends OhlcvCollector {
         saveEntities(unitName, indiceMinuteOhlcvEntities, transactionManager, indiceOhlcvRepository);
     }
 
-    void collectPastIndiceDailyOhlcvs(IndiceId indiceId, LocalDateTime expiredDateTime) {
+    void collectPastIndiceDailyOhlcvs(Indice.Id indiceId, LocalDateTime expiredDateTime) {
         // defines
         String yahooSymbol = convertToYahooSymbol(indiceId);
         LocalDateTime dateTimeTo = getIndiceMinDateTime(indiceId, Ohlcv.Type.DAILY)
@@ -236,7 +232,7 @@ public class PastOhlcvCollector extends OhlcvCollector {
         return Optional.ofNullable(minDateTime);
     }
 
-    Optional<LocalDateTime> getIndiceMinDateTime(IndiceId indiceId, Ohlcv.Type type) {
+    Optional<LocalDateTime> getIndiceMinDateTime(Indice.Id indiceId, Ohlcv.Type type) {
         LocalDateTime minDateTime = entityManager.createQuery("select " +
                                 " min(a.dateTime) " +
                                 " from IndiceOhlcvEntity a " +
@@ -249,7 +245,7 @@ public class PastOhlcvCollector extends OhlcvCollector {
         return Optional.ofNullable(minDateTime);
     }
 
-    public String convertToYahooSymbol(IndiceId indiceId) {
+    public String convertToYahooSymbol(Indice.Id indiceId) {
         String yahooSymbol = null;
         switch (indiceId) {
             case NDX -> yahooSymbol = "^NDX";

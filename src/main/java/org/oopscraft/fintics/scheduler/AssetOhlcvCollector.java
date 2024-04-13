@@ -3,12 +3,9 @@ package org.oopscraft.fintics.scheduler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.fintics.dao.*;
-import org.oopscraft.fintics.model.Broker;
+import org.oopscraft.fintics.model.*;
 import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.client.broker.BrokerClientFactory;
-import org.oopscraft.fintics.model.Ohlcv;
-import org.oopscraft.fintics.model.Trade;
-import org.oopscraft.fintics.model.TradeAsset;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -62,8 +59,8 @@ public class AssetOhlcvCollector extends OhlcvCollector {
         Broker broker = brokerRepository.findById(trade.getBrokerId())
                 .map(Broker::from)
                 .orElseThrow();
-        BrokerClient tradeClient = tradeClientFactory.getObject(broker);
-        List<Ohlcv> minuteOhlcvs = tradeClient.getMinuteOhlcvs(tradeAsset, dateTime);
+        BrokerClient brokerClient = tradeClientFactory.getObject(broker);
+        List<Ohlcv> minuteOhlcvs = brokerClient.getMinuteOhlcvs(tradeAsset, dateTime);
         if(minuteOhlcvs.isEmpty()) {
             return;
         }
@@ -89,8 +86,8 @@ public class AssetOhlcvCollector extends OhlcvCollector {
         Broker broker = brokerRepository.findById(trade.getBrokerId())
                 .map(Broker::from)
                 .orElseThrow();
-        BrokerClient tradeClient = tradeClientFactory.getObject(broker);
-        List<Ohlcv> dailyOhlcvs = tradeClient.getDailyOhlcvs(tradeAsset, dateTime);
+        BrokerClient brokerClient = tradeClientFactory.getObject(broker);
+        List<Ohlcv> dailyOhlcvs = brokerClient.getDailyOhlcvs(tradeAsset, dateTime);
         if(dailyOhlcvs.isEmpty()) {
             return;
         }

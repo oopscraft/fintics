@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.fintics.client.indice.IndiceClient;
 import org.oopscraft.fintics.dao.IndiceOhlcvEntity;
 import org.oopscraft.fintics.dao.IndiceOhlcvRepository;
-import org.oopscraft.fintics.model.IndiceId;
+import org.oopscraft.fintics.model.Indice;
 import org.oopscraft.fintics.model.Ohlcv;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -31,7 +31,7 @@ public class IndiceOhlcvCollector extends OhlcvCollector {
         try {
             log.info("IndiceOhlcvCollector - Start collect indice ohlcv.");
             LocalDateTime dateTime = LocalDateTime.now();
-            for (IndiceId indiceId : IndiceId.values()) {
+            for (Indice.Id indiceId : Indice.Id.values()) {
                 try {
                     saveIndiceMinuteOhlcvs(indiceId, dateTime);
                     saveIndiceDailyOhlcvs(indiceId, dateTime);
@@ -47,11 +47,11 @@ public class IndiceOhlcvCollector extends OhlcvCollector {
         }
     }
 
-    private void saveIndiceMinuteOhlcvs(IndiceId indiceId, LocalDateTime dateTime) {
+    private void saveIndiceMinuteOhlcvs(Indice.Id indiceId, LocalDateTime dateTime) {
         // current
         List<Ohlcv> minuteOhlcvs = indiceClient.getMinuteOhlcvs(indiceId, dateTime);
         List<IndiceOhlcvEntity> minuteOhlcvEntities = minuteOhlcvs.stream()
-                .map(ohlcv -> toIndiceOhlcvEntity(indiceId, ohlcv))
+                .map(indiceOhlcv -> toIndiceOhlcvEntity(indiceId, indiceOhlcv))
                 .toList();
 
         // previous
@@ -66,7 +66,7 @@ public class IndiceOhlcvCollector extends OhlcvCollector {
         saveEntities(unitName, newOrChangedMinuteOhlcvEntities, transactionManager, indiceOhlcvRepository);
     }
 
-    private void saveIndiceDailyOhlcvs(IndiceId indiceId, LocalDateTime dateTime) {
+    private void saveIndiceDailyOhlcvs(Indice.Id indiceId, LocalDateTime dateTime) {
         // current
         List<Ohlcv> dailyOhlcvs = indiceClient.getDailyOhlcvs(indiceId, dateTime);
         List<IndiceOhlcvEntity> dailyOhlcvEntities = dailyOhlcvs.stream()
@@ -85,7 +85,7 @@ public class IndiceOhlcvCollector extends OhlcvCollector {
         saveEntities(unitName, newOrChangedDailyOhlcvEntities, transactionManager, indiceOhlcvRepository);
     }
 
-    private IndiceOhlcvEntity toIndiceOhlcvEntity(IndiceId indiceId, Ohlcv ohlcv) {
+    private IndiceOhlcvEntity toIndiceOhlcvEntity(Indice.Id indiceId, Ohlcv ohlcv) {
         return IndiceOhlcvEntity.builder()
                 .indiceId(indiceId)
                 .dateTime(ohlcv.getDateTime())

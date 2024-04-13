@@ -2,6 +2,8 @@ package org.oopscraft.fintics.model;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.oopscraft.fintics.dao.AssetOhlcvEntity;
+import org.oopscraft.fintics.dao.IndiceOhlcvEntity;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -57,7 +59,45 @@ public class DataSummary {
     @NoArgsConstructor
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public static class IndiceOhlcvStatistics extends OhlcvStatistics implements Serializable {
-        private IndiceId indiceId;
+        private String indiceId;
+    }
+
+    @SuperBuilder
+    @Getter
+    public static class AssetOhlcv extends Ohlcv {
+        private String assetId;
+        public static AssetOhlcv from(AssetOhlcvEntity assetOhlcvEntity) {
+            return AssetOhlcv.builder()
+                    .assetId(assetOhlcvEntity.getAssetId())
+                    .type(assetOhlcvEntity.getType())
+                    .dateTime(assetOhlcvEntity.getDateTime())
+                    .openPrice(assetOhlcvEntity.getOpenPrice())
+                    .highPrice(assetOhlcvEntity.getHighPrice())
+                    .lowPrice(assetOhlcvEntity.getLowPrice())
+                    .closePrice(assetOhlcvEntity.getClosePrice())
+                    .volume(assetOhlcvEntity.getVolume())
+                    .interpolated(assetOhlcvEntity.isInterpolated())
+                    .build();
+        }
+    }
+
+    @SuperBuilder
+    @Getter
+    public static class IndiceOhlcv extends Ohlcv {
+        private Indice.Id indiceId;
+        public static IndiceOhlcv from(IndiceOhlcvEntity indiceOhlcvEntity) {
+            return IndiceOhlcv.builder()
+                    .indiceId(indiceOhlcvEntity.getIndiceId())
+                    .type(indiceOhlcvEntity.getType())
+                    .dateTime(indiceOhlcvEntity.getDateTime())
+                    .openPrice(indiceOhlcvEntity.getOpenPrice())
+                    .highPrice(indiceOhlcvEntity.getHighPrice())
+                    .lowPrice(indiceOhlcvEntity.getLowPrice())
+                    .closePrice(indiceOhlcvEntity.getClosePrice())
+                    .volume(indiceOhlcvEntity.getVolume())
+                    .interpolated(indiceOhlcvEntity.isInterpolated())
+                    .build();
+        }
     }
 
 }

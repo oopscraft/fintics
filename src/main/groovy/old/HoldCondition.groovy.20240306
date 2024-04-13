@@ -1,5 +1,5 @@
 import groovy.transform.ToString
-import org.oopscraft.fintics.calculator.*
+import org.oopscraft.fintics.indicator.*
 import org.oopscraft.fintics.model.Ohlcv
 import org.oopscraft.fintics.trade.Tool
 

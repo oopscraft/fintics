@@ -1,9 +1,15 @@
 package org.oopscraft.fintics.trade.old
 
-import org.oopscraft.fintics.calculator.*
+import org.oopscraft.fintics.indicator.*
+import org.oopscraft.fintics.indicator.chaikinoscillator.ChaikinOscillatorContext
+import org.oopscraft.fintics.indicator.dmi.DmiContext
+import org.oopscraft.fintics.indicator.ema.EmaContext
+import org.oopscraft.fintics.indicator.macd.MacdContext
+import org.oopscraft.fintics.indicator.obv.ObvContext
+import org.oopscraft.fintics.indicator.rsi.RsiContext
 import org.oopscraft.fintics.model.*
 
-def getIndicatorData(Indicator indicator, Ohlcv.Type ohlcvType, int ohlcvPeriod) {
+def getIndicatorData(Profile indicator, Ohlcv.Type ohlcvType, int ohlcvPeriod) {
     Map<String,Collection> result = [:]
     result.shortMas = indicator.calculate(ohlcvType, ohlcvPeriod, EmaContext.of(10))
     result.longMas = indicator.calculate(ohlcvType, ohlcvPeriod, EmaContext.of(30))

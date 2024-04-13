@@ -37,6 +37,25 @@ class StrategyExecutorTest {
                 .build();
     }
 
+//    List<IndiceProfile> getTestIndices() {
+//        List<IndiceProfile> indiceProfiles = new ArrayList<>();
+//        for (Indice.Id indiceId : Indice.Id.values()) {
+//            IndiceProfile indiceProfile = IndiceProfile.builder()
+//                    .minuteOhlcvs(new ArrayList<>())
+//                    .dailyOhlcvs(new ArrayList<>())
+//                    .build();
+//            indiceProfiles.add(indiceProfile);
+//        }
+//        return indiceProfiles;
+//    }
+//
+//    AssetProfile getTestAssetProfile() {
+//        return AssetProfile.builder()
+//                .minuteOhlcvs(new ArrayList<>())
+//                .dailyOhlcvs(new ArrayList<>())
+//                .build();
+//    }
+
     OrderBook getTestOrderBook() {
         return OrderBook.builder()
                 .price(BigDecimal.valueOf(10000))
@@ -45,11 +64,12 @@ class StrategyExecutorTest {
                 .build();
     }
 
-    List<IndiceIndicator> getTestIndiceIndicators() {
-        List<IndiceIndicator> indiceIndicators = new ArrayList<>();
-        for(IndiceId symbol : IndiceId.values()) {
-            indiceIndicators.add(IndiceIndicator.builder()
-                    .indiceId(symbol)
+    List<IndiceProfile> getTestIndiceProfiles() {
+        List<IndiceProfile> indiceProfiles = new ArrayList<>();
+        for(Indice.Id indiceId : Indice.Id.values()) {
+            Indice indice = Indice.from(indiceId);
+            indiceProfiles.add(IndiceProfile.builder()
+                    .target(indice)
                     .minuteOhlcvs(new ArrayList<Ohlcv>(){{
                         add(Ohlcv.builder()
                                 .dateTime(LocalDateTime.now())
@@ -72,31 +92,12 @@ class StrategyExecutorTest {
                     }})
                     .build());
         }
-        return indiceIndicators;
+        return indiceProfiles;
     }
 
-    String loadGroovyFileAsString(String fileName) {
-        String filePath = null;
-        try {
-            filePath = new File(".").getCanonicalPath() + "/src/main/groovy/" + fileName;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        StringBuilder stringBuilder = new StringBuilder();
-        try (InputStream inputStream = new FileInputStream(new File(filePath))) {
-            IOUtils.readLines(inputStream, StandardCharsets.UTF_8).forEach(line -> {
-                stringBuilder.append(line).append(LineSeparator.LF);
-            });
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        return stringBuilder.toString();
-    }
-
-    AssetIndicator getTestAssetIndicator(TradeAsset tradeAsset) {
-        return AssetIndicator.builder()
-                .assetId(tradeAsset.getAssetId())
-                .assetName(tradeAsset.getAssetName())
+    AssetProfile getTestAssetProfile(TradeAsset tradeAsset) {
+        return AssetProfile.builder()
+                .target(tradeAsset)
                 .minuteOhlcvs(IntStream.range(1,501)
                         .mapToObj(i -> {
                             BigDecimal price = BigDecimal.valueOf(1000 - (i*10));
@@ -126,14 +127,32 @@ class StrategyExecutorTest {
                 .build();
     }
 
+    String loadGroovyFileAsString(String fileName) {
+        String filePath = null;
+        try {
+            filePath = new File(".").getCanonicalPath() + "/src/main/groovy/" + fileName;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        StringBuilder stringBuilder = new StringBuilder();
+        try (InputStream inputStream = new FileInputStream(new File(filePath))) {
+            IOUtils.readLines(inputStream, StandardCharsets.UTF_8).forEach(line -> {
+                stringBuilder.append(line).append(LineSeparator.LF);
+            });
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return stringBuilder.toString();
+    }
+
     @Test
     void test() {
         // given
         Trade trade = getTestTrade();
         TradeAsset tradeAsset = getTestTradeAsset();
+        List<IndiceProfile> indiceProfiles = getTestIndiceProfiles();
+        AssetProfile assetProfile = getTestAssetProfile(tradeAsset);
         OrderBook orderBook = getTestOrderBook();
-        List<IndiceIndicator> indiceIndicators = getTestIndiceIndicators();
-        AssetIndicator assetIndicator = getTestAssetIndicator(tradeAsset);
         trade.setStrategyVariables("");
         Strategy strategy = Strategy.builder()
                 .script("return 1")
@@ -141,11 +160,11 @@ class StrategyExecutorTest {
 
         // when
         StrategyExecutor tradeAssetDecider = StrategyExecutor.builder()
+                .indiceProfiles(indiceProfiles)
+                .assetProfile(assetProfile)
                 .strategy(strategy)
                 .dateTime(LocalDateTime.now())
                 .orderBook(orderBook)
-                .indiceIndicators(indiceIndicators)
-                .assetIndicator(assetIndicator)
                 .build();
         BigDecimal result = tradeAssetDecider.execute();
 
@@ -159,8 +178,8 @@ class StrategyExecutorTest {
         // given
         Trade trade = getTestTrade();
         TradeAsset tradeAsset = getTestTradeAsset();
-        List<IndiceIndicator> indiceIndicators = getTestIndiceIndicators();
-        AssetIndicator assetIndicator = getTestAssetIndicator(tradeAsset);
+        List<IndiceProfile> indiceProfiles = getTestIndiceProfiles();
+        AssetProfile assetProfile = getTestAssetProfile(tradeAsset);
         String strategyScript = loadGroovyFileAsString("StrategyScript.groovy");
         Strategy strategy = Strategy.builder()
                         .script(strategyScript)
@@ -173,12 +192,12 @@ class StrategyExecutorTest {
 
         // when
         StrategyExecutor strategyExecutor = StrategyExecutor.builder()
+                .indiceProfiles(indiceProfiles)
+                .assetProfile(assetProfile)
                 .strategy(strategy)
                 .variables(strategyVariables.toString())
                 .dateTime(LocalDateTime.now())
                 .balance(new Balance())
-                .indiceIndicators(indiceIndicators)
-                .assetIndicator(assetIndicator)
                 .build();
         BigDecimal result = strategyExecutor.execute();
 

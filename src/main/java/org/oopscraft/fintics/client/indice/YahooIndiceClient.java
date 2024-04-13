@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
-import org.oopscraft.fintics.model.IndiceId;
+import org.oopscraft.fintics.model.Indice;
 import org.oopscraft.fintics.model.Ohlcv;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
@@ -34,40 +34,29 @@ public class YahooIndiceClient extends IndiceClient {
     private final ObjectMapper objectMapper;
 
     @Override
-    public List<Ohlcv> getMinuteOhlcvs(IndiceId indiceId, LocalDateTime dateTime) {
-        return switch (indiceId) {
-            case NDX -> getMinuteOhlcvs("^NDX", dateTime);
-            case NDX_FUTURE -> getMinuteOhlcvs("NQ=F", dateTime);
-            case SPX -> getMinuteOhlcvs("^GSPC", dateTime);
-            case SPX_FUTURE -> getMinuteOhlcvs("ES=F", dateTime);
-            case KOSPI -> getMinuteOhlcvs("^KS11", dateTime);
-            case USD_KRW -> getMinuteOhlcvs("KRW=X", dateTime);
-            case BITCOIN -> getMinuteOhlcvs("BTC-USD", dateTime);
-        };
+    public List<Ohlcv> getMinuteOhlcvs(Indice.Id indiceId, LocalDateTime dateTime) {
+        return getOhlcvs(indiceId, Ohlcv.Type.MINUTE, dateTime.minusDays(3), dateTime, 60*24);    // 1 days
     }
 
     @Override
-    public List<Ohlcv> getDailyOhlcvs(IndiceId indiceId, LocalDateTime dateTime) {
-        return switch (indiceId) {
-            case NDX -> getDailyOhlcvs("^NDX", dateTime);
-            case NDX_FUTURE -> getDailyOhlcvs("NQ=F", dateTime);
-            case SPX -> getDailyOhlcvs("^GSPC", dateTime);
-            case SPX_FUTURE -> getDailyOhlcvs("ES=F", dateTime);
-            case KOSPI -> getDailyOhlcvs("^KS11", dateTime);
-            case USD_KRW -> getDailyOhlcvs("KRW=X", dateTime);
-            case BITCOIN -> getDailyOhlcvs("BTC-USD", dateTime);
+    public List<Ohlcv> getDailyOhlcvs(Indice.Id indiceId, LocalDateTime dateTime) {
+        return getOhlcvs(indiceId, Ohlcv.Type.DAILY, dateTime.minusMonths(2), dateTime, 30);    // 1 months
+    }
+
+    private String convertYahooSymbol(Indice.Id indiceId) {
+        return switch(indiceId) {
+            case NDX -> "^NDX";
+            case NDX_FUTURE -> "NQ=F";
+            case SPX -> "^GSPC";
+            case SPX_FUTURE -> "ES=F";
+            case KOSPI -> "^KS11";
+            case USD_KRW -> "KRW=X";
+            case BITCOIN -> "BTC-USD";
         };
     }
 
-    private List<Ohlcv> getMinuteOhlcvs(String yahooSymbol, LocalDateTime dateTime) {
-        return getOhlcvs(yahooSymbol, Ohlcv.Type.MINUTE, dateTime.minusDays(3), dateTime, 60*24);    // 1 days
-    }
-
-    private List<Ohlcv> getDailyOhlcvs(String yahooSymbol, LocalDateTime dateTime) {
-        return getOhlcvs(yahooSymbol, Ohlcv.Type.DAILY, dateTime.minusMonths(2), dateTime, 30);    // 1 months
-    }
-
-    private List<Ohlcv> getOhlcvs(String symbol, Ohlcv.Type type, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo, Integer limit) {
+    private List<Ohlcv> getOhlcvs(Indice.Id indiceId, Ohlcv.Type type, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo, Integer limit) {
+        String yahooSymbol = convertYahooSymbol(indiceId);
         String interval;
         switch(type) {
             case MINUTE -> interval = "1m";
@@ -79,9 +68,9 @@ public class YahooIndiceClient extends IndiceClient {
                 .insecure(true)
                 .build();
 
-        String url = String.format("https://query1.finance.yahoo.com/v8/finance/chart/%s", symbol);
+        String url = String.format("https://query1.finance.yahoo.com/v8/finance/chart/%s", yahooSymbol);
         url = UriComponentsBuilder.fromUriString(url)
-                .queryParam("symbol",symbol)
+                .queryParam("symbol",yahooSymbol)
                 .queryParam("interval", interval)
                 .queryParam("period1", dateTimeFrom.atZone(ZoneId.systemDefault()).toEpochSecond())
                 .queryParam("period2", dateTimeTo.atZone(ZoneId.systemDefault()).toEpochSecond())

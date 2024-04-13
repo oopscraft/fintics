@@ -33,7 +33,6 @@ public class AssetService {
                 .and(Optional.ofNullable(market)
                         .map(AssetSpecifications::equalMarket)
                         .orElse(null));
-
         // sort
         Sort sort = Sort.by(AssetEntity_.MARKET_CAP).descending();
         pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
@@ -54,37 +53,10 @@ public class AssetService {
         return Optional.of(brokerAsset);
     }
 
-    public Optional<AssetIndicator> getAssetIndicator(String assetId, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo) {
-        AssetEntity assetEntity = assetRepository.findById(assetId)
-                .orElse(null);
-        String assetName = (assetEntity != null ? assetEntity.getAssetName() : assetId);
-
-        // minute ohlcv
-        LocalDateTime minuteDateTimeTo = Optional.ofNullable(dateTimeTo)
-                .orElse(LocalDateTime.now());
-        LocalDateTime minuteDateTimeFrom = Optional.ofNullable(dateTimeFrom)
-                .orElse(minuteDateTimeTo.minusDays(1));
-        List<Ohlcv> minuteOhlcvs = assetOhlcvRepository.findAllByAssetIdAndType(assetId, Ohlcv.Type.MINUTE, minuteDateTimeFrom, minuteDateTimeTo, Pageable.unpaged())
-                .stream()
+    public List<Ohlcv> getAssetOhlcvs(String assetId, Ohlcv.Type type, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo, Pageable pageable) {
+        return assetOhlcvRepository.findAllByAssetIdAndType(assetId, type, dateTimeFrom, dateTimeTo, pageable).stream()
                 .map(Ohlcv::from)
-                .collect(Collectors.toList());
-
-        // daily ohlcv
-        LocalDateTime dailyDateTimeTo = Optional.ofNullable(dateTimeTo)
-                .orElse(LocalDateTime.now());
-        LocalDateTime dailyDateTimeFrom = Optional.ofNullable(dateTimeFrom)
-                .orElse(dailyDateTimeTo.minusMonths(1));
-        List<Ohlcv> dailyOhlcvs = assetOhlcvRepository.findAllByAssetIdAndType(assetId, Ohlcv.Type.DAILY, dailyDateTimeFrom, dailyDateTimeTo, Pageable.unpaged())
-                .stream()
-                .map(Ohlcv::from)
-                .collect(Collectors.toList());
-
-        return Optional.ofNullable(AssetIndicator.builder()
-                .assetId(assetId)
-                .assetName(assetName)
-                .minuteOhlcvs(minuteOhlcvs)
-                .dailyOhlcvs(dailyOhlcvs)
-                .build());
+                .toList();
     }
 
 }

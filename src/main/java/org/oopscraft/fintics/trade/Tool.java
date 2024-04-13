@@ -1,10 +1,10 @@
 package org.oopscraft.fintics.trade;
 
 import com.mitchtalmadge.asciidata.graph.ASCIIGraph;
-import org.oopscraft.fintics.calculator.CalculateContext;
-import org.oopscraft.fintics.calculator.CalculateResult;
-import org.oopscraft.fintics.calculator.Calculator;
-import org.oopscraft.fintics.calculator.CalculatorFactory;
+import org.oopscraft.fintics.indicator.IndicatorContext;
+import org.oopscraft.fintics.indicator.Indicator;
+import org.oopscraft.fintics.indicator.IndicatorCalculator;
+import org.oopscraft.fintics.indicator.IndicatorCalculatorFactory;
 import org.oopscraft.fintics.model.Ohlcv;
 
 import java.math.BigDecimal;
@@ -24,13 +24,13 @@ public class Tool {
      * @param <R> return type
      * @return technical indicator results
      */
-    public static <C extends CalculateContext, R extends CalculateResult> List<R> calculate(List<Ohlcv> ohlcvs, C context) {
+    public static <C extends IndicatorContext, R extends Indicator> List<R> indicators(List<Ohlcv> ohlcvs, C context) {
         // series
         List<Ohlcv> series = new ArrayList<>(ohlcvs);
         Collections.reverse(series);
 
         // calculate
-        Calculator<C,R> calculator = CalculatorFactory.getCalculator(context);
+        IndicatorCalculator<C,R> calculator = IndicatorCalculatorFactory.getIndicator(context);
         List<R> calculateResults =  calculator.calculate(series);
 
         // reverse and return
@@ -96,7 +96,7 @@ public class Tool {
         Collections.reverse(series);
 
         BigDecimal mean = mean(series);
-        List<BigDecimal> stds = Calculator.sds(series, series.size(), MathContext.DECIMAL32);
+        List<BigDecimal> stds = IndicatorCalculator.sds(series, series.size(), MathContext.DECIMAL32);
         BigDecimal std = stds.get(stds.size() - 1);
 
         List<BigDecimal> zScores = new ArrayList<>();

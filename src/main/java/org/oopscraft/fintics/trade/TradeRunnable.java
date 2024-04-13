@@ -4,15 +4,15 @@ import ch.qos.logback.classic.Logger;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import org.oopscraft.fintics.dao.BrokerRepository;
-import org.oopscraft.fintics.dao.StrategyRepository;
-import org.oopscraft.fintics.model.Broker;
-import org.oopscraft.fintics.model.Strategy;
-import org.oopscraft.fintics.client.indice.IndiceClient;
 import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.client.broker.BrokerClientFactory;
-import org.oopscraft.fintics.dao.TradeRepository;
+import org.oopscraft.fintics.client.indice.IndiceClient;
+import org.oopscraft.fintics.model.Broker;
+import org.oopscraft.fintics.model.Strategy;
 import org.oopscraft.fintics.model.Trade;
+import org.oopscraft.fintics.service.BrokerService;
+import org.oopscraft.fintics.service.StrategyService;
+import org.oopscraft.fintics.service.TradeService;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -29,11 +29,11 @@ public class TradeRunnable implements Runnable {
     @Getter
     private final Integer interval;
 
-    private final TradeRepository tradeRepository;
+    private final TradeService tradeService;
 
-    private final StrategyRepository strategyRepository;
+    private final StrategyService strategyService;
 
-    private final BrokerRepository brokerRepository;
+    private final BrokerService brokerService;
 
     private final TradeExecutor tradeExecutor;
 
@@ -56,9 +56,9 @@ public class TradeRunnable implements Runnable {
     protected TradeRunnable(
         String tradeId,
         Integer interval,
-        TradeRepository tradeRepository,
-        StrategyRepository strategyRepository,
-        BrokerRepository brokerRepository,
+        TradeService tradeService,
+        StrategyService strategyService,
+        BrokerService brokerService,
         TradeExecutor tradeExecutor,
         IndiceClient indiceClient,
         BrokerClientFactory brokerClientFactory,
@@ -66,9 +66,9 @@ public class TradeRunnable implements Runnable {
     ){
         this.tradeId = tradeId;
         this.interval = interval;
-        this.tradeRepository = tradeRepository;
-        this.strategyRepository = strategyRepository;
-        this.brokerRepository = brokerRepository;
+        this.tradeService = tradeService;
+        this.strategyService = strategyService;
+        this.brokerService = brokerService;
         this.tradeExecutor = tradeExecutor;
         this.indiceClient = indiceClient;
         this.brokerClientFactory = brokerClientFactory;
@@ -102,15 +102,9 @@ public class TradeRunnable implements Runnable {
 
                 // call trade executor
                 LocalDateTime dateTime = LocalDateTime.now();
-                Trade trade = tradeRepository.findById(tradeId)
-                        .map(Trade::from)
-                        .orElseThrow();
-                Strategy strategy = strategyRepository.findById(trade.getStrategyId())
-                        .map(Strategy::from)
-                        .orElseThrow();
-                Broker broker = brokerRepository.findById(trade.getBrokerId())
-                        .map(Broker::from)
-                        .orElseThrow();
+                Trade trade = tradeService.getTrade(tradeId).orElseThrow();
+                Strategy strategy = strategyService.getStrategy(trade.getStrategyId()).orElseThrow();
+                Broker broker = brokerService.getBroker(trade.getBrokerId()).orElseThrow();
                 BrokerClient brokerClient = brokerClientFactory.getObject(broker);
                 tradeExecutor.execute(trade, strategy, dateTime, indiceClient, brokerClient);
 

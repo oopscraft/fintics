@@ -3,13 +3,12 @@ package org.oopscraft.fintics.api.v1.dto;
 import lombok.Builder;
 import lombok.Getter;
 import org.oopscraft.fintics.model.Indice;
-import org.oopscraft.fintics.model.IndiceId;
 
 @Builder
 @Getter
 public class IndiceResponse {
 
-    private IndiceId indiceId;
+    private Indice.Id indiceId;
 
     private String indiceName;
 

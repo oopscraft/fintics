@@ -4,12 +4,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.web.support.PageableUtils;
-import org.oopscraft.fintics.api.v1.dto.AssetOhlcvResponse;
 import org.oopscraft.fintics.api.v1.dto.AssetResponse;
 import org.oopscraft.fintics.api.v1.dto.DataSummaryResponse;
-import org.oopscraft.fintics.api.v1.dto.IndiceOhlcvResponse;
 import org.oopscraft.fintics.model.DataSummary;
-import org.oopscraft.fintics.model.IndiceId;
+import org.oopscraft.fintics.model.Indice;
 import org.oopscraft.fintics.model.Ohlcv;
 import org.oopscraft.fintics.service.DataService;
 import org.springframework.data.domain.Pageable;
@@ -60,7 +58,7 @@ public class DataRestController {
     }
 
     @GetMapping("asset-ohlcvs")
-    public ResponseEntity<List<AssetOhlcvResponse>> getAssetOhlcvs(
+    public ResponseEntity<List<DataSummaryResponse.AssetOhlcvResponse>> getAssetOhlcvs(
             @RequestParam(value = "assetId", required = false) String assetId,
             @RequestParam(value = "type", required = false) Ohlcv.Type type,
             @RequestParam(value = "dateTimeFrom", required = false) ZonedDateTime zonedDateTimeFrom,
@@ -74,8 +72,8 @@ public class DataRestController {
         LocalDateTime dateTimeTo = Optional.ofNullable(zonedDateTimeTo)
                 .map(item -> item.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime())
                 .orElse(null);
-        List<AssetOhlcvResponse> assetOhlcvResponses = dataService.getAssetOhlcvs(assetId, type, dateTimeFrom, dateTimeTo, interpolated, pageable).stream()
-                .map(AssetOhlcvResponse::from)
+        List<DataSummaryResponse.AssetOhlcvResponse> assetOhlcvResponses = dataService.getAssetOhlcvs(assetId, type, dateTimeFrom, dateTimeTo, interpolated, pageable).stream()
+                .map(DataSummaryResponse.AssetOhlcvResponse::from)
                 .toList();
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_RANGE, PageableUtils.toContentRange("asset-ohlcvs", pageable))
@@ -83,8 +81,8 @@ public class DataRestController {
     }
 
     @GetMapping("indice-ohlcvs")
-    public ResponseEntity<List<IndiceOhlcvResponse>> getIndiceOhlcvs(
-            @RequestParam(value = "indiceId", required = false) IndiceId indiceId,
+    public ResponseEntity<List<DataSummaryResponse.IndiceOhlcvResponse>> getIndiceOhlcvs(
+            @RequestParam(value = "indiceId", required = false) Indice.Id indiceId,
             @RequestParam(value = "type", required = false) Ohlcv.Type type,
             @RequestParam(value = "dateTimeFrom", required = false) ZonedDateTime zonedDateTimeFrom,
             @RequestParam(value = "dateTimeTo", required = false) ZonedDateTime zonedDateTimeTo,
@@ -97,8 +95,8 @@ public class DataRestController {
         LocalDateTime dateTimeTo = Optional.ofNullable(zonedDateTimeTo)
                 .map(item -> item.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime())
                 .orElse(null);
-        List<IndiceOhlcvResponse> indiceOhlcvResponses = dataService.getIndiceOhlcvs(indiceId, type, dateTimeFrom, dateTimeTo, interpolated, pageable).stream()
-                .map(IndiceOhlcvResponse::from)
+        List<DataSummaryResponse.IndiceOhlcvResponse> indiceOhlcvResponses = dataService.getIndiceOhlcvs(indiceId, type, dateTimeFrom, dateTimeTo, interpolated, pageable).stream()
+                .map(DataSummaryResponse.IndiceOhlcvResponse::from)
                 .toList();
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_RANGE, PageableUtils.toContentRange("indice-ohlcvs", pageable))

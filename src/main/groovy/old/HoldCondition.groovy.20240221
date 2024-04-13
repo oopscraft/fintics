@@ -1,6 +1,6 @@
 package org.oopscraft.fintics.trade
 
-import org.oopscraft.fintics.calculator.*
+import org.oopscraft.fintics.indicator.*
 import org.oopscraft.fintics.model.*
 
 import java.time.LocalTime

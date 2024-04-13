@@ -20,16 +20,16 @@ public class SimulateIndiceClient extends IndiceClient {
     @Getter
     private LocalDateTime dateTime = LocalDateTime.now();
 
-    private final Map<IndiceId,List<Ohlcv>> minuteOhlcvsMap = new HashMap<>();
+    private final Map<Indice.Id, List<Ohlcv>> minuteOhlcvsMap = new HashMap<>();
 
-    private final Map<IndiceId,List<Ohlcv>> dailyOhlcvsMap = new HashMap<>();
+    private final Map<Indice.Id, List<Ohlcv>> dailyOhlcvsMap = new HashMap<>();
 
     @Builder
     protected SimulateIndiceClient(IndiceOhlcvRepository indiceOhlcvRepository) {
         this.indiceOhlcvRepository = indiceOhlcvRepository;
     }
 
-    private void loadOhlcvs(IndiceId indiceId, LocalDateTime dateTime) {
+    private void loadOhlcvs(Indice.Id indiceId, LocalDateTime dateTime) {
         List<Ohlcv> minuteOhlcvs = indiceOhlcvRepository.findAllByIndiceIdAndType(indiceId, Ohlcv.Type.MINUTE, dateTime.minusMonths(1), dateTime, Pageable.unpaged())
                 .stream()
                 .map(Ohlcv::from)
@@ -43,13 +43,13 @@ public class SimulateIndiceClient extends IndiceClient {
     }
 
     @Override
-    public List<Ohlcv> getMinuteOhlcvs(IndiceId indiceId, LocalDateTime dateTime) {
+    public List<Ohlcv> getMinuteOhlcvs(Indice.Id indiceId, LocalDateTime dateTime) {
         LocalDateTime dateTimeFrom = dateTime.minusWeeks(1);
         LocalDateTime dateTimeTo = dateTime.minusMinutes(0);
         if(minuteOhlcvsMap.containsKey(indiceId)) {
             return minuteOhlcvsMap.get(indiceId).stream()
-                    .filter(ohlcv -> (ohlcv.getDateTime().isAfter(dateTimeFrom) || ohlcv.getDateTime().isEqual(dateTimeFrom))
-                            && (ohlcv.getDateTime().isBefore(dateTimeTo) || ohlcv.getDateTime().isEqual(dateTimeTo)))
+                    .filter(indiceOhlcv -> (indiceOhlcv.getDateTime().isAfter(dateTimeFrom) || indiceOhlcv.getDateTime().isEqual(dateTimeFrom))
+                            && (indiceOhlcv.getDateTime().isBefore(dateTimeTo) || indiceOhlcv.getDateTime().isEqual(dateTimeTo)))
                     .collect(Collectors.toList());
         }
 
@@ -64,7 +64,7 @@ public class SimulateIndiceClient extends IndiceClient {
     }
 
     @Override
-    public List<Ohlcv> getDailyOhlcvs(IndiceId indiceId, LocalDateTime dateTime) {
+    public List<Ohlcv> getDailyOhlcvs(Indice.Id indiceId, LocalDateTime dateTime) {
         LocalDateTime dateTimeFrom = dateTime.minusYears(1);
         LocalDateTime dateTimeTo = dateTime.minusDays(0);
         if(dailyOhlcvsMap.containsKey(indiceId)) {

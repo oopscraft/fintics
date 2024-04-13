@@ -17,42 +17,19 @@ public class IndiceService {
     private final IndiceOhlcvRepository indiceOhlcvRepository;
 
     public List<Indice> getIndices() {
-        return Arrays.stream(IndiceId.values())
+        return Arrays.stream(Indice.Id.values())
                 .map(Indice::from)
-                .collect(Collectors.toList());
+                .toList();
     }
 
-    public Optional<Indice> getIndice(IndiceId symbol) {
-        return Optional.ofNullable(Indice.from(symbol));
+    public Optional<Indice> getIndice(String indiceId) {
+        return Optional.of(Indice.from(Indice.Id.valueOf(indiceId)));
     }
 
-    public Optional<IndiceIndicator> getIndiceIndicator(IndiceId indiceId, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo) {
-        // minute ohlcv
-        LocalDateTime minuteDateTimeTo = Optional.ofNullable(dateTimeTo)
-                .orElse(LocalDateTime.now());
-        LocalDateTime minuteDateTimeFrom = Optional.ofNullable(dateTimeFrom)
-                .orElse(minuteDateTimeTo.minusDays(1));
-        List<Ohlcv> minuteOhlcvs = indiceOhlcvRepository.findAllByIndiceIdAndType(indiceId, Ohlcv.Type.MINUTE, minuteDateTimeFrom, minuteDateTimeTo, Pageable.unpaged())
-                .stream()
+    public List<Ohlcv> getIndiceOhlcvs(Indice.Id indiceId, Ohlcv.Type type, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo, Pageable pageable) {
+        return indiceOhlcvRepository.findAllByIndiceIdAndType(indiceId, type, dateTimeFrom, dateTimeTo, pageable).stream()
                 .map(Ohlcv::from)
-                .collect(Collectors.toList());
-
-        // daily ohlcv
-        LocalDateTime dailyDateTimeTo = Optional.ofNullable(dateTimeTo)
-                .orElse(LocalDateTime.now());
-        LocalDateTime dailyDateTimeFrom = Optional.ofNullable(dateTimeFrom)
-                .orElse(dailyDateTimeTo.minusMonths(1));
-        List<Ohlcv> dailyOhlcvs = indiceOhlcvRepository.findAllByIndiceIdAndType(indiceId, Ohlcv.Type.DAILY, dailyDateTimeFrom, dailyDateTimeTo, Pageable.unpaged())
-                .stream()
-                .map(Ohlcv::from)
-                .collect(Collectors.toList());
-
-        // return indicator
-        return Optional.of(IndiceIndicator.builder()
-                .indiceId(indiceId)
-                .minuteOhlcvs(minuteOhlcvs)
-                .dailyOhlcvs(dailyOhlcvs)
-                .build());
+                .toList();
     }
 
 }

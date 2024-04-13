@@ -28,9 +28,9 @@ public class SimulateBrokerClient extends BrokerClient {
     @Setter
     private BigDecimal feeRate = BigDecimal.ZERO;
 
-    private final Map<String,List<Ohlcv>> minuteOhlcvsMap = new HashMap<>();
+    private final Map<String, List<Ohlcv>> minuteOhlcvsMap = new HashMap<>();
 
-    private final Map<String,List<Ohlcv>> dailyOhlcvsMap = new HashMap<>();
+    private final Map<String, List<Ohlcv>> dailyOhlcvsMap = new HashMap<>();
 
     private final Balance balance = Balance.builder()
             .cashAmount(BigDecimal.ZERO)
@@ -127,11 +127,10 @@ public class SimulateBrokerClient extends BrokerClient {
         LocalDateTime dateTimeTo = dateTimeFrom.plusMinutes(1).minusNanos(1);
         List<Ohlcv> minuteOhlcvs = minuteOhlcvsMap.get(asset.getAssetId());
         Ohlcv minuteOhlcv = minuteOhlcvs.stream()
-                .filter(ohlcv -> (ohlcv.getDateTime().isAfter(dateTimeFrom) || ohlcv.getDateTime().isEqual(dateTimeFrom))
-                        && (ohlcv.getDateTime().isBefore(dateTimeTo) || ohlcv.getDateTime().isEqual(dateTimeTo)))
+                .filter(assetOhlcv -> (assetOhlcv.getDateTime().isAfter(dateTimeFrom) || assetOhlcv.getDateTime().isEqual(dateTimeFrom))
+                        && (assetOhlcv.getDateTime().isBefore(dateTimeTo) || assetOhlcv.getDateTime().isEqual(dateTimeTo)))
                 .findFirst()
                 .orElse(null);
-
         BigDecimal price = minuteOhlcv.getClosePrice();
         BigDecimal bidPrice = minuteOhlcv.getLowPrice();
         BigDecimal askPrice = minuteOhlcv.getHighPrice();
