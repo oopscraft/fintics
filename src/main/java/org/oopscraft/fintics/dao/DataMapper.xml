@@ -21,8 +21,7 @@
                     fta.used_by_trade as "usedByTrade"
         FROM        (
                     -- all
-                    SELECT 	DISTINCT
-                            asset_id,
+                    SELECT 	asset_id,
                             type,
                             MIN(date_time) as min_date_time,
                             MAX(date_time) as max_date_time,
@@ -35,8 +34,7 @@
                     ) as fao
         LEFT OUTER JOIN (
                     -- interpolated
-                    SELECT 	DISTINCT
-                            asset_id,
+                    SELECT 	asset_id,
                             type,
                             MIN(date_time) as interpolated_min_date_time,
                             MAX(date_time) as interpolated_max_date_time,
@@ -71,8 +69,7 @@
                     fioi.interpolated_count as "interpolatedCount"
         FROM        (
                     -- all
-                    SELECT 	DISTINCT
-                            indice_id,
+                    SELECT 	indice_id,
                             type,
                             MIN(date_time) as min_date_time,
                             MAX(date_time) as max_date_time,
@@ -85,8 +82,7 @@
                     ) as fio
         LEFT OUTER JOIN (
                     -- interpolated
-                    SELECT 	DISTINCT
-                            indice_id,
+                    SELECT 	indice_id,
                             type,
                             MIN(date_time) as interpolated_min_date_time,
                             MAX(date_time) as interpolated_max_date_time,
