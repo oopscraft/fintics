@@ -1,26 +1,14 @@
-import org.oopscraft.fintics.indicator.*
-import org.oopscraft.fintics.indicator.atr.Atr
-import org.oopscraft.fintics.indicator.atr.AtrContext
-import org.oopscraft.fintics.indicator.bollingerband.BollingerBand
-import org.oopscraft.fintics.indicator.bollingerband.BollingerBandContext
-import org.oopscraft.fintics.indicator.cci.Cci
-import org.oopscraft.fintics.indicator.cci.CciContext
-import org.oopscraft.fintics.indicator.chaikinoscillator.ChaikinOscillator
-import org.oopscraft.fintics.indicator.chaikinoscillator.ChaikinOscillatorContext
-import org.oopscraft.fintics.indicator.dmi.Dmi
-import org.oopscraft.fintics.indicator.dmi.DmiContext
-import org.oopscraft.fintics.indicator.macd.Macd
-import org.oopscraft.fintics.indicator.macd.MacdContext
-import org.oopscraft.fintics.indicator.obv.Obv
-import org.oopscraft.fintics.indicator.obv.ObvContext
-import org.oopscraft.fintics.indicator.rsi.Rsi
-import org.oopscraft.fintics.indicator.rsi.RsiContext
-import org.oopscraft.fintics.indicator.stochasticslow.StochasticSlow
-import org.oopscraft.fintics.indicator.stochasticslow.StochasticSlowContext
+import org.oopscraft.fintics.indicator.atr.*
+import org.oopscraft.fintics.indicator.bollingerband.*
+import org.oopscraft.fintics.indicator.cci.*
+import org.oopscraft.fintics.indicator.chaikinoscillator.*
+import org.oopscraft.fintics.indicator.dmi.*
+import org.oopscraft.fintics.indicator.macd.*
+import org.oopscraft.fintics.indicator.obv.*
+import org.oopscraft.fintics.indicator.rsi.*
+import org.oopscraft.fintics.indicator.stochasticslow.*
 import org.oopscraft.fintics.model.Ohlcv
 import org.oopscraft.fintics.trade.Tool
-
-import java.time.LocalTime
 
 interface Scorable {
     Number getAverage()
