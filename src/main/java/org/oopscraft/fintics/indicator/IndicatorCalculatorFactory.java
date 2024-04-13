@@ -1,28 +1,5 @@
 package org.oopscraft.fintics.indicator;
 
-import org.oopscraft.fintics.indicator.atr.AtrCalculator;
-import org.oopscraft.fintics.indicator.atr.AtrContext;
-import org.oopscraft.fintics.indicator.bollingerband.BollingerBandCalculator;
-import org.oopscraft.fintics.indicator.bollingerband.BollingerBandContext;
-import org.oopscraft.fintics.indicator.cci.CciCalculator;
-import org.oopscraft.fintics.indicator.cci.CciContext;
-import org.oopscraft.fintics.indicator.chaikinoscillator.ChaikinOscillatorCalculator;
-import org.oopscraft.fintics.indicator.chaikinoscillator.ChaikinOscillatorContext;
-import org.oopscraft.fintics.indicator.dmi.DmiCalculator;
-import org.oopscraft.fintics.indicator.dmi.DmiContext;
-import org.oopscraft.fintics.indicator.ema.EmaCalculator;
-import org.oopscraft.fintics.indicator.ema.EmaContext;
-import org.oopscraft.fintics.indicator.macd.MacdCalculator;
-import org.oopscraft.fintics.indicator.macd.MacdContext;
-import org.oopscraft.fintics.indicator.obv.ObvCalculator;
-import org.oopscraft.fintics.indicator.obv.ObvContext;
-import org.oopscraft.fintics.indicator.rsi.RsiCalculator;
-import org.oopscraft.fintics.indicator.rsi.RsiContext;
-import org.oopscraft.fintics.indicator.sma.SmaCalculator;
-import org.oopscraft.fintics.indicator.sma.SmaContext;
-import org.oopscraft.fintics.indicator.stochasticslow.StochasticSlowCalculator;
-import org.oopscraft.fintics.indicator.stochasticslow.StochasticSlowContext;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedHashMap;

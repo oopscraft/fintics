@@ -1,12 +1,12 @@
 package org.oopscraft.fintics.trade.old
 
 import org.oopscraft.fintics.indicator.*
-import org.oopscraft.fintics.indicator.chaikinoscillator.ChaikinOscillatorContext
-import org.oopscraft.fintics.indicator.dmi.DmiContext
-import org.oopscraft.fintics.indicator.ema.EmaContext
-import org.oopscraft.fintics.indicator.macd.MacdContext
-import org.oopscraft.fintics.indicator.obv.ObvContext
-import org.oopscraft.fintics.indicator.rsi.RsiContext
+import org.oopscraft.fintics.indicator.ChaikinOscillatorContext
+import org.oopscraft.fintics.indicator.DmiContext
+import org.oopscraft.fintics.indicator.EmaContext
+import org.oopscraft.fintics.indicator.MacdContext
+import org.oopscraft.fintics.indicator.ObvContext
+import org.oopscraft.fintics.indicator.RsiContext
 import org.oopscraft.fintics.model.*
 
 /**

@@ -1,14 +1,6 @@
-import org.oopscraft.fintics.indicator.atr.*
-import org.oopscraft.fintics.indicator.bollingerband.*
-import org.oopscraft.fintics.indicator.cci.*
-import org.oopscraft.fintics.indicator.chaikinoscillator.*
-import org.oopscraft.fintics.indicator.dmi.*
-import org.oopscraft.fintics.indicator.macd.*
-import org.oopscraft.fintics.indicator.obv.*
-import org.oopscraft.fintics.indicator.rsi.*
-import org.oopscraft.fintics.indicator.stochasticslow.*
 import org.oopscraft.fintics.model.Ohlcv
 import org.oopscraft.fintics.trade.Tool
+import org.oopscraft.fintics.indicator.*
 
 interface Scorable {
     Number getAverage()
