@@ -37,11 +37,11 @@ insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`au
 insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
     ('TRADES_EDIT','Y','Trades Edit Role','N','N');
 insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
-    ('STRATEGIES','Y','Strategies Access Role','N','N');
+    ('STRATEGIES','Y','Strategies Access Role','N','Y');
 insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
     ('STRATEGIES_EDIT','Y','Strategies Edit Role','N','N');
 insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
-    ('BROKERS','Y','Brokers Access Role','N','N');
+    ('BROKERS','Y','Brokers Access Role','N','Y');
 insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
     ('BROKERS_EDIT','Y','Brokers Edit Role','N','N');
 insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
