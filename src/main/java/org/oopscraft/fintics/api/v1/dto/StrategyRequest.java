@@ -9,6 +9,8 @@ import org.oopscraft.fintics.model.Strategy;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class StrategyRequest {
 
+    private String strategyId;
+
     private String strategyName;
 
     private Strategy.Language language;

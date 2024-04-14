@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.oopscraft.arch4j.web.support.PageableUtils;
 import org.oopscraft.fintics.api.v1.dto.SimulateRequest;
 import org.oopscraft.fintics.api.v1.dto.SimulateResponse;
+import org.oopscraft.fintics.api.v1.dto.StrategyRequest;
 import org.oopscraft.fintics.api.v1.dto.TradeRequest;
 import org.oopscraft.fintics.model.*;
 import org.oopscraft.fintics.service.SimulateService;
@@ -61,6 +62,7 @@ public class SimulatesRestController {
     @PreAuthorize("hasAuthority('API_SIMULATES_EDIT')")
     @Transactional
     public ResponseEntity<SimulateResponse> runSimulate(@RequestBody SimulateRequest simulateRequest) {
+        // trade
         TradeRequest tradeRequest = simulateRequest.getTrade();
         Trade trade = Trade.builder()
                 .tradeId(tradeRequest.getTradeId())
@@ -81,6 +83,17 @@ public class SimulatesRestController {
                         .build())
                 .collect(Collectors.toList());
         trade.setTradeAssets(tradeAssets);
+
+        // strategy
+        StrategyRequest strategyRequest = simulateRequest.getStrategy();
+        Strategy strategy = Strategy.builder()
+                .strategyId(strategyRequest.getStrategyId())
+                .strategyName(strategyRequest.getStrategyName())
+                .variables(strategyRequest.getVariables())
+                .language(strategyRequest.getLanguage())
+                .script(strategyRequest.getScript())
+                .build();
+
         LocalDateTime dateTimeFrom = simulateRequest.getDateTimeFrom()
                 .withZoneSameInstant(ZoneId.systemDefault())
                 .toLocalDateTime();
@@ -91,6 +104,7 @@ public class SimulatesRestController {
         BigDecimal feeRate = simulateRequest.getFeeRate();
         Simulate simulate = Simulate.builder()
                 .trade(trade)
+                .strategy(strategy)
                 .tradeId(trade.getTradeId())
                 .tradeName(trade.getTradeName())
                 .dateTimeFrom(dateTimeFrom)

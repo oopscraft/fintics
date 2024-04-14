@@ -5,10 +5,11 @@ delete from `core_git`;
 delete from `core_alarm`;
 
 -- core_authority
-insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_ASSETS','Y','Assets API Access Authority');
-insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_INDICES','Y','Indices API Access Authority');
-insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_ORDERS','Y','Orders API Access Authority');
-insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_SIMULATES','Y','Simulates API Access Authority');
+insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_ASSETS','Y','Assets API Authority');
+insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_INDICES','Y','Indices API Authority');
+insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_ORDERS','Y','Orders API Authority');
+insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_SIMULATES','Y','Simulates API Authority');
+insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_SIMULATES_EDIT','Y','Simulates Edit API Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_TRADES','Y','Trades API Access Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_TRADES_EDIT','Y','Trades Edit API Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_STRATEGIES','Y','Strategies API Authority');
@@ -25,6 +26,7 @@ insert into `core_authority` (`authority_id`,`system_required`,`authority_name`)
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('BROKERS_EDIT','Y','Brokers Edit Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('ORDERS','Y','Orders Access Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('SIMULATES','Y','Simulates Access Authority');
+insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('SIMULATES_EDIT','Y','Simulates Edit Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('DATA','Y','Data Access Authority');
 
 -- core_role
@@ -46,6 +48,8 @@ insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`au
     ('ORDERS','Y','Orders Access Role','N','Y');
 insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
     ('SIMULATES','Y','Simulates Access Role','N','Y');
+insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
+    ('SIMULATES_EDIT','Y','Simulates Edit Role','N','N');
 insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
     ('DATA','Y','Data Access Role','N','Y');
 
@@ -72,6 +76,12 @@ insert into `core_role_authority` (`role_id`,`authority_id`) values
 insert into `core_role_authority` (`role_id`,`authority_id`) values
     ('BROKERS_EDIT','BROKERS_EDIT'),
     ('BROKERS_EDIT','API_BROKERS_EDIT');
+insert into `core_role_authority` (`role_id`,`authority_id`) values
+    ('SIMULATES','SIMULATES'),
+    ('SIMULATES','API_SIMULATES');
+insert into `core_role_authority` (`role_id`,`authority_id`) values
+    ('SIMULATES_EDIT','SIMULATES_EDIT'),
+    ('SIMULATES_EDIT','API_SIMULATES_EDIT');
 insert into `core_role_authority` (`role_id`,`authority_id`) values
     ('ORDERS','ORDERS'),
     ('ORDERS','API_ORDERS');
