@@ -4,7 +4,6 @@ import ch.qos.logback.classic.Logger;
 import lombok.Builder;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
-import org.oopscraft.arch4j.core.data.IdGenerator;
 import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.client.indice.IndiceClient;
 import org.oopscraft.fintics.model.*;
@@ -286,9 +285,8 @@ public class TradeExecutor {
         }
     }
 
-    private void buyTradeAsset(BrokerClient tradeClient, Trade trade, TradeAsset tradeAsset, BigDecimal quantity, BigDecimal price) throws InterruptedException {
+    private void buyTradeAsset(BrokerClient brokerClient, Trade trade, TradeAsset tradeAsset, BigDecimal quantity, BigDecimal price) throws InterruptedException {
         Order order = Order.builder()
-                .orderId(IdGenerator.uuid())
                 .orderAt(LocalDateTime.now())
                 .type(Order.Type.BUY)
                 .kind(trade.getOrderKind())
@@ -301,7 +299,7 @@ public class TradeExecutor {
         log.info("[{}] buyTradeAsset: {}", tradeAsset.getAssetName(), order);
         try {
             // check waiting order exists
-            Order waitingOrder = tradeClient.getWaitingOrders().stream()
+            Order waitingOrder = brokerClient.getWaitingOrders().stream()
                     .filter(element ->
                             Objects.equals(element.getSymbol(), order.getSymbol())
                                     && element.getType() == order.getType())
@@ -312,13 +310,13 @@ public class TradeExecutor {
                 if (waitingOrder.getKind() == Order.Kind.LIMIT) {
                     waitingOrder.setPrice(price);
                     log.info("[{}] amend buy order:{}", tradeAsset.getAssetName(), waitingOrder);
-                    tradeClient.amendOrder(waitingOrder);
+                    brokerClient.amendOrder(waitingOrder);
                 }
                 return;
             }
 
             // submit buy order
-            tradeClient.submitOrder(order);
+            brokerClient.submitOrder(order);
             order.setResult(Order.Result.COMPLETED);
 
             // alarm
@@ -333,9 +331,8 @@ public class TradeExecutor {
         }
     }
 
-    private void sellTradeAsset(BrokerClient tradeClient, Trade trade, TradeAsset tradeAsset, BigDecimal quantity, BigDecimal price) throws InterruptedException {
+    private void sellTradeAsset(BrokerClient brokerClient, Trade trade, TradeAsset tradeAsset, BigDecimal quantity, BigDecimal price) throws InterruptedException {
         Order order = Order.builder()
-                .orderId(IdGenerator.uuid())
                 .orderAt(LocalDateTime.now())
                 .type(Order.Type.SELL)
                 .kind(trade.getOrderKind())
@@ -348,7 +345,7 @@ public class TradeExecutor {
         log.info("[{}] sellTradeAsset: {}", tradeAsset.getAssetName(), order);
         try {
             // check waiting order exists
-            Order waitingOrder = tradeClient.getWaitingOrders().stream()
+            Order waitingOrder = brokerClient.getWaitingOrders().stream()
                     .filter(element ->
                             Objects.equals(element.getSymbol(), order.getSymbol())
                                     && element.getType() == order.getType())
@@ -359,13 +356,13 @@ public class TradeExecutor {
                 if (waitingOrder.getKind() == Order.Kind.LIMIT) {
                     waitingOrder.setPrice(price);
                     log.info("[{}] amend sell order:{}", tradeAsset.getAssetName(), waitingOrder);
-                    tradeClient.amendOrder(waitingOrder);
+                    brokerClient.amendOrder(waitingOrder);
                 }
                 return;
             }
 
             // submit sell order
-            tradeClient.submitOrder(order);
+            brokerClient.submitOrder(order);
             order.setResult(Order.Result.COMPLETED);
 
             // alarm
