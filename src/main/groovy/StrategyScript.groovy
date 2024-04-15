@@ -95,8 +95,6 @@ class Analysis implements Analyzable {
         score.chaikinOscillatorValueOverSignal = chaikinOscillator.value > chaikinOscillator.signal ? 100 : 0
         // cci
         score.cciValueOverSignal = cci.value > cci.signal ? 100 : 0
-        // stochastic slow
-        score.stochasticSlowKOverD = stochasticSlow.slowK > stochasticSlow.slowD ? 100 : 0
         // return
         return score
     }
@@ -119,8 +117,6 @@ class Analysis implements Analyzable {
         score.chaikinOscillatorValueUnderSignal = chaikinOscillator.value < chaikinOscillator.signal ? 100 : 0
         // cci
         score.cciValueUnderSignal = cci.value < cci.signal ? 100 : 0
-        // stochastic slow
-        score.stochasticSlowKUnderD = stochasticSlow.slowK < stochasticSlow.slowD ? 100 : 0
         // return
         return score
     }
