@@ -453,31 +453,10 @@
         </form>
         <div class="padding-y--1em s__padding--0">
             <div>
-                <button id="simulateDialog-assetTabButton" type="button" class="tab">
-                    <img class="icon" th:src="@{/static/image/icon-asset.svg}" alt="asset"/>
-                    <span data-th-text="#{fintics.Asset}"></span>
-                </button>
-                <button id="simulateDialog-indiceTabButton" type="button" class="tab">
-                    <img class="icon" th:src="@{/static/image/icon-indice.svg}" alt="indice"/>
-                    <span data-th-text="#{fintics.Indice}"></span>
-                </button>
-                <hr class="margin--1px"/>
+                chart
             </div>
-            <div id="simulateDialog-assetTabContent">
-                <div class="width--100" style="height:200px;">
-                    <canvas id="simulateDialog-assetDailyOhlcvsChart"></canvas>
-                </div>
-                <div class="width--100" style="height:200px;">
-                    <canvas id="simulateDialog-assetMinuteOhlcvsChart"></canvas>
-                </div>
-            </div>
-            <div id="simulateDialog-indiceTabContent">
-                <div class="width--100" style="height:200px;">
-                    <canvas id="simulateDialog-indiceDailyOhlcvsChart"></canvas>
-                </div>
-                <div class="width--100" style="height:200px;">
-                    <canvas id="simulateDialog-indiceMinuteOhlcvsChart"></canvas>
-                </div>
+            <div class="width--100" style="height:200px;">
+                <canvas id="simulateDialog-assetOhlcvsChart"></canvas>
             </div>
         </div>
         <div class="display--grid grid-template-columns--12 padding--1em padding-y--2em s__padding--0">
@@ -672,10 +651,7 @@
                 },
                 orders: []
             }),
-            assetMinuteOhlcvsChart: null,
-            assetDailyOhlcvsChart: null,
-            indiceMinuteOhlcvsChart: null,
-            indiceDailyOhlcvsChart: null,
+            assetOhlcvsChart: null,
             subscribeLog: null,
             subscribeDateTime: null,
             subscribeBalance: null,
@@ -685,26 +661,8 @@
             initialize: function() {
                 // dialog closed
 
-
-
                 // initialize chart
-                this.indiceDailyOhlcvsChart = _createDailyOhlcvsChart('simulateDialog-indiceDailyOhlcvsChart');
-                this.indiceMinuteOhlcvsChart = _createMinuteOhlcvsChart('simulateDialog-indiceMinuteOhlcvsChart');
-                this.assetDailyOhlcvsChart = _createDailyOhlcvsChart('simulateDialog-assetDailyOhlcvsChart');
-                this.assetMinuteOhlcvsChart = _createMinuteOhlcvsChart('simulateDialog-assetMinuteOhlcvsChart');
-
-                // chart tab
-                let chartTabFolder = duice.tabFolder(
-                    duice.tabItem(
-                        document.getElementById('simulateDialog-assetTabButton'),
-                        document.getElementById('simulateDialog-assetTabContent'),
-                        () => {}),
-                    duice.tabItem(
-                        document.getElementById('simulateDialog-indiceTabButton'),
-                        document.getElementById('simulateDialog-indiceTabContent'),
-                        () => {})
-                );
-                chartTabFolder.setActive(0);
+                this.assetOhlcvsChart = _createMinuteOhlcvsChart('simulateDialog-assetOhlcvsChart');
 
                 // result tab
                 let resultTabFolder = duice.tabFolder(
@@ -742,116 +700,36 @@
             getDaysOfDateTimeFromTo: function() {
                 return dateFns.differenceInDays(this.simulate.dateTimeTo, this.simulate.dateTimeFrom);
             },
+            async getAssetOhlcvs(assetId, type, dateTimeFrom, dateTimeTo) {
+                let url = new URL(`${_apiUrl}/v1/assets/${assetId}/ohlcvs`, document.location.origin);
+                url.searchParams.append('type', type);
+                url.searchParams.append('dateTimeFrom', dateTimeFrom);
+                url.searchParams.append('dateTimeTo', dateTimeTo);
+                url.searchParams.append('_size', 60 * 24 * 365);
+                return await _fetch(url, null, true);
+            },
             drawChart: function() {
-                const daysOfDateTimeFromTo = this.getDaysOfDateTimeFromTo();
-                // asset indicator
-                const assetIndicatorPromises = this.simulate.trade.tradeAssets
+                this.assetOhlcvsChart.data.datasets.length = 0;
+                let dateTimeFrom = this.simulate.dateTimeFrom;
+                let dateTimeTo = this.simulate.dateTimeTo;
+                const assetOhlcvsPromises = this.simulate.trade.tradeAssets
                     .filter(tradeAsset => tradeAsset.enabled)
                     .map(async tradeAsset => {
-                        let url = new URL(`${_apiUrl}/v1/assets/${tradeAsset.assetId}/indicator`, document.location.origin);
-                        url.searchParams.append('dateTimeFrom', this.simulate.dateTimeFrom);
-                        url.searchParams.append('dateTimeTo', this.simulate.dateTimeTo);
-                        return await _fetch(url, null, true);
+                        return this.getAssetOhlcvs(tradeAsset.assetId, 'MINUTE', dateTimeFrom, dateTimeTo)
+                            .then(response => response.json())
+                            .then(ohlcvs => {
+                                let timeSeries = _createTimeSeries(dateTimeFrom, dateTimeTo, ohlcvs);
+                                return {
+                                    label: tradeAsset.assetName,
+                                    data: timeSeries,
+                                    borderWidth: 1,
+                                    pointStyle: false
+                                };
+                            });
                     });
-                Promise.all(assetIndicatorPromises).then(responses => {
-                    return Promise.all(responses.map(response => response.json()));
-                }).then(assetIndicators => {
-                    let dateFrom = new Date(this.simulate.dateTimeFrom);
-                    let dateTo = new Date(this.simulate.dateTimeTo);
-                    // asset chart
-                    this.assetDailyOhlcvsChart.data.datasets.length = 0;
-                    this.assetMinuteOhlcvsChart.data.datasets.length = 0;
-                    this.assetDailyOhlcvsChart.canvas.parentElement.style.display = 'none';
-                    this.assetMinuteOhlcvsChart.canvas.parentElement.style.display = 'none';
-                    assetIndicators.forEach(assetIndicator => {
-                        if (daysOfDateTimeFromTo > 30) {
-                            // daily
-                            let dailyOhlcvs = assetIndicator['dailyOhlcvs'];
-                            let dailyTimeSeries = _createTimeSeries(dateFns.subMonths(dateFrom,1), dateTo, dailyOhlcvs);
-                            let dailyDataset = {
-                                assetId: assetIndicator.assetId,
-                                label: assetIndicator.assetName,
-                                data: dailyTimeSeries,
-                                borderWidth: 1,
-                                pointStyle: false
-                            };
-                            this.assetDailyOhlcvsChart.data.datasets.push(dailyDataset);
-                            this.assetDailyOhlcvsChart.canvas.parentElement.style.display = 'block';
-                        } else {
-                            // minute
-                            let minuteOhlcvs = assetIndicator['minuteOhlcvs'];
-                            let minuteTimeSeries = _createTimeSeries(dateFrom, dateTo, minuteOhlcvs);
-                            let minuteDataset = {
-                                assetId: assetIndicator.assetId,
-                                label: assetIndicator.assetName,
-                                data: minuteTimeSeries,
-                                borderWidth: 1,
-                                pointStyle: new Array(minuteTimeSeries.length).fill(false),
-                                pointBorderColor: new Array(minuteTimeSeries.length).fill(false),
-                                pointBackgroundColor: new Array(minuteTimeSeries.length).fill(false)
-                            };
-                            this.assetMinuteOhlcvsChart.data.datasets.push(minuteDataset);
-                            this.assetMinuteOhlcvsChart.canvas.parentElement.style.display = 'block';
-                        }
-                    });
-                    this.assetDailyOhlcvsChart.update();
-                    this.assetMinuteOhlcvsChart.update();
-
-                    // mark order data point
-                    if(this.simulate.orders) {
-                        setTimeout(() => {
-                            this.setMarkOrdersAtChart(this.simulate.orders);
-                        }, 1000);
-                    }
-                });
-
-                // indice asset indicator
-                const indices = /*[[${indices}]]*/[];
-                const indiceIndicatorPromises = indices.map(async indice => {
-                    let url = new URL(`${_apiUrl}/v1/indices/${indice.indiceId}/indicator`, document.location.origin);
-                    url.searchParams.append('dateTimeFrom', this.simulate.dateTimeFrom);
-                    url.searchParams.append('dateTimeTo', this.simulate.dateTimeTo);
-                    return await _fetch(url, null, true);
-                });
-                Promise.all(indiceIndicatorPromises).then(responses => {
-                    return Promise.all(responses.map(response => response.json()));
-                }).then(indiceIndicators => {
-                    let dateFrom = new Date(this.simulate.dateTimeFrom);
-                    let dateTo = new Date(this.simulate.dateTimeTo);
-                    // indice chart
-                    this.indiceDailyOhlcvsChart.data.datasets.length = 0;
-                    this.indiceMinuteOhlcvsChart.data.datasets.length = 0;
-                    this.indiceDailyOhlcvsChart.canvas.parentElement.style.display = 'none';
-                    this.indiceMinuteOhlcvsChart.canvas.parentElement.style.display = 'none';
-                    indiceIndicators.forEach(indiceIndicator => {
-                        if (daysOfDateTimeFromTo > 30) {
-                            // daily
-                            let dailyOhlcvs = indiceIndicator['dailyOhlcvs'];
-                            let dailyTimeSeries = _createTimeSeries(dateFns.subMonths(dateFrom,1) , dateTo, dailyOhlcvs);
-                            let dailyDataset = {
-                                label: indiceIndicator.indicatorName,
-                                data: dailyTimeSeries,
-                                borderWidth: 1,
-                                pointStyle: false
-                            };
-                            this.indiceDailyOhlcvsChart.data.datasets.push(dailyDataset);
-                            this.indiceDailyOhlcvsChart.canvas.parentElement.style.display = 'block';
-                        } else {
-                            // minute
-                            let minuteOhlcvs = indiceIndicator['minuteOhlcvs'];
-                            let minuteTimeSeries = _createTimeSeries(dateFrom, dateTo, minuteOhlcvs);
-                            let minuteDataset = {
-                                label: indiceIndicator.indicatorName,
-                                data: minuteTimeSeries,
-                                borderWidth: 1,
-                                pointStyle: false
-                            };
-                            this.indiceMinuteOhlcvsChart.data.datasets.push(minuteDataset);
-                            this.indiceMinuteOhlcvsChart.canvas.parentElement.style.display = 'block';
-                        }
-                    });
-                    this.indiceDailyOhlcvsChart.update();
-                    this.indiceMinuteOhlcvsChart.update();
+                Promise.all(assetOhlcvsPromises).then(results => {
+                    results.forEach(dataset => this.assetOhlcvsChart.data.datasets.push(dataset));
+                    this.assetOhlcvsChart.update();
                 });
             },
             runSimulate: function() {

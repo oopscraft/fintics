@@ -18,7 +18,6 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-@Transactional
 public class AssetOhlcvCollector extends OhlcvCollector {
 
     private final TradeRepository tradeRepository;
@@ -52,10 +51,12 @@ public class AssetOhlcvCollector extends OhlcvCollector {
         } catch (Throwable e) {
             log.error(e.getMessage(), e);
             sendSystemAlarm(this.getClass(), e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
     private void saveAssetMinuteOhlcvs(Trade trade, TradeAsset tradeAsset, LocalDateTime dateTime) throws InterruptedException {
+        // current
         Broker broker = brokerRepository.findById(trade.getBrokerId())
                 .map(Broker::from)
                 .orElseThrow();
@@ -64,8 +65,6 @@ public class AssetOhlcvCollector extends OhlcvCollector {
         if(minuteOhlcvs.isEmpty()) {
             return;
         }
-
-        // current
         List<AssetOhlcvEntity> minuteOhlcvEntities = minuteOhlcvs.stream()
                 .map(ohlcv -> toAssetOhlcvEntity(tradeAsset.getAssetId(), ohlcv))
                 .toList();
