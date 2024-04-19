@@ -2,6 +2,8 @@ import org.oopscraft.fintics.model.Ohlcv
 import org.oopscraft.fintics.trade.Tool
 import org.oopscraft.fintics.indicator.*
 
+import java.time.LocalTime
+
 interface Scorable {
     Number getAverage()
 }
@@ -180,8 +182,10 @@ def waveOhlcvType = variables['waveOhlcvType'] as Ohlcv.Type
 def waveOhlcvPeriod = variables['waveOhlcvPeriod'] as Integer
 def tideOhlcvType = variables['tideOhlcvType'] as Ohlcv.Type
 def tideOhlcvPeriod = variables['tideOhlcvPeriod'] as Integer
+def overnight = variables['overnight'] as Boolean ?: false
 log.info("waveOhlcvType(Period): {}({})", waveOhlcvType, waveOhlcvPeriod)
 log.info("tideOhlcvType(Period): {}({})", tideOhlcvType, tideOhlcvPeriod)
+log.info("overnight: {}", overnight)
 
 // default
 def hold = null
@@ -232,6 +236,12 @@ if (analysis.getZScore() < -1.5 && analysis.getBearishScore().getAverage() > 75)
 // tide is bearish, disable
 if (tideAnalysis.getBearishScore().getAverage() > 75) {
     hold = 0
+}
+// overnight is false
+if (!overnight) {
+    if (dateTime.toLocalTime().isAfter(LocalTime.of(15,0,0))) {
+        hold = 0
+    }
 }
 
 //================================
