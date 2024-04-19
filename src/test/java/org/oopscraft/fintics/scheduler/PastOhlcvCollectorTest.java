@@ -62,7 +62,7 @@ class PastOhlcvCollectorTest extends CoreTestSupport {
         // given
         Asset asset = Asset.builder()
                 .assetId("KR.005930")
-                .exchange("KRX")
+                .exchange("XKRX")
                 .build();
         // when
         pastOhlcvCollector.collectPastAssetMinuteOhlcvs(asset, expiredDateTime);
@@ -85,7 +85,7 @@ class PastOhlcvCollectorTest extends CoreTestSupport {
         // given
         Asset asset = Asset.builder()
                 .assetId("KR.005930")
-                .exchange("KRX")
+                .exchange("XKRX")
                 .build();
         // when
         pastOhlcvCollector.collectPastAssetDailyOhlcvs(asset, expiredDateTime);

@@ -263,8 +263,8 @@ public class PastOhlcvCollector extends OhlcvCollector {
         String yahooSymbol = null;
         String exchange = Optional.ofNullable(asset.getExchange()).orElseThrow(() -> new RuntimeException("exchange is null"));
         switch(exchange) {
-            case "KRX" -> yahooSymbol = String.format("%s.KS", asset.getSymbol());
-            case "KOSDAQ" -> yahooSymbol = String.format("%s.KQ", asset.getSymbol());
+            case "XKRX" -> yahooSymbol = String.format("%s.KS", asset.getSymbol());
+            case "XKOS" -> yahooSymbol = String.format("%s.KQ", asset.getSymbol());
         }
         return yahooSymbol;
     }

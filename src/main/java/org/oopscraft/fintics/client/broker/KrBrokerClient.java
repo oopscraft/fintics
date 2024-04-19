@@ -86,7 +86,7 @@ public abstract class KrBrokerClient extends BrokerClient {
         String responseBody = responseEntity.getBody();
         List<ValueMap> rows = convertXmlToList(responseBody);
 
-        // sort, limit
+        // sort
         rows.sort((o1, o2) -> {
             BigDecimal o1MarketCap = toNumber(o1.get("MARTP_TOTAMT"), BigDecimal.ZERO);
             BigDecimal o2MarketCap = toNumber(o2.getString("MARTP_TOTAMT"), BigDecimal.ZERO);
@@ -97,8 +97,8 @@ public abstract class KrBrokerClient extends BrokerClient {
         String market = getDefinition().getMarket();
         String exchange;
         switch(exchangeType) {
-            case "11" -> exchange = "KRX";
-            case "12" -> exchange = "KOSDAQ";
+            case "11" -> exchange = "XKRX";
+            case "12" -> exchange = "XKOS";
             default -> throw new RuntimeException("invalid exchange type");
         }
 
@@ -369,6 +369,7 @@ public abstract class KrBrokerClient extends BrokerClient {
     /**
      * https://securities.koreainvestment.com/main/customer/notice/Notice.jsp?&cmd=TF04ga000002&currentPage=1&num=39930
      */
+    @Override
     public BigDecimal getPriceTick(Asset asset, BigDecimal price) throws InterruptedException {
         // etf, etn, elw
         if(Arrays.asList("ETF","ETN","ELW").contains(asset.getType())) {
