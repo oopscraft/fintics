@@ -33,11 +33,11 @@ class KisUsBrokerClientTest extends CoreTestSupport {
     private static final String accountNo;
 
     static {
-        production = Optional.ofNullable(System.getenv("KIS_US_PRODUCTION")).orElse("false");
-        apiUrl = Optional.ofNullable(System.getenv("KIS_US_API_URL")).orElse("https://openapivts.koreainvestment.com:29443");
-        appKey = System.getenv("KIS_US_APP_KEY");
-        appSecret = System.getenv("KIS_US_APP_SECRET");
-        accountNo = System.getenv("KIS_US_ACCOUNT_NO");
+        production = Optional.ofNullable(System.getenv("KIS_PRODUCTION")).orElse("false");
+        apiUrl = Optional.ofNullable(System.getenv("KIS_API_URL")).orElse("https://openapivts.koreainvestment.com:29443");
+        appKey = System.getenv("KIS_APP_KEY");
+        appSecret = System.getenv("KIS_APP_SECRET");
+        accountNo = System.getenv("KIS_ACCOUNT_NO");
     }
 
     KisUsBrokerClient getKisUsClient() {
@@ -110,7 +110,7 @@ class KisUsBrokerClientTest extends CoreTestSupport {
     void getDailyOhlcvs() throws InterruptedException {
         // given
         TradeAsset tradeAsset = TradeAsset.builder()
-                .assetId("KR.005930")
+                .assetId("US.TSLA")
                 .build();
 
         // when

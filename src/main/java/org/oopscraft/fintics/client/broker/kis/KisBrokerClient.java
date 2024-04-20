@@ -234,17 +234,23 @@ public class KisBrokerClient extends KrBrokerClient {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
+
+        String url = apiUrl + "/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice";
+        HttpHeaders headers = createHeaders();
+        headers.add("tr_id", "FHKST03010100");
         String fidCondMrktDivCode = "J";
         String fidInputIscd = asset.getSymbol();
-
-        String url = apiUrl + "/uapi/domestic-stock/v1/quotations/inquire-daily-price";
-        HttpHeaders headers = createHeaders();
-        headers.add("tr_id", "FHKST01010400");
+        String fidInputDate1 = DateTimeFormatter.ofPattern("yyyyMMdd").format(LocalDate.now().minusMonths(1));
+        String fidInputDate2 = DateTimeFormatter.ofPattern("yyyyMMdd").format(LocalDate.now());
+        String fidPeriodDivCode = "D";  // 일봉
+        String fidOrgAdjPrc = "0";      // 수정주가
         url = UriComponentsBuilder.fromUriString(url)
                 .queryParam("FID_COND_MRKT_DIV_CODE", fidCondMrktDivCode)
                 .queryParam("FID_INPUT_ISCD", fidInputIscd)
-                .queryParam("FID_PERIOD_DIV_CODE", "D") // 일봉
-                .queryParam("FID_ORG_ADJ_PRC", "0")     // 수정주가
+                .queryParam("FID_INPUT_DATE_1", fidInputDate1)
+                .queryParam("FID_INPUT_DATE_2", fidInputDate2)
+                .queryParam("FID_PERIOD_DIV_CODE", fidPeriodDivCode)
+                .queryParam("FID_ORG_ADJ_PRC", fidOrgAdjPrc)
                 .build()
                 .toUriString();
         RequestEntity<Void> requestEntity = RequestEntity
@@ -266,9 +272,9 @@ public class KisBrokerClient extends KrBrokerClient {
             throw new RuntimeException(msg1);
         }
 
-        List<ValueMap> output = objectMapper.convertValue(rootNode.path("output"), new TypeReference<>(){});
+        List<ValueMap> output2 = objectMapper.convertValue(rootNode.path("output2"), new TypeReference<>(){});
 
-        return output.stream()
+        return output2.stream()
                 .map(row -> {
                     LocalDateTime ohlcvDateTime = LocalDateTime.parse(row.getString("stck_bsop_date")+"000000", DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
                     BigDecimal openPrice = row.getNumber("stck_oprc");

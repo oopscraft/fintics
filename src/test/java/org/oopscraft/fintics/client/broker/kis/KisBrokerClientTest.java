@@ -36,8 +36,8 @@ class KisBrokerClientTest extends CoreTestSupport {
     private static final String accountNo;
 
     static {
-        production = Optional.ofNullable(System.getenv("PRODUCTION")).orElse("false");
-        apiUrl = Optional.ofNullable(System.getenv("API_URL")).orElse("https://openapivts.koreainvestment.com:29443");
+        production = Optional.ofNullable(System.getenv("KIS_PRODUCTION")).orElse("false");
+        apiUrl = Optional.ofNullable(System.getenv("KIS_API_URL")).orElse("https://openapivts.koreainvestment.com:29443");
         appKey = System.getenv("KIS_APP_KEY");
         appSecret = System.getenv("KIS_APP_SECRET");
         accountNo = System.getenv("KIS_ACCOUNT_NO");
