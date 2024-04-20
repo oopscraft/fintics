@@ -199,7 +199,7 @@ public class KisUsBrokerClient extends UsBrokerClient {
                         );
                         BigDecimal openPrice = row.getNumber("open");
                         BigDecimal highPrice = row.getNumber("high");
-                        BigDecimal lowPrice = row.getNumber("log");
+                        BigDecimal lowPrice = row.getNumber("low");
                         BigDecimal closePrice = row.getNumber("last");
                         BigDecimal volume = row.getNumber("eamt");
                         return Ohlcv.builder()
