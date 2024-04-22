@@ -150,7 +150,7 @@ log.info("tideAnalysis: {}", tideAnalysis)
 // trade
 //================================
 // buy
-if (analysis.getZScore() > 1.5 && analysis.getBullishScore().getAverage() > 75) {
+if (analysis.getZScore() > 1.0 && analysis.getBullishScore().getAverage() > 75) {
     if (waveAnalysis.getBullishScore().getAverage() > 75) {
         // default
         hold = 1
@@ -165,7 +165,7 @@ if (analysis.getZScore() > 1.5 && analysis.getBullishScore().getAverage() > 75) 
     }
 }
 // sell
-if (analysis.getZScore() < -1.5 && analysis.getBearishScore().getAverage() > 75) {
+if (analysis.getZScore() < -1.0 && analysis.getBearishScore().getAverage() > 75) {
     if (waveAnalysis.getBearishScore().getAverage() > 75) {
         // default
         hold = 0
