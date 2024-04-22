@@ -218,6 +218,7 @@ public class SimulateRunnable implements Runnable {
                     .tradeId(simulate.getTradeId())
                     .tradeName(simulate.getTradeName())
                     .tradeData(toDataString(simulate.getTrade()))
+                    .strategyData(toDataString(simulate.getStrategy()))
                     .dateTimeFrom(simulate.getDateTimeFrom())
                     .dateTimeTo(simulate.getDateTimeTo())
                     .investAmount(simulate.getInvestAmount())

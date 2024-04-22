@@ -720,6 +720,7 @@
                             .then(ohlcvs => {
                                 let timeSeries = _createTimeSeries(dateTimeFrom, dateTimeTo, ohlcvs);
                                 return {
+                                    assetId: tradeAsset.assetId,
                                     label: tradeAsset.assetName,
                                     data: timeSeries,
                                     borderWidth: 1,
@@ -798,33 +799,18 @@
                 });
             },
             clearMarkOrdersAtChart: function() {
-                // daily
-                this.assetDailyOhlcvsChart.data.datasets.forEach((dataset) => {
+                this.assetOhlcvsChart.data.datasets.forEach((dataset) => {
                     dataset.pointStyle = new Array(dataset.data.length).fill(false);
                     dataset.pointBorderColor = new Array(dataset.data.length).fill(false);
                     dataset.pointBackgroundColor = new Array(dataset.data.length).fill(false);
                 });
-                this.assetDailyOhlcvsChart.update();
-                // minute
-                this.assetMinuteOhlcvsChart.data.datasets.forEach((dataset) => {
-                    dataset.pointStyle = new Array(dataset.data.length).fill(false);
-                    dataset.pointBorderColor = new Array(dataset.data.length).fill(false);
-                    dataset.pointBackgroundColor = new Array(dataset.data.length).fill(false);
-                });
-                this.assetMinuteOhlcvsChart.update();
+                this.assetOhlcvsChart.update();
             },
             setMarkOrdersAtChart: function(orders) {
-                const daysOfDateTimeFromTo = this.getDaysOfDateTimeFromTo();
-                let ohlcvsChart = null;
-                if (daysOfDateTimeFromTo > 30) {
-                    ohlcvsChart = this.assetDailyOhlcvsChart;
-                } else {
-                    ohlcvsChart = this.assetMinuteOhlcvsChart;
-                }
-                // mark order
+                console.log("====== orders", orders);
                 orders.forEach(order => {
                     // find dataset
-                    let dataset = ohlcvsChart.data.datasets.find((dataset) => dataset.assetId === order.assetId);
+                    let dataset = this.assetOhlcvsChart.data.datasets.find((dataset) => dataset.assetId === order.assetId);
                     // find index by order at
                     let index = dataset.data.findIndex((ohlcv) => {
                         return dateFns.isEqual(dateFns.startOfMinute(new Date(ohlcv.dateTime)), dateFns.startOfMinute(new Date(order.orderAt)));
@@ -843,7 +829,7 @@
                     }
                 });
                 // update
-                ohlcvsChart.update();
+                this.assetOhlcvsChart.update();
             },
             stopSimulate: function() {
                 let url = new URL(`${_apiUrl}/v1/simulates/${this.simulate.simulateId}/stop`, document.location.origin);

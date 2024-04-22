@@ -65,7 +65,7 @@ public class AssetsRestController {
             @RequestParam("type") Ohlcv.Type type,
             @RequestParam(value = "dateTimeFrom", required = false) ZonedDateTime zonedDateTimeFrom,
             @RequestParam(value = "dateTimeTo", required = false) ZonedDateTime zonedDateTimeTo,
-            @PageableDefault(size = 1000) Pageable pageable
+            Pageable pageable
     ) {
         LocalDateTime dateTimeFrom = Optional.ofNullable(zonedDateTimeFrom)
                 .map(item -> item.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime())

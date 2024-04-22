@@ -34,15 +34,21 @@
             indiceMinuteOhlcvsChart = _createMinuteOhlcvsChart('indiceMinuteOhlcvsChart');
         }
 
-        async function getIndiceOhlcvs(indiceId, type) {
+        async function getIndiceOhlcvs(indiceId, type, dateTimeFrom, dateTimeTo) {
             let url = new URL(`${_apiUrl}/v1/indices/${indiceId}/ohlcvs`, document.location.origin);
             url.searchParams.append('type', type);
+            url.searchParams.append('dateTimeFrom', dateTimeFrom.toISOString());
+            url.searchParams.append('dateTimeTo', dateTimeTo.toISOString());
+            url.searchParams.append('_size', 1000);
             return await _fetch(url, null, true);
         }
 
-        async function getAssetOhlcvs(assetId, type) {
+        async function getAssetOhlcvs(assetId, type, dateTimeFrom, dateTimeTo) {
             let url = new URL(`${_apiUrl}/v1/assets/${assetId}/ohlcvs`, document.location.origin);
             url.searchParams.append('type', type);
+            url.searchParams.append('dateTimeFrom', dateTimeFrom.toISOString());
+            url.searchParams.append('dateTimeTo', dateTimeTo.toISOString());
+            url.searchParams.append('_size', 1000);
             return await _fetch(url, null, true);
         }
 
@@ -60,7 +66,7 @@
 
             // minute
             let minutePromises = indices.map(indice => {
-                return getIndiceOhlcvs(indice.indiceId, 'MINUTE')
+                return getIndiceOhlcvs(indice.indiceId, 'MINUTE', minuteFrom, minuteTo)
                     .then(response => response.json())
                     .then(ohlcvs => {
                         let timeSeries = _createTimeSeries(minuteFrom, minuteTo, ohlcvs, 60000);
@@ -79,7 +85,7 @@
 
             // daily
             let dailyPromises = indices.map(indice => {
-                return getIndiceOhlcvs(indice.indiceId, 'DAILY')
+                return getIndiceOhlcvs(indice.indiceId, 'DAILY', dailyFrom, dailyTo)
                     .then(response => response.json())
                     .then(ohlcvs => {
                         let timeSeries = _createTimeSeries(dailyFrom, dailyTo, ohlcvs, 60000*60*24);
@@ -139,7 +145,7 @@
             const minutePromises = trade.tradeAssets
                 .filter(tradeAsset => tradeAsset.enabled)
                 .map(async tradeAsset => {
-                    return getAssetOhlcvs(tradeAsset.assetId, 'MINUTE')
+                    return getAssetOhlcvs(tradeAsset.assetId, 'MINUTE', minuteFrom, minuteTo)
                         .then(response => response.json())
                         .then(ohlcvs => {
                             let timeSeries = _createTimeSeries(minuteFrom, minuteTo, ohlcvs);
@@ -160,7 +166,7 @@
             const dailyPromises = trade.tradeAssets
                 .filter(tradeAsset => tradeAsset.enabled)
                 .map(async tradeAsset => {
-                    return getAssetOhlcvs(tradeAsset.assetId, 'DAILY')
+                    return getAssetOhlcvs(tradeAsset.assetId, 'DAILY', dailyFrom, dailyTo)
                         .then(response => response.json())
                         .then(ohlcvs => {
                             let timeSeries = _createTimeSeries(dailyFrom, dailyTo, ohlcvs);
