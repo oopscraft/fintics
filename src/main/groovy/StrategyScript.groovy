@@ -37,18 +37,6 @@ class Analysis implements Analyzable {
     Dmi dmi
     List<Rsi> rsis
     Rsi rsi
-    List<Atr> atrs
-    Atr atr
-    List<BollingerBand> bollingerBands
-    BollingerBand bollingerBand
-    List<Obv> obvs
-    Obv obv
-    List<ChaikinOscillator> chaikinOscillators
-    ChaikinOscillator chaikinOscillator
-    List<Cci> ccis
-    Cci cci
-    List<StochasticSlow> stochasticSlows
-    StochasticSlow stochasticSlow
 
     Analysis(List<Ohlcv> ohlcvs) {
         this.ohlcvs = ohlcvs
@@ -59,18 +47,6 @@ class Analysis implements Analyzable {
         this.dmi = this.dmis.first()
         this.rsis = Tool.indicators(ohlcvs, RsiContext.DEFAULT)
         this.rsi = rsis.first()
-        this.atrs = Tool.indicators(ohlcvs, AtrContext.DEFAULT)
-        this.atr = atrs.first()
-        this.bollingerBands = Tool.indicators(ohlcvs, BollingerBandContext.DEFAULT)
-        this.bollingerBand = bollingerBands.first()
-        this.obvs = Tool.indicators(ohlcvs, ObvContext.DEFAULT)
-        this.obv = obvs.first()
-        this.chaikinOscillators = Tool.indicators(ohlcvs, ChaikinOscillatorContext.DEFAULT)
-        this.chaikinOscillator = chaikinOscillators.first()
-        this.ccis = Tool.indicators(ohlcvs, CciContext.DEFAULT)
-        this.cci = ccis.first()
-        this.stochasticSlows = Tool.indicators(ohlcvs, StochasticSlowContext.DEFAULT)
-        this.stochasticSlow = stochasticSlows.first()
     }
 
     @Override
@@ -84,19 +60,6 @@ class Analysis implements Analyzable {
         def score = new Score()
         // macd
         score.macdValueOverSignal = macd.value > macd.signal ? 100 : 0
-        score.macdOscillator = macd.oscillator > 0 ? 100 : 0
-        // dmi
-        score.dmiPdiOverMdi = dmi.pdi > dmi.mdi ? 100 : 0
-        // rsi
-        score.rsiValueOverSignal = rsi.value > rsi.signal ? 100 : 0
-        // bollinger band
-        score.bollingerBandPriceOverMiddle = ohlcv.closePrice > bollingerBand.middle ? 100 : 0
-        // obv
-        score.obvValueOverSignal = obv.value > obv.signal ? 100 : 0
-        // chaikin oscillator
-        score.chaikinOscillatorValueOverSignal = chaikinOscillator.value > chaikinOscillator.signal ? 100 : 0
-        // cci
-        score.cciValueOverSignal = cci.value > cci.signal ? 100 : 0
         // return
         return score
     }
@@ -106,19 +69,6 @@ class Analysis implements Analyzable {
         def score = new Score()
         // macd
         score.macdValueUnderSignal = macd.value < macd.signal ? 100 : 0
-        score.macdOscillator = macd.oscillator < 0 ? 100 : 0
-        // dmi
-        score.dmiValuePdiUnderMdi = dmi.pdi < dmi.mdi ? 100 : 0
-        // rsi
-        score.rsiValueUnderSignal = rsi.value < rsi.signal ? 100 : 0
-        // bollinger band
-        score.bollingerBandPriceUnderMiddle = ohlcv.closePrice < bollingerBand.middle ? 100 : 0
-        // obv
-        score.obvValueUnderSignal = obv.value < obv.signal ? 100 : 0
-        // chaikin oscillator
-        score.chaikinOscillatorValueUnderSignal = chaikinOscillator.value < chaikinOscillator.signal ? 100 : 0
-        // cci
-        score.cciValueUnderSignal = cci.value < cci.signal ? 100 : 0
         // return
         return score
     }
@@ -135,8 +85,6 @@ class Analysis implements Analyzable {
     @Override
     Scorable getMomentumScore() {
         def score = new Score()
-        // macd
-        score.macdValue = macd.value > 0 ? 100 : 0
         // rsi
         score.rsiValue = rsi.value > 50 ? 100 : 0
         // return
