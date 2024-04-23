@@ -229,7 +229,7 @@ public class SimulateBrokerClient extends BrokerClient {
             BigDecimal sellPrice = orderBook.getBidPrice();
             BigDecimal sellAmount = sellQuantity.multiply(sellPrice, MathContext.DECIMAL32);
             BigDecimal holdQuantity = balanceAsset.getQuantity().subtract(sellQuantity);
-            if(holdQuantity.compareTo(BigDecimal.ZERO) <= 0) {
+            if(holdQuantity.compareTo(BigDecimal.ZERO) == 0) {
                 balance.getBalanceAssets().remove(balanceAsset);
             }else{
                 BigDecimal holdPurchaseAmount = balanceAsset.getPurchaseAmount().subtract(sellAmount);
