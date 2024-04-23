@@ -191,7 +191,7 @@ public class SimulateBrokerClient extends BrokerClient {
 
         // buy
         if(order.getType() == Order.Type.BUY) {
-            BigDecimal buyQuantity = order.getQuantity();
+            BigDecimal buyQuantity = order.getQuantity().setScale(0, RoundingMode.FLOOR);
             BigDecimal buyPrice = orderBook.getAskPrice();
             BigDecimal buyAmount = buyQuantity.multiply(buyPrice, MathContext.DECIMAL32);
 
@@ -225,12 +225,9 @@ public class SimulateBrokerClient extends BrokerClient {
         // sell
         if(order.getType() == Order.Type.SELL) {
             Objects.requireNonNull(balanceAsset, "balance asset is null");
-            BigDecimal sellQuantity = order.getQuantity();
+            BigDecimal sellQuantity = order.getQuantity().setScale(0, RoundingMode.FLOOR);
             BigDecimal sellPrice = orderBook.getBidPrice();
             BigDecimal sellAmount = sellQuantity.multiply(sellPrice, MathContext.DECIMAL32);
-            if(sellQuantity.compareTo(balanceAsset.getQuantity()) > 0) {
-                throw new RuntimeException("quantity exceeded the held quantity");
-            }
             BigDecimal holdQuantity = balanceAsset.getQuantity().subtract(sellQuantity);
             if(holdQuantity.compareTo(BigDecimal.ZERO) <= 0) {
                 balance.getBalanceAssets().remove(balanceAsset);
