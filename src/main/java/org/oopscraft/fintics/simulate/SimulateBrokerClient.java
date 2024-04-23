@@ -191,7 +191,7 @@ public class SimulateBrokerClient extends BrokerClient {
 
         // buy
         if(order.getType() == Order.Type.BUY) {
-            BigDecimal buyQuantity = order.getQuantity().setScale(0, RoundingMode.FLOOR);
+            BigDecimal buyQuantity = order.getQuantity();
             BigDecimal buyPrice = orderBook.getAskPrice();
             BigDecimal buyAmount = buyQuantity.multiply(buyPrice, MathContext.DECIMAL32);
 
@@ -225,7 +225,7 @@ public class SimulateBrokerClient extends BrokerClient {
         // sell
         if(order.getType() == Order.Type.SELL) {
             Objects.requireNonNull(balanceAsset, "balance asset is null");
-            BigDecimal sellQuantity = order.getQuantity().setScale(0, RoundingMode.FLOOR);
+            BigDecimal sellQuantity = order.getQuantity();
             BigDecimal sellPrice = orderBook.getBidPrice();
             BigDecimal sellAmount = sellQuantity.multiply(sellPrice, MathContext.DECIMAL32);
             BigDecimal holdQuantity = balanceAsset.getQuantity().subtract(sellQuantity);
