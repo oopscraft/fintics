@@ -114,8 +114,8 @@ class Analysis implements Analyzable {
     @Override
     Scorable getOverestimateScore() {
         def score = new Score()
-        // cci
-        score.cciValue = cci.value > 0 ? 100 : 0
+        // macd
+        score.macdValue = macd.value > 0 ? 100 : 0
         // return
         return score
     }
@@ -123,8 +123,8 @@ class Analysis implements Analyzable {
     @Override
     Scorable getUnderestimateScore() {
         def score = new Score()
-        // cci
-        score.cciValue = cci.value < 0 ? 100 : 0
+        // macd
+        score.macdValue = macd.value < 0 ? 100 : 0
         // return
         return score
     }
@@ -176,8 +176,8 @@ def hold = null
 List<Ohlcv> ohlcvs = assetProfile.getOhlcvs(Ohlcv.Type.MINUTE, 1)
 
 // filter z-score
-def priceZScore = Tool.zScore(ohlcvs.take(10).collect{it.closePrice})
-if (priceZScore.abs() < 1.5) {
+def priceZScore = Tool.zScore(ohlcvs.take(20).collect{it.closePrice})
+if (priceZScore.abs() < 2.0) {
     log.info("skip - priceZScore: {}", priceZScore)
     return null
 }
@@ -198,7 +198,7 @@ log.info("tideAnalysis: {}", tideAnalysis)
 // trade
 //================================
 // buy
-if (priceZScore > 1.5 && analysis.getDirectionScore().getAverage() > 75) {
+if (priceZScore > 2.0 && analysis.getDirectionScore().getAverage() > 75 && analysis.getMomentumScore().getAverage() > 75) {
     // wave is bullish
     if (waveAnalysis.getDirectionScore().getAverage() > 75) {
         // default
@@ -207,22 +207,22 @@ if (priceZScore > 1.5 && analysis.getDirectionScore().getAverage() > 75) {
         if (waveAnalysis.getVolatilityScore().getAverage() < 75) {
             hold = null
         }
-        // filter - momentum
-        if (waveAnalysis.getMomentumScore().getAverage() < 75) {
-            hold = null
-        }
-        // filter - overbought
-        if (waveAnalysis.getOverboughtScore().getAverage() > 75) {
+        // filter - overestimate
+        if (waveAnalysis.getOverestimateScore().getAverage() > 75) {
             hold = null
         }
     }
 }
 // sell
-if (priceZScore < -1.5 && analysis.getDirectionScore().getAverage() < 25) {
+if (priceZScore < -2.0 && analysis.getDirectionScore().getAverage() < 25) {
     // wave is bearish
     if (waveAnalysis.getDirectionScore().getAverage() < 25) {
         // default
         hold = 0
+        // filter - momentum
+        if (waveAnalysis.getMomentumScore().getAverage() > 75) {
+            hold = null
+        }
     }
 }
 
