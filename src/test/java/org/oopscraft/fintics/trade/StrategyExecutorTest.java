@@ -185,7 +185,10 @@ class StrategyExecutorTest {
                         .script(strategyScript)
                         .build();
         StringBuilder strategyVariables = new StringBuilder();
-        strategyVariables.append("minuteOhlcvPeriod=10").append("\n");
+        strategyVariables.append("waveOhlcvType=MINUTE").append("\n");
+        strategyVariables.append("waveOhlcvPeriod=3").append("\n");
+        strategyVariables.append("tideOhlcvType=DAILY").append("\n");
+        strategyVariables.append("tideOhlcvPeriod=1").append("\n");
 
         // when
         StrategyExecutor strategyExecutor = StrategyExecutor.builder()
