@@ -19,12 +19,11 @@ class Score extends LinkedHashMap<String, BigDecimal> implements Scorable {
 }
 
 interface Analyzable {
-    Scorable getBullishScore()
-    Scorable getBearishScore()
-    Scorable getVolatilityScore()
+    Scorable getDirectionScore()
     Scorable getMomentumScore()
-    Scorable getUnderestimateScore()
-    Scorable getOverestimateScore()
+    Scorable getVolatilityScore()
+    Scorable getOverboughtScore()
+    Scorable getOversoldScore()
 }
 
 class Analysis implements Analyzable {
@@ -73,49 +72,30 @@ class Analysis implements Analyzable {
     }
 
     @Override
-    Scorable getBullishScore() {
-        def score = new Score()
+    Scorable getDirectionScore() {
+        def score = new Score();
         // macd
         score.macdValueOverSignal = macd.value > macd.signal ? 100 : 0
         score.macdOscillator = macd.oscillator > 0 ? 100 : 0
-        // bollinger band
-        score.bollingerBandPriceOverMiddle = ohlcv.closePrice > bollingerBand.middle ? 100 : 0
-        // cci
-        score.cciValueOverSignal = cci.value > cci.signal ? 100 : 0
-        // rsi
-        score.rsiValueOverSignal = rsi.value > rsi.signal ? 100 : 0
-        // dmi
-        score.dmiPdiOverMdi = dmi.pdi > dmi.mdi ? 100 : 0
-        // obv
-        score.obvValueOverSignal = obv.value > obv.signal ? 100 : 0
-        // chaikin oscillator
-        score.chaikinOscillatorValueOverSignal = chaikinOscillator.value > chaikinOscillator.signal ? 100 : 0
-        // stochastic slow
-        score.stochasticSlowKUnderD = stochasticSlow.slowK > stochasticSlow.slowD ? 100 : 0
         // return
         return score
     }
 
     @Override
-    Scorable getBearishScore() {
+    Scorable getMomentumScore() {
         def score = new Score()
         // macd
-        score.macdValueUnderSignal = macd.value < macd.signal ? 100 : 0
-        score.macdOscillator = macd.oscillator < 0 ? 100 : 0
-        // bollinger band
-        score.bollingerBandPriceUnderMiddle = ohlcv.closePrice < bollingerBand.middle ? 100 : 0
-        // cci
-        score.cciValueUnderSignal = cci.value < cci.signal ? 100 : 0
+        score.macdValue = macd.value > 0 ? 100 : 0
         // rsi
-        score.rsiValueUnderSignal = rsi.value < rsi.signal ? 100 : 0
+        score.rsiValue = rsi.value > 50 ? 100 : 0
+        // cci
+        score.cciValue = cci.value > 0 ? 100 : 0
         // dmi
-        score.dmiPidUnderMdi = dmi.pdi < dmi.mdi ? 100 : 0
+        score.dmiPdiOverMdi = dmi.pdi > dmi.mdi ? 100 : 0
         // obv
-        score.obvValueUnderSignal = obv.value < obv.signal ? 100 : 0
+        score.obvValueOverSignal = obv.value > obv.signal ? 100 : 0
         // chaikin oscillator
-        score.chaikinOscillatorValueUnderSignal = chaikinOscillator.value < chaikinOscillator.signal ? 100 : 0
-        // stochastic slow
-        score.stochasticSlowKUnderD = stochasticSlow.slowK < stochasticSlow.slowD ? 100 : 0
+        score.chaikinOscillatorValue = chaikinOscillator.value > 0 ? 100 : 0
         // return
         return score
     }
@@ -130,30 +110,19 @@ class Analysis implements Analyzable {
     }
 
     @Override
-    Scorable getMomentumScore() {
+    Scorable getOverboughtScore() {
         def score = new Score()
-        // macd
-        score.macdValue = macd.value > 0 ? 100 : 0
-        // rsi
-        score.rsiValue = rsi.value > 50 ? 100 : 0
+        // cci
+        score.cciValue = cci.value >= 100 ? 100 : 0
         // return
         return score
     }
 
     @Override
-    Scorable getUnderestimateScore() {
+    Scorable getOversoldScore() {
         def score = new Score()
-        // macd
-        score.macdValue = macd.value < 0 ? 100 : 0
-        // return
-        return score
-    }
-
-    @Override
-    Scorable getOverestimateScore() {
-        def score = new Score()
-        // macd
-        score.macdValue = macd.value > 0 ? 100 : 0
+        // cci
+        score.cciValue = cci.value <= -100 ? 100 : 0
         // return
         return score
     }
@@ -161,12 +130,11 @@ class Analysis implements Analyzable {
     @Override
     String toString() {
         return [
-                bullishScore: "${this.getBullishScore()}",
-                bearishScore: "${this.getBearishScore()}",
-                volatilityScore: "${this.getVolatilityScore()}",
+                directionScore: "${this.getDirectionScore()}",
                 momentumScore: "${this.getMomentumScore()}",
-                underestimateScore: "${this.getUnderestimateScore()}",
-                overestimateScore: "${this.getOverestimateScore()}"
+                volatilityScore: "${this.getVolatilityScore()}",
+                overboughtScore: "${this.getOverboughtScore()}",
+                oversoldScore: "${this.getOversoldScore()}"
         ].toString()
     }
 }
@@ -179,6 +147,7 @@ def waveOhlcvType = variables['waveOhlcvType'] as Ohlcv.Type
 def waveOhlcvPeriod = variables['waveOhlcvPeriod'] as Integer
 def tideOhlcvType = variables['tideOhlcvType'] as Ohlcv.Type
 def tideOhlcvPeriod = variables['tideOhlcvPeriod'] as Integer
+def overnight = (variables['overnight'] as Boolean) ?: false
 log.info("waveOhlcvType(Period): {}({})", waveOhlcvType, waveOhlcvPeriod)
 log.info("tideOhlcvType(Period): {}({})", tideOhlcvType, tideOhlcvPeriod)
 
@@ -188,7 +157,7 @@ List<Ohlcv> ohlcvs = assetProfile.getOhlcvs(Ohlcv.Type.MINUTE, 1)
 
 // filter z-score
 def priceZScore = Tool.zScore(ohlcvs.take(10).collect{it.closePrice})
-if (priceZScore.abs() < 2.0) {
+if (priceZScore.abs() < 1.0) {
     log.info("skip - priceZScore: {}", priceZScore)
     return null
 }
@@ -209,38 +178,50 @@ log.info("tideAnalysis: {}", tideAnalysis)
 // trade
 //================================
 // buy
-if (priceZScore > 2.0 && analysis.getBullishScore().getAverage() > 75) {
-    if (waveAnalysis.getBullishScore().getAverage() > 75) {
+if (analysis.getDirectionScore().getAverage() > 75) {
+    // wave is bullish
+    if (waveAnalysis.getDirectionScore().getAverage() > 75) {
         // default
         hold = 1
-        // volatility
+        // filter - momentum
+        if (waveAnalysis.getMomentumScore().getAverage() < 75) {
+            hold = null
+        }
+        // filter - volatility
         if (waveAnalysis.getVolatilityScore().getAverage() < 75) {
             hold = null
         }
-        // overestimate
-        if (waveAnalysis.getOverestimateScore().getAverage() > 75) {
+        // filter - overbought
+        if (waveAnalysis.getOverboughtScore().getAverage() > 75) {
             hold = null
         }
     }
 }
 // sell
-if (priceZScore < -2.0 && analysis.getBearishScore().getAverage() > 75) {
-    if (waveAnalysis.getBearishScore().getAverage() > 75) {
+if (analysis.getDirectionScore().getAverage() < 25) {
+    // wave is bearish
+    if (waveAnalysis.getDirectionScore().getAverage() < 25) {
         // default
         hold = 0
-        // momentum
-        if (waveAnalysis.getMomentumScore().getAverage() > 75) {
-            hold = null
-        }
     }
 }
 
 //================================
 // fallback
 //================================
-// tide is bearish, disable
-if (tideAnalysis.getBearishScore().getAverage() > 75) {
+// tide direction
+if (tideAnalysis.getDirectionScore().getAverage() < 75) {
     hold = 0
+}
+// tide momentum
+if (tideAnalysis.getMomentumScore().getAverage() < 75) {
+    hold = 0
+}
+// overnight
+if (!overnight) {
+    if (dateTime.toLocalTime().isAfter(LocalTime.of(15, 10))) {
+        hold = 0
+    }
 }
 
 //================================
