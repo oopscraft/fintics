@@ -22,10 +22,10 @@ interface Analyzable {
     Scorable getDirectionScore()
     Scorable getMomentumScore()
     Scorable getVolatilityScore()
-    Scorable getOverestimateScore()
     Scorable getUnderestimateScore()
-    Scorable getOverboughtScore()
+    Scorable getOverestimateScore()
     Scorable getOversoldScore()
+    Scorable getOverboughtScore()
 }
 
 class Analysis implements Analyzable {
@@ -112,15 +112,6 @@ class Analysis implements Analyzable {
     }
 
     @Override
-    Scorable getOverestimateScore() {
-        def score = new Score()
-        // macd
-        score.macdValue = macd.value > 0 ? 100 : 0
-        // return
-        return score
-    }
-
-    @Override
     Scorable getUnderestimateScore() {
         def score = new Score()
         // macd
@@ -130,10 +121,10 @@ class Analysis implements Analyzable {
     }
 
     @Override
-    Scorable getOverboughtScore() {
+    Scorable getOverestimateScore() {
         def score = new Score()
-        // cci
-        score.cciValue = cci.value >= 100 ? 100 : 0
+        // macd
+        score.macdValue = macd.value > 0 ? 100 : 0
         // return
         return score
     }
@@ -141,8 +132,21 @@ class Analysis implements Analyzable {
     @Override
     Scorable getOversoldScore() {
         def score = new Score()
+        // rsi
+        score.rsiValue = rsi.value <= 30 ? 100 : 0
         // cci
         score.cciValue = cci.value <= -100 ? 100 : 0
+        // return
+        return score
+    }
+
+    @Override
+    Scorable getOverboughtScore() {
+        def score = new Score()
+        // rsi
+        score.rsiValue = rsi.value >= 70 ? 100 : 0
+        // cci
+        score.cciValue = cci.value >= 100 ? 100 : 0
         // return
         return score
     }
@@ -167,7 +171,6 @@ def waveOhlcvType = variables['waveOhlcvType'] as Ohlcv.Type
 def waveOhlcvPeriod = variables['waveOhlcvPeriod'] as Integer
 def tideOhlcvType = variables['tideOhlcvType'] as Ohlcv.Type
 def tideOhlcvPeriod = variables['tideOhlcvPeriod'] as Integer
-def overnight = (variables['overnight'] as Boolean) ?: false
 log.info("waveOhlcvType(Period): {}({})", waveOhlcvType, waveOhlcvPeriod)
 log.info("tideOhlcvType(Period): {}({})", tideOhlcvType, tideOhlcvPeriod)
 
@@ -179,7 +182,7 @@ List<Ohlcv> ohlcvs = assetProfile.getOhlcvs(Ohlcv.Type.MINUTE, 1)
 def priceZScore = Tool.zScore(ohlcvs.take(20).collect{it.closePrice})
 if (priceZScore.abs() < 2.0) {
     log.info("skip - priceZScore: {}", priceZScore)
-    return null
+//    return null
 }
 
 // ripple
@@ -198,11 +201,10 @@ log.info("tideAnalysis: {}", tideAnalysis)
 // trade
 //================================
 // buy
-if (priceZScore > 2.0 && analysis.getDirectionScore().getAverage() > 75 && analysis.getMomentumScore().getAverage() > 75) {
-    // wave is bullish
-    if (waveAnalysis.getDirectionScore().getAverage() > 75) {
+if (analysis.getDirectionScore().getAverage() > 75 && analysis.getMomentumScore().getAverage() > 75) {
+    if (waveAnalysis.getDirectionScore().getAverage() > 75 && waveAnalysis.getMomentumScore().getAverage() > 75) {
         // default
-        hold = 1
+        hold = 1.0
         // filter - volatility
         if (waveAnalysis.getVolatilityScore().getAverage() < 75) {
             hold = null
@@ -214,13 +216,16 @@ if (priceZScore > 2.0 && analysis.getDirectionScore().getAverage() > 75 && analy
     }
 }
 // sell
-if (priceZScore < -2.0 && analysis.getDirectionScore().getAverage() < 25) {
-    // wave is bearish
-    if (waveAnalysis.getDirectionScore().getAverage() < 25) {
+if (analysis.getDirectionScore().getAverage() < 25 && analysis.getMomentumScore().getAverage() < 25) {
+    if (waveAnalysis.getDirectionScore().getAverage() < 25 && waveAnalysis.getMomentumScore().getAverage() < 25) {
         // default
-        hold = 0
-        // filter - momentum
-        if (waveAnalysis.getMomentumScore().getAverage() > 75) {
+        hold = 0.9
+        // filter - volatility
+        if (waveAnalysis.getVolatilityScore().getAverage() < 75) {
+            hold = null
+        }
+        // filter - underestimate
+        if (waveAnalysis.getUnderestimateScore().getAverage() > 75) {
             hold = null
         }
     }
@@ -229,19 +234,9 @@ if (priceZScore < -2.0 && analysis.getDirectionScore().getAverage() < 25) {
 //================================
 // fallback
 //================================
-// tide direction
-if (tideAnalysis.getDirectionScore().getAverage() < 75) {
+// tide direction and momentum
+if (tideAnalysis.getDirectionScore().getAverage() < 25 && tideAnalysis.getMomentumScore().getAverage() < 25) {
     hold = 0
-}
-// tide momentum
-if (tideAnalysis.getMomentumScore().getAverage() < 75) {
-    hold = 0
-}
-// overnight
-if (!overnight) {
-    if (dateTime.toLocalTime().isAfter(LocalTime.of(15, 10))) {
-        hold = 0
-    }
 }
 
 //================================

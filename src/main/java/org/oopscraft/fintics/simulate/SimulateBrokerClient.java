@@ -124,11 +124,9 @@ public class SimulateBrokerClient extends BrokerClient {
     public OrderBook getOrderBook(Asset asset) throws InterruptedException {
         loadOhlcvsIfNotExist(asset, dateTime);
         LocalDateTime dateTimeFrom = dateTime.truncatedTo(ChronoUnit.MINUTES);
-        LocalDateTime dateTimeTo = dateTimeFrom.plusMinutes(1).minusNanos(1);
         List<Ohlcv> minuteOhlcvs = minuteOhlcvsMap.get(asset.getAssetId());
         Ohlcv minuteOhlcv = minuteOhlcvs.stream()
-                .filter(assetOhlcv -> (assetOhlcv.getDateTime().isAfter(dateTimeFrom) || assetOhlcv.getDateTime().isEqual(dateTimeFrom))
-                        && (assetOhlcv.getDateTime().isBefore(dateTimeTo) || assetOhlcv.getDateTime().isEqual(dateTimeTo)))
+                .filter(assetOhlcv -> (assetOhlcv.getDateTime().isEqual(dateTimeFrom) || assetOhlcv.getDateTime().isBefore(dateTimeFrom)))
                 .findFirst()
                 .orElse(null);
         BigDecimal price = minuteOhlcv.getClosePrice();
