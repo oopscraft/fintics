@@ -77,7 +77,7 @@
                        th:placeholder="#{web.global.keyword}"/>
             </label>
             <div class="grid-column--8 s__grid-column--12 justify-self--end">
-                <button type="button" onclick="getStrategies();">
+                <button type="submit" onclick="getStrategies();">
                     <img class="icon" th:src="@{/static/image/icon-search.svg}" alt="reset"/>
                     <span data-th-text="#{web.global.search}"></span>
                 </button>
@@ -123,7 +123,7 @@
                 </tbody>
             </table>
         </div>
-        <div class="display--grid grid-template-columns--12 padding--1em">
+        <div class="display--grid grid-template-columns--12 margin-x--1em">
             <div class="grid-column--4 font-size--smaller">
                 <span data-th-text="#{web.global.total}"></span>
                 <span data-duice-bind="strategySearch" data-duice-property="_count" data-duice-format="number(0)"></span>

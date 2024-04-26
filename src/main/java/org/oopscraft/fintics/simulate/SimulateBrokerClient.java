@@ -124,9 +124,11 @@ public class SimulateBrokerClient extends BrokerClient {
     public OrderBook getOrderBook(Asset asset) throws InterruptedException {
         loadOhlcvsIfNotExist(asset, dateTime);
         LocalDateTime dateTimeFrom = dateTime.truncatedTo(ChronoUnit.MINUTES);
+        LocalDateTime dateTimeTo = dateTimeFrom.plusMinutes(1).minusNanos(1);
         List<Ohlcv> minuteOhlcvs = minuteOhlcvsMap.get(asset.getAssetId());
         Ohlcv minuteOhlcv = minuteOhlcvs.stream()
-                .filter(assetOhlcv -> (assetOhlcv.getDateTime().isEqual(dateTimeFrom) || assetOhlcv.getDateTime().isBefore(dateTimeFrom)))
+                .filter(assetOhlcv -> (assetOhlcv.getDateTime().isAfter(dateTimeFrom) || assetOhlcv.getDateTime().isEqual(dateTimeFrom))
+                        && (assetOhlcv.getDateTime().isBefore(dateTimeTo) || assetOhlcv.getDateTime().isEqual(dateTimeTo)))
                 .findFirst()
                 .orElse(null);
         BigDecimal price = minuteOhlcv.getClosePrice();
@@ -207,13 +209,13 @@ public class SimulateBrokerClient extends BrokerClient {
                         .build();
                 balance.getBalanceAssets().add(balanceAsset);
             }else{
-                BigDecimal holdQuantity = balanceAsset.getQuantity().add(buyQuantity);
-                BigDecimal holdPurchaseAmount = balanceAsset.getPurchaseAmount().add(buyAmount);
-                BigDecimal holdBuyPurchasePrice = holdPurchaseAmount.divide(holdQuantity, MathContext.DECIMAL32);
-                balanceAsset.setQuantity(holdQuantity);
-                balanceAsset.setOrderableQuantity(holdQuantity);
-                balanceAsset.setPurchasePrice(holdBuyPurchasePrice);
-                balanceAsset.setPurchaseAmount(holdPurchaseAmount);
+                BigDecimal quantity = balanceAsset.getQuantity().add(buyQuantity);
+                BigDecimal purchaseAmount = balanceAsset.getPurchaseAmount().add(buyAmount);
+                BigDecimal buyPurchasePrice = purchaseAmount.divide(quantity, MathContext.DECIMAL32);
+                balanceAsset.setQuantity(quantity);
+                balanceAsset.setOrderableQuantity(quantity);
+                balanceAsset.setPurchasePrice(buyPurchasePrice);
+                balanceAsset.setPurchaseAmount(purchaseAmount);
             }
 
             // deduct fee
@@ -226,15 +228,15 @@ public class SimulateBrokerClient extends BrokerClient {
             BigDecimal sellQuantity = order.getQuantity();
             BigDecimal sellPrice = orderBook.getBidPrice();
             BigDecimal sellAmount = sellQuantity.multiply(sellPrice, MathContext.DECIMAL32);
-            BigDecimal holdQuantity = balanceAsset.getQuantity().subtract(sellQuantity);
-            if(holdQuantity.compareTo(BigDecimal.ZERO) == 0) {
+            BigDecimal quantity = balanceAsset.getQuantity().subtract(sellQuantity);
+            if(quantity.compareTo(BigDecimal.ZERO) <= 0) {
                 balance.getBalanceAssets().remove(balanceAsset);
             }else{
-                BigDecimal holdPurchaseAmount = balanceAsset.getPurchaseAmount().subtract(sellAmount);
-                BigDecimal holdPurchasePrice = holdPurchaseAmount.divide(holdQuantity, MathContext.DECIMAL32);
-                balanceAsset.setQuantity(holdQuantity);
-                balanceAsset.setPurchasePrice(holdPurchasePrice);
-                balanceAsset.setPurchaseAmount(holdPurchaseAmount);
+                BigDecimal purchaseAmount = balanceAsset.getPurchaseAmount().subtract(sellAmount);
+                BigDecimal purchasePrice = purchaseAmount.divide(quantity, MathContext.DECIMAL32);
+                balanceAsset.setQuantity(quantity);
+                balanceAsset.setPurchasePrice(purchasePrice);
+                balanceAsset.setPurchaseAmount(purchaseAmount);
             }
 
             // deposit

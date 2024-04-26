@@ -14,10 +14,6 @@
             _size: 20,
             _count: 0
         });
-        duice.ObjectProxy.onPropertyChanged(simulateSearch, () => {
-            simulateSearch._page = 0;
-            getSimulates();
-        });
         const simulates = new duice.ArrayProxy([]);
         const trades = new duice.ArrayProxy([]);
 
@@ -163,13 +159,15 @@
                 <input type="checkbox" data-duice-bind="simulateSearch" data-duice-property="favorite"/>
                 <span data-th-text="#{fintics.Simulate.favorite}"></span>
             </label>
-            <div class="grid-column--1 s__grid-column--12">
+            <div class="grid-column--6 s__grid-column--12 justify-self--end">
+                <button type="submit" onclick="getSimulates();">
+                    <img class="icon" th:src="@{/static/image/icon-search.svg}" alt="search"/>
+                    <span data-th-text="#{web.global.search}"></span>
+                </button>
                 <button type="button" onclick="resetSimulates();">
                     <img class="icon" th:src="@{/static/image/icon-reset.svg}" alt="reset"/>
                     <span data-th-text="#{web.global.reset}"></span>
                 </button>
-            </div>
-            <div class="grid-column--5 s__grid-column--12 justify-self--end">
                 <button type="button" onclick="deleteSimulates();">
                     <img class="icon" th:src="@{/static/image/icon-delete.svg}" alt="delete"/>
                     <span data-th-text="#{web.global.delete}"></span>
@@ -305,7 +303,7 @@
                 </tbody>
             </table>
         </div>
-        <div class="display--grid grid-template-columns--12 padding--1em">
+        <div class="display--grid grid-template-columns--12">
             <div class="grid-column--4 font-size--smaller">
                 <span data-th-text="#{web.global.total}"></span>
                 <span data-duice-bind="simulateSearch" data-duice-property="_count" data-duice-format="number(0)"></span>

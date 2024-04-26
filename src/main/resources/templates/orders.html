@@ -24,9 +24,6 @@
                     duice.ArrayProxy.clear(tradeAssets);
                 }
             }
-            // get order
-            orderSearch._page = 0;
-            getOrders();
         });
         const orders = new duice.ArrayProxy([]);
         const trades = new duice.ArrayProxy([]);
@@ -135,10 +132,14 @@
                         <option value="FAILED">FAILED</option>
                     </select>
                 </label>
-                <div class="grid-column--1 s__grid-column--12">
+                <div class="grid-column--5 s__grid-column--12 justify-self--end">
+                    <button type="submit" onclick="getOrders();">
+                        <img class="icon" th:src="@{/static/image/icon-search.svg}" alt="search"/>
+                        <span data-th-text="#{web.global.search}"></span>
+                    </button>
                     <button type="button" onclick="resetOrders();">
                         <img class="icon" th:src="@{/static/image/icon-reset.svg}" alt="reset"/>
-                        <span data-th-text="#{web.global.reset}">Reset</span>
+                        <span data-th-text="#{web.global.reset}"></span>
                     </button>
                 </div>
             </div>
@@ -217,7 +218,7 @@
                 </tbody>
             </table>
         </div>
-        <div class="display--grid grid-template-columns--12 padding--1em">
+        <div class="display--grid grid-template-columns--12 margin-x--1em">
             <div class="grid-column--4 font-size--smaller">
                 <span data-th-text="#{web.global.total}"></span>
                 <span data-duice-bind="orderSearch" data-duice-property="_count" data-duice-format="number(0)"></span>

@@ -19,6 +19,9 @@ import java.time.LocalDateTime;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class IndiceOhlcvEntity extends OhlcvEntity {
 
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PROTECTED)
     public static class Pk implements Serializable {
         private Indice.Id indiceId;
         private Ohlcv.Type type;

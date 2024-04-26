@@ -43,21 +43,6 @@ class PastOhlcvCollectorTest extends CoreTestSupport {
 
     @Disabled
     @Test
-    void getOhlcvs() {
-        // given
-        String yahooSymbol = "005930.KS";
-        Ohlcv.Type type = Ohlcv.Type.MINUTE;
-        LocalDateTime dateTimeTo = LocalDateTime.now().minusDays(1);
-        LocalDateTime dateTimeFrom = dateTimeTo.minusWeeks(11);
-        // when
-        List<Ohlcv> ohlcvs = pastOhlcvCollector.getOhlcvs(yahooSymbol, type, dateTimeFrom, dateTimeTo);
-        // then
-        log.debug("ohlcvs.size():{}", ohlcvs.size());
-        assertTrue(ohlcvs.size() > 0);
-    }
-
-    @Disabled
-    @Test
     void collectPastAssetMinuteOhlcvs() {
         // given
         Asset asset = Asset.builder()
@@ -106,9 +91,9 @@ class PastOhlcvCollectorTest extends CoreTestSupport {
     @Test
     void collectPastIndiceMinuteOhlcvs() {
         // given
-        Indice.Id indiceId = Indice.Id.NDX_FUTURE;
+        Indice indice = Indice.from(Indice.Id.NDX_FUTURE);
         // when
-        pastOhlcvCollector.collectPastIndiceMinuteOhlcvs(indiceId, expiredDateTime);
+        pastOhlcvCollector.collectPastIndiceMinuteOhlcvs(indice, expiredDateTime);
         // then
         List<IndiceOhlcvEntity> indiceOhlcvEntities = entityManager.createQuery("select " +
                                 " a from IndiceOhlcvEntity a " +
@@ -116,7 +101,7 @@ class PastOhlcvCollectorTest extends CoreTestSupport {
                                 " and a.type = 'MINUTE'" +
                                 "order by a.dateTime desc",
                         IndiceOhlcvEntity.class)
-                .setParameter("indiceId", indiceId)
+                .setParameter("indiceId", indice.getIndiceId())
                 .getResultList();
         log.info("indiceOhlcvEntities.size:{}", indiceOhlcvEntities.size());
         assertTrue(indiceOhlcvEntities.size() > 0);
@@ -126,9 +111,9 @@ class PastOhlcvCollectorTest extends CoreTestSupport {
     @Test
     void collectPastIndiceDailyOhlcvs() {
         // given
-        Indice.Id indiceId = Indice.Id.NDX_FUTURE;
+        Indice indice = Indice.from(Indice.Id.NDX_FUTURE);
         // when
-        pastOhlcvCollector.collectPastIndiceDailyOhlcvs(indiceId, expiredDateTime);
+        pastOhlcvCollector.collectPastIndiceDailyOhlcvs(indice, expiredDateTime);
         // then
         List<IndiceOhlcvEntity> indiceOhlcvEntities = entityManager.createQuery("select " +
                                 " a from IndiceOhlcvEntity a " +
@@ -136,7 +121,7 @@ class PastOhlcvCollectorTest extends CoreTestSupport {
                                 " and a.type = 'DAILY'" +
                                 " order by a.dateTime desc",
                         IndiceOhlcvEntity.class)
-                .setParameter("indiceId", indiceId)
+                .setParameter("indiceId", indice.getIndiceId())
                 .getResultList();
         log.info("indiceOhlcvEntities.size:{}", indiceOhlcvEntities.size());
         assertTrue(indiceOhlcvEntities.size() > 0);

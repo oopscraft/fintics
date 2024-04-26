@@ -168,7 +168,7 @@ public abstract class KrBrokerClient extends BrokerClient {
 
         // market, exchange
         String market = getDefinition().getMarket();
-        String exchange = "KRX";
+        String exchange = "XKRX";
 
         // convert assets
         return rows.stream()

@@ -17,6 +17,7 @@ insert into `core_authority` (`authority_id`,`system_required`,`authority_name`)
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_BROKERS','Y','Brokers API Access Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_BROKERS_EDIT','Y','Brokers Edit API Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_DATA','Y','Data Access API Authority');
+insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_DATA_EDIT','Y','Data Edit API Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('MONITORS','Y','Monitor Access Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('TRADES','Y','Trades Access Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('TRADES_EDIT','Y','Trade Edit Authority');
@@ -28,6 +29,7 @@ insert into `core_authority` (`authority_id`,`system_required`,`authority_name`)
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('SIMULATES','Y','Simulates Access Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('SIMULATES_EDIT','Y','Simulates Edit Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('DATA','Y','Data Access Authority');
+insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('DATA_EDIT','Y','Data Edit Authority');
 
 -- core_role
 insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
@@ -52,6 +54,8 @@ insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`au
     ('SIMULATES_EDIT','Y','Simulates Edit Role','N','N');
 insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
     ('DATA','Y','Data Access Role','N','Y');
+insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
+    ('DATA_EDIT','Y','Data Edit Role','N','N');
 
 -- core_role_authority
 insert into `core_role_authority` (`role_id`,`authority_id`) values
@@ -88,6 +92,9 @@ insert into `core_role_authority` (`role_id`,`authority_id`) values
 insert into `core_role_authority` (`role_id`,`authority_id`) values
     ('DATA','DATA'),
     ('DATA','API_DATA');
+insert into `core_role_authority` (`role_id`,`authority_id`) values
+    ('DATA_EDIT','DATA_EDIT'),
+    ('DATA_EDIT','API_DATA_EDIT');
 
 -- core_menu
 insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`sort`,`icon`) values
@@ -130,13 +137,13 @@ insert into `core_alarm`
 
 -- fintics_asset
 insert into `fintics_asset`
-    (`asset_id`,`asset_name`,`type`) values
-    ('KR.122630','KODEX 레버리지','ETF'),
-    ('KR.229200','KODEX 코스닥150','ETF'),
-    ('KR.252670','KODEX 200선물인버스2X','ETF'),
-    ('KR.251340','KODEX 코스닥150선물인버스','ETF'),
-    ('UPBIT.KRW-BTC','Bitcoin',null),
-    ('UPBIT.KRW-ETH','Ethereum',null);
+    (`asset_id`,`asset_name`,`exchange`,`type`) values
+    ('KR.122630','KODEX 레버리지','XKRX','ETF'),
+    ('KR.229200','KODEX 코스닥150','XKRX','ETF'),
+    ('KR.252670','KODEX 200선물인버스2X','XKRX','ETF'),
+    ('KR.251340','KODEX 코스닥150선물인버스','XKRX','ETF'),
+    ('UPBIT.KRW-BTC','Bitcoin',null,null),
+    ('UPBIT.KRW-ETH','Ethereum',null,null);
 
 -- fintics_broker
 insert into `fintics_broker`

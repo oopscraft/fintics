@@ -18,6 +18,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class AssetOhlcvEntity extends OhlcvEntity {
 
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public static class Pk implements Serializable {
         private String assetId;
         private Ohlcv.Type type;
