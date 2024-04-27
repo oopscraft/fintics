@@ -148,13 +148,13 @@ public class TradeExecutor {
                 strategyExecutor.setLog(log);
                 Instant startTime = Instant.now();
                 BigDecimal strategyResult = strategyExecutor.execute();
-                log.info("[{}] Rule script execution elapsed:{}", tradeAsset.getAssetName(), Duration.between(startTime, Instant.now()));
-                log.info("[{}] ruleScriptResult: {}", tradeAsset.getAssetName(), strategyResult);
+                log.info("[{}] strategy execution elapsed:{}", tradeAsset.getAssetName(), Duration.between(startTime, Instant.now()));
+                log.info("[{}] strategy result: {}", tradeAsset.getAssetName(), strategyResult);
 
-                // check rule script result and count
-                BigDecimal previousRuleScriptResult = strategyResultMap.get(tradeAsset.getAssetId());
+                // check strategy result and count
+                BigDecimal previousStrategyResult = strategyResultMap.get(tradeAsset.getAssetId());
                 int strategyResultCount = strategyResultCountMap.getOrDefault(tradeAsset.getAssetId(), 0);
-                if (Objects.equals(strategyResult, previousRuleScriptResult)) {
+                if (Objects.equals(strategyResult, previousStrategyResult)) {
                     strategyResultCount++;
                 } else {
                     strategyResultCount = 1;
