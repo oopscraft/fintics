@@ -68,81 +68,11 @@ public class KisUsBrokerClient extends UsBrokerClient {
 
     @Override
     public boolean isOpened(LocalDateTime dateTime) throws InterruptedException {
-        ZonedDateTime systemZonedDateTime = dateTime.atZone(ZoneId.systemDefault());
-        ZonedDateTime koreaZonedDateTime = systemZonedDateTime.withZoneSameInstant(ZoneId.of("Asia/Seoul"));
-
-        // weekend
-        DayOfWeek dayOfWeek = koreaZonedDateTime.getDayOfWeek();
-        if(dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
-            return false;
-        }
-
-        // check holiday
-        if(isHoliday(koreaZonedDateTime.toLocalDateTime())) {
-            return false;
-        }
-
-        // default
-        return true;
+        throw new UnsupportedOperationException();
     }
 
     boolean isHoliday(LocalDateTime dateTime) throws InterruptedException {
-        // 모의 투자는 휴장일 조회 API 제공 하지 않음
-        if(!production) {
-            return false;
-        }
-
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .build();
-        String url = apiUrl + "/uapi/domestic-stock/v1/quotations/chk-holiday";
-        HttpHeaders headers = createHeaders();
-        headers.add("tr_id", "CTCA0903R");
-
-        String baseDt = dateTime.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        url = UriComponentsBuilder.fromUriString(url)
-                .queryParam("BASS_DT", baseDt)
-                .queryParam("CTX_AREA_NK","")
-                .queryParam("CTX_AREA_FK","")
-                .build()
-                .toUriString();
-        RequestEntity<Void> requestEntity = RequestEntity
-                .get(url)
-                .headers(headers)
-                .build();
-        sleep();
-        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
-        JsonNode rootNode;
-        try {
-            rootNode = objectMapper.readTree(responseEntity.getBody());
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-
-        String rtCd = objectMapper.convertValue(rootNode.path("rt_cd"), String.class);
-        String msg1 = objectMapper.convertValue(rootNode.path("msg1"), String.class);
-        if(!"0".equals(rtCd)) {
-            throw new RuntimeException(msg1);
-        }
-
-        List<ValueMap> output = objectMapper.convertValue(rootNode.path("output"), new TypeReference<>(){});
-        ValueMap matchedRow = output.stream()
-                .filter(row -> {
-                    LocalDate localDate = LocalDate.parse(row.getString("bass_dt"), DateTimeFormatter.ofPattern("yyyyMMdd"));
-                    return localDate.isEqual(dateTime.toLocalDate());
-                })
-                .findFirst()
-                .orElse(null);
-
-        // define holiday
-        boolean holiday = false;
-        if(matchedRow != null) {
-            String openYn = matchedRow.getString("opnd_yn");
-            if(openYn.equals("N")) {
-                holiday = true;
-            }
-        }
-        return holiday;
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -276,14 +206,15 @@ public class KisUsBrokerClient extends UsBrokerClient {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
-        String url = apiUrl + "/uapi/domestic-stock/v1/quotations/inquire-asking-price-exp-ccn";
+        String url = apiUrl + "/uapi/overseas-price/v1/quotations/inquire-asking-price";
         HttpHeaders headers = createHeaders();
-        headers.add("tr_id", "FHKST01010200");
-        String fidCondMrktDivCode = "J";
-        String fidInputIscd = asset.getSymbol();
+        headers.add("tr_id", "HHDFS76200100");
+        String excd = "NAS";
+        String symb = asset.getSymbol();
         url = UriComponentsBuilder.fromUriString(url)
-                .queryParam("FID_COND_MRKT_DIV_CODE", fidCondMrktDivCode)
-                .queryParam("FID_INPUT_ISCD", fidInputIscd)
+                .queryParam("AUTH","")
+                .queryParam("EXCD", excd)
+                .queryParam("SYMB", symb)
                 .build()
                 .toUriString();
         RequestEntity<Void> requestEntity = RequestEntity
@@ -308,9 +239,9 @@ public class KisUsBrokerClient extends UsBrokerClient {
         ValueMap output1 = objectMapper.convertValue(rootNode.path("output1"), ValueMap.class);
         ValueMap output2 = objectMapper.convertValue(rootNode.path("output2"), ValueMap.class);
 
-        BigDecimal price = output2.getNumber("stck_prpr");
-        BigDecimal bidPrice = output1.getNumber("bidp1");
-        BigDecimal askPrice = output1.getNumber("askp1");
+        BigDecimal price = output1.getNumber("last");
+        BigDecimal bidPrice = output2.getNumber("bidp1");
+        BigDecimal askPrice = output2.getNumber("askp1");
 
         return OrderBook.builder()
                 .price(price)
@@ -321,336 +252,22 @@ public class KisUsBrokerClient extends UsBrokerClient {
 
     @Override
     public Balance getBalance() throws InterruptedException {
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .build();
-        String url = apiUrl + "/uapi/domestic-stock/v1/trading/inquire-balance";
-        HttpHeaders headers = createHeaders();
-        String trId = production ? "TTTC8434R" : "VTTC8434R";
-        headers.add("tr_id", trId);
-        url = UriComponentsBuilder.fromUriString(url)
-                .queryParam("CANO", accountNo.split("-")[0])
-                .queryParam("ACNT_PRDT_CD", accountNo.split("-")[1])
-                .queryParam("AFHR_FLPR_YN", "N")
-                .queryParam("OFL_YN", "")
-                .queryParam("INQR_DVSN", "02")
-                .queryParam("UNPR_DVSN", "01")
-                .queryParam("FUND_STTL_ICLD_YN", "N")
-                .queryParam("FNCG_AMT_AUTO_RDPT_YN", "N")
-                .queryParam("PRCS_DVSN", "00")
-                .queryParam("CTX_AREA_FK100", "")
-                .queryParam("CTX_AREA_NK100", "")
-                .build()
-                .toUriString();
-        RequestEntity<Void> requestEntity = RequestEntity
-                .get(url)
-                .headers(headers)
-                .build();
-        sleep();
-        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
-        JsonNode rootNode;
-        try {
-            rootNode = objectMapper.readTree(responseEntity.getBody());
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-
-        String rtCd = objectMapper.convertValue(rootNode.path("rt_cd"), String.class);
-        String msg1 = objectMapper.convertValue(rootNode.path("msg1"), String.class);
-        if(!"0".equals(rtCd)) {
-            throw new RuntimeException(msg1);
-        }
-
-        JsonNode output1Node = rootNode.path("output1");
-        List<ValueMap> output1 = objectMapper.convertValue(output1Node, new TypeReference<>(){});
-
-        JsonNode output2Node = rootNode.path("output2");
-        List<ValueMap> output2 = objectMapper.convertValue(output2Node, new TypeReference<>(){});
-
-        Balance balance = Balance.builder()
-                .accountNo(accountNo)
-                .totalAmount(output2.get(0).getNumber("tot_evlu_amt"))
-                .cashAmount(output2.get(0).getNumber("prvs_rcdl_excc_amt"))
-                .purchaseAmount(output2.get(0).getNumber("pchs_amt_smtl_amt"))
-                .valuationAmount(output2.get(0).getNumber("evlu_amt_smtl_amt"))
-                .build();
-
-        List<BalanceAsset> balanceAssets = output1.stream()
-                .map(row -> BalanceAsset.builder()
-                        .accountNo(accountNo)
-                        .assetId(toAssetId(row.getString("pdno")))
-                        .assetName(row.getString("prdt_name"))
-                        .quantity(row.getNumber("hldg_qty"))
-                        .orderableQuantity(row.getNumber("ord_psbl_qty"))
-                        .purchaseAmount(row.getNumber("pchs_amt"))
-                        .valuationAmount(row.getNumber("evlu_amt"))
-                        .profitAmount(row.getNumber("evlu_pfls_amt"))
-                        .build())
-                .filter(balanceAsset -> balanceAsset.getQuantity().intValue() > 0)
-                .collect(Collectors.toList());
-        balance.setBalanceAssets(balanceAssets);
-
-        BigDecimal profitAmount = balanceAssets.stream()
-                .map(BalanceAsset::getProfitAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        balance.setProfitAmount(profitAmount);
-
-        if(production) {
-            BigDecimal realizedProfitAmount = getBalanceRealizedProfitAmount();
-            balance.setRealizedProfitAmount(realizedProfitAmount);
-        }
-
-        return balance;
-    }
-
-    private BigDecimal getBalanceRealizedProfitAmount() throws InterruptedException {
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .build();
-        String url = apiUrl + "/uapi/domestic-stock/v1/trading/inquire-balance-rlz-pl";
-        HttpHeaders headers = createHeaders();
-        String trId = "TTTC8494R";
-        headers.add("tr_id", trId);
-        url = UriComponentsBuilder.fromUriString(url)
-                .queryParam("CANO", accountNo.split("-")[0])
-                .queryParam("ACNT_PRDT_CD", accountNo.split("-")[1])
-                .queryParam("AFHR_FLPR_YN", "N")
-                .queryParam("OFL_YN", "")
-                .queryParam("INQR_DVSN", "00")
-                .queryParam("UNPR_DVSN", "01")
-                .queryParam("FUND_STTL_ICLD_YN", "N")
-                .queryParam("FNCG_AMT_AUTO_RDPT_YN", "N")
-                .queryParam("PRCS_DVSN", "00")
-                .queryParam("COST_ICLD_YN", "Y")
-                .queryParam("CTX_AREA_FK100", "")
-                .queryParam("CTX_AREA_NK100", "")
-                .build()
-                .toUriString();
-        RequestEntity<Void> requestEntity = RequestEntity
-                .get(url)
-                .headers(headers)
-                .build();
-        sleep();
-        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
-        JsonNode rootNode;
-        try {
-            rootNode = objectMapper.readTree(responseEntity.getBody());
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-
-        String rtCd = objectMapper.convertValue(rootNode.path("rt_cd"), String.class);
-        String msg1 = objectMapper.convertValue(rootNode.path("msg1"), String.class);
-        if(!"0".equals(rtCd)) {
-            throw new RuntimeException(msg1);
-        }
-
-        JsonNode output2Node = rootNode.path("output2");
-        List<ValueMap> output2 = objectMapper.convertValue(output2Node, new TypeReference<>(){});
-        return output2.get(0).getNumber("rlzt_pfls");
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public Order submitOrder(Order order) throws InterruptedException {
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .build();
-        String url = apiUrl + "/uapi/domestic-stock/v1/trading/order-cash";
-        HttpHeaders headers = createHeaders();
-
-        // order kind
-        String trId = null;
-        switch(order.getType()) {
-            case BUY -> trId = production ? "TTTC0802U" : "VTTC0802U";
-            case SELL -> trId = production ? "TTTC0801U" : "VTTC0801U";
-            default -> throw new RuntimeException("invalid order kind");
-        }
-        headers.add("tr_id", trId);
-
-        // order type
-        String ordDvsn = null;
-        String ordUnpr = null;
-        switch(order.getKind()) {
-            case LIMIT -> {
-                ordDvsn = "00";
-                ordUnpr = String.valueOf(order.getPrice().longValue());
-            }
-            case MARKET -> {
-                ordDvsn = "01";
-                ordUnpr = "0";
-            }
-            default -> throw new RuntimeException("invalid order type");
-        }
-
-        // quantity
-        int quantity = Math.max(order.getQuantity().intValue(),1);
-
-        // request
-        ValueMap payloadMap = new ValueMap();
-        payloadMap.put("CANO", accountNo.split("-")[0]);
-        payloadMap.put("ACNT_PRDT_CD", accountNo.split("-")[1]);
-        payloadMap.put("PDNO", order.getSymbol());
-        payloadMap.put("ORD_DVSN", ordDvsn);
-        payloadMap.put("ORD_QTY", String.valueOf(quantity));
-        payloadMap.put("ORD_UNPR", ordUnpr);
-        RequestEntity<ValueMap> requestEntity = RequestEntity
-                .post(url)
-                .headers(headers)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(payloadMap);
-
-        // exchange
-        sleep();
-        ResponseEntity<ValueMap> responseEntity = restTemplate.exchange(requestEntity, ValueMap.class);
-        ValueMap responseMap = Optional.ofNullable(responseEntity.getBody())
-                .orElseThrow();
-
-        // response
-        String rtCd = responseMap.getString("rt_cd");
-        String msg1 = responseMap.getString("msg1");
-        if(!"0".equals(rtCd)) {
-            throw new RuntimeException(msg1);
-        }
-
-        // return
-        return order;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public List<Order> getWaitingOrders() throws InterruptedException {
-        // 모의 투자는 지원 하지 않음
-        if(!production) {
-            return new ArrayList<>();
-        }
-
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .build();
-
-        String url = apiUrl + "/uapi/domestic-stock/v1/trading/inquire-psbl-rvsecncl";
-        HttpHeaders headers = createHeaders();
-        headers.add("tr_id", "TTTC8036R");
-        url = UriComponentsBuilder.fromUriString(url)
-                .queryParam("CANO", accountNo.split("-")[0])
-                .queryParam("ACNT_PRDT_CD", accountNo.split("-")[1])
-                .queryParam("CTX_AREA_FK100", "")
-                .queryParam("CTX_AREA_NK100","")
-                .queryParam("INQR_DVSN_1", "1")
-                .queryParam("INQR_DVSN_2", "0")
-                .build()
-                .toUriString();
-        RequestEntity<Void> requestEntity = RequestEntity
-                .get(url)
-                .headers(headers)
-                .build();
-
-        sleep();
-        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
-        JsonNode rootNode;
-        try {
-            rootNode = objectMapper.readTree(responseEntity.getBody());
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-
-        String rtCd = objectMapper.convertValue(rootNode.path("rt_cd"), String.class);
-        String msg1 = objectMapper.convertValue(rootNode.path("msg1"), String.class);
-        if(!"0".equals(rtCd)) {
-            throw new RuntimeException(msg1);
-        }
-
-        JsonNode outputNode = rootNode.path("output");
-        List<ValueMap> output = objectMapper.convertValue(outputNode, new TypeReference<>(){});
-
-        // return
-        return output.stream()
-                .map(row -> {
-                    Order.Type orderType;
-                    switch (row.getString("sll_buy_dvsn_cd")) {
-                        case "01" -> orderType = Order.Type.SELL;
-                        case "02" -> orderType = Order.Type.BUY;
-                        default -> throw new RuntimeException("invalid sll_buy_dvsn_cd");
-                    }
-                    Order.Kind orderKind;
-                    switch (row.getString("ord_dvsn_cd")) {
-                        case "00" -> orderKind = Order.Kind.LIMIT;
-                        case "01" -> orderKind = Order.Kind.MARKET;
-                        default -> orderKind = null;
-                    }
-
-                    String symbol = row.getString("pdno");
-                    BigDecimal quantity = row.getNumber("psbl_qty");
-                    BigDecimal price = row.getNumber("ord_unpr");
-                    String clientOrderId = row.getString("odno");
-                    return Order.builder()
-                            .type(orderType)
-                            .assetId(toAssetId(symbol))
-                            .kind(orderKind)
-                            .quantity(quantity)
-                            .price(price)
-                            .clientOrderId(clientOrderId)
-                            .build();
-
-                })
-                .collect(Collectors.toList());
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public Order amendOrder(Order order) throws InterruptedException {
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .build();
-        String url = apiUrl + "/uapi/domestic-stock/v1/trading/order-rvsecncl";
-        HttpHeaders headers = createHeaders();
-
-        // trId
-        String trId = (production ? "TTTC0803U" : "VTTC0803U");
-        headers.add("tr_id", trId);
-
-        // order type
-        String ordDvsn = null;
-        switch(order.getKind()) {
-            case LIMIT -> {
-                ordDvsn = "00";
-            }
-            case MARKET -> {
-                ordDvsn = "01";
-            }
-            default -> throw new RuntimeException("invalid order type");
-        }
-
-        // request
-        ValueMap payloadMap = new ValueMap();
-        payloadMap.put("CANO", accountNo.split("-")[0]);
-        payloadMap.put("ACNT_PRDT_CD", accountNo.split("-")[1]);
-        payloadMap.put("KRX_FWDG_ORD_ORGNO", "");
-        payloadMap.put("ORGN_ODNO", order.getClientOrderId());
-        payloadMap.put("ORD_DVSN", ordDvsn);
-        payloadMap.put("RVSE_CNCL_DVSN_CD", "01");
-        payloadMap.put("ORD_QTY", "0");
-        payloadMap.put("ORD_UNPR", String.valueOf(order.getPrice().longValue()));
-        payloadMap.put("QTY_ALL_ORD_YN", "Y");
-        RequestEntity<ValueMap> requestEntity = RequestEntity
-                .post(url)
-                .headers(headers)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(payloadMap);
-
-        // exchange
-        sleep();
-        ResponseEntity<ValueMap> responseEntity = restTemplate.exchange(requestEntity, ValueMap.class);
-        ValueMap responseMap = Optional.ofNullable(responseEntity.getBody())
-                .orElseThrow();
-
-        // response
-        String rtCd = responseMap.getString("rt_cd");
-        String msg1 = responseMap.getString("msg1");
-        if(!"0".equals(rtCd)) {
-            throw new RuntimeException(msg1);
-        }
-
-        // return
-        return order;
+        throw new UnsupportedOperationException();
     }
 
 }

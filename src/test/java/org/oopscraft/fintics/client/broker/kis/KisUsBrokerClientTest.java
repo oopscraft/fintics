@@ -78,7 +78,7 @@ class KisUsBrokerClientTest extends CoreTestSupport {
     void getOrderBook() throws InterruptedException {
         // given
         TradeAsset tradeAsset = TradeAsset.builder()
-                .assetId("KR.005930")
+                .assetId("US.TSLA")
                 .build();
 
         // when
