@@ -67,11 +67,14 @@ public class KisUsBrokerClient extends UsBrokerClient {
 
     @Override
     public boolean isOpened(LocalDateTime dateTime) throws InterruptedException {
-        throw new UnsupportedOperationException();
-    }
+        // check us super (weekend and fixed holiday)
+        if (!super.isOpened(dateTime)) {
+            return false;
+        }
 
-    boolean isHoliday(LocalDateTime dateTime) throws InterruptedException {
-        throw new UnsupportedOperationException();
+        // broker agent is not providing api
+        // default
+        return true;
     }
 
     @Override
@@ -247,6 +250,43 @@ public class KisUsBrokerClient extends UsBrokerClient {
                 .bidPrice(bidPrice)
                 .askPrice(askPrice)
                 .build();
+    }
+
+    @Override
+    public BigDecimal getTickPrice(Asset asset, BigDecimal price) throws InterruptedException {
+        RestTemplate restTemplate = RestTemplateBuilder.create()
+                .insecure(true)
+                .build();
+        String url = apiUrl + "/uapi/overseas-price/v1/quotations/price-detail";
+        HttpHeaders headers = createHeaders();
+        headers.add("tr_id", "HHDFS76200200");
+        url = UriComponentsBuilder.fromUriString(url)
+                .queryParam("AUTH", "")
+                .queryParam("EXCD", "NAS")
+                .queryParam("SYMB", asset.getSymbol())
+                .build()
+                .toUriString();
+        RequestEntity<Void> requestEntity = RequestEntity
+                .get(url)
+                .headers(headers)
+                .build();
+        sleep();
+        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+        JsonNode rootNode;
+        try {
+            rootNode = objectMapper.readTree(responseEntity.getBody());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        String rtCd = objectMapper.convertValue(rootNode.path("rt_cd"), String.class);
+        String msg1 = objectMapper.convertValue(rootNode.path("msg1"), String.class);
+        if(!"0".equals(rtCd)) {
+            throw new RuntimeException(msg1);
+        }
+        JsonNode outputNode = rootNode.path("output");
+        ValueMap output = objectMapper.convertValue(outputNode, ValueMap.class);
+        String tickPrice = output.getString("e_hogau");
+        return new BigDecimal(tickPrice);
     }
 
     @Override
@@ -431,7 +471,7 @@ public class KisUsBrokerClient extends UsBrokerClient {
                 .build();
 
         HttpHeaders headers = createHeaders();
-        headers.add("", production ? "TTTS3018R" : "VTTS3018R");
+        headers.add("tr_id", production ? "TTTS3018R" : "VTTS3018R");
         String url = apiUrl + "/uapi/overseas-stock/v1/trading/inquire-nccs";
         url = UriComponentsBuilder.fromUriString(url)
                 .queryParam("CANO", accountNo.split("-")[0])

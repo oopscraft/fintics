@@ -66,18 +66,6 @@ class KisUsBrokerClientTest extends CoreTestSupport {
 
     @Disabled
     @Test
-    void isHoliday() throws InterruptedException {
-        // given
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime dateTime = LocalDateTime.of(now.getYear(), 12, 25, 0, 0, 0);
-        // when
-        boolean holiday = getKisUsClient().isHoliday(dateTime);
-        // then
-        log.info("== holiday: {}", holiday);
-    }
-
-    @Disabled
-    @Test
     void getOrderBook() throws InterruptedException {
         // given
         TradeAsset tradeAsset = TradeAsset.builder()
@@ -132,6 +120,20 @@ class KisUsBrokerClientTest extends CoreTestSupport {
 
         // then
         assertNotNull(balance.getCashAmount());
+    }
+
+    @Disabled
+    @Test
+    void getTickPrice() throws InterruptedException {
+        // given
+        Asset asset = Asset.builder()
+                .assetId("US.TSLA")
+                .build();
+        // when
+        BigDecimal tickPrice = getKisUsClient().getTickPrice(asset, BigDecimal.ZERO);
+
+        // then
+        log.info("tickPrice: {}", tickPrice);
     }
 
     @Disabled

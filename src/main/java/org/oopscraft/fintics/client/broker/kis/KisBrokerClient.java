@@ -64,22 +64,15 @@ public class KisBrokerClient extends KrBrokerClient {
 
     @Override
     public boolean isOpened(LocalDateTime dateTime) throws InterruptedException {
-        ZonedDateTime systemZonedDateTime = dateTime.atZone(ZoneId.systemDefault());
-        ZonedDateTime koreaZonedDateTime = systemZonedDateTime.withZoneSameInstant(ZoneId.of("Asia/Seoul"));
-
-        // weekend
-        DayOfWeek dayOfWeek = koreaZonedDateTime.getDayOfWeek();
-        if(dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
+        // check kr super (weekend)
+        if (!super.isOpened(dateTime)) {
             return false;
         }
 
         // check holiday
-        if(isHoliday(koreaZonedDateTime.toLocalDateTime())) {
-            return false;
-        }
-
-        // default
-        return true;
+        ZonedDateTime systemZonedDateTime = dateTime.atZone(ZoneId.systemDefault());
+        ZonedDateTime koreaZonedDateTime = systemZonedDateTime.withZoneSameInstant(ZoneId.of("Asia/Seoul"));
+        return !isHoliday(koreaZonedDateTime.toLocalDateTime());
     }
 
     boolean isHoliday(LocalDateTime dateTime) throws InterruptedException {

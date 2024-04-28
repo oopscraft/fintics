@@ -32,7 +32,7 @@ import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -43,6 +43,31 @@ public abstract class UsBrokerClient extends BrokerClient {
     public UsBrokerClient(BrokerClientDefinition definition, Properties properties) {
         super(definition, properties);
         this.objectMapper = new ObjectMapper();
+    }
+
+    @Override
+    public boolean isOpened(LocalDateTime dateTime) throws InterruptedException {
+        ZonedDateTime systemZonedDateTime = dateTime.atZone(ZoneId.systemDefault());
+        ZonedDateTime usZonedDateTime = systemZonedDateTime.withZoneSameInstant(ZoneId.of("America/New_York"));
+
+        // check weekend
+        DayOfWeek dayOfWeek = usZonedDateTime.getDayOfWeek();
+        if (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
+            return false;
+        }
+
+        // check holiday
+        Set<LocalDate> fixedHolidays = new HashSet<>();
+        int year = usZonedDateTime.getYear();
+        fixedHolidays.add(LocalDate.of(year, Month.JANUARY, 1)); // New Year's Day
+        fixedHolidays.add(LocalDate.of(year, Month.JULY, 4));    // Independence Day
+        fixedHolidays.add(LocalDate.of(year, Month.DECEMBER, 25)); // Christmas Day
+        if (fixedHolidays.contains(usZonedDateTime.toLocalDate())) {
+            return false;
+        }
+
+        // default
+        return true;
     }
 
     @Override
@@ -144,11 +169,6 @@ public abstract class UsBrokerClient extends BrokerClient {
         headers.add("sec-fetch-site", "same-site");
         headers.add("user-agent","Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36");
         return headers;
-    }
-
-    @Override
-    public BigDecimal getTickPrice(Asset asset, BigDecimal price) throws InterruptedException {
-        return BigDecimal.valueOf(0.01);
     }
 
 }

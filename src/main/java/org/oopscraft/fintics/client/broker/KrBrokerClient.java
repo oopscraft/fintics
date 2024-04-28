@@ -27,7 +27,10 @@ import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -35,6 +38,21 @@ public abstract class KrBrokerClient extends BrokerClient {
 
     public KrBrokerClient(BrokerClientDefinition definition, Properties properties) {
         super(definition, properties);
+    }
+
+    @Override
+    public boolean isOpened(LocalDateTime dateTime) throws InterruptedException {
+        ZonedDateTime systemZonedDateTime = dateTime.atZone(ZoneId.systemDefault());
+        ZonedDateTime koreaZonedDateTime = systemZonedDateTime.withZoneSameInstant(ZoneId.of("Asia/Seoul"));
+
+        // weekend
+        DayOfWeek dayOfWeek = koreaZonedDateTime.getDayOfWeek();
+        if (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
+            return false;
+        }
+
+        // default
+        return true;
     }
 
     @Override
