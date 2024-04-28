@@ -68,6 +68,7 @@ public class OrderService {
         orderEntity.setKind(order.getKind());
         orderEntity.setPrice(order.getPrice());
         orderEntity.setQuantity(order.getQuantity());
+        orderEntity.setBrokerOrderId(order.getBrokerOrderId());
         orderEntity.setResult(order.getResult());
         orderEntity.setErrorMessage(order.getErrorMessage());
         OrderEntity savedOrderEntity = orderRepository.saveAndFlush(orderEntity);

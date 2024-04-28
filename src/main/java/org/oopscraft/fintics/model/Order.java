@@ -33,7 +33,7 @@ public class Order {
 
     private BigDecimal price;
 
-    private String clientOrderId;
+    private String brokerOrderId;
 
     private Result result;
 
@@ -73,6 +73,7 @@ public class Order {
                 .kind(orderEntity.getKind())
                 .quantity(orderEntity.getQuantity())
                 .price(orderEntity.getPrice())
+                .brokerOrderId(orderEntity.getBrokerOrderId())
                 .result(orderEntity.getResult())
                 .errorMessage(orderEntity.getErrorMessage())
                 .build();

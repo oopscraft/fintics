@@ -3,7 +3,6 @@ package org.oopscraft.fintics.dao;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.arch4j.core.data.BaseEntity;
-import org.oopscraft.arch4j.core.data.converter.AbstractEnumConverter;
 import org.oopscraft.fintics.model.Order;
 
 import javax.persistence.*;
@@ -51,6 +50,9 @@ public class OrderEntity extends BaseEntity {
 
     @Column(name = "price")
     private BigDecimal price;
+
+    @Column(name = "broker_order_id", length = 128)
+    private String brokerOrderId;
 
     @Column(name = "result", length = 16)
     private Order.Result result;
