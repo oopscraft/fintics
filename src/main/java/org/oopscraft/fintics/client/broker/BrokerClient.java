@@ -31,7 +31,7 @@ public abstract class BrokerClient {
 
     public abstract OrderBook getOrderBook(Asset asset) throws InterruptedException;
 
-    public abstract BigDecimal getPriceTick(Asset asset, BigDecimal price) throws InterruptedException;
+    public abstract BigDecimal getTickPrice(Asset asset, BigDecimal price) throws InterruptedException;
 
     public abstract Balance getBalance() throws InterruptedException;
 

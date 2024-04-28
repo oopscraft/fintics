@@ -147,7 +147,7 @@ public abstract class UsBrokerClient extends BrokerClient {
     }
 
     @Override
-    public BigDecimal getPriceTick(Asset asset, BigDecimal price) throws InterruptedException {
+    public BigDecimal getTickPrice(Asset asset, BigDecimal price) throws InterruptedException {
         return BigDecimal.valueOf(0.01);
     }
 

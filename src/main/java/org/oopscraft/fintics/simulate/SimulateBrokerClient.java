@@ -116,7 +116,7 @@ public class SimulateBrokerClient extends BrokerClient {
     }
 
     @Override
-    public BigDecimal getPriceTick(Asset asset, BigDecimal price) throws InterruptedException {
+    public BigDecimal getTickPrice(Asset asset, BigDecimal price) throws InterruptedException {
         return null;
     }
 

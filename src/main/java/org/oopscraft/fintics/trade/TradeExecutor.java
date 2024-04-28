@@ -197,10 +197,10 @@ public class TradeExecutor {
 
                 // buy (exceedAmount is over zero)
                 if (exceededAmount.compareTo(BigDecimal.ZERO) > 0) {
-                    BigDecimal price = orderBook.getAskPrice();
-                    BigDecimal priceTick = tradeClient.getPriceTick(tradeAsset, price);
-                    if(priceTick != null) {
-                        price = price.min(orderBook.getBidPrice().add(priceTick));
+                    BigDecimal price = orderBook.getBidPrice();
+                    BigDecimal tickPrice = tradeClient.getTickPrice(tradeAsset, price);
+                    if(tickPrice != null) {
+                        price = price.add(tickPrice);
                     }
                     BigDecimal quantity = exceededAmount.divide(price, MathContext.DECIMAL32);
                     buyTradeAsset(tradeClient, trade, tradeAsset, quantity, price);
@@ -208,13 +208,13 @@ public class TradeExecutor {
 
                 // sell (exceedAmount is under zero)
                 if (exceededAmount.compareTo(BigDecimal.ZERO) < 0) {
-                    BigDecimal price = orderBook.getBidPrice();
-                    BigDecimal priceTick = tradeClient.getPriceTick(tradeAsset, price);
-                    if(priceTick != null) {
-                        price = price.max(orderBook.getAskPrice().subtract(priceTick));
+                    BigDecimal price = orderBook.getAskPrice();
+                    BigDecimal tickPrice = tradeClient.getTickPrice(tradeAsset, price);
+                    if(tickPrice != null) {
+                        price = price.subtract(tickPrice);
                     }
                     BigDecimal quantity = exceededAmount.abs().divide(price, MathContext.DECIMAL32);
-                    // if holdConditionResult is zero, sell quantity is all
+                    // if strategy result is zero, sell quantity is all
                     if (strategyResult.compareTo(BigDecimal.ZERO) == 0) {
                         BalanceAsset balanceAsset = balance.getBalanceAsset(tradeAsset.getAssetId()).orElse(null);
                         if (balanceAsset != null) {

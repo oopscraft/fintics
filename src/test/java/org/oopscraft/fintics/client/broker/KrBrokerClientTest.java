@@ -5,9 +5,6 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.oopscraft.fintics.client.broker.BrokerClient;
-import org.oopscraft.fintics.client.broker.KrBrokerClient;
-import org.oopscraft.fintics.client.broker.KrBrokerClientDefinition;
 import org.oopscraft.fintics.model.*;
 
 import java.math.BigDecimal;
@@ -116,7 +113,7 @@ class KrBrokerClientTest {
                 .build();
         BigDecimal price = BigDecimal.valueOf(30_000);
         // when
-        BigDecimal etfPriceTick = krTradeClient.getPriceTick(asset, price);
+        BigDecimal etfPriceTick = krTradeClient.getTickPrice(asset, price);
         // then
         assertTrue(etfPriceTick.compareTo(BigDecimal.valueOf(5)) == 0);
     }
@@ -130,7 +127,7 @@ class KrBrokerClientTest {
                 .build();
         BigDecimal price = BigDecimal.valueOf(200_000);
         // when
-        BigDecimal etfPriceTick = krTradeClient.getPriceTick(asset, price);
+        BigDecimal etfPriceTick = krTradeClient.getTickPrice(asset, price);
         // then
         assertTrue(etfPriceTick.compareTo(BigDecimal.valueOf(100)) == 0);
     }

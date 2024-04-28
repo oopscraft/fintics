@@ -370,7 +370,7 @@ public abstract class KrBrokerClient extends BrokerClient {
      * https://securities.koreainvestment.com/main/customer/notice/Notice.jsp?&cmd=TF04ga000002&currentPage=1&num=39930
      */
     @Override
-    public BigDecimal getPriceTick(Asset asset, BigDecimal price) throws InterruptedException {
+    public BigDecimal getTickPrice(Asset asset, BigDecimal price) throws InterruptedException {
         // etf, etn, elw
         if(Arrays.asList("ETF","ETN","ELW").contains(asset.getType())) {
             return BigDecimal.valueOf(5);
