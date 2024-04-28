@@ -136,13 +136,14 @@ class KisUsBrokerClientTest extends CoreTestSupport {
 
     @Disabled
     @Test
-    void submitOrderBuyStock() throws InterruptedException {
+    void submitOrderBuy() throws InterruptedException {
         // given
         Order order = Order.builder()
-                .assetId("KR.005930")   // Samsung Electronic
+                .assetId("US.TSLA")
                 .type(Order.Type.BUY)
-                .kind(Order.Kind.MARKET)
+                .kind(Order.Kind.LIMIT)
                 .quantity(BigDecimal.valueOf(1))
+                .price(BigDecimal.valueOf(10))
                 .build();
 
         // when
@@ -151,43 +152,14 @@ class KisUsBrokerClientTest extends CoreTestSupport {
 
     @Disabled
     @Test
-    void submitOrderBuyEtf() throws InterruptedException {
+    void submitOrderSell() throws InterruptedException {
         // given
         Order order = Order.builder()
-                .assetId("KR.069500")   // Kodex 200 ETF
-                .type(Order.Type.BUY)
-                .kind(Order.Kind.MARKET)
-                .quantity(BigDecimal.valueOf(1))
-                .build();
-
-        // when
-        getKisUsClient().submitOrder(order);
-    }
-
-    @Disabled
-    @Test
-    void submitOrderSellStock() throws InterruptedException {
-        // given
-        Order order = Order.builder()
-                .assetId("KR.005930")   // Samsung Electronic
+                .assetId("US.TSLA")
                 .type(Order.Type.SELL)
-                .kind(Order.Kind.MARKET)
+                .kind(Order.Kind.LIMIT)
                 .quantity(BigDecimal.valueOf(1))
-                .build();
-
-        // when
-        getKisUsClient().submitOrder(order);
-    }
-
-    @Disabled
-    @Test
-    void submitOrderSellEtf() throws InterruptedException {
-        // given
-        Order order = Order.builder()
-                .assetId("KR.069500")   // Kodex 200 ETF
-                .type(Order.Type.SELL)
-                .kind(Order.Kind.MARKET)
-                .quantity(BigDecimal.valueOf(1))
+                .price(BigDecimal.valueOf(1000))
                 .build();
 
         // when
