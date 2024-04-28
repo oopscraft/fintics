@@ -202,6 +202,7 @@ public class TradeExecutor {
                     if(tickPrice != null) {
                         price = price.add(tickPrice);
                     }
+                    price = price.min(orderBook.getAskPrice()); // min competitive price
                     BigDecimal quantity = exceededAmount.divide(price, MathContext.DECIMAL32);
                     buyTradeAsset(tradeClient, trade, tradeAsset, quantity, price);
                 }
@@ -213,6 +214,7 @@ public class TradeExecutor {
                     if(tickPrice != null) {
                         price = price.subtract(tickPrice);
                     }
+                    price = price.max(orderBook.getBidPrice()); // max competitive price
                     BigDecimal quantity = exceededAmount.abs().divide(price, MathContext.DECIMAL32);
                     // if strategy result is zero, sell quantity is all
                     if (strategyResult.compareTo(BigDecimal.ZERO) == 0) {
