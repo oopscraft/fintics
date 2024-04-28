@@ -2,6 +2,8 @@ package org.oopscraft.fintics.client.broker.kis;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.oopscraft.arch4j.core.support.CoreTestSupport;
@@ -22,22 +24,23 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @Slf4j
 class KisUsBrokerClientTest extends CoreTestSupport {
 
-    private static final String production;
+    private static String production;
 
-    private static final String apiUrl;
+    private static String apiUrl;
 
-    private static final String appKey;
+    private static String appKey;
 
-    private static final String appSecret;
+    private static String appSecret;
 
-    private static final String accountNo;
+    private static String accountNo;
 
-    static {
-        production = Optional.ofNullable(System.getenv("KIS_PRODUCTION")).orElse("false");
-        apiUrl = Optional.ofNullable(System.getenv("KIS_API_URL")).orElse("https://openapivts.koreainvestment.com:29443");
-        appKey = System.getenv("KIS_APP_KEY");
-        appSecret = System.getenv("KIS_APP_SECRET");
-        accountNo = System.getenv("KIS_ACCOUNT_NO");
+    @BeforeAll
+    static void beforeAll() {
+        production = System.getenv("KIS_US_PRODUCTION");
+        apiUrl = System.getenv("KIS_US_API_URL");
+        appKey = System.getenv("KIS_US_APP_KEY");
+        appSecret = System.getenv("KIS_US_APP_SECRET");
+        accountNo = System.getenv("KIS_US_ACCOUNT_NO");
     }
 
     KisUsBrokerClient getKisUsClient() {

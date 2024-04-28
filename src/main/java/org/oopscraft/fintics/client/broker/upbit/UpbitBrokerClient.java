@@ -357,7 +357,7 @@ public class UpbitBrokerClient extends BrokerClient {
         ValueMap responseMap = responseEntity.getBody();
         log.info("{}", responseMap);
         if(responseMap != null) {
-            order.setClientOrderId(responseMap.getString("uuid"));
+            order.setBrokerOrderId(responseMap.getString("uuid"));
         }
 
         // return
@@ -411,7 +411,7 @@ public class UpbitBrokerClient extends BrokerClient {
                             .kind(orderType)
                             .quantity(quantity)
                             .price(price)
-                            .clientOrderId(clientOrderId)
+                            .brokerOrderId(clientOrderId)
                             .build();
                 })
                 .collect(Collectors.toList());
@@ -424,7 +424,7 @@ public class UpbitBrokerClient extends BrokerClient {
                 .insecure(true)
                 .build();
         String url = API_URL + "/v1/order";
-        String queryString = "uuid=" + order.getClientOrderId();
+        String queryString = "uuid=" + order.getBrokerOrderId();
         RequestEntity<Void> requestEntity = RequestEntity
                 .delete(url + "?" + queryString)
                 .headers(createHeaders(queryString))

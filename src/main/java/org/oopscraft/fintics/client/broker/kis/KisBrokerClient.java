@@ -482,7 +482,7 @@ public class KisBrokerClient extends KrBrokerClient {
         String url = apiUrl + "/uapi/domestic-stock/v1/trading/order-cash";
         HttpHeaders headers = createHeaders();
 
-        // order kind
+        // order type
         String trId = null;
         switch(order.getType()) {
             case BUY -> trId = production ? "TTTC0802U" : "VTTC0802U";
@@ -491,7 +491,7 @@ public class KisBrokerClient extends KrBrokerClient {
         }
         headers.add("tr_id", trId);
 
-        // order type
+        // order kind
         String ordDvsn = null;
         String ordUnpr = null;
         switch(order.getKind()) {
@@ -542,7 +542,7 @@ public class KisBrokerClient extends KrBrokerClient {
 
     @Override
     public List<Order> getWaitingOrders() throws InterruptedException {
-        // 모의 투자는 지원 하지 않음
+        // supported in only production
         if(!production) {
             return new ArrayList<>();
         }
@@ -612,7 +612,7 @@ public class KisBrokerClient extends KrBrokerClient {
                             .kind(orderKind)
                             .quantity(quantity)
                             .price(price)
-                            .clientOrderId(clientOrderId)
+                            .brokerOrderId(clientOrderId)
                             .build();
 
                 })
@@ -648,7 +648,7 @@ public class KisBrokerClient extends KrBrokerClient {
         payloadMap.put("CANO", accountNo.split("-")[0]);
         payloadMap.put("ACNT_PRDT_CD", accountNo.split("-")[1]);
         payloadMap.put("KRX_FWDG_ORD_ORGNO", "");
-        payloadMap.put("ORGN_ODNO", order.getClientOrderId());
+        payloadMap.put("ORGN_ODNO", order.getBrokerOrderId());
         payloadMap.put("ORD_DVSN", ordDvsn);
         payloadMap.put("RVSE_CNCL_DVSN_CD", "01");
         payloadMap.put("ORD_QTY", "0");
