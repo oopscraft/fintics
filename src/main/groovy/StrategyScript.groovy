@@ -75,7 +75,7 @@ class Analysis implements Analyzable {
 
     @Override
     Scorable getDirectionScore() {
-        def score = new Score();
+        def score = new Score()
         // macd
         score.macdValueOverSignal = macd.value > macd.signal ? 100 : 0
         score.macdOscillator = macd.oscillator > 0 ? 100 : 0
@@ -178,13 +178,6 @@ log.info("tideOhlcvType(Period): {}({})", tideOhlcvType, tideOhlcvPeriod)
 def hold = null
 List<Ohlcv> ohlcvs = assetProfile.getOhlcvs(Ohlcv.Type.MINUTE, 1)
 
-// filter z-score
-def priceZScore = Tool.zScore(ohlcvs.take(20).collect{it.closePrice})
-if (priceZScore.abs() < 2.0) {
-    log.info("skip - priceZScore: {}", priceZScore)
-//    return null
-}
-
 // ripple
 def analysis = new Analysis(ohlcvs)
 log.info("analysis: {}", analysis)
@@ -202,32 +195,28 @@ log.info("tideAnalysis: {}", tideAnalysis)
 //================================
 // buy
 if (analysis.getDirectionScore().getAverage() > 75 && analysis.getMomentumScore().getAverage() > 75) {
-    if (waveAnalysis.getDirectionScore().getAverage() > 75 && waveAnalysis.getMomentumScore().getAverage() > 75) {
-        // default
-        hold = 1.0
-        // filter - volatility
-        if (waveAnalysis.getVolatilityScore().getAverage() < 75) {
-            hold = null
-        }
-        // filter - overestimate
-        if (waveAnalysis.getOverestimateScore().getAverage() > 75) {
-            hold = null
-        }
+    // default
+    hold = 1.0
+    // filter - volatility
+    if (waveAnalysis.getVolatilityScore().getAverage() < 75) {
+        hold = null
+    }
+    // filter - overestimate
+    if (waveAnalysis.getOverestimateScore().getAverage() > 75) {
+        hold = null
     }
 }
 // sell
 if (analysis.getDirectionScore().getAverage() < 25 && analysis.getMomentumScore().getAverage() < 25) {
-    if (waveAnalysis.getDirectionScore().getAverage() < 25 && waveAnalysis.getMomentumScore().getAverage() < 25) {
-        // default
-        hold = 0.9
-        // filter - volatility
-        if (waveAnalysis.getVolatilityScore().getAverage() < 75) {
-            hold = null
-        }
-        // filter - underestimate
-        if (waveAnalysis.getUnderestimateScore().getAverage() > 75) {
-            hold = null
-        }
+    // default
+    hold = 0.9
+    // filter - volatility
+    if (waveAnalysis.getVolatilityScore().getAverage() < 75) {
+        hold = null
+    }
+    // filter - underestimate
+    if (waveAnalysis.getUnderestimateScore().getAverage() > 75) {
+        hold = null
     }
 }
 
@@ -235,7 +224,7 @@ if (analysis.getDirectionScore().getAverage() < 25 && analysis.getMomentumScore(
 // fallback
 //================================
 // tide direction and momentum
-if (tideAnalysis.getDirectionScore().getAverage() < 25 && tideAnalysis.getMomentumScore().getAverage() < 25) {
+if (tideAnalysis.getDirectionScore().getAverage() < 50 && tideAnalysis.getMomentumScore().getAverage() < 50) {
     hold = 0
 }
 
