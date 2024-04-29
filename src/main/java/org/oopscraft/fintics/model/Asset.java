@@ -55,6 +55,8 @@ public class Asset {
                     String symbol = array[1];
                     List<Link> links = new ArrayList<>();
                     switch (market) {
+                        case "US" ->
+                                links.add(Link.of("Yahoo", "https://finance.yahoo.com/quote/" + symbol));
                         case "KR" ->
                                 links.add(Link.of("Naver", "https://finance.naver.com/item/main.naver?code=" + symbol));
                         case "UPBIT" ->

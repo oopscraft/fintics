@@ -147,21 +147,32 @@ public class KisUsBrokerClient extends UsBrokerClient {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
-        String url = apiUrl + "/uapi/overseas-price/v1/quotations/inquire-daily-chartprice";
+//        String url = apiUrl + "/uapi/overseas-price/v1/quotations/inquire-daily-chartprice";
+        String url = apiUrl + "/uapi/overseas-price/v1/quotations/dailyprice";
         HttpHeaders headers = createHeaders();
-        headers.add("tr_id", "FHKST03030100");
-        headers.add("custtype", "P");
-        String fidCondMrktDivCode = "N";
-        String fidInputIscd = asset.getSymbol();
-        String fidInputDate1 = LocalDate.now().minusMonths(1).format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        String fidInputDate2 = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        String fidPeriodDivCode = "D";
+        headers.add("tr_id", "HHDFS76240000");
+//        headers.add("custtype", "P");
+//        String fidCondMrktDivCode = "N";
+//        String fidInputIscd = asset.getSymbol();
+//        String fidInputDate1 = LocalDate.now().minusMonths(1).format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+//        String fidInputDate2 = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+//        String fidPeriodDivCode = "D";
+//        url = UriComponentsBuilder.fromUriString(url)
+//                .queryParam("FID_COND_MRKT_DIV_CODE", fidCondMrktDivCode)
+//                .queryParam("FID_INPUT_ISCD", fidInputIscd)
+//                .queryParam("FID_INPUT_DATE_1", fidInputDate1)
+//                .queryParam("FID_INPUT_DATE_2", fidInputDate2)
+//                .queryParam("FID_PERIOD_DIV_CODE", fidPeriodDivCode)
+//                .build()
+//                .toUriString();
         url = UriComponentsBuilder.fromUriString(url)
-                .queryParam("FID_COND_MRKT_DIV_CODE", fidCondMrktDivCode)
-                .queryParam("FID_INPUT_ISCD", fidInputIscd)
-                .queryParam("FID_INPUT_DATE_1", fidInputDate1)
-                .queryParam("FID_INPUT_DATE_2", fidInputDate2)
-                .queryParam("FID_PERIOD_DIV_CODE", fidPeriodDivCode)
+                .queryParam("AUTH", "")
+                .queryParam("EXCD", "NAS")
+                .queryParam("SYMB", asset.getSymbol())
+                .queryParam("GUBN", "0")
+                .queryParam("BYMD", "")
+                .queryParam("MODP", "1")
+                .queryParam("KEYB", "")
                 .build()
                 .toUriString();
         RequestEntity<Void> requestEntity = RequestEntity
@@ -184,12 +195,12 @@ public class KisUsBrokerClient extends UsBrokerClient {
         List<ValueMap> output2 = objectMapper.convertValue(rootNode.path("output2"), new TypeReference<>(){});
         return output2.stream()
                 .map(row -> {
-                    LocalDateTime ohlcvDateTime = LocalDateTime.parse(row.getString("stck_bsop_date") + "000000", DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-                    BigDecimal openPrice = row.getNumber("ovrs_nmix_oprc");
-                    BigDecimal highPrice = row.getNumber("ovrs_nmix_hgpr");
-                    BigDecimal lowPrice = row.getNumber("ovrs_nmix_lwpr");
-                    BigDecimal closePrice = row.getNumber("ovrs_nmix_prpr");
-                    BigDecimal volume = row.getNumber("acml_vol");
+                    LocalDateTime ohlcvDateTime = LocalDateTime.parse(row.getString("xymd") + "000000", DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+                    BigDecimal openPrice = row.getNumber("open");
+                    BigDecimal highPrice = row.getNumber("high");
+                    BigDecimal lowPrice = row.getNumber("low");
+                    BigDecimal closePrice = row.getNumber("clos");
+                    BigDecimal volume = row.getNumber("tvol");
                     return Ohlcv.builder()
                             .type(Ohlcv.Type.DAILY)
                             .dateTime(ohlcvDateTime)
@@ -208,15 +219,13 @@ public class KisUsBrokerClient extends UsBrokerClient {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
-        String url = apiUrl + "/uapi/overseas-price/v1/quotations/inquire-asking-price";
+        String url = apiUrl + "/uapi/overseas-price/v1/quotations/price-detail";
         HttpHeaders headers = createHeaders();
-        headers.add("tr_id", "HHDFS76200100");
-        String excd = "NAS";
-        String symb = asset.getSymbol();
+        headers.add("tr_id", "HHDFS76200200");
         url = UriComponentsBuilder.fromUriString(url)
-                .queryParam("AUTH","")
-                .queryParam("EXCD", excd)
-                .queryParam("SYMB", symb)
+                .queryParam("AUTH", "")
+                .queryParam("EXCD", "NAS")
+                .queryParam("SYMB", asset.getSymbol())
                 .build()
                 .toUriString();
         RequestEntity<Void> requestEntity = RequestEntity
@@ -231,24 +240,19 @@ public class KisUsBrokerClient extends UsBrokerClient {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-
         String rtCd = objectMapper.convertValue(rootNode.path("rt_cd"), String.class);
         String msg1 = objectMapper.convertValue(rootNode.path("msg1"), String.class);
         if(!"0".equals(rtCd)) {
             throw new RuntimeException(msg1);
         }
-
-        ValueMap output1 = objectMapper.convertValue(rootNode.path("output1"), ValueMap.class);
-        ValueMap output2 = objectMapper.convertValue(rootNode.path("output2"), ValueMap.class);
-
-        BigDecimal price = output1.getNumber("last");
-        BigDecimal bidPrice = output2.getNumber("bidp1");
-        BigDecimal askPrice = output2.getNumber("askp1");
+        JsonNode outputNode = rootNode.path("output");
+        ValueMap output = objectMapper.convertValue(outputNode, ValueMap.class);
+        BigDecimal price = new BigDecimal(output.getString("last"));
 
         return OrderBook.builder()
                 .price(price)
-                .bidPrice(bidPrice)
-                .askPrice(askPrice)
+                .bidPrice(price)
+                .askPrice(price)
                 .build();
     }
 
@@ -411,7 +415,7 @@ public class KisUsBrokerClient extends UsBrokerClient {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
-        String url = apiUrl + "/uapi/domestic-stock/v1/trading/order-cash";
+        String url = apiUrl + "/uapi/overseas-stock/v1/trading/order";
         HttpHeaders headers = createHeaders();
 
         // order type
@@ -431,6 +435,12 @@ public class KisUsBrokerClient extends UsBrokerClient {
                 .setScale(2, RoundingMode.FLOOR)
                 .doubleValue();
 
+        // sllType
+        String sllType = null;
+        if (order.getType() == Order.Type.SELL) {
+            sllType = "00";
+        }
+
         // request
         ValueMap payloadMap = new ValueMap();
         payloadMap.put("CANO", accountNo.split("-")[0]);
@@ -439,6 +449,9 @@ public class KisUsBrokerClient extends UsBrokerClient {
         payloadMap.put("PDNO", order.getSymbol());
         payloadMap.put("ORD_QTY", String.valueOf(quantity));
         payloadMap.put("OVRS_ORD_UNPR", String.valueOf(price));
+        payloadMap.put("CTAC_TLNO", "");
+        payloadMap.put("MGCO_APTM_ODNO", "");
+        payloadMap.put("SLL_TYPE", sllType);
         payloadMap.put("ORD_SVR_DVSN_CD", "0");
         payloadMap.put("ORD_DVSN", "00");
         RequestEntity<ValueMap> requestEntity = RequestEntity
@@ -477,6 +490,7 @@ public class KisUsBrokerClient extends UsBrokerClient {
                 .queryParam("CANO", accountNo.split("-")[0])
                 .queryParam("ACNT_PRDT_CD", accountNo.split("-")[1])
                 .queryParam("OVRS_EXCG_CD", "NASD")
+                .queryParam("SORT_SQN", "DS")
                 .queryParam("CTX_AREA_FK200","")
                 .queryParam("CTX_AREA_NK200", "")
                 .build()

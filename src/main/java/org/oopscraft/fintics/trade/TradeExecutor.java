@@ -237,8 +237,14 @@ public class TradeExecutor {
         if(trade.getStartAt() == null || trade.getEndAt() == null) {
             return false;
         }
-        LocalTime time = dateTime.toLocalTime();
-        return time.isAfter(trade.getStartAt()) && time.isBefore(trade.getEndAt());
+        LocalTime startTime = trade.getStartAt();
+        LocalTime endTime = trade.getEndAt();
+        LocalTime currentTime = dateTime.toLocalTime();
+        if (startTime.isAfter(endTime)) {
+            return !currentTime.isBefore(startTime) || !currentTime.isAfter(endTime);
+        } else {
+            return currentTime.isAfter(startTime) && currentTime.isBefore(endTime);
+        }
     }
 
     private List<Ohlcv> getPreviousIndiceMinuteOhlcvs(Indice.Id indiceId, List<Ohlcv> ohlcvs, LocalDateTime dateTime) {
