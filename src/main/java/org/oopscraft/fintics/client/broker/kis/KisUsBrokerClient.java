@@ -75,6 +75,26 @@ public class KisUsBrokerClient extends UsBrokerClient {
         return true;
     }
 
+    private String toExcd3(String exchange) {
+        String excd = null;
+        switch(exchange) {
+            case "XNAS" -> excd = "NAS";
+            case "XNYS" -> excd = "NYS";
+            case "XASE" -> excd = "AMS";
+        }
+        return excd;
+    }
+
+    private String toExcd4(String exchange) {
+        String excd = null;
+        switch(exchange) {
+            case "XNAS" -> excd = "NASD";
+            case "XNYS" -> excd = "NYSE";
+            case "XASE" -> excd = "AMEX";
+        }
+        return excd;
+    }
+
     @Override
     public List<Ohlcv> getMinuteOhlcvs(Asset asset, LocalDateTime dateTime) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
@@ -84,7 +104,7 @@ public class KisUsBrokerClient extends UsBrokerClient {
         HttpHeaders headers = createHeaders();
         headers.add("tr_id", "HHDFS76950200");
         headers.add("custtype", "P");
-        String excd = "NAS";    // asset.getExchange();
+        String excd = toExcd3(asset.getExchange());
         String symb = asset.getSymbol();
         url = UriComponentsBuilder.fromUriString(url)
                 .queryParam("AUTH", "")
@@ -150,7 +170,7 @@ public class KisUsBrokerClient extends UsBrokerClient {
         headers.add("tr_id", "HHDFS76240000");
         url = UriComponentsBuilder.fromUriString(url)
                 .queryParam("AUTH", "")
-                .queryParam("EXCD", "NAS")
+                .queryParam("EXCD", toExcd3(asset.getExchange()))
                 .queryParam("SYMB", asset.getSymbol())
                 .queryParam("GUBN", "0")
                 .queryParam("BYMD", "")
@@ -207,7 +227,7 @@ public class KisUsBrokerClient extends UsBrokerClient {
         headers.add("tr_id", "HHDFS76200200");
         url = UriComponentsBuilder.fromUriString(url)
                 .queryParam("AUTH", "")
-                .queryParam("EXCD", "NAS")
+                .queryParam("EXCD", toExcd3(asset.getExchange()))
                 .queryParam("SYMB", asset.getSymbol())
                 .build()
                 .toUriString();
@@ -249,7 +269,7 @@ public class KisUsBrokerClient extends UsBrokerClient {
         headers.add("tr_id", "HHDFS76200200");
         url = UriComponentsBuilder.fromUriString(url)
                 .queryParam("AUTH", "")
-                .queryParam("EXCD", "NAS")
+                .queryParam("EXCD", toExcd3(asset.getExchange()))
                 .queryParam("SYMB", asset.getSymbol())
                 .build()
                 .toUriString();

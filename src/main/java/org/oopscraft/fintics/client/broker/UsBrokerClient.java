@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
 import org.oopscraft.fintics.model.Asset;
 import org.springframework.http.HttpHeaders;
@@ -16,6 +18,7 @@ import java.time.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 public abstract class UsBrokerClient extends BrokerClient {
 
     private final ObjectMapper objectMapper;
@@ -53,17 +56,19 @@ public abstract class UsBrokerClient extends BrokerClient {
     @Override
     public List<Asset> getAssets() {
         List<Asset> assets = new ArrayList<>();
-        assets.addAll(getStockAssets());
+        assets.addAll(getStockAssets("NASDAQ"));
+        assets.addAll(getStockAssets("NYSE"));
+        assets.addAll(getStockAssets("AMEX"));
         assets.addAll(getEtfAssets());
         return assets;
     }
 
-    protected List<Asset> getStockAssets() {
+    protected List<Asset> getStockAssets(String exchange) {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .readTimeout(30_000)
                 .build();
-        String url = "https://api.nasdaq.com/api/screener/stocks?tableonly=true&download=true";
+        String url = String.format("https://api.nasdaq.com/api/screener/stocks?tableonly=true&download=true&exchange=%s", exchange);
         RequestEntity<Void> requestEntity = RequestEntity.get(url)
                 .headers(createNasdaqHeaders())
                 .build();
@@ -80,20 +85,28 @@ public abstract class UsBrokerClient extends BrokerClient {
 
         // sort
         rows.sort((o1, o2) -> {
-            BigDecimal o1MarketCap = new BigDecimal(o1.getOrDefault("marketCap","0"));
-            BigDecimal o2MarketCap = new BigDecimal(o2.getOrDefault("marketCap","0"));
+            BigDecimal o1MarketCap = new BigDecimal(StringUtils.defaultIfBlank(o1.get("marketCap"), "0"));
+            BigDecimal o2MarketCap = new BigDecimal(StringUtils.defaultIfBlank(o2.get("marketCap"),"0"));
             return o2MarketCap.compareTo(o1MarketCap);
         });
 
         return rows.stream()
-                .map(row -> Asset.builder()
-                        .assetId(toAssetId(row.get("symbol")))
-                        .assetName(row.get("name"))
-                        .market(getDefinition().getMarket())
-                        .exchange("XNAS")
-                        .type("STOCK")
-                        .dateTime(LocalDateTime.now())
-                        .build())
+                .map(row -> {
+                    String exchangeMic = null;
+                    switch (exchange) {
+                        case "NASDAQ" -> exchangeMic = "XNAS";
+                        case "NYSE" -> exchangeMic = "XNYS";
+                        case "AMEX" -> exchangeMic = "XASE";
+                    }
+                    return Asset.builder()
+                            .assetId(toAssetId(row.get("symbol")))
+                            .assetName(row.get("name"))
+                            .market(getDefinition().getMarket())
+                            .exchange(exchangeMic)
+                            .type("STOCK")
+                            .dateTime(LocalDateTime.now())
+                            .build();
+                })
                 .collect(Collectors.toList());
     }
 
@@ -119,21 +132,64 @@ public abstract class UsBrokerClient extends BrokerClient {
 
         // sort
         rows.sort((o1, o2) -> {
-            BigDecimal o1LastSalePrice = new BigDecimal(o1.getOrDefault("lastSalePrice","$0").replace("$",""));
-            BigDecimal o2LastSalePrice = new BigDecimal(o2.getOrDefault("lastSalePrice","$0").replace("$",""));
+            BigDecimal o1LastSalePrice = new BigDecimal(StringUtils.defaultIfBlank(o1.get("lastSalePrice"),"$0").replace("$",""));
+            BigDecimal o2LastSalePrice = new BigDecimal(StringUtils.defaultIfBlank(o2.get("lastSalePrice"),"$0").replace("$",""));
             return o2LastSalePrice.compareTo(o1LastSalePrice);
         });
 
-        return rows.stream()
+        List<Asset> assets = rows.stream()
                 .map(row -> Asset.builder()
                         .assetId(toAssetId(row.get("symbol")))
                         .assetName(row.get("companyName"))
                         .market(getDefinition().getMarket())
-                        .exchange("XNAS")
                         .type("ETF")
                         .dateTime(LocalDateTime.now())
                         .build())
                 .collect(Collectors.toList());
+
+        // fill exchange
+        List<String> symbols = assets.stream().map(Asset::getSymbol).toList();
+        Map<String, String> exchangeMap = getExchangeMap(symbols);
+        assets.forEach(asset -> {
+            asset.setExchange(exchangeMap.get(asset.getSymbol()));
+        });
+
+        // return
+        return assets;
+    }
+
+    Map<String, String> getExchangeMap(List<String> symbols) {
+        Map<String, String> exchangeMicMap = new LinkedHashMap<>();
+        final int BATCH_SIZE = 100;
+        try {
+            RestTemplate restTemplate = RestTemplateBuilder.create()
+                    .insecure(true)
+                    .readTimeout(10_000)
+                    .build();
+            for (int i = 0; i < symbols.size(); i += BATCH_SIZE) {
+                List<String> batchSymbols = symbols.subList(i, Math.min(i + BATCH_SIZE, symbols.size()));
+                String symbolParam = String.join(",", batchSymbols);
+                String url = String.format("https://query2.finance.yahoo.com/v1/finance/quoteType/?symbol=%s&lang=en-US&region=US", symbolParam);
+                String response = restTemplate.getForEntity(url, String.class).getBody();
+                JsonNode rootNode = objectMapper.readTree(response);
+                JsonNode resultNode = rootNode.path("quoteType").path("result");
+                List<Map<String, String>> results = objectMapper.convertValue(resultNode, new TypeReference<>() {});
+                for (Map<String, String> result : results) {
+                    String symbol = result.get("symbol");
+                    String exchange = result.get("exchange");
+                    String exchangeMic = switch (exchange) {
+                        case "NGM" -> "XNAS";
+                        case "PCX" -> "XASE";
+                        default -> "XNYS";
+                    };
+                    exchangeMicMap.put(symbol, exchangeMic);
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Error fetching exchange information: {}", e.getMessage(), e);
+        }
+        // return
+        return exchangeMicMap;
     }
 
     private static HttpHeaders createNasdaqHeaders() {

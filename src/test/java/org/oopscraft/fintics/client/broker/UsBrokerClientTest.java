@@ -7,7 +7,10 @@ import org.oopscraft.fintics.model.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -89,7 +92,7 @@ class UsBrokerClientTest {
     void getStockAssets() {
         // given
         // when
-        List<Asset> assets = usTradeClient.getStockAssets();
+        List<Asset> assets = usTradeClient.getStockAssets("NASDAQ");
         // then
         log.info("assets.size:{}", assets.size());
         assertTrue(assets.size() > 0);
@@ -104,6 +107,17 @@ class UsBrokerClientTest {
         // then
         log.info("assets.size:{}", assets.size());
         assertTrue(assets.size() > 0);
+    }
+
+    @Disabled
+    @Test
+    void getExchangeMic() {
+        // given
+        List<String> symbols = Arrays.asList("QQQ","SPY","TLT","_INVALID_");
+        // when
+        Map<String, String> exchangeMap = usTradeClient.getExchangeMap(symbols);
+        // then
+        log.info("exchangeMap: {}", exchangeMap);
     }
 
 }
