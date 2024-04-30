@@ -4,34 +4,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang3.StringUtils;
 import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
-import org.oopscraft.arch4j.core.support.ValueMap;
 import org.oopscraft.fintics.model.Asset;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
-import org.w3c.dom.*;
-import org.xml.sax.InputSource;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathFactory;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.math.BigDecimal;
-import java.math.MathContext;
-import java.math.RoundingMode;
 import java.time.*;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -96,19 +76,19 @@ public abstract class UsBrokerClient extends BrokerClient {
             throw new RuntimeException(e);
         }
         JsonNode rowsNode = rootNode.path("data").path("rows");
-        List<ValueMap> rows = objectMapper.convertValue(rowsNode, new TypeReference<>() {});
+        List<Map<String, String>> rows = objectMapper.convertValue(rowsNode, new TypeReference<>() {});
 
         // sort
         rows.sort((o1, o2) -> {
-            BigDecimal o1MarketCap = new BigDecimal(StringUtils.defaultIfBlank(o1.getString("marketCap"),"0"));
-            BigDecimal o2MarketCap = new BigDecimal(StringUtils.defaultIfBlank(o2.getString("marketCap"),"0"));
+            BigDecimal o1MarketCap = new BigDecimal(o1.getOrDefault("marketCap","0"));
+            BigDecimal o2MarketCap = new BigDecimal(o2.getOrDefault("marketCap","0"));
             return o2MarketCap.compareTo(o1MarketCap);
         });
 
         return rows.stream()
                 .map(row -> Asset.builder()
-                        .assetId(toAssetId(row.getString("symbol")))
-                        .assetName(row.getString("name"))
+                        .assetId(toAssetId(row.get("symbol")))
+                        .assetName(row.get("name"))
                         .market(getDefinition().getMarket())
                         .exchange("XNAS")
                         .type("STOCK")
@@ -135,19 +115,19 @@ public abstract class UsBrokerClient extends BrokerClient {
             throw new RuntimeException(e);
         }
         JsonNode rowsNode = rootNode.path("data").path("data").path("rows");
-        List<ValueMap> rows = objectMapper.convertValue(rowsNode, new TypeReference<>() {});
+        List<Map<String, String>> rows = objectMapper.convertValue(rowsNode, new TypeReference<>() {});
 
         // sort
         rows.sort((o1, o2) -> {
-            BigDecimal o1LastSalePrice = new BigDecimal(StringUtils.defaultIfBlank(o1.getString("lastSalePrice"),"$0").replace("$",""));
-            BigDecimal o2LastSalePrice = new BigDecimal(StringUtils.defaultIfBlank(o2.getString("lastSalePrice"),"$0").replace("$",""));
+            BigDecimal o1LastSalePrice = new BigDecimal(o1.getOrDefault("lastSalePrice","$0").replace("$",""));
+            BigDecimal o2LastSalePrice = new BigDecimal(o2.getOrDefault("lastSalePrice","$0").replace("$",""));
             return o2LastSalePrice.compareTo(o1LastSalePrice);
         });
 
         return rows.stream()
                 .map(row -> Asset.builder()
-                        .assetId(toAssetId(row.getString("symbol")))
-                        .assetName(row.getString("companyName"))
+                        .assetId(toAssetId(row.get("symbol")))
+                        .assetName(row.get("companyName"))
                         .market(getDefinition().getMarket())
                         .exchange("XNAS")
                         .type("ETF")

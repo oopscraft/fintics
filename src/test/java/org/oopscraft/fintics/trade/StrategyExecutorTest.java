@@ -37,25 +37,6 @@ class StrategyExecutorTest {
                 .build();
     }
 
-//    List<IndiceProfile> getTestIndices() {
-//        List<IndiceProfile> indiceProfiles = new ArrayList<>();
-//        for (Indice.Id indiceId : Indice.Id.values()) {
-//            IndiceProfile indiceProfile = IndiceProfile.builder()
-//                    .minuteOhlcvs(new ArrayList<>())
-//                    .dailyOhlcvs(new ArrayList<>())
-//                    .build();
-//            indiceProfiles.add(indiceProfile);
-//        }
-//        return indiceProfiles;
-//    }
-//
-//    AssetProfile getTestAssetProfile() {
-//        return AssetProfile.builder()
-//                .minuteOhlcvs(new ArrayList<>())
-//                .dailyOhlcvs(new ArrayList<>())
-//                .build();
-//    }
-
     OrderBook getTestOrderBook() {
         return OrderBook.builder()
                 .price(BigDecimal.valueOf(10000))

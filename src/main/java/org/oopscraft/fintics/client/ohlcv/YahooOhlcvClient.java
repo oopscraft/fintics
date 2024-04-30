@@ -127,7 +127,7 @@ public class YahooOhlcvClient extends OhlcvClient {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-        List<Map<String,Object>> results = objectMapper.convertValue(rootNode.path("chart").path("result"), new TypeReference<>(){});
+        List<Map<String, Object>> results = objectMapper.convertValue(rootNode.path("chart").path("result"), new TypeReference<>(){});
         if(results == null || results.isEmpty()) {
             throw new NoSuchElementException();
         }

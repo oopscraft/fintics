@@ -2,9 +2,6 @@ package org.oopscraft.fintics.indicator;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
-import org.oopscraft.fintics.indicator.Ema;
-import org.oopscraft.fintics.indicator.EmaCalculator;
-import org.oopscraft.fintics.indicator.EmaContext;
 import org.oopscraft.fintics.model.Ohlcv;
 
 import java.math.BigDecimal;

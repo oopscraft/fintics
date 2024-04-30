@@ -3,9 +3,6 @@ package org.oopscraft.fintics.indicator;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.oopscraft.fintics.indicator.Sma;
-import org.oopscraft.fintics.indicator.SmaCalculator;
-import org.oopscraft.fintics.indicator.SmaContext;
 import org.oopscraft.fintics.model.Ohlcv;
 
 import java.math.BigDecimal;

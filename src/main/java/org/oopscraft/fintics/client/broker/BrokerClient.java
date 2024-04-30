@@ -11,14 +11,14 @@ import java.util.Properties;
 public abstract class BrokerClient {
 
     @Getter
-    private BrokerClientDefinition definition;
+    private final BrokerClientDefinition definition;
 
     @Getter
     private final Properties properties;
 
-    public BrokerClient(BrokerClientDefinition definition, Properties config) {
+    public BrokerClient(BrokerClientDefinition definition, Properties properties) {
         this.definition = definition;
-        this.properties = config;
+        this.properties = properties;
     }
 
     public abstract boolean isOpened(LocalDateTime dateTime) throws InterruptedException;

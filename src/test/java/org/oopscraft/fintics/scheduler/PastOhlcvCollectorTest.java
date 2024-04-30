@@ -10,7 +10,6 @@ import org.oopscraft.fintics.dao.AssetOhlcvEntity;
 import org.oopscraft.fintics.dao.IndiceOhlcvEntity;
 import org.oopscraft.fintics.model.Asset;
 import org.oopscraft.fintics.model.Indice;
-import org.oopscraft.fintics.model.Ohlcv;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.persistence.EntityManager;
@@ -18,7 +17,7 @@ import javax.persistence.PersistenceContext;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest(classes = FinticsConfiguration.class)
 @RequiredArgsConstructor

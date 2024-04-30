@@ -1,7 +1,6 @@
 package org.oopscraft.fintics.client.broker;
 
 import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
-import org.oopscraft.arch4j.core.support.ValueMap;
 import org.oopscraft.fintics.model.Asset;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -102,12 +101,12 @@ public abstract class KrBrokerClient extends BrokerClient {
         ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
 
         String responseBody = responseEntity.getBody();
-        List<ValueMap> rows = convertXmlToList(responseBody);
+        List<Map<String, String>> rows = convertXmlToList(responseBody);
 
         // sort
         rows.sort((o1, o2) -> {
             BigDecimal o1MarketCap = toNumber(o1.get("MARTP_TOTAMT"), BigDecimal.ZERO);
-            BigDecimal o2MarketCap = toNumber(o2.getString("MARTP_TOTAMT"), BigDecimal.ZERO);
+            BigDecimal o2MarketCap = toNumber(o2.get("MARTP_TOTAMT"), BigDecimal.ZERO);
             return o2MarketCap.compareTo(o1MarketCap);
         });
 
@@ -122,8 +121,8 @@ public abstract class KrBrokerClient extends BrokerClient {
 
         return rows.stream()
                 .map(row -> Asset.builder()
-                        .assetId(toAssetId(row.getString("SHOTN_ISIN")))
-                        .assetName(row.getString("KOR_SECN_NM"))
+                        .assetId(toAssetId(row.get("SHOTN_ISIN")))
+                        .assetName(row.get("KOR_SECN_NM"))
                         .market(market)
                         .exchange(exchange)
                         .type("STOCK")
@@ -175,7 +174,7 @@ public abstract class KrBrokerClient extends BrokerClient {
         ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
 
         String responseBody = responseEntity.getBody();
-        List<ValueMap> rows = convertXmlToList(responseBody);
+        List<Map<String, String>> rows = convertXmlToList(responseBody);
 
         // sort
         rows.sort((o1, o2) -> {
@@ -200,8 +199,8 @@ public abstract class KrBrokerClient extends BrokerClient {
 
                     // return
                     return Asset.builder()
-                            .assetId(toAssetId(row.getString("SHOTN_ISIN")))
-                            .assetName(row.getString("KOR_SECN_NM"))
+                            .assetId(toAssetId(row.get("SHOTN_ISIN")))
+                            .assetName(row.get("KOR_SECN_NM"))
                             .market(market)
                             .exchange(exchange)
                             .type("ETF")
@@ -267,8 +266,8 @@ public abstract class KrBrokerClient extends BrokerClient {
         }
     }
 
-    public static List<ValueMap> convertXmlToList(String responseXml) {
-        List<ValueMap> list = new ArrayList<>();
+    public static List<Map<String, String>> convertXmlToList(String responseXml) {
+        List<Map<String,String>> list = new ArrayList<>();
         InputSource inputSource;
         StringReader stringReader;
         try {
@@ -288,7 +287,7 @@ public abstract class KrBrokerClient extends BrokerClient {
             XPathExpression expr = xPath.compile("//vector/data/result");
             NodeList nodeList = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
             for(int i = 0; i < nodeList.getLength(); i++) {
-                ValueMap map = new ValueMap();
+                Map<String, String> map = new LinkedHashMap<>();
                 Node result = nodeList.item(i);
                 NodeList propertyNodes = result.getChildNodes();
                 for(int ii = 0; ii < propertyNodes.getLength(); ii++) {
@@ -306,8 +305,8 @@ public abstract class KrBrokerClient extends BrokerClient {
         return list;
     }
 
-    protected static ValueMap convertXmlToMap(String responseXml) {
-        ValueMap map  = new ValueMap();
+    protected static Map<String, String> convertXmlToMap(String responseXml) {
+        Map<String, String> map  = new LinkedHashMap<>();
         InputSource inputSource;
         StringReader stringReader;
         try {
@@ -327,7 +326,6 @@ public abstract class KrBrokerClient extends BrokerClient {
                 String propertyValue = propertyElement.getAttribute("value");
                 map.put(propertyName, propertyValue);
             }
-
         }catch(Throwable e) {
             throw new RuntimeException(e);
         }
@@ -344,18 +342,18 @@ public abstract class KrBrokerClient extends BrokerClient {
     }
 
     protected static String getIsin(String symbol) {
-        ValueMap map = getSecInfo(symbol);
-        return Optional.ofNullable(map.getString("ISIN"))
+        Map<String, String> map = getSecInfo(symbol);
+        return Optional.ofNullable(map.get("ISIN"))
                 .orElseThrow();
     }
 
     protected static String getIssucoCustNo(String symbol) {
-        ValueMap map = getSecInfo(symbol);
-        return Optional.ofNullable(map.getString("ISSUCO_CUSTNO"))
+        Map<String, String> map = getSecInfo(symbol);
+        return Optional.ofNullable(map.get("ISSUCO_CUSTNO"))
                 .orElseThrow();
     }
 
-    protected static ValueMap getSecInfo(String symbol) {
+    protected static Map<String, String> getSecInfo(String symbol) {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .readTimeout(30_000)

@@ -11,8 +11,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 @SpringBootTest(classes = FinticsConfiguration.class)
 @RequiredArgsConstructor
 class DataServiceTest extends CoreTestSupport {

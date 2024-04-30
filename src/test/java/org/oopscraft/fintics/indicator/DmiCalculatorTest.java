@@ -3,10 +3,6 @@ package org.oopscraft.fintics.indicator;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.oopscraft.fintics.indicator.AbstractCalculatorTest;
-import org.oopscraft.fintics.indicator.Dmi;
-import org.oopscraft.fintics.indicator.DmiCalculator;
-import org.oopscraft.fintics.indicator.DmiContext;
 import org.oopscraft.fintics.model.Ohlcv;
 
 import java.math.BigDecimal;

@@ -6,10 +6,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
-import org.oopscraft.arch4j.core.support.ValueMap;
 import org.oopscraft.fintics.client.broker.BrokerClientDefinition;
 import org.oopscraft.fintics.client.broker.UsBrokerClient;
 import org.oopscraft.fintics.model.*;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
@@ -21,9 +21,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -117,18 +115,18 @@ public class KisUsBrokerClient extends UsBrokerClient {
         if(!"0".equals(rtCd)) {
             throw new RuntimeException(msg1);
         }
-        List<ValueMap> output2 = objectMapper.convertValue(rootNode.path("output2"), new TypeReference<>(){});
+        List<Map<String, String>> output2 = objectMapper.convertValue(rootNode.path("output2"), new TypeReference<>(){});
         return output2.stream()
                 .map(row -> {
                     LocalDateTime ohlcvDateTime = LocalDateTime.parse(
-                            row.getString("kymd") + row.getString("khms"),
+                            row.get("kymd") + row.get("khms"),
                             DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
                     );
-                    BigDecimal openPrice = row.getNumber("open");
-                    BigDecimal highPrice = row.getNumber("high");
-                    BigDecimal lowPrice = row.getNumber("low");
-                    BigDecimal closePrice = row.getNumber("last");
-                    BigDecimal volume = row.getNumber("evol");
+                    BigDecimal openPrice = new BigDecimal(row.get("open"));
+                    BigDecimal highPrice = new BigDecimal(row.get("high"));
+                    BigDecimal lowPrice = new BigDecimal(row.get("low"));
+                    BigDecimal closePrice = new BigDecimal(row.get("last"));
+                    BigDecimal volume = new BigDecimal(row.get("evol"));
                     return Ohlcv.builder()
                             .type(Ohlcv.Type.MINUTE)
                             .dateTime(ohlcvDateTime)
@@ -147,24 +145,9 @@ public class KisUsBrokerClient extends UsBrokerClient {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
-//        String url = apiUrl + "/uapi/overseas-price/v1/quotations/inquire-daily-chartprice";
         String url = apiUrl + "/uapi/overseas-price/v1/quotations/dailyprice";
         HttpHeaders headers = createHeaders();
         headers.add("tr_id", "HHDFS76240000");
-//        headers.add("custtype", "P");
-//        String fidCondMrktDivCode = "N";
-//        String fidInputIscd = asset.getSymbol();
-//        String fidInputDate1 = LocalDate.now().minusMonths(1).format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-//        String fidInputDate2 = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-//        String fidPeriodDivCode = "D";
-//        url = UriComponentsBuilder.fromUriString(url)
-//                .queryParam("FID_COND_MRKT_DIV_CODE", fidCondMrktDivCode)
-//                .queryParam("FID_INPUT_ISCD", fidInputIscd)
-//                .queryParam("FID_INPUT_DATE_1", fidInputDate1)
-//                .queryParam("FID_INPUT_DATE_2", fidInputDate2)
-//                .queryParam("FID_PERIOD_DIV_CODE", fidPeriodDivCode)
-//                .build()
-//                .toUriString();
         url = UriComponentsBuilder.fromUriString(url)
                 .queryParam("AUTH", "")
                 .queryParam("EXCD", "NAS")
@@ -192,15 +175,15 @@ public class KisUsBrokerClient extends UsBrokerClient {
         if(!"0".equals(rtCd)) {
             throw new RuntimeException(msg1);
         }
-        List<ValueMap> output2 = objectMapper.convertValue(rootNode.path("output2"), new TypeReference<>(){});
+        List<Map<String, String>> output2 = objectMapper.convertValue(rootNode.path("output2"), new TypeReference<>(){});
         return output2.stream()
                 .map(row -> {
-                    LocalDateTime ohlcvDateTime = LocalDateTime.parse(row.getString("xymd") + "000000", DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-                    BigDecimal openPrice = row.getNumber("open");
-                    BigDecimal highPrice = row.getNumber("high");
-                    BigDecimal lowPrice = row.getNumber("low");
-                    BigDecimal closePrice = row.getNumber("clos");
-                    BigDecimal volume = row.getNumber("tvol");
+                    LocalDateTime ohlcvDateTime = LocalDateTime.parse(row.get("xymd") + "000000", DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+                    BigDecimal openPrice = new BigDecimal(row.get("open"));
+                    BigDecimal highPrice = new BigDecimal(row.get("high"));
+                    BigDecimal lowPrice = new BigDecimal(row.get("low"));
+                    BigDecimal closePrice = new BigDecimal(row.get("clos"));
+                    BigDecimal volume = new BigDecimal(row.get("tvol"));
                     return Ohlcv.builder()
                             .type(Ohlcv.Type.DAILY)
                             .dateTime(ohlcvDateTime)
@@ -246,8 +229,8 @@ public class KisUsBrokerClient extends UsBrokerClient {
             throw new RuntimeException(msg1);
         }
         JsonNode outputNode = rootNode.path("output");
-        ValueMap output = objectMapper.convertValue(outputNode, ValueMap.class);
-        BigDecimal price = new BigDecimal(output.getString("last"));
+        Map<String, String> output = objectMapper.convertValue(outputNode, new TypeReference<>() {});
+        BigDecimal price = new BigDecimal(output.get("last"));
 
         return OrderBook.builder()
                 .price(price)
@@ -288,8 +271,8 @@ public class KisUsBrokerClient extends UsBrokerClient {
             throw new RuntimeException(msg1);
         }
         JsonNode outputNode = rootNode.path("output");
-        ValueMap output = objectMapper.convertValue(outputNode, ValueMap.class);
-        String tickPrice = output.getString("e_hogau");
+        Map<String, String> output = objectMapper.convertValue(outputNode, new TypeReference<>() {});
+        String tickPrice = output.get("e_hogau");
         return new BigDecimal(tickPrice);
     }
 
@@ -331,17 +314,17 @@ public class KisUsBrokerClient extends UsBrokerClient {
         }
 
         JsonNode output1Node = rootNode.path("output1");
-        List<ValueMap> output1 = objectMapper.convertValue(output1Node, new TypeReference<>(){});
+        List<Map<String, String>> output1 = objectMapper.convertValue(output1Node, new TypeReference<>(){});
         JsonNode output2Node = rootNode.path("output2");
-        ValueMap output2 = objectMapper.convertValue(output2Node, ValueMap.class);
+        Map<String, String> output2 = objectMapper.convertValue(output2Node, new TypeReference<>(){});
 
         // balance
         Balance balance = Balance.builder()
                 .accountNo(accountNo)
-                .purchaseAmount(output2.getNumber("frcr_pchs_amt1"))
-                .valuationAmount(output2.getNumber("tot_evlu_pfls_amt"))
-                .realizedProfitAmount(output2.getNumber("ovrs_rlzt_pfls_amt"))
-                .profitAmount(output2.getNumber("ovrs_tot_pfls"))
+                .purchaseAmount(new BigDecimal(output2.get("frcr_pchs_amt1")))
+                .valuationAmount(new BigDecimal(output2.get("tot_evlu_pfls_amt")))
+                .realizedProfitAmount(new BigDecimal(output2.get("ovrs_rlzt_pfls_amt")))
+                .profitAmount(new BigDecimal(output2.get("ovrs_tot_pfls")))
                 .build();
 
         // cash amount, total amount
@@ -354,14 +337,14 @@ public class KisUsBrokerClient extends UsBrokerClient {
         List<BalanceAsset> balanceAssets = output1.stream()
                 .map(row -> BalanceAsset.builder()
                         .accountNo(accountNo)
-                        .assetId(toAssetId(row.getString("ovrs_pdno")))
-                        .assetName(row.getString("ovrs_item_name"))
-                        .quantity(row.getNumber("ovrs_cblc_qty"))
-                        .orderableQuantity(row.getNumber("ord_psbl_qty"))
-                        .purchasePrice(row.getNumber("pchs_avg_pric"))
-                        .purchaseAmount(row.getNumber("frcr_pchs_amt1"))
-                        .valuationAmount(row.getNumber("ovrs_stck_evlu_amt"))
-                        .profitAmount(row.getNumber("frcr_evlu_pfls_amt"))
+                        .assetId(toAssetId(row.get("ovrs_pdno")))
+                        .assetName(row.get("ovrs_item_name"))
+                        .quantity(new BigDecimal(row.get("ovrs_cblc_qty")))
+                        .orderableQuantity(new BigDecimal(row.get("ord_psbl_qty")))
+                        .purchasePrice(new BigDecimal(row.get("pchs_avg_pric")))
+                        .purchaseAmount(new BigDecimal(row.get("frcr_pchs_amt1")))
+                        .valuationAmount(new BigDecimal(row.get("ovrs_stck_evlu_amt")))
+                        .profitAmount(new BigDecimal(row.get("frcr_evlu_pfls_amt")))
                         .build())
                 .filter(balanceAsset -> balanceAsset.getQuantity().intValue() > 0)
                 .collect(Collectors.toList());
@@ -406,8 +389,8 @@ public class KisUsBrokerClient extends UsBrokerClient {
             throw new RuntimeException(msg1);
         }
         JsonNode output2Node = rootNode.path("output2");
-        List<ValueMap> output2 = objectMapper.convertValue(output2Node, new TypeReference<>(){});
-        return output2.get(0).getNumber("frcr_dncl_amt_2");
+        List<Map<String, String>> output2 = objectMapper.convertValue(output2Node, new TypeReference<>(){});
+        return new BigDecimal(output2.get(0).get("frcr_dncl_amt_2"));
     }
 
     @Override
@@ -442,7 +425,7 @@ public class KisUsBrokerClient extends UsBrokerClient {
         }
 
         // request
-        ValueMap payloadMap = new ValueMap();
+        Map<String, String> payloadMap = new LinkedHashMap<>();
         payloadMap.put("CANO", accountNo.split("-")[0]);
         payloadMap.put("ACNT_PRDT_CD", accountNo.split("-")[1]);
         payloadMap.put("OVRS_EXCG_CD", "NASD");
@@ -454,7 +437,7 @@ public class KisUsBrokerClient extends UsBrokerClient {
         payloadMap.put("SLL_TYPE", sllType);
         payloadMap.put("ORD_SVR_DVSN_CD", "0");
         payloadMap.put("ORD_DVSN", "00");
-        RequestEntity<ValueMap> requestEntity = RequestEntity
+        RequestEntity<Map<String, String>> requestEntity = RequestEntity
                 .post(url)
                 .headers(headers)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -462,13 +445,13 @@ public class KisUsBrokerClient extends UsBrokerClient {
 
         // exchange
         sleep();
-        ResponseEntity<ValueMap> responseEntity = restTemplate.exchange(requestEntity, ValueMap.class);
-        ValueMap responseMap = Optional.ofNullable(responseEntity.getBody())
+        ResponseEntity<Map<String, String>> responseEntity = restTemplate.exchange(requestEntity, new ParameterizedTypeReference<>() {});
+        Map<String, String> responseMap = Optional.ofNullable(responseEntity.getBody())
                 .orElseThrow();
 
         // response
-        String rtCd = responseMap.getString("rt_cd");
-        String msg1 = responseMap.getString("msg1");
+        String rtCd = responseMap.get("rt_cd");
+        String msg1 = responseMap.get("msg1");
         if(!"0".equals(rtCd)) {
             throw new RuntimeException(msg1);
         }
@@ -516,29 +499,29 @@ public class KisUsBrokerClient extends UsBrokerClient {
         }
 
         JsonNode outputNode = rootNode.path("output");
-        List<ValueMap> output = objectMapper.convertValue(outputNode, new TypeReference<>(){});
+        List<Map<String, String>> output = objectMapper.convertValue(outputNode, new TypeReference<>(){});
 
         // return
         return output.stream()
                 .map(row -> {
                     Order.Type orderType;
-                    switch (row.getString("sll_buy_dvsn_cd")) {
+                    switch (row.get("sll_buy_dvsn_cd")) {
                         case "01" -> orderType = Order.Type.SELL;
                         case "02" -> orderType = Order.Type.BUY;
                         default -> throw new RuntimeException("invalid sll_buy_dvsn_cd");
                     }
                     Order.Kind orderKind = Order.Kind.LIMIT;
-                    String symbol = row.getString("pdno");
-                    BigDecimal quantity = row.getNumber("ft_ord_qty");
-                    BigDecimal price = row.getNumber("ft_ord_unpr3");
-                    String clientOrderId = row.getString("odno");
+                    String symbol = row.get("pdno");
+                    BigDecimal quantity = new BigDecimal(row.get("ft_ord_qty"));
+                    BigDecimal price = new BigDecimal(row.get("ft_ord_unpr3"));
+                    String brokerOrderId = row.get("odno");
                     return Order.builder()
                             .type(orderType)
                             .assetId(toAssetId(symbol))
                             .kind(orderKind)
                             .quantity(quantity)
                             .price(price)
-                            .brokerOrderId(clientOrderId)
+                            .brokerOrderId(brokerOrderId)
                             .build();
 
                 })
@@ -558,7 +541,7 @@ public class KisUsBrokerClient extends UsBrokerClient {
         // request
         HttpHeaders headers = createHeaders();
         headers.add("tr_id", trId);
-        ValueMap payloadMap = new ValueMap();
+        Map<String, String> payloadMap = new LinkedHashMap<>();
         payloadMap.put("CANO", accountNo.split("-")[0]);
         payloadMap.put("ACNT_PRDT_CD", accountNo.split("-")[1]);
         payloadMap.put("OVRS_EXCG_CD", "NASD");
@@ -568,7 +551,7 @@ public class KisUsBrokerClient extends UsBrokerClient {
         payloadMap.put("ORD_QTY", quantity.toString());
         payloadMap.put("OVRS_ORD_UNPR", price.toString());
         payloadMap.put("ORD_SVR_DVSN_CD", "0");
-        RequestEntity<ValueMap> requestEntity = RequestEntity
+        RequestEntity<Map<String, String>> requestEntity = RequestEntity
                 .post(url)
                 .headers(headers)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -576,13 +559,13 @@ public class KisUsBrokerClient extends UsBrokerClient {
 
         // exchange
         sleep();
-        ResponseEntity<ValueMap> responseEntity = restTemplate.exchange(requestEntity, ValueMap.class);
-        ValueMap responseMap = Optional.ofNullable(responseEntity.getBody())
+        ResponseEntity<Map<String, String>> responseEntity = restTemplate.exchange(requestEntity, new ParameterizedTypeReference<>(){});
+        Map<String, String> responseMap = Optional.ofNullable(responseEntity.getBody())
                 .orElseThrow();
 
         // response
-        String rtCd = responseMap.getString("rt_cd");
-        String msg1 = responseMap.getString("msg1");
+        String rtCd = responseMap.get("rt_cd");
+        String msg1 = responseMap.get("msg1");
         if(!"0".equals(rtCd)) {
             throw new RuntimeException(msg1);
         }

@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.data.IdGenerator;
 import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
-import org.oopscraft.arch4j.core.support.ValueMap;
 import org.oopscraft.fintics.client.broker.BrokerClientDefinition;
 import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.model.*;
@@ -63,12 +62,13 @@ public class UpbitBrokerClient extends BrokerClient {
         RequestEntity<Void> requestEntity = RequestEntity
                 .get(API_URL + "/v1/market/all")
                 .build();
-        ResponseEntity<List<ValueMap>> responseEntity = restTemplate.exchange(requestEntity, new ParameterizedTypeReference<List<ValueMap>>() {});
+        ResponseEntity<List<Map<String, String>>> responseEntity = restTemplate.exchange(requestEntity, new ParameterizedTypeReference<>() {
+        });
         return responseEntity.getBody().stream()
                 .map(map -> {
                     return Asset.builder()
-                            .assetId(toAssetId(map.getString("market")))
-                            .assetName(map.getString("english_name"))
+                            .assetId(toAssetId(map.get("market")))
+                            .assetName(map.get("english_name"))
                             .market(getDefinition().getMarket())
                             .exchange(getDefinition().getMarket())
                             .build();
@@ -130,12 +130,12 @@ public class UpbitBrokerClient extends BrokerClient {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        List<ValueMap> orderBookUnits = objectMapper.convertValue(rootNode.get(0).path("orderbook_units"), new TypeReference<>() {});
-        ValueMap orderBookUnit = orderBookUnits.get(0);
+        List<Map<String, String>> orderBookUnits = objectMapper.convertValue(rootNode.get(0).path("orderbook_units"), new TypeReference<>() {});
+        Map<String, String> orderBookUnit = orderBookUnits.get(0);
         return OrderBook.builder()
-                .price(orderBookUnit.getNumber("bid_price"))
-                .bidPrice(orderBookUnit.getNumber("bid_price"))
-                .askPrice(orderBookUnit.getNumber("ask_price"))
+                .price(new BigDecimal(orderBookUnit.get("bid_price")))
+                .bidPrice(new BigDecimal(orderBookUnit.get("bid_price")))
+                .askPrice(new BigDecimal(orderBookUnit.get("ask_price")))
                 .build();
     }
 
@@ -172,7 +172,7 @@ public class UpbitBrokerClient extends BrokerClient {
 
         sleep();
         ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
-        List<ValueMap> rows;
+        List<Map<String, String>> rows;
         try {
             rows = objectMapper.readValue(responseEntity.getBody(), new TypeReference<>(){});
         } catch (IOException e) {
@@ -181,17 +181,17 @@ public class UpbitBrokerClient extends BrokerClient {
         return rows.stream()
                 .map(row -> {
                     LocalDateTime dateTime = LocalDateTime.parse(
-                            row.getString("candle_date_time_kst"),
+                            row.get("candle_date_time_kst"),
                             DateTimeFormatter.ISO_LOCAL_DATE_TIME
                     );
                     return Ohlcv.builder()
                             .type(ohlcvType)
                             .dateTime(dateTime)
-                            .openPrice(row.getNumber("opening_price").setScale(2, RoundingMode.HALF_UP))
-                            .highPrice(row.getNumber("high_price").setScale(2, RoundingMode.HALF_UP))
-                            .lowPrice(row.getNumber("low_price").setScale(2, RoundingMode.HALF_UP))
-                            .closePrice(row.getNumber("trade_price").setScale(2, RoundingMode.HALF_UP))
-                            .volume(row.getNumber("candle_acc_trade_volume").setScale(2, RoundingMode.HALF_UP))
+                            .openPrice(new BigDecimal(row.get("opening_price")).setScale(2, RoundingMode.HALF_UP))
+                            .highPrice(new BigDecimal(row.get("high_price")).setScale(2, RoundingMode.HALF_UP))
+                            .lowPrice(new BigDecimal(row.get("low_price")).setScale(2, RoundingMode.HALF_UP))
+                            .closePrice(new BigDecimal(row.get("trade_price")).setScale(2, RoundingMode.HALF_UP))
+                            .volume(new BigDecimal(row.get("candle_acc_trade_volume")).setScale(2, RoundingMode.HALF_UP))
                             .build();
                 })
                 .collect(Collectors.toList());
@@ -211,7 +211,7 @@ public class UpbitBrokerClient extends BrokerClient {
         sleep();
         ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
 
-        List<ValueMap> rows;
+        List<Map<String, String>> rows;
         try {
             rows = objectMapper.readValue(responseEntity.getBody(), new TypeReference<>(){});
         } catch (IOException e) {
@@ -225,12 +225,12 @@ public class UpbitBrokerClient extends BrokerClient {
         BigDecimal profitAmount = BigDecimal.ZERO;
         BigDecimal realizedProfitAmount = BigDecimal.ZERO;
         List<BalanceAsset> balanceAssets = new ArrayList<>();
-        for(ValueMap row : rows) {
-            String currency = row.getString("currency");
-            String unitCurrency = row.getString("unit_currency");
+        for(Map<String, String> row : rows) {
+            String currency = row.get("currency");
+            String unitCurrency = row.get("unit_currency");
             String symbol = String.format("%s-%s", unitCurrency, currency);
-            BigDecimal balance = row.getNumber("balance");
-            BigDecimal averageBuyPrice = row.getNumber("avg_buy_price");
+            BigDecimal balance = new BigDecimal(row.get("balance"));
+            BigDecimal averageBuyPrice = new BigDecimal(row.get("avg_buy_price"));
             if("KRW".equals(currency) && "KRW".equals(unitCurrency)) {
                 totalAmount = totalAmount.add(balance);
                 cacheAmount = cacheAmount.add(balance);
@@ -353,11 +353,11 @@ public class UpbitBrokerClient extends BrokerClient {
                 .body(payload);
 
         sleep();
-        ResponseEntity<ValueMap> responseEntity = restTemplate.exchange(requestEntity, ValueMap.class);
-        ValueMap responseMap = responseEntity.getBody();
+        ResponseEntity<Map<String, String>> responseEntity = restTemplate.exchange(requestEntity, new ParameterizedTypeReference<>() {});
+        Map<String, String> responseMap = responseEntity.getBody();
         log.info("{}", responseMap);
         if(responseMap != null) {
-            order.setBrokerOrderId(responseMap.getString("uuid"));
+            order.setBrokerOrderId(responseMap.get("uuid"));
         }
 
         // return
@@ -379,7 +379,7 @@ public class UpbitBrokerClient extends BrokerClient {
 
         sleep();
         ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
-        List<ValueMap> rows;
+        List<Map<String, String>> rows;
         try {
             rows = objectMapper.readValue(responseEntity.getBody(), new TypeReference<>(){});
         } catch (IOException e) {
@@ -388,21 +388,21 @@ public class UpbitBrokerClient extends BrokerClient {
         return rows.stream()
                 .map(row -> {
                     Order.Type orderKind;
-                    switch(row.getString("side")) {
+                    switch(row.get("side")) {
                         case "bid" -> orderKind = Order.Type.BUY;
                         case "ask" -> orderKind = Order.Type.SELL;
                         default -> throw new RuntimeException("invalid side");
                     }
                     Order.Kind orderType;
-                    switch(row.getString("ord_type")) {
+                    switch(row.get("ord_type")) {
                         case "limit" -> orderType = Order.Kind.LIMIT;
                         case "market","price" -> orderType = Order.Kind.MARKET;
                         default -> orderType = null;
                     }
-                    String symbol = row.getString("market");
-                    BigDecimal quantity = row.getNumber("remaining_volume");
-                    BigDecimal price = row.getNumber("price");
-                    String clientOrderId = row.getString("uuid");
+                    String symbol = row.get("market");
+                    BigDecimal quantity = new BigDecimal(row.get("remaining_volume"));
+                    BigDecimal price = new BigDecimal(row.get("price"));
+                    String clientOrderId = row.get("uuid");
 
                     // order
                     return Order.builder()

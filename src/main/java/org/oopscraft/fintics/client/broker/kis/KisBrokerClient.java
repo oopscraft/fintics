@@ -6,10 +6,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
-import org.oopscraft.arch4j.core.support.ValueMap;
 import org.oopscraft.fintics.client.broker.BrokerClientDefinition;
 import org.oopscraft.fintics.client.broker.KrBrokerClient;
 import org.oopscraft.fintics.model.*;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
@@ -114,10 +114,10 @@ public class KisBrokerClient extends KrBrokerClient {
             throw new RuntimeException(msg1);
         }
 
-        List<ValueMap> output = objectMapper.convertValue(rootNode.path("output"), new TypeReference<>(){});
-        ValueMap matchedRow = output.stream()
+        List<Map<String, String>> output = objectMapper.convertValue(rootNode.path("output"), new TypeReference<>(){});
+        Map<String, String> matchedRow = output.stream()
                 .filter(row -> {
-                    LocalDate localDate = LocalDate.parse(row.getString("bass_dt"), DateTimeFormatter.ofPattern("yyyyMMdd"));
+                    LocalDate localDate = LocalDate.parse(row.get("bass_dt"), DateTimeFormatter.ofPattern("yyyyMMdd"));
                     return localDate.isEqual(dateTime.toLocalDate());
                 })
                 .findFirst()
@@ -126,7 +126,7 @@ public class KisBrokerClient extends KrBrokerClient {
         // define holiday
         boolean holiday = false;
         if(matchedRow != null) {
-            String openYn = matchedRow.getString("opnd_yn");
+            String openYn = matchedRow.get("opnd_yn");
             if(openYn.equals("N")) {
                 holiday = true;
             }
@@ -180,19 +180,19 @@ public class KisBrokerClient extends KrBrokerClient {
                 throw new RuntimeException(msg1);
             }
 
-            List<ValueMap> output2 = objectMapper.convertValue(rootNode.path("output2"), new TypeReference<>(){});
+            List<Map<String, String>> output2 = objectMapper.convertValue(rootNode.path("output2"), new TypeReference<>(){});
 
             List<Ohlcv> minuteOhlcvsPage = output2.stream()
                     .map(row -> {
                         LocalDateTime ohlcvDateTime = LocalDateTime.parse(
-                                row.getString("stck_bsop_date") + row.getString("stck_cntg_hour"),
+                                row.get("stck_bsop_date") + row.get("stck_cntg_hour"),
                                 DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
                         );
-                        BigDecimal openPrice = row.getNumber("stck_oprc");
-                        BigDecimal highPrice = row.getNumber("stck_hgpr");
-                        BigDecimal lowPrice = row.getNumber("stck_lwpr");
-                        BigDecimal closePrice = row.getNumber("stck_prpr");
-                        BigDecimal volume = row.getNumber("cntg_vol");
+                        BigDecimal openPrice = new BigDecimal(row.get("stck_oprc"));
+                        BigDecimal highPrice = new BigDecimal(row.get("stck_hgpr"));
+                        BigDecimal lowPrice = new BigDecimal(row.get("stck_lwpr"));
+                        BigDecimal closePrice = new BigDecimal(row.get("stck_prpr"));
+                        BigDecimal volume = new BigDecimal(row.get("cntg_vol"));
                         return Ohlcv.builder()
                                 .type(Ohlcv.Type.MINUTE)
                                 .dateTime(ohlcvDateTime)
@@ -265,16 +265,16 @@ public class KisBrokerClient extends KrBrokerClient {
             throw new RuntimeException(msg1);
         }
 
-        List<ValueMap> output2 = objectMapper.convertValue(rootNode.path("output2"), new TypeReference<>(){});
+        List<Map<String, String>> output2 = objectMapper.convertValue(rootNode.path("output2"), new TypeReference<>(){});
 
         return output2.stream()
                 .map(row -> {
-                    LocalDateTime ohlcvDateTime = LocalDateTime.parse(row.getString("stck_bsop_date")+"000000", DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-                    BigDecimal openPrice = row.getNumber("stck_oprc");
-                    BigDecimal highPrice = row.getNumber("stck_hgpr");
-                    BigDecimal lowPrice = row.getNumber("stck_lwpr");
-                    BigDecimal closePrice = row.getNumber("stck_clpr");
-                    BigDecimal volume = row.getNumber("acml_vol");
+                    LocalDateTime ohlcvDateTime = LocalDateTime.parse(row.get("stck_bsop_date")+"000000", DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+                    BigDecimal openPrice = new BigDecimal(row.get("stck_oprc"));
+                    BigDecimal highPrice = new BigDecimal(row.get("stck_hgpr"));
+                    BigDecimal lowPrice = new BigDecimal(row.get("stck_lwpr"));
+                    BigDecimal closePrice = new BigDecimal(row.get("stck_clpr"));
+                    BigDecimal volume = new BigDecimal(row.get("acml_vol"));
                     return Ohlcv.builder()
                             .type(Ohlcv.Type.DAILY)
                             .dateTime(ohlcvDateTime)
@@ -322,12 +322,12 @@ public class KisBrokerClient extends KrBrokerClient {
             throw new RuntimeException(msg1);
         }
 
-        ValueMap output1 = objectMapper.convertValue(rootNode.path("output1"), ValueMap.class);
-        ValueMap output2 = objectMapper.convertValue(rootNode.path("output2"), ValueMap.class);
+        Map<String, String> output1 = objectMapper.convertValue(rootNode.path("output1"), new TypeReference<>() {});
+        Map<String, String> output2 = objectMapper.convertValue(rootNode.path("output2"), new TypeReference<>() {});
 
-        BigDecimal price = output2.getNumber("stck_prpr");
-        BigDecimal bidPrice = output1.getNumber("bidp1");
-        BigDecimal askPrice = output1.getNumber("askp1");
+        BigDecimal price = new BigDecimal(output2.get("stck_prpr"));
+        BigDecimal bidPrice = new BigDecimal(output1.get("bidp1"));
+        BigDecimal askPrice = new BigDecimal(output1.get("askp1"));
 
         return OrderBook.builder()
                 .price(price)
@@ -379,29 +379,29 @@ public class KisBrokerClient extends KrBrokerClient {
         }
 
         JsonNode output1Node = rootNode.path("output1");
-        List<ValueMap> output1 = objectMapper.convertValue(output1Node, new TypeReference<>(){});
+        List<Map<String, String>> output1 = objectMapper.convertValue(output1Node, new TypeReference<>(){});
 
         JsonNode output2Node = rootNode.path("output2");
-        List<ValueMap> output2 = objectMapper.convertValue(output2Node, new TypeReference<>(){});
+        List<Map<String, String>> output2 = objectMapper.convertValue(output2Node, new TypeReference<>(){});
 
         Balance balance = Balance.builder()
                 .accountNo(accountNo)
-                .totalAmount(output2.get(0).getNumber("tot_evlu_amt"))
-                .cashAmount(output2.get(0).getNumber("prvs_rcdl_excc_amt"))
-                .purchaseAmount(output2.get(0).getNumber("pchs_amt_smtl_amt"))
-                .valuationAmount(output2.get(0).getNumber("evlu_amt_smtl_amt"))
+                .totalAmount(new BigDecimal(output2.get(0).get("tot_evlu_amt")))
+                .cashAmount(new BigDecimal(output2.get(0).get("prvs_rcdl_excc_amt")))
+                .purchaseAmount(new BigDecimal(output2.get(0).get("pchs_amt_smtl_amt")))
+                .valuationAmount(new BigDecimal(output2.get(0).get("evlu_amt_smtl_amt")))
                 .build();
 
         List<BalanceAsset> balanceAssets = output1.stream()
                 .map(row -> BalanceAsset.builder()
                         .accountNo(accountNo)
-                        .assetId(toAssetId(row.getString("pdno")))
-                        .assetName(row.getString("prdt_name"))
-                        .quantity(row.getNumber("hldg_qty"))
-                        .orderableQuantity(row.getNumber("ord_psbl_qty"))
-                        .purchaseAmount(row.getNumber("pchs_amt"))
-                        .valuationAmount(row.getNumber("evlu_amt"))
-                        .profitAmount(row.getNumber("evlu_pfls_amt"))
+                        .assetId(toAssetId(row.get("pdno")))
+                        .assetName(row.get("prdt_name"))
+                        .quantity(new BigDecimal(row.get("hldg_qty")))
+                        .orderableQuantity(new BigDecimal(row.get("ord_psbl_qty")))
+                        .purchaseAmount(new BigDecimal(row.get("pchs_amt")))
+                        .valuationAmount(new BigDecimal(row.get("evlu_amt")))
+                        .profitAmount(new BigDecimal(row.get("evlu_pfls_amt")))
                         .build())
                 .filter(balanceAsset -> balanceAsset.getQuantity().intValue() > 0)
                 .collect(Collectors.toList());
@@ -463,8 +463,8 @@ public class KisBrokerClient extends KrBrokerClient {
         }
 
         JsonNode output2Node = rootNode.path("output2");
-        List<ValueMap> output2 = objectMapper.convertValue(output2Node, new TypeReference<>(){});
-        return output2.get(0).getNumber("rlzt_pfls");
+        List<Map<String, String>> output2 = objectMapper.convertValue(output2Node, new TypeReference<>(){});
+        return new BigDecimal(output2.get(0).get("rlzt_pfls"));
     }
 
     @Override
@@ -503,14 +503,14 @@ public class KisBrokerClient extends KrBrokerClient {
         int quantity = Math.max(order.getQuantity().intValue(),1);
 
         // request
-        ValueMap payloadMap = new ValueMap();
+        Map<String, String> payloadMap = new LinkedHashMap<>();
         payloadMap.put("CANO", accountNo.split("-")[0]);
         payloadMap.put("ACNT_PRDT_CD", accountNo.split("-")[1]);
         payloadMap.put("PDNO", order.getSymbol());
         payloadMap.put("ORD_DVSN", ordDvsn);
         payloadMap.put("ORD_QTY", String.valueOf(quantity));
         payloadMap.put("ORD_UNPR", ordUnpr);
-        RequestEntity<ValueMap> requestEntity = RequestEntity
+        RequestEntity<Map<String, String>> requestEntity = RequestEntity
                 .post(url)
                 .headers(headers)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -518,13 +518,13 @@ public class KisBrokerClient extends KrBrokerClient {
 
         // exchange
         sleep();
-        ResponseEntity<ValueMap> responseEntity = restTemplate.exchange(requestEntity, ValueMap.class);
-        ValueMap responseMap = Optional.ofNullable(responseEntity.getBody())
+        ResponseEntity<Map<String, String>> responseEntity = restTemplate.exchange(requestEntity, new ParameterizedTypeReference<>(){});
+        Map<String, String> responseMap = Optional.ofNullable(responseEntity.getBody())
                 .orElseThrow();
 
         // response
-        String rtCd = responseMap.getString("rt_cd");
-        String msg1 = responseMap.getString("msg1");
+        String rtCd = responseMap.get("rt_cd");
+        String msg1 = responseMap.get("msg1");
         if(!"0".equals(rtCd)) {
             throw new RuntimeException(msg1);
         }
@@ -577,28 +577,28 @@ public class KisBrokerClient extends KrBrokerClient {
         }
 
         JsonNode outputNode = rootNode.path("output");
-        List<ValueMap> output = objectMapper.convertValue(outputNode, new TypeReference<>(){});
+        List<Map<String, String>> output = objectMapper.convertValue(outputNode, new TypeReference<>(){});
 
         // return
         return output.stream()
                 .map(row -> {
                     Order.Type orderType;
-                    switch (row.getString("sll_buy_dvsn_cd")) {
+                    switch (row.get("sll_buy_dvsn_cd")) {
                         case "01" -> orderType = Order.Type.SELL;
                         case "02" -> orderType = Order.Type.BUY;
                         default -> throw new RuntimeException("invalid sll_buy_dvsn_cd");
                     }
                     Order.Kind orderKind;
-                    switch (row.getString("ord_dvsn_cd")) {
+                    switch (row.get("ord_dvsn_cd")) {
                         case "00" -> orderKind = Order.Kind.LIMIT;
                         case "01" -> orderKind = Order.Kind.MARKET;
                         default -> orderKind = null;
                     }
 
-                    String symbol = row.getString("pdno");
-                    BigDecimal quantity = row.getNumber("psbl_qty");
-                    BigDecimal price = row.getNumber("ord_unpr");
-                    String clientOrderId = row.getString("odno");
+                    String symbol = row.get("pdno");
+                    BigDecimal quantity = new BigDecimal(row.get("psbl_qty"));
+                    BigDecimal price = new BigDecimal(row.get("ord_unpr"));
+                    String clientOrderId = row.get("odno");
                     return Order.builder()
                             .type(orderType)
                             .assetId(toAssetId(symbol))
@@ -637,7 +637,7 @@ public class KisBrokerClient extends KrBrokerClient {
         }
 
         // request
-        ValueMap payloadMap = new ValueMap();
+        Map<String, String> payloadMap = new LinkedHashMap<>();
         payloadMap.put("CANO", accountNo.split("-")[0]);
         payloadMap.put("ACNT_PRDT_CD", accountNo.split("-")[1]);
         payloadMap.put("KRX_FWDG_ORD_ORGNO", "");
@@ -647,7 +647,7 @@ public class KisBrokerClient extends KrBrokerClient {
         payloadMap.put("ORD_QTY", "0");
         payloadMap.put("ORD_UNPR", String.valueOf(order.getPrice().longValue()));
         payloadMap.put("QTY_ALL_ORD_YN", "Y");
-        RequestEntity<ValueMap> requestEntity = RequestEntity
+        RequestEntity<Map<String, String>> requestEntity = RequestEntity
                 .post(url)
                 .headers(headers)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -655,13 +655,13 @@ public class KisBrokerClient extends KrBrokerClient {
 
         // exchange
         sleep();
-        ResponseEntity<ValueMap> responseEntity = restTemplate.exchange(requestEntity, ValueMap.class);
-        ValueMap responseMap = Optional.ofNullable(responseEntity.getBody())
+        ResponseEntity<Map<String, String>> responseEntity = restTemplate.exchange(requestEntity, new ParameterizedTypeReference<>(){});
+        Map<String, String> responseMap = Optional.ofNullable(responseEntity.getBody())
                 .orElseThrow();
 
         // response
-        String rtCd = responseMap.getString("rt_cd");
-        String msg1 = responseMap.getString("msg1");
+        String rtCd = responseMap.get("rt_cd");
+        String msg1 = responseMap.get("msg1");
         if(!"0".equals(rtCd)) {
             throw new RuntimeException(msg1);
         }
