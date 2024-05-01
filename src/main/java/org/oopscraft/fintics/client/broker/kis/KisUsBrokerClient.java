@@ -75,7 +75,7 @@ public class KisUsBrokerClient extends UsBrokerClient {
         return true;
     }
 
-    private String toExcd3(Asset asset) {
+    private String getExcd(Asset asset) {
         String excd = null;
         switch(asset.getExchange()) {
             case "XNAS" -> excd = "NAS";
@@ -85,7 +85,7 @@ public class KisUsBrokerClient extends UsBrokerClient {
         return excd;
     }
 
-    private String toExcd4(Asset asset) {
+    private String getOvrsExcgCd(Asset asset) {
         String excd = null;
         switch(asset.getExchange()) {
             case "XNAS" -> excd = "NASD";
@@ -104,7 +104,7 @@ public class KisUsBrokerClient extends UsBrokerClient {
         HttpHeaders headers = createHeaders();
         headers.add("tr_id", "HHDFS76950200");
         headers.add("custtype", "P");
-        String excd = toExcd3(asset);
+        String excd = getExcd(asset);
         String symb = asset.getSymbol();
         url = UriComponentsBuilder.fromUriString(url)
                 .queryParam("AUTH", "")
@@ -168,7 +168,7 @@ public class KisUsBrokerClient extends UsBrokerClient {
         String url = apiUrl + "/uapi/overseas-price/v1/quotations/dailyprice";
         HttpHeaders headers = createHeaders();
         headers.add("tr_id", "HHDFS76240000");
-        String excd = toExcd3(asset);
+        String excd = getExcd(asset);
         String symb = asset.getSymbol();
         url = UriComponentsBuilder.fromUriString(url)
                 .queryParam("AUTH", "")
@@ -227,7 +227,7 @@ public class KisUsBrokerClient extends UsBrokerClient {
         String url = apiUrl + "/uapi/overseas-price/v1/quotations/price-detail";
         HttpHeaders headers = createHeaders();
         headers.add("tr_id", "HHDFS76200200");
-        String excd = toExcd3(asset);
+        String excd = getExcd(asset);
         String symb = asset.getSymbol();
         url = UriComponentsBuilder.fromUriString(url)
                 .queryParam("AUTH", "")
@@ -271,7 +271,7 @@ public class KisUsBrokerClient extends UsBrokerClient {
         String url = apiUrl + "/uapi/overseas-price/v1/quotations/price-detail";
         HttpHeaders headers = createHeaders();
         headers.add("tr_id", "HHDFS76200200");
-        String excd = toExcd3(asset);
+        String excd = getExcd(asset);
         String symb = asset.getSymbol();
         url = UriComponentsBuilder.fromUriString(url)
                 .queryParam("AUTH", "")
@@ -437,7 +437,7 @@ public class KisUsBrokerClient extends UsBrokerClient {
         headers.add("tr_id", trId);
 
         // ovrsExcgCd
-        String ovrsExcgCd = toExcd4(asset);
+        String ovrsExcgCd = getOvrsExcgCd(asset);
 
         // quantity with check
         int quantity = order.getQuantity().intValue();
@@ -572,7 +572,7 @@ public class KisUsBrokerClient extends UsBrokerClient {
         headers.add("tr_id", trId);
 
         // ovrsExcgCd
-        String ovrsExcgCd = toExcd4(asset);
+        String ovrsExcgCd = getOvrsExcgCd(asset);
 
         // payload
         Map<String, String> payloadMap = new LinkedHashMap<>();
