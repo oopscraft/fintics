@@ -268,7 +268,7 @@ public class UpbitBrokerClient extends BrokerClient {
     }
 
     @Override
-    public Order submitOrder(Order order) throws InterruptedException {
+    public Order submitOrder(Asset asset, Order order) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
@@ -418,7 +418,7 @@ public class UpbitBrokerClient extends BrokerClient {
     }
 
     @Override
-    public Order amendOrder(Order order) throws InterruptedException {
+    public Order amendOrder(Asset asset, Order order) throws InterruptedException {
         // cancel
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
@@ -433,7 +433,12 @@ public class UpbitBrokerClient extends BrokerClient {
         restTemplate.exchange(requestEntity, Void.class);
 
         // submit order
-        return submitOrder(order);
+        return submitOrder(asset, order);
+    }
+
+    @Override
+    public BigDecimal getMinimumOrderQuantity() throws InterruptedException {
+        return BigDecimal.ZERO;
     }
 
 }

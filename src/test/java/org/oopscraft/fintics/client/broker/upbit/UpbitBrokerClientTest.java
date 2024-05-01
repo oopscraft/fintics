@@ -94,15 +94,18 @@ class UpbitBrokerClientTest {
     @Test
     void submitOrderBuy() throws Exception {
         // given
+        Asset asset = Asset.builder()
+                .assetId("UPBIT.KRW-BTC")
+                .build();
         Order order = Order.builder()
                 .type(Order.Type.BUY)
-                .assetId("UPBIT.KRW-BTC")
+                .assetId(asset.getAssetId())
                 .kind(Order.Kind.MARKET)
                 .quantity(BigDecimal.valueOf(6))
                 .price(BigDecimal.valueOf(840))
                 .build();
         // when
-        getUpbitTradeClient().submitOrder(order);
+        getUpbitTradeClient().submitOrder(asset, order);
         // then
     }
 
@@ -110,16 +113,19 @@ class UpbitBrokerClientTest {
     @Test
     void submitOrderSell() throws Exception {
         // given
+        Asset asset = Asset.builder()
+                .assetId("UPBIT.KRW-BTC")
+                .build();
         Order order = Order.builder()
                 .type(Order.Type.SELL)
-                .assetId("UPBIT.KRW-BTC")
+                .assetId(asset.getAssetId())
                 .kind(Order.Kind.MARKET)
                 .quantity(BigDecimal.valueOf(0.00008556))
                 .price(null)
                 .build();
 
         // when
-        getUpbitTradeClient().submitOrder(order);
+        getUpbitTradeClient().submitOrder(asset, order);
         // then
     }
 
@@ -141,7 +147,10 @@ class UpbitBrokerClientTest {
 
         // when
         for(Order order : orders) {
-            Order amendedOrder = getUpbitTradeClient().amendOrder(order);
+            Asset asset = Asset.builder()
+                    .assetId(order.getAssetId())
+                    .build();
+            Order amendedOrder = getUpbitTradeClient().amendOrder(asset, order);
             log.debug("amendedOrder:{}", amendedOrder);
         }
         // then

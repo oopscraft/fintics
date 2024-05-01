@@ -468,7 +468,7 @@ public class KisBrokerClient extends KrBrokerClient {
     }
 
     @Override
-    public Order submitOrder(Order order) throws InterruptedException {
+    public Order submitOrder(Asset asset, Order order) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
@@ -499,8 +499,8 @@ public class KisBrokerClient extends KrBrokerClient {
             default -> throw new RuntimeException("invalid order type");
         }
 
-        // quantity
-        int quantity = Math.max(order.getQuantity().intValue(),1);
+        // quantity with check
+        int quantity = order.getQuantity().intValue();
 
         // request
         Map<String, String> payloadMap = new LinkedHashMap<>();
@@ -613,7 +613,7 @@ public class KisBrokerClient extends KrBrokerClient {
     }
 
     @Override
-    public Order amendOrder(Order order) throws InterruptedException {
+    public Order amendOrder(Asset asset, Order order) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();

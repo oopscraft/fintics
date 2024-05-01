@@ -35,14 +35,20 @@ public abstract class BrokerClient {
 
     public abstract Balance getBalance() throws InterruptedException;
 
-    public abstract Order submitOrder(Order order) throws InterruptedException;
+
+    public abstract Order submitOrder(Asset asset, Order order) throws InterruptedException;
 
     public abstract List<Order> getWaitingOrders() throws InterruptedException;
 
-    public abstract Order amendOrder(Order order) throws InterruptedException;
+    public abstract Order amendOrder(Asset asset, Order order) throws InterruptedException;
 
     public final String toAssetId(String symbol) {
         return String.format("%s.%s", this.definition.getMarket(), symbol);
     }
+
+    public BigDecimal getMinimumOrderQuantity() throws InterruptedException {
+        return BigDecimal.ONE;
+    }
+
 
 }

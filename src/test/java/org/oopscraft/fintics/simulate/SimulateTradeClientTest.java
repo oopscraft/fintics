@@ -129,14 +129,14 @@ class SimulateTradeClientTest extends CoreTestSupport {
         SimulateBrokerClient tradeClient = createSimulateClient();
         tradeClient.deposit(BigDecimal.valueOf(1000));
         tradeClient.setDateTime(NOW.minusMinutes(2));
-        tradeClient.submitOrder(Order.builder()
+        tradeClient.submitOrder(asset, Order.builder()
                 .assetId(asset.getAssetId())
                 .type(Order.Type.BUY)
                 .kind(Order.Kind.MARKET)
                 .quantity(BigDecimal.valueOf(2))
                 .build());
         tradeClient.setDateTime(NOW);
-        tradeClient.submitOrder(Order.builder()
+        tradeClient.submitOrder(asset, Order.builder()
                 .assetId(asset.getAssetId())
                 .type(Order.Type.SELL)
                 .kind(Order.Kind.MARKET)

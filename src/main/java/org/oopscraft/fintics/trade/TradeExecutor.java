@@ -57,11 +57,11 @@ public class TradeExecutor {
         this.log = log;
     }
 
-    public void execute(Trade trade, Strategy strategy, LocalDateTime dateTime, IndiceClient indiceClient, BrokerClient tradeClient) throws InterruptedException {
+    public void execute(Trade trade, Strategy strategy, LocalDateTime dateTime, IndiceClient indiceClient, BrokerClient brokerClient) throws InterruptedException {
         log.info("[{}] Check trade", trade.getTradeName());
 
         // check market opened
-        if(!tradeClient.isOpened(dateTime)) {
+        if(!brokerClient.isOpened(dateTime)) {
             log.info("[{}] Market not opened.", trade.getTradeName());
             return;
         }
@@ -96,7 +96,7 @@ public class TradeExecutor {
         }
 
         // balance
-        Balance balance = tradeClient.getBalance();
+        Balance balance = brokerClient.getBalance();
 
         // checks buy condition
         for (TradeAsset tradeAsset : trade.getTradeAssets()) {
@@ -112,12 +112,12 @@ public class TradeExecutor {
                 log.info("[{}] Check asset", tradeAsset.getAssetName());
 
                 // minute ohlcvs
-                List<Ohlcv> minuteOhlcvs = tradeClient.getMinuteOhlcvs(tradeAsset, dateTime);
+                List<Ohlcv> minuteOhlcvs = brokerClient.getMinuteOhlcvs(tradeAsset, dateTime);
                 List<Ohlcv> previousMinuteOhlcvs = getPreviousAssetMinuteOhlcvs(tradeAsset.getAssetId(), minuteOhlcvs, dateTime);
                 minuteOhlcvs.addAll(previousMinuteOhlcvs);
 
                 // daily ohlcvs
-                List<Ohlcv> dailyOhlcvs = tradeClient.getDailyOhlcvs(tradeAsset, dateTime);
+                List<Ohlcv> dailyOhlcvs = brokerClient.getDailyOhlcvs(tradeAsset, dateTime);
                 List<Ohlcv> previousDailyOhlcvs = getPreviousAssetDailyOhlcvs(tradeAsset.getAssetId(), dailyOhlcvs, dateTime);
                 dailyOhlcvs.addAll(previousDailyOhlcvs);
 
@@ -133,7 +133,7 @@ public class TradeExecutor {
                 log.info("[{}] DailyOhlcvs({}):{}", tradeAsset.getAssetName(), assetProfile.getDailyOhlcvs().size(), assetProfile.getDailyOhlcvs().isEmpty() ? null : assetProfile.getDailyOhlcvs().get(0));
 
                 // order book
-                OrderBook orderBook = tradeClient.getOrderBook(tradeAsset);
+                OrderBook orderBook = brokerClient.getOrderBook(tradeAsset);
 
                 // executes trade asset decider
                 StrategyExecutor strategyExecutor = StrategyExecutor.builder()
@@ -198,32 +198,37 @@ public class TradeExecutor {
                 // buy (exceedAmount is over zero)
                 if (exceededAmount.compareTo(BigDecimal.ZERO) > 0) {
                     BigDecimal price = orderBook.getBidPrice();
-                    BigDecimal tickPrice = tradeClient.getTickPrice(tradeAsset, price);
+                    BigDecimal tickPrice = brokerClient.getTickPrice(tradeAsset, price);
                     if(tickPrice != null) {
                         price = price.add(tickPrice);
                     }
                     price = price.min(orderBook.getAskPrice()); // min competitive price
                     BigDecimal quantity = exceededAmount.divide(price, MathContext.DECIMAL32);
-                    buyTradeAsset(tradeClient, trade, tradeAsset, quantity, price);
+                    // 수량이 최소주문단위 이하일 경우 최소주문단위 수량은 매수 (기본 1주)
+                    quantity = quantity.max(brokerClient.getMinimumOrderQuantity());
+                    buyTradeAsset(brokerClient, trade, tradeAsset, quantity, price);
                 }
 
                 // sell (exceedAmount is under zero)
                 if (exceededAmount.compareTo(BigDecimal.ZERO) < 0) {
                     BigDecimal price = orderBook.getAskPrice();
-                    BigDecimal tickPrice = tradeClient.getTickPrice(tradeAsset, price);
+                    BigDecimal tickPrice = brokerClient.getTickPrice(tradeAsset, price);
                     if(tickPrice != null) {
                         price = price.subtract(tickPrice);
                     }
                     price = price.max(orderBook.getBidPrice()); // max competitive price
                     BigDecimal quantity = exceededAmount.abs().divide(price, MathContext.DECIMAL32);
-                    // if strategy result is zero, sell quantity is all
+                    // if strategy result is zero, sell quantity is all (결과가 0이 경우는 모두 매도)
                     if (strategyResult.compareTo(BigDecimal.ZERO) == 0) {
                         BalanceAsset balanceAsset = balance.getBalanceAsset(tradeAsset.getAssetId()).orElse(null);
                         if (balanceAsset != null) {
                             quantity = balanceAsset.getOrderableQuantity();
                         }
                     }
-                    sellTradeAsset(tradeClient, trade, tradeAsset, quantity, price);
+                    // 최소주문단위 이상일 경우만 매도
+                    if (quantity.compareTo(brokerClient.getMinimumOrderQuantity()) > 0) {
+                        sellTradeAsset(brokerClient, trade, tradeAsset, quantity, price);
+                    }
                 }
 
             } catch (Throwable e) {
@@ -318,13 +323,13 @@ public class TradeExecutor {
                 if (waitingOrder.getKind() == Order.Kind.LIMIT) {
                     waitingOrder.setPrice(price);
                     log.info("[{}] amend buy order:{}", tradeAsset.getAssetName(), waitingOrder);
-                    brokerClient.amendOrder(waitingOrder);
+                    brokerClient.amendOrder(tradeAsset, waitingOrder);
                 }
                 return;
             }
 
             // submit buy order
-            brokerClient.submitOrder(order);
+            brokerClient.submitOrder(tradeAsset, order);
             order.setResult(Order.Result.COMPLETED);
 
             // alarm
@@ -364,13 +369,13 @@ public class TradeExecutor {
                 if (waitingOrder.getKind() == Order.Kind.LIMIT) {
                     waitingOrder.setPrice(price);
                     log.info("[{}] amend sell order:{}", tradeAsset.getAssetName(), waitingOrder);
-                    brokerClient.amendOrder(waitingOrder);
+                    brokerClient.amendOrder(tradeAsset, waitingOrder);
                 }
                 return;
             }
 
             // submit sell order
-            brokerClient.submitOrder(order);
+            brokerClient.submitOrder(tradeAsset, order);
             order.setResult(Order.Result.COMPLETED);
 
             // alarm

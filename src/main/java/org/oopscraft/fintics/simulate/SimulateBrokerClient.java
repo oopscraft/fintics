@@ -171,16 +171,10 @@ public class SimulateBrokerClient extends BrokerClient {
     }
 
     @Override
-    public Order submitOrder(Order order) throws InterruptedException {
+    public Order submitOrder(Asset asset, Order order) throws InterruptedException {
         order.setOrderAt(dateTime);
-        String assetId = order.getAssetId();
-        String assetName = order.getAssetName();
 
         // order book
-        Asset asset = Asset.builder()
-                .assetId(assetId)
-                .assetName(assetName)
-                .build();
         OrderBook orderBook = getOrderBook(asset);
 
         // balance
@@ -259,7 +253,7 @@ public class SimulateBrokerClient extends BrokerClient {
     }
 
     @Override
-    public Order amendOrder(Order order) throws InterruptedException {
+    public Order amendOrder(Asset asset, Order order) throws InterruptedException {
         throw new UnsupportedOperationException("amend order is not supported.");
     }
 

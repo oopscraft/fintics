@@ -141,60 +141,72 @@ class KisBrokerClientTest extends CoreTestSupport {
     @Test
     void submitOrderBuyStock() throws InterruptedException {
         // given
-        Order order = Order.builder()
+        Asset asset = Asset.builder()
                 .assetId("KR.005930")   // Samsung Electronic
+                .build();
+        Order order = Order.builder()
+                .assetId(asset.getAssetId())
                 .type(Order.Type.BUY)
                 .kind(Order.Kind.MARKET)
                 .quantity(BigDecimal.valueOf(1))
                 .build();
 
         // when
-        getKisClient().submitOrder(order);
+        getKisClient().submitOrder(asset, order);
     }
 
     @Disabled
     @Test
     void submitOrderBuyEtf() throws InterruptedException {
         // given
-        Order order = Order.builder()
+        Asset asset = Asset.builder()
                 .assetId("KR.069500")   // Kodex 200 ETF
+                .build();
+        Order order = Order.builder()
+                .assetId(asset.getAssetId())
                 .type(Order.Type.BUY)
                 .kind(Order.Kind.MARKET)
                 .quantity(BigDecimal.valueOf(1))
                 .build();
 
         // when
-        getKisClient().submitOrder(order);
+        getKisClient().submitOrder(asset, order);
     }
 
     @Disabled
     @Test
     void submitOrderSellStock() throws InterruptedException {
         // given
-        Order order = Order.builder()
+        Asset asset = Asset.builder()
                 .assetId("KR.005930")   // Samsung Electronic
+                .build();
+        Order order = Order.builder()
+                .assetId(asset.getAssetId())
                 .type(Order.Type.SELL)
                 .kind(Order.Kind.MARKET)
                 .quantity(BigDecimal.valueOf(1))
                 .build();
 
         // when
-        getKisClient().submitOrder(order);
+        getKisClient().submitOrder(asset, order);
     }
 
     @Disabled
     @Test
     void submitOrderSellEtf() throws InterruptedException {
         // given
-        Order order = Order.builder()
+        Asset asset = Asset.builder()
                 .assetId("KR.069500")   // Kodex 200 ETF
+                .build();
+        Order order = Order.builder()
+                .assetId(asset.getAssetId())
                 .type(Order.Type.SELL)
                 .kind(Order.Kind.MARKET)
                 .quantity(BigDecimal.valueOf(1))
                 .build();
 
         // when
-        getKisClient().submitOrder(order);
+        getKisClient().submitOrder(asset, order);
     }
 
 }

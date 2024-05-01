@@ -72,7 +72,7 @@ class UsBrokerClientTest {
         }
 
         @Override
-        public Order submitOrder(Order order) throws InterruptedException {
+        public Order submitOrder(Asset asset, Order order) throws InterruptedException {
             return null;
         }
 
@@ -82,7 +82,7 @@ class UsBrokerClientTest {
         }
 
         @Override
-        public Order amendOrder(Order order) throws InterruptedException {
+        public Order amendOrder(Asset asset, Order order) throws InterruptedException {
             return null;
         }
     };

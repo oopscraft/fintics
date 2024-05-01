@@ -140,8 +140,11 @@ class KisUsBrokerClientTest extends CoreTestSupport {
     @Test
     void submitOrderBuy() throws InterruptedException {
         // given
-        Order order = Order.builder()
+        Asset asset = Asset.builder()
                 .assetId("US.TSLA")
+                .build();
+        Order order = Order.builder()
+                .assetId(asset.getAssetId())
                 .type(Order.Type.BUY)
                 .kind(Order.Kind.LIMIT)
                 .quantity(BigDecimal.valueOf(1))
@@ -149,15 +152,18 @@ class KisUsBrokerClientTest extends CoreTestSupport {
                 .build();
 
         // when
-        getKisUsClient().submitOrder(order);
+        getKisUsClient().submitOrder(asset, order);
     }
 
     @Disabled
     @Test
     void submitOrderSell() throws InterruptedException {
         // given
-        Order order = Order.builder()
+        Asset asset = Asset.builder()
                 .assetId("US.TSLA")
+                .build();
+        Order order = Order.builder()
+                .assetId(asset.getAssetId())
                 .type(Order.Type.SELL)
                 .kind(Order.Kind.LIMIT)
                 .quantity(BigDecimal.valueOf(1))
@@ -165,7 +171,7 @@ class KisUsBrokerClientTest extends CoreTestSupport {
                 .build();
 
         // when
-        getKisUsClient().submitOrder(order);
+        getKisUsClient().submitOrder(asset, order);
     }
 
 }

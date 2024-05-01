@@ -75,9 +75,9 @@ public class KisUsBrokerClient extends UsBrokerClient {
         return true;
     }
 
-    private String toExcd3(String exchange) {
+    private String toExcd3(Asset asset) {
         String excd = null;
-        switch(exchange) {
+        switch(asset.getExchange()) {
             case "XNAS" -> excd = "NAS";
             case "XNYS" -> excd = "NYS";
             case "XASE" -> excd = "AMS";
@@ -85,9 +85,9 @@ public class KisUsBrokerClient extends UsBrokerClient {
         return excd;
     }
 
-    private String toExcd4(String exchange) {
+    private String toExcd4(Asset asset) {
         String excd = null;
-        switch(exchange) {
+        switch(asset.getExchange()) {
             case "XNAS" -> excd = "NASD";
             case "XNYS" -> excd = "NYSE";
             case "XASE" -> excd = "AMEX";
@@ -104,7 +104,7 @@ public class KisUsBrokerClient extends UsBrokerClient {
         HttpHeaders headers = createHeaders();
         headers.add("tr_id", "HHDFS76950200");
         headers.add("custtype", "P");
-        String excd = toExcd3(asset.getExchange());
+        String excd = toExcd3(asset);
         String symb = asset.getSymbol();
         url = UriComponentsBuilder.fromUriString(url)
                 .queryParam("AUTH", "")
@@ -168,10 +168,12 @@ public class KisUsBrokerClient extends UsBrokerClient {
         String url = apiUrl + "/uapi/overseas-price/v1/quotations/dailyprice";
         HttpHeaders headers = createHeaders();
         headers.add("tr_id", "HHDFS76240000");
+        String excd = toExcd3(asset);
+        String symb = asset.getSymbol();
         url = UriComponentsBuilder.fromUriString(url)
                 .queryParam("AUTH", "")
-                .queryParam("EXCD", toExcd3(asset.getExchange()))
-                .queryParam("SYMB", asset.getSymbol())
+                .queryParam("EXCD", excd)
+                .queryParam("SYMB", symb)
                 .queryParam("GUBN", "0")
                 .queryParam("BYMD", "")
                 .queryParam("MODP", "1")
@@ -225,10 +227,12 @@ public class KisUsBrokerClient extends UsBrokerClient {
         String url = apiUrl + "/uapi/overseas-price/v1/quotations/price-detail";
         HttpHeaders headers = createHeaders();
         headers.add("tr_id", "HHDFS76200200");
+        String excd = toExcd3(asset);
+        String symb = asset.getSymbol();
         url = UriComponentsBuilder.fromUriString(url)
                 .queryParam("AUTH", "")
-                .queryParam("EXCD", toExcd3(asset.getExchange()))
-                .queryParam("SYMB", asset.getSymbol())
+                .queryParam("EXCD", excd)
+                .queryParam("SYMB", symb)
                 .build()
                 .toUriString();
         RequestEntity<Void> requestEntity = RequestEntity
@@ -267,10 +271,12 @@ public class KisUsBrokerClient extends UsBrokerClient {
         String url = apiUrl + "/uapi/overseas-price/v1/quotations/price-detail";
         HttpHeaders headers = createHeaders();
         headers.add("tr_id", "HHDFS76200200");
+        String excd = toExcd3(asset);
+        String symb = asset.getSymbol();
         url = UriComponentsBuilder.fromUriString(url)
                 .queryParam("AUTH", "")
-                .queryParam("EXCD", toExcd3(asset.getExchange()))
-                .queryParam("SYMB", asset.getSymbol())
+                .queryParam("EXCD", excd)
+                .queryParam("SYMB", symb)
                 .build()
                 .toUriString();
         RequestEntity<Void> requestEntity = RequestEntity
@@ -414,7 +420,7 @@ public class KisUsBrokerClient extends UsBrokerClient {
     }
 
     @Override
-    public Order submitOrder(Order order) throws InterruptedException {
+    public Order submitOrder(Asset asset, Order order) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
@@ -430,8 +436,11 @@ public class KisUsBrokerClient extends UsBrokerClient {
         }
         headers.add("tr_id", trId);
 
-        // quantity
-        int quantity = Math.max(order.getQuantity().intValue(),1);
+        // ovrsExcgCd
+        String ovrsExcgCd = toExcd4(asset);
+
+        // quantity with check
+        int quantity = order.getQuantity().intValue();
 
         // price
         double price = order.getPrice()
@@ -448,7 +457,7 @@ public class KisUsBrokerClient extends UsBrokerClient {
         Map<String, String> payloadMap = new LinkedHashMap<>();
         payloadMap.put("CANO", accountNo.split("-")[0]);
         payloadMap.put("ACNT_PRDT_CD", accountNo.split("-")[1]);
-        payloadMap.put("OVRS_EXCG_CD", "NASD");
+        payloadMap.put("OVRS_EXCG_CD", ovrsExcgCd);
         payloadMap.put("PDNO", order.getSymbol());
         payloadMap.put("ORD_QTY", String.valueOf(quantity));
         payloadMap.put("OVRS_ORD_UNPR", String.valueOf(price));
@@ -465,13 +474,13 @@ public class KisUsBrokerClient extends UsBrokerClient {
 
         // exchange
         sleep();
-        ResponseEntity<Map<String, String>> responseEntity = restTemplate.exchange(requestEntity, new ParameterizedTypeReference<>() {});
-        Map<String, String> responseMap = Optional.ofNullable(responseEntity.getBody())
+        ResponseEntity<Map<String, Object>> responseEntity = restTemplate.exchange(requestEntity, new ParameterizedTypeReference<>() {});
+        Map<String, Object> responseMap = Optional.ofNullable(responseEntity.getBody())
                 .orElseThrow();
 
         // response
-        String rtCd = responseMap.get("rt_cd");
-        String msg1 = responseMap.get("msg1");
+        String rtCd = responseMap.getOrDefault("rt_cd", "").toString();
+        String msg1 = responseMap.getOrDefault("msg1", "").toString();
         if(!"0".equals(rtCd)) {
             throw new RuntimeException(msg1);
         }
@@ -492,7 +501,7 @@ public class KisUsBrokerClient extends UsBrokerClient {
         url = UriComponentsBuilder.fromUriString(url)
                 .queryParam("CANO", accountNo.split("-")[0])
                 .queryParam("ACNT_PRDT_CD", accountNo.split("-")[1])
-                .queryParam("OVRS_EXCG_CD", "NASD")
+                .queryParam("OVRS_EXCG_CD", "NASD")     // NASD includes all us exchange
                 .queryParam("SORT_SQN", "DS")
                 .queryParam("CTX_AREA_FK200","")
                 .queryParam("CTX_AREA_NK200", "")
@@ -549,7 +558,7 @@ public class KisUsBrokerClient extends UsBrokerClient {
     }
 
     @Override
-    public Order amendOrder(Order order) throws InterruptedException {
+    public Order amendOrder(Asset asset, Order order) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
@@ -561,10 +570,15 @@ public class KisUsBrokerClient extends UsBrokerClient {
         // request
         HttpHeaders headers = createHeaders();
         headers.add("tr_id", trId);
+
+        // ovrsExcgCd
+        String ovrsExcgCd = toExcd4(asset);
+
+        // payload
         Map<String, String> payloadMap = new LinkedHashMap<>();
         payloadMap.put("CANO", accountNo.split("-")[0]);
         payloadMap.put("ACNT_PRDT_CD", accountNo.split("-")[1]);
-        payloadMap.put("OVRS_EXCG_CD", "NASD");
+        payloadMap.put("OVRS_EXCG_CD", ovrsExcgCd);
         payloadMap.put("PDNO", order.getSymbol());
         payloadMap.put("ORGN_ODNO", order.getBrokerOrderId());
         payloadMap.put("RVSE_CNCL_DVSN_CD", "01");
