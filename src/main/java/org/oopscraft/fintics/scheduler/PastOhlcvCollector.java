@@ -56,7 +56,7 @@ public class PastOhlcvCollector extends OhlcvCollector {
 
     private final OhlcvClient ohlcvClient;
 
-    @Scheduled(cron = "0 0 18 * * *")
+    @Scheduled(initialDelay = 10_000, fixedDelay = 600_000)
     public void collect() {
         try {
             log.info("PastOhlcvCollector - Start collect past asset ohlcv.");

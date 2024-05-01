@@ -588,10 +588,6 @@
                         data-duice-prev-content="<button>Prev</button>"
                         data-duice-next-content="<button>Next</button>">
                 </duice-pagination>
-                <button type="button" onclick="interpolateAssetOhlcvs();">
-                    <img class="icon" th:src="@{/static/image/icon-edit.svg}" alt="confirm"/>
-                    <span>Interpolate</span>
-                </button>
             </div>
         </form>
         <div class="overflow-y--scroll border-top--1" style="max-height:70vh;">
@@ -704,10 +700,6 @@
                         data-duice-prev-content="<button>Prev</button>"
                         data-duice-next-content="<button>Next</button>">
                 </duice-pagination>
-                <button type="button" onclick="interpolateIndiceOhlcvs();">
-                    <img class="icon" th:src="@{/static/image/icon-edit.svg}" alt="confirm"/>
-                    <span>Interpolate</span>
-                </button>
             </div>
         </form>
         <div class="overflow-y--scroll border-top--1" style="max-height:70vh;">
@@ -769,107 +761,5 @@
     <!-- ====================================== -->
     <!-- end: indiceOhlcv                       -->
     <!-- ====================================== -->
-
-    <!-- ====================================== -->
-    <!-- start: interpolateAssetOhlcvsDialog    -->
-    <!-- ====================================== -->
-    <dialog id="interpolateAssetOhlcvDialog">
-        <style th:inline="css">
-            #interpolateAssetOhlcvDialog {
-                width: 600px;
-                padding: 1.5em;
-            }
-        </style>
-        <script th:inline="javascript">
-            const interpolateAssetOhlcvsDialog = {
-                dialog: new duice.dialog.Dialog(document.getElementById('interpolateAssetOhlcvDialog')),
-                request: new duice.ObjectProxy({
-                    assetId: null,
-                    type: null,
-                    dateTimeFrom: null,
-                    dateTimeTo: null
-                }),
-                open: function() {
-                    return this.dialog.open();
-                },
-                confirm: function() {
-                    let url = new URL(`${_apiUrl}/v1/data/interpolate-asset-ohlcvs`, document.location.origin);
-                    _fetch(url, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(this.request)
-                    }).then(response =>{
-                        this.dialog.close();
-                    });
-                }
-            }
-        </script>
-        <div>
-            <h2>
-                <img class="icon" th:src="@{/static/image/icon-edit.svg}" alt="interpolate"/>
-                <span>Interpolate</span>
-            </h2>
-            <form onsubmit="return false;" class="display--grid grid-template-columns--12 grid-gap--1em">
-                <label class="grid-column--12">
-                    <span data-th-text="#{fintics.Asset}"></span>
-                    <select class="width--100" data-duice-bind="interpolateAssetOhlcvsDialog.request" data-duice-property="assetId">
-                        <option value="" data-th-text="'- ' + #{web.global.select} + ' -'"></option>
-                        <option th:each="asset : ${assets}" th:value="${asset.assetId}" th:text="${asset.assetName}"></option>
-                    </select>
-                </label>
-                <label class="grid-column--12">
-                    <span data-th-text="#{fintics.Ohlcv.type}"></span>
-                    <select class="width--100" data-duice-bind="interpolateAssetOhlcvsDialog.request" data-duice-property="type">
-                        <option value="" data-th-text="'- ' + #{web.global.select} + ' -'"></option>
-                        <option value="MINUTE">MINUTE</option>
-                        <option value="DAILY">DAILY</option>
-                    </select>
-                </label>
-                <label class="grid-column--12">
-                    <span class="width--100" data-th-text="#{web.global.start} + ' ' + #{fintics.Ohlcv.dateTime}"></span>
-                    <input class="width--100" type="datetime-local" data-duice-bind="interpolateAssetOhlcvsDialog.request" data-duice-property="dateTimeFrom"/>
-                </label>
-                <label class="grid-column--12">
-                    <span data-th-text="#{web.global.end} + ' ' + #{fintics.Ohlcv.dateTime}"></span>
-                    <input class="width--100" type="datetime-local" data-duice-bind="interpolateAssetOhlcvsDialog.request" data-duice-property="dateTimeTo"/>
-                </label>
-                <div class="grid-column--12 text-align--right">
-                    <button type="button" onclick="interpolateAssetOhlcvsDialog.confirm();">
-                        <img class="icon" th:src="@{/static/image/icon-confirm.svg}" alt="confirm"/>
-                        <span data-th-text="#{web.global.confirm}"></span>
-                    </button>
-                </div>
-            </form>
-        </div>
-    </dialog>
-    <!-- ====================================== -->
-    <!-- start: interpolateAssetOhlcvsDialog    -->
-    <!-- ====================================== -->
-
-    <!-- ====================================== -->
-    <!-- start: interpolateIndiceOhlcvsDialog   -->
-    <!-- ====================================== -->
-    <dialog id="interpolateIndiceOhlcvDialog">
-        <style th:inline="css">
-
-        </style>
-        <script th:inline="javascript">
-            const interpolateIndiceOhlcvsDialog = {
-                dialog: new duice.dialog.Dialog(document.getElementById('interpolateIndiceOhlcvDialog')),
-                open: function() {
-                    return this.dialog.open();
-                }
-            }
-        </script>
-        <div>
-
-        </div>
-    </dialog>
-    <!-- ====================================== -->
-    <!-- start: interpolateIndiceOhlcvsDialog   -->
-    <!-- ====================================== -->
-
 
 </th:block>

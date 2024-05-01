@@ -6,8 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.web.support.PageableUtils;
 import org.oopscraft.fintics.api.v1.dto.AssetResponse;
 import org.oopscraft.fintics.api.v1.dto.DataSummaryResponse;
-import org.oopscraft.fintics.api.v1.dto.InterpolateAssetOhlcvRequest;
-import org.oopscraft.fintics.api.v1.dto.InterpolateIndiceOhlcvRequest;
 import org.oopscraft.fintics.model.DataSummary;
 import org.oopscraft.fintics.model.Indice;
 import org.oopscraft.fintics.model.Ohlcv;
@@ -15,16 +13,17 @@ import org.oopscraft.fintics.service.DataService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api/v1/data")
@@ -104,25 +103,4 @@ public class DataRestController {
                 .body(indiceOhlcvResponses);
     }
 
-    @PostMapping("interpolate-asset-ohlcvs")
-    @PreAuthorize("hasAuthority('API_DATA_EDIT')")
-    public ResponseEntity<Void> interpolateAssetOhlcvs(@RequestBody InterpolateAssetOhlcvRequest interpolateAssetOhlcvRequest) {
-        String assetId = interpolateAssetOhlcvRequest.getAssetId();
-        Ohlcv.Type type = interpolateAssetOhlcvRequest.getType();
-        LocalDateTime dateTimeFrom = interpolateAssetOhlcvRequest.getDateTimeFrom().withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime();
-        LocalDateTime dateTimeTo = interpolateAssetOhlcvRequest.getDateTimeTo().withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime();
-        dataService.interpolateAssetOhlcvs(assetId, type, dateTimeFrom, dateTimeTo);
-        return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("interpolate-indice-ohlcvs")
-    @PreAuthorize("hasAuthority('API_DATA_EDIT')")
-    public ResponseEntity<Void> interpolateIndiceOhlcvs(@RequestBody InterpolateIndiceOhlcvRequest interpolateIndiceOhlcvRequest) {
-        Indice.Id indiceId = interpolateIndiceOhlcvRequest.getIndiceId();
-        Ohlcv.Type type = interpolateIndiceOhlcvRequest.getType();
-        LocalDateTime dateTimeFrom = interpolateIndiceOhlcvRequest.getDateTimeFrom().withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime();
-        LocalDateTime dateTimeTo = interpolateIndiceOhlcvRequest.getDateTimeTo().withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime();
-        dataService.interpolateIndiceOhlcvs(indiceId, type, dateTimeFrom, dateTimeTo);
-        return ResponseEntity.ok().build();
-    }
 }
