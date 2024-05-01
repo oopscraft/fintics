@@ -76,23 +76,19 @@ public class KisUsBrokerClient extends UsBrokerClient {
     }
 
     private String getExcd(Asset asset) {
-        String excd = null;
-        switch(asset.getExchange()) {
-            case "XNAS" -> excd = "NAS";
-            case "XNYS" -> excd = "NYS";
-            case "XASE" -> excd = "AMS";
-        }
-        return excd;
+        return switch (asset.getExchange()) {
+            case "XNAS" -> "NAS";
+            case "XNYS" -> "NYS";
+            case "XASE" -> "AMS";
+        };
     }
 
     private String getOvrsExcgCd(Asset asset) {
-        String excd = null;
-        switch(asset.getExchange()) {
-            case "XNAS" -> excd = "NASD";
-            case "XNYS" -> excd = "NYSE";
-            case "XASE" -> excd = "AMEX";
-        }
-        return excd;
+        return switch (asset.getExchange()) {
+            case "XNAS" -> "NASD";
+            case "XNYS" -> "NYSE";
+            case "XASE" -> "AMEX";
+        };
     }
 
     @Override
