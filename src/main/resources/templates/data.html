@@ -550,7 +550,7 @@
             <label class="grid-column--2 s__grid-column--12">
                 <select class="width--100" data-duice-bind="assetOhlcvSearch" data-duice-property="assetId">
                     <option value="" data-th-text="'- ' + #{fintics.Asset} + ' -'"></option>
-                    <option th:each="asset : ${assets}" th:value="${asset.assetId}" th:text="${asset.assetName}"></option>
+                    <option th:each="asset : ${assets}" th:value="${asset.assetId}" th:text="'[' + ${asset.assetId} + '] ' + ${asset.assetName}"></option>
                 </select>
             </label>
             <label class="grid-column--1 s__grid-column--12">
@@ -666,7 +666,7 @@
             <label class="grid-column--2 s__grid-column--12">
                 <select class="width--100" data-duice-bind="indiceOhlcvSearch" data-duice-property="indiceId">
                     <option value="" data-th-text="'- ' + #{fintics.Indice} + ' -'"></option>
-                    <option th:each="indice : ${indices}" th:value="${indice.indiceId}" th:text="${indice.indiceName}"></option>
+                    <option th:each="indice : ${indices}" th:value="${indice.indiceId}" th:text="'[' + ${indice.indiceId} + '] ' + ${indice.indiceName}"></option>
                 </select>
             </label>
             <label class="grid-column--1 s__grid-column--12">

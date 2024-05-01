@@ -40,7 +40,47 @@ class YahooOhlcvClientTest extends CoreTestSupport {
 
     @Disabled
     @Test
-    void getAssetOhlcvs() {
+    void getAssetOhlcvsInMarketKR() {
+        // given
+        Asset asset = Asset.builder()
+                .assetId("KR.005930")
+                .exchange("XKRX")
+                .build();
+        createAsset(asset);
+        LocalDateTime dateTimeTo = LocalDateTime.now().minusDays(1);
+        LocalDateTime dateTimeFrom = dateTimeTo.minusWeeks(11);
+
+        // when
+        List<Ohlcv> ohlcvs = getYahooOhlcvClient().getAssetOhlcvs(asset, Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo);
+
+        // then
+        log.debug("ohlcvs.size():{}", ohlcvs.size());
+        assertTrue(ohlcvs.size() > 0);
+    }
+
+    @Disabled
+    @Test
+    void getAssetOhlcvsInMarketUS() {
+        // given
+        Asset asset = Asset.builder()
+                .assetId("US.SPY")
+                .exchange("XASE")
+                .build();
+        createAsset(asset);
+        LocalDateTime dateTimeTo = LocalDateTime.now().minusDays(1);
+        LocalDateTime dateTimeFrom = dateTimeTo.minusWeeks(11);
+
+        // when
+        List<Ohlcv> ohlcvs = getYahooOhlcvClient().getAssetOhlcvs(asset, Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo);
+
+        // then
+        log.debug("ohlcvs.size():{}", ohlcvs.size());
+        assertTrue(ohlcvs.size() > 0);
+    }
+
+    @Disabled
+    @Test
+    void getAssetOhlcvsInExchangeXKRX() {
         // given
         Asset asset = Asset.builder()
                 .assetId("KR.005930")

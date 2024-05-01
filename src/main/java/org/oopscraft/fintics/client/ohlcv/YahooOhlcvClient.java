@@ -66,6 +66,7 @@ public class YahooOhlcvClient extends OhlcvClient {
         switch(exchange) {
             case "XKRX" -> yahooSymbol = String.format("%s.KS", asset.getSymbol());
             case "XKOS" -> yahooSymbol = String.format("%s.KQ", asset.getSymbol());
+            default -> yahooSymbol = asset.getSymbol();
         }
         return yahooSymbol;
     }
