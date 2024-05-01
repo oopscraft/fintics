@@ -24,6 +24,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
 public class SimulateRunnable implements Runnable {
@@ -123,7 +124,7 @@ public class SimulateRunnable implements Runnable {
                     throw new InterruptedException("SimulateRunnable is interrupted.");
                 }
                 // check start and end time
-                if (dateTime.toLocalTime().isBefore(trade.getStartAt()) || dateTime.toLocalTime().isAfter(trade.getEndAt())) {
+                if (!isOperatingTime(trade, dateTime)) {
                     continue;
                 }
 
@@ -188,6 +189,20 @@ public class SimulateRunnable implements Runnable {
             // save history
             simulate.setEndedAt(LocalDateTime.now());
             saveSimulate();
+        }
+    }
+
+    private boolean isOperatingTime(Trade trade, LocalDateTime dateTime) {
+        if(trade.getStartAt() == null || trade.getEndAt() == null) {
+            return false;
+        }
+        LocalTime startTime = trade.getStartAt();
+        LocalTime endTime = trade.getEndAt();
+        LocalTime currentTime = dateTime.toLocalTime();
+        if (startTime.isAfter(endTime)) {
+            return !currentTime.isBefore(startTime) || !currentTime.isAfter(endTime);
+        } else {
+            return currentTime.isAfter(startTime) && currentTime.isBefore(endTime);
         }
     }
 
