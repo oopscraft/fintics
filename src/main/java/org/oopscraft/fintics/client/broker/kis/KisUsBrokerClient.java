@@ -80,6 +80,7 @@ public class KisUsBrokerClient extends UsBrokerClient {
             case "XNAS" -> "NAS";
             case "XNYS" -> "NYS";
             case "XASE" -> "AMS";
+            default -> null;
         };
     }
 
@@ -88,6 +89,7 @@ public class KisUsBrokerClient extends UsBrokerClient {
             case "XNAS" -> "NASD";
             case "XNYS" -> "NYSE";
             case "XASE" -> "AMEX";
+            default -> null;
         };
     }
 
