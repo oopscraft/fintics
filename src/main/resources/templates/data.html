@@ -145,60 +145,6 @@
             getIndiceOhlcvs();
         }
 
-        function interpolateAssetOhlcvs() {
-            let assetId = assetOhlcvSearch.assetId;
-            let type = assetOhlcvSearch.type;
-            let dateTimeTo;
-            if (assetOhlcvs.length > 0) {
-                dateTimeTo = new Date(assetOhlcvs[0].dateTime);
-            } else {
-                dateTimeTo = new Date();
-            }
-            let dateTimeFrom = dateFns.subDays(dateTimeTo, 1);
-            let url = new URL(`${_apiUrl}/v1/data/interpolate-asset-ohlcvs`, document.location.origin);
-            _fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    assetId: assetId,
-                    type: type,
-                    dateTimeFrom: dateTimeFrom.toISOString(),
-                    dateTimeTo: dateTimeTo.toISOString()
-                })
-            }).then(response =>{
-                getAssetOhlcvs();
-            });
-        }
-
-        function interpolateIndiceOhlcvs() {
-            let indiceId = indiceOhlcvSearch.indiceId;
-            let type = indiceOhlcvSearch.type;
-            let dateTimeTo;
-            if (indiceOhlcvs.length > 0) {
-                dateTimeTo = new Date(indiceOhlcvs[0].dateTime);
-            } else {
-                dateTimeTo = new Date();
-            }
-            let dateTimeFrom = dateFns.subDays(dateTimeTo, 1);
-            let url = new URL(`${_apiUrl}/v1/data/interpolate-indice-ohlcvs`, document.location.origin);
-            _fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    indiceId: indiceId,
-                    type: type,
-                    dateTimeFrom: dateTimeFrom.toISOString(),
-                    dateTimeTo: dateTimeTo.toISOString()
-                })
-            }).then(response =>{
-                getIndiceOhlcvs();
-            });
-        }
-
         document.addEventListener('DOMContentLoaded', () => {
             let tabFolder = duice.tabFolder(
                 duice.tabItem(
@@ -639,12 +585,6 @@
                 </tbody>
             </table>
         </div>
-        <div class="text-align--right padding-x--1em">
-            <button onclick="interpolateAssetOhlcvs();">
-                <img class="icon" th:src="@{/static/image/icon-edit.svg}" alt="interpolate"/>
-                <span>Interpolate</span>
-            </button>
-        </div>
     </div>
     <!-- ====================================== -->
     <!-- end: assetOhlcv                        -->
@@ -750,12 +690,6 @@
                 </tr>
                 </tbody>
             </table>
-        </div>
-        <div class="text-align--right padding-x--1em">
-            <button onclick="interpolateIndiceOhlcvs();">
-                <img class="icon" th:src="@{/static/image/icon-edit.svg}" alt="interpolate"/>
-                <span>Interpolate</span>
-            </button>
         </div>
     </div>
     <!-- ====================================== -->
