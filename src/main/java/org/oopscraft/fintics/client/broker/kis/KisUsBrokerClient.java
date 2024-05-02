@@ -591,13 +591,13 @@ public class KisUsBrokerClient extends UsBrokerClient {
 
         // exchange
         sleep();
-        ResponseEntity<Map<String, String>> responseEntity = restTemplate.exchange(requestEntity, new ParameterizedTypeReference<>(){});
-        Map<String, String> responseMap = Optional.ofNullable(responseEntity.getBody())
+        ResponseEntity<Map<String, Object>> responseEntity = restTemplate.exchange(requestEntity, new ParameterizedTypeReference<>(){});
+        Map<String, Object> responseMap = Optional.ofNullable(responseEntity.getBody())
                 .orElseThrow();
 
         // response
-        String rtCd = responseMap.get("rt_cd");
-        String msg1 = responseMap.get("msg1");
+        String rtCd = responseMap.getOrDefault("rt_cd", "").toString();
+        String msg1 = responseMap.getOrDefault("msg1", "").toString();
         if(!"0".equals(rtCd)) {
             throw new RuntimeException(msg1);
         }
