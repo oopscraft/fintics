@@ -109,7 +109,7 @@ public class TradeExecutor {
                 }
 
                 // logging
-                log.info("[{}] Check asset", tradeAsset.getAssetName());
+                log.info("[{}] {} - Check asset", tradeAsset.getAssetId(), tradeAsset.getAssetName());
 
                 // minute ohlcvs
                 List<Ohlcv> minuteOhlcvs = brokerClient.getMinuteOhlcvs(tradeAsset, dateTime);
@@ -129,8 +129,8 @@ public class TradeExecutor {
                         .build();
 
                 // logging
-                log.info("[{}] MinuteOhlcvs({}):{}", tradeAsset.getAssetName(), assetProfile.getMinuteOhlcvs().size(), assetProfile.getMinuteOhlcvs().isEmpty() ? null : assetProfile.getMinuteOhlcvs().get(0));
-                log.info("[{}] DailyOhlcvs({}):{}", tradeAsset.getAssetName(), assetProfile.getDailyOhlcvs().size(), assetProfile.getDailyOhlcvs().isEmpty() ? null : assetProfile.getDailyOhlcvs().get(0));
+                log.info("[{}] {} - MinuteOhlcvs({}):{}", tradeAsset.getAssetId(), tradeAsset.getAssetName(), assetProfile.getMinuteOhlcvs().size(), assetProfile.getMinuteOhlcvs().isEmpty() ? null : assetProfile.getMinuteOhlcvs().get(0));
+                log.info("[{}] {} - DailyOhlcvs({}):{}", tradeAsset.getAssetId(), tradeAsset.getAssetName(), assetProfile.getDailyOhlcvs().size(), assetProfile.getDailyOhlcvs().isEmpty() ? null : assetProfile.getDailyOhlcvs().get(0));
 
                 // order book
                 OrderBook orderBook = brokerClient.getOrderBook(tradeAsset);
@@ -148,8 +148,8 @@ public class TradeExecutor {
                 strategyExecutor.setLog(log);
                 Instant startTime = Instant.now();
                 BigDecimal strategyResult = strategyExecutor.execute();
-                log.info("[{}] strategy execution elapsed:{}", tradeAsset.getAssetName(), Duration.between(startTime, Instant.now()));
-                log.info("[{}] strategy result: {}", tradeAsset.getAssetName(), strategyResult);
+                log.info("[{}] {} - strategy execution elapsed:{}", tradeAsset.getAssetId(), tradeAsset.getAssetName(), Duration.between(startTime, Instant.now()));
+                log.info("[{}] {} - strategy result: {}", tradeAsset.getAssetId(), tradeAsset.getAssetName(), strategyResult);
 
                 // check strategy result and count
                 BigDecimal previousStrategyResult = strategyResultMap.get(tradeAsset.getAssetId());
@@ -163,9 +163,9 @@ public class TradeExecutor {
                 strategyResultCountMap.put(tradeAsset.getAssetId(), strategyResultCount);
 
                 // checks threshold exceeded
-                log.info("[{}] strategyResultCount: {}", tradeAsset.getAssetName(), strategyResultCount);
+                log.info("[{}] {} - strategyResultCount: {}", tradeAsset.getAssetId(), tradeAsset.getAssetName(), strategyResultCount);
                 if (strategyResultCount < trade.getThreshold()) {
-                    log.info("[{}] Threshold has not been exceeded yet - threshold is {}", tradeAsset.getAssetName(), trade.getThreshold());
+                    log.info("[{}] {} - Threshold has not been exceeded yet - threshold is {}", tradeAsset.getAssetId(), tradeAsset.getAssetName(), trade.getThreshold());
                     continue;
                 }
 
