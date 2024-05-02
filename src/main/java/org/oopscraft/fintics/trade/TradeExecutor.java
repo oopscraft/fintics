@@ -223,11 +223,13 @@ public class TradeExecutor {
                         BalanceAsset balanceAsset = balance.getBalanceAsset(tradeAsset.getAssetId()).orElse(null);
                         if (balanceAsset != null) {
                             quantity = balanceAsset.getOrderableQuantity();
+                            sellTradeAsset(brokerClient, trade, tradeAsset, quantity, price);
                         }
-                    }
-                    // 최소주문단위 이상일 경우만 매도
-                    if (quantity.compareTo(brokerClient.getMinimumOrderQuantity()) > 0) {
-                        sellTradeAsset(brokerClient, trade, tradeAsset, quantity, price);
+                    } else {
+                        // 최소주문단위 이상일 경우만 매도
+                        if (quantity.compareTo(brokerClient.getMinimumOrderQuantity()) > 0) {
+                            sellTradeAsset(brokerClient, trade, tradeAsset, quantity, price);
+                        }
                     }
                 }
 
