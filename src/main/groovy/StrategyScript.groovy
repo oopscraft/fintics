@@ -19,7 +19,6 @@ class Score extends LinkedHashMap<String, BigDecimal> implements Scorable {
 }
 
 interface Analyzable {
-    Scorable getDirectionScore()
     Scorable getMomentumScore()
     Scorable getVolatilityScore()
     Scorable getUnderestimateScore()
@@ -74,29 +73,27 @@ class Analysis implements Analyzable {
     }
 
     @Override
-    Scorable getDirectionScore() {
+    Scorable getMomentumScore() {
         def score = new Score()
         // macd
         score.macdValueOverSignal = macd.value > macd.signal ? 100 : 0
         score.macdOscillator = macd.oscillator > 0 ? 100 : 0
-        // return
-        return score
-    }
-
-    @Override
-    Scorable getMomentumScore() {
-        def score = new Score()
-        // macd
         score.macdValue = macd.value > 0 ? 100 : 0
         // rsi
+        score.rsiValueOverSignal = rsi.value > rsi.signal ? 100 : 0
         score.rsiValue = rsi.value > 50 ? 100 : 0
         // cci
+        score.cciValueOverSignal = cci.value > cci.signal ? 100 : 0
         score.cciValue = cci.value > 0 ? 100 : 0
         // dmi
+        score.dmiPdiPctChange = Tool.pctChange(dmis.take(10).collect{it.pdi}) > 0 ? 100 : 0
+        score.dmiMdiPctChange = Tool.pctChange(dmis.take(10).collect{it.mdi}) < 0 ? 100 : 0
         score.dmiPdiOverMdi = dmi.pdi > dmi.mdi ? 100 : 0
         // obv
         score.obvValueOverSignal = obv.value > obv.signal ? 100 : 0
+        score.obvPctChange = Tool.pctChange(obvs.take(10).collect{it.value}) > 0 ? 100 : 0
         // chaikin oscillator
+        score.chaikinOscillatorValueOverSignal = chaikinOscillator.value > chaikinOscillator.signal ? 100 : 0
         score.chaikinOscillatorValue = chaikinOscillator.value > 0 ? 100 : 0
         // return
         return score
@@ -154,7 +151,6 @@ class Analysis implements Analyzable {
     @Override
     String toString() {
         return [
-                directionScore: "${this.getDirectionScore()}",
                 momentumScore: "${this.getMomentumScore()}",
                 volatilityScore: "${this.getVolatilityScore()}",
                 underestimateScore: "${this.getUnderestimateScore()}",
@@ -196,7 +192,7 @@ log.info("tideAnalysis: {}", tideAnalysis)
 // trade
 //================================
 // buy
-if (analysis.getDirectionScore().getAverage() > 75 && analysis.getMomentumScore().getAverage() > 75) {
+if (analysis.getMomentumScore().getAverage() > 75) {
     // default
     hold = 1.0
     // filter - volatility
@@ -209,7 +205,7 @@ if (analysis.getDirectionScore().getAverage() > 75 && analysis.getMomentumScore(
     }
 }
 // sell
-if (analysis.getDirectionScore().getAverage() < 25 && analysis.getMomentumScore().getAverage() < 25) {
+if (analysis.getMomentumScore().getAverage() < 25) {
     // default
     hold = 0.9
     // filter - volatility
@@ -226,7 +222,7 @@ if (analysis.getDirectionScore().getAverage() < 25 && analysis.getMomentumScore(
 // fallback
 //================================
 // tide direction and momentum
-if (tideAnalysis.getDirectionScore().getAverage() < 50 && tideAnalysis.getMomentumScore().getAverage() < 50) {
+if (tideAnalysis.getMomentumScore().getAverage() < 50) {
     hold = 0
 }
 

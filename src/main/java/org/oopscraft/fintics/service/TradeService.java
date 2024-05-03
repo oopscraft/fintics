@@ -16,6 +16,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Service
@@ -75,11 +76,13 @@ public class TradeService {
 
         // trade asset
         tradeEntity.getTradeAssets().clear();
+        AtomicInteger sort = new AtomicInteger(0);
         List<TradeAssetEntity> tradeAssetEntities = trade.getTradeAssets().stream()
                 .map(tradeAsset ->
                         TradeAssetEntity.builder()
                                 .tradeId(tradeEntity.getTradeId())
                                 .assetId(tradeAsset.getAssetId())
+                                .sort(sort.getAndIncrement())
                                 .enabled(tradeAsset.isEnabled())
                                 .holdRatio(tradeAsset.getHoldRatio())
                                 .build())

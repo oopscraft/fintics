@@ -2,6 +2,7 @@ package org.oopscraft.fintics.dao;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.oopscraft.arch4j.core.code.dao.CodeItemEntity_;
 import org.oopscraft.arch4j.core.data.BaseEntity;
 import org.oopscraft.arch4j.core.data.converter.BooleanToYNConverter;
 import org.oopscraft.fintics.model.Order;
@@ -69,6 +70,7 @@ public class TradeEntity extends BaseEntity {
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "trade_id", updatable = false)
+    @OrderBy(TradeAssetEntity_.SORT)
     @Builder.Default
     @Setter(AccessLevel.NONE)
     private List<TradeAssetEntity> tradeAssets = new ArrayList<>();

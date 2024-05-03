@@ -18,6 +18,8 @@ public class TradeAsset extends Asset {
 
     private String assetId;
 
+    private Integer sort;
+
     private boolean enabled;
 
     private BigDecimal holdRatio;
@@ -26,6 +28,7 @@ public class TradeAsset extends Asset {
         TradeAsset tradeAsset = TradeAsset.builder()
                 .tradeId(tradeAssetEntity.getTradeId())
                 .assetId(tradeAssetEntity.getAssetId())
+                .sort(tradeAssetEntity.getSort())
                 .enabled(tradeAssetEntity.isEnabled())
                 .holdRatio(tradeAssetEntity.getHoldRatio())
                 .build();

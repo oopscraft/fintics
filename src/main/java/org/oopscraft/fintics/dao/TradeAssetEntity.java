@@ -34,6 +34,9 @@ public class TradeAssetEntity extends BaseEntity {
     @Column(name = "asset_id", length = 32)
     private String assetId;
 
+    @Column(name = "sort")
+    private Integer sort;
+
     @Column(name = "enabled", length = 1)
     @Convert(converter = BooleanToYNConverter.class)
     private boolean enabled;
