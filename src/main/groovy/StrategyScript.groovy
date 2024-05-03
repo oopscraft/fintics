@@ -157,6 +157,8 @@ class Analysis implements Analyzable {
                 directionScore: "${this.getDirectionScore()}",
                 momentumScore: "${this.getMomentumScore()}",
                 volatilityScore: "${this.getVolatilityScore()}",
+                underestimateScore: "${this.getUnderestimateScore()}",
+                overestimateScore: "${this.getOverestimateScore()}",
                 overboughtScore: "${this.getOverboughtScore()}",
                 oversoldScore: "${this.getOversoldScore()}"
         ].toString()
