@@ -382,17 +382,17 @@ public class KisUsBrokerClient extends UsBrokerClient {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
-        String url = apiUrl + "/uapi/overseas-stock/v1/trading/inquire-present-balance";
+        // 잔고조회에서 매도재사용가능금액를 알수 없음으로 해외주식 매수가능금액조회[v1_해외주식-014]로 조회 (Apple 로 조회)
+        String url = apiUrl + "/uapi/overseas-stock/v1/trading/inquire-psamount";
         HttpHeaders headers = createHeaders();
-        String trId = production ? "CTRP6504R" : "VTRP6504R";
+        String trId = "TTTS3007R";
         headers.add("tr_id", trId);
         url = UriComponentsBuilder.fromUriString(url)
                 .queryParam("CANO", accountNo.split("-")[0])
                 .queryParam("ACNT_PRDT_CD", accountNo.split("-")[1])
-                .queryParam("WCRC_FRCR_DVSN_CD", "02")
-                .queryParam("NATN_CD", "840")
-                .queryParam("TR_MKET_CD", "00")
-                .queryParam("INQR_DVSN_CD", "00")
+                .queryParam("OVRS_EXCG_CD", "NASD")
+                .queryParam("OVRS_ORD_UNPR", "")
+                .queryParam("ITEM_CD", "AAPL")
                 .build()
                 .toUriString();
         RequestEntity<Void> requestEntity = RequestEntity
@@ -412,9 +412,9 @@ public class KisUsBrokerClient extends UsBrokerClient {
         if(!"0".equals(rtCd)) {
             throw new RuntimeException(msg1);
         }
-        JsonNode output2Node = rootNode.path("output2");
-        List<Map<String, String>> output2 = objectMapper.convertValue(output2Node, new TypeReference<>(){});
-        return new BigDecimal(output2.get(0).get("frcr_dncl_amt_2"));
+        JsonNode outputNode = rootNode.path("output");
+        Map<String, String> output = objectMapper.convertValue(outputNode, new TypeReference<>(){});
+        return new BigDecimal(output.get("sll_ruse_psbl_amt"));
     }
 
     @Override

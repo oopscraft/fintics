@@ -71,6 +71,7 @@ public class UpbitBrokerClient extends BrokerClient {
                             .assetName(map.get("english_name"))
                             .market(getDefinition().getMarket())
                             .exchange(getDefinition().getMarket())
+                            .type("CRYPTOCURRENCY")
                             .build();
                 })
                 .collect(Collectors.toList());
