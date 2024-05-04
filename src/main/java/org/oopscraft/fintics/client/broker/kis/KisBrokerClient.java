@@ -337,6 +337,11 @@ public class KisBrokerClient extends KrBrokerClient {
     }
 
     @Override
+    public BigDecimal getMinimumOrderQuantity() throws InterruptedException {
+        return BigDecimal.ONE;
+    }
+
+    @Override
     public Balance getBalance() throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)

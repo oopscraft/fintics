@@ -7,94 +7,57 @@
 
     <cache eviction="FIFO" flushInterval="60000" size="512"/>
 
-    <select id="selectAssetOhlcvStatistics" resultType="org.oopscraft.fintics.model.DataSummary$AssetOhlcvStatistics">
+    <select id="selectAssetOhlcvSummaries" resultType="org.oopscraft.fintics.model.AssetOhlcvSummary">
         <![CDATA[
-        SELECT      fao.asset_id as "assetId",
-                    (SELECT asset_name FROM fintics_asset WHERE asset_id = fao.asset_id) as "assetName",
-                    fao.type as "type",
-                    fao.min_date_time as "minDateTime",
-                    fao.max_date_time as "maxDateTime",
-                    fao.total_count as "totalCount",
-                    faoi.interpolated_min_date_time as "interpolatedMinDateTime",
-                    faoi.interpolated_max_date_time as "interpolatedMaxDateTime",
-                    faoi.interpolated_count as "interpolatedCount",
-                    fta.used_by_trade as "usedByTrade"
-        FROM        (
-                    -- all
-                    SELECT 	asset_id,
-                            type,
-                            MIN(date_time) as min_date_time,
-                            MAX(date_time) as max_date_time,
-                            COUNT(*) as total_count
-                    FROM 	fintics_asset_ohlcv
-                    WHERE 	type = #{type}
-                    GROUP BY
-                            asset_id,
-                            type
-                    ) as fao
-        LEFT OUTER JOIN (
-                    -- interpolated
-                    SELECT 	asset_id,
-                            type,
-                            MIN(date_time) as interpolated_min_date_time,
-                            MAX(date_time) as interpolated_max_date_time,
-                            COUNT(*) as interpolated_count
-                    FROM 	fintics_asset_ohlcv fao
-                    WHERE 	type = #{type}
-                    AND 	interpolated = 'Y'
-                    GROUP BY
-                            asset_id,
-                            type
-                    ) as faoi
-        ON  faoi.asset_id = fao.asset_id and faoi.type = fao.type
-        LEFT OUTER JOIN (
-        			SELECT  DISTINCT
-        					asset_id,
-        					true as used_by_trade
-        			FROM 	fintics_trade_asset fta
-        			) as fta
-        ON fta.asset_id = fao.asset_id
+        SELECT      fta.asset_id AS "assetId",
+                    fa.asset_name AS "assetName",
+                    (SELECT COUNT(*) FROM fintics_trade_asset WHERE asset_id = fta.asset_id) AS "tradeCount",
+                    fao.daily_count AS "dailyCount",
+                    fao.daily_interpolated_count AS "dailyInterpolatedCount",
+                    fao.daily_interpolated_max_date_time AS "dailyInterpolatedMaxDateTime",
+                    fao.minute_count AS "minuteCount",
+                    fao.minute_interpolated_count AS "minuteInterpolatedCount",
+                    fao.minute_interpolated_max_date_time AS "minuteInterpolatedMaxDateTime"
+        FROM 		(
+                    SELECT 		DISTINCT
+                                asset_id
+                    FROM 		fintics_asset_ohlcv fao
+                    UNION
+                    SELECT		DISTINCT
+                                asset_id
+                    FROM 		fintics_trade_asset fta
+                    ) fta
+        LEFT OUTER JOIN
+                    fintics_asset fa
+        ON 			    fa.asset_id = fta.asset_id
+        LEFT OUTER JOIN
+                    (
+                    SELECT 	    asset_id,
+                                SUM(CASE WHEN type = 'DAILY' THEN 1 ELSE 0 END) AS daily_count,
+                                SUM(CASE WHEN type = 'DAILY' AND interpolated = 'Y' THEN 1 ELSE 0 END) AS daily_interpolated_count,
+                                MAX(CASE WHEN type = 'DAILY' AND interpolated = 'Y' THEN date_time ELSE NULL END) AS daily_interpolated_max_date_time,
+                                SUM(CASE WHEN type = 'MINUTE' THEN 1 ELSE 0 END) AS minute_count,
+                                SUM(CASE WHEN type = 'MINUTE' AND interpolated = 'Y' THEN 1 ELSE 0 END) AS minute_interpolated_count,
+                                MAX(CASE WHEN type = 'MINUTE' AND interpolated = 'Y' THEN date_time ELSE NULL END) AS minute_interpolated_max_date_time
+                    FROM 		fintics_asset_ohlcv
+                    GROUP BY 	asset_id
+                    ) fao
+        ON 			fao.asset_id = fta.asset_id
+        ORDER BY 	fta.asset_id
         ]]>
     </select>
 
-    <select id="selectIndiceOhlcvStatistics" resultType="org.oopscraft.fintics.model.DataSummary$IndiceOhlcvStatistics">
+    <select id="selectIndiceOhlcvSummaries" resultType="org.oopscraft.fintics.model.IndiceOhlcvSummary">
         <![CDATA[
-        SELECT      fio.indice_id as "indiceId",
-                    fio.type as "type",
-                    fio.min_date_time as "minDateTime",
-                    fio.max_date_time as "maxDateTime",
-                    fio.total_count as "totalCount",
-                    fioi.interpolated_min_date_time as "interpolatedMinDateTime",
-                    fioi.interpolated_max_date_time as "interpolatedMaxDateTime",
-                    fioi.interpolated_count as "interpolatedCount"
-        FROM        (
-                    -- all
-                    SELECT 	indice_id,
-                            type,
-                            MIN(date_time) as min_date_time,
-                            MAX(date_time) as max_date_time,
-                            COUNT(*) as total_count
-                    FROM 	fintics_indice_ohlcv
-                    WHERE 	type = #{type}
-                    GROUP BY
-                            indice_id,
-                            type
-                    ) as fio
-        LEFT OUTER JOIN (
-                    -- interpolated
-                    SELECT 	indice_id,
-                            type,
-                            MIN(date_time) as interpolated_min_date_time,
-                            MAX(date_time) as interpolated_max_date_time,
-                            COUNT(*) as interpolated_count
-                    FROM 	fintics_indice_ohlcv fao
-                    WHERE 	type = #{type}
-                      AND 	interpolated = 'Y'
-                    GROUP BY
-                            indice_id,
-                            type
-                    ) as fioi
-        ON  fioi.indice_id = fio.indice_id and fioi.type = fio.type
+        SELECT 	    indice_id AS "indiceId",
+                    SUM(CASE WHEN type = 'DAILY' THEN 1 ELSE 0 END) AS "dailyCount",
+                    SUM(CASE WHEN type = 'DAILY' AND interpolated = 'Y' THEN 1 ELSE 0 END) AS "dailyInterpolatedCount",
+                    MAX(CASE WHEN type = 'DAILY' AND interpolated = 'Y' THEN date_time ELSE NULL END) AS "dailyInterpolatedMaxDateTime",
+                    SUM(CASE WHEN type = 'MINUTE' THEN 1 ELSE 0 END) AS "minuteCount",
+                    SUM(CASE WHEN type = 'MINUTE' AND interpolated = 'Y' THEN 1 ELSE 0 END) AS "minuteInterpolatedCount",
+                    MAX(CASE WHEN type = 'MINUTE' AND interpolated = 'Y' THEN date_time ELSE NULL END) AS "minuteInterpolatedMaxDateTime"
+        FROM 		fintics_indice_ohlcv
+        GROUP BY 	indice_id
         ]]>
     </select>
 

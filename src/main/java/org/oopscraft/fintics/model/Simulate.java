@@ -47,11 +47,11 @@ public class Simulate {
 
     private final LocalDateTime dateTimeTo;
 
-    @Builder.Default
-    private BigDecimal investAmount = BigDecimal.ZERO;
+    private BigDecimal investAmount;
 
-    @Builder.Default
-    private BigDecimal feeRate = BigDecimal.ZERO;
+    private BigDecimal minimumOrderQuantity;
+
+    private BigDecimal feeRate;
 
     @Setter
     private boolean favorite;
@@ -135,6 +135,7 @@ public class Simulate {
                 .dateTimeFrom(simulateEntity.getDateTimeFrom())
                 .dateTimeTo(simulateEntity.getDateTimeTo())
                 .investAmount(simulateEntity.getInvestAmount())
+                .minimumOrderQuantity(simulateEntity.getMinimumOrderQuantity())
                 .feeRate(simulateEntity.getFeeRate())
                 .dateTime(simulateEntity.getDateTime())
                 .favorite(simulateEntity.isFavorite())

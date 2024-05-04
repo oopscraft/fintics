@@ -60,6 +60,9 @@ public class SimulateEntity extends BaseEntity {
     @Column(name = "invest_amount")
     private BigDecimal investAmount;
 
+    @Column(name = "minimum_order_quantity")
+    private BigDecimal minimumOrderQuantity;
+
     @Column(name = "fee_rate", scale = 4)
     private BigDecimal feeRate;
 

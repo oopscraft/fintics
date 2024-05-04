@@ -21,14 +21,15 @@ public class SimulateBrokerClient extends BrokerClient {
 
     private final AssetOhlcvRepository assetOhlcvRepository;
 
+    private final BigDecimal minimumOrderQuantity;
+
+    private final BigDecimal feeRate;
+
     @Setter
     @Getter
     private LocalDateTime dateTime = LocalDateTime.now();
 
-    @Setter
-    private BigDecimal feeRate = BigDecimal.ZERO;
-
-    private final Map<String, List<Ohlcv>> minuteOhlcvsMap = new HashMap<>();
+   private final Map<String, List<Ohlcv>> minuteOhlcvsMap = new HashMap<>();
 
     private final Map<String, List<Ohlcv>> dailyOhlcvsMap = new HashMap<>();
 
@@ -40,9 +41,11 @@ public class SimulateBrokerClient extends BrokerClient {
     private final List<Order> orders = new ArrayList<>();
 
     @Builder
-    protected SimulateBrokerClient(AssetOhlcvRepository assetOhlcvRepository) {
+    protected SimulateBrokerClient(AssetOhlcvRepository assetOhlcvRepository, BigDecimal minimumOrderQuantity, BigDecimal feeRate) {
         super(null, new Properties());
         this.assetOhlcvRepository = assetOhlcvRepository;
+        this.minimumOrderQuantity = minimumOrderQuantity;
+        this.feeRate = feeRate;
     }
 
     public synchronized void deposit(BigDecimal amount) {
@@ -84,8 +87,7 @@ public class SimulateBrokerClient extends BrokerClient {
 
     @Override
     public boolean isOpened(LocalDateTime dateTime) throws InterruptedException {
-        DayOfWeek dayOfWeek = dateTime.getDayOfWeek();
-        return dayOfWeek != DayOfWeek.SATURDAY && dayOfWeek != DayOfWeek.SUNDAY;
+        return true;
     }
 
     @Override
@@ -117,7 +119,12 @@ public class SimulateBrokerClient extends BrokerClient {
 
     @Override
     public BigDecimal getTickPrice(Asset asset, BigDecimal price) throws InterruptedException {
-        return null;
+        throw new UnsupportedOperationException("not implemented");
+    }
+
+    @Override
+    public BigDecimal getMinimumOrderQuantity() throws InterruptedException {
+        return this.minimumOrderQuantity;
     }
 
     @Override

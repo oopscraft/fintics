@@ -110,7 +110,6 @@ public class SimulateRunnable implements Runnable {
             BigDecimal investAmount = simulate.getInvestAmount();
             BigDecimal feeRate = simulate.getFeeRate();
             simulateTradeClient.deposit(investAmount);
-            simulateTradeClient.setFeeRate(feeRate);
 
             // trade executor
             TradeExecutor tradeExecutor = tradeExecutorFactory.getObject();

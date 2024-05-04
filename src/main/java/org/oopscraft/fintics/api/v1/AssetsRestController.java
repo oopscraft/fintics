@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.web.support.PageableUtils;
 import org.oopscraft.fintics.api.v1.dto.AssetResponse;
-import org.oopscraft.fintics.api.v1.dto.DataSummaryResponse;
 import org.oopscraft.fintics.api.v1.dto.OhlcvResponse;
 import org.oopscraft.fintics.model.Asset;
 import org.oopscraft.fintics.model.Ohlcv;

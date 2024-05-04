@@ -61,6 +61,11 @@ class KrBrokerClientTest {
         }
 
         @Override
+        public BigDecimal getMinimumOrderQuantity() throws InterruptedException {
+            return null;
+        }
+
+        @Override
         public Balance getBalance() throws InterruptedException {
             return null;
         }

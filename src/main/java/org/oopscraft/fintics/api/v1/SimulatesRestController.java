@@ -101,6 +101,7 @@ public class SimulatesRestController {
                 .withZoneSameInstant(ZoneId.systemDefault())
                 .toLocalDateTime();
         BigDecimal investAmount = simulateRequest.getInvestAmount();
+        BigDecimal minimumOrderQuantity = simulateRequest.getMinimumOrderQuantity();
         BigDecimal feeRate = simulateRequest.getFeeRate();
         Simulate simulate = Simulate.builder()
                 .trade(trade)
@@ -110,6 +111,7 @@ public class SimulatesRestController {
                 .dateTimeFrom(dateTimeFrom)
                 .dateTimeTo(dateTimeTo)
                 .investAmount(investAmount)
+                .minimumOrderQuantity(minimumOrderQuantity)
                 .feeRate(feeRate)
                 .build();
         simulate = simulateService.runSimulate(simulate);

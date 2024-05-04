@@ -5,13 +5,7 @@
       layout:decorate="_web.html">
 <th:block layout:fragment="_content">
     <script th:inline="javascript">
-        const summary = new duice.ObjectProxy({
-            assetMinuteOhlcvStatistics: [],
-            assetDailyOhlcvStatistics: [],
-            indiceMinuteOhlcvStatistics: [],
-            indiceDailyOhlcvStatistics: []
-        });
-
+        // asset
         const assetSearch = new duice.ObjectProxy({
             key: 'assetName',
             value: null,
@@ -22,6 +16,8 @@
         });
         const assets = new duice.ArrayProxy([]);
 
+        // asset ohlcv
+        const assetOhlcvSummaries = new duice.ArrayProxy([]);
         const assetOhlcvSearch = new duice.ObjectProxy({
             assetId: null,
             type: null,
@@ -29,11 +25,14 @@
             dateTimeTo: null,
             interpolated: null,
             _page: 0,
-            _size: 100,
+            _size: 50,
             _count: 0
         });
+        duice.ObjectProxy.setReadonly(assetOhlcvSearch, 'assetId', true);
         const assetOhlcvs = new duice.ArrayProxy([]);
 
+        // indice ohlcv
+        const indiceOhlcvSummaries = new duice.ArrayProxy([]);
         const indiceOhlcvSearch = new duice.ObjectProxy({
             indiceId: null,
             type: null,
@@ -41,19 +40,11 @@
             dateTimeTo: null,
             interpolated: null,
             _page: 0,
-            _size: 100,
+            _size: 50,
             _count: 0
         });
+        duice.ObjectProxy.setReadonly(indiceOhlcvSearch, 'indiceId', true);
         const indiceOhlcvs = new duice.ArrayProxy([]);
-
-        function getSummary() {
-            let url = new URL(`${_apiUrl}/v1/data/summary`, document.location.origin);
-            _fetch(url)
-            .then(response => response.json())
-            .then(responseBody => {
-                duice.ObjectProxy.assign(summary, responseBody);
-            });
-        }
 
         function getAssets(page) {
             assetSearch._page = page || 0;
@@ -79,22 +70,39 @@
             getAssets();
         }
 
+        function getAssetOhlcvSummaries() {
+            let url = new URL(`${_apiUrl}/v1/data/asset-ohlcv-summaries`, document.location.origin);
+            _fetch(url)
+                .then(response => response.json())
+                .then(responseBody => {
+                    duice.ArrayProxy.assign(assetOhlcvSummaries, responseBody);
+                });
+        }
+
+        function selectAssetOhlcvSummary(assetId) {
+            duice.ObjectProxy.reset(assetOhlcvSearch);
+            assetOhlcvSearch.assetId = assetId;
+            duice.ObjectProxy.save(assetOhlcvSearch);
+            duice.ArrayProxy.clear(assetOhlcvs);
+            getAssetOhlcvs();
+        }
+
         function getAssetOhlcvs(page) {
             assetOhlcvSearch._page = page || 0;
             let url = new URL(`${_apiUrl}/v1/data/asset-ohlcvs`, document.location.origin);
-            if(assetOhlcvSearch.assetId) {
+            if (assetOhlcvSearch.assetId) {
                 url.searchParams.append('assetId', assetOhlcvSearch.assetId);
             }
-            if(assetOhlcvSearch.type) {
+            if (assetOhlcvSearch.type) {
                 url.searchParams.append('type', assetOhlcvSearch.type);
             }
-            if(assetOhlcvSearch.dateTimeFrom) {
+            if (assetOhlcvSearch.dateTimeFrom) {
                 url.searchParams.append('dateTimeFrom', assetOhlcvSearch.dateTimeFrom);
             }
-            if(assetOhlcvSearch.dateTimeTo) {
+            if (assetOhlcvSearch.dateTimeTo) {
                 url.searchParams.append('dateTimeTo', assetOhlcvSearch.dateTimeTo);
             }
-            if(assetOhlcvSearch.interpolated) {
+            if (assetOhlcvSearch.interpolated) {
                 url.searchParams.append('interpolated', assetOhlcvSearch.interpolated);
             }
             url.searchParams.append('_page', assetOhlcvSearch._page);
@@ -110,6 +118,23 @@
         function resetAssetOhlcvs() {
             duice.ObjectProxy.reset(assetOhlcvSearch);
             getAssetOhlcvs();
+        }
+
+        function getIndiceOhlcvSummaries() {
+            let url = new URL(`${_apiUrl}/v1/data/indice-ohlcv-summaries`, document.location.origin);
+            _fetch(url)
+                .then(response => response.json())
+                .then(responseBody => {
+                    duice.ArrayProxy.assign(indiceOhlcvSummaries, responseBody);
+                });
+        }
+
+        function selectIndiceOhlcvSummary(indiceId) {
+            duice.ObjectProxy.reset(indiceOhlcvSearch);
+            indiceOhlcvSearch.indiceId = indiceId;
+            duice.ObjectProxy.save(indiceOhlcvSearch);
+            duice.ArrayProxy.clear(indiceOhlcvs);
+            getIndiceOhlcvs();
         }
 
         function getIndiceOhlcvs(page) {
@@ -148,12 +173,6 @@
         document.addEventListener('DOMContentLoaded', () => {
             let tabFolder = duice.tabFolder(
                 duice.tabItem(
-                    document.getElementById('summaryTabButton'),
-                    document.getElementById('summaryTabContent'),
-                    () => {
-                        getSummary();
-                    }),
-                duice.tabItem(
                     document.getElementById('assetTabButton'),
                     document.getElementById('assetTabContent'),
                     () => {
@@ -163,13 +182,13 @@
                     document.getElementById('assetOhlcvTabButton'),
                     document.getElementById('assetOhlcvTabContent'),
                     () => {
-                        getAssetOhlcvs();
+                        getAssetOhlcvSummaries();
                     }),
                 duice.tabItem(
                     document.getElementById('indiceOhlcvTabButton'),
                     document.getElementById('indiceOhlcvTabContent'),
                     () => {
-                        getIndiceOhlcvs();
+                        getIndiceOhlcvSummaries();
                     })
             );
             tabFolder.setActive(0);
@@ -193,10 +212,6 @@
     <!-- start: tab index                       -->
     <!-- ====================================== -->
     <div id="tabIndex" class="display--flex flex-wrap--nowrap overflow-x--scroll gap--1px margin-bottom--1px">
-        <button id="summaryTabButton" type="button" class="tab">
-            <img class="icon" th:src="@{/static/image/icon-summary.svg}" alt="summary"/>
-            <span data-th-text="#{fintics.DataSummary}"></span>
-        </button>
         <button id="assetTabButton" type="button" class="tab">
             <img class="icon" th:src="@{/static/image/icon-asset.svg}" alt="asset"/>
             <span data-th-text="#{fintics.Asset}"></span>
@@ -212,165 +227,6 @@
     </div>
     <!-- ====================================== -->
     <!-- end: tab index                         -->
-    <!-- ====================================== -->
-
-    <!-- ====================================== -->
-    <!-- start: summary                         -->
-    <!-- ====================================== -->
-    <div id="summaryTabContent" class="border--1 padding--1em">
-        <h2>
-            <img class="icon" th:src="@{/static/image/icon-summary.svg}" alt="summary"/>
-            <span data-th-text="#{fintics.DataSummary}"></span>
-        </h2>
-        <div class="padding--1em">
-            <span class="font-weight--bold">AssetMinuteOhlcv</span>
-            <div class="overflow-y--scroll border-x--1" style="max-height:400px;">
-                <table class="width--100 border--0 text-align--center font-size--smaller">
-                    <thead>
-                    <tr>
-                        <th>assetId</th>
-                        <th>assetName</th>
-                        <th>type</th>
-                        <th>minDateTime</th>
-                        <th>maxDateTime</th>
-                        <th>totalCount</th>
-                        <th>interpolatedMinDateTime</th>
-                        <th>interpolatedMaxDateTime</th>
-                        <th>interpolatedCount</th>
-                        <th>usedByTrade</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr data-duice-bind="summary.assetMinuteOhlcvStatistics" data-duice-loop="assetMinuteOhlcvStatistics,status"
-                        data-duice-execute="if(!assetMinuteOhlcvStatistics.usedByTrade) this.classList.add('text-decoration--line-through');">
-                        <td data-duice-bind="assetMinuteOhlcvStatistics" data-duice-property="assetId"></td>
-                        <td data-duice-bind="assetMinuteOhlcvStatistics" data-duice-property="assetName"></td>
-                        <td data-duice-bind="assetMinuteOhlcvStatistics" data-duice-property="type"></td>
-                        <td data-duice-bind="assetMinuteOhlcvStatistics" data-duice-property="minDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
-                        <td data-duice-bind="assetMinuteOhlcvStatistics" data-duice-property="maxDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
-                        <td data-duice-bind="assetMinuteOhlcvStatistics" data-duice-property="totalCount" data-duice-format="number"></td>
-                        <td data-duice-bind="assetMinuteOhlcvStatistics" data-duice-property="interpolatedMinDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
-                        <td data-duice-bind="assetMinuteOhlcvStatistics" data-duice-property="interpolatedMaxDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
-                        <td data-duice-bind="assetMinuteOhlcvStatistics" data-duice-property="interpolatedCount" data-duice-format="number"></td>
-                        <td data-duice-bind="assetMinuteOhlcvStatistics" data-duice-property="usedByTrade"></td>
-                    </tr>
-                    <tr data-duice-bind="summary.assetMinuteOhlcvStatistics" data-duice-if="return summary.assetMinuteOhlcvStatistics.length === 0;">
-                        <td colspan="100%" class="text-align--center">No Data</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        <div class="padding--1em">
-            <span class="font-weight--bold">AssetDailyOhlcv</span>
-            <div class="overflow-y--scroll border-x--1" style="max-height:400px;">
-                <table class="width--100 border--0 text-align--center font-size--smaller">
-                    <thead>
-                    <tr>
-                        <th>assetId</th>
-                        <th>assetName</th>
-                        <th>type</th>
-                        <th>minDateTime</th>
-                        <th>maxDateTime</th>
-                        <th>totalCount</th>
-                        <th>interpolatedMinDateTime</th>
-                        <th>interpolatedMaxDateTime</th>
-                        <th>interpolatedCount</th>
-                        <th>usedByTrade</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr data-duice-bind="summary.assetDailyOhlcvStatistics" data-duice-loop="assetDailyOhlcvStatistics,status"
-                        data-duice-execute="if(!assetDailyOhlcvStatistics.usedByTrade) this.classList.add('text-decoration--line-through');">
-                        <td data-duice-bind="assetDailyOhlcvStatistics" data-duice-property="assetId"></td>
-                        <td data-duice-bind="assetDailyOhlcvStatistics" data-duice-property="assetName"></td>
-                        <td data-duice-bind="assetDailyOhlcvStatistics" data-duice-property="type"></td>
-                        <td data-duice-bind="assetDailyOhlcvStatistics" data-duice-property="minDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
-                        <td data-duice-bind="assetDailyOhlcvStatistics" data-duice-property="maxDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
-                        <td data-duice-bind="assetDailyOhlcvStatistics" data-duice-property="totalCount" data-duice-format="number"></td>
-                        <td data-duice-bind="assetDailyOhlcvStatistics" data-duice-property="interpolatedMinDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
-                        <td data-duice-bind="assetDailyOhlcvStatistics" data-duice-property="interpolatedMaxDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
-                        <td data-duice-bind="assetDailyOhlcvStatistics" data-duice-property="interpolatedCount" data-duice-format="number"></td>
-                        <td data-duice-bind="assetDailyOhlcvStatistics" data-duice-property="usedByTrade"></td>
-                    </tr>
-                    <tr data-duice-bind="summary.assetDailyOhlcvStatistics" data-duice-if="return summary.assetDailyOhlcvStatistics.length === 0;">
-                        <td colspan="100%" class="text-align--center">No Data</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        <div class="padding--1em">
-            <span class="font-weight--bold">IndiceMinuteOhlcv</span>
-            <div class="overflow-y--scroll border-x--1" style="max-height:400px;">
-                <table class="width--100 border--0 text-align--center font-size--smaller">
-                    <thead>
-                    <tr>
-                        <th>indiceId</th>
-                        <th>type</th>
-                        <th>minDateTime</th>
-                        <th>maxDateTime</th>
-                        <th>totalCount</th>
-                        <th>interpolatedMinDateTime</th>
-                        <th>interpolatedMaxDateTime</th>
-                        <th>interpolatedCount</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr data-duice-bind="summary.indiceMinuteOhlcvStatistics" data-duice-loop="indiceMinuteOhlcvStatistics,status">
-                        <td data-duice-bind="indiceMinuteOhlcvStatistics" data-duice-property="indiceId"></td>
-                        <td data-duice-bind="indiceMinuteOhlcvStatistics" data-duice-property="type"></td>
-                        <td data-duice-bind="indiceMinuteOhlcvStatistics" data-duice-property="minDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
-                        <td data-duice-bind="indiceMinuteOhlcvStatistics" data-duice-property="maxDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
-                        <td data-duice-bind="indiceMinuteOhlcvStatistics" data-duice-property="totalCount" data-duice-format="number"></td>
-                        <td data-duice-bind="indiceMinuteOhlcvStatistics" data-duice-property="interpolatedMinDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
-                        <td data-duice-bind="indiceMinuteOhlcvStatistics" data-duice-property="interpolatedMaxDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
-                        <td data-duice-bind="indiceMinuteOhlcvStatistics" data-duice-property="interpolatedCount" data-duice-format="number"></td>
-                    </tr>
-                    <tr data-duice-bind="summary.indiceMinuteOhlcvStatistics" data-duice-if="return summary.indiceMinuteOhlcvStatistics.length === 0;">
-                        <td colspan="100%" class="text-align--center">No Data</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        <div class="padding--1em">
-            <span class="font-weight--bold">IndiceDailyOhlcv</span>
-            <div class="overflow-y--scroll border-x--1" style="max-height:400px;">
-                <table class="width--100 border--0 text-align--center font-size--smaller">
-                    <thead>
-                    <tr>
-                        <th>indiceId</th>
-                        <th>type</th>
-                        <th>minDateTime</th>
-                        <th>maxDateTime</th>
-                        <th>totalCount</th>
-                        <th>interpolatedMinDateTime</th>
-                        <th>interpolatedMaxDateTime</th>
-                        <th>interpolatedCount</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr data-duice-bind="summary.indiceDailyOhlcvStatistics" data-duice-loop="indiceDailyOhlcvStatistics,status">
-                        <td data-duice-bind="indiceDailyOhlcvStatistics" data-duice-property="indiceId"></td>
-                        <td data-duice-bind="indiceDailyOhlcvStatistics" data-duice-property="type"></td>
-                        <td data-duice-bind="indiceDailyOhlcvStatistics" data-duice-property="minDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
-                        <td data-duice-bind="indiceDailyOhlcvStatistics" data-duice-property="maxDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
-                        <td data-duice-bind="indiceDailyOhlcvStatistics" data-duice-property="totalCount" data-duice-format="number"></td>
-                        <td data-duice-bind="indiceDailyOhlcvStatistics" data-duice-property="interpolatedMinDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
-                        <td data-duice-bind="indiceDailyOhlcvStatistics" data-duice-property="interpolatedMaxDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
-                        <td data-duice-bind="indiceDailyOhlcvStatistics" data-duice-property="interpolatedCount" data-duice-format="number"></td>
-                    </tr>
-                    <tr data-duice-bind="summary.indiceDailyOhlcvStatistics" data-duice-if="return summary.indiceDailyOhlcvStatistics.length === 0;">
-                        <td colspan="100%" class="text-align--center">No Data</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-    <!-- ====================================== -->
-    <!-- start: summary                         -->
     <!-- ====================================== -->
 
     <!-- ====================================== -->
@@ -492,6 +348,41 @@
             <img class="icon" th:src="@{/static/image/icon-ohlcv.svg}" alt="ohlcv"/>
             <span data-th-text="#{fintics.AssetOhlcv}"></span>
         </h2>
+        <div class="overflow-y--scroll border-x--1" style="max-height:30vh;">
+            <table class="width--100 border--0 text-align--center font-size--smaller">
+                <thead>
+                <tr>
+                    <th>assetId</th>
+                    <th>assetName</th>
+                    <th>tradeCount</th>
+                    <th>dailyCount</th>
+                    <th>dailyInterpolatedCount</th>
+                    <th>dailyInterpolatedMaxDateTime</th>
+                    <th>minuteCount</th>
+                    <th>minuteInterpolatedCount</th>
+                    <th>minuteInterpolatedMaxDateTime</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr data-duice-bind="assetOhlcvSummaries" data-duice-loop="assetOhlcvSummary,status" data-duice-selected-item-class="selected"
+                    data-duice-execute="this.dataset.assetId=assetOhlcvSummary.assetId; if(assetOhlcvSummary.tradeCount < 1) this.classList.add('text-decoration--line-through');"
+                    onclick="selectAssetOhlcvSummary(this.dataset.assetId);" class="link">
+                    <td data-duice-bind="assetOhlcvSummary" data-duice-property="assetId" class="font-weight--bold"></td>
+                    <td data-duice-bind="assetOhlcvSummary" data-duice-property="assetName"></td>
+                    <td data-duice-bind="assetOhlcvSummary" data-duice-property="tradeCount"></td>
+                    <td data-duice-bind="assetOhlcvSummary" data-duice-property="dailyCount" data-duice-format="number"></td>
+                    <td data-duice-bind="assetOhlcvSummary" data-duice-property="dailyInterpolatedCount" data-duice-format="number"></td>
+                    <td data-duice-bind="assetOhlcvSummary" data-duice-property="dailyInterpolatedMaxDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
+                    <td data-duice-bind="assetOhlcvSummary" data-duice-property="minuteCount" data-duice-format="number"></td>
+                    <td data-duice-bind="assetOhlcvSummary" data-duice-property="minuteInterpolatedCount" data-duice-format="number"></td>
+                    <td data-duice-bind="assetOhlcvSummary" data-duice-property="minuteInterpolatedMaxDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
+                </tr>
+                <tr data-duice-bind="assetOhlcvSummaries" data-duice-if="return assetOhlcvSummaries.length === 0;">
+                    <td colspan="100%" class="text-align--center">No Data</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
         <form onsubmit="return false;" class="display--grid grid-template-columns--12 grid-gap--1em padding-x--1em">
             <label class="grid-column--2 s__grid-column--12">
                 <select class="width--100" data-duice-bind="assetOhlcvSearch" data-duice-property="assetId">
@@ -536,7 +427,7 @@
                 </duice-pagination>
             </div>
         </form>
-        <div class="overflow-y--scroll border-top--1" style="max-height:70vh;">
+        <div class="overflow-y--scroll border-top--1" style="max-height:40vh;">
             <table class="width--100 text-align--center">
                 <colgroup>
                     <col style="width:5em;"/>
@@ -598,6 +489,39 @@
             <img class="icon" th:src="@{/static/image/icon-ohlcv.svg}" alt="ohlcv"/>
             <span data-th-text="#{fintics.IndiceOhlcv}"></span>
         </h2>
+        <div class="overflow-y--scroll border-x--1" style="max-height:30vh;">
+            <table class="width--100 border--0 text-align--center font-size--smaller">
+                <thead>
+                <tr>
+                    <th>indiceId</th>
+                    <th>indiceName</th>
+                    <th>dailyCount</th>
+                    <th>dailyInterpolatedCount</th>
+                    <th>dailyInterpolatedMaxDateTime</th>
+                    <th>minuteCount</th>
+                    <th>minuteInterpolatedCount</th>
+                    <th>minuteInterpolatedMaxDateTime</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr data-duice-bind="indiceOhlcvSummaries" data-duice-loop="indiceOhlcvSummary,status" data-duice-selected-item-class="selected"
+                    data-duice-execute="this.dataset.indiceId=indiceOhlcvSummary.indiceId;"
+                    onclick="selectIndiceOhlcvSummary(this.dataset.indiceId);" class="link">
+                    <td data-duice-bind="indiceOhlcvSummary" data-duice-property="indiceId" class="font-weight--bold"></td>
+                    <td data-duice-bind="indiceOhlcvSummary" data-duice-property="indiceName"></td>
+                    <td data-duice-bind="indiceOhlcvSummary" data-duice-property="dailyCount" data-duice-format="number"></td>
+                    <td data-duice-bind="indiceOhlcvSummary" data-duice-property="dailyInterpolatedCount" data-duice-format="number"></td>
+                    <td data-duice-bind="indiceOhlcvSummary" data-duice-property="dailyInterpolatedMaxDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
+                    <td data-duice-bind="indiceOhlcvSummary" data-duice-property="minuteCount" data-duice-format="number"></td>
+                    <td data-duice-bind="indiceOhlcvSummary" data-duice-property="minuteInterpolatedCount" data-duice-format="number"></td>
+                    <td data-duice-bind="indiceOhlcvSummary" data-duice-property="minuteInterpolatedMaxDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
+                </tr>
+                <tr data-duice-bind="indiceOhlcvSummaries" data-duice-if="return indiceOhlcvSummaries.length === 0;">
+                    <td colspan="100%" class="text-align--center">No Data</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
         <form onsubmit="return false;" class="display--grid grid-template-columns--12 grid-gap--1em padding-x--1em">
             <label class="grid-column--2 s__grid-column--12">
                 <select class="width--100" data-duice-bind="indiceOhlcvSearch" data-duice-property="indiceId">
@@ -642,7 +566,7 @@
                 </duice-pagination>
             </div>
         </form>
-        <div class="overflow-y--scroll border-top--1" style="max-height:70vh;">
+        <div class="overflow-y--scroll border-top--1" style="max-height:40vh;">
             <table class="width--100 text-align--center">
                 <colgroup>
                     <col style="width:5em;"/>

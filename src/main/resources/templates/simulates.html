@@ -422,11 +422,15 @@
                 <span th:text="#{fintics.Simulate.dateTimeTo}" class="font-weight--bold tag-required"></span>
                 <input class="width--100" type="datetime-local" data-duice-bind="simulateDialog.simulate" data-duice-property="dateTimeTo"/>
             </label>
-            <label class="grid-column--3 s__grid-column--6">
+            <label class="grid-column--2 s__grid-column--4">
                 <span data-th-text="#{fintics.Simulate.investAmount}" class="font-weight--bold tag-required"></span>
                 <input class="width--100" type="number" data-duice-bind="simulateDialog.simulate" data-duice-property="investAmount" data-duice-format="number"/>
             </label>
-            <label class="grid-column--3 s__grid-column--6">
+            <label class="grid-column--2 s__grid-column--4">
+                <span data-th-text="#{fintics.Simulate.feeRate}" class="font-weight--bold tag-required"></span>
+                <input class="width--100" type="number" data-duice-bind="simulateDialog.simulate" data-duice-property="minimumOrderQuantity" data-duice-format="number"/>
+            </label>
+            <label class="grid-column--2 s__grid-column--4">
                 <span data-th-text="#{fintics.Simulate.feeRate}" class="font-weight--bold tag-required"></span>
                 <input class="width--100" type="number" data-duice-bind="simulateDialog.simulate" data-duice-property="feeRate" data-duice-format="number(4)"/>
             </label>
@@ -642,6 +646,7 @@
                 dateTimeFrom: null,
                 dateTimeTo: null,
                 investAmount: 100_000_000,
+                minimumOrderQuantity: 1,
                 feeRate: 0.1,
                 dateTime: null,
                 balance: {

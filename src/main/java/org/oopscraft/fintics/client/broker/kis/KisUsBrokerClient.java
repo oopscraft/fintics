@@ -301,6 +301,11 @@ public class KisUsBrokerClient extends UsBrokerClient {
     }
 
     @Override
+    public BigDecimal getMinimumOrderQuantity() throws InterruptedException {
+        return BigDecimal.ONE;
+    }
+
+    @Override
     public Balance getBalance() throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)

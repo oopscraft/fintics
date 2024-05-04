@@ -33,8 +33,9 @@ public abstract class BrokerClient {
 
     public abstract BigDecimal getTickPrice(Asset asset, BigDecimal price) throws InterruptedException;
 
-    public abstract Balance getBalance() throws InterruptedException;
+    public abstract BigDecimal getMinimumOrderQuantity() throws InterruptedException;
 
+    public abstract Balance getBalance() throws InterruptedException;
 
     public abstract Order submitOrder(Asset asset, Order order) throws InterruptedException;
 
@@ -45,10 +46,5 @@ public abstract class BrokerClient {
     public final String toAssetId(String symbol) {
         return String.format("%s.%s", this.definition.getMarket(), symbol);
     }
-
-    public BigDecimal getMinimumOrderQuantity() throws InterruptedException {
-        return BigDecimal.ONE;
-    }
-
 
 }

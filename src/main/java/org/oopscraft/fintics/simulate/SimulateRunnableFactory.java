@@ -33,16 +33,14 @@ public class SimulateRunnableFactory {
     private final ObjectMapper objectMapper;
 
     public SimulateRunnable getObject(Simulate simulate) {
-        Trade trade = simulate.getTrade();
-
         SimulateIndiceClient simulateIndiceClient = SimulateIndiceClient.builder()
                 .indiceOhlcvRepository(indiceOhlcvRepository)
                 .build();
-
         SimulateBrokerClient simulateTradeClient = SimulateBrokerClient.builder()
                 .assetOhlcvRepository(assetOhlcvRepository)
+                .minimumOrderQuantity(simulate.getMinimumOrderQuantity())
+                .feeRate(simulate.getFeeRate())
                 .build();
-
         // return
         return SimulateRunnable.builder()
                 .simulate(simulate)
