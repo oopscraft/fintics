@@ -8,7 +8,6 @@
     <cache eviction="FIFO" flushInterval="60000" size="512"/>
 
     <select id="selectAssetOhlcvSummaries" resultType="org.oopscraft.fintics.model.AssetOhlcvSummary">
-        <![CDATA[
         SELECT      fta.asset_id AS "assetId",
                     fa.asset_name AS "assetName",
                     (SELECT COUNT(*) FROM fintics_trade_asset WHERE asset_id = fta.asset_id) AS "tradeCount",
@@ -40,15 +39,21 @@
                                 SUM(CASE WHEN type = 'MINUTE' AND interpolated = 'Y' THEN 1 ELSE 0 END) AS minute_interpolated_count,
                                 MAX(CASE WHEN type = 'MINUTE' AND interpolated = 'Y' THEN date_time ELSE NULL END) AS minute_interpolated_max_date_time
                     FROM 		fintics_asset_ohlcv
+                    WHERE       1 = 1
+                    <if test="assetId != null">
+                    AND         asset_id = #{assetId}
+                    </if>
                     GROUP BY 	asset_id
                     ) fao
         ON 			fao.asset_id = fta.asset_id
+        WHERE       1 = 1
+        <if test="assetId != null">
+        AND         fta.asset_id = #{assetId}
+        </if>
         ORDER BY 	fta.asset_id
-        ]]>
     </select>
 
     <select id="selectIndiceOhlcvSummaries" resultType="org.oopscraft.fintics.model.IndiceOhlcvSummary">
-        <![CDATA[
         SELECT 	    indice_id AS "indiceId",
                     SUM(CASE WHEN type = 'DAILY' THEN 1 ELSE 0 END) AS "dailyCount",
                     SUM(CASE WHEN type = 'DAILY' AND interpolated = 'Y' THEN 1 ELSE 0 END) AS "dailyInterpolatedCount",
@@ -57,8 +62,34 @@
                     SUM(CASE WHEN type = 'MINUTE' AND interpolated = 'Y' THEN 1 ELSE 0 END) AS "minuteInterpolatedCount",
                     MAX(CASE WHEN type = 'MINUTE' AND interpolated = 'Y' THEN date_time ELSE NULL END) AS "minuteInterpolatedMaxDateTime"
         FROM 		fintics_indice_ohlcv
+        WHERE       1 = 1
+        <if test="indiceId != null">
+        AND         indice_id = #{indiceId}
+        </if>
         GROUP BY 	indice_id
-        ]]>
     </select>
+
+    <select id="selectAssetOhlcvStatistics" resultType="org.oopscraft.fintics.model.OhlcvSummary$OhlcvStatistic" useCache="false">
+        SELECT 		DATE(date_time) AS "date",
+                    COUNT(*) AS "count",
+                    SUM(CASE WHEN interpolated = 'Y' THEN 1 ELSE 0 END) AS "interpolatedCount"
+        FROM 		fintics_asset_ohlcv
+        WHERE 		1 = 1
+        AND 		asset_id = #{assetId}
+        GROUP BY	DATE(date_time)
+        ORDER BY    DATE(date_time) DESC
+    </select>
+
+    <select id="selectIndiceOhlcvStatistics" resultType="org.oopscraft.fintics.model.OhlcvSummary$OhlcvStatistic" useCache="false">
+        SELECT 		DATE(date_time) AS "date",
+                    COUNT(*) AS "count",
+                    SUM(CASE WHEN interpolated = 'Y' THEN 1 ELSE 0 END) AS "interpolatedCount"
+        FROM 		fintics_indice_ohlcv
+        WHERE 		1 = 1
+        AND 		indice_id = #{indiceId}
+        GROUP BY	DATE(date_time)
+        ORDER BY    DATE(date_time) DESC
+    </select>
+
 
 </mapper>

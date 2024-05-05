@@ -18,6 +18,9 @@
 
         // asset ohlcv
         const assetOhlcvSummaries = new duice.ArrayProxy([]);
+        const assetOhlcvSummary = new duice.ObjectProxy({
+            ohlcvStatistics: []
+        });
         const assetOhlcvSearch = new duice.ObjectProxy({
             assetId: null,
             type: null,
@@ -33,6 +36,9 @@
 
         // indice ohlcv
         const indiceOhlcvSummaries = new duice.ArrayProxy([]);
+        const indiceOhlcvSummary = new duice.ObjectProxy({
+            ohlcvStatistics: []
+        });
         const indiceOhlcvSearch = new duice.ObjectProxy({
             indiceId: null,
             type: null,
@@ -79,45 +85,47 @@
                 });
         }
 
-        function selectAssetOhlcvSummary(assetId) {
-            duice.ObjectProxy.reset(assetOhlcvSearch);
-            assetOhlcvSearch.assetId = assetId;
-            duice.ObjectProxy.save(assetOhlcvSearch);
-            duice.ArrayProxy.clear(assetOhlcvs);
-            getAssetOhlcvs();
-        }
-
-        function getAssetOhlcvs(page) {
-            assetOhlcvSearch._page = page || 0;
-            let url = new URL(`${_apiUrl}/v1/data/asset-ohlcvs`, document.location.origin);
-            if (assetOhlcvSearch.assetId) {
-                url.searchParams.append('assetId', assetOhlcvSearch.assetId);
-            }
-            if (assetOhlcvSearch.type) {
-                url.searchParams.append('type', assetOhlcvSearch.type);
-            }
-            if (assetOhlcvSearch.dateTimeFrom) {
-                url.searchParams.append('dateTimeFrom', assetOhlcvSearch.dateTimeFrom);
-            }
-            if (assetOhlcvSearch.dateTimeTo) {
-                url.searchParams.append('dateTimeTo', assetOhlcvSearch.dateTimeTo);
-            }
-            if (assetOhlcvSearch.interpolated) {
-                url.searchParams.append('interpolated', assetOhlcvSearch.interpolated);
-            }
-            url.searchParams.append('_page', assetOhlcvSearch._page);
-            url.searchParams.append('_size', assetOhlcvSearch._size);
-            _fetch(url).then(response => {
-                return response.json();
-            }).then(responseBody => {
-                duice.ArrayProxy.assign(assetOhlcvs, responseBody);
-                assetOhlcvSearch._count = (assetOhlcvSearch._page * assetOhlcvSearch._size) + assetOhlcvs.length + 1;
+        function getAssetOhlcvSummary(assetId) {
+            duice.ObjectProxy.clear(assetOhlcvSummary);
+            let url = new URL(`${_apiUrl}/v1/data/asset-ohlcv-summaries/${assetId}`, document.location.origin);
+            _fetch(url).then(response => response.json())
+            .then(responseBody => {
+                console.log(responseBody);
+                duice.ObjectProxy.assign(assetOhlcvSummary, responseBody);
             });
         }
 
-        function resetAssetOhlcvs() {
-            duice.ObjectProxy.reset(assetOhlcvSearch);
-            getAssetOhlcvs();
+        async function getAssetOhlcvs(assetId, date) {
+            try {
+                await assetOhlcvsDialog.open(assetId, date);
+            } finally {
+                if (assetOhlcvsDialog.isInterpolated()) {
+                    getAssetOhlcvSummary(assetId);
+                }
+            }
+        }
+
+        async function interpolateCheckedAssetOhlcvs() {
+            let checkedItems = assetOhlcvSummary.ohlcvStatistics.filter(item => item._checked);
+            for (let item of checkedItems) {
+                console.log(item);
+                let url = new URL(`${_apiUrl}/v1/data/interpolate-asset-ohlcvs`, document.location.origin);
+                await _fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        assetId: assetOhlcvSummary.assetId,
+                        type: 'MINUTE',
+                        dateTimeFrom: dateFns.startOfDay(new Date(item.date)).toISOString(),
+                        dateTimeTo: dateFns.endOfDay(new Date(item.date)).toISOString()
+                    })
+                }).then(response => {
+                    console.log(response);
+                });
+            }
+            getAssetOhlcvSummary(assetOhlcvSummary.assetId);
         }
 
         function getIndiceOhlcvSummaries() {
@@ -129,45 +137,46 @@
                 });
         }
 
-        function selectIndiceOhlcvSummary(indiceId) {
-            duice.ObjectProxy.reset(indiceOhlcvSearch);
-            indiceOhlcvSearch.indiceId = indiceId;
-            duice.ObjectProxy.save(indiceOhlcvSearch);
-            duice.ArrayProxy.clear(indiceOhlcvs);
-            getIndiceOhlcvs();
+        function getIndiceOhlcvSummary(indiceId) {
+            duice.ObjectProxy.clear(indiceOhlcvSummary);
+            let url = new URL(`${_apiUrl}/v1/data/indice-ohlcv-summaries/${indiceId}`, document.location.origin);
+            _fetch(url).then(response => response.json())
+                .then(responseBody => {
+                    duice.ObjectProxy.assign(indiceOhlcvSummary, responseBody);
+                });
         }
 
-        function getIndiceOhlcvs(page) {
-            indiceOhlcvSearch._page = page || 0;
-            let url = new URL(`${_apiUrl}/v1/data/indice-ohlcvs`, document.location.origin);
-            if(indiceOhlcvSearch.indiceId) {
-                url.searchParams.append('indiceId', indiceOhlcvSearch.indiceId);
+        async function getIndiceOhlcvs(indiceId, date) {
+            try {
+                await indiceOhlcvsDialog.open(indiceId, date);
+            } finally {
+                if (indiceOhlcvsDialog.isInterpolated()) {
+                    getIndiceOhlcvSummary(indiceId);
+                }
             }
-            if(indiceOhlcvSearch.type) {
-                url.searchParams.append('type', indiceOhlcvSearch.type);
-            }
-            if(indiceOhlcvSearch.dateTimeFrom) {
-                url.searchParams.append('dateTimeFrom', indiceOhlcvSearch.dateTimeFrom);
-            }
-            if(indiceOhlcvSearch.dateTimeTo) {
-                url.searchParams.append('dateTimeTo', indiceOhlcvSearch.dateTimeTo);
-            }
-            if(indiceOhlcvSearch.interpolated) {
-                url.searchParams.append('interpolated', indiceOhlcvSearch.interpolated);
-            }
-            url.searchParams.append('_page', indiceOhlcvSearch._page);
-            url.searchParams.append('_size', indiceOhlcvSearch._size);
-            _fetch(url).then(response => {
-                return response.json();
-            }).then(responseBody => {
-                duice.ArrayProxy.assign(indiceOhlcvs, responseBody);
-                indiceOhlcvSearch._count = (indiceOhlcvSearch._page * indiceOhlcvSearch._size) + indiceOhlcvs.length + 1;
-            });
         }
 
-        function resetIndiceOhlcvs() {
-            duice.ObjectProxy.reset(indiceOhlcvSearch);
-            getIndiceOhlcvs();
+        async function interpolateCheckedIndiceOhlcvs() {
+            let checkedItems = indiceOhlcvSummary.ohlcvStatistics.filter(item => item._checked);
+            for (let item of checkedItems) {
+                console.log(item);
+                let url = new URL(`${_apiUrl}/v1/data/interpolate-indice-ohlcvs`, document.location.origin);
+                await _fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        indiceId: indiceOhlcvSummary.indiceId,
+                        type: 'MINUTE',
+                        dateTimeFrom: dateFns.startOfDay(new Date(item.date)).toISOString(),
+                        dateTimeTo: dateFns.endOfDay(new Date(item.date)).toISOString()
+                    })
+                }).then(response => {
+                    console.log(response);
+                });
+            }
+            getIndiceOhlcvSummary(indiceOhlcvSummary.indiceId);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -366,7 +375,7 @@
                 <tbody>
                 <tr data-duice-bind="assetOhlcvSummaries" data-duice-loop="assetOhlcvSummary,status" data-duice-selected-item-class="selected"
                     data-duice-execute="this.dataset.assetId=assetOhlcvSummary.assetId; if(assetOhlcvSummary.tradeCount < 1) this.classList.add('text-decoration--line-through');"
-                    onclick="selectAssetOhlcvSummary(this.dataset.assetId);" class="link">
+                    onclick="getAssetOhlcvSummary(this.dataset.assetId);" class="link">
                     <td data-duice-bind="assetOhlcvSummary" data-duice-property="assetId" class="font-weight--bold"></td>
                     <td data-duice-bind="assetOhlcvSummary" data-duice-property="assetName"></td>
                     <td data-duice-bind="assetOhlcvSummary" data-duice-property="tradeCount"></td>
@@ -383,98 +392,37 @@
                 </tbody>
             </table>
         </div>
-        <form onsubmit="return false;" class="display--grid grid-template-columns--12 grid-gap--1em padding-x--1em">
-            <label class="grid-column--2 s__grid-column--12">
-                <select class="width--100" data-duice-bind="assetOhlcvSearch" data-duice-property="assetId">
-                    <option value="" data-th-text="'- ' + #{fintics.Asset} + ' -'"></option>
-                    <option th:each="asset : ${assets}" th:value="${asset.assetId}" th:text="'[' + ${asset.assetId} + '] ' + ${asset.assetName}"></option>
-                </select>
-            </label>
-            <label class="grid-column--1 s__grid-column--12">
-                <select class="width--100" data-duice-bind="assetOhlcvSearch" data-duice-property="type">
-                    <option value="" data-th-text="'- ' + #{fintics.Ohlcv.type} + ' -'"></option>
-                    <option value="MINUTE">MINUTE</option>
-                    <option value="DAILY">DAILY</option>
-                </select>
-            </label>
-            <label class="grid-column--4 s__grid-column--12">
-                <span data-th-text="#{fintics.Ohlcv.dateTime}"></span>
-                <input type="datetime-local" data-duice-bind="assetOhlcvSearch" data-duice-property="dateTimeFrom"/>
-                <input type="datetime-local" data-duice-bind="assetOhlcvSearch" data-duice-property="dateTimeTo"/>
-            </label>
-            <label class="grid-column--1 s__grid-column--12 align-self--center">
-                <span data-th-text="#{fintics.Ohlcv.interpolated}"></span>
-                <input type="checkbox" data-duice-bind="assetOhlcvSearch" data-duice-property="interpolated"/>
-            </label>
-            <div class="grid-column--4 s__grid-column--12 justify-self--end">
-                <button type="submit" onclick="getAssetOhlcvs();">
-                    <img class="icon" th:src="@{/static/image/icon-search.svg}" alt="search"/>
-                    <span data-th-text="#{web.global.search}"></span>
-                </button>
-                <button type="button" onclick="resetAssetOhlcvs();">
-                    <img class="icon" th:src="@{/static/image/icon-reset.svg}" alt="reset"/>
-                    <span data-th-text="#{web.global.reset}"></span>
-                </button>
-                <duice-pagination
-                        data-duice-bind="assetOhlcvSearch"
-                        data-duice-size-property="_size"
-                        data-duice-page-property="_page"
-                        data-duice-count-property="_count"
-                        data-duice-onclick="getAssetOhlcvs(this.dataset.page);"
-                        data-duice-page-number-size="1"
-                        data-duice-prev-content="<button>Prev</button>"
-                        data-duice-next-content="<button>Next</button>">
-                </duice-pagination>
+        <div class="display--grid grid-template-columns--12 margin-top--1em padding--1px">
+            <div class="grid-column--6 font-weight--bold">
+                <span data-duice-bind="assetOhlcvSummary" data-duice-property="assetId"></span>
+                <span data-duice-bind="assetOhlcvSummary" data-duice-property="assetName"></span>
             </div>
-        </form>
-        <div class="overflow-y--scroll border-top--1" style="max-height:40vh;">
-            <table class="width--100 text-align--center">
-                <colgroup>
-                    <col style="width:5em;"/>
-                    <col style="width:15em;"/>
-                    <col style="width:10em;"/>
-                    <col style="width:15em;"/>
-                    <col/>
-                    <col/>
-                    <col/>
-                    <col/>
-                    <col/>
-                    <col style="width:10em;"/>
-                </colgroup>
-                <thead>
-                <tr>
-                    <th data-th-text="#{web.global.no}"></th>
-                    <th data-th-text="#{fintics.AssetOhlcv.assetId}"></th>
-                    <th data-th-text="#{fintics.Ohlcv.type}"></th>
-                    <th data-th-text="#{fintics.Ohlcv.dateTime}"></th>
-                    <th data-th-text="#{fintics.Ohlcv.openPrice}"></th>
-                    <th data-th-text="#{fintics.Ohlcv.highPrice}"></th>
-                    <th data-th-text="#{fintics.Ohlcv.lowPrice}"></th>
-                    <th data-th-text="#{fintics.Ohlcv.closePrice}"></th>
-                    <th data-th-text="#{fintics.Ohlcv.volume}"></th>
-                    <th data-th-text="#{fintics.Ohlcv.interpolated}"></th>
-                </tr>
-                </thead>
-                <tbody class="font-size--smaller">
-                <tr data-duice-bind="assetOhlcvs" data-duice-loop="assetOhlcv,status">
-                    <td data-duice-bind="assetOhlcv" data-duice-execute="this.innerHTML=assetOhlcvSearch._page * assetOhlcvSearch._size + status.count;"></td>
-                    <td data-duice-bind="assetOhlcv" data-duice-property="assetId" class="font-weight--bold"></td>
-                    <td data-duice-bind="assetOhlcv" data-duice-property="type" class="font-weight--bold"></td>
-                    <td data-duice-bind="assetOhlcv" data-duice-property="dateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')" class="font-weight--bold"></td>
-                    <td data-duice-bind="assetOhlcv" data-duice-property="openPrice" data-duice-format="number"></td>
-                    <td data-duice-bind="assetOhlcv" data-duice-property="highPrice" data-duice-format="number"></td>
-                    <td data-duice-bind="assetOhlcv" data-duice-property="lowPrice" data-duice-format="number"></td>
-                    <td data-duice-bind="assetOhlcv" data-duice-property="closePrice" data-duice-format="number"></td>
-                    <td data-duice-bind="assetOhlcv" data-duice-property="volume" data-duice-format="number"></td>
-                    <td data-duice-bind="assetOhlcv" data-duice-property="interpolated"></td>
-                </tr>
-                <tr data-duice-bind="assetOhlcvs" data-duice-if="return assetOhlcvs.length===0;">
-                    <td colspan="100%" class="text-align--center">
-                        No Data
-                    </td>
-                </tr>
-                </tbody>
-            </table>
+            <div class="grid-column--6 justify-self--end font-size--smaller">
+                <button type="button" onclick="interpolateCheckedAssetOhlcvs();">
+                    <img class="icon" th:src="@{/static/image/icon-refresh.svg}" alt="interpolate"/>
+                    Interpolate
+                </button>
+            </div>
+        </div>
+        <div class="display--grid grid-template-columns--12">
+            <div data-duice-bind="assetOhlcvSummary.ohlcvStatistics" data-duice-loop="ohlcvStatistic,status"
+                 data-duice-execute="
+                 this.dataset.date = ohlcvStatistic.date;
+                if (ohlcvStatistic.interpolatedCount > 0) {
+                    this.classList.add('background-color--yellow');
+                }
+                if (ohlcvStatistic.count < 360) {
+                    this.classList.add('background-color--red');
+                }
+                "
+                 onclick="getAssetOhlcvs(assetOhlcvSummary.assetId, this.dataset.date);"
+                 class="grid-column--1 margin--1px border--1 padding--1em padding-x--1px font-size--smaller link">
+                <input type="checkbox" data-duice-bind="ohlcvStatistic" data-duice-property="_checked" onclick="event.stopPropagation();" class="margin-right--1px"/>
+                <span data-duice-bind="ohlcvStatistic" data-duice-property="date" class="font-weight--bold"></span>
+                <br/>
+                <span data-duice-bind="ohlcvStatistic" data-duice-property="count"></span>
+                (<span data-duice-bind="ohlcvStatistic" data-duice-property="interpolatedCount"></span>)
+            </div>
         </div>
     </div>
     <!-- ====================================== -->
@@ -506,7 +454,7 @@
                 <tbody>
                 <tr data-duice-bind="indiceOhlcvSummaries" data-duice-loop="indiceOhlcvSummary,status" data-duice-selected-item-class="selected"
                     data-duice-execute="this.dataset.indiceId=indiceOhlcvSummary.indiceId;"
-                    onclick="selectIndiceOhlcvSummary(this.dataset.indiceId);" class="link">
+                    onclick="getIndiceOhlcvSummary(this.dataset.indiceId);" class="link">
                     <td data-duice-bind="indiceOhlcvSummary" data-duice-property="indiceId" class="font-weight--bold"></td>
                     <td data-duice-bind="indiceOhlcvSummary" data-duice-property="indiceName"></td>
                     <td data-duice-bind="indiceOhlcvSummary" data-duice-property="dailyCount" data-duice-format="number"></td>
@@ -522,63 +470,179 @@
                 </tbody>
             </table>
         </div>
-        <form onsubmit="return false;" class="display--grid grid-template-columns--12 grid-gap--1em padding-x--1em">
-            <label class="grid-column--2 s__grid-column--12">
-                <select class="width--100" data-duice-bind="indiceOhlcvSearch" data-duice-property="indiceId">
-                    <option value="" data-th-text="'- ' + #{fintics.Indice} + ' -'"></option>
-                    <option th:each="indice : ${indices}" th:value="${indice.indiceId}" th:text="'[' + ${indice.indiceId} + '] ' + ${indice.indiceName}"></option>
-                </select>
-            </label>
-            <label class="grid-column--1 s__grid-column--12">
-                <select class="width--100" data-duice-bind="indiceOhlcvSearch" data-duice-property="type">
-                    <option value="" data-th-text="'- ' + #{fintics.Ohlcv.type} + ' -'"></option>
-                    <option value="MINUTE">MINUTE</option>
-                    <option value="DAILY">DAILY</option>
-                </select>
-            </label>
-            <label class="grid-column--4 s__grid-column--12">
-                <span data-th-text="#{fintics.Ohlcv.dateTime}"></span>
-                <input type="datetime-local" data-duice-bind="indiceOhlcvSearch" data-duice-property="dateTimeFrom"/>
-                <input type="datetime-local" data-duice-bind="indiceOhlcvSearch" data-duice-property="dateTimeTo"/>
-            </label>
-            <label class="grid-column--1 s__grid-column--12 align-self--center">
-                <span data-th-text="#{fintics.Ohlcv.interpolated}"></span>
-                <input type="checkbox" data-duice-bind="indiceOhlcvSearch" data-duice-property="interpolated"/>
-            </label>
-            <div class="grid-column--4 s__grid-column--12 justify-self--end">
-                <button type="submit" onclick="getIndiceOhlcvs();">
-                    <img class="icon" th:src="@{/static/image/icon-search.svg}" alt="search"/>
-                    <span data-th-text="#{web.global.search}"></span>
-                </button>
-                <button type="button" onclick="resetIndiceOhlcvs();">
-                    <img class="icon" th:src="@{/static/image/icon-reset.svg}" alt="reset"/>
-                    <span data-th-text="#{web.global.reset}">Reset</span>
-                </button>
-                <duice-pagination
-                        data-duice-bind="indiceOhlcvSearch"
-                        data-duice-size-property="_size"
-                        data-duice-page-property="_page"
-                        data-duice-count-property="_count"
-                        data-duice-onclick="getIndiceOhlcvs(this.dataset.page);"
-                        data-duice-page-number-size="1"
-                        data-duice-prev-content="<button>Prev</button>"
-                        data-duice-next-content="<button>Next</button>">
-                </duice-pagination>
+        <div class="display--grid grid-template-columns--12 margin-top--1em padding--1px">
+            <div class="grid-column--6 font-weight--bold">
+                <span data-duice-bind="indiceOhlcvSummary" data-duice-property="indiceId"></span>
+                <span data-duice-bind="indiceOhlcvSummary" data-duice-property="indiceName"></span>
             </div>
-        </form>
-        <div class="overflow-y--scroll border-top--1" style="max-height:40vh;">
+            <div class="grid-column--6 justify-self--end font-size--smaller">
+                <button type="button" onclick="interpolateCheckedIndiceOhlcvs();">
+                    <img class="icon" th:src="@{/static/image/icon-refresh.svg}" alt="interpolate"/>
+                    Interpolate
+                </button>
+            </div>
+        </div>
+        <div class="display--grid grid-template-columns--12">
+            <div data-duice-bind="indiceOhlcvSummary.ohlcvStatistics" data-duice-loop="ohlcvStatistic,status"
+                 data-duice-execute="
+                 this.dataset.date = ohlcvStatistic.date;
+                if (ohlcvStatistic.interpolatedCount > 0) {
+                    this.classList.add('background-color--yellow');
+                }
+                if (ohlcvStatistic.count < 360) {
+                    this.classList.add('background-color--red');
+                }
+                "
+                 onclick="getIndiceOhlcvs(indiceOhlcvSummary.indiceId, this.dataset.date);"
+                 class="grid-column--1 margin--1px border--1 padding--1em padding-x--1px font-size--smaller link">
+                <input type="checkbox" data-duice-bind="ohlcvStatistic" data-duice-property="_checked" onclick="event.stopPropagation();" class="margin-right--1px"/>
+                <span data-duice-bind="ohlcvStatistic" data-duice-property="date" class="font-weight--bold"></span>
+                <br/>
+                <span data-duice-bind="ohlcvStatistic" data-duice-property="count"></span>
+                (<span data-duice-bind="ohlcvStatistic" data-duice-property="interpolatedCount"></span>)
+            </div>
+        </div>
+    </div>
+    <!-- ====================================== -->
+    <!-- end: indiceOhlcv                       -->
+    <!-- ====================================== -->
+
+    <!-- ====================================== -->
+    <!-- start: assetOhlcvsDialog               -->
+    <!-- ====================================== -->
+    <dialog id="assetOhlcvsDialog" class="padding--1em width--50 s__width--100">
+        <h2>OHLCV</h2>
+        <div class="overflow-y--scroll border-top--1" style="height:75vh;">
             <table class="width--100 text-align--center">
                 <colgroup>
-                    <col style="width:5em;"/>
-                    <col style="width:15em;"/>
-                    <col style="width:10em;"/>
-                    <col style="width:15em;"/>
                     <col/>
                     <col/>
                     <col/>
                     <col/>
                     <col/>
-                    <col style="width:10em;"/>
+                    <col/>
+                    <col/>
+                    <col/>
+                    <col/>
+                    <col/>
+                </colgroup>
+                <thead>
+                <tr>
+                    <th data-th-text="#{web.global.no}"></th>
+                    <th data-th-text="#{fintics.AssetOhlcv.assetId}"></th>
+                    <th data-th-text="#{fintics.Ohlcv.type}"></th>
+                    <th data-th-text="#{fintics.Ohlcv.dateTime}"></th>
+                    <th data-th-text="#{fintics.Ohlcv.openPrice}"></th>
+                    <th data-th-text="#{fintics.Ohlcv.highPrice}"></th>
+                    <th data-th-text="#{fintics.Ohlcv.lowPrice}"></th>
+                    <th data-th-text="#{fintics.Ohlcv.closePrice}"></th>
+                    <th data-th-text="#{fintics.Ohlcv.volume}"></th>
+                    <th data-th-text="#{fintics.Ohlcv.interpolated}"></th>
+                </tr>
+                </thead>
+                <tbody class="font-size--smaller">
+                <tr data-duice-bind="assetOhlcvsDialog.assetOhlcvs" data-duice-loop="assetOhlcv,status"
+                    data-duice-execute="if(assetOhlcv.interpolated) this.classList.add('background-color--yellow');">
+                    <td data-duice-bind="assetOhlcv" data-duice-execute="this.innerHTML=status.count;"></td>
+                    <td data-duice-bind="assetOhlcv" data-duice-property="assetId" class="font-weight--bold"></td>
+                    <td data-duice-bind="assetOhlcv" data-duice-property="type" class="font-weight--bold"></td>
+                    <td data-duice-bind="assetOhlcv" data-duice-property="dateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')" class="font-weight--bold"></td>
+                    <td data-duice-bind="assetOhlcv" data-duice-property="openPrice" data-duice-format="number"></td>
+                    <td data-duice-bind="assetOhlcv" data-duice-property="highPrice" data-duice-format="number"></td>
+                    <td data-duice-bind="assetOhlcv" data-duice-property="lowPrice" data-duice-format="number"></td>
+                    <td data-duice-bind="assetOhlcv" data-duice-property="closePrice" data-duice-format="number"></td>
+                    <td data-duice-bind="assetOhlcv" data-duice-property="volume" data-duice-format="number"></td>
+                    <td data-duice-bind="assetOhlcv" data-duice-property="interpolated"></td>
+                </tr>
+                <tr data-duice-bind="assetOhlcvsDialog.assetOhlcvs" data-duice-if="return assetOhlcvsDialog.assetOhlcvs.length===0;">
+                    <td colspan="100%" class="text-align--center">
+                        No Data
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="text-align--right margin-top--1em">
+            <button type="button" onclick="assetOhlcvsDialog.interpolateOhlcvs();">
+                <img class="icon" th:src="@{/static/image/icon-refresh.svg}" alt="interpolate"/>
+                Interpolate
+            </button>
+        </div>
+    </dialog>
+    <script th:inline="javascript">
+        const assetOhlcvsDialog = {
+            dialog: new duice.dialog.Dialog(document.getElementById('assetOhlcvsDialog')),
+            assetId: null,
+            date: null,
+            assetOhlcvs: new duice.ArrayProxy([]),
+            interpolated: false,
+            open: function(assetId, date) {
+                this.interpolated = false;
+                this.assetId = assetId;
+                this.date = date;
+                duice.ArrayProxy.clear(this.assetOhlcvs);
+                this.getAssetOhlcvs();
+                return this.dialog.open();
+            },
+            getAssetOhlcvs: function() {
+                let url = new URL(`${_apiUrl}/v1/data/asset-ohlcvs`, document.location.origin);
+                url.searchParams.append('assetId', this.assetId);
+                let dateTimeFrom = dateFns.startOfDay(new Date(this.date)).toISOString();
+                let dateTimeTo = dateFns.endOfDay(new Date(this.date)).toISOString();
+                url.searchParams.append('dateTimeFrom', dateTimeFrom);
+                url.searchParams.append('dateTimeTo', dateTimeTo);
+                url.searchParams.append('_size', 1000);
+                url.searchParams.append('_page', 0);
+                _fetch(url).then(response => response.json())
+                .then(responseBody => {
+                    duice.ArrayProxy.assign(this.assetOhlcvs, responseBody);
+                });
+            },
+            interpolateOhlcvs: function() {
+                this.interpolated = true;
+                let url = new URL(`${_apiUrl}/v1/data/interpolate-asset-ohlcvs`, document.location.origin);
+                _fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        assetId: this.assetId,
+                        type: 'MINUTE',
+                        dateTimeFrom: dateFns.startOfDay(new Date(this.date)).toISOString(),
+                        dateTimeTo: dateFns.endOfDay(new Date(this.date)).toISOString()
+                    })
+                }).then(response =>{
+                    this.getAssetOhlcvs();
+                });
+            },
+            isInterpolated: function() {
+                return this.interpolated;
+            }
+        };
+    </script>
+    <!-- ====================================== -->
+    <!-- start: assetOhlcvsDialog               -->
+    <!-- ====================================== -->
+
+    <!-- ====================================== -->
+    <!-- start: indiceOhlcvsDialog              -->
+    <!-- ====================================== -->
+    <dialog id="indiceOhlcvsDialog" class="padding--1em width--50 s__width--100">
+        <h2>OHLCV</h2>
+        <div class="overflow-y--scroll border-top--1" style="height:75vh;">
+            <table class="width--100 text-align--center">
+                <colgroup>
+                    <col/>
+                    <col/>
+                    <col/>
+                    <col/>
+                    <col/>
+                    <col/>
+                    <col/>
+                    <col/>
+                    <col/>
+                    <col/>
                 </colgroup>
                 <thead>
                 <tr>
@@ -595,8 +659,9 @@
                 </tr>
                 </thead>
                 <tbody class="font-size--smaller">
-                <tr data-duice-bind="indiceOhlcvs" data-duice-loop="indiceOhlcv,status">
-                    <td data-duice-bind="indiceOhlcv" data-duice-execute="this.innerHTML=indiceOhlcvSearch._page * indiceOhlcvSearch._size + status.count;"></td>
+                <tr data-duice-bind="indiceOhlcvsDialog.indiceOhlcvs" data-duice-loop="indiceOhlcv,status"
+                    data-duice-execute="if(indiceOhlcv.interpolated) this.classList.add('background-color--yellow');">
+                    <td data-duice-bind="indiceOhlcv" data-duice-execute="this.innerHTML=status.count;"></td>
                     <td data-duice-bind="indiceOhlcv" data-duice-property="indiceId" class="font-weight--bold"></td>
                     <td data-duice-bind="indiceOhlcv" data-duice-property="type" class="font-weight--bold"></td>
                     <td data-duice-bind="indiceOhlcv" data-duice-property="dateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')" class="font-weight--bold"></td>
@@ -607,7 +672,7 @@
                     <td data-duice-bind="indiceOhlcv" data-duice-property="volume" data-duice-format="number"></td>
                     <td data-duice-bind="indiceOhlcv" data-duice-property="interpolated"></td>
                 </tr>
-                <tr data-duice-bind="indiceOhlcvs" data-duice-if="return indiceOhlcvs.length===0;">
+                <tr data-duice-bind="indiceOhlcvsDialog.indiceOhlcvs" data-duice-if="return indiceOhlcvsDialog.indiceOhlcvs.length===0;">
                     <td colspan="100%" class="text-align--center">
                         No Data
                     </td>
@@ -615,9 +680,67 @@
                 </tbody>
             </table>
         </div>
-    </div>
+        <div class="text-align--right margin-top--1em">
+            <button type="button" onclick="indiceOhlcvsDialog.interpolateOhlcvs();">
+                <img class="icon" th:src="@{/static/image/icon-refresh.svg}" alt="interpolate"/>
+                Interpolate
+            </button>
+        </div>
+    </dialog>
+    <script th:inline="javascript">
+        const indiceOhlcvsDialog = {
+            dialog: new duice.dialog.Dialog(document.getElementById('indiceOhlcvsDialog')),
+            indiceId: null,
+            date: null,
+            indiceOhlcvs: new duice.ArrayProxy([]),
+            interpolated: false,
+            open: function(indiceId, date) {
+                this.interpolated = false;
+                this.indiceId = indiceId;
+                this.date = date;
+                duice.ArrayProxy.clear(this.indiceOhlcvs);
+                this.getIndiceOhlcvs();
+                return this.dialog.open();
+            },
+            getIndiceOhlcvs: function() {
+                let url = new URL(`${_apiUrl}/v1/data/indice-ohlcvs`, document.location.origin);
+                url.searchParams.append('indiceId', this.indiceId);
+                let dateTimeFrom = dateFns.startOfDay(new Date(this.date)).toISOString();
+                let dateTimeTo = dateFns.endOfDay(new Date(this.date)).toISOString();
+                url.searchParams.append('dateTimeFrom', dateTimeFrom);
+                url.searchParams.append('dateTimeTo', dateTimeTo);
+                url.searchParams.append('_size', 1000);
+                url.searchParams.append('_page', 0);
+                _fetch(url).then(response => response.json())
+                    .then(responseBody => {
+                        duice.ArrayProxy.assign(this.indiceOhlcvs, responseBody);
+                    });
+            },
+            interpolateOhlcvs: function() {
+                this.interpolated = true;
+                let url = new URL(`${_apiUrl}/v1/data/interpolate-indice-ohlcvs`, document.location.origin);
+                _fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        indiceId: this.indiceId,
+                        type: 'MINUTE',
+                        dateTimeFrom: dateFns.startOfDay(new Date(this.date)).toISOString(),
+                        dateTimeTo: dateFns.endOfDay(new Date(this.date)).toISOString()
+                    })
+                }).then(response =>{
+                    this.getIndiceOhlcvs();
+                });
+            },
+            isInterpolated: function() {
+                return this.interpolated;
+            }
+        };
+    </script>
     <!-- ====================================== -->
-    <!-- end: indiceOhlcv                       -->
+    <!-- start: assetOhlcvsDialog               -->
     <!-- ====================================== -->
 
 </th:block>

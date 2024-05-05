@@ -14,15 +14,13 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -80,6 +78,14 @@ public class DataRestController {
         }
     }
 
+    @GetMapping("asset-ohlcv-summaries/{assetId}")
+    public ResponseEntity<AssetOhlcvSummaryResponse> getAssetOhlcvSummary(@PathVariable("assetId") String assetId) {
+        AssetOhlcvSummaryResponse assetOhlcvSummaryResponse = dataService.getAssetOhlcvSummary(assetId)
+                .map(AssetOhlcvSummaryResponse::from)
+                .orElseThrow();
+        return ResponseEntity.ok(assetOhlcvSummaryResponse);
+    }
+
     @GetMapping("asset-ohlcvs")
     public ResponseEntity<List<AssetOhlcvResponse>> getAssetOhlcvs(
             @RequestParam(value = "assetId", required = false) String assetId,
@@ -103,6 +109,19 @@ public class DataRestController {
                 .body(assetOhlcvResponses);
     }
 
+    @PostMapping("interpolate-asset-ohlcvs")
+    @PreAuthorize("hasAuthority('API_DATA_EDIT')")
+    public ResponseEntity<Void> interpolateAssetOhlcvs(@RequestBody Map<String, String> payload) {
+        String assetId = payload.get("assetId");
+        Ohlcv.Type type = Ohlcv.Type.valueOf(payload.get("type"));
+        ZonedDateTime zonedDateTimeFrom = ZonedDateTime.parse(payload.get("dateTimeFrom"));
+        ZonedDateTime zonedDateTimeTo = ZonedDateTime.parse(payload.get("dateTimeTo"));
+        LocalDateTime dateTimeFrom = zonedDateTimeFrom.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime();
+        LocalDateTime dateTimeTo = zonedDateTimeTo.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime();
+        dataService.interpolateAssetOhlcvs(assetId, type, dateTimeFrom, dateTimeTo);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("indice-ohlcv-summaries")
     public ResponseEntity<List<IndiceOhlcvSummaryResponse>> getIndiceOhlcvSummaries() {
         if (indiceOhlcvSummaryResponses.isEmpty()) {
@@ -121,6 +140,14 @@ public class DataRestController {
             }
             return ResponseEntity.ok(indiceOhlcvSummaryResponses);
         }
+    }
+
+    @GetMapping("indice-ohlcv-summaries/{indiceId}")
+    public ResponseEntity<IndiceOhlcvSummaryResponse> getIndiceOhlcvSummary(@PathVariable("indiceId") Indice.Id indiceId) {
+        IndiceOhlcvSummaryResponse indiceOhlcvSummaryResponse = dataService.getIndiceOhlcvSummary(indiceId)
+                .map(IndiceOhlcvSummaryResponse::from)
+                .orElseThrow();
+        return ResponseEntity.ok(indiceOhlcvSummaryResponse);
     }
 
     @GetMapping("indice-ohlcvs")
@@ -144,6 +171,19 @@ public class DataRestController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_RANGE, PageableUtils.toContentRange("indice-ohlcvs", pageable))
                 .body(indiceOhlcvResponses);
+    }
+
+    @PostMapping("interpolate-indice-ohlcvs")
+    @PreAuthorize("hasAuthority('API_DATA_EDIT')")
+    public ResponseEntity<Void> interpolateIndiceOhlcvs(@RequestBody Map<String, String> payload) {
+        Indice.Id indiceId = Indice.Id.valueOf(payload.get("indiceId"));
+        Ohlcv.Type type = Ohlcv.Type.valueOf(payload.get("type"));
+        ZonedDateTime zonedDateTimeFrom = ZonedDateTime.parse(payload.get("dateTimeFrom"));
+        ZonedDateTime zonedDateTimeTo = ZonedDateTime.parse(payload.get("dateTimeTo"));
+        LocalDateTime dateTimeFrom = zonedDateTimeFrom.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime();
+        LocalDateTime dateTimeTo = zonedDateTimeTo.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime();
+        dataService.interpolateIndiceOhlcvs(indiceId, type, dateTimeFrom, dateTimeTo);
+        return ResponseEntity.ok().build();
     }
 
 }

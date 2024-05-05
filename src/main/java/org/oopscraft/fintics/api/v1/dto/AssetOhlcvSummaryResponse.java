@@ -4,6 +4,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.fintics.model.AssetOhlcvSummary;
+import org.oopscraft.fintics.model.OhlcvSummary;
 
 import java.io.Serializable;
 
@@ -29,6 +30,7 @@ public class AssetOhlcvSummaryResponse extends OhlcvSummaryResponse implements S
                 .minuteCount(assetOhlcvSummary.getMinuteCount())
                 .minuteInterpolatedCount(assetOhlcvSummary.getMinuteInterpolatedCount())
                 .minuteInterpolatedMaxDateTime(assetOhlcvSummary.getMinuteInterpolatedMaxDateTime())
+                .ohlcvStatistics(assetOhlcvSummary.getOhlcvStatistics().stream().map(OhlcvStatisticResponse::from).toList())
                 .build();
     }
 

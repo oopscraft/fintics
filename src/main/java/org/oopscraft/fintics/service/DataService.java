@@ -4,11 +4,9 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.logging.log4j.spi.CopyOnWrite;
 import org.oopscraft.fintics.client.ohlcv.OhlcvClient;
 import org.oopscraft.fintics.dao.*;
 import org.oopscraft.fintics.model.*;
-import org.oopscraft.fintics.scheduler.PastOhlcvCollector;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,8 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,6 +24,16 @@ public class DataService {
     private final JPAQueryFactory jpaQueryFactory;
 
     private final DataMapper dataMapper;
+
+    private final OhlcvClient ohlcvClient;
+
+    private final AssetService assetService;
+
+    private final AssetOhlcvRepository assetOhlcvRepository;
+
+    private final IndiceService indiceService;
+
+    private final IndiceOhlcvRepository indiceOhlcvRepository;
 
     public List<Asset> getAssets(String assetId, String assetName, String market, Pageable pageable) {
         QAssetEntity qAssetEntity = QAssetEntity.assetEntity;
@@ -47,8 +53,17 @@ public class DataService {
                 .collect(Collectors.toList());
     }
 
-    public synchronized List<AssetOhlcvSummary> getAssetOhlcvSummaries() {
-        return dataMapper.selectAssetOhlcvSummaries();
+    public List<AssetOhlcvSummary> getAssetOhlcvSummaries() {
+        return dataMapper.selectAssetOhlcvSummaries(null);
+    }
+
+    public Optional<AssetOhlcvSummary> getAssetOhlcvSummary(String assetId) {
+        AssetOhlcvSummary assetOhlcvSummary = dataMapper.selectAssetOhlcvSummaries(assetId).stream()
+                .findFirst()
+                .orElseThrow();
+        List<OhlcvSummary.OhlcvStatistic> ohlcvStatistics = dataMapper.selectAssetOhlcvStatistics(assetId);
+        assetOhlcvSummary.setOhlcvStatistics(ohlcvStatistics);
+        return Optional.of(assetOhlcvSummary);
     }
 
     public List<AssetOhlcv> getAssetOhlcvs(String assetId, Ohlcv.Type type, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo, Boolean interpolated, Pageable pageable) {
@@ -71,8 +86,45 @@ public class DataService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
+    public void interpolateAssetOhlcvs(String assetId, Ohlcv.Type type, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo) {
+        Asset asset = assetService.getAsset(assetId).orElseThrow();
+        List<Ohlcv> ohlcvs = ohlcvClient.getAssetOhlcvs(asset, type, dateTimeFrom, dateTimeTo);
+        for (Ohlcv ohlcv : ohlcvs) {
+            AssetOhlcvEntity.Pk pk = AssetOhlcvEntity.Pk.builder()
+                    .assetId(asset.getAssetId())
+                    .type(ohlcv.getType())
+                    .dateTime(ohlcv.getDateTime())
+                    .build();
+            AssetOhlcvEntity assetOhlcvEntity = assetOhlcvRepository.findById(pk).orElse(null);
+            if (assetOhlcvEntity == null) {
+                assetOhlcvEntity = AssetOhlcvEntity.builder()
+                        .assetId(asset.getAssetId())
+                        .type(ohlcv.getType())
+                        .dateTime(ohlcv.getDateTime())
+                        .openPrice(ohlcv.getOpenPrice())
+                        .highPrice(ohlcv.getHighPrice())
+                        .lowPrice(ohlcv.getLowPrice())
+                        .closePrice(ohlcv.getClosePrice())
+                        .volume(ohlcv.getVolume())
+                        .interpolated(ohlcv.isInterpolated())
+                        .build();
+                assetOhlcvRepository.saveAndFlush(assetOhlcvEntity);
+            }
+        }
+    }
+
     public List<IndiceOhlcvSummary> getIndiceOhlcvSummaries() {
-        return dataMapper.selectIndiceOhlcvSummaries();
+        return dataMapper.selectIndiceOhlcvSummaries(null);
+    }
+
+    public Optional<IndiceOhlcvSummary> getIndiceOhlcvSummary(Indice.Id indiceId) {
+        IndiceOhlcvSummary indiceOhlcvSummary = dataMapper.selectIndiceOhlcvSummaries(indiceId).stream()
+                .findFirst()
+                .orElseThrow();
+        List<OhlcvSummary.OhlcvStatistic> ohlcvStatistics = dataMapper.selectIndiceOhlcvStatistics(indiceId);
+        indiceOhlcvSummary.setOhlcvStatistics(ohlcvStatistics);
+        return Optional.of(indiceOhlcvSummary);
     }
 
     public List<IndiceOhlcv> getIndiceOhlcvs(Indice.Id indiceId, Ohlcv.Type type, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo, Boolean interpolated, Pageable pageable) {
@@ -94,5 +146,34 @@ public class DataService {
                 .map(IndiceOhlcv::from)
                 .collect(Collectors.toList());
     }
+
+    @Transactional
+    public void interpolateIndiceOhlcvs(Indice.Id indiceId, Ohlcv.Type type, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo) {
+        Indice indice = indiceService.getIndice(indiceId.name()).orElseThrow();
+        List<Ohlcv> ohlcvs = ohlcvClient.getIndiceOhlcvs(indice, type, dateTimeFrom, dateTimeTo);
+        for (Ohlcv ohlcv : ohlcvs) {
+            IndiceOhlcvEntity.Pk pk = IndiceOhlcvEntity.Pk.builder()
+                    .indiceId(indiceId)
+                    .type(ohlcv.getType())
+                    .dateTime(ohlcv.getDateTime())
+                    .build();
+            IndiceOhlcvEntity indiceOhlcvEntity = indiceOhlcvRepository.findById(pk).orElse(null);
+            if (indiceOhlcvEntity == null) {
+                indiceOhlcvEntity = IndiceOhlcvEntity.builder()
+                        .indiceId(indiceId)
+                        .type(ohlcv.getType())
+                        .dateTime(ohlcv.getDateTime())
+                        .openPrice(ohlcv.getOpenPrice())
+                        .highPrice(ohlcv.getHighPrice())
+                        .lowPrice(ohlcv.getLowPrice())
+                        .closePrice(ohlcv.getClosePrice())
+                        .volume(ohlcv.getVolume())
+                        .interpolated(ohlcv.isInterpolated())
+                        .build();
+                indiceOhlcvRepository.saveAndFlush(indiceOhlcvEntity);
+            }
+        }
+    }
+
 
 }

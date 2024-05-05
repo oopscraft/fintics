@@ -25,6 +25,7 @@ public class IndiceOhlcvSummaryResponse extends OhlcvSummaryResponse {
                 .minuteCount(indiceOhlcvSummary.getMinuteCount())
                 .minuteInterpolatedCount(indiceOhlcvSummary.getMinuteInterpolatedCount())
                 .minuteInterpolatedMaxDateTime(indiceOhlcvSummary.getMinuteInterpolatedMaxDateTime())
+                .ohlcvStatistics(indiceOhlcvSummary.getOhlcvStatistics().stream().map(OhlcvStatisticResponse::from).toList())
                 .build();
     }
 

@@ -130,8 +130,8 @@ public class SimulateBrokerClient extends BrokerClient {
     @Override
     public OrderBook getOrderBook(Asset asset) throws InterruptedException {
         loadOhlcvsIfNotExist(asset, dateTime);
-        LocalDateTime dateTimeFrom = dateTime.truncatedTo(ChronoUnit.MINUTES);
-        LocalDateTime dateTimeTo = dateTimeFrom.plusMinutes(1).minusNanos(1);
+        LocalDateTime dateTimeTo = dateTime.truncatedTo(ChronoUnit.MINUTES);
+        LocalDateTime dateTimeFrom = dateTimeTo.minusMinutes(10);
         List<Ohlcv> minuteOhlcvs = minuteOhlcvsMap.get(asset.getAssetId());
         Ohlcv minuteOhlcv = minuteOhlcvs.stream()
                 .filter(assetOhlcv -> (assetOhlcv.getDateTime().isAfter(dateTimeFrom) || assetOhlcv.getDateTime().isEqual(dateTimeFrom))
