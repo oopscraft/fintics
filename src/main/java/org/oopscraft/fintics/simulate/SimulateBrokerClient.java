@@ -119,7 +119,7 @@ public class SimulateBrokerClient extends BrokerClient {
 
     @Override
     public BigDecimal getTickPrice(Asset asset, BigDecimal price) throws InterruptedException {
-        throw new UnsupportedOperationException("not implemented");
+        return null;
     }
 
     @Override
@@ -139,8 +139,8 @@ public class SimulateBrokerClient extends BrokerClient {
                 .findFirst()
                 .orElse(null);
         BigDecimal price = minuteOhlcv.getClosePrice();
-        BigDecimal bidPrice = minuteOhlcv.getLowPrice();
-        BigDecimal askPrice = minuteOhlcv.getHighPrice();
+        BigDecimal bidPrice = minuteOhlcv.getClosePrice();
+        BigDecimal askPrice = minuteOhlcv.getClosePrice();
         return OrderBook.builder()
                 .price(price)
                 .bidPrice(bidPrice)
