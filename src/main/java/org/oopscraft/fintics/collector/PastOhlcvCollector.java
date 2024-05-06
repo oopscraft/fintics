@@ -54,8 +54,10 @@ public class PastOhlcvCollector extends OhlcvCollector {
                 Trade trade = Trade.from(tradeEntity);
                 for (TradeAsset tradeAsset : trade.getTradeAssets()) {
                     try {
-                        collectPastAssetMinuteOhlcvs(tradeAsset, expiredDateTime);
-                        collectPastAssetDailyOhlcvs(tradeAsset, expiredDateTime);
+                        if (ohlcvClient.isSupported(tradeAsset)) {
+                            collectPastAssetMinuteOhlcvs(tradeAsset, expiredDateTime);
+                            collectPastAssetDailyOhlcvs(tradeAsset, expiredDateTime);
+                        }
                     } catch (Throwable e) {
                         log.warn(e.getMessage());
                         sendSystemAlarm(this.getClass(), String.format("[%s] %s - %s", tradeEntity.getTradeName(), tradeAsset.getAssetName(), e.getMessage()));
@@ -66,8 +68,10 @@ public class PastOhlcvCollector extends OhlcvCollector {
             List<Indice> indices = indiceService.getIndices();
             for (Indice indice : indices) {
                 try {
-                    collectPastIndiceMinuteOhlcvs(indice, expiredDateTime);
-                    collectPastIndiceDailyOhlcvs(indice, expiredDateTime);
+                    if (ohlcvClient.isSupported(indice)) {
+                        collectPastIndiceMinuteOhlcvs(indice, expiredDateTime);
+                        collectPastIndiceDailyOhlcvs(indice, expiredDateTime);
+                    }
                 } catch (Throwable e) {
                     log.warn(e.getMessage());
                     sendSystemAlarm(this.getClass(), String.format("[%s] %s - %s", indice.getIndiceId(), indice.getIndiceName(), e.getMessage()));

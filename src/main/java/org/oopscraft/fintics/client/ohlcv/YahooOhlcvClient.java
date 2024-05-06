@@ -11,6 +11,7 @@ import org.oopscraft.fintics.model.Asset;
 import org.oopscraft.fintics.model.Indice;
 import org.oopscraft.fintics.model.Ohlcv;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +35,43 @@ import java.util.stream.Collectors;
 public class YahooOhlcvClient extends OhlcvClient {
 
     private final ObjectMapper objectMapper;
+
+    @Override
+    public boolean isSupported(Asset asset) {
+        String yahooSymbol = convertToYahooSymbol(asset);
+        return isSupported(yahooSymbol);
+    }
+
+    @Override
+    public boolean isSupported(Indice indice) {
+        String yahooSymbol = convertToYahooSymbol(indice.getIndiceId());
+        return isSupported(yahooSymbol);
+    }
+
+    boolean isSupported(String yahooSymbol) {
+        RestTemplate restTemplate = RestTemplateBuilder.create()
+                .insecure(true)
+                .build();
+        String url = String.format("https://query1.finance.yahoo.com/v1/finance/quoteType/?symbol=%s", yahooSymbol);
+        RequestEntity<Void> requestEntity = RequestEntity
+                .get(url)
+                .build();
+        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+        String responseBody = responseEntity.getBody();
+        JsonNode rootNode = null;
+        try {
+            rootNode = objectMapper.readTree(responseBody);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        JsonNode resultNode = rootNode.path("quoteType").path("result");
+        for (JsonNode result : resultNode) {
+            if (yahooSymbol.contentEquals(result.get("symbol").asText())) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     @Override
     public List<Ohlcv> getAssetOhlcvs(Asset asset, Ohlcv.Type type, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo) {

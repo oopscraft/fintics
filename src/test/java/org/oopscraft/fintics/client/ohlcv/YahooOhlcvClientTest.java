@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest(classes = FinticsConfiguration.class)
@@ -43,6 +44,30 @@ class YahooOhlcvClientTest extends CoreTestSupport {
         assetEntity.setExchange(asset.getExchange());
         entityManager.persist(assetEntity);
         entityManager.flush();
+    }
+
+    static Stream<Arguments> getIsSupportedArguments() {
+        return Stream.of(
+                Arguments.of("US.AAPL", "XNAS", true),
+                Arguments.of("US.INVALIDXXX", "XNAS", false),
+                Arguments.of("KR.005930", "XKRX", true),      // samsung electronics
+                Arguments.of("KR.122630", "XKRX", true)       // KODEX Leverage ETF
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("getIsSupportedArguments")
+    void isSupported(String assetId, String exchange, boolean expected) {
+        // given
+        Asset asset = Asset.builder()
+                .assetId(assetId)
+                .exchange(exchange)
+                .build();
+        saveAsset(asset);
+        // when
+        boolean supported = getYahooOhlcvClient().isSupported(asset);
+        // then
+        assertEquals(expected, supported);
     }
 
     static Stream<Arguments> getAssetInfos() {
