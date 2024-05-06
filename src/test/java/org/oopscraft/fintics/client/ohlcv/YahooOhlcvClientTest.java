@@ -5,6 +5,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.oopscraft.arch4j.core.support.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
 import org.oopscraft.fintics.dao.AssetEntity;
@@ -15,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -29,89 +33,181 @@ class YahooOhlcvClientTest extends CoreTestSupport {
         return new YahooOhlcvClient(objectMapper);
     }
 
-    void createAsset(Asset asset) {
-        AssetEntity assetEntity = AssetEntity.builder()
-                .assetId(asset.getAssetId())
-                .exchange(asset.getExchange())
-                .build();
+    void saveAsset(Asset asset) {
+        AssetEntity assetEntity = entityManager.find(AssetEntity.class, asset.getAssetId());
+        if (assetEntity == null) {
+            assetEntity = AssetEntity.builder()
+                    .assetId(asset.getAssetId())
+                    .build();
+        }
+        assetEntity.setExchange(asset.getExchange());
         entityManager.persist(assetEntity);
         entityManager.flush();
     }
 
-    @Disabled
-    @Test
-    void getAssetOhlcvsInMarketKR() {
+    static Stream<Arguments> getAssetInfos() {
+        return Stream.of(
+                Arguments.of("KR.005930", "XKRX"),      // samsung electronics
+                Arguments.of("KR.122630", "XKRX"),      // KODEX Leverage ETF
+                Arguments.of("US.AAPL", "XNAS"),        // Apple
+                Arguments.of("US.SPY", "XASE")          // SPY ETF
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("getAssetInfos")
+    void getAssetMinuteOhlcvsAfter30Days(String assetId, String exchange) {
         // given
         Asset asset = Asset.builder()
-                .assetId("KR.005930")
-                .exchange("XKRX")
+                .assetId(assetId)
+                .exchange(exchange)
                 .build();
-        createAsset(asset);
-        LocalDateTime dateTimeTo = LocalDateTime.now().minusDays(1);
-        LocalDateTime dateTimeFrom = dateTimeTo.minusWeeks(11);
+        saveAsset(asset);
+        LocalDateTime dateTimeFrom = LocalDateTime.now().minusDays(30);
+        LocalDateTime dateTimeTo = LocalDateTime.now();
 
         // when
         List<Ohlcv> ohlcvs = getYahooOhlcvClient().getAssetOhlcvs(asset, Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo);
 
         // then
         log.debug("ohlcvs.size():{}", ohlcvs.size());
-        assertTrue(ohlcvs.size() > 0);
+        assertTrue(ohlcvs.size() >= 60 * 4 * 15);
+        Ohlcv firstOhlcv = ohlcvs.get(0);
+        Ohlcv lastOhlcv = ohlcvs.get(ohlcvs.size()-1);
+        assertTrue(firstOhlcv.getDateTime().isBefore(dateTimeTo));
+        assertTrue(lastOhlcv.getDateTime().isAfter(dateTimeFrom));
     }
 
-    @Disabled
-    @Test
-    void getAssetOhlcvsInMarketUS() {
+    @ParameterizedTest
+    @MethodSource("getAssetInfos")
+    void getAssetMinuteOhlcvAcross30DaysAgo(String assetId, String exchange) {
         // given
         Asset asset = Asset.builder()
-                .assetId("US.SPY")
-                .exchange("XASE")
+                .assetId(assetId)
+                .exchange(exchange)
                 .build();
-        createAsset(asset);
-        LocalDateTime dateTimeTo = LocalDateTime.now().minusDays(1);
-        LocalDateTime dateTimeFrom = dateTimeTo.minusWeeks(11);
+        saveAsset(asset);
+        LocalDateTime dateTimeFrom = LocalDateTime.now().minusDays(60);
+        LocalDateTime dateTimeTo = LocalDateTime.now().minusDays(15);
 
         // when
         List<Ohlcv> ohlcvs = getYahooOhlcvClient().getAssetOhlcvs(asset, Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo);
 
         // then
         log.debug("ohlcvs.size():{}", ohlcvs.size());
-        assertTrue(ohlcvs.size() > 0);
+        assertTrue(ohlcvs.size() >= 60 * 4 * 7);
+        Ohlcv firstOhlcv = ohlcvs.get(0);
+        Ohlcv lastOhlcv = ohlcvs.get(ohlcvs.size()-1);
+        assertTrue(firstOhlcv.getDateTime().isBefore(dateTimeTo));
+        assertTrue(lastOhlcv.getDateTime().isAfter(dateTimeFrom));
     }
 
-    @Disabled
-    @Test
-    void getAssetOhlcvsInExchangeXKRX() {
+    @ParameterizedTest
+    @MethodSource("getAssetInfos")
+    void getAssetMinuteOhlcvsBefore30DaysAgo(String assetId, String exchange) {
         // given
         Asset asset = Asset.builder()
-                .assetId("KR.005930")
-                .exchange("XKRX")
+                .assetId(assetId)
+                .exchange(exchange)
                 .build();
-        createAsset(asset);
-        LocalDateTime dateTimeTo = LocalDateTime.now().minusDays(1);
-        LocalDateTime dateTimeFrom = dateTimeTo.minusWeeks(11);
+        saveAsset(asset);
+        LocalDateTime dateTimeFrom = LocalDateTime.now().minusDays(60);
+        LocalDateTime dateTimeTo = LocalDateTime.now().minusDays(30);
 
         // when
         List<Ohlcv> ohlcvs = getYahooOhlcvClient().getAssetOhlcvs(asset, Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo);
 
         // then
         log.debug("ohlcvs.size():{}", ohlcvs.size());
+        assertTrue(ohlcvs.size() < 1);
+    }
+
+    @ParameterizedTest
+    @MethodSource("getAssetInfos")
+    void getAssetDailyOhlcvsAfter1YearsAgo(String assetId, String exchange) {
+        // given
+        Asset asset = Asset.builder()
+                .assetId(assetId)
+                .exchange(exchange)
+                .build();
+        saveAsset(asset);
+        LocalDateTime dateTimeFrom = LocalDateTime.now().minusMonths(11);
+        LocalDateTime dateTimeTo = LocalDateTime.now();
+
+        // when
+        List<Ohlcv> ohlcvs = getYahooOhlcvClient().getAssetOhlcvs(asset, Ohlcv.Type.DAILY, dateTimeFrom, dateTimeTo);
+
+        // then
+        log.debug("ohlcvs.size():{}", ohlcvs.size());
         assertTrue(ohlcvs.size() > 0);
     }
 
-    @Disabled
-    @Test
-    void getIndiceOhlcvs() {
+    @ParameterizedTest
+    @MethodSource("getAssetInfos")
+    void getAssetDailyOhlcvAcross1YearsAgo(String assetId, String exchange) {
         // given
-        Indice indice = Indice.from(Indice.Id.NDX_FUTURE);
-        LocalDateTime dateTimeTo = LocalDateTime.now().minusDays(1);
-        LocalDateTime dateTimeFrom = dateTimeTo.minusWeeks(11);
+        Asset asset = Asset.builder()
+                .assetId(assetId)
+                .exchange(exchange)
+                .build();
+        saveAsset(asset);
+        LocalDateTime dateTimeFrom = LocalDateTime.now().minusYears(2);
+        LocalDateTime dateTimeTo = LocalDateTime.now().minusMonths(6);
+
+        // when
+        List<Ohlcv> ohlcvs = getYahooOhlcvClient().getAssetOhlcvs(asset, Ohlcv.Type.DAILY, dateTimeFrom, dateTimeTo);
+
+        // then
+        log.debug("ohlcvs.size():{}", ohlcvs.size());
+        assertTrue(ohlcvs.size() > 0);
+    }
+
+    @ParameterizedTest
+    @MethodSource("getAssetInfos")
+    void getAssetDailyOhlcvsBefore1YearsAgo(String assetId, String exchange) {
+        // given
+        Asset asset = Asset.builder()
+                .assetId(assetId)
+                .exchange(exchange)
+                .build();
+        saveAsset(asset);
+        LocalDateTime dateTimeFrom = LocalDateTime.now().minusYears(2);
+        LocalDateTime dateTimeTo = LocalDateTime.now().minusYears(1);
+
+        // when
+        List<Ohlcv> ohlcvs = getYahooOhlcvClient().getAssetOhlcvs(asset, Ohlcv.Type.DAILY, dateTimeFrom, dateTimeTo);
+
+        // then
+        log.debug("ohlcvs.size():{}", ohlcvs.size());
+        assertTrue(ohlcvs.size() < 1);
+    }
+
+    static Stream<Arguments> getIndiceIds() {
+        return Stream.of(
+                Arguments.of(Indice.Id.NDX_FUTURE),
+                Arguments.of(Indice.Id.KOSPI)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("getIndiceIds")
+    void getIndiceMinuteOhlcvsAfter30Days(Indice.Id indiceId) {
+        // given
+        Indice indice = Indice.from(indiceId);
+        LocalDateTime dateTimeFrom = LocalDateTime.now().minusDays(30);
+        LocalDateTime dateTimeTo = LocalDateTime.now();
 
         // when
         List<Ohlcv> ohlcvs = getYahooOhlcvClient().getIndiceOhlcvs(indice, Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo);
 
         // then
         log.debug("ohlcvs.size():{}", ohlcvs.size());
-        assertTrue(ohlcvs.size() > 0);
+        assertTrue(ohlcvs.size() >= 60 * 4 * 15);
+        Ohlcv firstOhlcv = ohlcvs.get(0);
+        Ohlcv lastOhlcv = ohlcvs.get(ohlcvs.size()-1);
+        assertTrue(firstOhlcv.getDateTime().isBefore(dateTimeTo));
+        assertTrue(lastOhlcv.getDateTime().isAfter(dateTimeFrom));
     }
+
 
 }

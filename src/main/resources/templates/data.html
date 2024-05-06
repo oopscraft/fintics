@@ -21,36 +21,12 @@
         const assetOhlcvSummary = new duice.ObjectProxy({
             ohlcvStatistics: []
         });
-        const assetOhlcvSearch = new duice.ObjectProxy({
-            assetId: null,
-            type: null,
-            dateTimeFrom: null,
-            dateTimeTo: null,
-            interpolated: null,
-            _page: 0,
-            _size: 50,
-            _count: 0
-        });
-        duice.ObjectProxy.setReadonly(assetOhlcvSearch, 'assetId', true);
-        const assetOhlcvs = new duice.ArrayProxy([]);
 
         // indice ohlcv
         const indiceOhlcvSummaries = new duice.ArrayProxy([]);
         const indiceOhlcvSummary = new duice.ObjectProxy({
             ohlcvStatistics: []
         });
-        const indiceOhlcvSearch = new duice.ObjectProxy({
-            indiceId: null,
-            type: null,
-            dateTimeFrom: null,
-            dateTimeTo: null,
-            interpolated: null,
-            _page: 0,
-            _size: 50,
-            _count: 0
-        });
-        duice.ObjectProxy.setReadonly(indiceOhlcvSearch, 'indiceId', true);
-        const indiceOhlcvs = new duice.ArrayProxy([]);
 
         function getAssets(page) {
             assetSearch._page = page || 0;
@@ -365,11 +341,11 @@
                     <th>assetName</th>
                     <th>tradeCount</th>
                     <th>dailyCount</th>
-                    <th>dailyInterpolatedCount</th>
-                    <th>dailyInterpolatedMaxDateTime</th>
+                    <th>dailyMinDateTime</th>
+                    <th>dailyMaxDateTime</th>
                     <th>minuteCount</th>
-                    <th>minuteInterpolatedCount</th>
-                    <th>minuteInterpolatedMaxDateTime</th>
+                    <th>minuteMinDateTime</th>
+                    <th>minuteMaxDateTime</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -380,11 +356,11 @@
                     <td data-duice-bind="assetOhlcvSummary" data-duice-property="assetName"></td>
                     <td data-duice-bind="assetOhlcvSummary" data-duice-property="tradeCount"></td>
                     <td data-duice-bind="assetOhlcvSummary" data-duice-property="dailyCount" data-duice-format="number"></td>
-                    <td data-duice-bind="assetOhlcvSummary" data-duice-property="dailyInterpolatedCount" data-duice-format="number"></td>
-                    <td data-duice-bind="assetOhlcvSummary" data-duice-property="dailyInterpolatedMaxDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
+                    <td data-duice-bind="assetOhlcvSummary" data-duice-property="dailyMinDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
+                    <td data-duice-bind="assetOhlcvSummary" data-duice-property="dailyMaxDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
                     <td data-duice-bind="assetOhlcvSummary" data-duice-property="minuteCount" data-duice-format="number"></td>
-                    <td data-duice-bind="assetOhlcvSummary" data-duice-property="minuteInterpolatedCount" data-duice-format="number"></td>
-                    <td data-duice-bind="assetOhlcvSummary" data-duice-property="minuteInterpolatedMaxDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
+                    <td data-duice-bind="assetOhlcvSummary" data-duice-property="minuteMinDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
+                    <td data-duice-bind="assetOhlcvSummary" data-duice-property="minuteMaxDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
                 </tr>
                 <tr data-duice-bind="assetOhlcvSummaries" data-duice-if="return assetOhlcvSummaries.length === 0;">
                     <td colspan="100%" class="text-align--center">No Data</td>
@@ -408,12 +384,12 @@
             <div data-duice-bind="assetOhlcvSummary.ohlcvStatistics" data-duice-loop="ohlcvStatistic,status"
                  data-duice-execute="
                  this.dataset.date = ohlcvStatistic.date;
-                if (ohlcvStatistic.interpolatedCount > 0) {
+                 if (ohlcvStatistic.count < 200) {
                     this.classList.add('background-color--yellow');
-                }
-                if (ohlcvStatistic.count < 360) {
+                 }
+                 if (ohlcvStatistic.count < 2) {
                     this.classList.add('background-color--red');
-                }
+                 }
                 "
                  onclick="getAssetOhlcvs(assetOhlcvSummary.assetId, this.dataset.date);"
                  class="grid-column--1 margin--1px border--1 padding--1em padding-x--1px font-size--smaller link">
@@ -421,7 +397,6 @@
                 <span data-duice-bind="ohlcvStatistic" data-duice-property="date" class="font-weight--bold"></span>
                 <br/>
                 <span data-duice-bind="ohlcvStatistic" data-duice-property="count"></span>
-                (<span data-duice-bind="ohlcvStatistic" data-duice-property="interpolatedCount"></span>)
             </div>
         </div>
     </div>
@@ -444,11 +419,11 @@
                     <th>indiceId</th>
                     <th>indiceName</th>
                     <th>dailyCount</th>
-                    <th>dailyInterpolatedCount</th>
-                    <th>dailyInterpolatedMaxDateTime</th>
+                    <th>dailyMinDateTime</th>
+                    <th>dailyMaxDateTime</th>
                     <th>minuteCount</th>
-                    <th>minuteInterpolatedCount</th>
-                    <th>minuteInterpolatedMaxDateTime</th>
+                    <th>minuteMinDateTime</th>
+                    <th>minuteMaxDateTime</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -458,11 +433,11 @@
                     <td data-duice-bind="indiceOhlcvSummary" data-duice-property="indiceId" class="font-weight--bold"></td>
                     <td data-duice-bind="indiceOhlcvSummary" data-duice-property="indiceName"></td>
                     <td data-duice-bind="indiceOhlcvSummary" data-duice-property="dailyCount" data-duice-format="number"></td>
-                    <td data-duice-bind="indiceOhlcvSummary" data-duice-property="dailyInterpolatedCount" data-duice-format="number"></td>
-                    <td data-duice-bind="indiceOhlcvSummary" data-duice-property="dailyInterpolatedMaxDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
+                    <td data-duice-bind="indiceOhlcvSummary" data-duice-property="dailyMinDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
+                    <td data-duice-bind="indiceOhlcvSummary" data-duice-property="dailyMaxDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
                     <td data-duice-bind="indiceOhlcvSummary" data-duice-property="minuteCount" data-duice-format="number"></td>
-                    <td data-duice-bind="indiceOhlcvSummary" data-duice-property="minuteInterpolatedCount" data-duice-format="number"></td>
-                    <td data-duice-bind="indiceOhlcvSummary" data-duice-property="minuteInterpolatedMaxDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
+                    <td data-duice-bind="indiceOhlcvSummary" data-duice-property="minuteMinDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
+                    <td data-duice-bind="indiceOhlcvSummary" data-duice-property="minuteMaxDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
                 </tr>
                 <tr data-duice-bind="indiceOhlcvSummaries" data-duice-if="return indiceOhlcvSummaries.length === 0;">
                     <td colspan="100%" class="text-align--center">No Data</td>
@@ -486,12 +461,12 @@
             <div data-duice-bind="indiceOhlcvSummary.ohlcvStatistics" data-duice-loop="ohlcvStatistic,status"
                  data-duice-execute="
                  this.dataset.date = ohlcvStatistic.date;
-                if (ohlcvStatistic.interpolatedCount > 0) {
+                 if (ohlcvStatistic.count < 200) {
                     this.classList.add('background-color--yellow');
-                }
-                if (ohlcvStatistic.count < 360) {
+                 }
+                 if (ohlcvStatistic.count < 2) {
                     this.classList.add('background-color--red');
-                }
+                 }
                 "
                  onclick="getIndiceOhlcvs(indiceOhlcvSummary.indiceId, this.dataset.date);"
                  class="grid-column--1 margin--1px border--1 padding--1em padding-x--1px font-size--smaller link">
@@ -499,7 +474,6 @@
                 <span data-duice-bind="ohlcvStatistic" data-duice-property="date" class="font-weight--bold"></span>
                 <br/>
                 <span data-duice-bind="ohlcvStatistic" data-duice-property="count"></span>
-                (<span data-duice-bind="ohlcvStatistic" data-duice-property="interpolatedCount"></span>)
             </div>
         </div>
     </div>
@@ -524,7 +498,6 @@
                     <col/>
                     <col/>
                     <col/>
-                    <col/>
                 </colgroup>
                 <thead>
                 <tr>
@@ -537,7 +510,6 @@
                     <th data-th-text="#{fintics.Ohlcv.lowPrice}"></th>
                     <th data-th-text="#{fintics.Ohlcv.closePrice}"></th>
                     <th data-th-text="#{fintics.Ohlcv.volume}"></th>
-                    <th data-th-text="#{fintics.Ohlcv.interpolated}"></th>
                 </tr>
                 </thead>
                 <tbody class="font-size--smaller">
@@ -552,7 +524,6 @@
                     <td data-duice-bind="assetOhlcv" data-duice-property="lowPrice" data-duice-format="number"></td>
                     <td data-duice-bind="assetOhlcv" data-duice-property="closePrice" data-duice-format="number"></td>
                     <td data-duice-bind="assetOhlcv" data-duice-property="volume" data-duice-format="number"></td>
-                    <td data-duice-bind="assetOhlcv" data-duice-property="interpolated"></td>
                 </tr>
                 <tr data-duice-bind="assetOhlcvsDialog.assetOhlcvs" data-duice-if="return assetOhlcvsDialog.assetOhlcvs.length===0;">
                     <td colspan="100%" class="text-align--center">
@@ -642,7 +613,6 @@
                     <col/>
                     <col/>
                     <col/>
-                    <col/>
                 </colgroup>
                 <thead>
                 <tr>
@@ -655,7 +625,6 @@
                     <th data-th-text="#{fintics.Ohlcv.lowPrice}"></th>
                     <th data-th-text="#{fintics.Ohlcv.closePrice}"></th>
                     <th data-th-text="#{fintics.Ohlcv.volume}"></th>
-                    <th data-th-text="#{fintics.Ohlcv.interpolated}"></th>
                 </tr>
                 </thead>
                 <tbody class="font-size--smaller">
@@ -670,7 +639,6 @@
                     <td data-duice-bind="indiceOhlcv" data-duice-property="lowPrice" data-duice-format="number"></td>
                     <td data-duice-bind="indiceOhlcv" data-duice-property="closePrice" data-duice-format="number"></td>
                     <td data-duice-bind="indiceOhlcv" data-duice-property="volume" data-duice-format="number"></td>
-                    <td data-duice-bind="indiceOhlcv" data-duice-property="interpolated"></td>
                 </tr>
                 <tr data-duice-bind="indiceOhlcvsDialog.indiceOhlcvs" data-duice-if="return indiceOhlcvsDialog.indiceOhlcvs.length===0;">
                     <td colspan="100%" class="text-align--center">

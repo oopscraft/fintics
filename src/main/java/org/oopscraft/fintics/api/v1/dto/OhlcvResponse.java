@@ -17,23 +17,15 @@ public class OhlcvResponse {
 
     private LocalDateTime dateTime;
 
-    @Builder.Default
-    private BigDecimal openPrice = BigDecimal.ZERO;
+    private BigDecimal openPrice;
 
-    @Builder.Default
-    private BigDecimal highPrice = BigDecimal.ZERO;
+    private BigDecimal highPrice;
 
-    @Builder.Default
-    private BigDecimal lowPrice = BigDecimal.ZERO;
+    private BigDecimal lowPrice;
 
-    @Builder.Default
-    private BigDecimal closePrice = BigDecimal.ZERO;
+    private BigDecimal closePrice;
 
-    @Builder.Default
-    private BigDecimal volume = BigDecimal.ZERO;
-
-    @Builder.Default
-    private boolean interpolated = false;
+    private BigDecimal volume;
 
     public static OhlcvResponse from(Ohlcv ohlcv) {
         return OhlcvResponse.builder()
@@ -44,7 +36,6 @@ public class OhlcvResponse {
                 .lowPrice(ohlcv.getLowPrice())
                 .closePrice(ohlcv.getClosePrice())
                 .volume(ohlcv.getVolume())
-                .interpolated(ohlcv.isInterpolated())
                 .build();
     }
 

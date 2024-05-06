@@ -12,11 +12,11 @@
                     fa.asset_name AS "assetName",
                     (SELECT COUNT(*) FROM fintics_trade_asset WHERE asset_id = fta.asset_id) AS "tradeCount",
                     fao.daily_count AS "dailyCount",
-                    fao.daily_interpolated_count AS "dailyInterpolatedCount",
-                    fao.daily_interpolated_max_date_time AS "dailyInterpolatedMaxDateTime",
+                    fao.daily_min_date_time AS "dailyMinDateTime",
+                    fao.daily_max_date_time AS "dailyMaxDateTime",
                     fao.minute_count AS "minuteCount",
-                    fao.minute_interpolated_count AS "minuteInterpolatedCount",
-                    fao.minute_interpolated_max_date_time AS "minuteInterpolatedMaxDateTime"
+                    fao.minute_min_date_time AS "minuteMinDateTime",
+                    fao.minute_max_date_time AS "minuteMaxDateTime"
         FROM 		(
                     SELECT 		DISTINCT
                                 asset_id
@@ -33,11 +33,11 @@
                     (
                     SELECT 	    asset_id,
                                 SUM(CASE WHEN type = 'DAILY' THEN 1 ELSE 0 END) AS daily_count,
-                                SUM(CASE WHEN type = 'DAILY' AND interpolated = 'Y' THEN 1 ELSE 0 END) AS daily_interpolated_count,
-                                MAX(CASE WHEN type = 'DAILY' AND interpolated = 'Y' THEN date_time ELSE NULL END) AS daily_interpolated_max_date_time,
+                                MIN(CASE WHEN type = 'DAILY' THEN date_time ELSE NULL END) AS daily_min_date_time,
+                                MAX(CASE WHEN type = 'DAILY' THEN date_time ELSE NULL END) AS daily_max_date_time,
                                 SUM(CASE WHEN type = 'MINUTE' THEN 1 ELSE 0 END) AS minute_count,
-                                SUM(CASE WHEN type = 'MINUTE' AND interpolated = 'Y' THEN 1 ELSE 0 END) AS minute_interpolated_count,
-                                MAX(CASE WHEN type = 'MINUTE' AND interpolated = 'Y' THEN date_time ELSE NULL END) AS minute_interpolated_max_date_time
+                                MIN(CASE WHEN type = 'MINUTE' THEN date_time ELSE NULL END) AS minute_min_date_time,
+                                MAX(CASE WHEN type = 'MINUTE' THEN date_time ELSE NULL END) AS minute_max_date_time
                     FROM 		fintics_asset_ohlcv
                     WHERE       1 = 1
                     <if test="assetId != null">
@@ -56,11 +56,11 @@
     <select id="selectIndiceOhlcvSummaries" resultType="org.oopscraft.fintics.model.IndiceOhlcvSummary">
         SELECT 	    indice_id AS "indiceId",
                     SUM(CASE WHEN type = 'DAILY' THEN 1 ELSE 0 END) AS "dailyCount",
-                    SUM(CASE WHEN type = 'DAILY' AND interpolated = 'Y' THEN 1 ELSE 0 END) AS "dailyInterpolatedCount",
-                    MAX(CASE WHEN type = 'DAILY' AND interpolated = 'Y' THEN date_time ELSE NULL END) AS "dailyInterpolatedMaxDateTime",
+                    MIN(CASE WHEN type = 'DAILY' THEN date_time ELSE NULL END) AS "dailyMinDateTime",
+                    MAX(CASE WHEN type = 'DAILY' THEN date_time ELSE NULL END) AS "dailyMaxDateTime",
                     SUM(CASE WHEN type = 'MINUTE' THEN 1 ELSE 0 END) AS "minuteCount",
-                    SUM(CASE WHEN type = 'MINUTE' AND interpolated = 'Y' THEN 1 ELSE 0 END) AS "minuteInterpolatedCount",
-                    MAX(CASE WHEN type = 'MINUTE' AND interpolated = 'Y' THEN date_time ELSE NULL END) AS "minuteInterpolatedMaxDateTime"
+                    MIN(CASE WHEN type = 'MINUTE' THEN date_time ELSE NULL END) AS "minuteMinDateTime",
+                    MAX(CASE WHEN type = 'MINUTE' THEN date_time ELSE NULL END) AS "minuteMaxDateTime"
         FROM 		fintics_indice_ohlcv
         WHERE       1 = 1
         <if test="indiceId != null">
@@ -71,8 +71,7 @@
 
     <select id="selectAssetOhlcvStatistics" resultType="org.oopscraft.fintics.model.OhlcvSummary$OhlcvStatistic" useCache="false">
         SELECT 		DATE(date_time) AS "date",
-                    COUNT(*) AS "count",
-                    SUM(CASE WHEN interpolated = 'Y' THEN 1 ELSE 0 END) AS "interpolatedCount"
+                    COUNT(*) AS "count"
         FROM 		fintics_asset_ohlcv
         WHERE 		1 = 1
         AND 		asset_id = #{assetId}
@@ -82,8 +81,7 @@
 
     <select id="selectIndiceOhlcvStatistics" resultType="org.oopscraft.fintics.model.OhlcvSummary$OhlcvStatistic" useCache="false">
         SELECT 		DATE(date_time) AS "date",
-                    COUNT(*) AS "count",
-                    SUM(CASE WHEN interpolated = 'Y' THEN 1 ELSE 0 END) AS "interpolatedCount"
+                    COUNT(*) AS "count"
         FROM 		fintics_indice_ohlcv
         WHERE 		1 = 1
         AND 		indice_id = #{indiceId}

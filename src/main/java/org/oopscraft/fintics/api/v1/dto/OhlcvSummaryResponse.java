@@ -8,7 +8,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Data
 @SuperBuilder
@@ -18,15 +17,15 @@ public abstract class OhlcvSummaryResponse {
 
     private Long dailyCount;
 
-    private Long dailyInterpolatedCount;
+    private LocalDateTime dailyMinDateTime;
 
-    private LocalDateTime dailyInterpolatedMaxDateTime;
+    private LocalDateTime dailyMaxDateTime;
 
     private Long minuteCount;
 
-    private Long minuteInterpolatedCount;
+    private LocalDateTime minuteMinDateTime;
 
-    private LocalDateTime minuteInterpolatedMaxDateTime;
+    private LocalDateTime minuteMaxDateTime;
 
     @Builder.Default
     @Setter
@@ -39,13 +38,11 @@ public abstract class OhlcvSummaryResponse {
     public static class OhlcvStatisticResponse {
         private LocalDate date;
         private Long count;
-        private Long interpolatedCount;
 
         public static OhlcvStatisticResponse from(OhlcvSummary.OhlcvStatistic ohlcvStatistic) {
             return OhlcvStatisticResponse.builder()
                     .date(ohlcvStatistic.getDate())
                     .count(ohlcvStatistic.getCount())
-                    .interpolatedCount(ohlcvStatistic.getInterpolatedCount())
                     .build();
         }
 

@@ -142,6 +142,8 @@ insert into `fintics_asset`
     ('KR.229200','KODEX 코스닥150','XKRX','ETF'),
     ('KR.252670','KODEX 200선물인버스2X','XKRX','ETF'),
     ('KR.251340','KODEX 코스닥150선물인버스','XKRX','ETF'),
+    ('US.AAPL','Apple Inc. Common Stock','XNAS','STOCK'),
+    ('US.SPY','SPDR S&P 500','XASE','ETF'),
     ('UPBIT.KRW-BTC','Bitcoin',null,null),
     ('UPBIT.KRW-ETH','Ethereum',null,null);
 
@@ -149,6 +151,7 @@ insert into `fintics_asset`
 insert into `fintics_broker`
     (`broker_id`,`broker_name`,`broker_client_id`,`broker_client_properties`) values
     ('ca5f55cd88694715bcb4c478710d9a68','Korea Investment Test','KIS',null),
+    ('961eb9c68c9547ce9ae61bbe3be7f037','Korea Investment US Test','KIS_US',null),
     ('a135ee9a276f4edf81d6e1b6b9d31e39','Upbit Test','UPBIT',null);
 
 -- fintics_strategy
@@ -156,7 +159,7 @@ insert into `fintics_strategy`
     (`strategy_id`,`strategy_name`,`language`,`script`) values
     ('7c94187b346f4727a0f2478fdc53064f','Test Rule','GROOVY','return null');
 
--- fintics_trade: 한국투자증권 모의투자 - 지수ETF
+-- fintics_trade: 한국투자증권 모의투자 - 국내
 insert into `fintics_trade`
     (`trade_id`,`trade_name`,`enabled`,`interval`,`threshold`,`start_at`,`end_at`,`broker_id`,`strategy_id`,`strategy_variables`,`alarm_id`,`order_kind`) values
     ('06c228451ce0400fa57bb36f0568d7cb','한국투자증권 모의투자 - 지수ETF','N','60','3','09:00','15:30',
@@ -167,16 +170,16 @@ values
     ('06c228451ce0400fa57bb36f0568d7cb','KR.122630','N','50'),
     ('06c228451ce0400fa57bb36f0568d7cb','KR.229200','Y','50');
 
--- fintics_trade: 한국투자증권 모의투자 - 지수ETF(인버스)
+-- fintics_trade: 한국투자증권 모의투자 - 미국
 insert into `fintics_trade`
     (`trade_id`,`trade_name`,`enabled`,`interval`,`threshold`,`start_at`,`end_at`,`broker_id`,`strategy_id`,`strategy_variables`,`alarm_id`,`order_kind`) values
-    ('7af6bc641eef4254b12dd9fa1d43384d','한국투자증권 모의투자 - 지수ETF(인버스)','N','60','3','09:00','15:30',
-     'ca5f55cd88694715bcb4c478710d9a68','7c94187b346f4727a0f2478fdc53064f', null, null, 'LIMIT');
+    ('7af6bc641eef4254b12dd9fa1d43384d','한국투자증권 모의투자 - 미국','N','60','3','10:30','06:00',
+     '961eb9c68c9547ce9ae61bbe3be7f037','7c94187b346f4727a0f2478fdc53064f', null, null, 'LIMIT');
 insert into `fintics_trade_asset`
     (`trade_id`,`asset_id`,`enabled`, `hold_ratio`)
 values
-    ('7af6bc641eef4254b12dd9fa1d43384d','KR.252670','N','40'),
-    ('7af6bc641eef4254b12dd9fa1d43384d','KR.251340','Y','40');
+    ('7af6bc641eef4254b12dd9fa1d43384d','US.AAPL','N','40'),
+    ('7af6bc641eef4254b12dd9fa1d43384d','US.SPY','Y','40');
 
 -- fintics_trade: 업비트 API(장시간 외 트레이드 테스트용)
 insert into `fintics_trade`

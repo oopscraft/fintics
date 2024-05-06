@@ -25,6 +25,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 @ConditionalOnProperty(prefix = "fintics", name = "ohlcv-client-class-name", havingValue="org.oopscraft.fintics.client.ohlcv.YahooOhlcvClient")
@@ -37,13 +38,19 @@ public class YahooOhlcvClient extends OhlcvClient {
     @Override
     public List<Ohlcv> getAssetOhlcvs(Asset asset, Ohlcv.Type type, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo) {
         String yahooSymbol = convertToYahooSymbol(asset);
-        return getOhlcvs(yahooSymbol, type, dateTimeFrom, dateTimeTo);
+        return switch (type) {
+            case MINUTE -> getMinuteOhlcvs(yahooSymbol, dateTimeFrom, dateTimeTo);
+            case DAILY -> getDailyOhlcvs(yahooSymbol, dateTimeFrom, dateTimeTo);
+        };
     }
 
     @Override
     public List<Ohlcv> getIndiceOhlcvs(Indice indice, Ohlcv.Type type, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo) {
         String yahooSymbol = convertToYahooSymbol(indice.getIndiceId());
-        return getOhlcvs(yahooSymbol, type, dateTimeFrom, dateTimeTo);
+        return switch (type) {
+            case MINUTE -> getMinuteOhlcvs(yahooSymbol, dateTimeFrom, dateTimeTo);
+            case DAILY -> getDailyOhlcvs(yahooSymbol, dateTimeFrom, dateTimeTo);
+        };
     }
 
     String convertToYahooSymbol(Indice.Id indiceId) {
@@ -71,68 +78,133 @@ public class YahooOhlcvClient extends OhlcvClient {
         return yahooSymbol;
     }
 
-    List<Ohlcv> getOhlcvs(String yahooSymbol, Ohlcv.Type type, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo) {
+    List<Ohlcv> getMinuteOhlcvs(String yahooSymbol, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo) {
+        int validDays = 29;
+        // check date time to
+        if(dateTimeTo.isBefore(LocalDateTime.now().minusDays(validDays))) {
+            return new ArrayList<>();
+        }
+
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
         HttpHeaders headers = createYahooHeader();
-
-        // url
-        String url = String.format("https://query1.finance.yahoo.com/v8/finance/chart/%s", yahooSymbol);
-        url = UriComponentsBuilder.fromUriString(url)
-                .queryParam("symbol", yahooSymbol)
-                .queryParam("interval", "-")
-                .queryParam("period1", dateTimeFrom.atZone(ZoneId.systemDefault()).toEpochSecond())
-                .queryParam("period2", dateTimeTo.atZone(ZoneId.systemDefault()).toEpochSecond())
-                .queryParam("corsDomain", "finance.yahoo.com")
-                .build()
-                .toUriString();
-
-        // intervals
-        List<String> intervals = null;
-        switch(type) {
-            case MINUTE -> intervals = List.of("1m","2m","5m","15m","30m","60m","90m");
-            case DAILY -> intervals = List.of("1d","5d");
-        }
-
-        // try request
-        String interval = null;
-        ResponseEntity<String> responseEntity = null;
-        for(int i = 0; i < intervals.size(); i ++) {
-            interval = intervals.get(i);
-            try {
-                url = UriComponentsBuilder.fromUriString(url)
-                        .replaceQueryParam("interval", interval)
-                        .build()
-                        .toUriString();
-                RequestEntity<Void> requestEntity = RequestEntity
-                        .get(url)
-                        .headers(headers)
-                        .build();
-                responseEntity = restTemplate.exchange(requestEntity, String.class);
-            } catch(Throwable e) {
-                log.debug(e.getMessage());
-                continue;
+        String interval = "1m";
+        LocalDateTime period2 = dateTimeTo.truncatedTo(ChronoUnit.MINUTES);
+        LocalDateTime period1;
+        Map<LocalDateTime, Ohlcv> minuteOhlcvMap = new LinkedHashMap<>();
+        for (int i = 0; i < 10; i ++) {
+            // period1
+            period1 = period2.minusDays(7);
+            if (period1.isBefore(dateTimeFrom)) {
+                period1 = dateTimeFrom.truncatedTo(ChronoUnit.MINUTES);
             }
-            break;
+            if (period1.isBefore(LocalDateTime.now().minusDays(validDays))) {
+                period1 = LocalDateTime.now().minusDays(validDays);
+            }
+
+            String url = String.format("https://query1.finance.yahoo.com/v8/finance/chart/%s", yahooSymbol);
+            url = UriComponentsBuilder.fromUriString(url)
+                    .queryParam("symbol", yahooSymbol)
+                    .queryParam("interval", interval)
+                    .queryParam("period1", period1.atZone(ZoneId.systemDefault()).toEpochSecond())
+                    .queryParam("period2", period2.atZone(ZoneId.systemDefault()).toEpochSecond())
+                    .queryParam("corsDomain", "finance.yahoo.com")
+                    .build()
+                    .toUriString();
+            RequestEntity<Void> requestEntity = RequestEntity
+                    .get(url)
+                    .headers(headers)
+                    .build();
+            ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+            JsonNode rootNode;
+            try {
+                rootNode = objectMapper.readTree(responseEntity.getBody());
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+            Map<LocalDateTime, Ohlcv> ohlcvMap = convertRootNodeToOhlcv(Ohlcv.Type.MINUTE, rootNode);
+            minuteOhlcvMap.putAll(ohlcvMap);
+
+            // next period2 and check break
+            period2 = period1.minusMinutes(1);
+            if (period2.isBefore(dateTimeFrom)) {
+                break;
+            }
+            if (period2.isBefore(LocalDateTime.now().minusDays(validDays))) {
+                break;
+            }
         }
 
-        // response body is null, return empty list
-        if(responseEntity == null) {
+        // check date time is in range (holiday is not matched)
+        List<Ohlcv> minuteOhlcvs = minuteOhlcvMap.values().stream()
+                .filter(ohlcv -> {
+                    LocalDateTime dateTime = ohlcv.getDateTime();
+                    return (dateTime.isAfter(dateTimeFrom) || dateTime.isEqual(dateTimeFrom))
+                            && (dateTime.isBefore(dateTimeTo) || dateTime.isEqual(dateTimeTo));
+                }).collect(Collectors.toList());
+
+        // sort by dateTime(sometimes response is not ordered)
+        minuteOhlcvs.sort(Comparator
+                .comparing(Ohlcv::getDateTime)
+                .reversed());
+        // return
+        return minuteOhlcvs;
+    }
+
+    List<Ohlcv> getDailyOhlcvs(String yahooSymbol, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo) {
+        int validYears = 1;
+        // check date time to
+        if(dateTimeTo.isBefore(LocalDateTime.now().minusYears(validYears))) {
             return new ArrayList<>();
         }
 
+        RestTemplate restTemplate = RestTemplateBuilder.create()
+                .insecure(true)
+                .build();
+        HttpHeaders headers = createYahooHeader();
+        String interval = "1d";
+        LocalDateTime period2 = dateTimeTo.truncatedTo(ChronoUnit.DAYS);
+        LocalDateTime period1 = dateTimeFrom.truncatedTo(ChronoUnit.DAYS);
+        String url = String.format("https://query1.finance.yahoo.com/v8/finance/chart/%s", yahooSymbol);
+        url = UriComponentsBuilder.fromUriString(url)
+                .queryParam("symbol", yahooSymbol)
+                .queryParam("interval", interval)
+                .queryParam("period1", period1.atZone(ZoneId.systemDefault()).toEpochSecond())
+                .queryParam("period2", period2.atZone(ZoneId.systemDefault()).toEpochSecond())
+                .queryParam("corsDomain", "finance.yahoo.com")
+                .build()
+                .toUriString();
+        RequestEntity<Void> requestEntity = RequestEntity
+                .get(url)
+                .headers(headers)
+                .build();
+        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
         JsonNode rootNode;
         try {
             rootNode = objectMapper.readTree(responseEntity.getBody());
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-        List<Map<String, Object>> results = objectMapper.convertValue(rootNode.path("chart").path("result"), new TypeReference<>(){});
-        if(results == null || results.isEmpty()) {
-            throw new NoSuchElementException();
-        }
+        Map<LocalDateTime, Ohlcv> dailyOhlcvMap = convertRootNodeToOhlcv(Ohlcv.Type.MINUTE, rootNode);
 
+        // check date time is in range (holiday is not matched)
+        List<Ohlcv> dailyOhlcvs = dailyOhlcvMap.values().stream()
+                .filter(ohlcv -> {
+                    LocalDateTime dateTime = ohlcv.getDateTime();
+                    return (dateTime.isAfter(dateTimeFrom) || dateTime.isEqual(dateTimeFrom))
+                            && (dateTime.isBefore(dateTimeTo) || dateTime.isEqual(dateTimeTo));
+                }).collect(Collectors.toList());
+
+        // sort by dateTime(sometimes response is not ordered)
+        dailyOhlcvs.sort(Comparator
+                .comparing(Ohlcv::getDateTime)
+                .reversed());
+        // return
+        return dailyOhlcvs;
+    }
+
+    Map<LocalDateTime, Ohlcv> convertRootNodeToOhlcv(Ohlcv.Type type, JsonNode rootNode) {
         JsonNode resultNode = rootNode.path("chart").path("result").get(0);
         List<Long> timestamps = objectMapper.convertValue(resultNode.path("timestamp"), new TypeReference<>(){});
         JsonNode quoteNode = resultNode.path("indicators").path("quote").get(0);
@@ -149,20 +221,11 @@ public class YahooOhlcvClient extends OhlcvClient {
                 LocalDateTime dateTime = Instant.ofEpochSecond(timestamps.get(i))
                         .atZone(ZoneId.systemDefault())
                         .toLocalDateTime();
-
                 // truncates dateTime
                 switch(type) {
                     case MINUTE -> dateTime = dateTime.truncatedTo(ChronoUnit.MINUTES);
                     case DAILY -> dateTime = dateTime.truncatedTo(ChronoUnit.DAYS);
                 }
-
-                // check date time is in range (holiday is not matched)
-                boolean inRange = (dateTime.isAfter(dateTimeFrom) || dateTime.isEqual(dateTimeFrom))
-                        && (dateTime.isBefore(dateTimeTo) || dateTime.isEqual(dateTimeTo));
-                if(!inRange) {
-                    continue;
-                }
-
                 // ohlcv value
                 BigDecimal openPrice = opens.get(i);
                 if(openPrice == null) {     // sometimes open price is null (data error)
@@ -182,55 +245,9 @@ public class YahooOhlcvClient extends OhlcvClient {
                         .volume(volume.setScale(2, RoundingMode.HALF_UP))
                         .build();
                 ohlcvMap.put(dateTime, ohlcv);
-
-                // interpolates minute ohlcv
-                if(type == Ohlcv.Type.MINUTE) {
-                    int intervalMinutes = Integer.parseInt(interval.replace("m",""));
-                    for(int j = 1; j < intervalMinutes; j++) {
-                        LocalDateTime interpolatedDateTime = dateTime.plusMinutes(j);
-                        Ohlcv interpolatedOhlcv = Ohlcv.builder()
-                                .dateTime(interpolatedDateTime)
-                                .type(type)
-                                .openPrice(openPrice.setScale(2, RoundingMode.HALF_UP))
-                                .highPrice(highPrice.setScale(2, RoundingMode.HALF_UP))
-                                .lowPrice(lowPrice.setScale(2, RoundingMode.HALF_UP))
-                                .closePrice(closePrice.setScale(2, RoundingMode.HALF_UP))
-                                .volume(BigDecimal.ZERO)
-                                .interpolated(true)
-                                .build();
-                        ohlcvMap.put(interpolatedDateTime, interpolatedOhlcv);
-                    }
-                }
-                // interpolates daily ohlcv
-                if(type == Ohlcv.Type.DAILY) {
-                    int intervalDays = Integer.parseInt(interval.replace("d",""));
-                    for(int j = 1; j < intervalDays; j++) {
-                        LocalDateTime interpolatedDateTime = dateTime.plusDays(j);
-                        Ohlcv interpolatedOhlcv = Ohlcv.builder()
-                                .dateTime(interpolatedDateTime)
-                                .type(type)
-                                .openPrice(openPrice.setScale(2, RoundingMode.HALF_UP))
-                                .highPrice(highPrice.setScale(2, RoundingMode.HALF_UP))
-                                .lowPrice(lowPrice.setScale(2, RoundingMode.HALF_UP))
-                                .closePrice(closePrice.setScale(2, RoundingMode.HALF_UP))
-                                .volume(BigDecimal.ZERO)
-                                .interpolated(true)
-                                .build();
-                        ohlcvMap.put(interpolatedDateTime, interpolatedOhlcv);
-                    }
-                }
-
             }
         }
-        List<Ohlcv> ohlcvs = new ArrayList<>(ohlcvMap.values());
-
-        // sort by dateTime(sometimes response is not ordered)
-        ohlcvs.sort(Comparator
-                .comparing(Ohlcv::getDateTime)
-                .reversed());
-
-        // return
-        return ohlcvs;
+        return ohlcvMap;
     }
 
     private HttpHeaders createYahooHeader() {

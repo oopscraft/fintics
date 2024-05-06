@@ -20,11 +20,11 @@ public class IndiceOhlcvSummaryResponse extends OhlcvSummaryResponse {
                 .indiceId(indiceOhlcvSummary.getIndiceId())
                 .indiceName(indiceOhlcvSummary.getIndiceName())
                 .dailyCount(indiceOhlcvSummary.getDailyCount())
-                .dailyInterpolatedCount(indiceOhlcvSummary.getDailyInterpolatedCount())
-                .dailyInterpolatedMaxDateTime(indiceOhlcvSummary.getDailyInterpolatedMaxDateTime())
+                .dailyMinDateTime(indiceOhlcvSummary.getDailyMinDateTime())
+                .dailyMaxDateTime(indiceOhlcvSummary.getDailyMaxDateTime())
                 .minuteCount(indiceOhlcvSummary.getMinuteCount())
-                .minuteInterpolatedCount(indiceOhlcvSummary.getMinuteInterpolatedCount())
-                .minuteInterpolatedMaxDateTime(indiceOhlcvSummary.getMinuteInterpolatedMaxDateTime())
+                .minuteMinDateTime(indiceOhlcvSummary.getMinuteMinDateTime())
+                .minuteMaxDateTime(indiceOhlcvSummary.getMinuteMaxDateTime())
                 .ohlcvStatistics(indiceOhlcvSummary.getOhlcvStatistics().stream().map(OhlcvStatisticResponse::from).toList())
                 .build();
     }

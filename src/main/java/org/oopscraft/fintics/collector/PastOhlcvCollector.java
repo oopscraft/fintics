@@ -1,34 +1,20 @@
-package org.oopscraft.fintics.scheduler;
+package org.oopscraft.fintics.collector;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
 import org.oopscraft.fintics.FinticsProperties;
 import org.oopscraft.fintics.client.ohlcv.OhlcvClient;
 import org.oopscraft.fintics.dao.*;
 import org.oopscraft.fintics.model.*;
 import org.oopscraft.fintics.service.IndiceService;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.RequestEntity;
-import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -116,7 +102,6 @@ public class PastOhlcvCollector extends OhlcvCollector {
                         .lowPrice(ohlcv.getLowPrice())
                         .closePrice(ohlcv.getClosePrice())
                         .volume(ohlcv.getVolume())
-                        .interpolated(ohlcv.isInterpolated())
                         .build())
                 .collect(Collectors.toList());
         String unitName = String.format("pastAssetMinuteOhlcvEntities[%s]", asset.getAssetName());
@@ -146,7 +131,6 @@ public class PastOhlcvCollector extends OhlcvCollector {
                         .lowPrice(ohlcv.getLowPrice())
                         .closePrice(ohlcv.getClosePrice())
                         .volume(ohlcv.getVolume())
-                        .interpolated(ohlcv.isInterpolated())
                         .build())
                 .collect(Collectors.toList());
         String unitName = String.format("pastAssetDailyOhlcvEntities[%s]", asset.getAssetName());
@@ -176,7 +160,6 @@ public class PastOhlcvCollector extends OhlcvCollector {
                         .lowPrice(ohlcv.getLowPrice())
                         .closePrice(ohlcv.getClosePrice())
                         .volume(ohlcv.getVolume())
-                        .interpolated(ohlcv.isInterpolated())
                         .build())
                 .collect(Collectors.toList());
         String unitName = String.format("pastIndiceMinuteOhlcvEntities[%s]", indice.getIndiceId());
@@ -206,7 +189,6 @@ public class PastOhlcvCollector extends OhlcvCollector {
                         .lowPrice(ohlcv.getLowPrice())
                         .closePrice(ohlcv.getClosePrice())
                         .volume(ohlcv.getVolume())
-                        .interpolated(ohlcv.isInterpolated())
                         .build())
                 .collect(Collectors.toList());
         String unitName = String.format("pastIndiceDailyOhlcvEntities[%s]", indice.getIndiceId());

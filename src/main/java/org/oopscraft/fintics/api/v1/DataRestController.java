@@ -92,7 +92,6 @@ public class DataRestController {
             @RequestParam(value = "type", required = false) Ohlcv.Type type,
             @RequestParam(value = "dateTimeFrom", required = false) ZonedDateTime zonedDateTimeFrom,
             @RequestParam(value = "dateTimeTo", required = false) ZonedDateTime zonedDateTimeTo,
-            @RequestParam(value = "interpolated", required = false) Boolean interpolated,
             Pageable pageable
     ) {
         LocalDateTime dateTimeFrom = Optional.ofNullable(zonedDateTimeFrom)
@@ -101,7 +100,7 @@ public class DataRestController {
         LocalDateTime dateTimeTo = Optional.ofNullable(zonedDateTimeTo)
                 .map(item -> item.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime())
                 .orElse(null);
-        List<AssetOhlcvResponse> assetOhlcvResponses = dataService.getAssetOhlcvs(assetId, type, dateTimeFrom, dateTimeTo, interpolated, pageable).stream()
+        List<AssetOhlcvResponse> assetOhlcvResponses = dataService.getAssetOhlcvs(assetId, type, dateTimeFrom, dateTimeTo, pageable).stream()
                 .map(AssetOhlcvResponse::from)
                 .toList();
         return ResponseEntity.ok()
@@ -156,7 +155,6 @@ public class DataRestController {
             @RequestParam(value = "type", required = false) Ohlcv.Type type,
             @RequestParam(value = "dateTimeFrom", required = false) ZonedDateTime zonedDateTimeFrom,
             @RequestParam(value = "dateTimeTo", required = false) ZonedDateTime zonedDateTimeTo,
-            @RequestParam(value = "interpolated", required = false) Boolean interpolated,
             Pageable pageable
     ) {
         LocalDateTime dateTimeFrom = Optional.ofNullable(zonedDateTimeFrom)
@@ -165,7 +163,7 @@ public class DataRestController {
         LocalDateTime dateTimeTo = Optional.ofNullable(zonedDateTimeTo)
                 .map(item -> item.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime())
                 .orElse(null);
-        List<IndiceOhlcvResponse> indiceOhlcvResponses = dataService.getIndiceOhlcvs(indiceId, type, dateTimeFrom, dateTimeTo, interpolated, pageable).stream()
+        List<IndiceOhlcvResponse> indiceOhlcvResponses = dataService.getIndiceOhlcvs(indiceId, type, dateTimeFrom, dateTimeTo, pageable).stream()
                 .map(IndiceOhlcvResponse::from)
                 .toList();
         return ResponseEntity.ok()

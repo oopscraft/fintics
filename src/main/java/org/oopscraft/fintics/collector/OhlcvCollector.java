@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.scheduler;
+package org.oopscraft.fintics.collector;
 
 import lombok.RequiredArgsConstructor;
 import org.oopscraft.fintics.dao.OhlcvEntity;
@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RequiredArgsConstructor
-public abstract class OhlcvCollector extends AbstractScheduler {
+public abstract class OhlcvCollector extends AbstractCollector {
 
     protected <T extends OhlcvEntity> List<T> extractNewOrChangedOhlcvEntities(List<T> ohlcvEntities, List<T> previousOhlcvEntities) {
         return ohlcvEntities.stream()

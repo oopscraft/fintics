@@ -19,23 +19,15 @@ public class Ohlcv {
 
     private LocalDateTime dateTime;
 
-    @Builder.Default
-    private BigDecimal openPrice = BigDecimal.ZERO;
+    private BigDecimal openPrice;
 
-    @Builder.Default
-    private BigDecimal highPrice = BigDecimal.ZERO;
+    private BigDecimal highPrice;
 
-    @Builder.Default
-    private BigDecimal lowPrice = BigDecimal.ZERO;
+    private BigDecimal lowPrice;
 
-    @Builder.Default
-    private BigDecimal closePrice = BigDecimal.ZERO;
+    private BigDecimal closePrice;
 
-    @Builder.Default
-    private BigDecimal volume = BigDecimal.ZERO;
-
-    @Builder.Default
-    private boolean interpolated = false;
+    private BigDecimal volume;
 
     public enum Type { MINUTE, DAILY }
 
@@ -62,7 +54,6 @@ public class Ohlcv {
                 .lowPrice(ohlcvEntity.getLowPrice())
                 .closePrice(ohlcvEntity.getClosePrice())
                 .volume(ohlcvEntity.getVolume())
-                .interpolated(ohlcvEntity.isInterpolated())
                 .build();
     }
 

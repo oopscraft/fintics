@@ -25,11 +25,11 @@ public class AssetOhlcvSummaryResponse extends OhlcvSummaryResponse implements S
                 .assetName(assetOhlcvSummary.getAssetName())
                 .tradeCount(assetOhlcvSummary.getTradeCount())
                 .dailyCount(assetOhlcvSummary.getDailyCount())
-                .dailyInterpolatedCount(assetOhlcvSummary.getDailyInterpolatedCount())
-                .dailyInterpolatedMaxDateTime(assetOhlcvSummary.getDailyInterpolatedMaxDateTime())
+                .dailyMinDateTime(assetOhlcvSummary.getDailyMinDateTime())
+                .dailyMaxDateTime(assetOhlcvSummary.getDailyMaxDateTime())
                 .minuteCount(assetOhlcvSummary.getMinuteCount())
-                .minuteInterpolatedCount(assetOhlcvSummary.getMinuteInterpolatedCount())
-                .minuteInterpolatedMaxDateTime(assetOhlcvSummary.getMinuteInterpolatedMaxDateTime())
+                .minuteMinDateTime(assetOhlcvSummary.getMinuteMinDateTime())
+                .minuteMaxDateTime(assetOhlcvSummary.getMinuteMaxDateTime())
                 .ohlcvStatistics(assetOhlcvSummary.getOhlcvStatistics().stream().map(OhlcvStatisticResponse::from).toList())
                 .build();
     }

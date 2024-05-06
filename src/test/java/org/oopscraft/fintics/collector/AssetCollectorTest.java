@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.scheduler;
+package org.oopscraft.fintics.collector;
 
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Disabled;

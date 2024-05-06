@@ -24,7 +24,6 @@ public class AssetOhlcvResponse extends OhlcvResponse {
                 .lowPrice(assetOhlcv.getLowPrice())
                 .closePrice(assetOhlcv.getClosePrice())
                 .volume(assetOhlcv.getVolume())
-                .interpolated(assetOhlcv.isInterpolated())
                 .build();
     }
 

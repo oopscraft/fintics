@@ -66,7 +66,7 @@ public class DataService {
         return Optional.of(assetOhlcvSummary);
     }
 
-    public List<AssetOhlcv> getAssetOhlcvs(String assetId, Ohlcv.Type type, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo, Boolean interpolated, Pageable pageable) {
+    public List<AssetOhlcv> getAssetOhlcvs(String assetId, Ohlcv.Type type, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo, Pageable pageable) {
         QAssetOhlcvEntity qAssetOhlcvEntity = QAssetOhlcvEntity.assetOhlcvEntity;
         JPAQuery<AssetOhlcvEntity> query = jpaQueryFactory
                 .selectFrom(qAssetOhlcvEntity)
@@ -74,8 +74,7 @@ public class DataService {
                         Optional.ofNullable(assetId).map(qAssetOhlcvEntity.assetId::eq).orElse(null),
                         Optional.ofNullable(type).map(qAssetOhlcvEntity.type::eq).orElse(null),
                         Optional.ofNullable(dateTimeFrom).map(qAssetOhlcvEntity.dateTime::goe).orElse(null),
-                        Optional.ofNullable(dateTimeTo).map(qAssetOhlcvEntity.dateTime::loe).orElse(null),
-                        Optional.ofNullable(interpolated).map(qAssetOhlcvEntity.interpolated::eq).orElse(null)
+                        Optional.ofNullable(dateTimeTo).map(qAssetOhlcvEntity.dateTime::loe).orElse(null)
                 )
                 .orderBy(qAssetOhlcvEntity.dateTime.desc())
                 .limit(pageable.getPageSize())
@@ -107,7 +106,6 @@ public class DataService {
                         .lowPrice(ohlcv.getLowPrice())
                         .closePrice(ohlcv.getClosePrice())
                         .volume(ohlcv.getVolume())
-                        .interpolated(ohlcv.isInterpolated())
                         .build();
                 assetOhlcvRepository.saveAndFlush(assetOhlcvEntity);
             }
@@ -127,7 +125,7 @@ public class DataService {
         return Optional.of(indiceOhlcvSummary);
     }
 
-    public List<IndiceOhlcv> getIndiceOhlcvs(Indice.Id indiceId, Ohlcv.Type type, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo, Boolean interpolated, Pageable pageable) {
+    public List<IndiceOhlcv> getIndiceOhlcvs(Indice.Id indiceId, Ohlcv.Type type, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo, Pageable pageable) {
         QIndiceOhlcvEntity qIndiceOhlcvEntity = QIndiceOhlcvEntity.indiceOhlcvEntity;
         JPAQuery<IndiceOhlcvEntity> query = jpaQueryFactory
                 .selectFrom(qIndiceOhlcvEntity)
@@ -135,8 +133,7 @@ public class DataService {
                         Optional.ofNullable(indiceId).map(qIndiceOhlcvEntity.indiceId::eq).orElse(null),
                         Optional.ofNullable(type).map(qIndiceOhlcvEntity.type::eq).orElse(null),
                         Optional.ofNullable(dateTimeFrom).map(qIndiceOhlcvEntity.dateTime::goe).orElse(null),
-                        Optional.ofNullable(dateTimeTo).map(qIndiceOhlcvEntity.dateTime::loe).orElse(null),
-                        Optional.ofNullable(interpolated).map(qIndiceOhlcvEntity.interpolated::eq).orElse(null)
+                        Optional.ofNullable(dateTimeTo).map(qIndiceOhlcvEntity.dateTime::loe).orElse(null)
                 )
                 .orderBy(qIndiceOhlcvEntity.dateTime.desc())
                 .limit(pageable.getPageSize())
@@ -168,12 +165,10 @@ public class DataService {
                         .lowPrice(ohlcv.getLowPrice())
                         .closePrice(ohlcv.getClosePrice())
                         .volume(ohlcv.getVolume())
-                        .interpolated(ohlcv.isInterpolated())
                         .build();
                 indiceOhlcvRepository.saveAndFlush(indiceOhlcvEntity);
             }
         }
     }
-
 
 }

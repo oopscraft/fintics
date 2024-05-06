@@ -42,8 +42,4 @@ public abstract class OhlcvEntity extends BaseEntity {
     @Column(name = "volume")
     private BigDecimal volume;
 
-    @Column(name = "interpolated")
-    @Convert(converter = BooleanToYNConverter.class)
-    private boolean interpolated;
-
 }

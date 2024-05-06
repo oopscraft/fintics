@@ -17,15 +17,15 @@ public abstract class OhlcvSummary implements Serializable {
 
     private Long dailyCount;
 
-    private Long dailyInterpolatedCount;
+    private LocalDateTime dailyMinDateTime;
 
-    private LocalDateTime dailyInterpolatedMaxDateTime;
+    private LocalDateTime dailyMaxDateTime;
 
     private Long minuteCount;
 
-    private Long minuteInterpolatedCount;
+    private LocalDateTime minuteMinDateTime;
 
-    private LocalDateTime minuteInterpolatedMaxDateTime;
+    private LocalDateTime minuteMaxDateTime;
 
     @Builder.Default
     @Setter
@@ -38,7 +38,6 @@ public abstract class OhlcvSummary implements Serializable {
     public static class OhlcvStatistic implements Serializable {
         private LocalDate date;
         private Long count;
-        private Long interpolatedCount;
     }
 
 }
