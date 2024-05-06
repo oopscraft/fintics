@@ -58,7 +58,7 @@ public class PastOhlcvCollector extends OhlcvCollector {
                         collectPastAssetDailyOhlcvs(tradeAsset, expiredDateTime);
                     } catch (Throwable e) {
                         log.warn(e.getMessage());
-                        sendSystemAlarm(this.getClass(), String.format("%s - %s", tradeEntity.getTradeName(), e.getMessage()));
+                        sendSystemAlarm(this.getClass(), String.format("[%s] %s - %s", tradeEntity.getTradeName(), tradeAsset.getAssetName(), e.getMessage()));
                     }
                 }
             }
@@ -70,7 +70,7 @@ public class PastOhlcvCollector extends OhlcvCollector {
                     collectPastIndiceDailyOhlcvs(indice, expiredDateTime);
                 } catch (Throwable e) {
                     log.warn(e.getMessage());
-                    sendSystemAlarm(this.getClass(), String.format("%s - %s", indice.getIndiceId(), e.getMessage()));
+                    sendSystemAlarm(this.getClass(), String.format("[%s] %s - %s", indice.getIndiceId(), indice.getIndiceName(), e.getMessage()));
                 }
             }
             log.info("PastOhlcvCollector - End collect past asset ohlcv");
