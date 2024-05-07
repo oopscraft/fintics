@@ -165,12 +165,11 @@ class Analysis implements Analyzable {
 // define
 //================================
 // config
+log.info("variables: {}", variables)
 def waveOhlcvType = variables['waveOhlcvType'] as Ohlcv.Type
 def waveOhlcvPeriod = variables['waveOhlcvPeriod'] as Integer
 def tideOhlcvType = variables['tideOhlcvType'] as Ohlcv.Type
 def tideOhlcvPeriod = variables['tideOhlcvPeriod'] as Integer
-log.info("waveOhlcvType(Period): {}({})", waveOhlcvType, waveOhlcvPeriod)
-log.info("tideOhlcvType(Period): {}({})", tideOhlcvType, tideOhlcvPeriod)
 
 // default
 def hold = null
@@ -178,15 +177,19 @@ List<Ohlcv> ohlcvs = assetProfile.getOhlcvs(Ohlcv.Type.MINUTE, 1)
 
 // ripple
 def analysis = new Analysis(ohlcvs)
-log.info("analysis: {}", analysis)
 
 // wave
 def waveAnalysis = new Analysis(assetProfile.getOhlcvs(waveOhlcvType, waveOhlcvPeriod))
-log.info("waveAnalysis: {}", waveAnalysis)
 
 // tide
 def tideAnalysis = new Analysis(assetProfile.getOhlcvs(tideOhlcvType, tideOhlcvPeriod))
-log.info("tideAnalysis: {}", tideAnalysis)
+
+// logging
+log.info("({}) analysis.momentum: {}", analysis.getMomentumScore().getAverage(), analysis.getMomentumScore());
+log.info("({}) waveAnalysis.volatility: {}", waveAnalysis.getVolatilityScore().getAverage(), waveAnalysis.getVolatilityScore())
+log.info("({}) waveAnalysis.underestimate: {}", waveAnalysis.getUnderestimateScore().getAverage(), waveAnalysis.getUnderestimateScore())
+log.info("({}) waveAnalysis.overestimate: {}", waveAnalysis.getOverestimateScore().getAverage(), waveAnalysis.getOverestimateScore())
+log.info("({}) tideAnalysis.momentum: {}", tideAnalysis.getMomentumScore().getAverage(), tideAnalysis.getMomentumScore())
 
 //================================
 // trade
