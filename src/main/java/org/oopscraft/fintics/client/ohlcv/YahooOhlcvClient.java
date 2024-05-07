@@ -202,8 +202,8 @@ public class YahooOhlcvClient extends OhlcvClient {
                 .build();
         HttpHeaders headers = createYahooHeader();
         String interval = "1d";
-        LocalDateTime period2 = dateTimeTo.truncatedTo(ChronoUnit.DAYS);
         LocalDateTime period1 = dateTimeFrom.truncatedTo(ChronoUnit.DAYS);
+        LocalDateTime period2 = LocalDateTime.now().truncatedTo(ChronoUnit.DAYS);
         String url = String.format("https://query1.finance.yahoo.com/v8/finance/chart/%s", yahooSymbol);
         url = UriComponentsBuilder.fromUriString(url)
                 .queryParam("symbol", yahooSymbol)

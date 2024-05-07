@@ -55,8 +55,8 @@ public class PastOhlcvCollector extends OhlcvCollector {
                 for (TradeAsset tradeAsset : trade.getTradeAssets()) {
                     try {
                         if (ohlcvClient.isSupported(tradeAsset)) {
-                            collectPastAssetMinuteOhlcvs(tradeAsset, expiredDateTime);
                             collectPastAssetDailyOhlcvs(tradeAsset, expiredDateTime);
+                            collectPastAssetMinuteOhlcvs(tradeAsset, expiredDateTime);
                         }
                     } catch (Throwable e) {
                         log.warn(e.getMessage());
@@ -69,8 +69,8 @@ public class PastOhlcvCollector extends OhlcvCollector {
             for (Indice indice : indices) {
                 try {
                     if (ohlcvClient.isSupported(indice)) {
-                        collectPastIndiceMinuteOhlcvs(indice, expiredDateTime);
                         collectPastIndiceDailyOhlcvs(indice, expiredDateTime);
+                        collectPastIndiceMinuteOhlcvs(indice, expiredDateTime);
                     }
                 } catch (Throwable e) {
                     log.warn(e.getMessage());
@@ -83,34 +83,6 @@ public class PastOhlcvCollector extends OhlcvCollector {
             sendSystemAlarm(this.getClass(), e.getMessage());
             throw new RuntimeException(e);
         }
-    }
-
-    void collectPastAssetMinuteOhlcvs(Asset asset, LocalDateTime expiredDateTime) {
-        LocalDateTime dateTimeTo = getAssetMinDateTime(asset.getAssetId(), Ohlcv.Type.MINUTE)
-                .orElse(LocalDateTime.now());
-        LocalDateTime dateTimeFrom = dateTimeTo.minusWeeks(1);
-        // check expired date time
-        if(dateTimeFrom.isBefore(expiredDateTime)) {
-            dateTimeFrom = expiredDateTime;
-        }
-        // get minute ohlcvs
-        List<Ohlcv> ohlcvs = ohlcvClient.getAssetOhlcvs(asset, Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo);
-        // convert and save
-        List<AssetOhlcvEntity> assetMinuteOhlcvEntities = ohlcvs.stream()
-                .map(ohlcv -> AssetOhlcvEntity.builder()
-                        .assetId(asset.getAssetId())
-                        .dateTime(ohlcv.getDateTime())
-                        .type(ohlcv.getType())
-                        .openPrice(ohlcv.getOpenPrice())
-                        .highPrice(ohlcv.getHighPrice())
-                        .lowPrice(ohlcv.getLowPrice())
-                        .closePrice(ohlcv.getClosePrice())
-                        .volume(ohlcv.getVolume())
-                        .build())
-                .collect(Collectors.toList());
-        String unitName = String.format("pastAssetMinuteOhlcvEntities[%s]", asset.getAssetName());
-        log.info("PastOhlcvCollector - save {}:{}", unitName, assetMinuteOhlcvEntities.size());
-        saveEntities(unitName, assetMinuteOhlcvEntities, transactionManager, assetOhlcvRepository);
     }
 
     void collectPastAssetDailyOhlcvs(Asset asset, LocalDateTime expiredDateTime) {
@@ -142,21 +114,27 @@ public class PastOhlcvCollector extends OhlcvCollector {
         saveEntities(unitName, assetDailyOhlcvEntities, transactionManager, assetOhlcvRepository);
     }
 
-    void collectPastIndiceMinuteOhlcvs(Indice indice, LocalDateTime expiredDateTime) {
-        // defines
-        LocalDateTime dateTimeTo = getIndiceMinDateTime(indice.getIndiceId(), Ohlcv.Type.MINUTE)
+    void collectPastAssetMinuteOhlcvs(Asset asset, LocalDateTime expiredDateTime) {
+        LocalDateTime dateTimeTo = getAssetMinDateTime(asset.getAssetId(), Ohlcv.Type.MINUTE)
                 .orElse(LocalDateTime.now());
         LocalDateTime dateTimeFrom = dateTimeTo.minusWeeks(1);
         // check expired date time
         if(dateTimeFrom.isBefore(expiredDateTime)) {
             dateTimeFrom = expiredDateTime;
         }
+        // check daily min date time (in case of new IPO security)
+        LocalDateTime dailyMinDateTime = getAssetMinDateTime(asset.getAssetId(), Ohlcv.Type.DAILY).orElse(null);
+        if (dailyMinDateTime != null) {
+            if (dateTimeFrom.isBefore(dailyMinDateTime)) {
+                dateTimeFrom = dailyMinDateTime;
+            }
+        }
         // get minute ohlcvs
-        List<Ohlcv> ohlcvs = ohlcvClient.getIndiceOhlcvs(indice, Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo);
+        List<Ohlcv> ohlcvs = ohlcvClient.getAssetOhlcvs(asset, Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo);
         // convert and save
-        List<IndiceOhlcvEntity> indiceMinuteOhlcvEntities = ohlcvs.stream()
-                .map(ohlcv -> IndiceOhlcvEntity.builder()
-                        .indiceId(indice.getIndiceId())
+        List<AssetOhlcvEntity> assetMinuteOhlcvEntities = ohlcvs.stream()
+                .map(ohlcv -> AssetOhlcvEntity.builder()
+                        .assetId(asset.getAssetId())
                         .dateTime(ohlcv.getDateTime())
                         .type(ohlcv.getType())
                         .openPrice(ohlcv.getOpenPrice())
@@ -166,9 +144,9 @@ public class PastOhlcvCollector extends OhlcvCollector {
                         .volume(ohlcv.getVolume())
                         .build())
                 .collect(Collectors.toList());
-        String unitName = String.format("pastIndiceMinuteOhlcvEntities[%s]", indice.getIndiceId());
-        log.info("PastOhlcvCollector - save {}:{}", unitName, indiceMinuteOhlcvEntities.size());
-        saveEntities(unitName, indiceMinuteOhlcvEntities, transactionManager, indiceOhlcvRepository);
+        String unitName = String.format("pastAssetMinuteOhlcvEntities[%s]", asset.getAssetName());
+        log.info("PastOhlcvCollector - save {}:{}", unitName, assetMinuteOhlcvEntities.size());
+        saveEntities(unitName, assetMinuteOhlcvEntities, transactionManager, assetOhlcvRepository);
     }
 
     void collectPastIndiceDailyOhlcvs(Indice indice, LocalDateTime expiredDateTime) {
@@ -198,6 +176,42 @@ public class PastOhlcvCollector extends OhlcvCollector {
         String unitName = String.format("pastIndiceDailyOhlcvEntities[%s]", indice.getIndiceId());
         log.info("PastOhlcvCollector - save {}:{}", unitName, indiceDailyOhlcvEntities.size());
         saveEntities(unitName, indiceDailyOhlcvEntities, transactionManager, indiceOhlcvRepository);
+    }
+
+    void collectPastIndiceMinuteOhlcvs(Indice indice, LocalDateTime expiredDateTime) {
+        // defines
+        LocalDateTime dateTimeTo = getIndiceMinDateTime(indice.getIndiceId(), Ohlcv.Type.MINUTE)
+                .orElse(LocalDateTime.now());
+        LocalDateTime dateTimeFrom = dateTimeTo.minusWeeks(1);
+        // check expired date time
+        if(dateTimeFrom.isBefore(expiredDateTime)) {
+            dateTimeFrom = expiredDateTime;
+        }
+        // check daily min date time (in case of new IPO security)
+        LocalDateTime dailyMinDateTime = getIndiceMinDateTime(indice.getIndiceId(), Ohlcv.Type.DAILY).orElse(null);
+        if (dailyMinDateTime != null) {
+            if (dateTimeFrom.isBefore(dailyMinDateTime)) {
+                dateTimeFrom = dailyMinDateTime;
+            }
+        }
+        // get minute ohlcvs
+        List<Ohlcv> ohlcvs = ohlcvClient.getIndiceOhlcvs(indice, Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo);
+        // convert and save
+        List<IndiceOhlcvEntity> indiceMinuteOhlcvEntities = ohlcvs.stream()
+                .map(ohlcv -> IndiceOhlcvEntity.builder()
+                        .indiceId(indice.getIndiceId())
+                        .dateTime(ohlcv.getDateTime())
+                        .type(ohlcv.getType())
+                        .openPrice(ohlcv.getOpenPrice())
+                        .highPrice(ohlcv.getHighPrice())
+                        .lowPrice(ohlcv.getLowPrice())
+                        .closePrice(ohlcv.getClosePrice())
+                        .volume(ohlcv.getVolume())
+                        .build())
+                .collect(Collectors.toList());
+        String unitName = String.format("pastIndiceMinuteOhlcvEntities[%s]", indice.getIndiceId());
+        log.info("PastOhlcvCollector - save {}:{}", unitName, indiceMinuteOhlcvEntities.size());
+        saveEntities(unitName, indiceMinuteOhlcvEntities, transactionManager, indiceOhlcvRepository);
     }
 
     Optional<LocalDateTime> getAssetMinDateTime(String assetId, Ohlcv.Type type) {
