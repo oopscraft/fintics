@@ -185,11 +185,11 @@ def waveAnalysis = new Analysis(assetProfile.getOhlcvs(waveOhlcvType, waveOhlcvP
 def tideAnalysis = new Analysis(assetProfile.getOhlcvs(tideOhlcvType, tideOhlcvPeriod))
 
 // logging
-log.info("({}) analysis.momentum: {}", analysis.getMomentumScore().getAverage(), analysis.getMomentumScore());
-log.info("({}) waveAnalysis.volatility: {}", waveAnalysis.getVolatilityScore().getAverage(), waveAnalysis.getVolatilityScore())
-log.info("({}) waveAnalysis.underestimate: {}", waveAnalysis.getUnderestimateScore().getAverage(), waveAnalysis.getUnderestimateScore())
-log.info("({}) waveAnalysis.overestimate: {}", waveAnalysis.getOverestimateScore().getAverage(), waveAnalysis.getOverestimateScore())
-log.info("({}) tideAnalysis.momentum: {}", tideAnalysis.getMomentumScore().getAverage(), tideAnalysis.getMomentumScore())
+log.info("analysis.momentum: {} {}", analysis.getMomentumScore().getAverage(), analysis.getMomentumScore());
+log.info("waveAnalysis.volatility: {} {}", waveAnalysis.getVolatilityScore().getAverage(), waveAnalysis.getVolatilityScore())
+log.info("waveAnalysis.underestimate: {} {}", waveAnalysis.getUnderestimateScore().getAverage(), waveAnalysis.getUnderestimateScore())
+log.info("waveAnalysis.overestimate: {} {}", waveAnalysis.getOverestimateScore().getAverage(), waveAnalysis.getOverestimateScore())
+log.info("tideAnalysis.momentum: {} {}", tideAnalysis.getMomentumScore().getAverage(), tideAnalysis.getMomentumScore())
 
 //================================
 // trade
