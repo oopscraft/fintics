@@ -89,7 +89,7 @@ public class PastOhlcvCollector extends OhlcvCollector {
         // date time
         LocalDateTime dateTimeTo = getAssetMinDateTime(asset.getAssetId(), Ohlcv.Type.DAILY)
                 .orElse(LocalDateTime.now());
-        LocalDateTime dateTimeFrom = dateTimeTo.minusMonths(1);
+        LocalDateTime dateTimeFrom = dateTimeTo.minusYears(1);
         // check expired date time
         if(dateTimeFrom.isBefore(expiredDateTime)) {
             dateTimeFrom = expiredDateTime;
@@ -117,7 +117,7 @@ public class PastOhlcvCollector extends OhlcvCollector {
     void collectPastAssetMinuteOhlcvs(Asset asset, LocalDateTime expiredDateTime) {
         LocalDateTime dateTimeTo = getAssetMinDateTime(asset.getAssetId(), Ohlcv.Type.MINUTE)
                 .orElse(LocalDateTime.now());
-        LocalDateTime dateTimeFrom = dateTimeTo.minusWeeks(1);
+        LocalDateTime dateTimeFrom = dateTimeTo.minusMonths(1);
         // check expired date time
         if(dateTimeFrom.isBefore(expiredDateTime)) {
             dateTimeFrom = expiredDateTime;
@@ -153,7 +153,7 @@ public class PastOhlcvCollector extends OhlcvCollector {
         // defines
         LocalDateTime dateTimeTo = getIndiceMinDateTime(indice.getIndiceId(), Ohlcv.Type.DAILY)
                 .orElse(LocalDateTime.now());
-        LocalDateTime dateTimeFrom = dateTimeTo.minusMonths(1);
+        LocalDateTime dateTimeFrom = dateTimeTo.minusYears(1);
         // check expired date time
         if(dateTimeFrom.isBefore(expiredDateTime)) {
             dateTimeFrom = expiredDateTime;
@@ -182,7 +182,7 @@ public class PastOhlcvCollector extends OhlcvCollector {
         // defines
         LocalDateTime dateTimeTo = getIndiceMinDateTime(indice.getIndiceId(), Ohlcv.Type.MINUTE)
                 .orElse(LocalDateTime.now());
-        LocalDateTime dateTimeFrom = dateTimeTo.minusWeeks(1);
+        LocalDateTime dateTimeFrom = dateTimeTo.minusMonths(1);
         // check expired date time
         if(dateTimeFrom.isBefore(expiredDateTime)) {
             dateTimeFrom = expiredDateTime;

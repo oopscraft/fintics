@@ -230,7 +230,7 @@ public class YahooOhlcvClient extends OhlcvClient {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-        Map<LocalDateTime, Ohlcv> dailyOhlcvMap = convertRootNodeToOhlcv(Ohlcv.Type.MINUTE, rootNode);
+        Map<LocalDateTime, Ohlcv> dailyOhlcvMap = convertRootNodeToOhlcv(Ohlcv.Type.DAILY, rootNode);
 
         // check date time is in range (holiday is not matched)
         List<Ohlcv> dailyOhlcvs = dailyOhlcvMap.values().stream()
