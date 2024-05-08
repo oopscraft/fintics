@@ -1,15 +1,15 @@
-package org.oopscraft.fintics.client.ohlcv;
+package org.oopscraft.fintics.client.ohlcv.yahoo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.oopscraft.arch4j.core.support.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
+import org.oopscraft.fintics.client.ohlcv.OhlcvClientProperties;
+import org.oopscraft.fintics.client.ohlcv.yahoo.YahooOhlcvClient;
 import org.oopscraft.fintics.dao.AssetEntity;
 import org.oopscraft.fintics.model.Asset;
 import org.oopscraft.fintics.model.Indice;
@@ -28,10 +28,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Slf4j
 class YahooOhlcvClientTest extends CoreTestSupport {
 
+    private final OhlcvClientProperties ohlcvClientProperties;
+
     private final ObjectMapper objectMapper;
 
     YahooOhlcvClient getYahooOhlcvClient() {
-        return new YahooOhlcvClient(objectMapper);
+        return new YahooOhlcvClient(ohlcvClientProperties, objectMapper);
     }
 
     void saveAsset(Asset asset) {

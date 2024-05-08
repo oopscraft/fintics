@@ -14,7 +14,9 @@ public final class FinticsProperties {
 
     private final String systemAlarmId;
 
-    private final String indiceClientClassName;
+//    private final String indiceClientClassName;
+//
+//    private final String ohlcvClientClassName;
 
     private final Integer ohlcvRetentionMonths;
 

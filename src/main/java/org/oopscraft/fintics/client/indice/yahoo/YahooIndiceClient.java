@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.client.indice;
+package org.oopscraft.fintics.client.indice.yahoo;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
+import org.oopscraft.fintics.client.indice.IndiceClient;
+import org.oopscraft.fintics.client.indice.IndiceClientProperties;
 import org.oopscraft.fintics.model.Indice;
 import org.oopscraft.fintics.model.Ohlcv;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -26,12 +28,16 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Component
-@ConditionalOnProperty(prefix = "fintics", name = "indice-client-class-name", havingValue="org.oopscraft.fintics.client.indice.YahooIndiceClient")
-@RequiredArgsConstructor
+@ConditionalOnProperty(prefix = "fintics", name = "indice-client.class-name", havingValue="org.oopscraft.fintics.client.indice.yahoo.YahooIndiceClient")
 @Slf4j
 public class YahooIndiceClient extends IndiceClient {
 
     private final ObjectMapper objectMapper;
+
+    protected YahooIndiceClient(IndiceClientProperties indiceClientProperties, ObjectMapper objectMapper) {
+        super(indiceClientProperties);
+        this.objectMapper = objectMapper;
+    }
 
     @Override
     public List<Ohlcv> getMinuteOhlcvs(Indice.Id indiceId, LocalDateTime dateTime) {

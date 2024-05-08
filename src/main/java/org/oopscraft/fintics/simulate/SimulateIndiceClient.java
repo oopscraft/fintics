@@ -4,6 +4,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.oopscraft.fintics.client.indice.IndiceClient;
+import org.oopscraft.fintics.client.indice.IndiceClientProperties;
+import org.oopscraft.fintics.client.ohlcv.OhlcvClientProperties;
 import org.oopscraft.fintics.dao.IndiceOhlcvRepository;
 import org.oopscraft.fintics.model.*;
 import org.springframework.data.domain.Pageable;
@@ -25,7 +27,8 @@ public class SimulateIndiceClient extends IndiceClient {
     private final Map<Indice.Id, List<Ohlcv>> dailyOhlcvsMap = new HashMap<>();
 
     @Builder
-    protected SimulateIndiceClient(IndiceOhlcvRepository indiceOhlcvRepository) {
+    protected SimulateIndiceClient(IndiceClientProperties indiceClientProperties, IndiceOhlcvRepository indiceOhlcvRepository) {
+        super(indiceClientProperties);
         this.indiceOhlcvRepository = indiceOhlcvRepository;
     }
 
