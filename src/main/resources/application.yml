@@ -20,9 +20,10 @@ fintics:
   ohlcv-retention-months: 3
   indice-client:
     class-name: org.oopscraft.fintics.client.indice.yahoo.YahooIndiceClient
-  ohlcv-client:
-    #class-name: org.oopscraft.fintics.client.ohlcv.yahoo.YahooOhlcvClient
-    class-name: org.oopscraft.fintics.client.ohlcv.alphavantage.AlphavantageOhlcvClient
     properties:
-      apikey: demo
+      name: value
+  ohlcv-client:
+    class-name: org.oopscraft.fintics.client.ohlcv.yahoo.YahooOhlcvClient
+    properties:
+      name: value
 
