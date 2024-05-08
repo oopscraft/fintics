@@ -14,7 +14,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 
-public class Tool {
+public class Tools {
 
     /**
      * calculate technical indicator

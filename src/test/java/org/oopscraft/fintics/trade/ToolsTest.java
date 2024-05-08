@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
-public class ToolTest {
+public class ToolsTest {
 
     @Test
     void testChart() {
@@ -19,7 +19,7 @@ public class ToolTest {
         }
 
         // when
-        log.info("###############{}", Tool.graph("Test Graph", rows));
+        log.info("###############{}", Tools.graph("Test Graph", rows));
     }
 
 }

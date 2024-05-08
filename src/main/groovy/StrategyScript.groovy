@@ -1,5 +1,5 @@
 import org.oopscraft.fintics.model.Ohlcv
-import org.oopscraft.fintics.trade.Tool
+import org.oopscraft.fintics.trade.Tools
 import org.oopscraft.fintics.indicator.*
 
 import java.time.LocalTime
@@ -52,23 +52,23 @@ class Analysis implements Analyzable {
     Analysis(List<Ohlcv> ohlcvs) {
         this.ohlcvs = ohlcvs
         this.ohlcv = this.ohlcvs.first()
-        this.macds = Tool.indicators(ohlcvs, MacdContext.DEFAULT)
+        this.macds = Tools.indicators(ohlcvs, MacdContext.DEFAULT)
         this.macd = this.macds.first()
-        this.dmis = Tool.indicators(ohlcvs, DmiContext.DEFAULT)
+        this.dmis = Tools.indicators(ohlcvs, DmiContext.DEFAULT)
         this.dmi = this.dmis.first()
-        this.rsis = Tool.indicators(ohlcvs, RsiContext.DEFAULT)
+        this.rsis = Tools.indicators(ohlcvs, RsiContext.DEFAULT)
         this.rsi = rsis.first()
-        this.atrs = Tool.indicators(ohlcvs, AtrContext.DEFAULT)
+        this.atrs = Tools.indicators(ohlcvs, AtrContext.DEFAULT)
         this.atr = atrs.first()
-        this.bollingerBands = Tool.indicators(ohlcvs, BollingerBandContext.DEFAULT)
+        this.bollingerBands = Tools.indicators(ohlcvs, BollingerBandContext.DEFAULT)
         this.bollingerBand = bollingerBands.first()
-        this.obvs = Tool.indicators(ohlcvs, ObvContext.DEFAULT)
+        this.obvs = Tools.indicators(ohlcvs, ObvContext.DEFAULT)
         this.obv = obvs.first()
-        this.chaikinOscillators = Tool.indicators(ohlcvs, ChaikinOscillatorContext.DEFAULT)
+        this.chaikinOscillators = Tools.indicators(ohlcvs, ChaikinOscillatorContext.DEFAULT)
         this.chaikinOscillator = chaikinOscillators.first()
-        this.ccis = Tool.indicators(ohlcvs, CciContext.DEFAULT)
+        this.ccis = Tools.indicators(ohlcvs, CciContext.DEFAULT)
         this.cci = ccis.first()
-        this.stochasticSlows = Tool.indicators(ohlcvs, StochasticSlowContext.DEFAULT)
+        this.stochasticSlows = Tools.indicators(ohlcvs, StochasticSlowContext.DEFAULT)
         this.stochasticSlow = stochasticSlows.first()
     }
 
@@ -86,12 +86,12 @@ class Analysis implements Analyzable {
         score.cciValueOverSignal = cci.value > cci.signal ? 100 : 0
         score.cciValue = cci.value > 0 ? 100 : 0
         // dmi
-        score.dmiPdiPctChange = Tool.pctChange(dmis.take(10).collect{it.pdi}) > 0 ? 100 : 0
-        score.dmiMdiPctChange = Tool.pctChange(dmis.take(10).collect{it.mdi}) < 0 ? 100 : 0
+        score.dmiPdiPctChange = Tools.pctChange(dmis.take(10).collect{it.pdi}) > 0 ? 100 : 0
+        score.dmiMdiPctChange = Tools.pctChange(dmis.take(10).collect{it.mdi}) < 0 ? 100 : 0
         score.dmiPdiOverMdi = dmi.pdi > dmi.mdi ? 100 : 0
         // obv
         score.obvValueOverSignal = obv.value > obv.signal ? 100 : 0
-        score.obvPctChange = Tool.pctChange(obvs.take(10).collect{it.value}) > 0 ? 100 : 0
+        score.obvPctChange = Tools.pctChange(obvs.take(10).collect{it.value}) > 0 ? 100 : 0
         // chaikin oscillator
         score.chaikinOscillatorValueOverSignal = chaikinOscillator.value > chaikinOscillator.signal ? 100 : 0
         score.chaikinOscillatorValue = chaikinOscillator.value > 0 ? 100 : 0
