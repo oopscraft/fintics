@@ -11,7 +11,6 @@ import org.springframework.data.domain.Pageable;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
-import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -114,10 +113,35 @@ public class SimulateBrokerClient extends BrokerClient {
         loadOhlcvsIfNotExist(asset, dateTime);
         LocalDateTime dateTimeFrom = dateTime.minusYears(1);
         LocalDateTime dateTimeTo = dateTime.minusDays(0);
-        return dailyOhlcvsMap.get(asset.getAssetId()).stream()
+        List<Ohlcv> dailyOhlcvs = dailyOhlcvsMap.get(asset.getAssetId()).stream()
                 .filter(ohlcv -> (ohlcv.getDateTime().isAfter(dateTimeFrom) || ohlcv.getDateTime().isEqual(dateTimeFrom))
                         && (ohlcv.getDateTime().isBefore(dateTimeTo) || ohlcv.getDateTime().isEqual(dateTimeTo)))
                 .collect(Collectors.toList());
+
+        // 저정된 이전 일봉 데이터는 그날 장종료 후 데이터 이므로 현재 분봉의 데이터를 반영
+        List<Ohlcv> todayMinuteOhlcvs = getMinuteOhlcvs(asset, dateTime).stream()
+                .filter(ohlcv -> ohlcv.getDateTime().toLocalDate().isEqual(dateTime.toLocalDate()))
+                .collect(Collectors.toList());
+        BigDecimal highPrice = todayMinuteOhlcvs.stream()
+                .map(Ohlcv::getHighPrice)
+                .reduce(BigDecimal::max)
+                .orElseThrow();
+        BigDecimal lowPrice = todayMinuteOhlcvs.stream()
+                .map(Ohlcv::getLowPrice)
+                .reduce(BigDecimal::min)
+                .orElseThrow();
+        BigDecimal closePrice = todayMinuteOhlcvs.get(0).getClosePrice();
+        BigDecimal volume = todayMinuteOhlcvs.stream()
+                .map(Ohlcv::getVolume)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        Ohlcv todayDailyOhlcv = dailyOhlcvs.get(0);
+        todayDailyOhlcv.setHighPrice(highPrice);
+        todayDailyOhlcv.setLowPrice(lowPrice);
+        todayDailyOhlcv.setClosePrice(closePrice);
+        todayDailyOhlcv.setVolume(volume);
+
+        // return
+        return dailyOhlcvs;
     }
 
     @Override
