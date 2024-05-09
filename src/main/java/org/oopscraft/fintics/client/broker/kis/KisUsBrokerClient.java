@@ -350,17 +350,17 @@ public class KisUsBrokerClient extends UsBrokerClient {
         // balance
         Balance balance = Balance.builder()
                 .accountNo(accountNo)
-                .purchaseAmount(new BigDecimal(output2.get("frcr_pchs_amt1")))
-                .valuationAmount(new BigDecimal(output2.get("tot_evlu_pfls_amt")))
-                .realizedProfitAmount(new BigDecimal(output2.get("ovrs_rlzt_pfls_amt")))
-                .profitAmount(new BigDecimal(output2.get("ovrs_tot_pfls")))
+                .purchaseAmount(new BigDecimal(output2.get("frcr_pchs_amt1")).setScale(2, RoundingMode.HALF_UP))
+                .valuationAmount(new BigDecimal(output2.get("tot_evlu_pfls_amt")).setScale(2, RoundingMode.HALF_UP))
+                .realizedProfitAmount(new BigDecimal(output2.get("ovrs_rlzt_pfls_amt")).setScale(2, RoundingMode.HALF_UP))
+                .profitAmount(new BigDecimal(output2.get("ovrs_tot_pfls")).setScale(2, RoundingMode.HALF_UP))
                 .build();
 
         // cash amount, total amount
         BigDecimal cashAmount = getBalanceCashAmount();
         BigDecimal totalAmount = balance.getValuationAmount().add(cashAmount);
-        balance.setTotalAmount(totalAmount);
-        balance.setCashAmount(cashAmount);
+        balance.setTotalAmount(totalAmount.setScale(2, RoundingMode.HALF_UP));
+        balance.setCashAmount(cashAmount.setScale(2, RoundingMode.HALF_UP));
 
         // balance asset
         List<BalanceAsset> balanceAssets = output1.stream()
@@ -370,10 +370,10 @@ public class KisUsBrokerClient extends UsBrokerClient {
                         .assetName(row.get("ovrs_item_name"))
                         .quantity(new BigDecimal(row.get("ovrs_cblc_qty")))
                         .orderableQuantity(new BigDecimal(row.get("ord_psbl_qty")))
-                        .purchasePrice(new BigDecimal(row.get("pchs_avg_pric")))
-                        .purchaseAmount(new BigDecimal(row.get("frcr_pchs_amt1")))
-                        .valuationAmount(new BigDecimal(row.get("ovrs_stck_evlu_amt")))
-                        .profitAmount(new BigDecimal(row.get("frcr_evlu_pfls_amt")))
+                        .purchasePrice(new BigDecimal(row.get("pchs_avg_pric")).setScale(2, RoundingMode.HALF_UP))
+                        .purchaseAmount(new BigDecimal(row.get("frcr_pchs_amt1")).setScale(2, RoundingMode.HALF_UP))
+                        .valuationAmount(new BigDecimal(row.get("ovrs_stck_evlu_amt")).setScale(2, RoundingMode.HALF_UP))
+                        .profitAmount(new BigDecimal(row.get("frcr_evlu_pfls_amt")).setScale(2, RoundingMode.HALF_UP))
                         .build())
                 .filter(balanceAsset -> balanceAsset.getQuantity().intValue() > 0)
                 .collect(Collectors.toList());

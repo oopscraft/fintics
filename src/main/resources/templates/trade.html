@@ -997,7 +997,7 @@
             <div class="display--grid grid-template-columns--12 grid-gap--1em padding-y--1em s__padding-y--0">
                 <label class="grid-column--6 s__grid-column--12">
                     <span data-th-text="#{fintics.Balance.totalAmount}" class="font-weight--bold"></span>
-                    <input type="number" data-duice-bind="balance" data-duice-property="totalAmount" data-duice-format="number" class="width--100"/>
+                    <input type="number" data-duice-bind="balance" data-duice-property="totalAmount" data-duice-format="number" class="width--100 font-weight--bold"/>
                 </label>
                 <label class="grid-column--6 s__grid-column--12">
                     <span data-th-text="#{fintics.Balance.cashAmount}" class="font-weight--bold"></span>
@@ -1055,9 +1055,9 @@
                                 <th data-th-text="#{fintics.BalanceAsset.assetId}"></th>
                                 <th data-th-text="#{fintics.BalanceAsset.assetName}"></th>
                                 <th data-th-text="#{fintics.BalanceAsset.quantity}"></th>
-                                <th data-th-text="#{fintics.BalanceAsset.purchaseAmount}"></th>
-                                <th data-th-text="#{fintics.BalanceAsset.valuationAmount}"></th>
-                                <th data-th-text="#{fintics.BalanceAsset.profitAmount}"></th>
+                                <th data-th-text="#{fintics.BalanceAsset.purchaseAmount}" class="text-align--right"></th>
+                                <th data-th-text="#{fintics.BalanceAsset.valuationAmount}" class="text-align--right"></th>
+                                <th data-th-text="#{fintics.BalanceAsset.profitAmount}" class="text-align--right"></th>
                                 <th>-</th>
                             </tr>
                             </thead>
@@ -1084,13 +1084,13 @@
                                     <span data-duice-bind="balanceAsset" data-duice-property="quantity" data-duice-format="number"></span>
                                     (<span data-duice-bind="balanceAsset" data-duice-property="orderableQuantity" data-duice-format="number"></span>)
                                 </td>
-                                <td>
+                                <td class="text-align--right">
                                     <span data-duice-bind="balanceAsset" data-duice-property="purchaseAmount" data-duice-format="number"></span>
                                 </td>
-                                <td>
+                                <td class="text-align--right">
                                     <span data-duice-bind="balanceAsset" data-duice-property="valuationAmount" data-duice-format="number"></span>
                                 </td>
-                                <td class="text-align--center">
+                                <td class="text-align--right">
                                     <span data-duice-bind="balanceAsset"
                                           data-duice-property="profitAmount"
                                           data-duice-format="number"
