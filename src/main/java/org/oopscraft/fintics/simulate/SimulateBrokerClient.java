@@ -53,6 +53,9 @@ public class SimulateBrokerClient extends BrokerClient {
     }
 
     public synchronized void withdraw(BigDecimal amount) {
+        if (amount.compareTo(balance.getCashAmount()) > 0) {
+            throw new RuntimeException("withdraw amount is over cache amount");
+        }
         balance.setCashAmount(balance.getCashAmount().subtract(amount));
     }
 
@@ -196,6 +199,11 @@ public class SimulateBrokerClient extends BrokerClient {
             BigDecimal buyPrice = orderBook.getAskPrice();
             BigDecimal buyAmount = buyQuantity.multiply(buyPrice, MathContext.DECIMAL32);
 
+            // minimum order quantity
+            if (buyQuantity.compareTo(minimumOrderQuantity) < 0) {
+                throw new RuntimeException(String.format("[%s] is under minimum order quantity", buyQuantity));
+            }
+
             // withdraw
             withdraw(buyAmount);
 
@@ -229,6 +237,12 @@ public class SimulateBrokerClient extends BrokerClient {
             BigDecimal sellQuantity = order.getQuantity();
             BigDecimal sellPrice = orderBook.getBidPrice();
             BigDecimal sellAmount = sellQuantity.multiply(sellPrice, MathContext.DECIMAL32);
+
+            // check minimum order quantity
+            if (sellQuantity.compareTo(minimumOrderQuantity) < 0) {
+                throw new RuntimeException(String.format("[%s] is under minimum order quantity", sellQuantity));
+            }
+
             BigDecimal quantity = balanceAsset.getQuantity().subtract(sellQuantity);
             if(quantity.compareTo(BigDecimal.ZERO) <= 0) {
                 balance.getBalanceAssets().remove(balanceAsset);

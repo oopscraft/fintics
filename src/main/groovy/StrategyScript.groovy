@@ -194,10 +194,13 @@ log.info("tideAnalysis.momentum: {} {}", tideAnalysis.getMomentumScore().getAver
 //================================
 // trade
 //================================
+// multiplier
+def multiplier = tideAnalysis.getMomentumScore().getAverage()/100
+
 // buy
 if (analysis.getMomentumScore().getAverage() > 75) {
     // default
-    hold = 1.0
+    hold = 1.0 * multiplier
     // filter - volatility
     if (waveAnalysis.getVolatilityScore().getAverage() < 75) {
         hold = null
@@ -210,7 +213,7 @@ if (analysis.getMomentumScore().getAverage() > 75) {
 // sell
 if (analysis.getMomentumScore().getAverage() < 25) {
     // default
-    hold = 0.9
+    hold = 0.9 * multiplier
     // filter - volatility
     if (waveAnalysis.getVolatilityScore().getAverage() < 75) {
         hold = null
