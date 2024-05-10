@@ -109,6 +109,7 @@
             let selectedAssets = await assetSelect.open(market, disabledAssetIds);
             selectedAssets.forEach(asset => {
                 trade.tradeAssets.push({
+                    _new: true,
                     assetId: asset.assetId,
                     assetName: asset.assetName,
                     exchange: asset.exchange,
@@ -126,6 +127,41 @@
 
         function removeTradeAsset(index) {
             trade.tradeAssets.splice(index, 1);
+        }
+
+        function exportTradeAssets() {
+            let tradeAssetsJson = JSON.stringify(trade.tradeAssets, null, 4);
+            let a = document.createElement('a');
+            let href = 'data:application/json;charset=utf-8,' + encodeURIComponent(tradeAssetsJson);
+            let download = `${trade.tradeName}_tradeAssets.json`;
+            a.setAttribute('href', href);
+            a.setAttribute('download', download);
+            a.click();
+        }
+
+        function importTradeAssets() {
+            let input = document.createElement('input');
+            input.setAttribute("type", "file");
+            input.setAttribute("accept", "application/json");
+            input.addEventListener('change', function (e) {
+                let fileReader = new FileReader();
+                if (this.files && this.files[0]) {
+                    fileReader.addEventListener("load", async function (event) {
+                        let tradeAssets = JSON.parse(event.target.result);
+                        for (const tradeAsset of tradeAssets) {
+                            let exists = trade.tradeAssets.some(it => it.assetId === tradeAsset.assetId);
+                            if (!exists) {
+                                tradeAsset._new = true;
+                                trade.tradeAssets.push(tradeAsset);
+                            }
+                        }
+                    });
+                    fileReader.readAsText(this.files[0]);
+                }
+                e.preventDefault();
+                e.stopPropagation();
+            });
+            input.click();
         }
 
         async function saveTrade() {
@@ -487,7 +523,6 @@
                         <span data-th-text="#{fintics.Trade.alarmOnOrder}" class="font-weight--bold"></span>
                     </label>
                 </div>
-
                 <label class="grid-column--6">
                     <span data-th-text="#{fintics.Trade.orderKind}" class="font-weight--bold tag-required"></span>
                     <select data-duice-bind="trade" data-duice-property="orderKind" class="width--100">
@@ -496,7 +531,21 @@
                     </select>
                 </label>
                 <div class="grid-column--12">
-                    <span data-th-text="#{fintics.TradeAsset}" class="font-weight--bold width--100"></span>
+                    <div class="display--flex justify-content--space-between">
+                        <div>
+                            <span data-th-text="#{fintics.TradeAsset}" class="font-weight--bold width--100"></span>
+                        </div>
+                        <div class="padding--1px">
+                            <button type="button" class="small" onclick="exportTradeAssets();">
+                                <img class="icon" th:src="@{/static/image/icon-export.svg}" alt="export"/>
+                                <span>Export</span>
+                            </button>
+                            <button type="button" class="small" onclick="importTradeAssets();">
+                                <img class="icon" th:src="@{/static/image/icon-import.svg}" alt="import"/>
+                                <span>Import</span>
+                            </button>
+                        </div>
+                    </div>
                     <div class="overflow-x--scroll">
                         <table class="width--100 text-align--center font-size--smaller">
                             <colgroup>
@@ -536,7 +585,8 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <tr data-duice-bind="trade.tradeAssets" data-duice-loop="tradeAsset,status" data-duice-editable="true">
+                            <tr data-duice-bind="trade.tradeAssets" data-duice-loop="tradeAsset,status" data-duice-editable="true"
+                                data-duice-execute="if(tradeAsset._new) this.classList.add('background-color--yellow');">
                                 <td class="text-align--center">
                                     <button type="button" class="small"
                                             data-duice-bind="tradeAsset"
@@ -546,8 +596,8 @@
                                     </button>
                                 </td>
                                 <td class="text-align--center">
-                            <span data-duice-bind="status" data-duice-property="count"
-                                  class="text-align--center"></span>
+                                    <span data-duice-bind="status" data-duice-property="count"
+                                        class="text-align--center"></span>
                                 </td>
                                 <td>
                                     <span data-duice-bind="tradeAsset" data-duice-property="assetId"></span>
