@@ -302,16 +302,13 @@
                     <td data-duice-bind="asset" data-duice-property="roe"></td>
                     <td data-duice-bind="asset" data-duice-property="roa"></td>
                     <td>
-                        <button type="button"
-                                class="small"
-                                data-duice-bind="asset.links"
-                                data-duice-loop="link,status"
-                                data-duice-execute="
-                                        this.dataset.url=link.url;
-                                        this.addEventListener('click', () => { _openLink(this.dataset.url,'_blank'); })">
-                            <img class="icon" th:src="@{/static/image/icon-open.svg}" alt="link"/>
-                            <span class="font-weight--bold" data-duice-bind="link" data-duice-property="name"></span>
-                        </button>
+                        <select data-duice-bind="asset"
+                                data-duice-option="asset.links"
+                                data-duice-option-value-property="url"
+                                data-duice-option-text-property="name"
+                                onchange="_openLink(this.value, '_blank'); this.value = '';">
+                            <option value>- Link -</option>
+                        </select>
                     </td>
                 </tr>
                 </tbody>

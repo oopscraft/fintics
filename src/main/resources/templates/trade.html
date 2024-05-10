@@ -111,6 +111,12 @@
                 trade.tradeAssets.push({
                     assetId: asset.assetId,
                     assetName: asset.assetName,
+                    exchange: asset.exchange,
+                    type: asset.type,
+                    marketCap: asset.marketCap,
+                    per: asset.per,
+                    roe: asset.roe,
+                    roa: asset.roa,
                     enabled: false,
                     holdRatio: 0,
                     links: asset.links
@@ -504,6 +510,7 @@
                                 <col/>
                                 <col/>
                                 <col/>
+                                <col/>
                                 <col style="width:5em;"/>
                                 <col style="width:10em;"/>
                             </colgroup>
@@ -517,6 +524,7 @@
                                 <th data-th-text="#{web.global.no}"></th>
                                 <th data-th-text="#{fintics.Asset.assetId}"></th>
                                 <th data-th-text="#{fintics.Asset.assetName}"></th>
+                                <th data-th-text="#{fintics.Asset.exchange}"></th>
                                 <th data-th-text="#{fintics.Asset.type}"></th>
                                 <th data-th-text="#{fintics.Asset.marketCap}"></th>
                                 <th data-th-text="#{fintics.Asset.per}"></th>
@@ -547,7 +555,9 @@
                                 <td>
                                     <span data-duice-bind="tradeAsset" data-duice-property="assetName"></span>
                                 </td>
-
+                                <td>
+                                    <span data-duice-bind="tradeAsset" data-duice-property="exchange" class="badge"></span>
+                                </td>
                                 <td>
                                     <span data-duice-bind="tradeAsset" data-duice-property="type" class="badge"></span>
                                 </td>
@@ -564,16 +574,13 @@
                                     <span data-duice-bind="tradeAsset" data-duice-property="roa" data-duice-format="number"></span>
                                 </td>
                                 <td>
-                                    <button type="button"
-                                            class="small"
-                                            data-duice-bind="tradeAsset.links"
-                                            data-duice-loop="link,status"
-                                            data-duice-execute="
-                                this.dataset.url=link.url;
-                                this.addEventListener('click', () => { _openLink(this.dataset.url,'_blank'); })">
-                                        <img class="icon" th:src="@{/static/image/icon-open.svg}" alt="link"/>
-                                        <span class="font-weight--bold" data-duice-bind="link" data-duice-property="name"></span>
-                                    </button>
+                                    <select data-duice-bind="tradeAsset"
+                                            data-duice-option="tradeAsset.links"
+                                            data-duice-option-value-property="url"
+                                            data-duice-option-text-property="name"
+                                            onchange="_openLink(this.value, '_blank'); this.value = '';">
+                                        <option value>- Link -</option>
+                                    </select>
                                 </td>
                                 <td>
                                     <label>
@@ -1259,12 +1266,14 @@
                         <col/>
                         <col/>
                         <col/>
+                        <col/>
                     </colgroup>
                     <thead>
                     <tr>
                         <th class="text-align--center">-</th>
                         <th data-th-text="#{fintics.Asset.assetId}"></th>
                         <th data-th-text="#{fintics.Asset.assetName}"></th>
+                        <th data-th-text="#{fintics.Asset.exchange}"></th>
                         <th class="text-align--center" data-th-text="#{fintics.Asset.type}"></th>
                         <th class="text-align--center" data-th-text="#{fintics.Asset.marketCap}"></th>
                         <th class="text-align--center" data-th-text="#{fintics.Asset.per}"></th>
@@ -1294,7 +1303,10 @@
                             <span data-duice-bind="asset" data-duice-property="assetName"></span>
                         </td>
                         <td class="text-align--center">
-                            <span data-duice-bind="asset" data-duice-property="type" class="font-size--smaller font-weight--bold"></span>
+                            <span data-duice-bind="asset" data-duice-property="exchange" class="badge"></span>
+                        </td>
+                        <td class="text-align--center">
+                            <span data-duice-bind="asset" data-duice-property="type" class="badge"></span>
                         </td>
                         <td class="text-align--center">
                             <span data-duice-bind="asset" data-duice-property="marketCap" data-duice-format="number"></span>
@@ -1309,16 +1321,13 @@
                             <span data-duice-bind="asset" data-duice-property="roa" data-duice-format="number"></span>
                         </td>
                         <td class="text-align--right font-size--smaller">
-                            <button type="button"
-                                    class="small"
-                                    data-duice-bind="asset.links"
-                                    data-duice-loop="link,status"
-                                    data-duice-execute="
-                                    this.dataset.url=link.url;
-                                    this.addEventListener('click', () => { _openLink(this.dataset.url,'_blank'); })">
-                                <img class="icon" th:src="@{/static/image/icon-open.svg}" alt="link"/>
-                                <span class="font-weight--bold" data-duice-bind="link" data-duice-property="name"></span>
-                            </button>
+                            <select data-duice-bind="asset"
+                                    data-duice-option="asset.links"
+                                    data-duice-option-value-property="url"
+                                    data-duice-option-text-property="name"
+                                    onchange="_openLink(this.value, '_blank'); this.value = '';">
+                                <option value>- Link -</option>
+                            </select>
                         </td>
                     </tr>
                     <tr data-duice-bind="assetSelect.assets"
@@ -1358,12 +1367,14 @@
                         <col/>
                         <col/>
                         <col/>
+                        <col/>
                     </colgroup>
                     <thead>
                     <tr>
                         <th class="text-align--center">-</th>
                         <th data-th-text="#{fintics.Asset.assetId}"></th>
                         <th data-th-text="#{fintics.Asset.assetName}"></th>
+                        <th data-th-text="#{fintics.Asset.exchange}"></th>
                         <th class="text-align--center" data-th-text="#{fintics.Asset.type}"></th>
                         <th class="text-align--center" data-th-text="#{fintics.Asset.marketCap}"></th>
                         <th class="text-align--center" data-th-text="#{fintics.Asset.per}"></th>
@@ -1388,7 +1399,10 @@
                             <span data-duice-bind="asset" data-duice-property="assetName"></span>
                         </td>
                         <td class="text-align--center">
-                            <span data-duice-bind="asset" data-duice-property="type" class="font-weight--bold"></span>
+                            <span data-duice-bind="asset" data-duice-property="exchange" class="badge"></span>
+                        </td>
+                        <td class="text-align--center">
+                            <span data-duice-bind="asset" data-duice-property="type" class="badge"></span>
                         </td>
                         <td class="text-align--center">
                             <span data-duice-bind="asset" data-duice-property="marketCap" data-duice-format="number"></span>
@@ -1403,16 +1417,13 @@
                             <span data-duice-bind="asset" data-duice-property="roa" data-duice-format="number"></span>
                         </td>
                         <td class="text-align--right font-size--smaller">
-                            <button type="button"
-                                    class="small"
-                                    data-duice-bind="asset.links"
-                                    data-duice-loop="link,status"
-                                    data-duice-execute="
-                                    this.dataset.url=link.url;
-                                    this.addEventListener('click', () => { _openLink(this.dataset.url,'_blank'); })">
-                                <img class="icon" th:src="@{/static/image/icon-open.svg}" alt="link"/>
-                                <span class="font-weight--bold" data-duice-bind="link" data-duice-property="name"></span>
-                            </button>
+                            <select data-duice-bind="asset"
+                                    data-duice-option="asset.links"
+                                    data-duice-option-value-property="url"
+                                    data-duice-option-text-property="name"
+                                    onchange="_openLink(this.value, '_blank'); this.value = '';">
+                                <option value>- Link -</option>
+                            </select>
                         </td>
                     </tr>
                     <tr data-duice-bind="assetSelect.selectedAssets"

@@ -1,12 +1,14 @@
 package org.oopscraft.fintics.model;
 
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.fintics.dao.AssetEntity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,24 +49,7 @@ public class Asset {
     }
 
     public List<Link> getLinks() {
-        return Optional.ofNullable(getAssetId())
-                .map(value -> value.split("\\."))
-                .filter(array -> array.length > 1)
-                .map(array -> {
-                    String market = array[0];
-                    String symbol = array[1];
-                    List<Link> links = new ArrayList<>();
-                    switch (market) {
-                        case "US" ->
-                                links.add(Link.of("Yahoo", "https://finance.yahoo.com/quote/" + symbol));
-                        case "KR" ->
-                                links.add(Link.of("Naver", "https://finance.naver.com/item/main.naver?code=" + symbol));
-                        case "UPBIT" ->
-                                links.add(Link.of("UPBIT", "https://upbit.com/exchange?code=CRIX.UPBIT." + symbol));
-                    }
-                    return links;
-                })
-                .orElse(new ArrayList<>());
+        return LinkFactory.getLinks(this);
     }
 
     public static Asset from(AssetEntity assetEntity) {
