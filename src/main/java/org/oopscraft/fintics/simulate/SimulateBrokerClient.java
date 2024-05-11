@@ -2,7 +2,6 @@ package org.oopscraft.fintics.simulate;
 
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.dao.AssetOhlcvRepository;
 import org.oopscraft.fintics.model.*;
@@ -11,7 +10,6 @@ import org.springframework.data.domain.Pageable;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -25,10 +23,9 @@ public class SimulateBrokerClient extends BrokerClient {
 
     private final BigDecimal feeRate;
 
-    @Getter
-    private LocalDateTime dateTime = LocalDateTime.now();
+    private LocalDateTime dateTime;
 
-   private final Map<String, List<Ohlcv>> minuteOhlcvsMap = new HashMap<>();
+    private final Map<String, List<Ohlcv>> minuteOhlcvsMap = new HashMap<>();
 
     private final Map<String, List<Ohlcv>> dailyOhlcvsMap = new HashMap<>();
 
@@ -39,17 +36,15 @@ public class SimulateBrokerClient extends BrokerClient {
     @Getter
     private final List<Order> orders = new ArrayList<>();
 
-    private final Map<LocalDate, BigDecimal> totalAmounts = new LinkedHashMap<>();
+    @Getter
+    private final SimulateReport simulateReport = new SimulateReport();
 
     public void setDateTime(LocalDateTime dateTime) {
-        snapshotBalance();
+        if (this.dateTime != null) {
+            simulateReport.snapshotBalance(this.dateTime, balance);
+        }
         this.dateTime = dateTime;
-        snapshotBalance();
-    }
-
-    private void snapshotBalance() {
-        LocalDate date = dateTime.toLocalDate();
-        totalAmounts.put(date, balance.getTotalAmount());
+        simulateReport.snapshotBalance(this.dateTime, balance);
     }
 
     @Builder
@@ -62,7 +57,7 @@ public class SimulateBrokerClient extends BrokerClient {
 
     public synchronized void deposit(BigDecimal amount) {
         balance.setCashAmount(balance.getCashAmount().add(amount));
-        snapshotBalance();
+        simulateReport.snapshotBalance(dateTime, balance);
     }
 
     public synchronized void withdraw(BigDecimal amount) {
@@ -70,7 +65,7 @@ public class SimulateBrokerClient extends BrokerClient {
             throw new RuntimeException("withdraw amount is over cache amount");
         }
         balance.setCashAmount(balance.getCashAmount().subtract(amount));
-        snapshotBalance();
+        simulateReport.snapshotBalance(dateTime, balance);
     }
 
     public synchronized void deductFee(BigDecimal amount) {
@@ -78,7 +73,7 @@ public class SimulateBrokerClient extends BrokerClient {
                 .multiply(feeRate.divide(BigDecimal.valueOf(100), MathContext.DECIMAL32))
                 .setScale(2, RoundingMode.CEILING);
         balance.setCashAmount(balance.getCashAmount().subtract(feeAmount));
-        snapshotBalance();
+        simulateReport.snapshotBalance(dateTime, balance);
     }
 
     private void loadOhlcvsIfNotExist(Asset asset, LocalDateTime dateTime) {
@@ -171,7 +166,7 @@ public class SimulateBrokerClient extends BrokerClient {
     }
 
     @Override
-    public OrderBook getOrderBook(Asset asset) throws InterruptedException {
+    public OrderBook getOrderBook(Asset asset) {
         loadOhlcvsIfNotExist(asset, dateTime);
         LocalDateTime dateTimeTo = dateTime.truncatedTo(ChronoUnit.MINUTES);
         LocalDateTime dateTimeFrom = dateTimeTo.minusMinutes(1);
@@ -192,7 +187,7 @@ public class SimulateBrokerClient extends BrokerClient {
     }
 
     @Override
-    public Balance getBalance() throws InterruptedException {
+    public Balance getBalance() {
         BigDecimal totalPurchaseAmount = BigDecimal.ZERO;
         BigDecimal totalValuationAmount = BigDecimal.ZERO;
         BigDecimal totalProfitAmount = BigDecimal.ZERO;
@@ -319,7 +314,7 @@ public class SimulateBrokerClient extends BrokerClient {
         orders.add(order);
 
         // snapshot
-        snapshotBalance();
+        simulateReport.snapshotBalance(dateTime, balance);
 
         // return
         return order;

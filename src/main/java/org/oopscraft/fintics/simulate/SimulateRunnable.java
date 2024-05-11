@@ -109,7 +109,6 @@ public class SimulateRunnable implements Runnable {
             // invest amount, fee rate
             BigDecimal investAmount = simulate.getInvestAmount();
             BigDecimal feeRate = simulate.getFeeRate();
-            simulateTradeClient.deposit(investAmount);
 
             // trade executor
             TradeExecutor tradeExecutor = tradeExecutorFactory.getObject();
@@ -117,7 +116,16 @@ public class SimulateRunnable implements Runnable {
 
             // start
             saveSimulate();
-            for (LocalDateTime dateTime = dateTimeFrom.plusSeconds(interval); dateTime.isBefore(dateTimeTo); dateTime = dateTime.plusSeconds(interval)) {
+
+            // deposit
+            simulateTradeClient.setDateTime(dateTimeFrom);
+            simulateTradeClient.deposit(investAmount);
+
+            // loop
+            for (LocalDateTime dateTime = dateTimeFrom;
+                 dateTime.isBefore(dateTimeTo) || dateTime.isEqual(dateTimeTo);
+                 dateTime = dateTime.plusSeconds(interval)) {
+
                 // check interrupted
                 if (interrupted) {
                     throw new InterruptedException("SimulateRunnable is interrupted.");
@@ -131,6 +139,8 @@ public class SimulateRunnable implements Runnable {
                 sendMessage("dateTime", dateTime.format(DateTimeFormatter.ISO_DATE_TIME));
                 TransactionStatus transactionStatus = null;
                 try {
+                    // change date time
+                    simulate.setDateTime(dateTime);
                     simulateIndiceClient.setDateTime(dateTime);
                     simulateTradeClient.setDateTime(dateTime);
 
@@ -151,9 +161,9 @@ public class SimulateRunnable implements Runnable {
                     // send balance message
                     sendMessage("balance", simulateTradeClient.getBalance());
                     sendMessage("orders", simulateTradeClient.getOrders());
+                    sendMessage("simulateReport", simulateTradeClient.getSimulateReport());
 
                     // save
-                    simulate.setDateTime(dateTime);
                     saveSimulate();
                     transactionManager.commit(transactionStatus);
 
@@ -199,9 +209,11 @@ public class SimulateRunnable implements Runnable {
         LocalTime endTime = trade.getEndAt();
         LocalTime currentTime = dateTime.toLocalTime();
         if (startTime.isAfter(endTime)) {
-            return !currentTime.isBefore(startTime) || !currentTime.isAfter(endTime);
+            return !(currentTime.isBefore(startTime) || currentTime.equals(startTime))
+                    || !(currentTime.isAfter(endTime) || currentTime.equals(endTime));
         } else {
-            return currentTime.isAfter(startTime) && currentTime.isBefore(endTime);
+            return (currentTime.isAfter(startTime) || currentTime.equals(startTime))
+                    && (currentTime.isBefore(endTime) || currentTime.equals(endTime));
         }
     }
 
@@ -245,31 +257,17 @@ public class SimulateRunnable implements Runnable {
         simulateEntity.setEndedAt(simulate.getEndedAt());
         simulateEntity.setStatus(simulate.getStatus());
         simulateEntity.setDateTime(simulate.getDateTime());
-
-        // balance data
-        try {
-            BigDecimal investAmount = simulateEntity.getInvestAmount();
-            BigDecimal balanceTotalAmount = simulateTradeClient.getBalance().getTotalAmount();
-            BigDecimal profitAmount = balanceTotalAmount.subtract(investAmount);
-            BigDecimal profitPercentage = profitAmount.divide(investAmount, MathContext.DECIMAL32)
-                    .multiply(BigDecimal.valueOf(100))
-                    .setScale(2, RoundingMode.FLOOR);
-            simulateEntity.setProfitAmount(profitAmount);
-            simulateEntity.setProfitPercentage(profitPercentage);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-
-        // order data
-        try {
-            simulateEntity.setBalanceData(toDataString(simulateTradeClient.getBalance()));
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        BigDecimal investAmount = simulateEntity.getInvestAmount();
+        BigDecimal balanceTotalAmount = simulateTradeClient.getBalance().getTotalAmount();
+        BigDecimal profitAmount = balanceTotalAmount.subtract(investAmount);
+        BigDecimal profitPercentage = profitAmount.divide(investAmount, MathContext.DECIMAL32)
+                .multiply(BigDecimal.valueOf(100))
+                .setScale(2, RoundingMode.FLOOR);
+        simulateEntity.setProfitAmount(profitAmount);
+        simulateEntity.setProfitPercentage(profitPercentage);
+        simulateEntity.setBalanceData(toDataString(simulateTradeClient.getBalance()));
         simulateEntity.setOrdersData(toDataString(simulateTradeClient.getOrders()));
-
-        // TODO report data
-
+        simulateEntity.setSimulateReportData(toDataString(simulateTradeClient.getSimulateReport()));
 
         // save
         simulateRepository.saveAndFlush(simulateEntity);
@@ -278,7 +276,8 @@ public class SimulateRunnable implements Runnable {
     private String toDataString(Object object) {
         try {
             return objectMapper.writeValueAsString(object);
-        } catch (JsonProcessingException ignored) {
+        } catch (JsonProcessingException e) {
+            log.warn(e.getMessage(), e);
             return null;
         }
     }

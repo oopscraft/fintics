@@ -248,9 +248,11 @@ public class TradeExecutor {
         LocalTime endTime = trade.getEndAt();
         LocalTime currentTime = dateTime.toLocalTime();
         if (startTime.isAfter(endTime)) {
-            return !currentTime.isBefore(startTime) || !currentTime.isAfter(endTime);
+            return !(currentTime.isBefore(startTime) || currentTime.equals(startTime))
+                    || !(currentTime.isAfter(endTime) || currentTime.equals(endTime));
         } else {
-            return currentTime.isAfter(startTime) && currentTime.isBefore(endTime);
+            return (currentTime.isAfter(startTime) || currentTime.equals(startTime))
+                    && (currentTime.isBefore(endTime) || currentTime.equals(endTime));
         }
     }
 

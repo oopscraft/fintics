@@ -74,6 +74,9 @@ public class Simulate {
     @Builder.Default
     private List<Order> orders = new ArrayList<>();
 
+    @Builder.Default
+    private SimulateReport simulateReport = new SimulateReport();
+
     public enum Status { WAITING, RUNNING, COMPLETED, STOPPING, STOPPED, FAILED }
 
     @Converter(autoApply = true)
@@ -122,6 +125,16 @@ public class Simulate {
             }
         }
 
+        // simulate report
+        SimulateReport simulateReport = new SimulateReport();
+        if(simulateEntity.getSimulateReportData() != null) {
+            try {
+                simulateReport = objectMapper.readValue(simulateEntity.getSimulateReportData(), new TypeReference<>(){});
+            } catch (JsonProcessingException e) {
+                log.debug(e.getMessage());
+            }
+        }
+
         // return
         return Simulate.builder()
                 .simulateId(simulateEntity.getSimulateId())
@@ -144,6 +157,7 @@ public class Simulate {
                 .profitPercentage(simulateEntity.getProfitPercentage())
                 .balance(balance)
                 .orders(orders)
+                .simulateReport(simulateReport)
                 .build();
     }
 

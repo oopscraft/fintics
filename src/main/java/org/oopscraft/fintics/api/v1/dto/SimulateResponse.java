@@ -3,6 +3,7 @@ package org.oopscraft.fintics.api.v1.dto;
 import lombok.Builder;
 import lombok.Getter;
 import org.oopscraft.fintics.model.Simulate;
+import org.oopscraft.fintics.model.SimulateReport;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -56,6 +57,8 @@ public class SimulateResponse {
     @Builder.Default
     private List<OrderResponse> orders = new ArrayList<>();
 
+    private SimulateReportResponse simulateReport;
+
     public static SimulateResponse from(Simulate simulate) {
         return SimulateResponse.builder()
                 .simulateId(simulate.getSimulateId())
@@ -78,6 +81,7 @@ public class SimulateResponse {
                 .profitPercentage(simulate.getProfitPercentage())
                 .balance(BalanceResponse.from(simulate.getBalance()))
                 .orders(OrderResponse.from(simulate.getOrders()))
+                .simulateReport(SimulateReportResponse.from(simulate.getSimulateReport()))
                 .build();
     }
 

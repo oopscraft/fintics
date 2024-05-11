@@ -435,7 +435,7 @@
                 <input class="width--100" type="number" data-duice-bind="simulateDialog.simulate" data-duice-property="feeRate" data-duice-format="number(4)"/>
             </label>
             <div class="grid-column--12 justify-self--end">
-                <button type="button" onclick="simulateDialog.drawChart();">
+                <button type="button" onclick="simulateDialog.drawAssetOhlcvsChart();">
                     <img class="icon" th:src="@{/static/image/icon-search.svg}" alt="search"/>
                     <span data-th-text="#{web.global.search}"></span>
                 </button>
@@ -455,7 +455,7 @@
         </form>
         <div class="padding-y--1em s__padding--0">
             <div>
-                chart
+               Chart
             </div>
             <div class="width--100" style="height:200px;">
                 <canvas id="simulateDialog-assetOhlcvsChart"></canvas>
@@ -475,6 +475,10 @@
                     <button id="simulateDialog-orderTabButton" type="button" class="tab">
                         <img class="icon" th:src="@{/static/image/icon-order.svg}" alt="indice"/>
                         <span data-th-text="#{fintics.Order}"></span>
+                    </button>
+                    <button id="simulateDialog-simulateReportTabButton" type="button" class="tab">
+                        <img class="icon" th:src="@{/static/image/icon-simulate.svg}" alt="indice"/>
+                        <span data-th-text="#{fintics.SimulateReport}"></span>
                     </button>
                     <hr class="margin--1px"/>
                 </div>
@@ -631,6 +635,14 @@
                         </table>
                     </div>
                 </div>
+                <div id="simulateDialog-simulateReportContent">
+                    <div>
+                        Balance
+                    </div>
+                    <div class="width--100" style="height:200px;">
+                        <canvas id="simulateDialog-simulateReportTotalAmountsChart"></canvas>
+                    </div>
+                </div>
             </div>
         </div>
     </dialog>
@@ -652,13 +664,18 @@
                 balance: {
                     balanceAssets: []
                 },
-                orders: []
+                orders: [],
+                simulateReport: {
+                    totalAmounts: {}
+                }
             }),
             assetOhlcvsChart: null,
+            simulateReportTotalAmountsChart: null,
             subscribeLog: null,
             subscribeDateTime: null,
             subscribeBalance: null,
             subscribeOrders: null,
+            subscribeSimulateReport: null,
             dateTime: document.getElementById('simulateDialog-dateTime'),
             log: document.getElementById('simulateDialog-log'),
             initialize: function() {
@@ -676,16 +693,49 @@
                     duice.tabItem(
                         document.getElementById('simulateDialog-orderTabButton'),
                         document.getElementById('simulateDialog-orderTabContent'),
+                        () => {}),
+                    duice.tabItem(
+                        document.getElementById('simulateDialog-simulateReportTabButton'),
+                        document.getElementById('simulateDialog-simulateReportContent'),
                         () => {})
                 );
                 resultTabFolder.setActive(0);
+
+                // create simulate report chart
+                this.simulateReportTotalAmountsChart = new Chart(
+                    document.getElementById('simulateDialog-simulateReportTotalAmountsChart'),
+                    {
+                        type: 'line',
+                        data: {
+                            datasets: []
+                        },
+                        options: {
+                            animation: false,
+                            maintainAspectRatio: false,
+                            scales: {
+                                x: {
+                                    type: 'time',
+                                    distribution: 'series',
+                                    time: {
+                                        unit: 'day',
+                                        displayFormats: {
+                                            hour: 'MM-dd'
+                                        }
+                                    }
+                                },
+                                y: {
+                                }
+                            }
+                        }
+                    }
+                );
             },
             openForNew: async function(simulate) {
                 duice.ObjectProxy.clear(this.simulate);
                 duice.ObjectProxy.assign(this.simulate, simulate);
                 this.simulate.simulateId = null;
                 this.unsubscribeSimulate();
-                await this.drawChart();
+                await this.drawAssetOhlcvsChart();
                 return this.dialog.open();
             },
             openForEdit: function(simulateId) {
@@ -694,14 +744,12 @@
                     .then(response => response.json())
                     .then(async simulate => {
                         duice.ObjectProxy.assign(this.simulate, simulate);
-                        await this.drawChart();
+                        await this.drawAssetOhlcvsChart();
+                        await this.drawSimulateReportTotalAmountsChart();
                         this.unsubscribeSimulate();
                         this.subscribeSimulate();
                     });
                 return this.dialog.open();
-            },
-            getDaysOfDateTimeFromTo: function() {
-                return dateFns.differenceInDays(this.simulate.dateTimeTo, this.simulate.dateTimeFrom);
             },
             async getAssetOhlcvs(assetId, type, dateTimeFrom, dateTimeTo) {
                 let url = new URL(`${_apiUrl}/v1/assets/${assetId}/ohlcvs`, document.location.origin);
@@ -711,7 +759,7 @@
                 url.searchParams.append('_size', 60 * 24 * 365);
                 return await _fetch(url, null, true);
             },
-            drawChart: function() {
+            drawAssetOhlcvsChart: function() {
                 this.assetOhlcvsChart.data.datasets.length = 0;
                 let dateTimeFrom = this.simulate.dateTimeFrom;
                 let dateTimeTo = this.simulate.dateTimeTo;
@@ -735,6 +783,24 @@
                     results.forEach(dataset => this.assetOhlcvsChart.data.datasets.push(dataset));
                     this.assetOhlcvsChart.update();
                 });
+            },
+            drawSimulateReportTotalAmountsChart: function() {
+                this.simulateReportTotalAmountsChart.data.labels.length = 0;
+                this.simulateReportTotalAmountsChart.data.datasets.length = 0;
+                let totalAmounts = this.simulate.simulateReport?.totalAmounts;
+                if (totalAmounts) {
+                    let dates = Object.keys(totalAmounts);
+                    let values = Object.values(totalAmounts);
+                    this.simulateReportTotalAmountsChart.data.datasets.length = 0;
+                    this.simulateReportTotalAmountsChart.data.labels = dates;
+                    this.simulateReportTotalAmountsChart.data.datasets.push({
+                        label: 'Total Amounts',
+                        data: values,
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1
+                    });
+                }
             },
             runSimulate: function() {
                 this.clearMarkOrdersAtChart();
@@ -762,6 +828,7 @@
                 _webSocketClient.unsubscribe(this.subscribeDateTime);
                 _webSocketClient.unsubscribe(this.subscribeBalance);
                 _webSocketClient.unsubscribe(this.subscribeOrders);
+                _webSocketClient.unsubscribe(this.subscribeSimulateReport);
             },
             subscribeSimulate: function() {
                 // websocket
@@ -794,10 +861,17 @@
                     destination: `/simulates/${_this.simulate.simulateId}/orders`,
                     listener: function(frame) {
                         let orders = JSON.parse(frame.body);
-                        if(orders.length !== _this.simulate.orders.length) {
+                        if (orders.length !== _this.simulate.orders.length) {
                             duice.ObjectProxy.assign(_this.simulate.orders, orders);
                             _this.setMarkOrdersAtChart(orders);
                         }
+                    }
+                });
+                this.subscribeSimulateReport = _webSocketClient.subscribe({
+                    destination: `/simulates/${_this.simulate.simulateId}/simulateReport`,
+                    listener: function(frame) {
+                        let simulateReport = JSON.parse(frame.body);
+                        duice.ObjectProxy.assign(_this.simulate.simulateReport, simulateReport);
                     }
                 });
             },
