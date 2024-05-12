@@ -8,6 +8,7 @@ import org.oopscraft.fintics.client.ohlcv.OhlcvClient;
 import org.oopscraft.fintics.dao.*;
 import org.oopscraft.fintics.model.*;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,7 +45,15 @@ public class DataService {
                         Optional.ofNullable(assetName).map(qAssetEntity.assetName::contains).orElse(null),
                         Optional.ofNullable(market).map(qAssetEntity.market::eq).orElse(null)
                 )
-                .orderBy(qAssetEntity.marketCap.desc())
+                .orderBy(
+                        Optional.ofNullable(pageable.getSort().getOrderFor(AssetEntity_.PER))
+                                .map(order -> order.getDirection() == Sort.Direction.DESC ? qAssetEntity.per.desc() : qAssetEntity.per.asc())
+                                .orElse(null),
+                        Optional.ofNullable(pageable.getSort().getOrderFor(AssetEntity_.ROE))
+                                .map(order -> order.getDirection() == Sort.Direction.DESC ? qAssetEntity.roe.desc() : qAssetEntity.roe.asc())
+                                .orElse(null),
+                        qAssetEntity.marketCap.desc()   // default
+                )
                 .limit(pageable.getPageSize())
                 .offset(pageable.getOffset())
                 .fetch();
