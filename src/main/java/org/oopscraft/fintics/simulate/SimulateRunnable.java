@@ -86,7 +86,6 @@ public class SimulateRunnable implements Runnable {
     public void run() {
         simulate.setStatus(Simulate.Status.RUNNING);
         simulate.setStartedAt(LocalDateTime.now());
-        saveSimulate();
 
         if(this.simulateLogAppender != null) {
             log.addAppender(this.simulateLogAppender);
@@ -108,18 +107,17 @@ public class SimulateRunnable implements Runnable {
 
             // invest amount, fee rate
             BigDecimal investAmount = simulate.getInvestAmount();
-            BigDecimal feeRate = simulate.getFeeRate();
-
-            // trade executor
-            TradeExecutor tradeExecutor = tradeExecutorFactory.getObject();
-            tradeExecutor.setLog(log);
-
-            // start
-            saveSimulate();
 
             // deposit
             simulateTradeClient.setDateTime(dateTimeFrom);
             simulateTradeClient.deposit(investAmount);
+
+            // start
+            saveSimulate();
+
+            // trade executor
+            TradeExecutor tradeExecutor = tradeExecutorFactory.getObject();
+            tradeExecutor.setLog(log);
 
             // loop
             for (LocalDateTime dateTime = dateTimeFrom;

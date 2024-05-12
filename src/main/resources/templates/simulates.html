@@ -678,14 +678,10 @@
             subscribeSimulateReport: null,
             dateTime: document.getElementById('simulateDialog-dateTime'),
             log: document.getElementById('simulateDialog-log'),
+            resultTabFolder: null,
             initialize: function() {
-                // dialog closed
-
-                // initialize chart
-                this.assetOhlcvsChart = _createMinuteOhlcvsChart('simulateDialog-assetOhlcvsChart');
-
                 // result tab
-                let resultTabFolder = duice.tabFolder(
+                this.resultTabFolder = duice.tabFolder(
                     duice.tabItem(
                         document.getElementById('simulateDialog-balanceTabButton'),
                         document.getElementById('simulateDialog-balanceTabContent'),
@@ -699,7 +695,10 @@
                         document.getElementById('simulateDialog-simulateReportContent'),
                         () => {})
                 );
-                resultTabFolder.setActive(0);
+                this.resultTabFolder.setActive(0);
+
+                // initialize chart
+                this.assetOhlcvsChart = _createMinuteOhlcvsChart('simulateDialog-assetOhlcvsChart');
 
                 // create simulate report chart
                 this.simulateReportTotalAmountsChart = new Chart(
@@ -731,14 +730,17 @@
                 );
             },
             openForNew: async function(simulate) {
+                this.resultTabFolder.setActive(0);
                 duice.ObjectProxy.clear(this.simulate);
                 duice.ObjectProxy.assign(this.simulate, simulate);
                 this.simulate.simulateId = null;
                 this.unsubscribeSimulate();
                 await this.drawAssetOhlcvsChart();
+                await this.drawSimulateReportTotalAmountsChart();
                 return this.dialog.open();
             },
             openForEdit: function(simulateId) {
+                this.resultTabFolder.setActive(0);
                 let url = new URL(`${_apiUrl}/v1/simulates/${simulateId}`, document.location.origin);
                 _fetch(url)
                     .then(response => response.json())
@@ -801,6 +803,7 @@
                         borderWidth: 1
                     });
                 }
+                this.simulateReportTotalAmountsChart.update();
             },
             runSimulate: function() {
                 this.clearMarkOrdersAtChart();

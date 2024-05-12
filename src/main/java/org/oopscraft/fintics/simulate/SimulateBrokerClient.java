@@ -249,6 +249,9 @@ public class SimulateBrokerClient extends BrokerClient {
             // withdraw
             withdraw(buyAmount);
 
+            // deduct fee
+            deductFee(buyAmount);
+
             if(balanceAsset == null) {
                 balanceAsset = BalanceAsset.builder()
                         .assetId(order.getAssetId())
@@ -268,9 +271,6 @@ public class SimulateBrokerClient extends BrokerClient {
                 balanceAsset.setPurchaseAmount(purchaseAmount);
                 balanceAsset.setPurchasePrice(purchasePrice);
             }
-
-            // deduct fee
-            deductFee(buyAmount);
         }
 
         // sell

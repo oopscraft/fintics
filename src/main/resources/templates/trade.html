@@ -47,10 +47,6 @@
             _size: 20,
             _count: 0
         });
-        duice.ObjectProxy.onPropertyChanged(simulateSearch, () => {
-            simulateSearch._page = 0;
-            getSimulates();
-        });
         const simulates = new duice.ArrayProxy([]);
 
         // order
@@ -61,10 +57,6 @@
             _page: 0,
             _size: 20,
             _count: 0
-        });
-        duice.ObjectProxy.onPropertyChanged(orderSearch, () => {
-            orderSearch._page = 0;
-            getOrders();
         });
         const orders = new duice.ArrayProxy([]);
 
@@ -737,17 +729,19 @@
                                 th:text="${status}"></option>
                     </select>
                 </label>
-                <label class="grid-column--1 align-self--center display--flex gap--1em">
+                <label class="grid-column--2 align-self--center display--flex gap--1em">
                     <input type="checkbox" data-duice-bind="simulateSearch" data-duice-property="favorite"/>
                     <span data-th-text="#{fintics.Simulate.favorite}"></span>
                 </label>
-                <div class="grid-column--1 s__grid-column--12">
+                <div class="grid-column--8 s__grid-column--12 justify-self--end">
+                    <button type="submit" onclick="getSimulates();">
+                        <img class="icon" th:src="@{/static/image/icon-search.svg}" alt="search"/>
+                        <span data-th-text="#{web.global.search}"></span>
+                    </button>
                     <button type="button" onclick="resetSimulates();">
                         <img class="icon" th:src="@{/static/image/icon-reset.svg}" alt="reset"/>
                         <span data-th-text="#{web.global.reset}">Reset</span>
                     </button>
-                </div>
-                <div class="grid-column--8 s__grid-column--12 justify-self--end">
                     <button type="button" onclick="createSimulate();">
                         <img class="icon" data-th-src="@{/static/image/icon-create.svg}" alt="create"/>
                         <span data-th-text="#{web.global.create}"></span>
@@ -939,10 +933,14 @@
                             <option value="FAILED">FAILED</option>
                         </select>
                     </label>
-                    <div class="grid-column--1 s__grid-column--12">
+                    <div class="grid-column--8 s__grid-column--12 justify-self--end">
+                        <button type="button" onclick="getOrders();">
+                            <img class="icon" th:src="@{/static/image/icon-search.svg}" alt="search"/>
+                            <span data-th-text="#{web.global.search}"></span>
+                        </button>
                         <button type="button" onclick="resetOrders();">
                             <img class="icon" th:src="@{/static/image/icon-reset.svg}" alt="reset"/>
-                            <span data-th-text="#{web.global.reset}">Reset</span>
+                            <span data-th-text="#{web.global.reset}"></span>
                         </button>
                     </div>
                 </div>
