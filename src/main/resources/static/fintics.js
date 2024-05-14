@@ -24,7 +24,7 @@ function _createDailyOhlcvsChart(elementId) {
                     time: {
                         unit: 'day',
                         displayFormats: {
-                            hour: 'MM-dd'
+                            day: 'MM-dd'
                         }
                     },
                     ticks: {

@@ -148,11 +148,6 @@ public class SimulateRunnable implements Runnable {
                         continue;
                     }
 
-                    // start transaction
-                    DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition();
-                    transactionDefinition.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-                    transactionStatus = transactionManager.getTransaction(transactionDefinition);
-
                     // executes trade
                     tradeExecutor.execute(trade, strategy, dateTime, simulateIndiceClient, simulateTradeClient);
 
@@ -161,21 +156,16 @@ public class SimulateRunnable implements Runnable {
                     sendMessage("orders", simulateTradeClient.getOrders());
                     sendMessage("simulateReport", simulateTradeClient.getSimulateReport());
 
-                    // save
-                    saveSimulate();
-                    transactionManager.commit(transactionStatus);
-
                 } catch (InterruptedException e) {
                     log.warn(e.getMessage(), e);
                     throw e;
-                } catch (Throwable e) {
+                } catch (Exception e) {
                     log.warn(e.getMessage(), e);
                 } finally {
-                    if (transactionStatus != null) {
-                        if (!transactionStatus.isCompleted()) {
-                            transactionStatus.setRollbackOnly();
-                            transactionManager.commit(transactionStatus);
-                        }
+                    try {
+                        saveSimulate();
+                    } catch (Exception e){
+                        log.warn(e.getMessage());
                     }
                 }
             }
@@ -186,9 +176,8 @@ public class SimulateRunnable implements Runnable {
         } catch (InterruptedException e) {
             log.warn(e.getMessage(), e);
             simulate.setStatus(Simulate.Status.STOPPED);
-        } catch (Throwable e) {
+        } catch (Exception e) {
             simulate.setStatus(Simulate.Status.FAILED);
-            throw new RuntimeException(e);
         } finally {
             simulateLogAppender.stop();
             this.onComplete.run();
@@ -255,20 +244,25 @@ public class SimulateRunnable implements Runnable {
         simulateEntity.setEndedAt(simulate.getEndedAt());
         simulateEntity.setStatus(simulate.getStatus());
         simulateEntity.setDateTime(simulate.getDateTime());
-        BigDecimal investAmount = simulateEntity.getInvestAmount();
-        BigDecimal balanceTotalAmount = simulateTradeClient.getBalance().getTotalAmount();
-        BigDecimal profitAmount = balanceTotalAmount.subtract(investAmount);
-        BigDecimal profitPercentage = profitAmount.divide(investAmount, MathContext.DECIMAL32)
-                .multiply(BigDecimal.valueOf(100))
-                .setScale(2, RoundingMode.FLOOR);
-        simulateEntity.setProfitAmount(profitAmount);
-        simulateEntity.setProfitPercentage(profitPercentage);
-        simulateEntity.setBalanceData(toDataString(simulateTradeClient.getBalance()));
-        simulateEntity.setOrdersData(toDataString(simulateTradeClient.getOrders()));
-        simulateEntity.setSimulateReportData(toDataString(simulateTradeClient.getSimulateReport()));
 
-        // save
-        simulateRepository.saveAndFlush(simulateEntity);
+        try {
+            BigDecimal investAmount = simulateEntity.getInvestAmount();
+            BigDecimal balanceTotalAmount = simulateTradeClient.getBalance().getTotalAmount();
+            BigDecimal profitAmount = balanceTotalAmount.subtract(investAmount);
+            BigDecimal profitPercentage = profitAmount.divide(investAmount, MathContext.DECIMAL32)
+                    .multiply(BigDecimal.valueOf(100))
+                    .setScale(2, RoundingMode.FLOOR);
+            simulateEntity.setProfitAmount(profitAmount);
+            simulateEntity.setProfitPercentage(profitPercentage);
+            simulateEntity.setBalanceData(toDataString(simulateTradeClient.getBalance()));
+            simulateEntity.setOrdersData(toDataString(simulateTradeClient.getOrders()));
+            simulateEntity.setSimulateReportData(toDataString(simulateTradeClient.getSimulateReport()));
+        } catch (Exception e) {
+            log.warn(e.getMessage());
+        } finally {
+            // save
+            simulateRepository.saveAndFlush(simulateEntity);
+        }
     }
 
     private String toDataString(Object object) {

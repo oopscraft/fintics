@@ -640,7 +640,10 @@
                         Balance
                     </div>
                     <div class="width--100" style="height:200px;">
-                        <canvas id="simulateDialog-simulateReportTotalAmountsChart"></canvas>
+                        <canvas id="simulateDialog-simulateReportTotalReturnsChart"></canvas>
+                    </div>
+                    <div class="width--100" style="height:200px;">
+                        <canvas id="simulateDialog-simulateReportAssetReturnsChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -670,7 +673,8 @@
                 }
             }),
             assetOhlcvsChart: null,
-            simulateReportTotalAmountsChart: null,
+            simulateReportTotalReturnsChart: null,
+            simulateReportAssetReturnsChart: null,
             subscribeLog: null,
             subscribeDateTime: null,
             subscribeBalance: null,
@@ -700,9 +704,9 @@
                 // initialize chart
                 this.assetOhlcvsChart = _createMinuteOhlcvsChart('simulateDialog-assetOhlcvsChart');
 
-                // create simulate report chart
-                this.simulateReportTotalAmountsChart = new Chart(
-                    document.getElementById('simulateDialog-simulateReportTotalAmountsChart'),
+                // create simulate report total returns chart
+                this.simulateReportTotalReturnsChart = new Chart(
+                    document.getElementById('simulateDialog-simulateReportTotalReturnsChart'),
                     {
                         type: 'line',
                         data: {
@@ -711,6 +715,10 @@
                         options: {
                             animation: false,
                             maintainAspectRatio: false,
+                            parsing: {
+                                xAxisKey: 'date',
+                                yAxisKey: 'totalAmount'
+                            },
                             scales: {
                                 x: {
                                     type: 'time',
@@ -718,7 +726,40 @@
                                     time: {
                                         unit: 'day',
                                         displayFormats: {
-                                            hour: 'MM-dd'
+                                            day: 'MM-dd'
+                                        }
+                                    }
+                                },
+                                y: {
+                                }
+                            }
+                        }
+                    }
+                );
+
+                // creates simulate report asset returns chart
+                this.simulateReportAssetReturnsChart = new Chart(
+                    document.getElementById('simulateDialog-simulateReportAssetReturnsChart'),
+                    {
+                        type: 'line',
+                        data: {
+                            datasets: []
+                        },
+                        options: {
+                            animation: false,
+                            maintainAspectRatio: false,
+                            parsing: {
+                                xAxisKey: 'dateTime',
+                                yAxisKey: 'accumulatedProfitAmount'
+                            },
+                            scales: {
+                                x: {
+                                    type: 'time',
+                                    distribution: 'series',
+                                    time: {
+                                        unit: 'day',
+                                        displayFormats: {
+                                            day: 'MM-dd'
                                         }
                                     }
                                 },
@@ -736,7 +777,7 @@
                 this.simulate.simulateId = null;
                 this.unsubscribeSimulate();
                 await this.drawAssetOhlcvsChart();
-                await this.drawSimulateReportTotalAmountsChart();
+                await this.drawSimulateReportTotalReturnsChart();
                 return this.dialog.open();
             },
             openForEdit: function(simulateId) {
@@ -747,7 +788,8 @@
                     .then(async simulate => {
                         duice.ObjectProxy.assign(this.simulate, simulate);
                         await this.drawAssetOhlcvsChart();
-                        await this.drawSimulateReportTotalAmountsChart();
+                        await this.drawSimulateReportTotalReturnsChart();
+                        await this.drawSimulateReportAssetReturnsChart();
                         this.unsubscribeSimulate();
                         this.subscribeSimulate();
                     });
@@ -786,24 +828,51 @@
                     this.assetOhlcvsChart.update();
                 });
             },
-            drawSimulateReportTotalAmountsChart: function() {
-                this.simulateReportTotalAmountsChart.data.labels.length = 0;
-                this.simulateReportTotalAmountsChart.data.datasets.length = 0;
-                let totalAmounts = this.simulate.simulateReport?.totalAmounts;
-                if (totalAmounts) {
-                    let dates = Object.keys(totalAmounts);
-                    let values = Object.values(totalAmounts);
-                    this.simulateReportTotalAmountsChart.data.datasets.length = 0;
-                    this.simulateReportTotalAmountsChart.data.labels = dates;
-                    this.simulateReportTotalAmountsChart.data.datasets.push({
-                        label: 'Total Amounts',
-                        data: values,
+            drawSimulateReportTotalReturnsChart: function() {
+                // change x min, max
+                this.simulateReportTotalReturnsChart.options.scales.x.min = dateFns.subDays(this.simulate.dateTimeFrom,1);
+                this.simulateReportTotalReturnsChart.options.scales.x.max = dateFns.addDays(this.simulate.dateTimeTo,1);
+                // clear data
+                this.simulateReportTotalReturnsChart.data.labels.length = 0;
+                this.simulateReportTotalReturnsChart.data.datasets.length = 0;
+                let totalReturns = this.simulate.simulateReport?.totalReturns || [];
+                this.simulateReportTotalReturnsChart.data.datasets.push({
+                    label: 'Total Returns',
+                    data: totalReturns,
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1
+                });
+                this.simulateReportTotalReturnsChart.update();
+            },
+            drawSimulateReportAssetReturnsChart: function() {
+                // change x min, max
+                this.simulateReportAssetReturnsChart.options.scales.x.min = dateFns.subDays(this.simulate.dateTimeFrom,1);
+                this.simulateReportAssetReturnsChart.options.scales.x.max = dateFns.addDays(this.simulate.dateTimeTo,1);
+                // clear data
+                this.simulateReportAssetReturnsChart.data.labels.length = 0;
+                this.simulateReportAssetReturnsChart.data.datasets.length = 0;
+                let assetReturns = this.simulate.simulateReport?.assetReturns;
+                console.log("====== assetReturns:", assetReturns);
+
+                // asset ids
+                let assetIds = Array.from(new Set(assetReturns.map(it=> it.assetId)));
+                console.log("============= assetIds", assetIds);
+
+                for (let assetId of assetIds) {
+                    let assetReturn = assetReturns.find(it => it.assetId === assetId)
+                    console.log("### assetReturn", assetReturn);
+                    let assetProfits = assetReturn.assetProfits;
+                    console.log("### assetProfits:", assetProfits);
+                    this.simulateReportAssetReturnsChart.data.datasets.push({
+                        label: assetId,
+                        data: assetProfits,
                         backgroundColor: 'rgba(255, 99, 132, 0.2)',
                         borderColor: 'rgba(255, 99, 132, 1)',
                         borderWidth: 1
                     });
                 }
-                this.simulateReportTotalAmountsChart.update();
+                this.simulateReportAssetReturnsChart.update();
             },
             runSimulate: function() {
                 this.clearMarkOrdersAtChart();

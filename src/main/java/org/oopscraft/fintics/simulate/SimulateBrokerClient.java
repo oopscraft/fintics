@@ -13,6 +13,7 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 public class SimulateBrokerClient extends BrokerClient {
@@ -29,9 +30,9 @@ public class SimulateBrokerClient extends BrokerClient {
 
     private final Map<String, List<Ohlcv>> dailyOhlcvsMap = new HashMap<>();
 
-    private final Balance balance = Balance.builder()
-            .cashAmount(BigDecimal.ZERO)
-            .build();
+    private BigDecimal balanceCashAmount = BigDecimal.ZERO;
+
+    private final List<BalanceAsset> balanceAssets = new CopyOnWriteArrayList<>();
 
     @Getter
     private final List<Order> orders = new ArrayList<>();
@@ -41,10 +42,10 @@ public class SimulateBrokerClient extends BrokerClient {
 
     public void setDateTime(LocalDateTime dateTime) {
         if (this.dateTime != null) {
-            simulateReport.snapshotBalance(this.dateTime, balance);
+            snapshotSimulateReport();
         }
         this.dateTime = dateTime;
-        simulateReport.snapshotBalance(this.dateTime, balance);
+        snapshotSimulateReport();
     }
 
     @Builder
@@ -56,24 +57,28 @@ public class SimulateBrokerClient extends BrokerClient {
     }
 
     public synchronized void deposit(BigDecimal amount) {
-        balance.setCashAmount(balance.getCashAmount().add(amount));
-        simulateReport.snapshotBalance(dateTime, balance);
+        balanceCashAmount = balanceCashAmount.add(amount);
+        snapshotSimulateReport();
     }
 
     public synchronized void withdraw(BigDecimal amount) {
-        if (amount.compareTo(balance.getCashAmount()) > 0) {
+        if (amount.compareTo(balanceCashAmount) > 0) {
             throw new RuntimeException("withdraw amount is over cache amount");
         }
-        balance.setCashAmount(balance.getCashAmount().subtract(amount));
-        simulateReport.snapshotBalance(dateTime, balance);
+        balanceCashAmount = balanceCashAmount.subtract(amount);
+        snapshotSimulateReport();
     }
 
     public synchronized void deductFee(BigDecimal amount) {
-        BigDecimal feeAmount = amount
-                .multiply(feeRate.divide(BigDecimal.valueOf(100), MathContext.DECIMAL32))
+        BigDecimal feeAmount = getFeeAmount(amount);
+        balanceCashAmount = balanceCashAmount.subtract(feeAmount);
+        simulateReport.addFeeAmount(feeAmount);
+        snapshotSimulateReport();
+    }
+
+    public BigDecimal getFeeAmount(BigDecimal amount) {
+        return amount.multiply(feeRate.divide(BigDecimal.valueOf(100), MathContext.DECIMAL32))
                 .setScale(2, RoundingMode.CEILING);
-        balance.setCashAmount(balance.getCashAmount().subtract(feeAmount));
-        simulateReport.snapshotBalance(dateTime, balance);
     }
 
     private void loadOhlcvsIfNotExist(Asset asset, LocalDateTime dateTime) {
@@ -188,31 +193,31 @@ public class SimulateBrokerClient extends BrokerClient {
 
     @Override
     public Balance getBalance() {
-        BigDecimal totalPurchaseAmount = BigDecimal.ZERO;
-        BigDecimal totalValuationAmount = BigDecimal.ZERO;
-        BigDecimal totalProfitAmount = BigDecimal.ZERO;
-        for(BalanceAsset balanceAsset : balance.getBalanceAssets()) {
+        BigDecimal balanceValuationAmount = BigDecimal.ZERO;
+        for (BalanceAsset balanceAsset : balanceAssets) {
             OrderBook orderBook = getOrderBook(balanceAsset);
-            BigDecimal currentPrice = orderBook.getPrice();
-            BigDecimal purchaseAmount = balanceAsset.getPurchaseAmount();
-            BigDecimal valuationAmount = balanceAsset.getQuantity().multiply(currentPrice, MathContext.DECIMAL32);
-            BigDecimal profitAmount = valuationAmount.subtract(purchaseAmount);
+            BigDecimal assetCurrentPrice = orderBook.getPrice();
 
-            balanceAsset.setPurchaseAmount(purchaseAmount);
-            balanceAsset.setValuationAmount(valuationAmount);
-            balanceAsset.setProfitAmount(profitAmount);
+            BigDecimal assetQuantity = balanceAsset.getQuantity();
+            BigDecimal assetValuationAmount = assetQuantity.multiply(assetCurrentPrice, MathContext.DECIMAL32);
+            BigDecimal assetProfitAmount = assetValuationAmount.subtract(balanceAsset.getPurchaseAmount());
 
-            totalPurchaseAmount = totalPurchaseAmount.add(purchaseAmount);
-            totalValuationAmount = totalValuationAmount.add(valuationAmount);
-            totalProfitAmount = totalProfitAmount.add(profitAmount);
+            // updates balance asset
+            balanceAsset.setValuationAmount(assetValuationAmount);
+            balanceAsset.setProfitAmount(assetProfitAmount);
+
+            // add balance valuation amount
+            balanceValuationAmount = balanceValuationAmount.add(assetValuationAmount);
         }
+        BigDecimal totalAmount = balanceCashAmount.add(balanceValuationAmount);
 
-        BigDecimal totalAmount = totalValuationAmount.add(balance.getCashAmount());
-        balance.setTotalAmount(totalAmount);
-        balance.setPurchaseAmount(totalPurchaseAmount);
-        balance.setValuationAmount(totalValuationAmount);
-        balance.setProfitAmount(totalProfitAmount);
-        return balance;
+        // return
+        return Balance.builder()
+                .totalAmount(totalAmount)
+                .cashAmount(balanceCashAmount)
+                .valuationAmount(balanceValuationAmount)
+                .balanceAssets(balanceAssets)
+                .build();
     }
 
     @Override
@@ -222,20 +227,22 @@ public class SimulateBrokerClient extends BrokerClient {
         // order book
         OrderBook orderBook = getOrderBook(asset);
 
-        // balance
-        Balance balance = getBalance();
-
         // balance asset
-        BalanceAsset balanceAsset = balance.getBalanceAsset(order.getAssetId()).orElse(null);
+        BalanceAsset balanceAsset = balanceAssets.stream()
+                .filter(it -> Objects.equals(it.getAssetId(),  order.getAssetId()))
+                .findFirst()
+                .orElse(null);
 
         // buy
         if(order.getType() == Order.Type.BUY) {
             BigDecimal buyQuantity = order.getQuantity();
 
-            // minimum order quantity
+            // validate minimum order quantity
             if (buyQuantity.compareTo(minimumOrderQuantity) < 0) {
                 throw new RuntimeException(String.format("[%s] is under minimum order quantity", buyQuantity));
             }
+
+            // apply minimum order quantity
             if (minimumOrderQuantity.compareTo(BigDecimal.ZERO) > 0) {
                 buyQuantity = buyQuantity.divide(minimumOrderQuantity, MathContext.DECIMAL32)
                         .setScale(0, RoundingMode.FLOOR)
@@ -261,7 +268,7 @@ public class SimulateBrokerClient extends BrokerClient {
                         .purchasePrice(buyPrice)
                         .purchaseAmount(buyAmount)
                         .build();
-                balance.getBalanceAssets().add(balanceAsset);
+                balanceAssets.add(balanceAsset);
             }else{
                 BigDecimal quantity = balanceAsset.getQuantity().add(buyQuantity);
                 BigDecimal purchaseAmount = balanceAsset.getPurchaseAmount().add(buyAmount);
@@ -282,6 +289,8 @@ public class SimulateBrokerClient extends BrokerClient {
             if (sellQuantity.compareTo(minimumOrderQuantity) < 0) {
                 throw new RuntimeException(String.format("[%s] is under minimum order quantity", sellQuantity));
             }
+
+            // apply minimum order quantity
             if (minimumOrderQuantity.compareTo(BigDecimal.ZERO) > 0) {
                 sellQuantity = sellQuantity.divide(minimumOrderQuantity, MathContext.DECIMAL32)
                         .setScale(0, RoundingMode.FLOOR)
@@ -292,13 +301,20 @@ public class SimulateBrokerClient extends BrokerClient {
             BigDecimal sellPrice = orderBook.getBidPrice();
             BigDecimal sellAmount = sellQuantity.multiply(sellPrice, MathContext.DECIMAL32);
 
-            BigDecimal quantity = balanceAsset.getQuantity().subtract(sellQuantity);
-            if(quantity.compareTo(BigDecimal.ZERO) <= 0) {
-                balance.getBalanceAssets().remove(balanceAsset);
+            // realized profit amount
+            BigDecimal realizedProfitAmount = sellPrice
+                    .subtract(balanceAsset.getPurchasePrice())
+                    .multiply(sellQuantity, MathContext.DECIMAL32);
+            simulateReport.addAssetReturn(balanceAsset, dateTime, realizedProfitAmount);
+
+            // updates balance asset
+            BigDecimal remainedQuantity = balanceAsset.getQuantity().subtract(sellQuantity);
+            if(remainedQuantity.compareTo(BigDecimal.ZERO) <= 0) {
+                balanceAssets.removeIf(it -> Objects.equals(it.getAssetId(), order.getAssetId()));
             }else{
                 BigDecimal purchaseAmount = balanceAsset.getPurchaseAmount().subtract(sellAmount);
-                BigDecimal purchasePrice = purchaseAmount.divide(quantity, MathContext.DECIMAL32);
-                balanceAsset.setQuantity(quantity);
+                BigDecimal purchasePrice = purchaseAmount.divide(remainedQuantity, MathContext.DECIMAL32);
+                balanceAsset.setQuantity(remainedQuantity);
                 balanceAsset.setPurchasePrice(purchasePrice);
                 balanceAsset.setPurchaseAmount(purchaseAmount);
             }
@@ -313,8 +329,8 @@ public class SimulateBrokerClient extends BrokerClient {
         // save order
         orders.add(order);
 
-        // snapshot
-        simulateReport.snapshotBalance(dateTime, balance);
+        // snapshot simulate report
+        snapshotSimulateReport();
 
         // return
         return order;
@@ -328,6 +344,11 @@ public class SimulateBrokerClient extends BrokerClient {
     @Override
     public Order amendOrder(Asset asset, Order order) throws InterruptedException {
         throw new UnsupportedOperationException("amend order is not supported.");
+    }
+
+    void snapshotSimulateReport() {
+        Balance balance = getBalance();
+        simulateReport.addTotalReturn(dateTime, balance.getTotalAmount());
     }
 
 }

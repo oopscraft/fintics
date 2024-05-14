@@ -31,9 +31,12 @@ public class BalanceAsset extends Asset {
     private BigDecimal profitAmount;
 
     public BigDecimal getProfitPercentage() {
-        return getProfitAmount().divide(getPurchaseAmount(), MathContext.DECIMAL32)
-                .multiply(BigDecimal.valueOf(100))
-                .setScale(2, RoundingMode.HALF_UP);
+        if (profitAmount != null && purchaseAmount != null) {
+            return getProfitAmount().divide(getPurchaseAmount(), MathContext.DECIMAL32)
+                    .multiply(BigDecimal.valueOf(100))
+                    .setScale(2, RoundingMode.HALF_UP);
+        }
+        return null;
     }
 
 }
