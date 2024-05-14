@@ -1,5 +1,6 @@
 package org.oopscraft.fintics.service;
 
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -14,8 +15,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -45,18 +48,20 @@ public class DataService {
                         Optional.ofNullable(assetName).map(qAssetEntity.assetName::contains).orElse(null),
                         Optional.ofNullable(market).map(qAssetEntity.market::eq).orElse(null)
                 )
-                .orderBy(
+                .orderBy(Stream.of(
                         Optional.ofNullable(pageable.getSort().getOrderFor(AssetEntity_.PER))
                                 .map(order -> order.getDirection() == Sort.Direction.DESC ? qAssetEntity.per.desc() : qAssetEntity.per.asc())
                                 .orElse(null),
                         Optional.ofNullable(pageable.getSort().getOrderFor(AssetEntity_.ROE))
                                 .map(order -> order.getDirection() == Sort.Direction.DESC ? qAssetEntity.roe.desc() : qAssetEntity.roe.asc())
                                 .orElse(null),
-                        qAssetEntity.marketCap.desc()   // default
-                )
+                        qAssetEntity.marketCap.desc()
+                        ).filter(Objects::nonNull)
+                        .toArray(OrderSpecifier[]::new))
                 .limit(pageable.getPageSize())
                 .offset(pageable.getOffset())
                 .fetch();
+
         return assetEntities.stream()
                 .map(Asset::from)
                 .collect(Collectors.toList());
