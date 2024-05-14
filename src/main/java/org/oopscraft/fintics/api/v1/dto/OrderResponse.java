@@ -35,6 +35,8 @@ public class OrderResponse {
 
     private BigDecimal price;
 
+    private BigDecimal purchasePrice;
+
     private Order.Result result;
 
     private String errorMessage;
@@ -50,15 +52,10 @@ public class OrderResponse {
                 .kind(order.getKind())
                 .quantity(order.getQuantity())
                 .price(order.getPrice())
+                .purchasePrice(order.getPurchasePrice())
                 .result(order.getResult())
                 .errorMessage(order.getErrorMessage())
                 .build();
-    }
-
-    public static List<OrderResponse> from(List<Order> orders) {
-        return orders.stream()
-                .map(OrderResponse::from)
-                .collect(Collectors.toList());
     }
 
 }

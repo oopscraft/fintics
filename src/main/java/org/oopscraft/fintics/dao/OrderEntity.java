@@ -48,8 +48,11 @@ public class OrderEntity extends BaseEntity {
     @Column(name = "quantity")
     private BigDecimal quantity;
 
-    @Column(name = "price")
+    @Column(name = "price", scale = 4)
     private BigDecimal price;
+
+    @Column(name = "purchase_price", scale = 4)
+    private BigDecimal purchasePrice;
 
     @Column(name = "broker_order_id", length = 128)
     private String brokerOrderId;

@@ -122,25 +122,24 @@ public class SimulateRunnable implements Runnable {
             // loop
             for (LocalDateTime dateTime = dateTimeFrom;
                  dateTime.isBefore(dateTimeTo) || dateTime.isEqual(dateTimeTo);
-                 dateTime = dateTime.plusSeconds(interval)) {
-
-                // check interrupted
-                if (interrupted) {
-                    throw new InterruptedException("SimulateRunnable is interrupted.");
-                }
-                // check start and end time
-                if (!isOperatingTime(trade, dateTime)) {
-                    continue;
-                }
-
-                log.info("== dateTime:{}", dateTime);
-                sendMessage("dateTime", dateTime.format(DateTimeFormatter.ISO_DATE_TIME));
-                TransactionStatus transactionStatus = null;
+                 dateTime = dateTime.plusSeconds(interval)
+            ) {
                 try {
                     // change date time
+                    log.info("== dateTime:{}", dateTime);
                     simulate.setDateTime(dateTime);
                     simulateIndiceClient.setDateTime(dateTime);
                     simulateTradeClient.setDateTime(dateTime);
+                    sendMessage("dateTime", dateTime.format(DateTimeFormatter.ISO_DATE_TIME));
+
+                    // check interrupted
+                    if (interrupted) {
+                        throw new InterruptedException("SimulateRunnable is interrupted.");
+                    }
+                    // check start and end time
+                    if (!isOperatingTime(trade, dateTime)) {
+                        continue;
+                    }
 
                     // check market open
                     if (!simulateTradeClient.isOpened(dateTime)) {
@@ -162,11 +161,7 @@ public class SimulateRunnable implements Runnable {
                 } catch (Exception e) {
                     log.warn(e.getMessage(), e);
                 } finally {
-                    try {
-                        saveSimulate();
-                    } catch (Exception e){
-                        log.warn(e.getMessage());
-                    }
+                    saveSimulate();
                 }
             }
 
@@ -206,7 +201,7 @@ public class SimulateRunnable implements Runnable {
 
     private void sendMessage(String destinationSuffix, Object object) {
         String destination =  String.format("/simulates/%s/%s", simulate.getSimulateId(), destinationSuffix);
-        String message = null;
+        String message;
         if(object != null) {
             try {
                 message = objectMapper.writeValueAsString(object);
@@ -223,6 +218,7 @@ public class SimulateRunnable implements Runnable {
     }
 
     public void saveSimulate() {
+        // find previous simulate entity
         SimulateEntity simulateEntity = simulateRepository.findById(simulate.getSimulateId())
                 .orElse(null);
         if(simulateEntity == null) {
@@ -245,6 +241,7 @@ public class SimulateRunnable implements Runnable {
         simulateEntity.setStatus(simulate.getStatus());
         simulateEntity.setDateTime(simulate.getDateTime());
 
+        // setting detail properties
         try {
             BigDecimal investAmount = simulateEntity.getInvestAmount();
             BigDecimal balanceTotalAmount = simulateTradeClient.getBalance().getTotalAmount();
@@ -257,12 +254,12 @@ public class SimulateRunnable implements Runnable {
             simulateEntity.setBalanceData(toDataString(simulateTradeClient.getBalance()));
             simulateEntity.setOrdersData(toDataString(simulateTradeClient.getOrders()));
             simulateEntity.setSimulateReportData(toDataString(simulateTradeClient.getSimulateReport()));
-        } catch (Exception e) {
-            log.warn(e.getMessage());
-        } finally {
-            // save
-            simulateRepository.saveAndFlush(simulateEntity);
+        } catch (Exception ignore) {
+            log.warn(ignore.getMessage());
         }
+
+        // save
+        simulateRepository.saveAndFlush(simulateEntity);
     }
 
     private String toDataString(Object object) {

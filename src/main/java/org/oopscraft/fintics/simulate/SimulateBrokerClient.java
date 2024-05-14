@@ -2,6 +2,7 @@ package org.oopscraft.fintics.simulate;
 
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.dao.AssetOhlcvRepository;
 import org.oopscraft.fintics.model.*;
@@ -24,6 +25,7 @@ public class SimulateBrokerClient extends BrokerClient {
 
     private final BigDecimal feeRate;
 
+    @Setter
     private LocalDateTime dateTime;
 
     private final Map<String, List<Ohlcv>> minuteOhlcvsMap = new HashMap<>();
@@ -39,14 +41,6 @@ public class SimulateBrokerClient extends BrokerClient {
 
     @Getter
     private final SimulateReport simulateReport = new SimulateReport();
-
-    public void setDateTime(LocalDateTime dateTime) {
-        if (this.dateTime != null) {
-            snapshotSimulateReport();
-        }
-        this.dateTime = dateTime;
-        snapshotSimulateReport();
-    }
 
     @Builder
     protected SimulateBrokerClient(AssetOhlcvRepository assetOhlcvRepository, BigDecimal minimumOrderQuantity, BigDecimal feeRate) {

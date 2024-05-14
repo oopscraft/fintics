@@ -578,6 +578,7 @@
                                 <col/>
                                 <col/>
                                 <col/>
+                                <col/>
                             </colgroup>
                             <thead>
                             <tr>
@@ -587,6 +588,7 @@
                                 <th data-th-text="#{fintics.Asset.assetName}"></th>
                                 <th data-th-text="#{fintics.Order.quantity}"></th>
                                 <th data-th-text="#{fintics.Order.price}"></th>
+                                <th data-th-text="#{fintics.Order.purchasePrice}"></th>
                                 <th data-th-text="#{fintics.Order.result}"></th>
                                 <th data-th-text="#{fintics.Order.errorMessage}"></th>
                             </tr>
@@ -616,6 +618,9 @@
                                 </td>
                                 <td>
                                     <span data-duice-bind="order" data-duice-property="price" data-duice-format="number"></span>
+                                </td>
+                                <td>
+                                    <span data-duice-bind="order" data-duice-property="purchasePrice" data-duice-format="number"></span>
                                 </td>
                                 <td>
                                 <span data-duice-bind="order" data-duice-property="result" class="badge"
@@ -853,19 +858,15 @@
                 this.simulateReportAssetReturnsChart.data.labels.length = 0;
                 this.simulateReportAssetReturnsChart.data.datasets.length = 0;
                 let assetReturns = this.simulate.simulateReport?.assetReturns;
-                console.log("====== assetReturns:", assetReturns);
 
                 // asset ids
                 let assetIds = Array.from(new Set(assetReturns.map(it=> it.assetId)));
-                console.log("============= assetIds", assetIds);
-
                 for (let assetId of assetIds) {
                     let assetReturn = assetReturns.find(it => it.assetId === assetId)
-                    console.log("### assetReturn", assetReturn);
+                    let assetName = assetReturn.assetName;
                     let assetProfits = assetReturn.assetProfits;
-                    console.log("### assetProfits:", assetProfits);
                     this.simulateReportAssetReturnsChart.data.datasets.push({
-                        label: assetId,
+                        label: assetName,
                         data: assetProfits,
                         backgroundColor: 'rgba(255, 99, 132, 0.2)',
                         borderColor: 'rgba(255, 99, 132, 1)',

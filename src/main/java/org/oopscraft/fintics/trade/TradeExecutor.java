@@ -218,17 +218,17 @@ public class TradeExecutor {
                     }
                     price = price.max(orderBook.getBidPrice()); // max competitive price
                     BigDecimal quantity = exceededAmount.abs().divide(price, MathContext.DECIMAL32);
-                    // if strategy result is zero, sell quantity is all (결과가 0이 경우는 모두 매도)
-                    if (strategyResult.compareTo(BigDecimal.ZERO) == 0) {
-                        BalanceAsset balanceAsset = balance.getBalanceAsset(tradeAsset.getAssetId()).orElse(null);
-                        if (balanceAsset != null) {
+                    BalanceAsset balanceAsset = balance.getBalanceAsset(tradeAsset.getAssetId()).orElse(null);
+                    if (balanceAsset != null) {
+                        // if strategy result is zero, sell quantity is all (결과가 0이 경우는 모두 매도)
+                        if (strategyResult.compareTo(BigDecimal.ZERO) == 0) {
                             quantity = balanceAsset.getOrderableQuantity();
-                            sellTradeAsset(brokerClient, trade, tradeAsset, quantity, price);
-                        }
-                    } else {
-                        // 최소주문단위 이상일 경우만 매도
-                        if (quantity.compareTo(brokerClient.getMinimumOrderQuantity()) > 0) {
-                            sellTradeAsset(brokerClient, trade, tradeAsset, quantity, price);
+                            sellTradeAsset(brokerClient, trade, balanceAsset, quantity, price);
+                        } else {
+                            // 최소주문단위 이상일 경우만 매도
+                            if (quantity.compareTo(brokerClient.getMinimumOrderQuantity()) > 0) {
+                                sellTradeAsset(brokerClient, trade, balanceAsset, quantity, price);
+                            }
                         }
                     }
                 }
@@ -348,18 +348,19 @@ public class TradeExecutor {
         }
     }
 
-    private void sellTradeAsset(BrokerClient brokerClient, Trade trade, TradeAsset tradeAsset, BigDecimal quantity, BigDecimal price) throws InterruptedException {
+    private void sellTradeAsset(BrokerClient brokerClient, Trade trade, BalanceAsset balanceAsset, BigDecimal quantity, BigDecimal price) throws InterruptedException {
         Order order = Order.builder()
                 .orderAt(LocalDateTime.now())
                 .type(Order.Type.SELL)
                 .kind(trade.getOrderKind())
-                .tradeId(tradeAsset.getTradeId())
-                .assetId(tradeAsset.getAssetId())
-                .assetName(tradeAsset.getAssetName())
+                .tradeId(trade.getTradeId())
+                .assetId(balanceAsset.getAssetId())
+                .assetName(balanceAsset.getAssetName())
                 .quantity(quantity)
                 .price(price)
+                .purchasePrice(balanceAsset.getPurchasePrice())
                 .build();
-        log.info("[{}] sellTradeAsset: {}", tradeAsset.getAssetName(), order);
+        log.info("[{}] sellTradeAsset: {}", balanceAsset.getAssetName(), order);
         try {
             // check waiting order exists
             Order waitingOrder = brokerClient.getWaitingOrders().stream()
@@ -372,14 +373,14 @@ public class TradeExecutor {
                 // if limit type order, amend order
                 if (waitingOrder.getKind() == Order.Kind.LIMIT) {
                     waitingOrder.setPrice(price);
-                    log.info("[{}] amend sell order:{}", tradeAsset.getAssetName(), waitingOrder);
-                    brokerClient.amendOrder(tradeAsset, waitingOrder);
+                    log.info("[{}] amend sell order:{}", balanceAsset.getAssetName(), waitingOrder);
+                    brokerClient.amendOrder(balanceAsset, waitingOrder);
                 }
                 return;
             }
 
             // submit sell order
-            brokerClient.submitOrder(tradeAsset, order);
+            brokerClient.submitOrder(balanceAsset, order);
             order.setResult(Order.Result.COMPLETED);
 
             // alarm

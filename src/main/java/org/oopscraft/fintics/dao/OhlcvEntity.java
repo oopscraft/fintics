@@ -27,16 +27,16 @@ public abstract class OhlcvEntity extends BaseEntity {
     @Column(name = "date_time")
     private LocalDateTime dateTime;
 
-    @Column(name = "open_price")
+    @Column(name = "open_price", scale = 4)
     private BigDecimal openPrice;
 
-    @Column(name = "high_price")
+    @Column(name = "high_price", scale = 4)
     private BigDecimal highPrice;
 
-    @Column(name = "low_price")
+    @Column(name = "low_price", scale = 4)
     private BigDecimal lowPrice;
 
-    @Column(name = "close_price")
+    @Column(name = "close_price", scale = 4)
     private BigDecimal closePrice;
 
     @Column(name = "volume")

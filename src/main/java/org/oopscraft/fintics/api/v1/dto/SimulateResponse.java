@@ -80,7 +80,9 @@ public class SimulateResponse {
                 .profitAmount(simulate.getProfitAmount())
                 .profitPercentage(simulate.getProfitPercentage())
                 .balance(BalanceResponse.from(simulate.getBalance()))
-                .orders(OrderResponse.from(simulate.getOrders()))
+                .orders(simulate.getOrders().stream()
+                        .map(OrderResponse::from)
+                        .toList())
                 .simulateReport(SimulateReportResponse.from(simulate.getSimulateReport()))
                 .build();
     }
