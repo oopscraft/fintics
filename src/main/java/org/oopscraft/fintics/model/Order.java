@@ -35,6 +35,8 @@ public class Order {
 
     private BigDecimal purchasePrice;
 
+    private BigDecimal realizedProfitAmount;
+
     private String brokerOrderId;
 
     private Result result;
@@ -76,6 +78,7 @@ public class Order {
                 .quantity(orderEntity.getQuantity())
                 .price(orderEntity.getPrice())
                 .purchasePrice(orderEntity.getPurchasePrice())
+                .realizedProfitAmount(orderEntity.getRealizedProfitAmount())
                 .brokerOrderId(orderEntity.getBrokerOrderId())
                 .result(orderEntity.getResult())
                 .errorMessage(orderEntity.getErrorMessage())

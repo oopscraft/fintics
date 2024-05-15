@@ -149,7 +149,7 @@
                 <colgroup>
                     <col style="width:7em;"/>
                     <col style="width:10em;"/>
-                    <col style="width:10em;"/>
+                    <col style="width:5em;"/>
                     <col/>
                     <col/>
                     <col/>
@@ -157,6 +157,7 @@
                     <col/>
                     <col/>
                     <col/>
+                    <col style="width:20em;"/>
                 </colgroup>
                 <thead>
                 <tr>
@@ -168,6 +169,7 @@
                     <th data-th-text="#{fintics.Order.quantity}"></th>
                     <th data-th-text="#{fintics.Order.price}"></th>
                     <th data-th-text="#{fintics.Order.purchasePrice}"></th>
+                    <th data-th-text="#{fintics.Order.realizedProfitAmount}"></th>
                     <th data-th-text="#{fintics.Order.result}"></th>
                     <th data-th-text="#{fintics.Order.errorMessage}"></th>
                 </tr>
@@ -205,6 +207,9 @@
                     </td>
                     <td>
                         <span data-duice-bind="order" data-duice-property="purchasePrice" data-duice-format="number"></span>
+                    </td>
+                    <td>
+                        <span data-duice-bind="order" data-duice-property="realizedProfitAmount" data-duice-format="number"></span>
                     </td>
                     <td>
                         <span data-duice-bind="order" data-duice-property="result" class="badge"

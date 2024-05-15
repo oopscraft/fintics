@@ -37,6 +37,8 @@ public class OrderResponse {
 
     private BigDecimal purchasePrice;
 
+    private BigDecimal realizedProfitAmount;
+
     private Order.Result result;
 
     private String errorMessage;
@@ -53,6 +55,7 @@ public class OrderResponse {
                 .quantity(order.getQuantity())
                 .price(order.getPrice())
                 .purchasePrice(order.getPurchasePrice())
+                .realizedProfitAmount(order.getRealizedProfitAmount())
                 .result(order.getResult())
                 .errorMessage(order.getErrorMessage())
                 .build();

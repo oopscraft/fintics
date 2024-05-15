@@ -68,6 +68,8 @@ public class OrderService {
         orderEntity.setKind(order.getKind());
         orderEntity.setPrice(order.getPrice());
         orderEntity.setQuantity(order.getQuantity());
+        orderEntity.setPurchasePrice(order.getPurchasePrice());
+        orderEntity.setRealizedProfitAmount(order.getRealizedProfitAmount());
         orderEntity.setBrokerOrderId(order.getBrokerOrderId());
         orderEntity.setResult(order.getResult());
         orderEntity.setErrorMessage(order.getErrorMessage());
