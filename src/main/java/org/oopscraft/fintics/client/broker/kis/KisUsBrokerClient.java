@@ -419,7 +419,7 @@ public class KisUsBrokerClient extends UsBrokerClient {
         }
         JsonNode outputNode = rootNode.path("output");
         Map<String, String> output = objectMapper.convertValue(outputNode, new TypeReference<>(){});
-        return new BigDecimal(output.get("sll_ruse_psbl_amt"));
+        return new BigDecimal(output.get("ovrs_ord_psbl_amt"));
     }
 
     @Override
