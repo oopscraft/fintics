@@ -52,7 +52,7 @@ public class StrategyExecutor {
         this.log = log;
     }
 
-    public BigDecimal execute() {
+    public StrategyResult execute() {
         ClassLoader classLoader = this.getClass().getClassLoader();
         GroovyClassLoader groovyClassLoader = new GroovyClassLoader(classLoader);
         Binding binding = new Binding();
@@ -64,11 +64,14 @@ public class StrategyExecutor {
         binding.setVariable("indiceProfiles", indiceProfiles);
         binding.setVariable("assetProfile", assetProfile);
         GroovyShell groovyShell = new GroovyShell(groovyClassLoader, binding);
-        Object result = groovyShell.evaluate(strategy.getScript());
-        if(result == null) {
-            return null;
+        Object result = groovyShell.evaluate(
+                "import " + StrategyResult.class.getName() + '\n' +
+                strategy.getScript()
+        );
+        if (result != null) {
+            return (StrategyResult) result;
         }
-        return new BigDecimal(result.toString());
+        return null;
     }
 
     private Properties loadRuleConfigAsProperties(String propertiesString) {

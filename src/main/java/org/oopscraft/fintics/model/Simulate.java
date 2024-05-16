@@ -49,8 +49,6 @@ public class Simulate {
 
     private BigDecimal investAmount;
 
-    private BigDecimal minimumOrderQuantity;
-
     private BigDecimal feeRate;
 
     @Setter
@@ -148,7 +146,6 @@ public class Simulate {
                 .dateTimeFrom(simulateEntity.getDateTimeFrom())
                 .dateTimeTo(simulateEntity.getDateTimeTo())
                 .investAmount(simulateEntity.getInvestAmount())
-                .minimumOrderQuantity(simulateEntity.getMinimumOrderQuantity())
                 .feeRate(simulateEntity.getFeeRate())
                 .dateTime(simulateEntity.getDateTime())
                 .favorite(simulateEntity.isFavorite())

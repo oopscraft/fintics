@@ -33,7 +33,7 @@ public abstract class BrokerClient {
 
     public abstract BigDecimal getTickPrice(Asset asset, BigDecimal price) throws InterruptedException;
 
-    public abstract BigDecimal getMinimumOrderQuantity() throws InterruptedException;
+    public abstract boolean isOverMinimumOrderAmount(BigDecimal quantity, BigDecimal price) throws InterruptedException;
 
     public abstract Balance getBalance() throws InterruptedException;
 

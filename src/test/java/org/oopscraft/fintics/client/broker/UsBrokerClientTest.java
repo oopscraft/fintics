@@ -67,8 +67,8 @@ class UsBrokerClientTest {
         }
 
         @Override
-        public BigDecimal getMinimumOrderQuantity() throws InterruptedException {
-            return null;
+        public boolean isOverMinimumOrderAmount(BigDecimal quantity, BigDecimal price) throws InterruptedException {
+            return false;
         }
 
         @Override

@@ -21,8 +21,6 @@ public class SimulateBrokerClient extends BrokerClient {
 
     private final AssetOhlcvRepository assetOhlcvRepository;
 
-    private final BigDecimal minimumOrderQuantity;
-
     private final BigDecimal feeRate;
 
     @Setter
@@ -43,10 +41,9 @@ public class SimulateBrokerClient extends BrokerClient {
     private final SimulateReport simulateReport = new SimulateReport();
 
     @Builder
-    protected SimulateBrokerClient(AssetOhlcvRepository assetOhlcvRepository, BigDecimal minimumOrderQuantity, BigDecimal feeRate) {
+    protected SimulateBrokerClient(AssetOhlcvRepository assetOhlcvRepository, BigDecimal feeRate) {
         super(null, new Properties());
         this.assetOhlcvRepository = assetOhlcvRepository;
-        this.minimumOrderQuantity = minimumOrderQuantity;
         this.feeRate = feeRate;
     }
 
@@ -160,8 +157,8 @@ public class SimulateBrokerClient extends BrokerClient {
     }
 
     @Override
-    public BigDecimal getMinimumOrderQuantity() throws InterruptedException {
-        return this.minimumOrderQuantity;
+    public boolean isOverMinimumOrderAmount(BigDecimal quantity, BigDecimal price) throws InterruptedException {
+        return quantity.compareTo(BigDecimal.ONE) >= 0;
     }
 
     @Override
@@ -231,18 +228,6 @@ public class SimulateBrokerClient extends BrokerClient {
         if(order.getType() == Order.Type.BUY) {
             BigDecimal buyQuantity = order.getQuantity();
 
-            // validate minimum order quantity
-            if (buyQuantity.compareTo(minimumOrderQuantity) < 0) {
-                throw new RuntimeException(String.format("[%s] is under minimum order quantity", buyQuantity));
-            }
-
-            // apply minimum order quantity
-            if (minimumOrderQuantity.compareTo(BigDecimal.ZERO) > 0) {
-                buyQuantity = buyQuantity.divide(minimumOrderQuantity, MathContext.DECIMAL32)
-                        .setScale(0, RoundingMode.FLOOR)
-                        .multiply(minimumOrderQuantity);
-            }
-
             // buy price, amount
             BigDecimal buyPrice = orderBook.getAskPrice();
             BigDecimal buyAmount = buyQuantity.multiply(buyPrice, MathContext.DECIMAL32);
@@ -278,18 +263,6 @@ public class SimulateBrokerClient extends BrokerClient {
         if(order.getType() == Order.Type.SELL) {
             Objects.requireNonNull(balanceAsset, "balance asset is null");
             BigDecimal sellQuantity = order.getQuantity();
-
-            // check minimum order quantity
-            if (sellQuantity.compareTo(minimumOrderQuantity) < 0) {
-                throw new RuntimeException(String.format("[%s] is under minimum order quantity", sellQuantity));
-            }
-
-            // apply minimum order quantity
-            if (minimumOrderQuantity.compareTo(BigDecimal.ZERO) > 0) {
-                sellQuantity = sellQuantity.divide(minimumOrderQuantity, MathContext.DECIMAL32)
-                        .setScale(0, RoundingMode.FLOOR)
-                        .multiply(minimumOrderQuantity);
-            }
 
             // sell price, amount
             BigDecimal sellPrice = orderBook.getBidPrice();

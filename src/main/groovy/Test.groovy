@@ -1,4 +1,5 @@
 import org.oopscraft.fintics.model.Ohlcv
+import org.oopscraft.fintics.trade.StrategyResult
 import org.oopscraft.fintics.trade.Tools
 import org.oopscraft.fintics.indicator.*
 
@@ -164,75 +165,40 @@ class Analysis implements Analyzable {
 //================================
 // define
 //================================
-// config
-log.info("variables: {}", variables)
-def waveOhlcvType = variables['waveOhlcvType'] as Ohlcv.Type
-def waveOhlcvPeriod = variables['waveOhlcvPeriod'] as Integer
-def tideOhlcvType = variables['tideOhlcvType'] as Ohlcv.Type
-def tideOhlcvPeriod = variables['tideOhlcvPeriod'] as Integer
-
 // default
-def hold = null
+StrategyResult strategyResult = null
 List<Ohlcv> ohlcvs = assetProfile.getOhlcvs(Ohlcv.Type.MINUTE, 1)
 
-// ripple
+// analysis
 def analysis = new Analysis(ohlcvs)
-
-// wave
-def waveAnalysis = new Analysis(assetProfile.getOhlcvs(waveOhlcvType, waveOhlcvPeriod))
-
-// tide
-def tideAnalysis = new Analysis(assetProfile.getOhlcvs(tideOhlcvType, tideOhlcvPeriod))
 
 // logging
 log.info("analysis.momentum: {} {}", analysis.getMomentumScore().getAverage(), analysis.getMomentumScore());
-log.info("waveAnalysis.volatility: {} {}", waveAnalysis.getVolatilityScore().getAverage(), waveAnalysis.getVolatilityScore())
-log.info("waveAnalysis.underestimate: {} {}", waveAnalysis.getUnderestimateScore().getAverage(), waveAnalysis.getUnderestimateScore())
-log.info("waveAnalysis.overestimate: {} {}", waveAnalysis.getOverestimateScore().getAverage(), waveAnalysis.getOverestimateScore())
-log.info("tideAnalysis.momentum: {} {}", tideAnalysis.getMomentumScore().getAverage(), tideAnalysis.getMomentumScore())
+log.info("analysis.volatility: {} {}", analysis.getVolatilityScore().getAverage(), analysis.getVolatilityScore())
 
 //================================
 // trade
 //================================
-// multiplier
-def multiplier = tideAnalysis.getMomentumScore().getAverage()/100
-
 // buy
 if (analysis.getMomentumScore().getAverage() > 75) {
     // default
-    hold = 1.0 * multiplier
+    strategyResult = StrategyResult.of(1.0, "buy");
     // filter - volatility
-    if (waveAnalysis.getVolatilityScore().getAverage() < 75) {
-        hold = null
-    }
-    // filter - overestimate
-    if (waveAnalysis.getOverestimateScore().getAverage() > 75) {
-        hold = null
+    if (analysis.getVolatilityScore().getAverage() < 75) {
+        strategyResult = null
     }
 }
 // sell
 if (analysis.getMomentumScore().getAverage() < 25) {
     // default
-    hold = 0.9 * multiplier
+    strategyResult = StrategyResult.of(0.0, "sell")
     // filter - volatility
-    if (waveAnalysis.getVolatilityScore().getAverage() < 75) {
-        hold = null
+    if (analysis.getVolatilityScore().getAverage() < 75) {
+        strategyResult = null
     }
-    // filter - underestimate
-    if (waveAnalysis.getUnderestimateScore().getAverage() > 75) {
-        hold = null
-    }
-}
-
-//================================
-// fallback
-//================================
-// tide direction and momentum
-if (tideAnalysis.getMomentumScore().getAverage() < 50) {
-    hold = 0
 }
 
 //================================
 // return
 //================================
-return hold
+return strategyResult

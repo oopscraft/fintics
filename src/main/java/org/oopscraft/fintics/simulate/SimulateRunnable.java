@@ -231,7 +231,6 @@ public class SimulateRunnable implements Runnable {
                     .dateTimeFrom(simulate.getDateTimeFrom())
                     .dateTimeTo(simulate.getDateTimeTo())
                     .investAmount(simulate.getInvestAmount())
-                    .minimumOrderQuantity(simulate.getMinimumOrderQuantity())
                     .feeRate(simulate.getFeeRate())
                     .startedAt(LocalDateTime.now())
                     .build();

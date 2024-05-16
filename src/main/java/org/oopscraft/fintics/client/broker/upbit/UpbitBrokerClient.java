@@ -438,8 +438,8 @@ public class UpbitBrokerClient extends BrokerClient {
     }
 
     @Override
-    public BigDecimal getMinimumOrderQuantity() throws InterruptedException {
-        return BigDecimal.ZERO;
+    public boolean isOverMinimumOrderAmount(BigDecimal quantity, BigDecimal price) {
+        return quantity.multiply(price).compareTo(BigDecimal.valueOf(5_000)) >= 0;
     }
 
 }

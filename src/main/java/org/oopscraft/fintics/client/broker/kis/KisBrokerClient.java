@@ -337,8 +337,8 @@ public class KisBrokerClient extends KrBrokerClient {
     }
 
     @Override
-    public BigDecimal getMinimumOrderQuantity() throws InterruptedException {
-        return BigDecimal.ONE;
+    public boolean isOverMinimumOrderAmount(BigDecimal quantity, BigDecimal price) throws InterruptedException {
+        return quantity.compareTo(BigDecimal.ONE) >= 0;
     }
 
     @Override

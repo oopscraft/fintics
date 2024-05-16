@@ -40,9 +40,9 @@ public class TradeExecutor {
 
     private Logger log = (Logger) LoggerFactory.getLogger(this.getClass());
 
-    private final Map<String,BigDecimal> strategyResultMap = new HashMap<>();
+    private final Map<String, StrategyResult> strategyResultMap = new HashMap<>();
 
-    private final Map<String,Integer> strategyResultCountMap = new HashMap<>();
+    private final Map<String, Integer> strategyResultValueMatchCountMap = new HashMap<>();
 
     @Builder
     private TradeExecutor(PlatformTransactionManager transactionManager, IndiceService indiceService, AssetService assetService, OrderService orderService, AlarmService alarmService) {
@@ -135,6 +135,9 @@ public class TradeExecutor {
                 // order book
                 OrderBook orderBook = brokerClient.getOrderBook(tradeAsset);
 
+                // balance asset
+                BalanceAsset balanceAsset = balance.getBalanceAsset(tradeAsset.getAssetId()).orElse(null);
+
                 // executes trade asset decider
                 StrategyExecutor strategyExecutor = StrategyExecutor.builder()
                         .indiceProfiles(indiceProfiles)
@@ -147,33 +150,50 @@ public class TradeExecutor {
                         .build();
                 strategyExecutor.setLog(log);
                 Instant startTime = Instant.now();
-                BigDecimal strategyResult = strategyExecutor.execute();
+                StrategyResult strategyResult = strategyExecutor.execute();
                 log.info("[{} - {}] strategy execution elapsed:{}", tradeAsset.getAssetId(), tradeAsset.getAssetName(), Duration.between(startTime, Instant.now()));
                 log.info("[{} - {}] strategy result: {}", tradeAsset.getAssetId(), tradeAsset.getAssetName(), strategyResult);
 
                 // check strategy result and count
-                BigDecimal previousStrategyResult = strategyResultMap.get(tradeAsset.getAssetId());
-                int strategyResultCount = strategyResultCountMap.getOrDefault(tradeAsset.getAssetId(), 0);
+                StrategyResult previousStrategyResult = strategyResultMap.get(tradeAsset.getAssetId());
+                int strategyResultValueMatchCount = strategyResultValueMatchCountMap.getOrDefault(tradeAsset.getAssetId(), 0);
                 if (Objects.equals(strategyResult, previousStrategyResult)) {
-                    strategyResultCount++;
+                    strategyResultValueMatchCount ++;
                 } else {
-                    strategyResultCount = 1;
+                    strategyResultValueMatchCount = 1;
                 }
                 strategyResultMap.put(tradeAsset.getAssetId(), strategyResult);
-                strategyResultCountMap.put(tradeAsset.getAssetId(), strategyResultCount);
+                strategyResultValueMatchCountMap.put(tradeAsset.getAssetId(), strategyResultValueMatchCount);
 
                 // checks threshold exceeded
-                log.info("[{} - {}] strategyResultCount: {}", tradeAsset.getAssetId(), tradeAsset.getAssetName(), strategyResultCount);
-                if (strategyResultCount < trade.getThreshold()) {
+                log.info("[{} - {}] strategyResultValueMatchCount: {}", tradeAsset.getAssetId(), tradeAsset.getAssetName(), strategyResultValueMatchCount);
+                if (strategyResultValueMatchCount < trade.getThreshold()) {
                     log.info("[{} - {}] threshold has not been exceeded yet - threshold is {}", tradeAsset.getAssetId(), tradeAsset.getAssetName(), trade.getThreshold());
                     continue;
                 }
 
-                // null is no operation
+                //===============================================
+                // 1. null is no operation
+                //===============================================
                 if (strategyResult == null) {
                     continue;
                 }
 
+                //===============================================
+                // 2. result or hold ratio is zero
+                //===============================================
+                if (strategyResult.getValue().compareTo(BigDecimal.ZERO) <= 0 || tradeAsset.getHoldRatio().compareTo(BigDecimal.ZERO) <= 0) {
+                    if (balanceAsset != null) {
+                        BigDecimal price = calculateSellPrice(tradeAsset, orderBook, brokerClient);
+                        BigDecimal quantity = balanceAsset.getOrderableQuantity();
+                        sellTradeAsset(brokerClient, trade, tradeAsset, quantity, price, balanceAsset.getPurchasePrice());
+                    }
+                    continue;
+                }
+
+                //===============================================
+                // 3. apply hold ratio
+                //===============================================
                 // calculate exceeded amount
                 BigDecimal totalAmount = balance.getTotalAmount();
                 BigDecimal holdRatio = tradeAsset.getHoldRatio();
@@ -182,53 +202,31 @@ public class TradeExecutor {
                         .multiply(holdRatio)
                         .setScale(2, RoundingMode.HALF_UP);
                 BigDecimal holdConditionResultAmount = holdRatioAmount
-                        .multiply(strategyResult)
+                        .multiply(strategyResult.getValue())
                         .setScale(2, RoundingMode.HALF_UP);
                 BigDecimal balanceAssetAmount = balance.getBalanceAsset(tradeAsset.getAssetId())
                         .map(BalanceAsset::getValuationAmount)
                         .orElse(BigDecimal.ZERO);
                 BigDecimal exceededAmount = holdConditionResultAmount.subtract(balanceAssetAmount);
 
-                // check change is over 10%(9%)
-                BigDecimal thresholdAmount = holdRatioAmount.multiply(BigDecimal.valueOf(0.09));
-                if(exceededAmount.abs().compareTo(thresholdAmount) < 0) {
-                    continue;
-                }
-
                 // buy (exceedAmount is over zero)
                 if (exceededAmount.compareTo(BigDecimal.ZERO) > 0) {
-                    BigDecimal price = orderBook.getBidPrice();
-                    BigDecimal tickPrice = brokerClient.getTickPrice(tradeAsset, price);
-                    if(tickPrice != null) {
-                        price = price.add(tickPrice);
+                    BigDecimal buyPrice = calculateBuyPrice(tradeAsset, orderBook, brokerClient);
+                    BigDecimal buyQuantity = exceededAmount.divide(buyPrice, MathContext.DECIMAL32);
+                    // if over minimum order quantity
+                    if (brokerClient.isOverMinimumOrderAmount(buyQuantity, buyPrice)) {
+                        buyTradeAsset(brokerClient, trade, tradeAsset, buyQuantity, buyPrice);
                     }
-                    price = price.min(orderBook.getAskPrice()); // min competitive price
-                    BigDecimal quantity = exceededAmount.divide(price, MathContext.DECIMAL32);
-                    // 수량이 최소주문단위 이하일 경우 최소주문단위 수량은 매수 (기본 1주)
-                    quantity = quantity.max(brokerClient.getMinimumOrderQuantity());
-                    buyTradeAsset(brokerClient, trade, tradeAsset, quantity, price);
                 }
 
                 // sell (exceedAmount is under zero)
                 if (exceededAmount.compareTo(BigDecimal.ZERO) < 0) {
-                    BigDecimal price = orderBook.getAskPrice();
-                    BigDecimal tickPrice = brokerClient.getTickPrice(tradeAsset, price);
-                    if(tickPrice != null) {
-                        price = price.subtract(tickPrice);
-                    }
-                    price = price.max(orderBook.getBidPrice()); // max competitive price
-                    BigDecimal quantity = exceededAmount.abs().divide(price, MathContext.DECIMAL32);
-                    BalanceAsset balanceAsset = balance.getBalanceAsset(tradeAsset.getAssetId()).orElse(null);
                     if (balanceAsset != null) {
-                        // if strategy result is zero, sell quantity is all (결과가 0이 경우는 모두 매도)
-                        if (strategyResult.compareTo(BigDecimal.ZERO) == 0) {
-                            quantity = balanceAsset.getOrderableQuantity();
-                            sellTradeAsset(brokerClient, trade, tradeAsset, quantity, price, balanceAsset.getPurchasePrice());
-                        } else {
-                            // 최소주문단위 이상일 경우만 매도
-                            if (quantity.compareTo(brokerClient.getMinimumOrderQuantity()) > 0) {
-                                sellTradeAsset(brokerClient, trade, tradeAsset, quantity, price, balanceAsset.getPurchasePrice());
-                            }
+                        BigDecimal sellPrice = calculateSellPrice(tradeAsset, orderBook, brokerClient);
+                        BigDecimal sellQuantity = exceededAmount.abs().divide(sellPrice, MathContext.DECIMAL32);
+                        // if over minimum order quantity
+                        if (brokerClient.isOverMinimumOrderAmount(sellQuantity, sellPrice)) {
+                            sellTradeAsset(brokerClient, trade, tradeAsset, sellQuantity, sellPrice, balanceAsset.getPurchasePrice());
                         }
                     }
                 }
@@ -301,6 +299,26 @@ public class TradeExecutor {
             }
         }
     }
+
+    private BigDecimal calculateBuyPrice(TradeAsset tradeAsset, OrderBook orderBook, BrokerClient brokerClient) throws InterruptedException {
+        BigDecimal price = orderBook.getAskPrice();
+        BigDecimal tickPrice = brokerClient.getTickPrice(tradeAsset, price);
+        if(tickPrice != null) {
+            price = price.subtract(tickPrice);
+        }
+        return price.max(orderBook.getBidPrice()); // max competitive price
+    }
+
+
+    private BigDecimal calculateSellPrice(TradeAsset tradeAsset, OrderBook orderBook, BrokerClient brokerClient) throws InterruptedException {
+        BigDecimal price = orderBook.getBidPrice();
+        BigDecimal tickPrice = brokerClient.getTickPrice(tradeAsset, price);
+        if(tickPrice != null) {
+            price = price.add(tickPrice);
+        }
+        return price.min(orderBook.getAskPrice()); // min competitive price
+    }
+
 
     private void buyTradeAsset(BrokerClient brokerClient, Trade trade, TradeAsset tradeAsset, BigDecimal quantity, BigDecimal price) throws InterruptedException {
         Order order = Order.builder()

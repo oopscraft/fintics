@@ -42,7 +42,6 @@ public class SimulateRunnableFactory {
                 .build();
         SimulateBrokerClient simulateTradeClient = SimulateBrokerClient.builder()
                 .assetOhlcvRepository(assetOhlcvRepository)
-                .minimumOrderQuantity(simulate.getMinimumOrderQuantity())
                 .feeRate(simulate.getFeeRate())
                 .build();
         // return

@@ -24,8 +24,6 @@ public class SimulateRequest {
 
     private BigDecimal investAmount;
 
-    private BigDecimal minimumOrderQuantity;
-
     private BigDecimal feeRate;
 
     private Simulate.Status status;

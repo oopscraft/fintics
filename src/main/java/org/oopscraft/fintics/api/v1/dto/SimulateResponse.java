@@ -36,8 +36,6 @@ public class SimulateResponse {
 
     private BigDecimal investAmount;
 
-    private BigDecimal minimumOrderQuantity;
-
     private BigDecimal feeRate;
 
     private String holdCondition;
@@ -72,7 +70,6 @@ public class SimulateResponse {
                 .dateTimeFrom(simulate.getDateTimeFrom())
                 .dateTimeTo(simulate.getDateTimeTo())
                 .investAmount(simulate.getInvestAmount())
-                .minimumOrderQuantity(simulate.getMinimumOrderQuantity())
                 .feeRate(simulate.getFeeRate())
                 .dateTime(simulate.getDateTime())
                 .favorite(simulate.isFavorite())

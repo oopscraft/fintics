@@ -136,54 +136,21 @@ class StrategyExecutorTest {
         OrderBook orderBook = getTestOrderBook();
         trade.setStrategyVariables("");
         Strategy strategy = Strategy.builder()
-                .script("return 1")
+                .script("return StrategyResult.of(1, 'details')")
                 .build();
-
-        // when
-        StrategyExecutor tradeAssetDecider = StrategyExecutor.builder()
-                .indiceProfiles(indiceProfiles)
-                .assetProfile(assetProfile)
-                .strategy(strategy)
-                .dateTime(LocalDateTime.now())
-                .orderBook(orderBook)
-                .build();
-        BigDecimal result = tradeAssetDecider.execute();
-
-        // then
-        log.info("== result:{}", result);
-        assertEquals(0, result.compareTo(BigDecimal.valueOf(1)));
-    }
-
-    @Test
-    void testStrategyScript() {
-        // given
-        Trade trade = getTestTrade();
-        TradeAsset tradeAsset = getTestTradeAsset();
-        List<IndiceProfile> indiceProfiles = getTestIndiceProfiles();
-        AssetProfile assetProfile = getTestAssetProfile(tradeAsset);
-        String strategyScript = loadGroovyFileAsString("StrategyScript.groovy");
-        Strategy strategy = Strategy.builder()
-                        .script(strategyScript)
-                        .build();
-        StringBuilder strategyVariables = new StringBuilder();
-        strategyVariables.append("waveOhlcvType=MINUTE").append("\n");
-        strategyVariables.append("waveOhlcvPeriod=3").append("\n");
-        strategyVariables.append("tideOhlcvType=DAILY").append("\n");
-        strategyVariables.append("tideOhlcvPeriod=1").append("\n");
 
         // when
         StrategyExecutor strategyExecutor = StrategyExecutor.builder()
                 .indiceProfiles(indiceProfiles)
                 .assetProfile(assetProfile)
                 .strategy(strategy)
-                .variables(strategyVariables.toString())
                 .dateTime(LocalDateTime.now())
-                .balance(new Balance())
+                .orderBook(orderBook)
                 .build();
-        BigDecimal result = strategyExecutor.execute();
+        StrategyResult strategyResult = strategyExecutor.execute();
 
         // then
-        log.info("== result:{}", result);
+        log.info("== strategyResult:{}", strategyResult);
     }
 
 }

@@ -422,15 +422,11 @@
                 <span th:text="#{fintics.Simulate.dateTimeTo}" class="font-weight--bold tag-required"></span>
                 <input class="width--100" type="datetime-local" data-duice-bind="simulateDialog.simulate" data-duice-property="dateTimeTo"/>
             </label>
-            <label class="grid-column--2 s__grid-column--4">
+            <label class="grid-column--3 s__grid-column--6">
                 <span data-th-text="#{fintics.Simulate.investAmount}" class="font-weight--bold tag-required"></span>
                 <input class="width--100" type="number" data-duice-bind="simulateDialog.simulate" data-duice-property="investAmount" data-duice-format="number"/>
             </label>
-            <label class="grid-column--2 s__grid-column--4">
-                <span data-th-text="#{fintics.Simulate.feeRate}" class="font-weight--bold tag-required"></span>
-                <input class="width--100" type="number" data-duice-bind="simulateDialog.simulate" data-duice-property="minimumOrderQuantity" data-duice-format="number"/>
-            </label>
-            <label class="grid-column--2 s__grid-column--4">
+            <label class="grid-column--3 s__grid-column--6">
                 <span data-th-text="#{fintics.Simulate.feeRate}" class="font-weight--bold tag-required"></span>
                 <input class="width--100" type="number" data-duice-bind="simulateDialog.simulate" data-duice-property="feeRate" data-duice-format="number(4)"/>
             </label>
@@ -568,7 +564,7 @@
                 </div>
                 <div id="simulateDialog-orderTabContent">
                     <div class="overflow-y--scroll border-x--1" style="max-height:300px;">
-                        <table class="width--100 font-size--smaller text-align--center border--0">
+                        <table id="simulateDialog-ordersTable" class="width--100 font-size--smaller text-align--center border--0">
                             <colgroup>
                                 <col style="width:5em;"/>
                                 <col/>
@@ -644,6 +640,12 @@
                             </tbody>
                         </table>
                     </div>
+                    <div class="text-align--right padding-x--1em">
+                        <button type="button" class="small" onclick="simulateDialog.exportSimulateOrders();">
+                            <img class="icon" th:src="@{/static/image/icon-excel.svg}" alt="excel"/>
+                            <span>Excel</span>
+                        </button>
+                    </div>
                 </div>
                 <div id="simulateDialog-simulateReportContent">
                     <div>
@@ -671,7 +673,6 @@
                 dateTimeFrom: null,
                 dateTimeTo: null,
                 investAmount: 100_000_000,
-                minimumOrderQuantity: 1,
                 feeRate: 0.1,
                 dateTime: null,
                 balance: {
@@ -1000,6 +1001,11 @@
             },
             close: function() {
                 this.dialog.close();
+            },
+            exportSimulateOrders: function() {
+                let ordersTable = document.getElementById("simulateDialog-ordersTable");
+                let workbook = XLSX.utils.table_to_book(ordersTable, { sheet: "Sheet1" });
+                XLSX.writeFile(workbook, "simulate_orders.xlsx");
             }
         }
         simulateDialog.initialize();
