@@ -3,10 +3,10 @@ package org.oopscraft.fintics.model;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.*;
+import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.data.converter.AbstractEnumConverter;
 import org.oopscraft.arch4j.core.support.ObjectMapperHolder;
 import org.oopscraft.fintics.dao.OrderEntity;
-import org.oopscraft.fintics.trade.StrategyResult;
 
 import javax.persistence.Converter;
 import java.math.BigDecimal;
@@ -17,6 +17,7 @@ import java.util.Optional;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Slf4j
 public class Order {
 
     private String orderId;
@@ -80,7 +81,9 @@ public class Order {
         if (orderEntity.getStrategyResultData() != null) {
            try {
                strategyResult = objectMapper.readValue(orderEntity.getStrategyResultData(), StrategyResult.class);
-           } catch (JsonProcessingException ignore) { }
+           } catch (JsonProcessingException ignore) {
+               log.warn(ignore.getMessage());
+           }
         }
 
         // return

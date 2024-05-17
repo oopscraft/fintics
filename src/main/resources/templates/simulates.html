@@ -564,9 +564,10 @@
                 </div>
                 <div id="simulateDialog-orderTabContent">
                     <div class="overflow-y--scroll border-x--1" style="max-height:300px;">
-                        <table id="simulateDialog-ordersTable" class="width--100 font-size--smaller text-align--center border--0">
+                        <table class="width--100 font-size--smaller text-align--center border--0">
                             <colgroup>
                                 <col style="width:5em;"/>
+                                <col/>
                                 <col/>
                                 <col/>
                                 <col/>
@@ -585,6 +586,7 @@
                                 <th data-th-text="#{fintics.Asset.assetName}"></th>
                                 <th data-th-text="#{fintics.Order.quantity}"></th>
                                 <th data-th-text="#{fintics.Order.price}"></th>
+                                <th data-th-text="#{fintics.StrategyResult}"></th>
                                 <th data-th-text="#{fintics.Order.purchasePrice}"></th>
                                 <th data-th-text="#{fintics.Order.realizedProfitAmount}"></th>
                                 <th data-th-text="#{fintics.Order.result}"></th>
@@ -617,6 +619,9 @@
                                 <td>
                                     <span data-duice-bind="order" data-duice-property="price" data-duice-format="number"></span>
                                 </td>
+                                <td class="display--flex padding--1px">
+                                    <textarea data-duice-bind="order" data-duice-execute="this.value=JSON.stringify(order.strategyResult,null,2);" class="height-100 width--100"></textarea>
+                                </td>
                                 <td>
                                     <span data-duice-bind="order" data-duice-property="purchasePrice" data-duice-format="number"></span>
                                 </td>
@@ -630,8 +635,8 @@
                                         if(order.result === 'FAILED') this.classList.add('background-color--red');
                                         "></span>
                                 </td>
-                                <td>
-                                    <span data-duice-bind="order" data-duice-property="errorMessage"></span>
+                                <td class="display--flex padding--1px">
+                                    <textarea data-duice-bind="order" data-duice-property="errorMessage" class="height--100 width--100" style="white-space:normal;"></textarea>
                                 </td>
                             </tr>
                             <tr data-duice-bind="simulateDialog.simulate.orders" data-duice-if="return simulateDialog.simulate.orders.length === 0;" hidden>
@@ -640,23 +645,20 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="text-align--right padding-x--1em">
-                        <button type="button" class="small" onclick="simulateDialog.exportSimulateOrders();">
-                            <img class="icon" th:src="@{/static/image/icon-excel.svg}" alt="excel"/>
-                            <span>Excel</span>
-                        </button>
-                    </div>
                 </div>
                 <div id="simulateDialog-simulateReportContent">
-                    <div>
-                        Balance
-                    </div>
                     <div class="width--100" style="height:200px;">
                         <canvas id="simulateDialog-simulateReportTotalReturnsChart"></canvas>
                     </div>
                     <div class="width--100" style="height:200px;">
                         <canvas id="simulateDialog-simulateReportAssetReturnsChart"></canvas>
                     </div>
+                </div>
+                <div class="text-align--right padding-x--1em">
+                    <button type="button" onclick="simulateDialog.exportSimulate();">
+                        <img class="icon" th:src="@{/static/image/icon-excel.svg}" alt="excel"/>
+                        <span>Excel</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -1002,10 +1004,18 @@
             close: function() {
                 this.dialog.close();
             },
-            exportSimulateOrders: function() {
-                let ordersTable = document.getElementById("simulateDialog-ordersTable");
-                let workbook = XLSX.utils.table_to_book(ordersTable, { sheet: "Sheet1" });
-                XLSX.writeFile(workbook, "simulate_orders.xlsx");
+            exportSimulate: function() {
+                // balance assets
+                const balanceAssets = this.simulate.balance.balanceAssets;
+                const balanceAssetsWorksheet = XLSX.utils.json_to_sheet(balanceAssets);
+                // orders
+                const orders = this.simulate.orders;
+                const ordersWorksheet = XLSX.utils.json_to_sheet(orders);
+                // export
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, balanceAssetsWorksheet, "balanceAssets");
+                XLSX.utils.book_append_sheet(workbook, ordersWorksheet, "orders");
+                XLSX.writeFile(workbook, "simulate_result.xlsx");
             }
         }
         simulateDialog.initialize();

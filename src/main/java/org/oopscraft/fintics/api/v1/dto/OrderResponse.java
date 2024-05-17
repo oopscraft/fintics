@@ -8,6 +8,7 @@ import org.oopscraft.fintics.model.Order;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Builder
@@ -35,6 +36,8 @@ public class OrderResponse {
 
     private BigDecimal price;
 
+    private StrategyResultResponse strategyResult;
+
     private BigDecimal purchasePrice;
 
     private BigDecimal realizedProfitAmount;
@@ -54,6 +57,9 @@ public class OrderResponse {
                 .kind(order.getKind())
                 .quantity(order.getQuantity())
                 .price(order.getPrice())
+                .strategyResult(Optional.ofNullable(order.getStrategyResult())
+                        .map(StrategyResultResponse::from)
+                        .orElse(null))
                 .purchasePrice(order.getPurchasePrice())
                 .realizedProfitAmount(order.getRealizedProfitAmount())
                 .result(order.getResult())

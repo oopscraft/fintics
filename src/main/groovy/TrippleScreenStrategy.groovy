@@ -1,5 +1,5 @@
 import org.oopscraft.fintics.model.Ohlcv
-import org.oopscraft.fintics.trade.StrategyResult
+import org.oopscraft.fintics.model.StrategyResult
 import org.oopscraft.fintics.trade.Tools
 import org.oopscraft.fintics.indicator.*
 

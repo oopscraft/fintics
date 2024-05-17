@@ -1,24 +1,23 @@
-package org.oopscraft.fintics.trade;
+package org.oopscraft.fintics.model;
 
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.*;
 
 import java.math.BigDecimal;
 
 @Builder
-@Getter
+@Data
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @ToString
 public class StrategyResult {
 
     @EqualsAndHashCode.Include
-    private final BigDecimal value;
+    private BigDecimal value;
 
-    private final Object detail;
+    private String detail;
 
-    public static StrategyResult of(BigDecimal value, Object detail) {
+    public static StrategyResult of(BigDecimal value, String detail) {
         return StrategyResult.builder()
                 .value(value)
                 .detail(detail)
