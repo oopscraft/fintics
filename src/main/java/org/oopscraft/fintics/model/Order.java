@@ -1,8 +1,12 @@
 package org.oopscraft.fintics.model;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.*;
 import org.oopscraft.arch4j.core.data.converter.AbstractEnumConverter;
+import org.oopscraft.arch4j.core.support.ObjectMapperHolder;
 import org.oopscraft.fintics.dao.OrderEntity;
+import org.oopscraft.fintics.trade.StrategyResult;
 
 import javax.persistence.Converter;
 import java.math.BigDecimal;
@@ -32,6 +36,8 @@ public class Order {
     private BigDecimal quantity;
 
     private BigDecimal price;
+
+    private StrategyResult strategyResult;
 
     private BigDecimal purchasePrice;
 
@@ -67,6 +73,17 @@ public class Order {
     public static class ResultConverter extends AbstractEnumConverter<Result> {}
 
     public static Order from(OrderEntity orderEntity) {
+        ObjectMapper objectMapper = ObjectMapperHolder.getObject();
+
+        // strategy result
+        StrategyResult strategyResult = null;
+        if (orderEntity.getStrategyResultData() != null) {
+           try {
+               strategyResult = objectMapper.readValue(orderEntity.getStrategyResultData(), StrategyResult.class);
+           } catch (JsonProcessingException ignore) { }
+        }
+
+        // return
         return Order.builder()
                 .orderId(orderEntity.getOrderId())
                 .orderAt(orderEntity.getOrderAt())
@@ -77,6 +94,7 @@ public class Order {
                 .kind(orderEntity.getKind())
                 .quantity(orderEntity.getQuantity())
                 .price(orderEntity.getPrice())
+                .strategyResult(strategyResult)
                 .purchasePrice(orderEntity.getPurchasePrice())
                 .realizedProfitAmount(orderEntity.getRealizedProfitAmount())
                 .brokerOrderId(orderEntity.getBrokerOrderId())

@@ -1,6 +1,7 @@
 package org.oopscraft.fintics.trade;
 
 import ch.qos.logback.classic.Logger;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Builder;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
@@ -186,7 +187,7 @@ public class TradeExecutor {
                     if (balanceAsset != null) {
                         BigDecimal price = calculateSellPrice(tradeAsset, orderBook, brokerClient);
                         BigDecimal quantity = balanceAsset.getOrderableQuantity();
-                        sellTradeAsset(brokerClient, trade, tradeAsset, quantity, price, balanceAsset.getPurchasePrice());
+                        sellTradeAsset(brokerClient, trade, tradeAsset, quantity, price, strategyResult, balanceAsset);
                     }
                     continue;
                 }
@@ -215,7 +216,7 @@ public class TradeExecutor {
                     BigDecimal buyQuantity = exceededAmount.divide(buyPrice, MathContext.DECIMAL32);
                     // if over minimum order quantity
                     if (brokerClient.isOverMinimumOrderAmount(buyQuantity, buyPrice)) {
-                        buyTradeAsset(brokerClient, trade, tradeAsset, buyQuantity, buyPrice);
+                        buyTradeAsset(brokerClient, trade, tradeAsset, buyQuantity, buyPrice, strategyResult);
                     }
                 }
 
@@ -226,7 +227,7 @@ public class TradeExecutor {
                         BigDecimal sellQuantity = exceededAmount.abs().divide(sellPrice, MathContext.DECIMAL32);
                         // if over minimum order quantity
                         if (brokerClient.isOverMinimumOrderAmount(sellQuantity, sellPrice)) {
-                            sellTradeAsset(brokerClient, trade, tradeAsset, sellQuantity, sellPrice, balanceAsset.getPurchasePrice());
+                            sellTradeAsset(brokerClient, trade, tradeAsset, sellQuantity, sellPrice, strategyResult, balanceAsset);
                         }
                     }
                 }
@@ -290,16 +291,6 @@ public class TradeExecutor {
         return assetService.getAssetOhlcvs(assetId, Ohlcv.Type.DAILY, dateTimeFrom, dateTimeTo, PageRequest.of(0, 360));
     }
 
-    private void sendErrorAlarmIfEnabled(Trade trade, TradeAsset tradeAsset, Throwable t) {
-        if(trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
-            if (trade.isAlarmOnError()) {
-                String subject = String.format("[%s - %s]", trade.getTradeName(), tradeAsset != null ? tradeAsset.getAssetName() : "");
-                String content = ExceptionUtils.getRootCause(t).getMessage();
-                alarmService.sendAlarm(trade.getAlarmId(), subject, content);
-            }
-        }
-    }
-
     private BigDecimal calculateBuyPrice(TradeAsset tradeAsset, OrderBook orderBook, BrokerClient brokerClient) throws InterruptedException {
         BigDecimal price = orderBook.getAskPrice();
         BigDecimal tickPrice = brokerClient.getTickPrice(tradeAsset, price);
@@ -308,7 +299,6 @@ public class TradeExecutor {
         }
         return price.max(orderBook.getBidPrice()); // max competitive price
     }
-
 
     private BigDecimal calculateSellPrice(TradeAsset tradeAsset, OrderBook orderBook, BrokerClient brokerClient) throws InterruptedException {
         BigDecimal price = orderBook.getBidPrice();
@@ -319,8 +309,7 @@ public class TradeExecutor {
         return price.min(orderBook.getAskPrice()); // min competitive price
     }
 
-
-    private void buyTradeAsset(BrokerClient brokerClient, Trade trade, TradeAsset tradeAsset, BigDecimal quantity, BigDecimal price) throws InterruptedException {
+    private void buyTradeAsset(BrokerClient brokerClient, Trade trade, TradeAsset tradeAsset, BigDecimal quantity, BigDecimal price, StrategyResult strategyResult) throws InterruptedException {
         Order order = Order.builder()
                 .orderAt(LocalDateTime.now())
                 .type(Order.Type.BUY)
@@ -330,6 +319,7 @@ public class TradeExecutor {
                 .assetName(tradeAsset.getAssetName())
                 .quantity(quantity)
                 .price(price)
+                .strategyResult(strategyResult)
                 .build();
         log.info("[{}] buyTradeAsset: {}", tradeAsset.getAssetName(), order);
         try {
@@ -366,7 +356,7 @@ public class TradeExecutor {
         }
     }
 
-    private void sellTradeAsset(BrokerClient brokerClient, Trade trade, TradeAsset tradeAsset, BigDecimal quantity, BigDecimal price, BigDecimal purchasePrice) throws InterruptedException {
+    private void sellTradeAsset(BrokerClient brokerClient, Trade trade, TradeAsset tradeAsset, BigDecimal quantity, BigDecimal price, StrategyResult strategyResult, BalanceAsset balanceAsset) throws InterruptedException {
         Order order = Order.builder()
                 .orderAt(LocalDateTime.now())
                 .type(Order.Type.SELL)
@@ -376,13 +366,14 @@ public class TradeExecutor {
                 .assetName(tradeAsset.getAssetName())
                 .quantity(quantity)
                 .price(price)
+                .strategyResult(strategyResult)
                 .build();
         log.info("[{}] sellTradeAsset: {}", tradeAsset.getAssetName(), order);
 
-        // purchase price
-        if (purchasePrice != null) {
-            order.setPurchasePrice(purchasePrice);
-            BigDecimal realizedProfitAmount = price.subtract(purchasePrice)
+        // purchase price, realized amount
+        if (balanceAsset.getPurchasePrice() != null) {
+            order.setPurchasePrice(balanceAsset.getPurchasePrice());
+            BigDecimal realizedProfitAmount = price.subtract(balanceAsset.getPurchasePrice())
                     .multiply(quantity)
                     .setScale(4, RoundingMode.FLOOR);
             order.setRealizedProfitAmount(realizedProfitAmount);
@@ -429,17 +420,29 @@ public class TradeExecutor {
                 orderService.saveOrder(order));
     }
 
+    private void sendErrorAlarmIfEnabled(Trade trade, TradeAsset tradeAsset, Throwable t) {
+        if(trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
+            if (trade.isAlarmOnError()) {
+                String subject = String.format("[%s - %s] Error", trade.getTradeName(), tradeAsset != null ? tradeAsset.getAssetName() : "");
+                String content = ExceptionUtils.getRootCause(t).getMessage();
+                alarmService.sendAlarm(trade.getAlarmId(), subject, content);
+            }
+        }
+    }
+
     private void sendOrderAlarmIfEnabled(Trade trade, Order order) {
         if (trade.isAlarmOnOrder()) {
             if (trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
-                String subject = String.format("[%s]", trade.getTradeName());
-                String content = String.format("[%s] %s(%s) - price: %s / quantity: %s",
-                        order.getAssetName(),
-                        order.getType(),
-                        order.getKind(),
-                        order.getPrice(),
-                        order.getQuantity());
-                alarmService.sendAlarm(trade.getAlarmId(), subject, content);
+                // subject
+                StringBuilder subject = new StringBuilder();
+                subject.append(String.format("[%s - %s] %s", trade.getTradeName(), order.getAssetName(), order.getType()));
+                // content
+                StringBuilder content = new StringBuilder();
+                content.append(String.format("- kind: %s", order.getKind())).append('\n');
+                content.append(String.format("- price: %s", order.getPrice())).append('\n');
+                content.append(String.format("- quantity: %s", order.getQuantity())).append('\n');
+                content.append(String.format("- strategyResult: %s", order.getStrategyResult())).append('\n');
+                alarmService.sendAlarm(trade.getAlarmId(), subject.toString(), content.toString());
             }
         }
     }

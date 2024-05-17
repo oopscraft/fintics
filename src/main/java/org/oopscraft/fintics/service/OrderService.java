@@ -1,6 +1,9 @@
 package org.oopscraft.fintics.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.data.IdGenerator;
 import org.oopscraft.fintics.dao.OrderEntity;
 import org.oopscraft.fintics.dao.OrderEntity_;
@@ -17,9 +20,12 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class OrderService {
 
     private final OrderRepository orderRepository;
+
+    private final ObjectMapper objectMapper;
 
     public Page<Order> getOrders(String tradeId, String assetId, Order.Type type, Order.Result result, Pageable pageable) {
         // where
@@ -73,6 +79,15 @@ public class OrderService {
         orderEntity.setBrokerOrderId(order.getBrokerOrderId());
         orderEntity.setResult(order.getResult());
         orderEntity.setErrorMessage(order.getErrorMessage());
+
+        // strategy result
+        try {
+            String strategyResultData = objectMapper.writeValueAsString(order.getStrategyResult());
+            orderEntity.setStrategyResultData(strategyResultData);
+        } catch (JsonProcessingException ignore) {
+            log.warn(ignore.getMessage());
+        }
+
         OrderEntity savedOrderEntity = orderRepository.saveAndFlush(orderEntity);
         return Order.from(savedOrderEntity);
     }

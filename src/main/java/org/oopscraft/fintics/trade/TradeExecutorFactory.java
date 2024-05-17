@@ -1,5 +1,6 @@
 package org.oopscraft.fintics.trade;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
 import org.oopscraft.fintics.dao.AssetOhlcvRepository;
@@ -24,6 +25,7 @@ public class TradeExecutorFactory {
     private final OrderService orderService;
 
     private final AlarmService alarmService;
+
 
     public TradeExecutor getObject() {
         return TradeExecutor.builder()
