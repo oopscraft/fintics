@@ -303,9 +303,11 @@
                                 <col/>
                                 <col/>
                                 <col/>
+                                <col/>
                             </colgroup>
                             <thead>
                             <tr class="font-size--smaller">
+                                <th data-th-text="#{web.global.no}"></th>
                                 <th data-th-text="#{fintics.BalanceAsset.assetId}"></th>
                                 <th data-th-text="#{fintics.BalanceAsset.assetName}"></th>
                                 <th data-th-text="#{fintics.BalanceAsset.quantity}" class="text-align--right"></th>
@@ -316,6 +318,7 @@
                             </thead>
                             <tbody>
                             <tr th:data-duice-bind="'tradeBalanceMap.get(\'' + ${trade.tradeId} + '\').balanceAssets'" data-duice-loop="balanceAsset,status" class="font-size--smaller">
+                                <td data-duice-bind="status" data-duice-property="count"></td>
                                 <td data-duice-bind="balanceAsset" data-duice-property="assetId"></td>
                                 <td data-duice-bind="balanceAsset" data-duice-property="assetName"></td>
                                 <td data-duice-bind="balanceAsset" data-duice-property="quantity" data-duice-format="number" class="text-align--right"></td>
