@@ -402,6 +402,7 @@ public class KisBrokerClient extends KrBrokerClient {
                         .accountNo(accountNo)
                         .assetId(toAssetId(row.get("pdno")))
                         .assetName(row.get("prdt_name"))
+                        .market(getDefinition().getMarket())
                         .quantity(new BigDecimal(row.get("hldg_qty")))
                         .orderableQuantity(new BigDecimal(row.get("ord_psbl_qty")))
                         .purchaseAmount(new BigDecimal(row.get("pchs_amt")))

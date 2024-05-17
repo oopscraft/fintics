@@ -368,6 +368,7 @@ public class KisUsBrokerClient extends UsBrokerClient {
                         .accountNo(accountNo)
                         .assetId(toAssetId(row.get("ovrs_pdno")))
                         .assetName(row.get("ovrs_item_name"))
+                        .market(getDefinition().getMarket())
                         .quantity(new BigDecimal(row.get("ovrs_cblc_qty")))
                         .orderableQuantity(new BigDecimal(row.get("ord_psbl_qty")))
                         .purchasePrice(new BigDecimal(row.get("pchs_avg_pric")).setScale(2, RoundingMode.HALF_UP))

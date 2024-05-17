@@ -223,7 +223,7 @@
             background-color: #222;
             color: white;
             font-family: monospace;
-            font-size: smaller;
+            font-size: xx-small;
         }
     </style>
 
@@ -248,10 +248,10 @@
                 <span data-th-text="#{fintics.Indice}"></span>
             </h2>
             <div class="display--grid grid-template-columns--12 padding--1em s__padding--0">
-                <div class="grid-column--5 s__grid-column--12" style="height:150px;">
+                <div class="grid-column--6 s__grid-column--12" style="height:150px;">
                     <canvas id="indiceDailyOhlcvsChart"></canvas>
                 </div>
-                <div class="grid-column--7 s__grid-column--12" style="height:150px;">
+                <div class="grid-column--6 s__grid-column--12" style="height:150px;">
                     <canvas id="indiceMinuteOhlcvsChart"></canvas>
                 </div>
             </div>
@@ -287,7 +287,7 @@
                 </a>
             </h2>
             <div class="display--grid grid-template-columns--12 grid-gap--1em">
-                <div class="grid-column--5 s__grid-column--12">
+                <div class="grid-column--6 s__grid-column--12">
                     <div style="height:150px;">
                         <canvas th:id="'tradeAssetDailyOhlcvsChart-' + ${trade.tradeId}"></canvas>
                     </div>
@@ -297,6 +297,7 @@
                     <div class="overflow-y--auto overflow-x--auto border-top--1">
                         <table class="width--100 border--0 text-align--center font-size-smaller" style="line-height:normal;">
                             <colgroup>
+                                <col/>
                                 <col/>
                                 <col/>
                                 <col/>
@@ -314,6 +315,7 @@
                                 <th data-th-text="#{fintics.BalanceAsset.purchaseAmount}" class="text-align--right"></th>
                                 <th data-th-text="#{fintics.BalanceAsset.valuationAmount}" class="text-align--right"></th>
                                 <th data-th-text="#{fintics.BalanceAsset.profitAmount}" class="text-align--right"></th>
+                                <th data-th-text="#{fintics.Asset.links}" class="text-align--right"></th>
                             </tr>
                             </thead>
                             <tbody>
@@ -329,6 +331,15 @@
                                     if(balanceAsset.profitAmount > 0) this.classList.add('color--red');
                                     if(balanceAsset.profitAmount < 0) this.classList.add('color--blue');
                                     "></td>
+                                <td class="text-align--right">
+                                    <select data-duice-bind="balanceAsset"
+                                            data-duice-option="balanceAsset.links"
+                                            data-duice-option-value-property="url"
+                                            data-duice-option-text-property="name"
+                                            onchange="_openLink(this.value, '_blank'); this.value = '';">
+                                        <option value>- Link -</option>
+                                    </select>
+                                </td>
                             </tr>
                             <tr th:data-duice-bind="'tradeBalanceMap.get(\'' + ${trade.tradeId} + '\').balanceAssets'"
                                 th:data-duice-execute="'if(tradeBalanceMap.get(\'' + ${trade.tradeId} + '\').balanceAssets.length === 0) this.hidden=false;'" hidden>
@@ -338,7 +349,7 @@
                         </table>
                     </div>
                 </div>
-                <div class="grid-column--7 s__grid-column--12" style="min-height:200px;">
+                <div class="grid-column--6 s__grid-column--12" style="min-height:200px;">
                     <textarea th:id="'tradeLog-' + ${trade.tradeId}" class="tradeLog width--100 height--100"></textarea>
                 </div>
             </div>
