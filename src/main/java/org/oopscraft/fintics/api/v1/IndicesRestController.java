@@ -9,7 +9,6 @@ import org.oopscraft.fintics.api.v1.dto.OhlcvResponse;
 import org.oopscraft.fintics.model.Indice;
 import org.oopscraft.fintics.model.Ohlcv;
 import org.oopscraft.fintics.service.IndiceService;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;

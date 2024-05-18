@@ -67,20 +67,27 @@ public class DataService {
                 .collect(Collectors.toList());
     }
 
-    public List<AssetOhlcvSummary> getAssetOhlcvSummaries() {
-        return dataMapper.selectAssetOhlcvSummaries(null);
+    public List<OhlcvSummary> getAssetOhlcvSummaries() {
+        return dataMapper.selectAssetOhlcvSummaries(null).stream()
+                .peek(it -> it.setName(assetService.getAsset(it.getId())
+                        .map(Asset::getAssetName)
+                        .orElse(null)))
+                .toList();
     }
 
-    public Optional<AssetOhlcvSummary> getAssetOhlcvSummary(String assetId) {
-        AssetOhlcvSummary assetOhlcvSummary = dataMapper.selectAssetOhlcvSummaries(assetId).stream()
+    public Optional<OhlcvSummary> getAssetOhlcvSummary(String assetId) {
+        OhlcvSummary assetOhlcvSummary = dataMapper.selectAssetOhlcvSummaries(assetId).stream()
                 .findFirst()
                 .orElseThrow();
+        assetOhlcvSummary.setName(assetService.getAsset(assetOhlcvSummary.getId())
+                .map(Asset::getAssetName)
+                .orElse(null));
         List<OhlcvSummary.OhlcvStatistic> ohlcvStatistics = dataMapper.selectAssetOhlcvStatistics(assetId);
         assetOhlcvSummary.setOhlcvStatistics(ohlcvStatistics);
         return Optional.of(assetOhlcvSummary);
     }
 
-    public List<AssetOhlcv> getAssetOhlcvs(String assetId, Ohlcv.Type type, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo, Pageable pageable) {
+    public List<Ohlcv> getAssetOhlcvs(String assetId, Ohlcv.Type type, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo, Pageable pageable) {
         QAssetOhlcvEntity qAssetOhlcvEntity = QAssetOhlcvEntity.assetOhlcvEntity;
         JPAQuery<AssetOhlcvEntity> query = jpaQueryFactory
                 .selectFrom(qAssetOhlcvEntity)
@@ -95,51 +102,31 @@ public class DataService {
                 .offset(pageable.getOffset());
         List<AssetOhlcvEntity> assetOhlcvEntities = query.fetch();
         return assetOhlcvEntities.stream()
-                .map(AssetOhlcv::from)
+                .map(Ohlcv::from)
                 .collect(Collectors.toList());
     }
 
-    @Transactional
-    public void interpolateAssetOhlcvs(String assetId, Ohlcv.Type type, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo) {
-        Asset asset = assetService.getAsset(assetId).orElseThrow();
-        List<Ohlcv> ohlcvs = ohlcvClient.getAssetOhlcvs(asset, type, dateTimeFrom, dateTimeTo);
-        for (Ohlcv ohlcv : ohlcvs) {
-            AssetOhlcvEntity.Pk pk = AssetOhlcvEntity.Pk.builder()
-                    .assetId(asset.getAssetId())
-                    .type(ohlcv.getType())
-                    .dateTime(ohlcv.getDateTime())
-                    .build();
-            AssetOhlcvEntity assetOhlcvEntity = assetOhlcvRepository.findById(pk).orElse(null);
-            if (assetOhlcvEntity == null) {
-                assetOhlcvEntity = AssetOhlcvEntity.builder()
-                        .assetId(asset.getAssetId())
-                        .type(ohlcv.getType())
-                        .dateTime(ohlcv.getDateTime())
-                        .openPrice(ohlcv.getOpenPrice())
-                        .highPrice(ohlcv.getHighPrice())
-                        .lowPrice(ohlcv.getLowPrice())
-                        .closePrice(ohlcv.getClosePrice())
-                        .volume(ohlcv.getVolume())
-                        .build();
-                assetOhlcvRepository.saveAndFlush(assetOhlcvEntity);
-            }
-        }
+    public List<OhlcvSummary> getIndiceOhlcvSummaries() {
+        return dataMapper.selectIndiceOhlcvSummaries(null).stream()
+                .peek(it -> it.setName(indiceService.getIndice(it.getId())
+                        .map(Indice::getIndiceName)
+                        .orElse(null)))
+                .toList();
     }
 
-    public List<IndiceOhlcvSummary> getIndiceOhlcvSummaries() {
-        return dataMapper.selectIndiceOhlcvSummaries(null);
-    }
-
-    public Optional<IndiceOhlcvSummary> getIndiceOhlcvSummary(Indice.Id indiceId) {
-        IndiceOhlcvSummary indiceOhlcvSummary = dataMapper.selectIndiceOhlcvSummaries(indiceId).stream()
+    public Optional<OhlcvSummary> getIndiceOhlcvSummary(Indice.Id indiceId) {
+        OhlcvSummary indiceOhlcvSummary = dataMapper.selectIndiceOhlcvSummaries(indiceId).stream()
                 .findFirst()
                 .orElseThrow();
+        indiceOhlcvSummary.setName(indiceService.getIndice(indiceOhlcvSummary.getId())
+                .map(Indice::getIndiceName)
+                .orElse(null));
         List<OhlcvSummary.OhlcvStatistic> ohlcvStatistics = dataMapper.selectIndiceOhlcvStatistics(indiceId);
         indiceOhlcvSummary.setOhlcvStatistics(ohlcvStatistics);
         return Optional.of(indiceOhlcvSummary);
     }
 
-    public List<IndiceOhlcv> getIndiceOhlcvs(Indice.Id indiceId, Ohlcv.Type type, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo, Pageable pageable) {
+    public List<Ohlcv> getIndiceOhlcvs(Indice.Id indiceId, Ohlcv.Type type, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo, Pageable pageable) {
         QIndiceOhlcvEntity qIndiceOhlcvEntity = QIndiceOhlcvEntity.indiceOhlcvEntity;
         JPAQuery<IndiceOhlcvEntity> query = jpaQueryFactory
                 .selectFrom(qIndiceOhlcvEntity)
@@ -154,35 +141,8 @@ public class DataService {
                 .offset(pageable.getOffset());
         List<IndiceOhlcvEntity> indiceOhlcvEntities = query.fetch();
         return indiceOhlcvEntities.stream()
-                .map(IndiceOhlcv::from)
+                .map(Ohlcv::from)
                 .collect(Collectors.toList());
-    }
-
-    @Transactional
-    public void interpolateIndiceOhlcvs(Indice.Id indiceId, Ohlcv.Type type, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo) {
-        Indice indice = indiceService.getIndice(indiceId.name()).orElseThrow();
-        List<Ohlcv> ohlcvs = ohlcvClient.getIndiceOhlcvs(indice, type, dateTimeFrom, dateTimeTo);
-        for (Ohlcv ohlcv : ohlcvs) {
-            IndiceOhlcvEntity.Pk pk = IndiceOhlcvEntity.Pk.builder()
-                    .indiceId(indiceId)
-                    .type(ohlcv.getType())
-                    .dateTime(ohlcv.getDateTime())
-                    .build();
-            IndiceOhlcvEntity indiceOhlcvEntity = indiceOhlcvRepository.findById(pk).orElse(null);
-            if (indiceOhlcvEntity == null) {
-                indiceOhlcvEntity = IndiceOhlcvEntity.builder()
-                        .indiceId(indiceId)
-                        .type(ohlcv.getType())
-                        .dateTime(ohlcv.getDateTime())
-                        .openPrice(ohlcv.getOpenPrice())
-                        .highPrice(ohlcv.getHighPrice())
-                        .lowPrice(ohlcv.getLowPrice())
-                        .closePrice(ohlcv.getClosePrice())
-                        .volume(ohlcv.getVolume())
-                        .build();
-                indiceOhlcvRepository.saveAndFlush(indiceOhlcvEntity);
-            }
-        }
     }
 
 }

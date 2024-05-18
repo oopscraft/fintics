@@ -7,54 +7,24 @@
 
     <cache eviction="FIFO" flushInterval="60000" size="512"/>
 
-    <select id="selectAssetOhlcvSummaries" resultType="org.oopscraft.fintics.model.AssetOhlcvSummary">
-        SELECT      fta.asset_id AS "assetId",
-                    fa.asset_name AS "assetName",
-                    (SELECT COUNT(*) FROM fintics_trade_asset WHERE asset_id = fta.asset_id) AS "tradeCount",
-                    fao.daily_count AS "dailyCount",
-                    fao.daily_min_date_time AS "dailyMinDateTime",
-                    fao.daily_max_date_time AS "dailyMaxDateTime",
-                    fao.minute_count AS "minuteCount",
-                    fao.minute_min_date_time AS "minuteMinDateTime",
-                    fao.minute_max_date_time AS "minuteMaxDateTime"
-        FROM 		(
-                    SELECT 		DISTINCT
-                                asset_id
-                    FROM 		fintics_asset_ohlcv fao
-                    UNION
-                    SELECT		DISTINCT
-                                asset_id
-                    FROM 		fintics_trade_asset fta
-                    ) fta
-        LEFT OUTER JOIN
-                    fintics_asset fa
-        ON 			    fa.asset_id = fta.asset_id
-        LEFT OUTER JOIN
-                    (
-                    SELECT 	    asset_id,
-                                SUM(CASE WHEN type = 'DAILY' THEN 1 ELSE 0 END) AS daily_count,
-                                MIN(CASE WHEN type = 'DAILY' THEN date_time ELSE NULL END) AS daily_min_date_time,
-                                MAX(CASE WHEN type = 'DAILY' THEN date_time ELSE NULL END) AS daily_max_date_time,
-                                SUM(CASE WHEN type = 'MINUTE' THEN 1 ELSE 0 END) AS minute_count,
-                                MIN(CASE WHEN type = 'MINUTE' THEN date_time ELSE NULL END) AS minute_min_date_time,
-                                MAX(CASE WHEN type = 'MINUTE' THEN date_time ELSE NULL END) AS minute_max_date_time
-                    FROM 		fintics_asset_ohlcv
-                    WHERE       1 = 1
-                    <if test="assetId != null">
-                    AND         asset_id = #{assetId}
-                    </if>
-                    GROUP BY 	asset_id
-                    ) fao
-        ON 			fao.asset_id = fta.asset_id
+    <select id="selectAssetOhlcvSummaries" resultType="org.oopscraft.fintics.model.OhlcvSummary">
+        SELECT 	    asset_id as "id",
+                    SUM(CASE WHEN fao.type = 'DAILY' THEN 1 ELSE 0 END) AS "dailyCount",
+                    MIN(CASE WHEN fao.type = 'DAILY' THEN fao.date_time ELSE NULL END) AS "dailyMinDateTime",
+                    MAX(CASE WHEN fao.type = 'DAILY' THEN fao.date_time ELSE NULL END) AS "dailyMaxDateTime",
+                    SUM(CASE WHEN fao.type = 'MINUTE' THEN 1 ELSE 0 END) AS "minuteCount",
+                    MIN(CASE WHEN fao.type = 'MINUTE' THEN fao.date_time ELSE NULL END) AS "minuteMinDateTime",
+                    MAX(CASE WHEN fao.type = 'MINUTE' THEN fao.date_time ELSE NULL END) AS "minuteMaxDateTime"
+        FROM 		fintics_asset_ohlcv fao
         WHERE       1 = 1
         <if test="assetId != null">
-        AND         fta.asset_id = #{assetId}
+        AND         fao.asset_id = #{assetId}
         </if>
-        ORDER BY 	fta.asset_id
+        GROUP BY 	fao.asset_id
     </select>
 
-    <select id="selectIndiceOhlcvSummaries" resultType="org.oopscraft.fintics.model.IndiceOhlcvSummary">
-        SELECT 	    indice_id AS "indiceId",
+    <select id="selectIndiceOhlcvSummaries" resultType="org.oopscraft.fintics.model.OhlcvSummary">
+        SELECT 	    indice_id AS "id",
                     SUM(CASE WHEN type = 'DAILY' THEN 1 ELSE 0 END) AS "dailyCount",
                     MIN(CASE WHEN type = 'DAILY' THEN date_time ELSE NULL END) AS "dailyMinDateTime",
                     MAX(CASE WHEN type = 'DAILY' THEN date_time ELSE NULL END) AS "dailyMaxDateTime",

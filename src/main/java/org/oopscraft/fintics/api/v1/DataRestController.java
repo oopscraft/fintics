@@ -33,11 +33,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @Tag(name = "data", description = "Data")
 public class DataRestController {
 
-    private static final List<AssetOhlcvSummaryResponse> assetOhlcvSummaryResponses = new CopyOnWriteArrayList<>();
+    private static final List<OhlcvSummaryResponse> assetOhlcvSummaryResponses = new CopyOnWriteArrayList<>();
 
     private static CompletableFuture<Void> assetOhlcvSummaryResponsesFuture = new CompletableFuture<>();
 
-    private static final List<IndiceOhlcvSummaryResponse> indiceOhlcvSummaryResponses = new CopyOnWriteArrayList<>();
+    private static final List<OhlcvSummaryResponse> indiceOhlcvSummaryResponses = new CopyOnWriteArrayList<>();
 
     private static CompletableFuture<Void> indiceOhlcvSummaryResponsesFuture = new CompletableFuture<>();
 
@@ -59,10 +59,10 @@ public class DataRestController {
     }
 
     @GetMapping("asset-ohlcv-summaries")
-    public ResponseEntity<List<AssetOhlcvSummaryResponse>> getAssetOhlcvSummaries() {
+    public ResponseEntity<List<OhlcvSummaryResponse>> getAssetOhlcvSummaries() {
         if (assetOhlcvSummaryResponses.isEmpty()) {
             assetOhlcvSummaryResponses.addAll(dataService.getAssetOhlcvSummaries().stream()
-                    .map(AssetOhlcvSummaryResponse::from)
+                    .map(OhlcvSummaryResponse::from)
                     .toList());
             return ResponseEntity.ok(assetOhlcvSummaryResponses);
         } else {
@@ -70,7 +70,7 @@ public class DataRestController {
                 assetOhlcvSummaryResponsesFuture = CompletableFuture.runAsync(() -> {
                     assetOhlcvSummaryResponses.clear();
                     assetOhlcvSummaryResponses.addAll(dataService.getAssetOhlcvSummaries().stream()
-                            .map(AssetOhlcvSummaryResponse::from)
+                            .map(OhlcvSummaryResponse::from)
                             .toList());
                 });
             }
@@ -79,15 +79,15 @@ public class DataRestController {
     }
 
     @GetMapping("asset-ohlcv-summaries/{assetId}")
-    public ResponseEntity<AssetOhlcvSummaryResponse> getAssetOhlcvSummary(@PathVariable("assetId") String assetId) {
-        AssetOhlcvSummaryResponse assetOhlcvSummaryResponse = dataService.getAssetOhlcvSummary(assetId)
-                .map(AssetOhlcvSummaryResponse::from)
+    public ResponseEntity<OhlcvSummaryResponse> getAssetOhlcvSummary(@PathVariable("assetId") String assetId) {
+        OhlcvSummaryResponse assetOhlcvSummaryResponse = dataService.getAssetOhlcvSummary(assetId)
+                .map(OhlcvSummaryResponse::from)
                 .orElseThrow();
         return ResponseEntity.ok(assetOhlcvSummaryResponse);
     }
 
     @GetMapping("asset-ohlcvs")
-    public ResponseEntity<List<AssetOhlcvResponse>> getAssetOhlcvs(
+    public ResponseEntity<List<OhlcvResponse>> getAssetOhlcvs(
             @RequestParam(value = "assetId", required = false) String assetId,
             @RequestParam(value = "type", required = false) Ohlcv.Type type,
             @RequestParam(value = "dateTimeFrom", required = false) ZonedDateTime zonedDateTimeFrom,
@@ -100,32 +100,19 @@ public class DataRestController {
         LocalDateTime dateTimeTo = Optional.ofNullable(zonedDateTimeTo)
                 .map(item -> item.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime())
                 .orElse(null);
-        List<AssetOhlcvResponse> assetOhlcvResponses = dataService.getAssetOhlcvs(assetId, type, dateTimeFrom, dateTimeTo, pageable).stream()
-                .map(AssetOhlcvResponse::from)
+        List<OhlcvResponse> assetOhlcvResponses = dataService.getAssetOhlcvs(assetId, type, dateTimeFrom, dateTimeTo, pageable).stream()
+                .map(OhlcvResponse::from)
                 .toList();
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_RANGE, PageableUtils.toContentRange("asset-ohlcvs", pageable))
                 .body(assetOhlcvResponses);
     }
 
-    @PostMapping("interpolate-asset-ohlcvs")
-    @PreAuthorize("hasAuthority('API_DATA_EDIT')")
-    public ResponseEntity<Void> interpolateAssetOhlcvs(@RequestBody Map<String, String> payload) {
-        String assetId = payload.get("assetId");
-        Ohlcv.Type type = Ohlcv.Type.valueOf(payload.get("type"));
-        ZonedDateTime zonedDateTimeFrom = ZonedDateTime.parse(payload.get("dateTimeFrom"));
-        ZonedDateTime zonedDateTimeTo = ZonedDateTime.parse(payload.get("dateTimeTo"));
-        LocalDateTime dateTimeFrom = zonedDateTimeFrom.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime();
-        LocalDateTime dateTimeTo = zonedDateTimeTo.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime();
-        dataService.interpolateAssetOhlcvs(assetId, type, dateTimeFrom, dateTimeTo);
-        return ResponseEntity.ok().build();
-    }
-
     @GetMapping("indice-ohlcv-summaries")
-    public ResponseEntity<List<IndiceOhlcvSummaryResponse>> getIndiceOhlcvSummaries() {
+    public ResponseEntity<List<OhlcvSummaryResponse>> getIndiceOhlcvSummaries() {
         if (indiceOhlcvSummaryResponses.isEmpty()) {
             indiceOhlcvSummaryResponses.addAll(dataService.getIndiceOhlcvSummaries().stream()
-                    .map(IndiceOhlcvSummaryResponse::from)
+                    .map(OhlcvSummaryResponse::from)
                     .toList());
             return ResponseEntity.ok(indiceOhlcvSummaryResponses);
         } else {
@@ -133,7 +120,7 @@ public class DataRestController {
                 indiceOhlcvSummaryResponsesFuture = CompletableFuture.runAsync(() -> {
                     indiceOhlcvSummaryResponses.clear();
                     indiceOhlcvSummaryResponses.addAll(dataService.getIndiceOhlcvSummaries().stream()
-                            .map(IndiceOhlcvSummaryResponse::from)
+                            .map(OhlcvSummaryResponse::from)
                             .toList());
                 });
             }
@@ -142,15 +129,15 @@ public class DataRestController {
     }
 
     @GetMapping("indice-ohlcv-summaries/{indiceId}")
-    public ResponseEntity<IndiceOhlcvSummaryResponse> getIndiceOhlcvSummary(@PathVariable("indiceId") Indice.Id indiceId) {
-        IndiceOhlcvSummaryResponse indiceOhlcvSummaryResponse = dataService.getIndiceOhlcvSummary(indiceId)
-                .map(IndiceOhlcvSummaryResponse::from)
+    public ResponseEntity<OhlcvSummaryResponse> getIndiceOhlcvSummary(@PathVariable("indiceId") Indice.Id indiceId) {
+        OhlcvSummaryResponse indiceOhlcvSummaryResponse = dataService.getIndiceOhlcvSummary(indiceId)
+                .map(OhlcvSummaryResponse::from)
                 .orElseThrow();
         return ResponseEntity.ok(indiceOhlcvSummaryResponse);
     }
 
     @GetMapping("indice-ohlcvs")
-    public ResponseEntity<List<IndiceOhlcvResponse>> getIndiceOhlcvs(
+    public ResponseEntity<List<OhlcvResponse>> getIndiceOhlcvs(
             @RequestParam(value = "indiceId", required = false) Indice.Id indiceId,
             @RequestParam(value = "type", required = false) Ohlcv.Type type,
             @RequestParam(value = "dateTimeFrom", required = false) ZonedDateTime zonedDateTimeFrom,
@@ -163,25 +150,12 @@ public class DataRestController {
         LocalDateTime dateTimeTo = Optional.ofNullable(zonedDateTimeTo)
                 .map(item -> item.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime())
                 .orElse(null);
-        List<IndiceOhlcvResponse> indiceOhlcvResponses = dataService.getIndiceOhlcvs(indiceId, type, dateTimeFrom, dateTimeTo, pageable).stream()
-                .map(IndiceOhlcvResponse::from)
+        List<OhlcvResponse> indiceOhlcvResponses = dataService.getIndiceOhlcvs(indiceId, type, dateTimeFrom, dateTimeTo, pageable).stream()
+                .map(OhlcvResponse::from)
                 .toList();
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_RANGE, PageableUtils.toContentRange("indice-ohlcvs", pageable))
                 .body(indiceOhlcvResponses);
-    }
-
-    @PostMapping("interpolate-indice-ohlcvs")
-    @PreAuthorize("hasAuthority('API_DATA_EDIT')")
-    public ResponseEntity<Void> interpolateIndiceOhlcvs(@RequestBody Map<String, String> payload) {
-        Indice.Id indiceId = Indice.Id.valueOf(payload.get("indiceId"));
-        Ohlcv.Type type = Ohlcv.Type.valueOf(payload.get("type"));
-        ZonedDateTime zonedDateTimeFrom = ZonedDateTime.parse(payload.get("dateTimeFrom"));
-        ZonedDateTime zonedDateTimeTo = ZonedDateTime.parse(payload.get("dateTimeTo"));
-        LocalDateTime dateTimeFrom = zonedDateTimeFrom.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime();
-        LocalDateTime dateTimeTo = zonedDateTimeTo.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime();
-        dataService.interpolateIndiceOhlcvs(indiceId, type, dateTimeFrom, dateTimeTo);
-        return ResponseEntity.ok().build();
     }
 
 }

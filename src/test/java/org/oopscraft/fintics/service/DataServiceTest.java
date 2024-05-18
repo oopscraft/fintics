@@ -2,19 +2,15 @@ package org.oopscraft.fintics.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.oopscraft.arch4j.core.support.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
 import org.oopscraft.fintics.model.Asset;
-import org.oopscraft.fintics.model.AssetOhlcvSummary;
-import org.oopscraft.fintics.model.Ohlcv;
+import org.oopscraft.fintics.model.OhlcvSummary;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 
 import javax.persistence.EntityManager;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @SpringBootTest(classes = FinticsConfiguration.class)
@@ -39,7 +35,7 @@ class DataServiceTest extends CoreTestSupport {
     void getAssetOhlcvSummaries() {
         // given
         // when
-        List<AssetOhlcvSummary> assetOhlcvSummaries = dataService.getAssetOhlcvSummaries();
+        List<OhlcvSummary> assetOhlcvSummaries = dataService.getAssetOhlcvSummaries();
         // then
         log.info("assetOhlcvSummaries: {}", assetOhlcvSummaries);
     }

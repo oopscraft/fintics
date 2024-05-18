@@ -13,7 +13,11 @@ import java.util.List;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public abstract class OhlcvSummary implements Serializable {
+public class OhlcvSummary implements Serializable {
+
+    private String id;
+
+    private String name;
 
     private Long dailyCount;
 

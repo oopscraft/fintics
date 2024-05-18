@@ -97,6 +97,11 @@ class Analysis implements Analyzable {
         // chaikin oscillator
         score.chaikinOscillatorValueOverSignal = chaikinOscillator.value > chaikinOscillator.signal ? 100 : 0
         score.chaikinOscillatorValue = chaikinOscillator.value > 0 ? 100 : 0
+        // stochastic slow
+        score.stochasticSlowKOverD = stochasticSlow.slowK > stochasticSlow.slowD ? 100 : 0
+        score.stochasticSlowK = stochasticSlow.slowK > 50 ? 100 : 0
+        // bollinger band
+        score.bollinerBandPriceOverMiddle = ohlcv.closePrice > bollingerBand.middle ? 100 : 0
         // return
         return score
     }

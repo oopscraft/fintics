@@ -11,7 +11,6 @@ import org.oopscraft.fintics.model.Ohlcv;
 import org.oopscraft.fintics.service.AssetService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
