@@ -3,7 +3,7 @@ package org.oopscraft.fintics.dao;
 import org.oopscraft.fintics.model.Ohlcv;
 import org.springframework.data.jpa.domain.Specification;
 
-public class IndiceOhlcvSpecification {
+public class IndiceOhlcvSpecifications {
 
     public static Specification<IndiceOhlcvEntity> equalIndiceId(String indiceId) {
         return ((root, query, criteriaBuilder) ->
