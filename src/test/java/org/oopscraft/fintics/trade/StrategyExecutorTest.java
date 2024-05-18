@@ -136,7 +136,7 @@ class StrategyExecutorTest {
         OrderBook orderBook = getTestOrderBook();
         trade.setStrategyVariables("");
         Strategy strategy = Strategy.builder()
-                .script("return StrategyResult.of(1, 'details')")
+                .script("return null")
                 .build();
 
         // when
