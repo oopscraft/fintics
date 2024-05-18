@@ -78,7 +78,7 @@ public class TradesRestController {
                                 .assetId(tradeAssetRequest.getAssetId())
                                 .assetName(tradeAssetRequest.getAssetName())
                                 .enabled(tradeAssetRequest.isEnabled())
-                                .holdRatio(tradeAssetRequest.getHoldRatio())
+                                .holdingWeight(tradeAssetRequest.getHoldingWeight())
                                 .build())
                 .collect(Collectors.toList());
         trade.setTradeAssets(tradeAssets);
@@ -112,7 +112,7 @@ public class TradesRestController {
                                 .assetId(tradeAssetRequest.getAssetId())
                                 .assetName(tradeAssetRequest.getAssetName())
                                 .enabled(tradeAssetRequest.isEnabled())
-                                .holdRatio(tradeAssetRequest.getHoldRatio())
+                                .holdingWeight(tradeAssetRequest.getHoldingWeight())
                                 .build())
                 .collect(Collectors.toList());
         trade.setTradeAssets(tradeAssets);

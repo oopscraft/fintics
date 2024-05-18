@@ -98,7 +98,7 @@ class SimulateRunnableTest extends CoreTestSupport {
                 .assetId("122630")
                 .assetName("KODEX 레버리지")
                 .enabled(true)
-                .holdRatio(BigDecimal.valueOf(30))
+                .holdingWeight(BigDecimal.valueOf(30))
                 .build();
         trade.getTradeAssets().add(tradeAsset);
         Strategy strategy = Strategy.builder()

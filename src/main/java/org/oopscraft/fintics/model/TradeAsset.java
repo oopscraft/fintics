@@ -22,7 +22,7 @@ public class TradeAsset extends Asset {
 
     private boolean enabled;
 
-    private BigDecimal holdRatio;
+    private BigDecimal holdingWeight;
 
     public static TradeAsset from(TradeAssetEntity tradeAssetEntity) {
         TradeAsset tradeAsset = TradeAsset.builder()
@@ -30,7 +30,7 @@ public class TradeAsset extends Asset {
                 .assetId(tradeAssetEntity.getAssetId())
                 .sort(tradeAssetEntity.getSort())
                 .enabled(tradeAssetEntity.isEnabled())
-                .holdRatio(tradeAssetEntity.getHoldRatio())
+                .holdingWeight(tradeAssetEntity.getHoldingWeight())
                 .build();
         AssetEntity assetEntity = tradeAssetEntity.getAssetEntity();
         if(assetEntity != null) {

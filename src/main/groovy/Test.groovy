@@ -1,5 +1,6 @@
 import org.oopscraft.fintics.model.Ohlcv
 import org.oopscraft.fintics.model.StrategyResult
+import org.oopscraft.fintics.model.StrategyResult.Action
 import org.oopscraft.fintics.trade.Tools
 import org.oopscraft.fintics.indicator.*
 
@@ -182,7 +183,7 @@ log.info("analysis.volatility: {} {}", analysis.getVolatilityScore().getAverage(
 // buy
 if (analysis.getMomentumScore().getAverage() > 75) {
     // default
-    strategyResult = StrategyResult.of(1.0, "buy");
+    strategyResult = StrategyResult.of(Action.BUY, 1.0, "buy");
     // filter - volatility
     if (analysis.getVolatilityScore().getAverage() < 75) {
         strategyResult = null
@@ -191,7 +192,7 @@ if (analysis.getMomentumScore().getAverage() > 75) {
 // sell
 if (analysis.getMomentumScore().getAverage() < 25) {
     // default
-    strategyResult = StrategyResult.of(0.0, "sell")
+    strategyResult = StrategyResult.of(Action.SELL, 0.0, "sell")
     // filter - volatility
     if (analysis.getVolatilityScore().getAverage() < 75) {
         strategyResult = null

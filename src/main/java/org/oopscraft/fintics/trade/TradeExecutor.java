@@ -173,16 +173,9 @@ public class TradeExecutor {
                 }
 
                 //===============================================
-                // 1. null is no operation
+                // 0. holding weight is zero
                 //===============================================
-                if (strategyResult == null) {
-                    continue;
-                }
-
-                //===============================================
-                // 2. result or hold ratio is zero
-                //===============================================
-                if (strategyResult.getValue().compareTo(BigDecimal.ZERO) <= 0 || tradeAsset.getHoldRatio().compareTo(BigDecimal.ZERO) <= 0) {
+                if (tradeAsset.getHoldingWeight().compareTo(BigDecimal.ZERO) == 0) {
                     if (balanceAsset != null) {
                         BigDecimal price = calculateSellPrice(tradeAsset, orderBook, brokerClient);
                         BigDecimal quantity = balanceAsset.getOrderableQuantity();
@@ -192,43 +185,59 @@ public class TradeExecutor {
                 }
 
                 //===============================================
-                // 3. apply hold ratio
+                // 1. null is no operation
                 //===============================================
-                // calculate exceeded amount
-                BigDecimal totalAmount = balance.getTotalAmount();
-                BigDecimal holdRatio = tradeAsset.getHoldRatio();
-                BigDecimal holdRatioAmount = totalAmount
-                        .divide(BigDecimal.valueOf(100), MathContext.DECIMAL32)
-                        .multiply(holdRatio)
-                        .setScale(2, RoundingMode.HALF_UP);
-                BigDecimal holdConditionResultAmount = holdRatioAmount
-                        .multiply(strategyResult.getValue())
-                        .setScale(2, RoundingMode.HALF_UP);
-                BigDecimal balanceAssetAmount = balance.getBalanceAsset(tradeAsset.getAssetId())
-                        .map(BalanceAsset::getValuationAmount)
-                        .orElse(BigDecimal.ZERO);
-                BigDecimal exceededAmount = holdConditionResultAmount.subtract(balanceAssetAmount);
-
-                // buy (exceedAmount is over zero)
-                if (exceededAmount.compareTo(BigDecimal.ZERO) > 0) {
-                    BigDecimal buyPrice = calculateBuyPrice(tradeAsset, orderBook, brokerClient);
-                    BigDecimal buyQuantity = exceededAmount.divide(buyPrice, MathContext.DECIMAL32);
-                    // if over minimum order quantity
-                    if (brokerClient.isOverMinimumOrderAmount(buyQuantity, buyPrice)) {
-                        buyTradeAsset(brokerClient, trade, tradeAsset, buyQuantity, buyPrice, strategyResult);
-                    }
+                if (strategyResult == null) {
+                    continue;
                 }
 
-                // sell (exceedAmount is under zero)
-                if (exceededAmount.compareTo(BigDecimal.ZERO) < 0) {
-                    if (balanceAsset != null) {
+                //===============================================
+                // 2. apply holding weight
+                //===============================================
+                // defines
+                BigDecimal totalAmount = balance.getTotalAmount();
+                BigDecimal holdingWeight = tradeAsset.getHoldingWeight();
+                BigDecimal holdingWeightAmount = totalAmount
+                        .divide(BigDecimal.valueOf(100), MathContext.DECIMAL32)
+                        .multiply(holdingWeight)
+                        .setScale(2, RoundingMode.HALF_UP);
+
+                StrategyResult.Action action = strategyResult.getAction();
+                BigDecimal position = strategyResult.getPosition();
+                BigDecimal positionAmount = holdingWeightAmount
+                        .multiply(position)
+                        .setScale(2, RoundingMode.HALF_UP);
+
+                BigDecimal currentOwnedAmount = balance.getBalanceAsset(tradeAsset.getAssetId())
+                        .map(BalanceAsset::getValuationAmount)
+                        .orElse(BigDecimal.ZERO);
+
+                // buy
+                if (action == StrategyResult.Action.BUY) {
+                    BigDecimal buyAmount = positionAmount.subtract(currentOwnedAmount);
+                    if (buyAmount.compareTo(BigDecimal.ZERO) > 0) {
+                        BigDecimal buyPrice = calculateBuyPrice(tradeAsset, orderBook, brokerClient);
+                        BigDecimal buyQuantity = buyAmount.divide(buyPrice, MathContext.DECIMAL32);
+                        // if over minimum order amount
+                        if (brokerClient.isOverMinimumOrderAmount(buyQuantity, buyPrice)) {
+                            buyTradeAsset(brokerClient, trade, tradeAsset, buyQuantity, buyPrice, strategyResult);
+                        }
+                    }
+                    continue;
+                }
+
+                // sell
+                if (action == StrategyResult.Action.SELL) {
+                    BigDecimal sellAmount = currentOwnedAmount.subtract(positionAmount);
+                    if (sellAmount.compareTo(BigDecimal.ZERO) > 0) {
                         BigDecimal sellPrice = calculateSellPrice(tradeAsset, orderBook, brokerClient);
-                        BigDecimal sellQuantity = exceededAmount.abs().divide(sellPrice, MathContext.DECIMAL32);
-                        // if over minimum order quantity
+                        BigDecimal sellQuantity = sellAmount.divide(sellPrice, MathContext.DECIMAL32);
+                        // if over minimum order amount
                         if (brokerClient.isOverMinimumOrderAmount(sellQuantity, sellPrice)) {
                             sellTradeAsset(brokerClient, trade, tradeAsset, sellQuantity, sellPrice, strategyResult, balanceAsset);
                         }
                     }
+                    continue;
                 }
 
             } catch (Throwable e) {

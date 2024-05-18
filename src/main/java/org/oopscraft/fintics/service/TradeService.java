@@ -84,7 +84,7 @@ public class TradeService {
                                 .assetId(tradeAsset.getAssetId())
                                 .sort(sort.getAndIncrement())
                                 .enabled(tradeAsset.isEnabled())
-                                .holdRatio(tradeAsset.getHoldRatio())
+                                .holdingWeight(tradeAsset.getHoldingWeight())
                                 .build())
                 .collect(Collectors.toList());
         tradeEntity.getTradeAssets().addAll(tradeAssetEntities);

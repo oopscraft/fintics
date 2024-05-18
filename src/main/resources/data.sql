@@ -165,7 +165,7 @@ insert into `fintics_trade`
     ('06c228451ce0400fa57bb36f0568d7cb','한국투자증권 모의투자 - 지수ETF','N','60','3','09:00','15:30',
      'ca5f55cd88694715bcb4c478710d9a68','7c94187b346f4727a0f2478fdc53064f', null, null, 'LIMIT');
 insert into `fintics_trade_asset`
-    (`trade_id`,`asset_id`,`enabled`, `hold_ratio`)
+    (`trade_id`,`asset_id`,`enabled`, `holding_weight`)
 values
     ('06c228451ce0400fa57bb36f0568d7cb','KR.122630','N','50'),
     ('06c228451ce0400fa57bb36f0568d7cb','KR.229200','Y','50');
@@ -176,7 +176,7 @@ insert into `fintics_trade`
     ('7af6bc641eef4254b12dd9fa1d43384d','한국투자증권 모의투자 - 미국','N','60','3','10:30','06:00',
      '961eb9c68c9547ce9ae61bbe3be7f037','7c94187b346f4727a0f2478fdc53064f', null, null, 'LIMIT');
 insert into `fintics_trade_asset`
-    (`trade_id`,`asset_id`,`enabled`, `hold_ratio`)
+    (`trade_id`,`asset_id`,`enabled`, `holding_weight`)
 values
     ('7af6bc641eef4254b12dd9fa1d43384d','US.AAPL','N','40'),
     ('7af6bc641eef4254b12dd9fa1d43384d','US.SPY','Y','40');
@@ -187,7 +187,7 @@ insert into `fintics_trade`
     ('81c6a451d6da49449faa2b5b7e66041b','코인놀이방(24시간 테스트용)','N','30','3','00:00','23:59',
      'a135ee9a276f4edf81d6e1b6b9d31e39','7c94187b346f4727a0f2478fdc53064f', null, null, 'LIMIT');
 insert into `fintics_trade_asset`
-    (`trade_id`,`asset_id`,`enabled`, `hold_ratio`) values
+    (`trade_id`,`asset_id`,`enabled`, `holding_weight`) values
     ('81c6a451d6da49449faa2b5b7e66041b','UPBIT.KRW-BTC','N','20'),
     ('81c6a451d6da49449faa2b5b7e66041b','UPBIT.KRW-ETH','N','20');
 

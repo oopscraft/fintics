@@ -21,7 +21,7 @@ public class TradeAssetResponse extends AssetResponse {
 
     private boolean enabled;
 
-    private BigDecimal holdRatio;
+    private BigDecimal holdingWeight;
 
     public static TradeAssetResponse from(TradeAsset tradeAsset) {
         return TradeAssetResponse.builder()
@@ -30,7 +30,7 @@ public class TradeAssetResponse extends AssetResponse {
                 .assetName(tradeAsset.getAssetName())
                 .links(LinkResponse.from(tradeAsset.getLinks()))
                 .enabled(tradeAsset.isEnabled())
-                .holdRatio(tradeAsset.getHoldRatio())
+                .holdingWeight(tradeAsset.getHoldingWeight())
                 .exchange(tradeAsset.getExchange())
                 .type(tradeAsset.getType())
                 .marketCap(tradeAsset.getMarketCap())

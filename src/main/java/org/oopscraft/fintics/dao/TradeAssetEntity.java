@@ -4,8 +4,6 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.arch4j.core.data.BaseEntity;
 import org.oopscraft.arch4j.core.data.converter.BooleanToYNConverter;
-import org.oopscraft.arch4j.core.menu.dao.MenuEntity;
-import org.oopscraft.arch4j.core.role.dao.AuthorityEntity;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -41,8 +39,8 @@ public class TradeAssetEntity extends BaseEntity {
     @Convert(converter = BooleanToYNConverter.class)
     private boolean enabled;
 
-    @Column(name = "hold_ratio")
-    private BigDecimal holdRatio;
+    @Column(name = "holding_weight")
+    private BigDecimal holdingWeight;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "asset_id", insertable = false, updatable = false)

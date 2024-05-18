@@ -111,7 +111,7 @@
                     roe: asset.roe,
                     roa: asset.roa,
                     enabled: false,
-                    holdRatio: 0,
+                    holdingWeight: 0,
                     links: asset.links
                 });
             });
@@ -573,7 +573,7 @@
                                 <th data-th-text="#{fintics.Asset.roa}"></th>
                                 <th data-th-text="#{fintics.Asset.links}"></th>
                                 <th data-th-text="#{fintics.TradeAsset.enabled}"></th>
-                                <th data-th-text="#{fintics.TradeAsset.holdRatio}"></th>
+                                <th data-th-text="#{fintics.TradeAsset.holdingWeight}"></th>
                             </tr>
                             </thead>
                             <tbody>
@@ -632,7 +632,7 @@
                                 </td>
                                 <td>
                                     <label>
-                                        <input type="number" data-duice-bind="tradeAsset" data-duice-property="holdRatio" class="width--50"/>
+                                        <input type="number" data-duice-bind="tradeAsset" data-duice-property="holdingWeight" class="width--50"/>
                                         %
                                     </label>
                                 </td>

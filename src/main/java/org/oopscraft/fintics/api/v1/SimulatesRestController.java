@@ -79,7 +79,7 @@ public class SimulatesRestController {
                         .assetId(tradeAssetResponse.getAssetId())
                         .assetName(tradeAssetResponse.getAssetName())
                         .enabled(tradeAssetResponse.isEnabled())
-                        .holdRatio(tradeAssetResponse.getHoldRatio())
+                        .holdingWeight(tradeAssetResponse.getHoldingWeight())
                         .build())
                 .collect(Collectors.toList());
         trade.setTradeAssets(tradeAssets);

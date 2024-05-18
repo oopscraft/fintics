@@ -17,8 +17,8 @@ public class StrategyResultResponse {
 
     public static StrategyResultResponse from(StrategyResult strategyResult) {
         return StrategyResultResponse.builder()
-                .value(strategyResult.getValue())
-                .detail(strategyResult.getDetail())
+                .value(strategyResult.getPosition())
+                .detail(strategyResult.getDescription())
                 .build();
     }
 

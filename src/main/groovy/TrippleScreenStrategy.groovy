@@ -1,5 +1,6 @@
 import org.oopscraft.fintics.model.Ohlcv
 import org.oopscraft.fintics.model.StrategyResult
+import org.oopscraft.fintics.model.StrategyResult.Action
 import org.oopscraft.fintics.trade.Tools
 import org.oopscraft.fintics.indicator.*
 
@@ -201,7 +202,7 @@ def multiplier = tideAnalysis.getMomentumScore().getAverage()/100
 // buy
 if (analysis.getMomentumScore().getAverage() > 75) {
     // default
-    strategyResult = StrategyResult.of(1.0 * multiplier, "analysis.momentum: ${analysis.getMomentumScore()}")
+    strategyResult = StrategyResult.of(Action.BUY, 1.0 * multiplier, "analysis.momentum: ${analysis.getMomentumScore()}")
     // filter - volatility
     if (waveAnalysis.getVolatilityScore().getAverage() < 75) {
         strategyResult = null
@@ -214,7 +215,7 @@ if (analysis.getMomentumScore().getAverage() > 75) {
 // sell
 if (analysis.getMomentumScore().getAverage() < 25) {
     // default
-    strategyResult = StrategyResult.of(0.9 * multiplier, "analysis.momentum: ${analysis.getMomentumScore()}")
+    strategyResult = StrategyResult.of(Action.SELL, 0.9 * multiplier, "analysis.momentum: ${analysis.getMomentumScore()}")
     // filter - volatility
     if (waveAnalysis.getVolatilityScore().getAverage() < 75) {
         strategyResult = null
@@ -230,7 +231,7 @@ if (analysis.getMomentumScore().getAverage() < 25) {
 //================================
 // tide direction and momentum
 if (tideAnalysis.getMomentumScore().getAverage() < 50) {
-    strategyResult = StrategyResult.of(0.0, "tideAnalysis.momentum: ${tideAnalysis.getMomentumScore()}")
+    strategyResult = StrategyResult.of(Action.SELL, 0.0, "tideAnalysis.momentum: ${tideAnalysis.getMomentumScore()}")
 }
 
 //================================

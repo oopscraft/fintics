@@ -13,14 +13,22 @@ import java.math.BigDecimal;
 public class StrategyResult {
 
     @EqualsAndHashCode.Include
-    private BigDecimal value;
+    private Action action;
 
-    private String detail;
+    @EqualsAndHashCode.Include
+    private BigDecimal position;
 
-    public static StrategyResult of(BigDecimal value, String detail) {
+    private String description;
+
+    public enum Action {
+        BUY, SELL
+    }
+
+    public static StrategyResult of(Action action, BigDecimal position, String description) {
         return StrategyResult.builder()
-                .value(value)
-                .detail(detail)
+                .action(action)
+                .position(position)
+                .description(description)
                 .build();
     }
 
