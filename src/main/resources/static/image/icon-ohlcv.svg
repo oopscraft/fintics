@@ -1,6 +1,18 @@
-<?xml version="1.0" encoding="utf-8"?><!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
-<svg width="800px" height="800px" viewBox="0 0 48 48" version="1" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 48 48">
-    <path fill="#90CAF9" d="M39,16v7h-6v-7h-2v7h-6v-7h-2v7h-7v2h7v6h-7v2h7v6h-7v2h25V16H39z M39,25v6h-6v-6H39z M25,25h6v6h-6V25z M25,33h6v6h-6V33z M33,39v-6h6v6H33z"/>
-    <polygon fill="#00BCD4" points="40,8 8,8 8,40 16,40 16,16 40,16"/>
-    <path fill="#0097A7" d="M7,7v34h10V17h24V7H7z M9,23v-6h6v6H9z M15,25v6H9v-6H15z M17,9h6v6h-6V9z M25,9h6v6h-6V9z M15,9v6H9V9H15z M9,39v-6h6v6H9z M39,15h-6V9h6V15z"/>
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+<svg height="800px" width="800px" version="1.1" id="_x32_" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
+	 viewBox="0 0 512 512"  xml:space="preserve">
+<style type="text/css">
+	.st0{fill:#000000;}
+</style>
+<g>
+	<polygon class="st0" points="495.426,455.094 56.902,455.094 56.902,16.57 56.902,0 0,0 0,16.57 0,455.094 0,495.422 0,512 
+		16.574,512 56.902,512 495.426,512 512,512 512,455.094 	"/>
+	<polygon class="st0" points="178,401.391 210,401.391 210,364.058 272.668,364.058 272.668,153.391 210,153.391 210,76.058 
+		178,76.058 178,153.391 115.334,153.391 115.334,364.058 178,364.058 	"/>
+	<path class="st0" d="M378.346,337.391h32v-49.332h74.668V90.726h-74.668V33.391h-32v57.336h-74.668v197.332h74.668V337.391z
+		 M343.678,248.058V130.726h101.336v117.332H343.678z"/>
+</g>
 </svg>

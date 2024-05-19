@@ -1,10 +1,9 @@
-package org.oopscraft.fintics.client.indice.yahoo;
+package org.oopscraft.fintics.client.indice.simple;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
 import org.oopscraft.fintics.client.indice.IndiceClient;
@@ -28,13 +27,13 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Component
-@ConditionalOnProperty(prefix = "fintics", name = "indice-client.class-name", havingValue="org.oopscraft.fintics.client.indice.yahoo.YahooIndiceClient")
+@ConditionalOnProperty(prefix = "fintics", name = "indice-client.class-name", havingValue="org.oopscraft.fintics.client.indice.simple.SimpleIndiceClient")
 @Slf4j
-public class YahooIndiceClient extends IndiceClient {
+public class SimpleIndiceClient extends IndiceClient {
 
     private final ObjectMapper objectMapper;
 
-    protected YahooIndiceClient(IndiceClientProperties indiceClientProperties, ObjectMapper objectMapper) {
+    protected SimpleIndiceClient(IndiceClientProperties indiceClientProperties, ObjectMapper objectMapper) {
         super(indiceClientProperties);
         this.objectMapper = objectMapper;
     }

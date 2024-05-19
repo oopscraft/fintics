@@ -1,10 +1,9 @@
-package org.oopscraft.fintics.client.ohlcv.yahoo;
+package org.oopscraft.fintics.client.ohlcv.simple;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
 import org.oopscraft.fintics.client.ohlcv.OhlcvClient;
@@ -13,7 +12,6 @@ import org.oopscraft.fintics.model.Asset;
 import org.oopscraft.fintics.model.Indice;
 import org.oopscraft.fintics.model.Ohlcv;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
@@ -31,13 +29,13 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
-@ConditionalOnProperty(prefix = "fintics", name = "ohlcv-client.class-name", havingValue="org.oopscraft.fintics.client.ohlcv.yahoo.YahooOhlcvClient")
+@ConditionalOnProperty(prefix = "fintics", name = "ohlcv-client.class-name", havingValue="org.oopscraft.fintics.client.ohlcv.simple.SimpleOhlcvClient")
 @Slf4j
-public class YahooOhlcvClient extends OhlcvClient {
+public class SimpleOhlcvClient extends OhlcvClient {
 
     private final ObjectMapper objectMapper;
 
-    public YahooOhlcvClient(OhlcvClientProperties ohlcvClientProperties, ObjectMapper objectMapper) {
+    public SimpleOhlcvClient(OhlcvClientProperties ohlcvClientProperties, ObjectMapper objectMapper) {
         super(ohlcvClientProperties);
         this.objectMapper = objectMapper;
     }

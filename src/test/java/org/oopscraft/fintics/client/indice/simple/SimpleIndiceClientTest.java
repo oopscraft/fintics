@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.client.indice.yahoo;
+package org.oopscraft.fintics.client.indice.simple;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 import org.oopscraft.arch4j.core.support.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
 import org.oopscraft.fintics.client.indice.IndiceClientProperties;
-import org.oopscraft.fintics.client.indice.yahoo.YahooIndiceClient;
 import org.oopscraft.fintics.model.Indice;
 import org.oopscraft.fintics.model.Ohlcv;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,14 +18,14 @@ import java.util.List;
 @SpringBootTest(classes = FinticsConfiguration.class)
 @RequiredArgsConstructor
 @Slf4j
-class YahooIndiceClientTest extends CoreTestSupport {
+class SimpleIndiceClientTest extends CoreTestSupport {
 
     private final IndiceClientProperties indiceClientProperties;
 
     private final ObjectMapper objectMapper;
 
-    YahooIndiceClient getYahooIndiceClient() {
-        return new YahooIndiceClient(indiceClientProperties, objectMapper);
+    SimpleIndiceClient getYahooIndiceClient() {
+        return new SimpleIndiceClient(indiceClientProperties, objectMapper);
     }
 
     @Disabled
@@ -34,7 +33,7 @@ class YahooIndiceClientTest extends CoreTestSupport {
     void getMinuteOhlcvs() {
         // given
         // when
-        YahooIndiceClient indiceClient = getYahooIndiceClient();
+        SimpleIndiceClient indiceClient = getYahooIndiceClient();
         for(Indice.Id indiceId : Indice.Id.values()) {
             log.info("====== indice[{}] =====", indiceId);
             List<Ohlcv> ohlcvs = indiceClient.getMinuteOhlcvs(indiceId, LocalDateTime.now());
@@ -48,7 +47,7 @@ class YahooIndiceClientTest extends CoreTestSupport {
     void getDailyOhlcvs() {
         // given
         // when
-        YahooIndiceClient indiceClient = getYahooIndiceClient();
+        SimpleIndiceClient indiceClient = getYahooIndiceClient();
         for(Indice.Id indiceId : Indice.Id.values()) {
             log.info("====== indice[{}] =====", indiceId);
             List<Ohlcv> ohlcvs = indiceClient.getDailyOhlcvs(indiceId, LocalDateTime.now());

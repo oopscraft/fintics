@@ -145,4 +145,20 @@ public class DataService {
                 .collect(Collectors.toList());
     }
 
+    public List<NewsSummary> getAssetNewsSummaries() {
+        return dataMapper.selectAssetNewsSummaries().stream()
+                .peek(it -> it.setName(assetService.getAsset(it.getId())
+                        .map(Asset::getAssetName)
+                        .orElse(null)))
+                .toList();
+    }
+
+    public List<NewsSummary> getIndiceNewsSummaries() {
+        return dataMapper.selectIndiceNewsSummaries().stream()
+                .peek(it-> it.setName(indiceService.getIndice(it.getId())
+                        .map(Indice::getIndiceName)
+                        .orElse(null)))
+                .toList();
+    }
+
 }

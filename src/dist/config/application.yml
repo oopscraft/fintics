@@ -52,3 +52,4 @@ web:
 fintics:
   system-alarm-id: fintics
   ohlcv-retention-months: 12
+  news-retention-months: 12

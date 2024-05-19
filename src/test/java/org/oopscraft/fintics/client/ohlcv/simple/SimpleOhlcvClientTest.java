@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.client.ohlcv.yahoo;
+package org.oopscraft.fintics.client.ohlcv.simple;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -9,7 +9,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.oopscraft.arch4j.core.support.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
 import org.oopscraft.fintics.client.ohlcv.OhlcvClientProperties;
-import org.oopscraft.fintics.client.ohlcv.yahoo.YahooOhlcvClient;
 import org.oopscraft.fintics.dao.AssetEntity;
 import org.oopscraft.fintics.model.Asset;
 import org.oopscraft.fintics.model.Indice;
@@ -26,14 +25,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @SpringBootTest(classes = FinticsConfiguration.class)
 @RequiredArgsConstructor
 @Slf4j
-class YahooOhlcvClientTest extends CoreTestSupport {
+class SimpleOhlcvClientTest extends CoreTestSupport {
 
     private final OhlcvClientProperties ohlcvClientProperties;
 
     private final ObjectMapper objectMapper;
 
-    YahooOhlcvClient getYahooOhlcvClient() {
-        return new YahooOhlcvClient(ohlcvClientProperties, objectMapper);
+    SimpleOhlcvClient getSimpleOhlcvClient() {
+        return new SimpleOhlcvClient(ohlcvClientProperties, objectMapper);
     }
 
     void saveAsset(Asset asset) {
@@ -67,7 +66,7 @@ class YahooOhlcvClientTest extends CoreTestSupport {
                 .build();
         saveAsset(asset);
         // when
-        boolean supported = getYahooOhlcvClient().isSupported(asset);
+        boolean supported = getSimpleOhlcvClient().isSupported(asset);
         // then
         assertEquals(expected, supported);
     }
@@ -94,7 +93,7 @@ class YahooOhlcvClientTest extends CoreTestSupport {
         LocalDateTime dateTimeTo = LocalDateTime.now();
 
         // when
-        List<Ohlcv> ohlcvs = getYahooOhlcvClient().getAssetOhlcvs(asset, Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo);
+        List<Ohlcv> ohlcvs = getSimpleOhlcvClient().getAssetOhlcvs(asset, Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo);
 
         // then
         log.debug("ohlcvs.size():{}", ohlcvs.size());
@@ -118,7 +117,7 @@ class YahooOhlcvClientTest extends CoreTestSupport {
         LocalDateTime dateTimeTo = LocalDateTime.now().minusDays(15);
 
         // when
-        List<Ohlcv> ohlcvs = getYahooOhlcvClient().getAssetOhlcvs(asset, Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo);
+        List<Ohlcv> ohlcvs = getSimpleOhlcvClient().getAssetOhlcvs(asset, Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo);
 
         // then
         log.debug("ohlcvs.size():{}", ohlcvs.size());
@@ -142,7 +141,7 @@ class YahooOhlcvClientTest extends CoreTestSupport {
         LocalDateTime dateTimeTo = LocalDateTime.now().minusDays(30);
 
         // when
-        List<Ohlcv> ohlcvs = getYahooOhlcvClient().getAssetOhlcvs(asset, Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo);
+        List<Ohlcv> ohlcvs = getSimpleOhlcvClient().getAssetOhlcvs(asset, Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo);
 
         // then
         log.debug("ohlcvs.size():{}", ohlcvs.size());
@@ -162,7 +161,7 @@ class YahooOhlcvClientTest extends CoreTestSupport {
         LocalDateTime dateTimeTo = LocalDateTime.now();
 
         // when
-        List<Ohlcv> ohlcvs = getYahooOhlcvClient().getAssetOhlcvs(asset, Ohlcv.Type.DAILY, dateTimeFrom, dateTimeTo);
+        List<Ohlcv> ohlcvs = getSimpleOhlcvClient().getAssetOhlcvs(asset, Ohlcv.Type.DAILY, dateTimeFrom, dateTimeTo);
 
         // then
         log.debug("ohlcvs.size():{}", ohlcvs.size());
@@ -182,7 +181,7 @@ class YahooOhlcvClientTest extends CoreTestSupport {
         LocalDateTime dateTimeTo = LocalDateTime.now().minusMonths(6);
 
         // when
-        List<Ohlcv> ohlcvs = getYahooOhlcvClient().getAssetOhlcvs(asset, Ohlcv.Type.DAILY, dateTimeFrom, dateTimeTo);
+        List<Ohlcv> ohlcvs = getSimpleOhlcvClient().getAssetOhlcvs(asset, Ohlcv.Type.DAILY, dateTimeFrom, dateTimeTo);
 
         // then
         log.debug("ohlcvs.size():{}", ohlcvs.size());
@@ -202,7 +201,7 @@ class YahooOhlcvClientTest extends CoreTestSupport {
         LocalDateTime dateTimeTo = LocalDateTime.now().minusYears(1);
 
         // when
-        List<Ohlcv> ohlcvs = getYahooOhlcvClient().getAssetOhlcvs(asset, Ohlcv.Type.DAILY, dateTimeFrom, dateTimeTo);
+        List<Ohlcv> ohlcvs = getSimpleOhlcvClient().getAssetOhlcvs(asset, Ohlcv.Type.DAILY, dateTimeFrom, dateTimeTo);
 
         // then
         log.debug("ohlcvs.size():{}", ohlcvs.size());
@@ -225,7 +224,7 @@ class YahooOhlcvClientTest extends CoreTestSupport {
         LocalDateTime dateTimeTo = LocalDateTime.now();
 
         // when
-        List<Ohlcv> ohlcvs = getYahooOhlcvClient().getIndiceOhlcvs(indice, Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo);
+        List<Ohlcv> ohlcvs = getSimpleOhlcvClient().getIndiceOhlcvs(indice, Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo);
 
         // then
         log.debug("ohlcvs.size():{}", ohlcvs.size());

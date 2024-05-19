@@ -28,6 +28,13 @@
             ohlcvStatistics: []
         });
 
+        // asset news
+        const assetNewsSummaries = new duice.ArrayProxy([]);
+
+        // indice news
+        const indiceNewsSummaries = new duice.ArrayProxy([]);
+
+
         function getAssets(page) {
             assetSearch._page = page || 0;
             let url = new URL(`${_apiUrl}/v1/data/assets`, document.location.origin);
@@ -75,29 +82,6 @@
             ohlcvsDialog.open('asset', id, date);
         }
 
-        async function interpolateCheckedAssetOhlcvs() {
-            let checkedItems = assetOhlcvSummary.ohlcvStatistics.filter(item => item._checked);
-            for (let item of checkedItems) {
-                console.log(item);
-                let url = new URL(`${_apiUrl}/v1/data/interpolate-asset-ohlcvs`, document.location.origin);
-                await _fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        assetId: assetOhlcvSummary.assetId,
-                        type: 'MINUTE',
-                        dateTimeFrom: dateFns.startOfDay(new Date(item.date)).toISOString(),
-                        dateTimeTo: dateFns.endOfDay(new Date(item.date)).toISOString()
-                    })
-                }).then(response => {
-                    console.log(response);
-                });
-            }
-            getAssetOhlcvSummary(assetOhlcvSummary.assetId);
-        }
-
         function getIndiceOhlcvSummaries() {
             let url = new URL(`${_apiUrl}/v1/data/indice-ohlcv-summaries`, document.location.origin);
             _fetch(url)
@@ -120,6 +104,22 @@
             ohlcvsDialog.open('indice', id, date);
         }
 
+        function getAssetNewsSummaries() {
+            let url = new URL(`${_apiUrl}/v1/data/asset-news-summaries`, document.location.origin);
+            _fetch(url).then(response => response.json())
+            .then(responseBody => {
+                duice.ArrayProxy.assign(assetNewsSummaries, responseBody);
+            });
+        }
+
+        function getIndiceNewsSummaries() {
+            let url = new URL(`${_apiUrl}/v1/data/indice-news-summaries`, document.location.origin);
+            _fetch(url).then(response => response.json())
+            .then(responseBody => {
+                duice.ArrayProxy.assign(indiceNewsSummaries, responseBody);
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             let tabFolder = duice.tabFolder(
                 duice.tabItem(
@@ -139,6 +139,18 @@
                     document.getElementById('indiceOhlcvTabContent'),
                     () => {
                         getIndiceOhlcvSummaries();
+                    }),
+                duice.tabItem(
+                    document.getElementById('assetNewsTabButton'),
+                    document.getElementById('assetNewsTabContent'),
+                    () => {
+                        getAssetNewsSummaries();
+                    }),
+                duice.tabItem(
+                    document.getElementById('indiceNewsTabButton'),
+                    document.getElementById('indiceNewsTabContent'),
+                    () => {
+                        getIndiceNewsSummaries();
                     })
             );
             tabFolder.setActive(0);
@@ -168,11 +180,19 @@
         </button>
         <button id="assetOhlcvTabButton" type="button" class="tab">
             <img class="icon" th:src="@{/static/image/icon-ohlcv.svg}" alt="asset-ohlcv"/>
-            <span data-th-text="#{fintics.AssetOhlcv}"></span>
+            <span data-th-text="|#{fintics.Asset} #{fintics.Ohlcv}|"></span>
         </button>
         <button id="indiceOhlcvTabButton" type="button" class="tab">
             <img class="icon" th:src="@{/static/image/icon-ohlcv.svg}" alt="indice-ohlcv"/>
-            <span data-th-text="#{fintics.IndiceOhlcv}"></span>
+            <span data-th-text="|#{fintics.Indice} #{fintics.Ohlcv}|"></span>
+        </button>
+        <button id="assetNewsTabButton" type="button" class="tab">
+            <img class="icon" th:src="@{/static/image/icon-news.svg}" alt="asset-news"/>
+            <span data-th-text="|#{fintics.Asset} #{fintics.News}|"></span>
+        </button>
+        <button id="indiceNewsTabButton" type="button" class="tab">
+            <img class="icon" th:src="@{/static/image/icon-news.svg}" alt="indice-news"/>
+            <span data-th-text="|#{fintics.Indice} #{fintics.News}|"></span>
         </button>
     </div>
     <!-- ====================================== -->
@@ -431,6 +451,32 @@
     </div>
     <!-- ====================================== -->
     <!-- end: indiceOhlcv                       -->
+    <!-- ====================================== -->
+
+    <!-- ====================================== -->
+    <!-- start: asseNews                        -->
+    <!-- ====================================== -->
+    <div id="assetNewsTabContent" class="border--1 padding--1em">
+        <h2>
+            <img class="icon" th:src="@{/static/image/icon-news.svg}" alt="news"/>
+            <span data-th-text="#{fintics.News}"></span>
+        </h2>
+    </div>
+    <!-- ====================================== -->
+    <!-- start: asseNews                        -->
+    <!-- ====================================== -->
+
+    <!-- ====================================== -->
+    <!-- start: indiceNews                      -->
+    <!-- ====================================== -->
+    <div id="indiceNewsTabContent" class="border--1 padding--1em">
+        <h2>
+            <img class="icon" th:src="@{/static/image/icon-news.svg}" alt="news"/>
+            <span data-th-text="#{fintics.News}"></span>
+        </h2>
+    </div>
+    <!-- ====================================== -->
+    <!-- start: indiceNews                      -->
     <!-- ====================================== -->
 
     <!-- ====================================== -->

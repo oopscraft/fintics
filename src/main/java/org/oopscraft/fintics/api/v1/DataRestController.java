@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/data")
@@ -156,6 +157,22 @@ public class DataRestController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_RANGE, PageableUtils.toContentRange("indice-ohlcvs", pageable))
                 .body(indiceOhlcvResponses);
+    }
+
+    @GetMapping("asset-news-summaries")
+    public ResponseEntity<List<NewsSummaryResponse>> getAssetNewsSummaries() {
+        List<NewsSummaryResponse> assetNewsSummaryResponses = dataService.getAssetNewsSummaries().stream()
+                .map(NewsSummaryResponse::from)
+                .toList();
+        return ResponseEntity.ok(assetNewsSummaryResponses);
+    }
+
+    @GetMapping("indice-news-summaries")
+    public ResponseEntity<List<NewsSummaryResponse>> getIndiceNewsSummaries() {
+        List<NewsSummaryResponse> indiceNewsSummaryResponses = dataService.getIndiceNewsSummaries().stream()
+                .map(NewsSummaryResponse::from)
+                .toList();
+        return ResponseEntity.ok(indiceNewsSummaryResponses);
     }
 
 }

@@ -59,5 +59,25 @@
         ORDER BY    DATE(date_time) DESC
     </select>
 
+    <select id="selectAssetNewsSummaries" resultType="org.oopscraft.fintics.model.NewsSummary">
+        SELECT 	    asset_id AS "id",
+                    COUNT(*) AS "totalCount",
+                    MIN(date_time) AS "minDateTime",
+                    MAX(date_time) AS "maxDateTime"
+        FROM 		fintics_asset_news fan
+        WHERE       1 = 1
+        GROUP BY 	asset_id
+    </select>
+
+    <select id="selectIndiceNewsSummaries" resultType="org.oopscraft.fintics.model.NewsSummary">
+        SELECT 	    indice_id AS "id",
+                    COUNT(*) AS "totalCount",
+                    MIN(date_time) AS "minDateTime",
+                    MAX(date_time) AS "maxDateTime"
+        FROM 		fintics_indice_news fin
+        WHERE       1 = 1
+        GROUP BY 	indice_id
+    </select>
+
 
 </mapper>
