@@ -25,9 +25,13 @@ public class StrategyExecutor {
 
     private final LocalDateTime dateTime;
 
+    private final TradeAsset tradeAsset;
+
     private final OrderBook orderBook;
 
     private final Balance balance;
+
+    private final BalanceAsset balanceAsset;
 
     private final Map<String, IndiceProfile> indiceProfiles;
 
@@ -36,12 +40,14 @@ public class StrategyExecutor {
     private Logger log = (Logger) LoggerFactory.getLogger(this.getClass());
 
     @Builder
-    protected StrategyExecutor(Strategy strategy, String variables, LocalDateTime dateTime, OrderBook orderBook, Balance balance, List<IndiceProfile> indiceProfiles, AssetProfile assetProfile) {
+    protected StrategyExecutor(Strategy strategy, String variables, LocalDateTime dateTime, TradeAsset tradeAsset, OrderBook orderBook, Balance balance, BalanceAsset balanceAsset, List<IndiceProfile> indiceProfiles, AssetProfile assetProfile) {
         this.strategy = strategy;
         this.variables = variables;
         this.dateTime = dateTime;
+        this.tradeAsset = tradeAsset;
         this.orderBook = orderBook;
         this.balance = balance;
+        this.balanceAsset = balanceAsset;
         this.indiceProfiles = indiceProfiles.stream()
                 .collect(Collectors.toMap(indiceProfile -> indiceProfile.getTarget().getIndiceId().name(), indiceProfile -> indiceProfile));
         this.assetProfile = assetProfile;
@@ -58,8 +64,10 @@ public class StrategyExecutor {
         binding.setVariable("variables", loadRuleConfigAsProperties(variables));
         binding.setVariable("log", log);
         binding.setVariable("dateTime", dateTime);
+        binding.setVariable("tradeAsset", tradeAsset);
         binding.setVariable("orderBook", orderBook);
         binding.setVariable("balance", balance);
+        binding.setVariable("balanceAsset", balanceAsset);
         binding.setVariable("indiceProfiles", indiceProfiles);
         binding.setVariable("assetProfile", assetProfile);
         GroovyShell groovyShell = new GroovyShell(groovyClassLoader, binding);

@@ -220,7 +220,7 @@ if (analysis.getMomentumScore().getAverage() > 75) {
 // sell
 if (analysis.getMomentumScore().getAverage() < 25) {
     // default
-    strategyResult = StrategyResult.of(Action.SELL, 0.9 * multiplier, "analysis.momentum: ${analysis.getMomentumScore()}")
+    strategyResult = StrategyResult.of(Action.SELL, 0.5 * multiplier, "analysis.momentum: ${analysis.getMomentumScore()}")
     // filter - volatility
     if (waveAnalysis.getVolatilityScore().getAverage() < 75) {
         strategyResult = null
@@ -229,13 +229,17 @@ if (analysis.getMomentumScore().getAverage() < 25) {
     if (waveAnalysis.getUnderestimateScore().getAverage() > 75) {
         strategyResult = null
     }
+    // filter - force to hold if not profit
+    if (balanceAsset != null && balanceAsset.getProfitPercentage() < 1.0) {
+        strategyResult = null
+    }
 }
 
 //================================
 // fallback
 //================================
 // tide direction and momentum
-if (tideAnalysis.getMomentumScore().getAverage() < 50) {
+if (tideAnalysis.getMomentumScore().getAverage() <= 50) {
     strategyResult = StrategyResult.of(Action.SELL, 0.0, "tideAnalysis.momentum: ${tideAnalysis.getMomentumScore()}")
 }
 

@@ -145,8 +145,10 @@ public class TradeExecutor {
                         .strategy(strategy)
                         .variables(trade.getStrategyVariables())
                         .dateTime(dateTime)
+                        .tradeAsset(tradeAsset)
                         .orderBook(orderBook)
                         .balance(balance)
+                        .balanceAsset(balanceAsset)
                         .build();
                 strategyExecutor.setLog(log);
                 Instant startTime = Instant.now();

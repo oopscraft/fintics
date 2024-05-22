@@ -97,6 +97,11 @@ class Analysis implements Analyzable {
         // chaikin oscillator
         score.chaikinOscillatorValueOverSignal = chaikinOscillator.value > chaikinOscillator.signal ? 100 : 0
         score.chaikinOscillatorValue = chaikinOscillator.value > 0 ? 100 : 0
+        // stochastic slow
+        score.stochasticSlowKOverD = stochasticSlow.slowK > stochasticSlow.slowD ? 100 : 0
+        score.stochasticSlowK = stochasticSlow.slowK > 50 ? 100 : 0
+        // bollinger band
+        score.bollinerBandPriceOverMiddle = ohlcv.closePrice > bollingerBand.middle ? 100 : 0
         // return
         return score
     }
@@ -166,38 +171,80 @@ class Analysis implements Analyzable {
 //================================
 // define
 //================================
+// config
+log.info("variables: {}", variables)
+def waveOhlcvType = variables['waveOhlcvType'] as Ohlcv.Type
+def waveOhlcvPeriod = variables['waveOhlcvPeriod'] as Integer
+def tideOhlcvType = variables['tideOhlcvType'] as Ohlcv.Type
+def tideOhlcvPeriod = variables['tideOhlcvPeriod'] as Integer
+
 // default
 StrategyResult strategyResult = null
 List<Ohlcv> ohlcvs = assetProfile.getOhlcvs(Ohlcv.Type.MINUTE, 1)
 
-// analysis
+// ripple
 def analysis = new Analysis(ohlcvs)
+
+// wave
+def waveAnalysis = new Analysis(assetProfile.getOhlcvs(waveOhlcvType, waveOhlcvPeriod))
+
+//// tide
+//def tideAnalysis = new Analysis(assetProfile.getOhlcvs(tideOhlcvType, tideOhlcvPeriod))
 
 // logging
 log.info("analysis.momentum: {} {}", analysis.getMomentumScore().getAverage(), analysis.getMomentumScore());
-log.info("analysis.volatility: {} {}", analysis.getVolatilityScore().getAverage(), analysis.getVolatilityScore())
+log.info("waveAnalysis.volatility: {} {}", waveAnalysis.getVolatilityScore().getAverage(), waveAnalysis.getVolatilityScore())
+log.info("waveAnalysis.underestimate: {} {}", waveAnalysis.getUnderestimateScore().getAverage(), waveAnalysis.getUnderestimateScore())
+log.info("waveAnalysis.overestimate: {} {}", waveAnalysis.getOverestimateScore().getAverage(), waveAnalysis.getOverestimateScore())
+//log.info("tideAnalysis.momentum: {} {}", tideAnalysis.getMomentumScore().getAverage(), tideAnalysis.getMomentumScore())
 
 //================================
 // trade
 //================================
+// multiplier
+//def multiplier = tideAnalysis.getMomentumScore().getAverage()/100
+
 // buy
 if (analysis.getMomentumScore().getAverage() > 75) {
     // default
-    strategyResult = StrategyResult.of(Action.BUY, 1.0, "buy");
-    // filter - volatility
-    if (analysis.getVolatilityScore().getAverage() < 75) {
+    strategyResult = StrategyResult.of(Action.BUY, 1.0, "analysis.momentum: ${analysis.getMomentumScore()}")
+//    // filter - volatility
+//    if (waveAnalysis.getVolatilityScore().getAverage() < 75) {
+//        strategyResult = null
+//    }
+    // filter - overestimate
+    if (waveAnalysis.getOverestimateScore().getAverage() > 75) {
         strategyResult = null
     }
 }
 // sell
 if (analysis.getMomentumScore().getAverage() < 25) {
     // default
-    strategyResult = StrategyResult.of(Action.SELL, 0.0, "sell")
-    // filter - volatility
-    if (analysis.getVolatilityScore().getAverage() < 75) {
+    strategyResult = StrategyResult.of(Action.SELL, 0.0, "analysis.momentum: ${analysis.getMomentumScore()}")
+
+    if (balanceAsset != null) {
+        if (balanceAsset.getProfitPercentage() < 1.0) {
+            strategyResult = null;
+        }
+    }
+
+//    // filter - volatility
+//    if (waveAnalysis.getVolatilityScore().getAverage() < 75) {
+//        strategyResult = null
+//    }
+    // filter - underestimate
+    if (waveAnalysis.getUnderestimateScore().getAverage() > 75) {
         strategyResult = null
     }
 }
+
+//================================
+// fallback
+//================================
+// tide direction and momentum
+//if (tideAnalysis.getMomentumScore().getAverage() < 50) {
+//    strategyResult = StrategyResult.of(Action.SELL, 0.0, "tideAnalysis.momentum: ${tideAnalysis.getMomentumScore()}")
+//}
 
 //================================
 // return

@@ -167,8 +167,8 @@ insert into `fintics_trade`
 insert into `fintics_trade_asset`
     (`trade_id`,`asset_id`,`enabled`, `holding_weight`)
 values
-    ('06c228451ce0400fa57bb36f0568d7cb','KR.122630','N','50'),
-    ('06c228451ce0400fa57bb36f0568d7cb','KR.229200','Y','50');
+    ('06c228451ce0400fa57bb36f0568d7cb','KR.122630','Y','50'),
+    ('06c228451ce0400fa57bb36f0568d7cb','KR.229200','N','50');
 
 -- fintics_trade: 한국투자증권 모의투자 - 미국
 insert into `fintics_trade`
