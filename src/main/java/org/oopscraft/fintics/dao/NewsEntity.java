@@ -28,7 +28,7 @@ public class NewsEntity extends BaseEntity {
     @Column(name = "news_id", length = 32)
     private String newsId;
 
-    @Column(name = "new_url")
+    @Column(name = "news_url")
     @Lob
     private String newsUrl;
 
