@@ -46,7 +46,14 @@ public class SimpleNewsClient extends NewsClient {
 
     @Override
     public List<News> getAssetNewses(Asset asset) {
-        String keyword = asset.getSymbol() + "+" + asset.getAssetName().split("\\s+")[0];
+        // keyword
+        String keyword = null;
+        switch (asset.getMarket()) {
+            case "US" -> keyword = asset.getSymbol() + "+" + asset.getAssetName().split("\\s+")[0];
+            case "KR" -> keyword = asset.getAssetName();
+            default -> keyword = asset.getAssetName();
+        }
+        // locale
         Locale locale = parseLocale(asset);
         return getNewses(keyword, locale);
     }
@@ -57,7 +64,7 @@ public class SimpleNewsClient extends NewsClient {
         return getNewses(indice.getIndiceName(), locale);
     }
 
-    private Locale parseLocale(Asset asset) {
+    Locale parseLocale(Asset asset) {
         String market = Optional.ofNullable(asset.getMarket()).orElse("US");
         return switch (market) {
             case "KR" -> new Locale("ko", "KR");
@@ -71,7 +78,7 @@ public class SimpleNewsClient extends NewsClient {
                     .insecure(true)
                     .build();
             String url = "https://news.google.com/search";
-            String query = String.format("intitle:%s+when:1d", keyword);
+            String query = String.format("intitle:%s+when:1h", keyword);
             url = UriComponentsBuilder.fromUriString(url)
                     .queryParam("q", query)
                     .queryParam("hl", String.format("%s-%s", locale.getLanguage(), locale.getCountry()))  // en-US
@@ -87,7 +94,7 @@ public class SimpleNewsClient extends NewsClient {
             String responseBody = responseEntity.getBody();
             Document doc = Jsoup.parse(responseBody);
 
-
+            // find article elements
             Elements articleElements = doc.getElementsByTag("article");
             List<News> newses = new ArrayList<>();
             for (Element articleElement : articleElements) {

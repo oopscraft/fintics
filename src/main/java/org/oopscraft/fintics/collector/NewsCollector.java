@@ -101,7 +101,7 @@ public class NewsCollector extends AbstractCollector {
     }
 
     void collectAssetNews(Asset asset) {
-        List<News> assetNewses = newsClient.getAssetNewses(asset);
+        List<News> assetNewses = distinctNewsesByTitle(newsClient.getAssetNewses(asset));
         for (News assetNews : assetNewses) {
             try {
                 String newsId = IdGenerator.md5(assetNews.getNewsUrl());
@@ -136,7 +136,7 @@ public class NewsCollector extends AbstractCollector {
     }
 
     void collectIndiceNews(Indice indice) {
-        List<News> indiceNewses = newsClient.getIndiceNewses(indice);
+        List<News> indiceNewses = distinctNewsesByTitle(newsClient.getIndiceNewses(indice));
         for (News indiceNews : indiceNewses) {
             try {
                 String newsId = IdGenerator.md5(indiceNews.getNewsUrl());
@@ -168,6 +168,16 @@ public class NewsCollector extends AbstractCollector {
                 log.warn(e.getMessage());
             }
         }
+    }
+
+    List<News> distinctNewsesByTitle(List<News> newses) {
+        return new ArrayList<>(newses.stream()
+                .collect(Collectors.toMap(
+                        News::getTitle, // key
+                        news -> news,   // value
+                        (existing, replacement) -> existing // check existing
+                ))
+                .values());
     }
 
     void analysisNews(NewsEntity newsEntity) {
