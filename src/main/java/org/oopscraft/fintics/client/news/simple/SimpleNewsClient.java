@@ -6,8 +6,10 @@ import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.sentiment.SentimentCoreAnnotations;
 import edu.stanford.nlp.util.CoreMap;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.parser.Parser;
 import org.jsoup.select.Elements;
 import org.oopscraft.arch4j.core.data.IdGenerator;
@@ -44,8 +46,9 @@ public class SimpleNewsClient extends NewsClient {
 
     @Override
     public List<News> getAssetNewses(Asset asset) {
+        String keyword = asset.getSymbol() + "+" + asset.getAssetName().split("\\s+")[0];
         Locale locale = parseLocale(asset);
-        return getNewses(asset.getAssetName(), locale);
+        return getNewses(keyword, locale);
     }
 
     @Override
@@ -67,8 +70,8 @@ public class SimpleNewsClient extends NewsClient {
             RestTemplate restTemplate = RestTemplateBuilder.create()
                     .insecure(true)
                     .build();
-            String url = "https://news.google.com/rss/search";
-            String query = String.format("intitle:\"%s\"+when:1d", keyword);
+            String url = "https://news.google.com/search";
+            String query = String.format("intitle:%s+when:1d", keyword);
             url = UriComponentsBuilder.fromUriString(url)
                     .queryParam("q", query)
                     .queryParam("hl", String.format("%s-%s", locale.getLanguage(), locale.getCountry()))  // en-US
@@ -82,22 +85,27 @@ public class SimpleNewsClient extends NewsClient {
                     .build();
             ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
             String responseBody = responseEntity.getBody();
-            Document doc = Jsoup.parse(responseBody,"", Parser.xmlParser());
-            Elements items = doc.select("item");
-            List<News> newses = items.stream()
-                    .map(it -> {
-                        String pubDate = it.select("pubDate").text();
-                        String title = it.select("title").text();
-                        String link = it.select("link").text();
-                        LocalDateTime dateTime = LocalDateTime.parse(pubDate, DateTimeFormatter.RFC_1123_DATE_TIME);
-                        String newsUrl = extractNewsUrl(link);
-                        return News.builder()
-                                .dateTime(dateTime)
-                                .newsUrl(newsUrl)
-                                .title(title)
-                                .build();
-                    })
-                    .collect(Collectors.toList());
+            Document doc = Jsoup.parse(responseBody);
+
+
+            Elements articleElements = doc.getElementsByTag("article");
+            List<News> newses = new ArrayList<>();
+            for (Element articleElement : articleElements) {
+                Element aElement = articleElement.getElementsByTag("a").stream()
+                        .filter(it -> StringUtils.isNotBlank(it.text()))
+                        .findFirst()
+                        .orElse(null);
+                String newsUrl = extractNewsUrl(aElement.attr("href"));
+                String title = aElement.text();
+                String dateTimeString = articleElement.getElementsByTag("time").first().attr("datetime");
+                LocalDateTime dateTime = LocalDateTime.parse(dateTimeString, DateTimeFormatter.ISO_DATE_TIME);
+                News news = News.builder()
+                        .dateTime(dateTime)
+                        .newsUrl(newsUrl)
+                        .title(title)
+                        .build();
+                newses.add(news);
+            }
 
             // sort
             newses.sort(Comparator.comparing(News::getDateTime)

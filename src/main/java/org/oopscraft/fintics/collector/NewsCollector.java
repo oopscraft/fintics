@@ -201,7 +201,7 @@ public class NewsCollector extends AbstractCollector {
             newsEntity.setSentiment(News.Sentiment.valueOf(sentiment.toUpperCase(Locale.ROOT)));
             newsEntity.setConfidence(new BigDecimal(confident));
             newsEntity.setReason(reason);
-        } catch (JsonProcessingException e) {
+        } catch (Exception e) {
             log.warn(e.getMessage());
         }
     }
