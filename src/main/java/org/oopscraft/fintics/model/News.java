@@ -26,6 +26,8 @@ public class News {
 
     private BigDecimal confidence;
 
+    private String reason;
+
     public enum Sentiment {
         POSITIVE, NEUTRAL, NEGATIVE
     }
@@ -41,6 +43,7 @@ public class News {
                 .title(newsEntity.getTitle())
                 .sentiment(newsEntity.getSentiment())
                 .confidence(newsEntity.getConfidence())
+                .reason(newsEntity.getReason())
                 .build();
     }
 

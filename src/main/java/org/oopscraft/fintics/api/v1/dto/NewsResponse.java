@@ -24,6 +24,8 @@ public class NewsResponse {
 
     private BigDecimal confidence;
 
+    private String reason;
+
     public static NewsResponse from(News news) {
         return NewsResponse.builder()
                 .dateTime(news.getDateTime())
@@ -32,6 +34,7 @@ public class NewsResponse {
                 .title(news.getTitle())
                 .sentiment(news.getSentiment())
                 .confidence(news.getConfidence())
+                .reason(news.getReason())
                 .build();
     }
 
