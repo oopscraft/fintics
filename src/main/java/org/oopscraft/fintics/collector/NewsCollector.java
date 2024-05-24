@@ -61,7 +61,7 @@ public class NewsCollector extends AbstractCollector {
 
     private final IndiceNewsRepository indiceNewsRepository;
 
-    @Scheduled(initialDelay = 10_000, fixedDelay = 600_000)
+    @Scheduled(initialDelay = 10_000, fixedDelay = 3600_000)
     public void collect() {
         try {
             log.info("NewsCollector - Start collect news.");
