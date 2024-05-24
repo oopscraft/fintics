@@ -181,10 +181,9 @@ public class NewsCollector extends AbstractCollector {
                     .readTimeout(60_000)
                     .build();
             String url = finticsProperties.getAiApiUrl() + "/news";
-            String message = newsEntity.getTitle() + "\n" +
-                    Optional.ofNullable(getNewsContent(newsEntity.getNewsUrl())).orElse("") + "\n";
             Map<String,String> payload = new LinkedHashMap<>(){{
-                put("message", message);
+                put("url", newsEntity.getNewsUrl());
+                put("title", newsEntity.getTitle());
             }};
             RequestEntity<Map<String,String>> requestEntity = RequestEntity
                     .post(url)
