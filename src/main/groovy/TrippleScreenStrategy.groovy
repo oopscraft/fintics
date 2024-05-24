@@ -204,34 +204,37 @@ log.info("tideAnalysis.momentum: {} {}", tideAnalysis.getMomentumScore().getAver
 // multiplier
 def multiplier = tideAnalysis.getMomentumScore().getAverage()/100
 
-// buy
-if (analysis.getMomentumScore().getAverage() > 75) {
-    // default
-    strategyResult = StrategyResult.of(Action.BUY, 1.0 * multiplier, "analysis.momentum: ${analysis.getMomentumScore()}")
-    // filter - volatility
-    if (waveAnalysis.getVolatilityScore().getAverage() < 75) {
-        strategyResult = null
+// trade
+if (tideAnalysis.getMomentumScore().getAverage() > 50) {
+    // buy
+    if (analysis.getMomentumScore().getAverage() > 75) {
+        // default
+        strategyResult = StrategyResult.of(Action.BUY, 1.0 * multiplier, "analysis.momentum: ${analysis.getMomentumScore()}")
+        // filter - volatility
+        if (waveAnalysis.getVolatilityScore().getAverage() < 75) {
+            strategyResult = null
+        }
+        // filter - overestimate
+        if (waveAnalysis.getOverestimateScore().getAverage() > 75) {
+            strategyResult = null
+        }
     }
-    // filter - overestimate
-    if (waveAnalysis.getOverestimateScore().getAverage() > 75) {
-        strategyResult = null
-    }
-}
-// sell
-if (analysis.getMomentumScore().getAverage() < 25) {
-    // default
-    strategyResult = StrategyResult.of(Action.SELL, 0.5 * multiplier, "analysis.momentum: ${analysis.getMomentumScore()}")
-    // filter - volatility
-    if (waveAnalysis.getVolatilityScore().getAverage() < 75) {
-        strategyResult = null
-    }
-    // filter - underestimate
-    if (waveAnalysis.getUnderestimateScore().getAverage() > 75) {
-        strategyResult = null
-    }
-    // filter - force to hold if not profit
-    if (balanceAsset != null && balanceAsset.getProfitPercentage() < 1.0) {
-        strategyResult = null
+    // sell
+    if (analysis.getMomentumScore().getAverage() < 25) {
+        // default
+        strategyResult = StrategyResult.of(Action.SELL, 0.5 * multiplier, "analysis.momentum: ${analysis.getMomentumScore()}")
+        // filter - volatility
+        if (waveAnalysis.getVolatilityScore().getAverage() < 75) {
+            strategyResult = null
+        }
+        // filter - underestimate
+        if (waveAnalysis.getUnderestimateScore().getAverage() > 75) {
+            strategyResult = null
+        }
+        // filter - force to hold if not profit
+        if (balanceAsset != null && balanceAsset.getProfitPercentage() < 1.0) {
+            strategyResult = null
+        }
     }
 }
 
@@ -240,10 +243,15 @@ if (analysis.getMomentumScore().getAverage() < 25) {
 //================================
 // tide direction and momentum
 if (tideAnalysis.getMomentumScore().getAverage() < 50) {
-    if (waveAnalysis.getMomentumScore().getAverage() < 25) {
-        if (analysis.getMomentumScore().getAverage() < 25) {
-            strategyResult = StrategyResult.of(Action.SELL, 0.0, "tideAnalysis.momentum: ${tideAnalysis.getMomentumScore()}")
-        }
+    // default
+    strategyResult = StrategyResult.of(Action.SELL, 0.0, "tideAnalysis.momentum: ${tideAnalysis.getMomentumScore()}")
+    // filter - wave momentum is divergence
+    if (waveAnalysis.getMomentumScore().getAverage() > 50) {
+        strategyResult = null;
+    }
+    // filter - ripple momentum is divergence
+    if (analysis.getMomentumScore().getAverage() > 50) {
+        strategyResult = null;
     }
 }
 
