@@ -69,12 +69,16 @@ public class NewsCollector extends AbstractCollector {
             List<TradeEntity> tradeEntities = tradeRepository.findAll();
             for (TradeEntity tradeEntity : tradeEntities) {
                 Trade trade = Trade.from(tradeEntity);
-                for (TradeAsset tradeAsset : trade.getTradeAssets()) {
-                    try {
-                        collectAssetNews(tradeAsset);
-                    } catch (Exception e) {
-                        log.warn(e.getMessage());
-                        sendSystemAlarm(this.getClass(), String.format("[%s] %s - %s", tradeEntity.getTradeName(), tradeAsset.getAssetName(), e.getMessage()));
+                if (trade.isEnabled()) {
+                    for (TradeAsset tradeAsset : trade.getTradeAssets()) {
+                        try {
+                            if (tradeAsset.isEnabled()) {
+                                collectAssetNews(tradeAsset);
+                            }
+                        } catch (Exception e) {
+                            log.warn(e.getMessage());
+                            sendSystemAlarm(this.getClass(), String.format("[%s] %s - %s", tradeEntity.getTradeName(), tradeAsset.getAssetName(), e.getMessage()));
+                        }
                     }
                 }
             }
