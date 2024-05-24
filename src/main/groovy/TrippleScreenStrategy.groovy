@@ -239,8 +239,12 @@ if (analysis.getMomentumScore().getAverage() < 25) {
 // fallback
 //================================
 // tide direction and momentum
-if (tideAnalysis.getMomentumScore().getAverage() <= 50) {
-    strategyResult = StrategyResult.of(Action.SELL, 0.0, "tideAnalysis.momentum: ${tideAnalysis.getMomentumScore()}")
+if (tideAnalysis.getMomentumScore().getAverage() < 50) {
+    if (waveAnalysis.getMomentumScore().getAverage() < 25) {
+        if (analysis.getMomentumScore().getAverage() < 25) {
+            strategyResult = StrategyResult.of(Action.SELL, 0.0, "tideAnalysis.momentum: ${tideAnalysis.getMomentumScore()}")
+        }
+    }
 }
 
 //================================
