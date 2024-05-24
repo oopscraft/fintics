@@ -51,5 +51,6 @@ web:
 # fintics
 fintics:
   system-alarm-id: fintics
+  ai-api-url: https://fintics-ai.oopscraft.org
   ohlcv-retention-months: 12
   news-retention-months: 12

@@ -68,7 +68,7 @@ public class SimpleNewsClient extends NewsClient {
                     .insecure(true)
                     .build();
             String url = "https://news.google.com/rss/search";
-            String query = String.format("intitle:%s", keyword);
+            String query = String.format("intitle:\"%s\"+when:1d", keyword);
             url = UriComponentsBuilder.fromUriString(url)
                     .queryParam("q", query)
                     .queryParam("hl", String.format("%s-%s", locale.getLanguage(), locale.getCountry()))  // en-US

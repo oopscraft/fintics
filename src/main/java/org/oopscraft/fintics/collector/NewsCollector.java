@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -99,27 +100,31 @@ public class NewsCollector extends AbstractCollector {
         List<News> assetNewses = newsClient.getAssetNewses(asset);
         List<AssetNewsEntity> assetNewsEntities = new ArrayList<>();
         for (News assetNews : assetNewses) {
-            String newsId = IdGenerator.md5(assetNews.getNewsUrl());
-            AssetNewsEntity assetNewsEntity = assetNewsRepository.findById(AssetNewsEntity.Pk.builder()
-                            .assetId(newsId)
+            try {
+                String newsId = IdGenerator.md5(assetNews.getNewsUrl());
+                AssetNewsEntity assetNewsEntity = assetNewsRepository.findById(AssetNewsEntity.Pk.builder()
+                                .assetId(newsId)
+                                .dateTime(assetNews.getDateTime())
+                                .newsId(assetNews.getNewsId())
+                                .build())
+                        .orElse(null);
+                if (assetNewsEntity == null) {
+                    assetNewsEntity = AssetNewsEntity.builder()
+                            .assetId(asset.getAssetId())
                             .dateTime(assetNews.getDateTime())
-                            .newsId(assetNews.getNewsId())
-                            .build())
-                    .orElse(null);
-            if (assetNewsEntity == null) {
-                assetNewsEntity = AssetNewsEntity.builder()
-                        .assetId(asset.getAssetId())
-                        .dateTime(assetNews.getDateTime())
-                        .newsId(newsId)
-                        .newsUrl(assetNews.getNewsUrl())
-                        .title(assetNews.getTitle())
-                        .build();
-            }
+                            .newsId(newsId)
+                            .newsUrl(assetNews.getNewsUrl())
+                            .title(assetNews.getTitle())
+                            .build();
+                }
 
-            // analysis
-            if (assetNewsEntity.getSentiment() == null) {
-                analysisNews(assetNewsEntity);
-                assetNewsEntities.add(assetNewsEntity);
+                // analysis
+                if (assetNewsEntity.getSentiment() == null) {
+                    analysisNews(assetNewsEntity);
+                    assetNewsEntities.add(assetNewsEntity);
+                }
+            } catch (Exception e) {
+                log.warn(e.getMessage());
             }
         }
 
@@ -130,23 +135,47 @@ public class NewsCollector extends AbstractCollector {
 
     void collectIndiceNews(Indice indice) {
         List<News> indiceNewses = newsClient.getIndiceNewses(indice);
-        List<IndiceNewsEntity> indiceNewsEntities = indiceNewses.stream()
-                .map(it -> IndiceNewsEntity.builder()
-                        .indiceId(indice.getIndiceId())
-                        .dateTime(it.getDateTime())
-                        .newsId(it.getNewsId())
-                        .newsUrl(it.getNewsUrl())
-                        .title(it.getTitle())
-                        .sentiment(it.getSentiment())
-                        .confidence(it.getConfidence())
-                        .build())
-                .collect(Collectors.toList());
+        List<IndiceNewsEntity> indiceNewsEntities = new ArrayList<>();
+        for (News indiceNews : indiceNewses) {
+            try {
+                String newsId = IdGenerator.md5(indiceNews.getNewsUrl());
+                IndiceNewsEntity indiceNewsEntity = indiceNewsRepository.findById(IndiceNewsEntity.Pk.builder()
+                                .indiceId(indice.getIndiceId())
+                                .dateTime(indiceNews.getDateTime())
+                                .newsId(indiceNews.getNewsId())
+                                .build())
+                        .orElse(null);
+                if (indiceNewsEntity == null) {
+                    indiceNewsEntity = IndiceNewsEntity.builder()
+                            .indiceId(indice.getIndiceId())
+                            .dateTime(indiceNews.getDateTime())
+                            .newsId(newsId)
+                            .newsUrl(indiceNews.getNewsUrl())
+                            .title(indiceNews.getTitle())
+                            .build();
+                }
+
+                // analysis
+                if (indiceNewsEntity.getSentiment() == null) {
+                    analysisNews(indiceNewsEntity);
+                    indiceNewsEntities.add(indiceNewsEntity);
+                }
+            } catch (Exception e) {
+                log.warn(e.getMessage());
+            }
+        }
+
+        // save news
         String unitName = String.format("indiceNewsEntities[%s]", indice.getIndiceName());
         saveEntities(unitName, indiceNewsEntities, transactionManager, indiceNewsRepository);
     }
 
 
     void analysisNews(NewsEntity newsEntity) {
+        // config not setting
+        if (StringUtils.isBlank(finticsProperties.getAiApiUrl())) {
+            return;
+        }
         try {
             RestTemplate restTemplate = RestTemplateBuilder.create()
                     .insecure(true)
