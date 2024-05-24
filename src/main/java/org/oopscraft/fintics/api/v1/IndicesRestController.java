@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.web.support.PageableUtils;
 import org.oopscraft.fintics.api.v1.dto.IndiceResponse;
+import org.oopscraft.fintics.api.v1.dto.NewsResponse;
 import org.oopscraft.fintics.api.v1.dto.OhlcvResponse;
 import org.oopscraft.fintics.model.Indice;
 import org.oopscraft.fintics.model.Ohlcv;
@@ -31,8 +32,6 @@ import java.util.stream.Collectors;
 @Tag(name = "indices", description = "Indices")
 public class IndicesRestController {
 
-    private final static String INDICES_REST_CONTROLLER_GET_INDICE_OHLCVS = "IndicesRestController.getIndiceOhlcvs";
-
     private final IndiceService indiceService;
 
     @GetMapping
@@ -51,10 +50,9 @@ public class IndicesRestController {
         return ResponseEntity.ok(indiceResponse);
     }
 
-    @GetMapping("{indiceId}/ohlcvs")
-    public ResponseEntity<List<OhlcvResponse>> getIndiceOhlcvs(
+    @GetMapping("{indiceId}/daily-ohlcvs")
+    public ResponseEntity<List<OhlcvResponse>> getIndiceDailyOhlcvs(
             @PathVariable("indiceId") Indice.Id indiceId,
-            @RequestParam("type") Ohlcv.Type type,
             @RequestParam(value = "dateTimeFrom", required = false) ZonedDateTime zonedDateTimeFrom,
             @RequestParam(value = "dateTimeTo", required = false) ZonedDateTime zonedDateTimeTo,
             @PageableDefault(size = 1000) Pageable pageable
@@ -65,12 +63,54 @@ public class IndicesRestController {
         LocalDateTime dateTimeTo = Optional.ofNullable(zonedDateTimeTo)
                 .map(item -> item.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime())
                 .orElse(LocalDateTime.of(9999,12,31,23,59,59));
-        List<OhlcvResponse> indiceOhlcvResponses = indiceService.getIndiceOhlcvs(indiceId, type, dateTimeFrom, dateTimeTo, pageable).stream()
+        List<OhlcvResponse> indiceOhlcvResponses = indiceService.getIndiceDailyOhlcvs(indiceId, dateTimeFrom, dateTimeTo, pageable).stream()
                 .map(OhlcvResponse::from)
                 .toList();
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_RANGE, PageableUtils.toContentRange("ohlcvs", pageable))
                 .body(indiceOhlcvResponses);
+    }
+
+    @GetMapping("{indiceId}/minute-ohlcvs")
+    public ResponseEntity<List<OhlcvResponse>> getIndiceMinuteOhlcvs(
+            @PathVariable("indiceId") Indice.Id indiceId,
+            @RequestParam(value = "dateTimeFrom", required = false) ZonedDateTime zonedDateTimeFrom,
+            @RequestParam(value = "dateTimeTo", required = false) ZonedDateTime zonedDateTimeTo,
+            @PageableDefault(size = 1000) Pageable pageable
+    ) {
+        LocalDateTime dateTimeFrom = Optional.ofNullable(zonedDateTimeFrom)
+                .map(item -> item.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime())
+                .orElse(LocalDateTime.of(1000,1,1,0,0));
+        LocalDateTime dateTimeTo = Optional.ofNullable(zonedDateTimeTo)
+                .map(item -> item.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime())
+                .orElse(LocalDateTime.of(9999,12,31,23,59,59));
+        List<OhlcvResponse> indiceOhlcvResponses = indiceService.getIndiceMinuteOhlcvs(indiceId, dateTimeFrom, dateTimeTo, pageable).stream()
+                .map(OhlcvResponse::from)
+                .toList();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_RANGE, PageableUtils.toContentRange("ohlcvs", pageable))
+                .body(indiceOhlcvResponses);
+    }
+
+    @RequestMapping("{indiceId}/newses")
+    public ResponseEntity<List<NewsResponse>> getIndiceNewses(
+            @PathVariable("indiceId") Indice.Id indiceId,
+            @RequestParam(value = "dateTimeFrom", required = false) ZonedDateTime zonedDateTimeFrom,
+            @RequestParam(value = "dateTimeTo", required = false) ZonedDateTime zonedDateTimeTo,
+            Pageable pageable
+    ) {
+        LocalDateTime dateTimeFrom = Optional.ofNullable(zonedDateTimeFrom)
+                .map(it -> it.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime())
+                .orElse(LocalDateTime.now().minusMonths(1));
+        LocalDateTime dateTimeTo = Optional.ofNullable(zonedDateTimeTo)
+                .map(it -> it.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime())
+                .orElse(LocalDateTime.now());
+        List<NewsResponse> newsResponses = indiceService.getIndiceNewses(indiceId, dateTimeFrom, dateTimeTo, pageable).stream()
+                .map(NewsResponse::from)
+                .toList();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_RANGE, PageableUtils.toContentRange("indice-newses", pageable))
+                .body(newsResponses);
     }
 
 }

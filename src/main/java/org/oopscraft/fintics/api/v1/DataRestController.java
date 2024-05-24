@@ -87,28 +87,6 @@ public class DataRestController {
         return ResponseEntity.ok(assetOhlcvSummaryResponse);
     }
 
-    @GetMapping("asset-ohlcvs")
-    public ResponseEntity<List<OhlcvResponse>> getAssetOhlcvs(
-            @RequestParam(value = "assetId", required = false) String assetId,
-            @RequestParam(value = "type", required = false) Ohlcv.Type type,
-            @RequestParam(value = "dateTimeFrom", required = false) ZonedDateTime zonedDateTimeFrom,
-            @RequestParam(value = "dateTimeTo", required = false) ZonedDateTime zonedDateTimeTo,
-            Pageable pageable
-    ) {
-        LocalDateTime dateTimeFrom = Optional.ofNullable(zonedDateTimeFrom)
-                .map(item -> item.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime())
-                .orElse(null);
-        LocalDateTime dateTimeTo = Optional.ofNullable(zonedDateTimeTo)
-                .map(item -> item.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime())
-                .orElse(null);
-        List<OhlcvResponse> assetOhlcvResponses = dataService.getAssetOhlcvs(assetId, type, dateTimeFrom, dateTimeTo, pageable).stream()
-                .map(OhlcvResponse::from)
-                .toList();
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_RANGE, PageableUtils.toContentRange("asset-ohlcvs", pageable))
-                .body(assetOhlcvResponses);
-    }
-
     @GetMapping("indice-ohlcv-summaries")
     public ResponseEntity<List<OhlcvSummaryResponse>> getIndiceOhlcvSummaries() {
         if (indiceOhlcvSummaryResponses.isEmpty()) {
@@ -137,28 +115,6 @@ public class DataRestController {
         return ResponseEntity.ok(indiceOhlcvSummaryResponse);
     }
 
-    @GetMapping("indice-ohlcvs")
-    public ResponseEntity<List<OhlcvResponse>> getIndiceOhlcvs(
-            @RequestParam(value = "indiceId", required = false) Indice.Id indiceId,
-            @RequestParam(value = "type", required = false) Ohlcv.Type type,
-            @RequestParam(value = "dateTimeFrom", required = false) ZonedDateTime zonedDateTimeFrom,
-            @RequestParam(value = "dateTimeTo", required = false) ZonedDateTime zonedDateTimeTo,
-            Pageable pageable
-    ) {
-        LocalDateTime dateTimeFrom = Optional.ofNullable(zonedDateTimeFrom)
-                .map(item -> item.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime())
-                .orElse(null);
-        LocalDateTime dateTimeTo = Optional.ofNullable(zonedDateTimeTo)
-                .map(item -> item.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime())
-                .orElse(null);
-        List<OhlcvResponse> indiceOhlcvResponses = dataService.getIndiceOhlcvs(indiceId, type, dateTimeFrom, dateTimeTo, pageable).stream()
-                .map(OhlcvResponse::from)
-                .toList();
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_RANGE, PageableUtils.toContentRange("indice-ohlcvs", pageable))
-                .body(indiceOhlcvResponses);
-    }
-
     @GetMapping("asset-news-summaries")
     public ResponseEntity<List<NewsSummaryResponse>> getAssetNewsSummaries() {
         List<NewsSummaryResponse> assetNewsSummaryResponses = dataService.getAssetNewsSummaries().stream()
@@ -167,12 +123,28 @@ public class DataRestController {
         return ResponseEntity.ok(assetNewsSummaryResponses);
     }
 
+    @GetMapping("asset-news-summaries/{assetId}")
+    public ResponseEntity<NewsSummaryResponse> getAssetNewSummary(@PathVariable("assetId") String assetId) {
+        NewsSummaryResponse newsSummaryResponse = dataService.getAssetNewsSummary(assetId)
+                .map(NewsSummaryResponse::from)
+                .orElseThrow();
+        return ResponseEntity.ok(newsSummaryResponse);
+    }
+
     @GetMapping("indice-news-summaries")
     public ResponseEntity<List<NewsSummaryResponse>> getIndiceNewsSummaries() {
         List<NewsSummaryResponse> indiceNewsSummaryResponses = dataService.getIndiceNewsSummaries().stream()
                 .map(NewsSummaryResponse::from)
                 .toList();
         return ResponseEntity.ok(indiceNewsSummaryResponses);
+    }
+
+    @GetMapping("indice-news-summaries/{indiceId}")
+    public ResponseEntity<NewsSummaryResponse> getIndiceNewsSummary(@PathVariable("indiceId") Indice.Id indiceId) {
+        NewsSummaryResponse newsSummaryResponse = dataService.getIndiceNewsSummary(indiceId)
+                .map(NewsSummaryResponse::from)
+                .orElseThrow();
+        return ResponseEntity.ok(newsSummaryResponse);
     }
 
 }

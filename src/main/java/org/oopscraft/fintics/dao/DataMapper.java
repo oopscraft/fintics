@@ -19,8 +19,11 @@ public interface DataMapper {
 
     List<OhlcvSummary.OhlcvStatistic> selectIndiceOhlcvStatistics(@Param("indiceId") Indice.Id indiceId);
 
-    List<NewsSummary> selectAssetNewsSummaries();
+    List<NewsSummary> selectAssetNewsSummaries(@Param("assetId") String assetId);
 
-    List<NewsSummary> selectIndiceNewsSummaries();
+    List<NewsSummary> selectIndiceNewsSummaries(@Param("indiceId") Indice.Id indiceId);
 
+    List<NewsSummary.NewsStatistic> selectAssetNewsStatistics(@Param("assetId") String assetId);
+
+    List<NewsSummary.NewsStatistic> selectIndiceNewsStatistics(@Param("indiceId") Indice.Id indiceId);
 }

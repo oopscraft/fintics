@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.web.support.PageableUtils;
 import org.oopscraft.fintics.api.v1.dto.AssetResponse;
+import org.oopscraft.fintics.api.v1.dto.NewsResponse;
 import org.oopscraft.fintics.api.v1.dto.OhlcvResponse;
 import org.oopscraft.fintics.model.Asset;
 import org.oopscraft.fintics.model.Ohlcv;
@@ -57,10 +58,9 @@ public class AssetsRestController {
         return ResponseEntity.ok(assetResponse);
     }
 
-    @GetMapping("{assetId}/ohlcvs")
-    public ResponseEntity<List<OhlcvResponse>> getAssetOhlcvs(
+    @GetMapping("{assetId}/daily-ohlcvs")
+    public ResponseEntity<List<OhlcvResponse>> getAssetDailyOhlcvs(
             @PathVariable("assetId") String assetId,
-            @RequestParam("type") Ohlcv.Type type,
             @RequestParam(value = "dateTimeFrom", required = false) ZonedDateTime zonedDateTimeFrom,
             @RequestParam(value = "dateTimeTo", required = false) ZonedDateTime zonedDateTimeTo,
             Pageable pageable
@@ -71,12 +71,54 @@ public class AssetsRestController {
         LocalDateTime dateTimeTo = Optional.ofNullable(zonedDateTimeTo)
                 .map(item -> item.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime())
                 .orElse(LocalDateTime.of(9999,12,31,23,59,59));
-        List<OhlcvResponse> assetOhlcvResponses = assetService.getAssetOhlcvs(assetId, type, dateTimeFrom, dateTimeTo, pageable).stream()
+        List<OhlcvResponse> assetOhlcvResponses = assetService.getAssetDailyOhlcvs(assetId, dateTimeFrom, dateTimeTo, pageable).stream()
                 .map(OhlcvResponse::from)
                 .toList();
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_RANGE, PageableUtils.toContentRange("ohlcvs", pageable))
+                .header(HttpHeaders.CONTENT_RANGE, PageableUtils.toContentRange("daily-ohlcvs", pageable))
                 .body(assetOhlcvResponses);
+    }
+
+    @GetMapping("{assetId}/minute-ohlcvs")
+    public ResponseEntity<List<OhlcvResponse>> getAssetOhlcvs(
+            @PathVariable("assetId") String assetId,
+            @RequestParam(value = "dateTimeFrom", required = false) ZonedDateTime zonedDateTimeFrom,
+            @RequestParam(value = "dateTimeTo", required = false) ZonedDateTime zonedDateTimeTo,
+            Pageable pageable
+    ) {
+        LocalDateTime dateTimeFrom = Optional.ofNullable(zonedDateTimeFrom)
+                .map(item -> item.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime())
+                .orElse(LocalDateTime.of(1000,1,1,0,0));
+        LocalDateTime dateTimeTo = Optional.ofNullable(zonedDateTimeTo)
+                .map(item -> item.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime())
+                .orElse(LocalDateTime.of(9999,12,31,23,59,59));
+        List<OhlcvResponse> assetOhlcvResponses = assetService.getAssetMinuteOhlcvs(assetId, dateTimeFrom, dateTimeTo, pageable).stream()
+                .map(OhlcvResponse::from)
+                .toList();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_RANGE, PageableUtils.toContentRange("minute-ohlcvs", pageable))
+                .body(assetOhlcvResponses);
+    }
+
+    @GetMapping("{assetId}/newses")
+    public ResponseEntity<List<NewsResponse>> getAssetNewses(
+            @PathVariable("assetId") String assetId,
+            @RequestParam(value = "dateTimeFrom", required = false) ZonedDateTime zonedDateTimeFrom,
+            @RequestParam(value = "dateTimeTo", required = false) ZonedDateTime zonedDateTimeTo,
+            Pageable pageable
+    ) {
+        LocalDateTime dateTimeFrom = Optional.ofNullable(zonedDateTimeFrom)
+                .map(it -> it.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime())
+                .orElse(LocalDateTime.now().minusMonths(1));
+        LocalDateTime dateTimeTo = Optional.ofNullable(zonedDateTimeTo)
+                .map(it -> it.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime())
+                .orElse(LocalDateTime.now());
+        List<NewsResponse> newsResponses = assetService.getAssetNewses(assetId, dateTimeFrom, dateTimeTo, pageable).stream()
+                .map(NewsResponse::from)
+                .toList();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_RANGE, PageableUtils.toContentRange("asset-news", pageable))
+                .body(newsResponses);
     }
 
 }

@@ -111,26 +111,26 @@ public class TradeExecutor {
                 // logging
                 log.info("[{} - {}] check asset", tradeAsset.getAssetId(), tradeAsset.getAssetName());
 
-                // minute ohlcvs
-                List<Ohlcv> minuteOhlcvs = brokerClient.getMinuteOhlcvs(tradeAsset, dateTime);
-                List<Ohlcv> previousMinuteOhlcvs = getPreviousAssetMinuteOhlcvs(tradeAsset.getAssetId(), minuteOhlcvs, dateTime);
-                minuteOhlcvs.addAll(previousMinuteOhlcvs);
-
                 // daily ohlcvs
                 List<Ohlcv> dailyOhlcvs = brokerClient.getDailyOhlcvs(tradeAsset, dateTime);
                 List<Ohlcv> previousDailyOhlcvs = getPreviousAssetDailyOhlcvs(tradeAsset.getAssetId(), dailyOhlcvs, dateTime);
                 dailyOhlcvs.addAll(previousDailyOhlcvs);
 
+                // minute ohlcvs
+                List<Ohlcv> minuteOhlcvs = brokerClient.getMinuteOhlcvs(tradeAsset, dateTime);
+                List<Ohlcv> previousMinuteOhlcvs = getPreviousAssetMinuteOhlcvs(tradeAsset.getAssetId(), minuteOhlcvs, dateTime);
+                minuteOhlcvs.addAll(previousMinuteOhlcvs);
+
                 // asset profile
                 AssetProfile assetProfile = AssetProfile.builder()
                         .target(tradeAsset)
-                        .minuteOhlcvs(minuteOhlcvs)
                         .dailyOhlcvs(dailyOhlcvs)
+                        .minuteOhlcvs(minuteOhlcvs)
                         .build();
 
                 // logging
-                log.info("[{} - {}] minuteOhlcvs({}):{}", tradeAsset.getAssetId(), tradeAsset.getAssetName(), assetProfile.getMinuteOhlcvs().size(), assetProfile.getMinuteOhlcvs().isEmpty() ? null : assetProfile.getMinuteOhlcvs().get(0));
                 log.info("[{} - {}] dailyOhlcvs({}):{}", tradeAsset.getAssetId(), tradeAsset.getAssetName(), assetProfile.getDailyOhlcvs().size(), assetProfile.getDailyOhlcvs().isEmpty() ? null : assetProfile.getDailyOhlcvs().get(0));
+                log.info("[{} - {}] minuteOhlcvs({}):{}", tradeAsset.getAssetId(), tradeAsset.getAssetName(), assetProfile.getMinuteOhlcvs().size(), assetProfile.getMinuteOhlcvs().isEmpty() ? null : assetProfile.getMinuteOhlcvs().get(0));
 
                 // order book
                 OrderBook orderBook = brokerClient.getOrderBook(tradeAsset);
@@ -265,31 +265,22 @@ public class TradeExecutor {
         }
     }
 
-    private List<Ohlcv> getPreviousIndiceMinuteOhlcvs(Indice.Id indiceId, List<Ohlcv> ohlcvs, LocalDateTime dateTime) {
-        LocalDateTime dateTimeFrom = dateTime.minusWeeks(1);
-        LocalDateTime dateTimeTo = ohlcvs.isEmpty() ? dateTime : ohlcvs.get(ohlcvs.size()-1).getDateTime().minusMinutes(1);
-        if(dateTimeTo.isBefore(dateTimeFrom)) {
-            return new ArrayList<>();
-        }
-        return indiceService.getIndiceOhlcvs(indiceId, Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo, PageRequest.of(0, 1000));
-    }
-
     private List<Ohlcv> getPreviousIndiceDailyOhlcvs(Indice.Id indiceId, List<Ohlcv> ohlcvs, LocalDateTime dateTime) {
         LocalDateTime dateTimeFrom = dateTime.minusYears(1);
         LocalDateTime dateTimeTo = ohlcvs.isEmpty() ? dateTime : ohlcvs.get(ohlcvs.size()-1).getDateTime().minusDays(1);
         if(dateTimeTo.isBefore(dateTimeFrom)) {
             return new ArrayList<>();
         }
-        return indiceService.getIndiceOhlcvs(indiceId, Ohlcv.Type.DAILY, dateTimeFrom, dateTimeTo, PageRequest.of(0, 360));
+        return indiceService.getIndiceDailyOhlcvs(indiceId, dateTimeFrom, dateTimeTo, PageRequest.of(0, 360));
     }
 
-    private List<Ohlcv> getPreviousAssetMinuteOhlcvs(String assetId, List<Ohlcv> ohlcvs, LocalDateTime dateTime) {
+    private List<Ohlcv> getPreviousIndiceMinuteOhlcvs(Indice.Id indiceId, List<Ohlcv> ohlcvs, LocalDateTime dateTime) {
         LocalDateTime dateTimeFrom = dateTime.minusWeeks(1);
         LocalDateTime dateTimeTo = ohlcvs.isEmpty() ? dateTime : ohlcvs.get(ohlcvs.size()-1).getDateTime().minusMinutes(1);
         if(dateTimeTo.isBefore(dateTimeFrom)) {
             return new ArrayList<>();
         }
-        return assetService.getAssetOhlcvs(assetId, Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo, PageRequest.of(0, 1000));
+        return indiceService.getIndiceMinuteOhlcvs(indiceId, dateTimeFrom, dateTimeTo, PageRequest.of(0, 1000));
     }
 
     private List<Ohlcv> getPreviousAssetDailyOhlcvs(String assetId, List<Ohlcv> ohlcvs, LocalDateTime dateTime) {
@@ -298,7 +289,16 @@ public class TradeExecutor {
         if(dateTimeTo.isBefore(dateTimeFrom)) {
             return new ArrayList<>();
         }
-        return assetService.getAssetOhlcvs(assetId, Ohlcv.Type.DAILY, dateTimeFrom, dateTimeTo, PageRequest.of(0, 360));
+        return assetService.getAssetDailyOhlcvs(assetId, dateTimeFrom, dateTimeTo, PageRequest.of(0, 360));
+    }
+
+    private List<Ohlcv> getPreviousAssetMinuteOhlcvs(String assetId, List<Ohlcv> ohlcvs, LocalDateTime dateTime) {
+        LocalDateTime dateTimeFrom = dateTime.minusWeeks(1);
+        LocalDateTime dateTimeTo = ohlcvs.isEmpty() ? dateTime : ohlcvs.get(ohlcvs.size()-1).getDateTime().minusMinutes(1);
+        if(dateTimeTo.isBefore(dateTimeFrom)) {
+            return new ArrayList<>();
+        }
+        return assetService.getAssetMinuteOhlcvs(assetId, dateTimeFrom, dateTimeTo, PageRequest.of(0, 1000));
     }
 
     private BigDecimal calculateBuyPrice(TradeAsset tradeAsset, OrderBook orderBook, BrokerClient brokerClient) throws InterruptedException {

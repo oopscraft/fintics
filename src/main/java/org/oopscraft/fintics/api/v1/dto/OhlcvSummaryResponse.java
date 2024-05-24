@@ -44,7 +44,9 @@ public class OhlcvSummaryResponse {
                 .minuteCount(ohlcvSummary.getMinuteCount())
                 .minuteMinDateTime(ohlcvSummary.getMinuteMinDateTime())
                 .minuteMaxDateTime(ohlcvSummary.getMinuteMaxDateTime())
-                .ohlcvStatistics(ohlcvSummary.getOhlcvStatistics().stream().map(OhlcvStatisticResponse::from).toList())
+                .ohlcvStatistics(ohlcvSummary.getOhlcvStatistics().stream()
+                        .map(OhlcvStatisticResponse::from)
+                        .toList())
                 .build();
     }
 

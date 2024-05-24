@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +18,8 @@ public class AssetService {
     private final AssetRepository assetRepository;
 
     private final AssetOhlcvRepository assetOhlcvRepository;
+
+    private final AssetNewsRepository assetNewsRepository;
 
     public Page<Asset> getAssets(String assetId, String assetName, String market, Pageable pageable) {
         // where
@@ -53,9 +54,21 @@ public class AssetService {
         return Optional.of(brokerAsset);
     }
 
-    public List<Ohlcv> getAssetOhlcvs(String assetId, Ohlcv.Type type, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo, Pageable pageable) {
-        return assetOhlcvRepository.findAllByAssetIdAndType(assetId, type, dateTimeFrom, dateTimeTo, pageable).stream()
+    public List<Ohlcv> getAssetDailyOhlcvs(String assetId, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo, Pageable pageable) {
+        return assetOhlcvRepository.findAllByAssetIdAndType(assetId, Ohlcv.Type.DAILY, dateTimeFrom, dateTimeTo, pageable).stream()
                 .map(Ohlcv::from)
+                .toList();
+    }
+
+    public List<Ohlcv> getAssetMinuteOhlcvs(String assetId, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo, Pageable pageable) {
+        return assetOhlcvRepository.findAllByAssetIdAndType(assetId, Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo, pageable).stream()
+                .map(Ohlcv::from)
+                .toList();
+    }
+
+    public List<News> getAssetNewses(String assetId, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo, Pageable pageable) {
+        return assetNewsRepository.findAllByAssetId(assetId, dateTimeFrom, dateTimeTo, pageable).stream()
+                .map(News::from)
                 .toList();
     }
 

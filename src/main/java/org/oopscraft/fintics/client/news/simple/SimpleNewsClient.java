@@ -44,25 +44,36 @@ public class SimpleNewsClient extends NewsClient {
 
     @Override
     public List<News> getAssetNewses(Asset asset) {
-        return getNewses(asset.getAssetName());
+        Locale locale = parseLocale(asset);
+        return getNewses(asset.getAssetName(), locale);
     }
 
     @Override
     public List<News> getIndiceNewses(Indice indice) {
-        return getNewses(indice.getIndiceName());
+        Locale locale = new Locale("en", "US");
+        return getNewses(indice.getIndiceName(), locale);
     }
 
-    List<News> getNewses(String keyword) {
+    private Locale parseLocale(Asset asset) {
+        String market = Optional.ofNullable(asset.getMarket()).orElse("US");
+        return switch (market) {
+            case "KR" -> new Locale("ko", "KR");
+            default -> new Locale("en", "US");
+        };
+    }
+
+    List<News> getNewses(String keyword, Locale locale) {
         try {
             RestTemplate restTemplate = RestTemplateBuilder.create()
                     .insecure(true)
                     .build();
             String url = "https://news.google.com/rss/search";
+            String query = String.format("intitle:%s", keyword);
             url = UriComponentsBuilder.fromUriString(url)
-                    .queryParam("q", keyword)
-                    .queryParam("hl", "en-US")
-                    .queryParam("gl", "US")
-                    .queryParam("ceid", "US:en")
+                    .queryParam("q", query)
+                    .queryParam("hl", String.format("%s-%s", locale.getLanguage(), locale.getCountry()))  // en-US
+                    .queryParam("gl", locale.getCountry())     // US
+                    .queryParam("ceid", String.format("%s:%s", locale.getCountry(), locale.getLanguage()))    // US:en
                     .build()
                     .toUriString();
             HttpHeaders headers = new HttpHeaders();
@@ -80,10 +91,8 @@ public class SimpleNewsClient extends NewsClient {
                         String link = it.select("link").text();
                         LocalDateTime dateTime = LocalDateTime.parse(pubDate, DateTimeFormatter.RFC_1123_DATE_TIME);
                         String newsUrl = extractNewsUrl(link);
-                        String newsId = IdGenerator.md5(newsUrl);
                         return News.builder()
                                 .dateTime(dateTime)
-                                .newsId(newsId)
                                 .newsUrl(newsUrl)
                                 .title(title)
                                 .build();
@@ -93,6 +102,7 @@ public class SimpleNewsClient extends NewsClient {
             // sort
             newses.sort(Comparator.comparing(News::getDateTime)
                     .reversed());
+
             // return
             return newses;
         } catch (Exception e) {
@@ -117,71 +127,6 @@ public class SimpleNewsClient extends NewsClient {
             }
         }
         return null;
-    }
-
-    String getContent(String newsUrl) {
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .build();
-        ResponseEntity<String> responseEntity = restTemplate.getForEntity(newsUrl, String.class);
-        String responseBody = responseEntity.getBody();
-        Document doc = Jsoup.parse(responseBody);
-        return doc.text();
-    }
-
-    void analyzeNews(News news, String content) {
-        Properties props = new Properties();
-        props.setProperty("annotators", "tokenize,ssplit,pos,lemma,parse,sentiment");
-        StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
-        Annotation annotation = new Annotation(content);
-        pipeline.annotate(annotation);
-
-        int totalSentimentScore = 0;
-        int sentenceCount = 0;
-        for (CoreMap sentence : annotation.get(CoreAnnotations.SentencesAnnotation.class)) {
-            String sentiment = sentence.get(SentimentCoreAnnotations.SentimentClass.class);
-            int sentimentScore = convertSentimentToScore(sentiment);
-            totalSentimentScore += sentimentScore;
-            sentenceCount++;
-        }
-
-        // 평균 감정 점수 계산
-        double averageSentimentScore = (double) totalSentimentScore / sentenceCount;
-        String overallSentiment = determineOverallSentiment(averageSentimentScore);
-
-        log.debug("Overall Sentiment: {}", overallSentiment);
-        log.debug("Average Sentiment Score: {}", averageSentimentScore);
-    }
-
-    private static int convertSentimentToScore(String sentiment) {
-        switch (sentiment) {
-            case "Very positive":
-                return 4;
-            case "Positive":
-                return 3;
-            case "Neutral":
-                return 2;
-            case "Negative":
-                return 1;
-            case "Very negative":
-                return 0;
-            default:
-                return 2; // 중립
-        }
-    }
-
-    private static String determineOverallSentiment(double averageSentimentScore) {
-        if (averageSentimentScore >= 3.5) {
-            return "Very positive";
-        } else if (averageSentimentScore >= 2.5) {
-            return "Positive";
-        } else if (averageSentimentScore >= 1.5) {
-            return "Neutral";
-        } else if (averageSentimentScore >= 0.5) {
-            return "Negative";
-        } else {
-            return "Very negative";
-        }
     }
 
 }

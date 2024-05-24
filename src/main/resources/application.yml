@@ -17,6 +17,7 @@ web:
 # fintics
 fintics:
   system-alarm-id: fintics
+  ai-api-url: https://fintics-ai.oopscraft.org
   ohlcv-retention-months: 3
   news-retention-months: 3
   indice-client:
@@ -31,4 +32,3 @@ fintics:
     class-name: org.oopscraft.fintics.client.news.simple.SimpleNewsClient
     properties:
       name: value
-

@@ -30,10 +30,15 @@
 
         // asset news
         const assetNewsSummaries = new duice.ArrayProxy([]);
+        const assetNewsSummary = new duice.ObjectProxy({
+            newsStatistics: []
+        });
 
         // indice news
         const indiceNewsSummaries = new duice.ArrayProxy([]);
-
+        const indiceNewsSummary = new duice.ObjectProxy({
+            newsStatistics: []
+        });
 
         function getAssets(page) {
             assetSearch._page = page || 0;
@@ -79,7 +84,7 @@
         }
 
         function getAssetOhlcvs(id, date) {
-            ohlcvsDialog.open('asset', id, date);
+            ohlcvsDialog.open('assets', id, date);
         }
 
         function getIndiceOhlcvSummaries() {
@@ -101,7 +106,7 @@
         }
 
         function getIndiceOhlcvs(id, date) {
-            ohlcvsDialog.open('indice', id, date);
+            ohlcvsDialog.open('indices', id, date);
         }
 
         function getAssetNewsSummaries() {
@@ -112,12 +117,37 @@
             });
         }
 
+        function getAssetNewsSummary(id) {
+            duice.ObjectProxy.clear(assetNewsSummary);
+            let url = new URL(`${_apiUrl}/v1/data/asset-news-summaries/${id}`, document.location.origin);
+            _fetch(url).then(response => response.json())
+            .then(responseBody => {
+                duice.ObjectProxy.assign(assetNewsSummary, responseBody);
+            });
+        }
+
+        function getAssetNews(id, date) {
+            newsesDialog.open('assets', id, date);
+        }
+
         function getIndiceNewsSummaries() {
             let url = new URL(`${_apiUrl}/v1/data/indice-news-summaries`, document.location.origin);
             _fetch(url).then(response => response.json())
             .then(responseBody => {
                 duice.ArrayProxy.assign(indiceNewsSummaries, responseBody);
             });
+        }
+
+        function getIndiceNewsSummary(id) {
+            let url = new URL(`${_apiUrl}/v1/data/indice-news-summaries/${id}`, document.location.origin);
+            _fetch(url).then(response => response.json())
+            .then(responseBody => {
+                duice.ObjectProxy.assign(indiceNewsSummary, responseBody);
+            });
+        }
+
+        function getIndiceNews(id, date) {
+            newsesDialog.open('indices', id, date);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -313,7 +343,7 @@
     <div id="assetOhlcvTabContent" class="border--1 padding--1em">
         <h2>
             <img class="icon" th:src="@{/static/image/icon-ohlcv.svg}" alt="ohlcv"/>
-            <span data-th-text="#{fintics.AssetOhlcv}"></span>
+            <span data-th-text="|#{fintics.Asset} #{fintics.Ohlcv}|"></span>
         </h2>
         <div class="overflow-y--scroll border-x--1" style="max-height:30vh;">
             <table class="width--100 border--0 text-align--center font-size--smaller">
@@ -368,8 +398,7 @@
                  }
                 "
                  onclick="getAssetOhlcvs(assetOhlcvSummary.id, this.dataset.date);"
-                 class="grid-column--1 margin--1px border--1 padding--1em padding-x--1px font-size--smaller link">
-                <input type="checkbox" data-duice-bind="ohlcvStatistic" data-duice-property="_checked" onclick="event.stopPropagation();" class="margin-right--1px"/>
+                 class="grid-column--1 s__grid-column--3 margin--1px border--1 padding--1em padding-x--1px font-size--smaller link">
                 <span data-duice-bind="ohlcvStatistic" data-duice-property="date" class="font-weight--bold"></span>
                 <br/>
                 <span data-duice-bind="ohlcvStatistic" data-duice-property="count"></span>
@@ -386,7 +415,7 @@
     <div id="indiceOhlcvTabContent" class="border--1 padding--1em">
         <h2>
             <img class="icon" th:src="@{/static/image/icon-ohlcv.svg}" alt="ohlcv"/>
-            <span data-th-text="#{fintics.IndiceOhlcv}"></span>
+            <span data-th-text="|#{fintics.Indice} #{fintics.Ohlcv}|"></span>
         </h2>
         <div class="overflow-y--scroll border-x--1" style="max-height:30vh;">
             <table class="width--100 border--0 text-align--center font-size--smaller">
@@ -441,8 +470,7 @@
                  }
                 "
                  onclick="getIndiceOhlcvs(indiceOhlcvSummary.id, this.dataset.date);"
-                 class="grid-column--1 margin--1px border--1 padding--1em padding-x--1px font-size--smaller link">
-                <input type="checkbox" data-duice-bind="ohlcvStatistic" data-duice-property="_checked" onclick="event.stopPropagation();" class="margin-right--1px"/>
+                 class="grid-column--1 s__grid-column--3 margin--1px border--1 padding--1em padding-x--1px font-size--smaller link">
                 <span data-duice-bind="ohlcvStatistic" data-duice-property="date" class="font-weight--bold"></span>
                 <br/>
                 <span data-duice-bind="ohlcvStatistic" data-duice-property="count"></span>
@@ -459,8 +487,53 @@
     <div id="assetNewsTabContent" class="border--1 padding--1em">
         <h2>
             <img class="icon" th:src="@{/static/image/icon-news.svg}" alt="news"/>
-            <span data-th-text="#{fintics.News}"></span>
+            <span data-th-text="|#{fintics.Asset} #{fintics.News}|"></span>
         </h2>
+        <div class="overflow-y--scroll border-x--1" style="max-height:30vh;">
+            <table class="width--100 border--0 text-align--center font-size--smaller">
+                <thead>
+                <tr>
+                    <th data-th-text="#{web.global.no}"></th>
+                    <th>assetId</th>
+                    <th>assetName</th>
+                    <th>totalCount</th>
+                    <th>minDateTime</th>
+                    <th>maxDateTime</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr data-duice-bind="assetNewsSummaries" data-duice-loop="assetNewsSummary,status" data-duice-selected-item-class="selected"
+                    data-duice-execute="this.dataset.id=assetNewsSummary.id;"
+                    onclick="getAssetNewsSummary(this.dataset.id);" class="link">
+                    <td data-duice-bind="status" data-duice-property="count"></td>
+                    <td data-duice-bind="assetNewsSummary" data-duice-property="id" class="font-weight--bold"></td>
+                    <td data-duice-bind="assetNewsSummary" data-duice-property="name"></td>
+                    <td data-duice-bind="assetNewsSummary" data-duice-property="totalCount" data-duice-format="number"></td>
+                    <td data-duice-bind="assetNewsSummary" data-duice-property="minDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
+                    <td data-duice-bind="assetNewsSummary" data-duice-property="maxDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
+                </tr>
+                <tr data-duice-bind="assetNewsSummaries" data-duice-if="return assetNewsSummaries.length === 0;">
+                    <td colspan="100%" class="text-align--center">No Data</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="margin-top--1em font-weight--bold">
+            &nbsp;
+            <span data-duice-bind="assetNewsSummary" data-duice-property="id"></span>
+            -
+            <span data-duice-bind="assetNewsSummary" data-duice-property="name"></span>
+        </div>
+        <div class="display--grid grid-template-columns--12">
+            <div data-duice-bind="assetNewsSummary.newsStatistics" data-duice-loop="newsStatistic,status"
+                 data-duice-execute="this.dataset.date = newsStatistic.date;"
+                 onclick="getAssetNews(assetNewsSummary.id, this.dataset.date);"
+                 class="grid-column--1 s__grid-column--3 margin--1px border--1 padding--1em padding-x--1px font-size--smaller link">
+                <span data-duice-bind="newsStatistic" data-duice-property="date" class="font-weight--bold"></span>
+                <br/>
+                <span data-duice-bind="newsStatistic" data-duice-property="count"></span>
+            </div>
+        </div>
     </div>
     <!-- ====================================== -->
     <!-- start: asseNews                        -->
@@ -472,8 +545,53 @@
     <div id="indiceNewsTabContent" class="border--1 padding--1em">
         <h2>
             <img class="icon" th:src="@{/static/image/icon-news.svg}" alt="news"/>
-            <span data-th-text="#{fintics.News}"></span>
+            <span data-th-text="|#{fintics.Indice} #{fintics.News}|"></span>
         </h2>
+        <div class="overflow-y--scroll border-x--1" style="max-height:30vh;">
+            <table class="width--100 border--0 text-align--center font-size--smaller">
+                <thead>
+                <tr>
+                    <th data-th-text="#{web.global.no}"></th>
+                    <th>assetId</th>
+                    <th>assetName</th>
+                    <th>totalCount</th>
+                    <th>minDateTime</th>
+                    <th>maxDateTime</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr data-duice-bind="indiceNewsSummaries" data-duice-loop="indiceNewsSummary,status" data-duice-selected-item-class="selected"
+                    data-duice-execute="this.dataset.id=indiceNewsSummary.id;"
+                    onclick="getIndiceNewsSummary(this.dataset.id);" class="link">
+                    <td data-duice-bind="status" data-duice-property="count"></td>
+                    <td data-duice-bind="indiceNewsSummary" data-duice-property="id" class="font-weight--bold"></td>
+                    <td data-duice-bind="indiceNewsSummary" data-duice-property="name"></td>
+                    <td data-duice-bind="indiceNewsSummary" data-duice-property="totalCount" data-duice-format="number"></td>
+                    <td data-duice-bind="indiceNewsSummary" data-duice-property="minDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
+                    <td data-duice-bind="indiceNewsSummary" data-duice-property="maxDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
+                </tr>
+                <tr data-duice-bind="indiceNewsSummaries" data-duice-if="return indiceNewsSummaries.length === 0;">
+                    <td colspan="100%" class="text-align--center">No Data</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="margin-top--1em font-weight--bold">
+            &nbsp;
+            <span data-duice-bind="assetNewsSummary" data-duice-property="id"></span>
+            -
+            <span data-duice-bind="assetNewsSummary" data-duice-property="name"></span>
+        </div>
+        <div class="display--grid grid-template-columns--12">
+            <div data-duice-bind="indiceNewsSummary.newsStatistics" data-duice-loop="newsStatistic,status"
+                 data-duice-execute="this.dataset.date = newsStatistic.date;"
+                 onclick="getIndiceNews(indiceNewsSummary.id, this.dataset.date);"
+                 class="grid-column--1 s__grid-column--3 margin--1px border--1 padding--1em padding-x--1px font-size--smaller link">
+                <span data-duice-bind="newsStatistic" data-duice-property="date" class="font-weight--bold"></span>
+                <br/>
+                <span data-duice-bind="newsStatistic" data-duice-property="count"></span>
+            </div>
+        </div>
     </div>
     <!-- ====================================== -->
     <!-- start: indiceNews                      -->
@@ -483,7 +601,10 @@
     <!-- start: ohlcvsDialog                    -->
     <!-- ====================================== -->
     <dialog id="ohlcvsDialog" class="padding--1em width--50 s__width--100">
-        <h2>OHLCV</h2>
+        <h2>
+            <img class="icon" data-th-src="@{/static/image/icon-ohlcv.svg}" alt="ohlcv"/>
+            <span data-th-text="#{fintics.Ohlcv}"></span>
+        </h2>
         <div class="overflow-y--scroll border-top--1" style="height:75vh;">
             <table class="width--100 text-align--center">
                 <colgroup>
@@ -535,8 +656,8 @@
             id: null,
             date: null,
             ohlcvs: new duice.ArrayProxy([]),
-            open: function(type, id, date) {
-                this.type = type;
+            open: function(target, id, date) {
+                this.target = target;
                 this.id = id;
                 this.date = date;
                 duice.ArrayProxy.clear(this.ohlcvs);
@@ -544,17 +665,108 @@
                 return this.dialog.open();
             },
             getOhlcvs: function() {
-                let url = new URL(`${_apiUrl}/v1/data/${this.type}-ohlcvs`, document.location.origin);
-                url.searchParams.append(`${this.type}Id`, this.id);
                 let dateTimeFrom = dateFns.startOfDay(new Date(this.date)).toISOString();
                 let dateTimeTo = dateFns.endOfDay(new Date(this.date)).toISOString();
+                let urls = [
+                    new URL(`${_apiUrl}/v1/${this.target}/${this.id}/daily-ohlcvs`, document.location.origin),
+                    new URL(`${_apiUrl}/v1/${this.target}/${this.id}/minute-ohlcvs`, document.location.origin)
+                ];
+                const promises = urls.map(url => {
+                    url.searchParams.append('dateTimeFrom', dateTimeFrom);
+                    url.searchParams.append('dateTimeTo', dateTimeTo);
+                    url.searchParams.append('_size', 1000);
+                    url.searchParams.append('_page', 0);
+                    return _fetch(url).then(response => response.json());
+                });
+                Promise.all(promises).then(results => {
+                    duice.ArrayProxy.assign(this.ohlcvs, results.flat());
+                });
+            }
+        };
+    </script>
+    <!-- ====================================== -->
+    <!-- start: ohlcvsDialog                    -->
+    <!-- ====================================== -->
+
+    <!-- ====================================== -->
+    <!-- start: newsesDialog                    -->
+    <!-- ====================================== -->
+    <dialog id="newsesDialog" class="padding--1em width--75 s__width--100">
+        <h2>
+            <img class="icon" data-th-src="@{/static/image/icon-news.svg}" alt="news"/>
+            <span data-th-text="#{fintics.News}"></span>
+        </h2>
+        <div class="overflow-y--scroll border-top--1" style="height:75vh;">
+            <table class="width--100 text-align--center">
+                <colgroup>
+                    <col/>
+                    <col/>
+                    <col/>
+                    <col/>
+                    <col/>
+                    <col/>
+                </colgroup>
+                <thead>
+                <tr>
+                    <th data-th-text="#{web.global.no}"></th>
+                    <th data-th-text="#{fintics.News.dateTime}"></th>
+                    <th data-th-text="#{fintics.News.title}"></th>
+                    <th data-th-text="#{fintics.News.sentiment}"></th>
+                    <th data-th-text="#{fintics.News.confidence}"></th>
+                    <th data-th-text="#{fintics.News.reason}"></th>
+                </tr>
+                </thead>
+                <tbody class="font-size--smaller">
+                <tr data-duice-bind="newsesDialog.newses" data-duice-loop="news,status">
+                    <td data-duice-bind="status" data-duice-execute="this.innerHTML=status.count;"></td>
+                    <td data-duice-bind="news" data-duice-property="dateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
+                    <td>
+                        <a href="#" onclick="_openLink(this.dataset.newsUrl,'_blank')"
+                           data-duice-bind="news" data-duice-execute="this.dataset.newsUrl=news.newsUrl;">
+                            <span data-duice-bind="news" data-duice-property="title"></span>
+                        </a>
+                    </td>
+                    <td data-duice-bind="news" data-duice-property="sentiment"></td>
+                    <td data-duice-bind="news" data-duice-property="confidence"></td>
+                    <td class="display--flex">
+                        <textarea data-duice-bind="news" data-duice-property="reason" class="width--100"></textarea>
+                    </td>
+                </tr>
+                <tr data-duice-bind="newsesDialog.newses" data-duice-if="return newsesDialog.newses.length===0;">
+                    <td colspan="100%" class="text-align--center">
+                        No Data
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </dialog>
+    <script th:inline="javascript">
+        const newsesDialog = {
+            dialog: new duice.dialog.Dialog(document.getElementById('newsesDialog')),
+            target: null,
+            id: null,
+            date: null,
+            newses: new duice.ArrayProxy([]),
+            open: function(target, id, date) {
+                this.target = target;
+                this.id = id;
+                this.date = date;
+                duice.ArrayProxy.clear(this.newses);
+                this.getNewses();
+                return this.dialog.open();
+            },
+            getNewses: function() {
+                let dateTimeFrom = dateFns.startOfDay(new Date(this.date)).toISOString();
+                let dateTimeTo = dateFns.endOfDay(new Date(this.date)).toISOString();
+                let url = new URL(`${_apiUrl}/v1/${this.target}/${this.id}/newses`, document.location.origin);
                 url.searchParams.append('dateTimeFrom', dateTimeFrom);
                 url.searchParams.append('dateTimeTo', dateTimeTo);
                 url.searchParams.append('_size', 1000);
                 url.searchParams.append('_page', 0);
                 _fetch(url).then(response => response.json())
                 .then(responseBody => {
-                    duice.ArrayProxy.assign(this.ohlcvs, responseBody);
+                    duice.ArrayProxy.assign(this.newses, responseBody);
                 });
             }
         };

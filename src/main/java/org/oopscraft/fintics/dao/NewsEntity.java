@@ -33,6 +33,7 @@ public class NewsEntity extends BaseEntity {
     private String newsUrl;
 
     @Column(name = "title")
+    @Lob
     private String title;
 
     @Column(name = "sentiment", length = 16)
@@ -40,5 +41,9 @@ public class NewsEntity extends BaseEntity {
 
     @Column(name = "confidence", scale = 2)
     private BigDecimal confidence;
+
+    @Column(name = "reason")
+    @Lob
+    private String reason;
 
 }

@@ -137,15 +137,15 @@ insert into `core_alarm`
 
 -- fintics_asset
 insert into `fintics_asset`
-    (`asset_id`,`asset_name`,`exchange`,`type`) values
-    ('KR.122630','KODEX 레버리지','XKRX','ETF'),
-    ('KR.229200','KODEX 코스닥150','XKRX','ETF'),
-    ('KR.252670','KODEX 200선물인버스2X','XKRX','ETF'),
-    ('KR.251340','KODEX 코스닥150선물인버스','XKRX','ETF'),
-    ('US.AAPL','Apple Inc. Common Stock','XNAS','STOCK'),
-    ('US.SPY','SPDR S&P 500','XASE','ETF'),
-    ('UPBIT.KRW-BTC','Bitcoin',null,null),
-    ('UPBIT.KRW-ETH','Ethereum',null,null);
+    (`asset_id`,`asset_name`,`market`,`exchange`,`type`) values
+    ('KR.122630','KODEX 레버리지','KR','XKRX','ETF'),
+    ('KR.229200','KODEX 코스닥150','KR','XKRX','ETF'),
+    ('KR.252670','KODEX 200선물인버스2X','KR','XKRX','ETF'),
+    ('KR.251340','KODEX 코스닥150선물인버스','KR','XKRX','ETF'),
+    ('US.AAPL','Apple Inc. Common Stock','US','XNAS','STOCK'),
+    ('US.SPY','SPDR S&P 500','US','XASE','ETF'),
+    ('UPBIT.KRW-BTC','Bitcoin','UPBIT','UPBIT',null),
+    ('UPBIT.KRW-ETH','Ethereum','UPBIT','UPBIT',null);
 
 -- fintics_broker
 insert into `fintics_broker`

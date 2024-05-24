@@ -17,7 +17,7 @@
                     MAX(CASE WHEN fao.type = 'MINUTE' THEN fao.date_time ELSE NULL END) AS "minuteMaxDateTime"
         FROM 		fintics_asset_ohlcv fao
         WHERE       1 = 1
-        <if test="assetId != null">
+        <if test="assetId!= null">
         AND         fao.asset_id = #{assetId}
         </if>
         GROUP BY 	fao.asset_id
@@ -66,6 +66,9 @@
                     MAX(date_time) AS "maxDateTime"
         FROM 		fintics_asset_news fan
         WHERE       1 = 1
+        <if test="assetId != null">
+        AND         asset_id = #{assetId}
+        </if>
         GROUP BY 	asset_id
     </select>
 
@@ -76,8 +79,30 @@
                     MAX(date_time) AS "maxDateTime"
         FROM 		fintics_indice_news fin
         WHERE       1 = 1
+        <if test="indiceId != null">
+        AND         indice_id = #{indiceId}
+        </if>
         GROUP BY 	indice_id
     </select>
 
+    <select id="selectAssetNewsStatistics" resultType="org.oopscraft.fintics.model.NewsSummary$NewsStatistic" useCache="false">
+        SELECT 		DATE(date_time) AS "date",
+                    COUNT(*) AS "count"
+        FROM 		fintics_asset_news
+        WHERE 		1 = 1
+          AND 		asset_id = #{assetId}
+        GROUP BY	DATE(date_time)
+        ORDER BY    DATE(date_time) DESC
+    </select>
+
+    <select id="selectIndiceNewsStatistics" resultType="org.oopscraft.fintics.model.NewsSummary$NewsStatistic" useCache="false">
+        SELECT 		DATE(date_time) AS "date",
+                    COUNT(*) AS "count"
+        FROM 		fintics_indice_news
+        WHERE 		1 = 1
+          AND 		indice_id = #{indiceId}
+        GROUP BY	DATE(date_time)
+        ORDER BY    DATE(date_time) DESC
+    </select>
 
 </mapper>

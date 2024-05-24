@@ -87,25 +87,6 @@ public class DataService {
         return Optional.of(assetOhlcvSummary);
     }
 
-    public List<Ohlcv> getAssetOhlcvs(String assetId, Ohlcv.Type type, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo, Pageable pageable) {
-        QAssetOhlcvEntity qAssetOhlcvEntity = QAssetOhlcvEntity.assetOhlcvEntity;
-        JPAQuery<AssetOhlcvEntity> query = jpaQueryFactory
-                .selectFrom(qAssetOhlcvEntity)
-                .where(
-                        Optional.ofNullable(assetId).map(qAssetOhlcvEntity.assetId::eq).orElse(null),
-                        Optional.ofNullable(type).map(qAssetOhlcvEntity.type::eq).orElse(null),
-                        Optional.ofNullable(dateTimeFrom).map(qAssetOhlcvEntity.dateTime::goe).orElse(null),
-                        Optional.ofNullable(dateTimeTo).map(qAssetOhlcvEntity.dateTime::loe).orElse(null)
-                )
-                .orderBy(qAssetOhlcvEntity.dateTime.desc())
-                .limit(pageable.getPageSize())
-                .offset(pageable.getOffset());
-        List<AssetOhlcvEntity> assetOhlcvEntities = query.fetch();
-        return assetOhlcvEntities.stream()
-                .map(Ohlcv::from)
-                .collect(Collectors.toList());
-    }
-
     public List<OhlcvSummary> getIndiceOhlcvSummaries() {
         return dataMapper.selectIndiceOhlcvSummaries(null).stream()
                 .peek(it -> it.setName(indiceService.getIndice(it.getId())
@@ -126,39 +107,44 @@ public class DataService {
         return Optional.of(indiceOhlcvSummary);
     }
 
-    public List<Ohlcv> getIndiceOhlcvs(Indice.Id indiceId, Ohlcv.Type type, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo, Pageable pageable) {
-        QIndiceOhlcvEntity qIndiceOhlcvEntity = QIndiceOhlcvEntity.indiceOhlcvEntity;
-        JPAQuery<IndiceOhlcvEntity> query = jpaQueryFactory
-                .selectFrom(qIndiceOhlcvEntity)
-                .where(
-                        Optional.ofNullable(indiceId).map(qIndiceOhlcvEntity.indiceId::eq).orElse(null),
-                        Optional.ofNullable(type).map(qIndiceOhlcvEntity.type::eq).orElse(null),
-                        Optional.ofNullable(dateTimeFrom).map(qIndiceOhlcvEntity.dateTime::goe).orElse(null),
-                        Optional.ofNullable(dateTimeTo).map(qIndiceOhlcvEntity.dateTime::loe).orElse(null)
-                )
-                .orderBy(qIndiceOhlcvEntity.dateTime.desc())
-                .limit(pageable.getPageSize())
-                .offset(pageable.getOffset());
-        List<IndiceOhlcvEntity> indiceOhlcvEntities = query.fetch();
-        return indiceOhlcvEntities.stream()
-                .map(Ohlcv::from)
-                .collect(Collectors.toList());
-    }
-
     public List<NewsSummary> getAssetNewsSummaries() {
-        return dataMapper.selectAssetNewsSummaries().stream()
+        return dataMapper.selectAssetNewsSummaries(null).stream()
                 .peek(it -> it.setName(assetService.getAsset(it.getId())
                         .map(Asset::getAssetName)
                         .orElse(null)))
                 .toList();
     }
 
+    public Optional<NewsSummary> getAssetNewsSummary(String assetId) {
+        NewsSummary newsSummary = dataMapper.selectAssetNewsSummaries(assetId).stream()
+                .findFirst()
+                .orElseThrow();
+        newsSummary.setName(assetService.getAsset(newsSummary.getId())
+                .map(Asset::getAssetName)
+                .orElse(null));
+        List<NewsSummary.NewsStatistic> newsStatistics = dataMapper.selectAssetNewsStatistics(assetId);
+        newsSummary.setNewsStatisticList(newsStatistics);
+        return Optional.of(newsSummary);
+    }
+
     public List<NewsSummary> getIndiceNewsSummaries() {
-        return dataMapper.selectIndiceNewsSummaries().stream()
+        return dataMapper.selectIndiceNewsSummaries(null).stream()
                 .peek(it-> it.setName(indiceService.getIndice(it.getId())
                         .map(Indice::getIndiceName)
                         .orElse(null)))
                 .toList();
+    }
+
+    public Optional<NewsSummary> getIndiceNewsSummary(Indice.Id indiceId) {
+        NewsSummary newsSummary = dataMapper.selectIndiceNewsSummaries(indiceId).stream()
+                .findFirst()
+                .orElseThrow();
+        newsSummary.setName(indiceService.getIndice(newsSummary.getId())
+                .map(Indice::getIndiceName)
+                .orElse(null));
+        List<NewsSummary.NewsStatistic> newsStatistics = dataMapper.selectIndiceNewsStatistics(indiceId);
+        newsSummary.setNewsStatisticList(newsStatistics);
+        return Optional.of(newsSummary);
     }
 
 }

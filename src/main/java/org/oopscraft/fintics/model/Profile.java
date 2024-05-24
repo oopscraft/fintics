@@ -20,10 +20,10 @@ public abstract class Profile<T> {
     private T target;
 
     @Builder.Default
-    private final List<Ohlcv> minuteOhlcvs = new ArrayList<>();
+    private final List<Ohlcv> dailyOhlcvs = new ArrayList<>();
 
     @Builder.Default
-    private final List<Ohlcv> dailyOhlcvs = new ArrayList<>();
+    private final List<Ohlcv> minuteOhlcvs = new ArrayList<>();
 
     public List<Ohlcv> getOhlcvs(Ohlcv.Type type, int period) {
         List<Ohlcv> ohlcvs;
