@@ -98,7 +98,6 @@ public class NewsCollector extends AbstractCollector {
 
     void collectAssetNews(Asset asset) {
         List<News> assetNewses = newsClient.getAssetNewses(asset);
-        List<AssetNewsEntity> assetNewsEntities = new ArrayList<>();
         for (News assetNews : assetNewses) {
             try {
                 String newsId = IdGenerator.md5(assetNews.getNewsUrl());
@@ -121,21 +120,19 @@ public class NewsCollector extends AbstractCollector {
                 // analysis
                 if (assetNewsEntity.getSentiment() == null) {
                     analysisNews(assetNewsEntity);
-                    assetNewsEntities.add(assetNewsEntity);
                 }
+
+                // save news
+                String unitName = String.format("assetNewsEntity[%s]: {}", asset.getAssetName(), assetNewsEntity.getTitle());
+                saveEntities(unitName, List.of(assetNewsEntity), transactionManager, assetNewsRepository);
             } catch (Exception e) {
                 log.warn(e.getMessage());
             }
         }
-
-        // save news
-        String unitName = String.format("assetNewsEntities[%s]", asset.getAssetName());
-        saveEntities(unitName, assetNewsEntities, transactionManager, assetNewsRepository);
     }
 
     void collectIndiceNews(Indice indice) {
         List<News> indiceNewses = newsClient.getIndiceNewses(indice);
-        List<IndiceNewsEntity> indiceNewsEntities = new ArrayList<>();
         for (News indiceNews : indiceNewses) {
             try {
                 String newsId = IdGenerator.md5(indiceNews.getNewsUrl());
@@ -158,18 +155,16 @@ public class NewsCollector extends AbstractCollector {
                 // analysis
                 if (indiceNewsEntity.getSentiment() == null) {
                     analysisNews(indiceNewsEntity);
-                    indiceNewsEntities.add(indiceNewsEntity);
                 }
+
+                // save news
+                String unitName = String.format("indiceNewsEntity[%s]: %s", indice.getIndiceName(), indiceNewsEntity.getTitle());
+                saveEntities(unitName, List.of(indiceNewsEntity), transactionManager, indiceNewsRepository);
             } catch (Exception e) {
                 log.warn(e.getMessage());
             }
         }
-
-        // save news
-        String unitName = String.format("indiceNewsEntities[%s]", indice.getIndiceName());
-        saveEntities(unitName, indiceNewsEntities, transactionManager, indiceNewsRepository);
     }
-
 
     void analysisNews(NewsEntity newsEntity) {
         // config not setting
@@ -207,6 +202,8 @@ public class NewsCollector extends AbstractCollector {
     }
 
     String getNewsContent(String newsUrl) {
+        return null;
+        /* TODO Insufficient hardware performance
         try {
             RestTemplate restTemplate = RestTemplateBuilder.create()
                     .insecure(true)
@@ -224,6 +221,7 @@ public class NewsCollector extends AbstractCollector {
             log.warn(e.getMessage());
             return null;
         }
+        */
     }
 
 }
