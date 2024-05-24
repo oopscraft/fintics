@@ -48,7 +48,7 @@ public class SimpleNewsClient extends NewsClient {
     public List<News> getAssetNewses(Asset asset) {
         // keyword
         String keyword = null;
-        switch (asset.getMarket()) {
+        switch (Optional.ofNullable(asset.getMarket()).orElse("")) {
             case "US" -> keyword = asset.getSymbol() + "+" + asset.getAssetName().split("\\s+")[0];
             case "KR" -> keyword = asset.getAssetName();
             default -> keyword = asset.getAssetName();
