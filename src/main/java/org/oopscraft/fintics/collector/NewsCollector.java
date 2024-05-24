@@ -182,7 +182,8 @@ public class NewsCollector extends AbstractCollector {
                     .build();
             String url = finticsProperties.getAiApiUrl() + "/news";
             Map<String,String> payload = new LinkedHashMap<>(){{
-                put("url", newsEntity.getNewsUrl());
+                // TODO Insufficient hardware performance
+                //put("url", newsEntity.getNewsUrl());
                 put("title", newsEntity.getTitle());
             }};
             RequestEntity<Map<String,String>> requestEntity = RequestEntity
