@@ -14,11 +14,14 @@
 
         let indiceDailyOhlcvsChart = null;
         let indiceMinuteOhlcvsChart = null;
+        const indiceNewses = new duice.ArrayProxy([]);
 
         const tradeAssetDailyOhlcvsChartMap = new Map();
         const tradeAssetMinuteOhlcvsChartMap = new Map();
+        const tradeNewsesMap = new Map();
         const tradeBalanceMap = new Map();
         trades.forEach(trade => {
+            tradeNewsesMap.set(trade.tradeId, new duice.ArrayProxy([]));
             tradeBalanceMap.set(trade.tradeId, new duice.ObjectProxy({
                 balanceAssets: new duice.ArrayProxy([])
             }));
@@ -50,6 +53,11 @@
             return await _fetch(url, null, true);
         }
 
+        async function getIndiceNewses(indiceId) {
+            let url = new URL(`${_apiUrl}/v1/indices/${indiceId}/newses`, document.location.origin);
+            return await _fetch(url);
+        }
+
         async function getAssetDailyOhlcvs(assetId, dateTimeFrom, dateTimeTo) {
             let url = new URL(`${_apiUrl}/v1/assets/${assetId}/daily-ohlcvs`, document.location.origin);
             url.searchParams.append('dateTimeFrom', dateTimeFrom.toISOString());
@@ -64,6 +72,11 @@
             url.searchParams.append('dateTimeTo', dateTimeTo.toISOString());
             url.searchParams.append('_size', 1000);
             return await _fetch(url, null, true);
+        }
+
+        async function getAssetNewses(assetId) {
+            let url = new URL(`${_apiUrl}/v1/assets/${assetId}/newses`, document.location.origin);
+            return await _fetch(url);
         }
 
         async function getIndiceMonitor() {
@@ -114,6 +127,27 @@
             Promise.all(minutePromises).then(results => {
                 results.forEach(dataset => indiceMinuteOhlcvsChart.data.datasets.push(dataset));
                 indiceMinuteOhlcvsChart.update();
+            });
+
+            // news
+            let newsPromises = indices.map(indice => {
+                return getIndiceNewses(indice.indiceId)
+                    .then(response => response.json())
+                    .then(indiceNewses => {
+                        indiceNewses.forEach(it => {
+                            it.indiceId = indice.indiceId;
+                            it.indiceName = indice.indiceName;
+                        });
+                        return indiceNewses;
+                    });
+            });
+            Promise.all(newsPromises).then(results => {
+                let newses = [];
+                results.forEach(result => {
+                    newses.push.apply(newses, result);
+                });
+                newses.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
+                duice.ArrayProxy.assign(indiceNewses, newses);
             });
         }
 
@@ -197,6 +231,27 @@
                 minuteOhlcvsChart.update();
             });
 
+            // news
+            let newsPromises = trade.tradeAssets.map(asset => {
+                return getAssetNewses(asset.assetId)
+                    .then(response => response.json())
+                    .then(newses => {
+                        newses.forEach(it => {
+                            it.assetId = asset.assetId;
+                            it.assetName = asset.assetName;
+                        });
+                        return newses;
+                    });
+            });
+            Promise.all(newsPromises).then(results => {
+                let newses = [];
+                results.forEach(result => {
+                    newses.push.apply(newses, result);
+                });
+                newses.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
+                duice.ArrayProxy.assign(tradeNewsesMap.get(trade.tradeId), newses);
+            });
+
             // balance
             let balanceUrl = new URL(`${_apiUrl}/v1/trades/${trade.tradeId}/balance`, document.location.origin);
             _fetch(balanceUrl, null, true).then(response => response.json())
@@ -268,6 +323,38 @@
                 <div class="grid-column--6 s__grid-column--12" style="height:150px;">
                     <canvas id="indiceMinuteOhlcvsChart"></canvas>
                 </div>
+                <div class="grid-column--12 overflow-y--scroll" style="height:150px;">
+                    <table class="width--100" style="line-height:normal;">
+                        <colgroup>
+                            <col style="width:10em;"/>
+                            <col/>
+                            <col/>
+                            <col style="width:10em;"/>
+                            <col style="width:10em;"/>
+                        </colgroup>
+                        <thead>
+                        <tr class="font-size--smaller">
+                            <th data-th-text="#{fintics.News.dateTime}"></th>
+                            <th data-th-text="#{fintics.Indice}"></th>
+                            <th data-th-text="#{fintics.News.title}" class="text-align--center"></th>
+                            <th data-th-text="#{fintics.News.sentiment}"></th>
+                            <th data-th-text="#{fintics.News.confidence}"></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr data-duice-bind="indiceNewses" data-duice-loop="indiceNews,status" class="font-size--smaller">
+                            <td data-duice-bind="indiceNews" data-duice-property="dateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
+                            <td data-duice-bind="indiceNews" data-duice-property="indiceName"></td>
+                            <td class="text-align--center">
+                                <a href="#" onclick="_openLink(this.dataset.newsUrl,'_blank');" data-duice-bind="indiceNews" data-duice-property="title" data-duice-execute="this.dataset.newsUrl=indiceNews.newsUrl;">
+                                </a>
+                            </td>
+                            <td data-duice-bind="indiceNews" data-duice-property="sentiment"></td>
+                            <td data-duice-bind="indiceNews" data-duice-property="confidence"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
         <!-- ================================== -->
@@ -300,71 +387,105 @@
                     </small>
                 </a>
             </h2>
-            <div class="display--grid grid-template-columns--12 grid-gap--1em">
-                <div class="grid-column--6 s__grid-column--12">
-                    <div style="height:150px;">
-                        <canvas th:id="'tradeAssetDailyOhlcvsChart-' + ${trade.tradeId}"></canvas>
-                    </div>
-                    <div style="height:150px;">
-                        <canvas th:id="'tradeAssetMinuteOhlcvsChart-' + ${trade.tradeId}"></canvas>
-                    </div>
-                    <div class="overflow-y--auto overflow-x--auto border-top--1">
-                        <table class="width--100 border--0 text-align--center font-size-smaller" style="line-height:normal;">
-                            <colgroup>
-                                <col/>
-                                <col/>
-                                <col/>
-                                <col/>
-                                <col/>
-                                <col/>
-                                <col/>
-                                <col/>
-                            </colgroup>
-                            <thead>
-                            <tr class="font-size--smaller">
-                                <th data-th-text="#{web.global.no}"></th>
-                                <th data-th-text="#{fintics.BalanceAsset.assetId}"></th>
-                                <th data-th-text="#{fintics.BalanceAsset.assetName}"></th>
-                                <th data-th-text="#{fintics.BalanceAsset.quantity}" class="text-align--right"></th>
-                                <th data-th-text="#{fintics.BalanceAsset.purchaseAmount}" class="text-align--right"></th>
-                                <th data-th-text="#{fintics.BalanceAsset.valuationAmount}" class="text-align--right"></th>
-                                <th data-th-text="#{fintics.BalanceAsset.profitAmount}" class="text-align--right"></th>
-                                <th data-th-text="#{fintics.Asset.links}"></th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr th:data-duice-bind="'tradeBalanceMap.get(\'' + ${trade.tradeId} + '\').balanceAssets'" data-duice-loop="balanceAsset,status" class="font-size--smaller">
-                                <td data-duice-bind="status" data-duice-property="count"></td>
-                                <td data-duice-bind="balanceAsset" data-duice-property="assetId"></td>
-                                <td data-duice-bind="balanceAsset" data-duice-property="assetName"></td>
-                                <td data-duice-bind="balanceAsset" data-duice-property="quantity" data-duice-format="number" class="text-align--right"></td>
-                                <td data-duice-bind="balanceAsset" data-duice-property="purchaseAmount" data-duice-format="number" class="text-align--right"></td>
-                                <td data-duice-bind="balanceAsset" data-duice-property="valuationAmount" data-duice-format="number" class="text-align--right"></td>
-                                <td data-duice-bind="balanceAsset" data-duice-property="profitAmount" data-duice-format="number" class="text-align--right"
-                                    data-duice-execute="
-                                    if(balanceAsset.profitAmount > 0) this.classList.add('color--red');
-                                    if(balanceAsset.profitAmount < 0) this.classList.add('color--blue');
-                                    "></td>
-                                <td class="text-align--right">
-                                    <select data-duice-bind="balanceAsset"
-                                            data-duice-option="balanceAsset.links"
-                                            data-duice-option-value-property="url"
-                                            data-duice-option-text-property="name"
-                                            onchange="_openLink(this.value, '_blank'); this.value = '';">
-                                        <option value>- Link -</option>
-                                    </select>
-                                </td>
-                            </tr>
-                            <tr th:data-duice-bind="'tradeBalanceMap.get(\'' + ${trade.tradeId} + '\').balanceAssets'"
-                                th:data-duice-execute="'if(tradeBalanceMap.get(\'' + ${trade.tradeId} + '\').balanceAssets.length === 0) this.hidden=false;'" hidden>
-                                <td colspan="100%" class="text-align--center font-size--smaller">No Data</td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
+            <div class="display--grid grid-template-columns--12 padding--1em s__padding--0">
+                <div class="grid-column--6 s__grid-column--12" style="height:150px;">
+                    <canvas th:id="'tradeAssetDailyOhlcvsChart-' + ${trade.tradeId}"></canvas>
                 </div>
-                <div class="grid-column--6 s__grid-column--12" style="min-height:200px;">
-                    <textarea th:id="'tradeLog-' + ${trade.tradeId}" class="tradeLog width--100 height--100"></textarea>
+                <div class="grid-column--6 s__grid-column--12" style="height:150px;">
+                    <canvas th:id="'tradeAssetMinuteOhlcvsChart-' + ${trade.tradeId}"></canvas>
+                </div>
+            </div>
+            <div class="grid-column--12 padding--1em s__padding--0">
+                <div class="overflow-y--scroll border-top--1" style="max-height:150px;">
+                    <table class="width--100" style="line-height:normal;">
+                        <colgroup>
+                            <col style="width:10em;"/>
+                            <col/>
+                            <col/>
+                            <col style="width:10em;"/>
+                            <col style="width:10em;"/>
+                        </colgroup>
+                        <thead>
+                        <tr class="font-size--smaller">
+                            <th data-th-text="#{fintics.News.dateTime}"></th>
+                            <th data-th-text="#{fintics.Asset}"></th>
+                            <th data-th-text="#{fintics.News.title}" class="text-align--center"></th>
+                            <th data-th-text="#{fintics.News.sentiment}"></th>
+                            <th data-th-text="#{fintics.News.confidence}"></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:data-duice-bind="'tradeNewsesMap.get(\'' + ${trade.tradeId} + '\')'" data-duice-loop="assetNews,status" class="font-size--smaller">
+                            <td data-duice-bind="assetNews" data-duice-property="dateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
+                            <td data-duice-bind="assetNews" data-duice-property="assetName"></td>
+                            <td class="text-align--center">
+                                <a href="#" onclick="_openLink(this.dataset.newsUrl,'_blank');" data-duice-bind="assetNews" data-duice-property="title" data-duice-execute="this.dataset.newsUrl=assetNews.newsUrl;">
+                                </a>
+                            </td>
+                            <td data-duice-bind="assetNews" data-duice-property="sentiment"></td>
+                            <td data-duice-bind="assetNews" data-duice-property="confidence"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="grid-column--12 padding--1em s__padding--0" style="height:200px;">
+                <textarea th:id="'tradeLog-' + ${trade.tradeId}" class="tradeLog width--100 height--100"></textarea>
+            </div>
+            <div class="grid-column--12 padding--1em s__padding--0">
+                <div class="border-top--1">
+                    <table class="width--100 border--0 text-align--center font-size-smaller" style="line-height:normal;">
+                        <colgroup>
+                            <col/>
+                            <col/>
+                            <col/>
+                            <col/>
+                            <col/>
+                            <col/>
+                            <col/>
+                            <col/>
+                        </colgroup>
+                        <thead>
+                        <tr class="font-size--smaller">
+                            <th data-th-text="#{web.global.no}"></th>
+                            <th data-th-text="#{fintics.BalanceAsset.assetId}"></th>
+                            <th data-th-text="#{fintics.BalanceAsset.assetName}"></th>
+                            <th data-th-text="#{fintics.BalanceAsset.quantity}" class="text-align--right"></th>
+                            <th data-th-text="#{fintics.BalanceAsset.purchaseAmount}" class="text-align--right"></th>
+                            <th data-th-text="#{fintics.BalanceAsset.valuationAmount}" class="text-align--right"></th>
+                            <th data-th-text="#{fintics.BalanceAsset.profitAmount}" class="text-align--right"></th>
+                            <th data-th-text="#{fintics.Asset.links}"></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:data-duice-bind="'tradeBalanceMap.get(\'' + ${trade.tradeId} + '\').balanceAssets'" data-duice-loop="balanceAsset,status" class="font-size--smaller">
+                            <td data-duice-bind="status" data-duice-property="count"></td>
+                            <td data-duice-bind="balanceAsset" data-duice-property="assetId"></td>
+                            <td data-duice-bind="balanceAsset" data-duice-property="assetName"></td>
+                            <td data-duice-bind="balanceAsset" data-duice-property="quantity" data-duice-format="number" class="text-align--right"></td>
+                            <td data-duice-bind="balanceAsset" data-duice-property="purchaseAmount" data-duice-format="number" class="text-align--right"></td>
+                            <td data-duice-bind="balanceAsset" data-duice-property="valuationAmount" data-duice-format="number" class="text-align--right"></td>
+                            <td data-duice-bind="balanceAsset" data-duice-property="profitAmount" data-duice-format="number" class="text-align--right"
+                                data-duice-execute="
+                                if(balanceAsset.profitAmount > 0) this.classList.add('color--red');
+                                if(balanceAsset.profitAmount < 0) this.classList.add('color--blue');
+                                "></td>
+                            <td class="text-align--right">
+                                <select data-duice-bind="balanceAsset"
+                                        data-duice-option="balanceAsset.links"
+                                        data-duice-option-value-property="url"
+                                        data-duice-option-text-property="name"
+                                        onchange="_openLink(this.value, '_blank'); this.value = '';">
+                                    <option value>- Link -</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr th:data-duice-bind="'tradeBalanceMap.get(\'' + ${trade.tradeId} + '\').balanceAssets'"
+                            th:data-duice-execute="'if(tradeBalanceMap.get(\'' + ${trade.tradeId} + '\').balanceAssets.length === 0) this.hidden=false;'" hidden>
+                            <td colspan="100%" class="text-align--center font-size--smaller">No Data</td>
+                        </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
