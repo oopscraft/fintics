@@ -192,8 +192,7 @@ public class NewsCollector extends AbstractCollector {
                     .build();
             String url = finticsProperties.getAiApiUrl() + "/news";
             Map<String,String> payload = new LinkedHashMap<>(){{
-                // TODO Insufficient hardware performance
-                //put("url", newsEntity.getNewsUrl());
+                put("url", newsEntity.getNewsUrl());
                 put("title", newsEntity.getTitle());
             }};
             RequestEntity<Map<String,String>> requestEntity = RequestEntity
@@ -213,29 +212,6 @@ public class NewsCollector extends AbstractCollector {
         } catch (Exception e) {
             log.warn(e.getMessage());
         }
-    }
-
-    String getNewsContent(String newsUrl) {
-        return null;
-        /* TODO Insufficient hardware performance
-        try {
-            RestTemplate restTemplate = RestTemplateBuilder.create()
-                    .insecure(true)
-                    .build();
-            ResponseEntity<String> responseEntity = restTemplate.getForEntity(newsUrl, String.class);
-            String responseBody = responseEntity.getBody();
-            Document doc = Jsoup.parse(responseBody);
-            Element articleElement = doc.getElementsByTag("article").first();
-            if (articleElement != null) {
-                return articleElement.text();
-            } else {
-                return null;
-            }
-        } catch (Exception e) {
-            log.warn(e.getMessage());
-            return null;
-        }
-        */
     }
 
 }
