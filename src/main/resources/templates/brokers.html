@@ -150,7 +150,7 @@
         <!-- ====================================== -->
         <!-- start: broker list                     -->
         <!-- ====================================== -->
-        <div id="brokerList" class="grid-column--5 s__grid-column--12">
+        <div id="brokerList" class="grid-column--6 s__grid-column--12">
             <div class="display--grid grid-gap--1em border--1 padding--1em">
                 <h2>
                     <img class="icon" th:src="@{/static/image/icon-list.svg}" alt="list"/>
@@ -167,7 +167,7 @@
                                th:placeholder="#{web.global.keyword}"/>
                     </label>
                     <div class="grid-column--12 justify-self--end">
-                        <button type="button" onclick="getBrokers();">
+                        <button type="submit" onclick="getBrokers();">
                             <img class="icon" th:src="@{/static/image/icon-search.svg}" alt="reset"/>
                             <span data-th-text="#{web.global.search}"></span>
                         </button>
@@ -240,7 +240,7 @@
         <!-- ====================================== -->
         <!-- start: broker detail                   -->
         <!-- ====================================== -->
-        <div id="brokerDetail" class="grid-column--7 s__grid-column--12">
+        <div id="brokerDetail" class="grid-column--6 s__grid-column--12">
             <div class="display--grid grid-gap--1em border--1 padding--1em">
                 <h2>
                     <img class="icon" th:src="@{/static/image/icon-detail.svg}" alt="detail"/>
