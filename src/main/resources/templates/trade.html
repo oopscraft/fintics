@@ -1118,6 +1118,7 @@
                                 <col/>
                                 <col/>
                                 <col/>
+                                <col/>
                             </colgroup>
                             <thead>
                             <tr>
@@ -1128,7 +1129,8 @@
                                 <th data-th-text="#{fintics.BalanceAsset.purchaseAmount}" class="text-align--right"></th>
                                 <th data-th-text="#{fintics.BalanceAsset.valuationAmount}" class="text-align--right"></th>
                                 <th data-th-text="#{fintics.BalanceAsset.profitAmount}" class="text-align--right"></th>
-                                <th>-</th>
+                                <th data-th-text="#{fintics.BalanceAsset.profitPercentage}" class="text-align--right"></th>
+                                <th data-th-text="#{fintics.Asset.links}">-</th>
                             </tr>
                             </thead>
                             <tbody class="font-size--smaller">
@@ -1170,17 +1172,21 @@
                                           ">
                                     </span>
                                 </td>
+                                <td data-duice-bind="balanceAsset" data-duice-execute="
+                                if(balanceAsset.profitPercentage > 0) this.classList.add('color--red');
+                                if(balanceAsset.profitPercentage < 0) this.classList.add('color--blue');
+                                " class="text-align--right">
+                                    <span data-duice-bind="balanceAsset" data-duice-property="profitPercentage" data-duice-format="number"></span>
+                                    %
+                                </td>
                                 <td>
-                                    <button type="button"
-                                            class="small"
-                                            data-duice-bind="balanceAsset.links"
-                                            data-duice-loop="link,status"
-                                            data-duice-execute="
-                                            this.dataset.url=link.url;
-                                            this.addEventListener('click', () => { _openLink(this.dataset.url,'_blank'); })">
-                                        <img class="icon" th:src="@{/static/image/icon-open.svg}" alt="link"/>
-                                        <span class="font-weight--bold" data-duice-bind="link" data-duice-property="name"></span>
-                                    </button>
+                                    <select data-duice-bind="balanceAsset"
+                                            data-duice-option="balanceAsset.links"
+                                            data-duice-option-value-property="url"
+                                            data-duice-option-text-property="name"
+                                            onchange="_openLink(this.value, '_blank'); this.value = '';">
+                                        <option value>- Link -</option>
+                                    </select>
                                 </td>
                             </tr>
                             <tr data-duice-bind="balance.balanceAssets" data-duice-execute="if(balance.balanceAssets.length === 0) this.hidden=false;" hidden>

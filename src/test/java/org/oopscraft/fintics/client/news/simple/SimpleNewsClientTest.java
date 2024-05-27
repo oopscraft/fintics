@@ -58,4 +58,17 @@ class SimpleNewsClientTest extends CoreTestSupport {
         log.info("news: {}", news);
     }
 
+    @Test
+    void getAssetNewsKrEtf() {
+        // given
+        Asset asset = Asset.builder()
+                .assetId("KR.251340")
+                .assetName("KODEX 코스닥150선물인버스")
+                .build();
+        // when
+        List<News> news = getSimpleNewsClient().getAssetNewses(asset);
+        // then
+        log.info("news: {}", news);
+    }
+
 }

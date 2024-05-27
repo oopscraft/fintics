@@ -346,11 +346,10 @@
                             <td data-duice-bind="indiceNews" data-duice-property="dateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
                             <td data-duice-bind="indiceNews" data-duice-property="indiceName"></td>
                             <td class="text-align--center">
-                                <a href="#" onclick="_openLink(this.dataset.newsUrl,'_blank');" data-duice-bind="indiceNews" data-duice-property="title" data-duice-execute="this.dataset.newsUrl=indiceNews.newsUrl;">
-                                </a>
+                                <a href="#" onclick="_openLink(this.dataset.newsUrl,'_blank');" data-duice-bind="indiceNews" data-duice-property="title" data-duice-execute="this.dataset.newsUrl=indiceNews.newsUrl;"></a>
                             </td>
-                            <td data-duice-bind="indiceNews" data-duice-property="sentiment"></td>
-                            <td data-duice-bind="indiceNews" data-duice-property="confidence"></td>
+                            <td data-duice-bind="indiceNews" data-duice-property="sentiment" class="text-align--center"></td>
+                            <td data-duice-bind="indiceNews" data-duice-property="confidence" class="text-align--center"></td>
                         </tr>
                         </tbody>
                     </table>
@@ -410,8 +409,8 @@
                             <th data-th-text="#{fintics.News.dateTime}"></th>
                             <th data-th-text="#{fintics.Asset}"></th>
                             <th data-th-text="#{fintics.News.title}" class="text-align--center"></th>
-                            <th data-th-text="#{fintics.News.sentiment}"></th>
-                            <th data-th-text="#{fintics.News.confidence}"></th>
+                            <th data-th-text="#{fintics.News.sentiment}" class="text-align--center"></th>
+                            <th data-th-text="#{fintics.News.confidence}" class="text-align--center"></th>
                         </tr>
                         </thead>
                         <tbody>
@@ -422,8 +421,8 @@
                                 <a href="#" onclick="_openLink(this.dataset.newsUrl,'_blank');" data-duice-bind="assetNews" data-duice-property="title" data-duice-execute="this.dataset.newsUrl=assetNews.newsUrl;">
                                 </a>
                             </td>
-                            <td data-duice-bind="assetNews" data-duice-property="sentiment"></td>
-                            <td data-duice-bind="assetNews" data-duice-property="confidence"></td>
+                            <td data-duice-bind="assetNews" data-duice-property="sentiment" class="text-align--center"></td>
+                            <td data-duice-bind="assetNews" data-duice-property="confidence" class="text-align--center"></td>
                         </tr>
                         </tbody>
                     </table>
@@ -444,6 +443,7 @@
                             <col/>
                             <col/>
                             <col/>
+                            <col/>
                         </colgroup>
                         <thead>
                         <tr class="font-size--smaller">
@@ -454,6 +454,7 @@
                             <th data-th-text="#{fintics.BalanceAsset.purchaseAmount}" class="text-align--right"></th>
                             <th data-th-text="#{fintics.BalanceAsset.valuationAmount}" class="text-align--right"></th>
                             <th data-th-text="#{fintics.BalanceAsset.profitAmount}" class="text-align--right"></th>
+                            <th data-th-text="#{fintics.BalanceAsset.profitPercentage}" class="text-align--right"></th>
                             <th data-th-text="#{fintics.Asset.links}"></th>
                         </tr>
                         </thead>
@@ -462,7 +463,10 @@
                             <td data-duice-bind="status" data-duice-property="count"></td>
                             <td data-duice-bind="balanceAsset" data-duice-property="assetId"></td>
                             <td data-duice-bind="balanceAsset" data-duice-property="assetName"></td>
-                            <td data-duice-bind="balanceAsset" data-duice-property="quantity" data-duice-format="number" class="text-align--right"></td>
+                            <td class="text-align--right">
+                                <span data-duice-bind="balanceAsset" data-duice-property="quantity" data-duice-format="number"></span>
+                                (<span data-duice-bind="balanceAsset" data-duice-property="orderableQuantity" data-duice-format="number"></span>)
+                            </td>
                             <td data-duice-bind="balanceAsset" data-duice-property="purchaseAmount" data-duice-format="number" class="text-align--right"></td>
                             <td data-duice-bind="balanceAsset" data-duice-property="valuationAmount" data-duice-format="number" class="text-align--right"></td>
                             <td data-duice-bind="balanceAsset" data-duice-property="profitAmount" data-duice-format="number" class="text-align--right"
@@ -470,7 +474,14 @@
                                 if(balanceAsset.profitAmount > 0) this.classList.add('color--red');
                                 if(balanceAsset.profitAmount < 0) this.classList.add('color--blue');
                                 "></td>
-                            <td class="text-align--right">
+                            <td data-duice-bind="balanceAsset" data-duice-execute="
+                                if(balanceAsset.profitPercentage > 0) this.classList.add('color--red');
+                                if(balanceAsset.profitPercentage < 0) this.classList.add('color--blue');
+                                " class="text-align--right">
+                                <span data-duice-bind="balanceAsset" data-duice-property="profitPercentage" data-duice-format="number"></span>
+                                %
+                            </td>
+                            <td>
                                 <select data-duice-bind="balanceAsset"
                                         data-duice-option="balanceAsset.links"
                                         data-duice-option-value-property="url"
