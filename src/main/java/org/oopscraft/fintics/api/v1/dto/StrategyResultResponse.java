@@ -11,14 +11,17 @@ import java.math.BigDecimal;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class StrategyResultResponse {
 
-    private BigDecimal value;
+    private StrategyResult.Action action;
 
-    private String detail;
+    private BigDecimal position;
+
+    private String description;
 
     public static StrategyResultResponse from(StrategyResult strategyResult) {
         return StrategyResultResponse.builder()
-                .value(strategyResult.getPosition())
-                .detail(strategyResult.getDescription())
+                .action(strategyResult.getAction())
+                .position(strategyResult.getPosition())
+                .description(strategyResult.getDescription())
                 .build();
     }
 
