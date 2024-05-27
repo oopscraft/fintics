@@ -27,6 +27,8 @@ public class BalanceAssetResponse extends AssetResponse {
 
     private BigDecimal profitAmount;
 
+    private BigDecimal profitPercentage;
+
     public static BalanceAssetResponse from(BalanceAsset balanceAsset) {
         return BalanceAssetResponse.builder()
                 .assetId(balanceAsset.getAssetId())
@@ -37,6 +39,7 @@ public class BalanceAssetResponse extends AssetResponse {
                 .purchaseAmount(balanceAsset.getPurchaseAmount())
                 .valuationAmount(balanceAsset.getValuationAmount())
                 .profitAmount(balanceAsset.getProfitAmount())
+                .profitPercentage(balanceAsset.getProfitPercentage())
                 .type(balanceAsset.getType())
                 .marketCap(balanceAsset.getMarketCap())
                 .issuedShares(balanceAsset.getIssuedShares())

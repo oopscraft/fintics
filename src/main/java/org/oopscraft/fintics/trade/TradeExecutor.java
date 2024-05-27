@@ -12,6 +12,7 @@ import org.oopscraft.fintics.service.IndiceService;
 import org.oopscraft.fintics.service.OrderService;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
@@ -86,11 +87,15 @@ public class TradeExecutor {
             List<Ohlcv> previousDailyOhlcvs = getPreviousIndiceDailyOhlcvs(indice.getIndiceId(), dailyOhlcvs, dateTime);
             dailyOhlcvs.addAll(previousDailyOhlcvs);
 
+            // newses
+            List<News> newses = indiceService.getIndiceNewses(indice.getIndiceId(), dateTime.minusWeeks(1), dateTime, Pageable.unpaged());
+
             // indice profile
             IndiceProfile indiceProfile = IndiceProfile.builder()
                     .target(indice)
                     .minuteOhlcvs(minuteOhlcvs)
                     .dailyOhlcvs(dailyOhlcvs)
+                    .newses(newses)
                     .build();
             indiceProfiles.add(indiceProfile);
         }
@@ -121,11 +126,15 @@ public class TradeExecutor {
                 List<Ohlcv> previousMinuteOhlcvs = getPreviousAssetMinuteOhlcvs(tradeAsset.getAssetId(), minuteOhlcvs, dateTime);
                 minuteOhlcvs.addAll(previousMinuteOhlcvs);
 
+                // newses
+                List<News> newses = assetService.getAssetNewses(tradeAsset.getAssetId(), dateTime.minusWeeks(1), dateTime, Pageable.unpaged());
+
                 // asset profile
                 AssetProfile assetProfile = AssetProfile.builder()
                         .target(tradeAsset)
                         .dailyOhlcvs(dailyOhlcvs)
                         .minuteOhlcvs(minuteOhlcvs)
+                        .newses(newses)
                         .build();
 
                 // logging

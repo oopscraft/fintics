@@ -25,6 +25,9 @@ public abstract class Profile<T> {
     @Builder.Default
     private final List<Ohlcv> minuteOhlcvs = new ArrayList<>();
 
+    @Builder.Default
+    private final List<News> newses = new ArrayList<>();
+
     public List<Ohlcv> getOhlcvs(Ohlcv.Type type, int period) {
         List<Ohlcv> ohlcvs;
         switch(type) {

@@ -238,22 +238,22 @@
             <span data-th-text="#{fintics.Asset}"></span>
         </h2>
         <form onsubmit="return false;" class="display--grid grid-template-columns--12 grid-gap--1em padding-x--1em">
-            <label class="grid-column--1 s-grid-column-4">
+            <label class="grid-column--1 s__grid-column--4">
                 <select class="width--100" data-duice-bind="assetSearch" data-duice-property="key">
                     <option value="assetName" th:text="#{fintics.Asset.assetName}"></option>
                     <option value="assetId" th:text="#{fintics.Asset.assetId}"></option>
                 </select>
             </label>
-            <label class="grid-column--2 s-grid-column--8">
+            <label class="grid-column--2 s__grid-column--8">
                 <input class="width--100" type="text" data-duice-bind="assetSearch" data-duice-property="value"/>
             </label>
-            <label class="grid-column--2">
+            <label class="grid-column--2 s__grid-column--12">
                 <select data-duice-bind="assetSearch" data-duice-property="market" class="width--100">
                     <option value="" data-th-text="'- ' + #{fintics.Asset.market} + ' -'"></option>
                     <option th:each="market : ${markets}" th:value="${market}" th:text="${market}"></option>
                 </select>
             </label>
-            <div class="grid-column--7 justify-self--end align-self--end">
+            <div class="grid-column--7 s__grid-column--12 justify-self--end align-self--end">
                 <button type="submit" onclick="getAssets();">
                     <img class="icon" th:src="@{/static/image/icon-search.svg}" alt="search"/>
                     <span data-th-text="#{web.global.search}"></span>
