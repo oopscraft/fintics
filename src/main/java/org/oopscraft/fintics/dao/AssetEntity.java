@@ -3,11 +3,9 @@ package org.oopscraft.fintics.dao;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.arch4j.core.data.BaseEntity;
+import org.oopscraft.arch4j.core.data.converter.BooleanToYNConverter;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -35,6 +33,10 @@ public class AssetEntity extends BaseEntity {
 
     @Column(name = "type", length = 16)
     private String type;
+
+    @Column(name = "favorite")
+    @Convert(converter = BooleanToYNConverter.class)
+    private boolean favorite;
 
     @Column(name = "date_time")
     private LocalDateTime dateTime;

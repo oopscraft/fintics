@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="_web.html">
+<th:block layout:fragment="_content">
+    <script th:inline="javascript">
+        const assetSearch = new duice.ObjectProxy({
+            market: null,
+            key: 'assetName',
+            value: null,
+            favorite: null,
+            perFrom: null,
+            perTo: null,
+            roeFrom: null,
+            roeTo: null,
+            roaFrom: null,
+            roaTo: null,
+            _page: 0,
+            _size: 20,
+            _count: 0
+        });
+        duice.ObjectProxy.setDisable(assetSearch, 'perFrom', true);
+        duice.ObjectProxy.setDisable(assetSearch, 'perTo', true);
+        duice.ObjectProxy.setDisable(assetSearch, 'roeFrom', true);
+        duice.ObjectProxy.setDisable(assetSearch, 'roeTo', true);
+        duice.ObjectProxy.setDisable(assetSearch, 'roaFrom', true);
+        duice.ObjectProxy.setDisable(assetSearch, 'roaTo', true);
+
+        const assets = new duice.ArrayProxy([]);
+
+        function getAssets(page) {
+            if(page) {
+                assetSearch._page = page;
+            }
+            let url = new URL(`${_apiUrl}/v1/assets`, document.location.origin);
+            if (assetSearch.market != null) {
+                url.searchParams.append('market', assetSearch.market);
+            }
+            if (assetSearch.key && assetSearch.value) {
+                url.searchParams.append(assetSearch.key, assetSearch.value);
+            }
+            if (assetSearch.favorite != null) {
+                url.searchParams.append('favorite', assetSearch.favorite);
+            }
+            if (assetSearch.perFrom != null && assetSearch.perTo != null) {
+                url.searchParams.append('perFrom', assetSearch.perFrom);
+                url.searchParams.append('perTo', assetSearch.perTo);
+            }
+            if (assetSearch.roeFrom != null && assetSearch.roeTo != null) {
+                url.searchParams.append('roeFrom', assetSearch.roeFrom);
+                url.searchParams.append('roeTo', assetSearch.roeTo);
+            }
+            if (assetSearch.roaFrom != null && assetSearch.roaTo != null) {
+                url.searchParams.append('roaFrom', assetSearch.roaFrom);
+                url.searchParams.append('roaTo', assetSearch.roaTo);
+            }
+            url.searchParams.append('_page', assetSearch._page);
+            url.searchParams.append('_size', assetSearch._size);
+            _fetch(url)
+                .then(response => {
+                    assetSearch._count = _parseTotalCount(response);
+                    return response.json()
+                })
+                .then(data => {
+                    duice.ArrayProxy.assign(assets, data);
+                });
+        }
+
+        function togglePerCheckbox(checkbox) {
+            if (checkbox.checked) {
+                assetSearch.perFrom = 0;
+                assetSearch.perTo=100;
+            } else {
+                assetSearch.perFrom = null;
+                assetSearch.perTo = null;
+            }
+            let disable = !checkbox.checked;
+            duice.ObjectProxy.setDisable(assetSearch, 'perFrom', disable);
+            duice.ObjectProxy.setDisable(assetSearch, 'perTo', disable);
+        }
+
+        function toggleRoeCheckbox(checkbox) {
+            if (checkbox.checked) {
+                assetSearch.roeFrom = 0;
+                assetSearch.roeTo=100;
+            } else {
+                assetSearch.roeFrom = null;
+                assetSearch.roeTo = null;
+            }
+            let disable = !checkbox.checked;
+            duice.ObjectProxy.setDisable(assetSearch, 'roeFrom', disable);
+            duice.ObjectProxy.setDisable(assetSearch, 'roeTo', disable);
+        }
+
+        function toggleRoaCheckbox(checkbox) {
+            if (checkbox.checked) {
+                assetSearch.roaFrom = 0;
+                assetSearch.roaTo=100;
+            } else {
+                assetSearch.roaFrom = null;
+                assetSearch.roaTo = null;
+            }
+            let disable = !checkbox.checked;
+            duice.ObjectProxy.setDisable(assetSearch, 'roaFrom', disable);
+            duice.ObjectProxy.setDisable(assetSearch, 'roaTo', disable);
+        }
+
+        function resetAssets() {
+            duice.ObjectProxy.reset(assetSearch);
+            duice.ObjectProxy.setDisable(assetSearch, 'perFrom', true);
+            duice.ObjectProxy.setDisable(assetSearch, 'perTo', true);
+            duice.ObjectProxy.setDisable(assetSearch, 'roeFrom', true);
+            duice.ObjectProxy.setDisable(assetSearch, 'roeTo', true);
+            duice.ObjectProxy.setDisable(assetSearch, 'roaFrom', true);
+            duice.ObjectProxy.setDisable(assetSearch, 'roaTo', true);
+            getAssets();
+        }
+
+        // DOM content loaded listener
+        document.addEventListener('DOMContentLoaded',()=> {
+            getAssets();
+        });
+    </script>
+
+    <!-- ====================================== -->
+    <!-- start: title                           -->
+    <!-- ====================================== -->
+    <h1 id="title">
+        <img class="icon" th:src="@{/static/image/icon-asset.svg}" alt="asset"/>
+        <span data-th-text="#{fintics.Asset}"></span>
+    </h1>
+    <!-- ====================================== -->
+    <!-- end: title                             -->
+    <!-- ====================================== -->
+
+    <!-- ================================== -->
+    <!-- start: assets                      -->
+    <!-- ================================== -->
+    <div class="border--1 padding--1em" style="min-height:400px;">
+        <form onsubmit="return false;" class="display--grid grid-template-columns--12 grid-gap--1em margin-x--1em">
+            <label class="grid-column--2 s__grid-column--12">
+                <select data-duice-bind="assetSearch" data-duice-property="market" class="width--100">
+                    <option value="" data-th-text="'- ' + #{fintics.Asset.market} + ' -'"></option>
+                    <option th:each="market : ${markets}" th:value="${market}" th:text="${market}"></option>
+                </select>
+            </label>
+            <label class="grid-column--2 s-grid-column-4">
+                <select class="width--100" data-duice-bind="assetSearch" data-duice-property="key">
+                    <option value="assetName" th:text="#{fintics.Asset.assetName}"></option>
+                    <option value="assetId" th:text="#{fintics.Asset.assetId}"></option>
+                </select>
+            </label>
+            <label class="grid-column--2 s-grid-column--8">
+                <input class="width--100" type="text" data-duice-bind="assetSearch" data-duice-property="value"/>
+            </label>
+            <label class="grid-column--2 align-self--center display--flex gap--1em">
+                <input type="checkbox" data-duice-bind="assetSearch" data-duice-property="favorite"/>
+                <span data-th-text="#{fintics.Asset.favorite}"></span>
+            </label>
+            <div class="grid-column--4"></div>
+            <div class="grid-column--3">
+                <div class="display--grid grid-template-columns--12">
+                    <label class="grid-column--2">
+                        <input type="checkbox" onclick="togglePerCheckbox(this);"/>
+                        <span data-th-text="#{fintics.Asset.per}"></span>
+                    </label>
+                    <label class="grid-column--5">
+                        <input type="range" data-duice-bind="assetSearch" data-duice-property="perFrom" min="0" max="100" step="10" class="width--75 vertical-align--middle"/>
+                        <span data-duice-bind="assetSearch" data-duice-property="perFrom" class="width--25"></span>
+                        <span>~</span>
+                    </label>
+                    <label class="grid-column--5">
+                        <input type="range" data-duice-bind="assetSearch" data-duice-property="perTo" min="0" max="100" step="10" class="width--75 vertical-align--middle"/>
+                        <span data-duice-bind="assetSearch" data-duice-property="perTo" class="width--25"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="grid-column--3">
+                <div class="display--grid grid-template-columns--12">
+                    <label class="grid-column--2">
+                        <input type="checkbox" onclick="toggleRoeCheckbox(this);"/>
+                        <span data-th-text="#{fintics.Asset.roe}"></span>
+                    </label>
+                    <label class="grid-column--5">
+                        <input type="range" data-duice-bind="assetSearch" data-duice-property="roeFrom" min="0" max="100" step="10" class="width--75 vertical-align--middle"/>
+                        <span data-duice-bind="assetSearch" data-duice-property="roeFrom" class="width--25"></span>
+                        <span>~</span>
+                    </label>
+                    <label class="grid-column--5">
+                        <input type="range" data-duice-bind="assetSearch" data-duice-property="roeTo" min="0" max="100" step="10" class="width--75 vertical-align--middle"/>
+                        <span data-duice-bind="assetSearch" data-duice-property="roeTo" class="width--25"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="grid-column--3">
+                <div class="display--grid grid-template-columns--12">
+                    <label class="grid-column--2">
+                        <input type="checkbox" onclick="toggleRoaCheckbox(this);"/>
+                        <span data-th-text="#{fintics.Asset.roa}"></span>
+                    </label>
+                    <label class="grid-column--5">
+                        <input type="range" data-duice-bind="assetSearch" data-duice-property="roaFrom" min="0" max="100" step="10" class="width--75 vertical-align--middle"/>
+                        <span data-duice-bind="assetSearch" data-duice-property="roaFrom" class="width--25"></span>
+                        <span>~</span>
+                    </label>
+                    <label class="grid-column--5">
+                        <input type="range" data-duice-bind="assetSearch" data-duice-property="roaTo" min="0" max="100" step="10" class="width--75 vertical-align--middle"/>
+                        <span data-duice-bind="assetSearch" data-duice-property="roaTo" class="width--25"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="grid-column--3 justify-self--end">
+                <button type="submit" onclick="getAssets();">
+                    <img class="icon" th:src="@{/static/image/icon-search.svg}" alt="search"/>
+                    <span data-th-text="#{web.global.search}"></span>
+                </button>
+                <button type="button" onclick="resetAssets();">
+                    <img class="icon" th:src="@{/static/image/icon-reset.svg}" alt="reset"/>
+                    <span data-th-text="#{web.global.reset}"></span>
+                </button>
+            </div>
+        </form>
+        <div class="overflow-x--scroll">
+            <table class="width--100 text-align--center">
+                <colgroup>
+                    <col style="width:3em;"/>
+                    <col style="width:10em;"/>
+                    <col style="width:25%;"/>
+                    <col style="width:5em;"/>
+                    <col/>
+                    <col/>
+                    <col/>
+                    <col/>
+                    <col/>
+                </colgroup>
+                <thead>
+                <tr>
+                    <th class="text-align--center">-</th>
+                    <th data-th-text="#{fintics.Asset.assetId}"></th>
+                    <th data-th-text="#{fintics.Asset.assetName}"></th>
+                    <th data-th-text="#{fintics.Asset.exchange}"></th>
+                    <th class="text-align--center" data-th-text="#{fintics.Asset.type}"></th>
+                    <th class="text-align--center" data-th-text="#{fintics.Asset.marketCap}"></th>
+                    <th class="text-align--center" data-th-text="#{fintics.Asset.per}"></th>
+                    <th class="text-align--center" data-th-text="#{fintics.Asset.roe}"></th>
+                    <th class="text-align--center" data-th-text="#{fintics.Asset.roa}"></th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody class="font-size--smaller">
+                <tr data-duice-bind="assets" data-duice-loop="asset,status">
+                    <td class="text-align--center">
+                        <span data-duice-bind="status"
+                              data-duice-execute="this.innerHTML=assetSearch._size*assetSearch._page + status.count;">
+                        </span>
+                    </td>
+                    <td>
+                        <span data-duice-bind="asset" data-duice-property="assetId" class="font-weight--bold"></span>
+                    </td>
+                    <td>
+                        <span data-duice-bind="asset" data-duice-property="assetName"></span>
+                    </td>
+                    <td class="text-align--center">
+                        <span data-duice-bind="asset" data-duice-property="exchange" class="badge"></span>
+                    </td>
+                    <td class="text-align--center">
+                        <span data-duice-bind="asset" data-duice-property="type" class="badge"></span>
+                    </td>
+                    <td class="text-align--center">
+                        <span data-duice-bind="asset" data-duice-property="marketCap" data-duice-format="number"></span>
+                    </td>
+                    <td class="text-align--center">
+                        <span data-duice-bind="asset" data-duice-property="per" data-duice-format="number"></span>
+                    </td>
+                    <td class="text-align--center">
+                        <span data-duice-bind="asset" data-duice-property="roe" data-duice-format="number"></span>
+                    </td>
+                    <td class="text-align--center">
+                        <span data-duice-bind="asset" data-duice-property="roa" data-duice-format="number"></span>
+                    </td>
+                    <td class="text-align--right font-size--smaller">
+                        <select data-duice-bind="asset"
+                                data-duice-option="asset.links"
+                                data-duice-option-value-property="url"
+                                data-duice-option-text-property="name"
+                                onchange="_openLink(this.value, '_blank'); this.value = '';">
+                            <option value>- Link -</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr data-duice-bind="assets" data-duice-if="return assets.length === 0;" hidden>
+                    <td colspan="100%" class="text-align--center">No Data</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="display--grid grid-template-columns--12 margin-x--1em">
+            <div class="grid-column--4 font-size--smaller">
+                <span data-th-text="#{web.global.total}"></span>
+                <span data-duice-bind="assetSearch" data-duice-property="_count" data-duice-format="number(0)"></span>
+                <span data-th-text="#{web.global.rows}"></span>
+            </div>
+            <div class="grid-column--4 justify-self--center">
+                <duice-pagination
+                        data-duice-bind="assetSearch"
+                        data-duice-size-property="_size"
+                        data-duice-page-property="_page"
+                        data-duice-count-property="_count"
+                        data-duice-onclick="getAssets(this.dataset.page);">
+                </duice-pagination>
+            </div>
+            <div class="grid-column--4">
+            </div>
+        </div>
+    </div>
+    <!-- ================================== -->
+    <!-- end: assets                        -->
+    <!-- ================================== -->
+
+</th:block>

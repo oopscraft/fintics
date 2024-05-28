@@ -5,7 +5,8 @@ delete from `core_git`;
 delete from `core_alarm`;
 
 -- core_authority
-insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_ASSETS','Y','Assets API Authority');
+insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_ASSETS','Y','Assets Access API Authority');
+insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_ASSETS_EDIT','Y','Assets Edit API Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_INDICES','Y','Indices API Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_ORDERS','Y','Orders API Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_SIMULATES','Y','Simulates API Authority');
@@ -21,6 +22,8 @@ insert into `core_authority` (`authority_id`,`system_required`,`authority_name`)
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('MONITORS','Y','Monitor Access Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('TRADES','Y','Trades Access Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('TRADES_EDIT','Y','Trade Edit Authority');
+insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('ASSETS','Y','Assets Access Authority');
+insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('ASSETS_EDIT','Y','Assets Edit Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('STRATEGIES','Y','Strategies Access Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('STRATEGIES_EDIT','Y','Strategies Edit Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('BROKERS','Y','Brokers Access Authority');
@@ -38,6 +41,10 @@ insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`au
     ('TRADES','Y','Trades Access Role','N','Y');
 insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
     ('TRADES_EDIT','Y','Trades Edit Role','N','N');
+insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
+    ('ASSETS','Y','Assets Access Role','N','Y');
+insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
+    ('ASSETS_EDIT','Y','Assets Edit Role','N','Y');
 insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
     ('STRATEGIES','Y','Strategies Access Role','N','Y');
 insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
@@ -68,6 +75,12 @@ insert into `core_role_authority` (`role_id`,`authority_id`) values
 insert into `core_role_authority` (`role_id`,`authority_id`) values
     ('TRADES_EDIT','TRADES_EDIT'),
     ('TRADES_EDIT','API_TRADES_EDIT');
+insert into `core_role_authority` (`role_id`,`authority_id`) values
+    ('ASSETS','ASSETS'),
+    ('ASSETS','API_ASSETS');
+insert into `core_role_authority` (`role_id`,`authority_id`) values
+    ('ASSETS_EDIT','ASSETS_EDIT'),
+    ('ASSETS_EDIT','API_ASSETS_EDIT');
 insert into `core_role_authority` (`role_id`,`authority_id`) values
     ('STRATEGIES','STRATEGIES'),
     ('STRATEGIES','API_STRATEGIES');
@@ -106,23 +119,27 @@ insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name
 insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
     ('trades','ko','트레이드');
 insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`sort`,`icon`) values
-    ('strategies','Y',null,'Strategies','/strategies',3,'/static/image/icon-strategy.svg');
+    ('assets','Y',null,'Assets','/assets',3,'/static/image/icon-asset.svg');
+insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
+    ('assets','ko','종목');
+insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`sort`,`icon`) values
+    ('strategies','Y',null,'Strategies','/strategies',4,'/static/image/icon-strategy.svg');
 insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
     ('strategies','ko','매매전략');
 insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`sort`,`icon`) values
-    ('brokers','Y',null,'Brokers','/brokers',4,'/static/image/icon-broker.svg');
+    ('brokers','Y',null,'Brokers','/brokers',5,'/static/image/icon-broker.svg');
 insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
     ('brokers','ko','브로커');
 insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`sort`,`icon`) values
-    ('orders','Y',null,'Orders','/orders',5,'/static/image/icon-order.svg');
+    ('orders','Y',null,'Orders','/orders',6,'/static/image/icon-order.svg');
 insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
     ('orders','ko','거래이력');
 insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`sort`,`icon`) values
-    ('simulates','Y',null,'Simulates','/simulates',6,'/static/image/icon-simulate.svg');
+    ('simulates','Y',null,'Simulates','/simulates',7,'/static/image/icon-simulate.svg');
 insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
     ('simulates','ko','시뮬레이션');
 insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`sort`,`icon`) values
-    ('data','Y',null,'Data','/data',7,'/static/image/icon-data.svg');
+    ('data','Y',null,'Data','/data',8,'/static/image/icon-data.svg');
 insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
     ('data','ko','데이터');
 insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`target`,`sort`,`icon`) values

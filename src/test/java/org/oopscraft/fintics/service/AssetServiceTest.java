@@ -50,7 +50,7 @@ class AssetServiceTest extends CoreTestSupport {
                 .build());
         entityManager.flush();
         // when
-        Page<Asset> assetPage = assetService.getAssets(assetId, null, null, PageRequest.of(0, 10));
+        Page<Asset> assetPage = assetService.getAssets(assetId, null, null, null, null, null, null, null, null, null, PageRequest.of(0, 10));
         // then
         assertTrue(assetPage.getContent().stream().anyMatch(it -> Objects.equals(it.getAssetId(), assetId)));
         assertEquals(assetId, assetPage.getContent().get(0).getAssetId());

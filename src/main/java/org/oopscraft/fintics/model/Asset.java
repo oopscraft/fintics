@@ -28,6 +28,8 @@ public class Asset {
 
     private String type;
 
+    private boolean favorite;
+
     private LocalDateTime dateTime;
 
     private BigDecimal marketCap;
@@ -59,6 +61,7 @@ public class Asset {
                 .market(assetEntity.getMarket())
                 .exchange(assetEntity.getExchange())
                 .type(assetEntity.getType())
+                .favorite(assetEntity.isFavorite())
                 .dateTime(assetEntity.getDateTime())
                 .marketCap(assetEntity.getMarketCap())
                 .issuedShares(assetEntity.getIssuedShares())

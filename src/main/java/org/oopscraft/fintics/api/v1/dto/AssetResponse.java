@@ -27,6 +27,8 @@ public class AssetResponse {
 
     private String type;
 
+    private boolean favorite;
+
     private LocalDateTime dateTime;
 
     private BigDecimal marketCap;
@@ -49,6 +51,7 @@ public class AssetResponse {
                 .market(asset.getMarket())
                 .exchange(asset.getExchange())
                 .type(asset.getType())
+                .favorite(asset.isFavorite())
                 .dateTime(asset.getDateTime())
                 .marketCap(asset.getMarketCap())
                 .issuedShares(asset.getIssuedShares())

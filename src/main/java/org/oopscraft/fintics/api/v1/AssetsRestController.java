@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -38,9 +39,16 @@ public class AssetsRestController {
             @RequestParam(value = "assetId", required = false) String assetId,
             @RequestParam(value = "assetName", required = false) String assetName,
             @RequestParam(value = "market", required = false) String market,
+            @RequestParam(value = "favorite", required = false) Boolean favorite,
+            @RequestParam(value = "perFrom", required = false) BigDecimal perFrom,
+            @RequestParam(value = "perTo", required = false) BigDecimal perTo,
+            @RequestParam(value = "roeFrom", required = false) BigDecimal roeFrom,
+            @RequestParam(value = "roeTo", required = false) BigDecimal roeTo,
+            @RequestParam(value = "roaFrom", required = false) BigDecimal roaFrom,
+            @RequestParam(value = "roaTo", required = false) BigDecimal roaTo,
             Pageable pageable
     ) {
-        Page<Asset> assetPage = assetService.getAssets(assetId, assetName, market, pageable);
+        Page<Asset> assetPage = assetService.getAssets(assetId, assetName, market, favorite, perFrom, perTo, roeFrom, roeTo, roaFrom, roaTo, pageable);
         List<AssetResponse> assetResponses = assetPage.getContent().stream()
                 .map(AssetResponse::from)
                 .toList();

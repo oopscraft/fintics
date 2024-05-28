@@ -7,6 +7,7 @@ import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -21,7 +22,7 @@ public class AssetService {
 
     private final AssetNewsRepository assetNewsRepository;
 
-    public Page<Asset> getAssets(String assetId, String assetName, String market, Pageable pageable) {
+    public Page<Asset> getAssets(String assetId, String assetName, String market, Boolean favorite, BigDecimal perFrom, BigDecimal perTo, BigDecimal roeFrom, BigDecimal roeTo, BigDecimal roaFrom, BigDecimal roaTo, Pageable pageable) {
         // where
         Specification<AssetEntity> specification = Specification.where(null);
         specification = specification
@@ -33,7 +34,20 @@ public class AssetService {
                         .orElse(null))
                 .and(Optional.ofNullable(market)
                         .map(AssetSpecifications::equalMarket)
+                        .orElse(null))
+                .and(Optional.ofNullable(favorite)
+                        .map(AssetSpecifications::isFavorite)
                         .orElse(null));
+        if (perFrom != null && perTo != null) {
+            specification = specification.and(AssetSpecifications.betweenPer(perFrom, perTo));
+        }
+        if (roeFrom != null && roeTo != null) {
+            specification = specification.and(AssetSpecifications.betweenRoe(roeFrom, roeTo));
+        }
+        if (roaFrom != null && roaTo != null) {
+            specification = specification.and(AssetSpecifications.betweenRoa(roaFrom, roaTo));
+        }
+
         // sort
         Sort sort = Sort.by(AssetEntity_.MARKET_CAP).descending();
         pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
