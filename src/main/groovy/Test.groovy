@@ -16,7 +16,7 @@ class Score extends LinkedHashMap<String, BigDecimal> implements Scorable {
     }
     @Override
     String toString() {
-        return super.toString()
+        return this.getAverage() + ' ' + super.toString()
     }
 }
 
@@ -25,11 +25,10 @@ interface Analyzable {
     Scorable getVolatilityScore()
     Scorable getUnderestimateScore()
     Scorable getOverestimateScore()
-    Scorable getOversoldScore()
-    Scorable getOverboughtScore()
 }
 
 class Analysis implements Analyzable {
+    def pctChangePeriod = 10
     List<Ohlcv> ohlcvs
     Ohlcv ohlcv
     List<Macd> macds
@@ -88,18 +87,18 @@ class Analysis implements Analyzable {
         score.cciValueOverSignal = cci.value > cci.signal ? 100 : 0
         score.cciValue = cci.value > 0 ? 100 : 0
         // dmi
-        score.dmiPdiPctChange = Tools.pctChange(dmis.take(10).collect{it.pdi}) > 0 ? 100 : 0
-        score.dmiMdiPctChange = Tools.pctChange(dmis.take(10).collect{it.mdi}) < 0 ? 100 : 0
+        score.dmiPdiPctChange = Tools.pctChange(dmis.take(pctChangePeriod).collect{it.pdi}) > 0 ? 100 : 0
+        score.dmiMdiPctChange = Tools.pctChange(dmis.take(pctChangePeriod).collect{it.mdi}) < 0 ? 100 : 0
         score.dmiPdiOverMdi = dmi.pdi > dmi.mdi ? 100 : 0
         // obv
         score.obvValueOverSignal = obv.value > obv.signal ? 100 : 0
-        score.obvPctChange = Tools.pctChange(obvs.take(10).collect{it.value}) > 0 ? 100 : 0
+        score.obvPctChange = Tools.pctChange(obvs.take(pctChangePeriod).collect{it.value}) > 0 ? 100 : 0
         // chaikin oscillator
         score.chaikinOscillatorValueOverSignal = chaikinOscillator.value > chaikinOscillator.signal ? 100 : 0
         score.chaikinOscillatorValue = chaikinOscillator.value > 0 ? 100 : 0
         // stochastic slow
         score.stochasticSlowKOverD = stochasticSlow.slowK > stochasticSlow.slowD ? 100 : 0
-        score.stochasticSlowK = stochasticSlow.slowK > 50 ? 100 : 0
+        score.stochasticSlowK = stochasticSlow.slowK > 50 && stochasticSlow.slowD > 50 ? 100 : 0
         // bollinger band
         score.bollinerBandPriceOverMiddle = ohlcv.closePrice > bollingerBand.middle ? 100 : 0
         // return
@@ -120,6 +119,12 @@ class Analysis implements Analyzable {
         def score = new Score()
         // macd
         score.macdValue = macd.value < 0 ? 100 : 0
+        // rsi
+        score.rsiValue = rsi.value < 50 ? 100 : 0
+        // cci
+        score.cciValue = cci.value < 0 ? 100 : 0
+        // stochastic slow
+        score.stochasticSlowK = stochasticSlow.slowK < 50 && stochasticSlow.slowD < 50 ? 100 : 0
         // return
         return score
     }
@@ -129,28 +134,12 @@ class Analysis implements Analyzable {
         def score = new Score()
         // macd
         score.macdValue = macd.value > 0 ? 100 : 0
-        // return
-        return score
-    }
-
-    @Override
-    Scorable getOversoldScore() {
-        def score = new Score()
         // rsi
-        score.rsiValue = rsi.value <= 30 ? 100 : 0
+        score.rsiValue = rsi.value > 50 ? 100 : 0
         // cci
-        score.cciValue = cci.value <= -100 ? 100 : 0
-        // return
-        return score
-    }
-
-    @Override
-    Scorable getOverboughtScore() {
-        def score = new Score()
-        // rsi
-        score.rsiValue = rsi.value >= 70 ? 100 : 0
-        // cci
-        score.cciValue = cci.value >= 100 ? 100 : 0
+        score.cciValue = cci.value > 0 ? 100 : 0
+        // stochastic slow
+        score.stochasticSlowK = stochasticSlow.slowK > 50 && stochasticSlow.slowD > 50 ? 100 : 0
         // return
         return score
     }
@@ -161,9 +150,7 @@ class Analysis implements Analyzable {
                 momentumScore: "${this.getMomentumScore()}",
                 volatilityScore: "${this.getVolatilityScore()}",
                 underestimateScore: "${this.getUnderestimateScore()}",
-                overestimateScore: "${this.getOverestimateScore()}",
-                overboughtScore: "${this.getOverboughtScore()}",
-                oversoldScore: "${this.getOversoldScore()}"
+                overestimateScore: "${this.getOverestimateScore()}"
         ].toString()
     }
 }
@@ -188,53 +175,52 @@ def analysis = new Analysis(ohlcvs)
 // wave
 def waveAnalysis = new Analysis(assetProfile.getOhlcvs(waveOhlcvType, waveOhlcvPeriod))
 
-//// tide
-//def tideAnalysis = new Analysis(assetProfile.getOhlcvs(tideOhlcvType, tideOhlcvPeriod))
+// tide
+def tideAnalysis = new Analysis(assetProfile.getOhlcvs(tideOhlcvType, tideOhlcvPeriod))
+
+// multiplier
+def multiplier = tideAnalysis.getMomentumScore().getAverage()/100
 
 // logging
-log.info("analysis.momentum: {} {}", analysis.getMomentumScore().getAverage(), analysis.getMomentumScore());
-log.info("waveAnalysis.volatility: {} {}", waveAnalysis.getVolatilityScore().getAverage(), waveAnalysis.getVolatilityScore())
-log.info("waveAnalysis.underestimate: {} {}", waveAnalysis.getUnderestimateScore().getAverage(), waveAnalysis.getUnderestimateScore())
-log.info("waveAnalysis.overestimate: {} {}", waveAnalysis.getOverestimateScore().getAverage(), waveAnalysis.getOverestimateScore())
-//log.info("tideAnalysis.momentum: {} {}", tideAnalysis.getMomentumScore().getAverage(), tideAnalysis.getMomentumScore())
+log.info("analysis.momentum: {}", analysis.getMomentumScore());
+log.info("waveAnalysis.volatility: {}", waveAnalysis.getVolatilityScore())
+log.info("waveAnalysis.underestimate: {}", waveAnalysis.getUnderestimateScore())
+log.info("waveAnalysis.overestimate: {}", waveAnalysis.getOverestimateScore())
+log.info("tideAnalysis.momentum: {}", tideAnalysis.getMomentumScore())
 
 //================================
 // trade
 //================================
-// multiplier
-//def multiplier = tideAnalysis.getMomentumScore().getAverage()/100
-
-// buy
-if (analysis.getMomentumScore().getAverage() > 75) {
-    // default
-    strategyResult = StrategyResult.of(Action.BUY, 1.0, "analysis.momentum: ${analysis.getMomentumScore()}")
-//    // filter - volatility
-//    if (waveAnalysis.getVolatilityScore().getAverage() < 75) {
-//        strategyResult = null
-//    }
-    // filter - overestimate
-    if (waveAnalysis.getOverestimateScore().getAverage() > 75) {
-        strategyResult = null
-    }
-}
-// sell
-if (analysis.getMomentumScore().getAverage() < 25) {
-    // default
-    strategyResult = StrategyResult.of(Action.SELL, 0.0, "analysis.momentum: ${analysis.getMomentumScore()}")
-
-    if (balanceAsset != null) {
-        if (balanceAsset.getProfitPercentage() < 1.0) {
-            strategyResult = null;
+if (tideAnalysis.getMomentumScore().getAverage() > 50) {
+    // buy
+    if (analysis.getMomentumScore().getAverage() > 80) {
+        // default
+        strategyResult = StrategyResult.of(Action.BUY, 1.0 * multiplier, "analysis.momentum: ${analysis.getMomentumScore()}")
+        // filter - volatility
+        if (waveAnalysis.getVolatilityScore().getAverage() < 50) {
+            strategyResult = null
+        }
+        // filter - overestimate
+        if (waveAnalysis.getOverestimateScore().getAverage() > 50) {
+            strategyResult = null
         }
     }
-
-//    // filter - volatility
-//    if (waveAnalysis.getVolatilityScore().getAverage() < 75) {
-//        strategyResult = null
-//    }
-    // filter - underestimate
-    if (waveAnalysis.getUnderestimateScore().getAverage() > 75) {
-        strategyResult = null
+    // sell
+    if (analysis.getMomentumScore().getAverage() < 20) {
+        // default
+        strategyResult = StrategyResult.of(Action.SELL, 0.9 * multiplier, "analysis.momentum: ${analysis.getMomentumScore()}")
+        // filter - volatility
+        if (waveAnalysis.getVolatilityScore().getAverage() < 50) {
+            strategyResult = null
+        }
+        // filter - underestimate
+        if (waveAnalysis.getUnderestimateScore().getAverage() > 50) {
+            strategyResult = null
+        }
+//        // filter - force to hold if not profit
+//        if (balanceAsset != null && balanceAsset.getProfitPercentage() < 1.0) {
+//            strategyResult = null
+//        }
     }
 }
 
@@ -242,9 +228,18 @@ if (analysis.getMomentumScore().getAverage() < 25) {
 // fallback
 //================================
 // tide direction and momentum
-//if (tideAnalysis.getMomentumScore().getAverage() < 50) {
-//    strategyResult = StrategyResult.of(Action.SELL, 0.0, "tideAnalysis.momentum: ${tideAnalysis.getMomentumScore()}")
-//}
+if (tideAnalysis.getMomentumScore().getAverage() < 50) {
+    // default
+    strategyResult = StrategyResult.of(Action.SELL, 0.0, "tideAnalysis.momentum: ${tideAnalysis.getMomentumScore()}")
+//    // filter - wave momentum is divergence
+//    if (waveAnalysis.getMomentumScore().getAverage() > 50) {
+//        strategyResult = null;
+//    }
+//    // filter - ripple momentum is divergence
+//    if (analysis.getMomentumScore().getAverage() > 50) {
+//        strategyResult = null;
+//    }
+}
 
 //================================
 // return

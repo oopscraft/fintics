@@ -119,12 +119,16 @@ class Analysis implements Analyzable {
         def score = new Score()
         // macd
         score.macdValue = macd.value < 0 ? 100 : 0
+        score.macdSignal = macd.signal < 0 ? 100 : 0
         // rsi
         score.rsiValue = rsi.value < 50 ? 100 : 0
+        score.rsiSignal = rsi.signal < 50 ? 100 : 0
         // cci
         score.cciValue = cci.value < 0 ? 100 : 0
+        score.cciSignal = cci.signal < 0 ? 100 : 0
         // stochastic slow
-        score.stochasticSlowK = stochasticSlow.slowK < 50 && stochasticSlow.slowD < 50 ? 100 : 0
+        score.stochasticSlowK = stochasticSlow.slowK < 50 ? 100 : 0
+        score.stochasticSlowD = stochasticSlow.slowD < 50 ? 100 : 0
         // return
         return score
     }
@@ -134,12 +138,16 @@ class Analysis implements Analyzable {
         def score = new Score()
         // macd
         score.macdValue = macd.value > 0 ? 100 : 0
+        score.macdSignal = macd.signal > 0 ? 100 : 0
         // rsi
         score.rsiValue = rsi.value > 50 ? 100 : 0
+        score.rsiSignal = rsi.signal > 50 ? 100 : 0
         // cci
         score.cciValue = cci.value > 0 ? 100 : 0
+        score.cciSignal = cci.signal > 0 ? 100 : 0
         // stochastic slow
-        score.stochasticSlowK = stochasticSlow.slowK > 50 && stochasticSlow.slowD > 50 ? 100 : 0
+        score.stochasticSlowK = stochasticSlow.slowK > 50 ? 100 : 0
+        score.stochasticSlowD = stochasticSlow.slowD > 50 ? 100 : 0
         // return
         return score
     }
@@ -208,17 +216,13 @@ if (tideAnalysis.getMomentumScore().getAverage() > 50) {
     // sell
     if (analysis.getMomentumScore().getAverage() < 20) {
         // default
-        strategyResult = StrategyResult.of(Action.SELL, 0.5 * multiplier, "analysis.momentum: ${analysis.getMomentumScore()}")
+        strategyResult = StrategyResult.of(Action.SELL, 0.9 * multiplier, "analysis.momentum: ${analysis.getMomentumScore()}")
         // filter - volatility
         if (waveAnalysis.getVolatilityScore().getAverage() < 50) {
             strategyResult = null
         }
         // filter - underestimate
         if (waveAnalysis.getUnderestimateScore().getAverage() > 50) {
-            strategyResult = null
-        }
-        // filter - force to hold if not profit
-        if (balanceAsset != null && balanceAsset.getProfitPercentage() < 1.0) {
             strategyResult = null
         }
     }
@@ -229,15 +233,10 @@ if (tideAnalysis.getMomentumScore().getAverage() > 50) {
 //================================
 // tide direction and momentum
 if (tideAnalysis.getMomentumScore().getAverage() < 50) {
-    // default
-    strategyResult = StrategyResult.of(Action.SELL, 0.0, "tideAnalysis.momentum: ${tideAnalysis.getMomentumScore()}")
-    // filter - wave momentum is divergence
-    if (waveAnalysis.getMomentumScore().getAverage() > 50) {
-        strategyResult = null;
-    }
-    // filter - ripple momentum is divergence
-    if (analysis.getMomentumScore().getAverage() > 50) {
-        strategyResult = null;
+    // sell
+    if (analysis.getMomentumScore().getAverage() < 20) {
+        // default
+        strategyResult = StrategyResult.of(Action.SELL, 0.0, "tideAnalysis.momentum: ${tideAnalysis.getMomentumScore()}")
     }
 }
 
