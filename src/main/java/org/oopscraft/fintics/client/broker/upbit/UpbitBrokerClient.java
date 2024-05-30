@@ -323,10 +323,10 @@ public class UpbitBrokerClient extends BrokerClient {
         payloadMap.put("market", market);
         payloadMap.put("side", side);
         if(price != null) {
-            payloadMap.put("price", String.valueOf(price.doubleValue()));
+            payloadMap.put("price", price.toPlainString());
         }
         if(volume != null) {
-            payloadMap.put("volume", String.valueOf(volume.doubleValue()));
+            payloadMap.put("volume", volume.toPlainString());
         }
         payloadMap.put("ord_type", ordType);
         payloadMap.put("identifier", IdGenerator.uuid());

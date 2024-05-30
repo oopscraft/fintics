@@ -73,7 +73,7 @@ public class StrategyExecutor {
         GroovyShell groovyShell = new GroovyShell(groovyClassLoader, binding);
         Object result = groovyShell.evaluate(
                 "import " + StrategyResult.class.getName() + '\n' +
-                        "import " + StrategyResult.Action.class.getName() + '\n' +
+                        "import " + StrategyResult.Action.class.getName().replaceAll("\\$",".") + '\n' +
                 strategy.getScript()
         );
         if (result != null) {

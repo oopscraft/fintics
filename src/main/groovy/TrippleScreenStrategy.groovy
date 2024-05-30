@@ -4,6 +4,7 @@ import org.oopscraft.fintics.model.StrategyResult.Action
 import org.oopscraft.fintics.trade.Tools
 import org.oopscraft.fintics.indicator.*
 
+import java.math.RoundingMode
 import java.time.LocalTime
 
 interface Scorable {
@@ -187,7 +188,7 @@ def waveAnalysis = new Analysis(assetProfile.getOhlcvs(waveOhlcvType, waveOhlcvP
 def tideAnalysis = new Analysis(assetProfile.getOhlcvs(tideOhlcvType, tideOhlcvPeriod))
 
 // multiplier
-def multiplier = tideAnalysis.getMomentumScore().getAverage()/100
+def multiplier = (tideAnalysis.getMomentumScore().getAverage()/100).setScale(1, RoundingMode.HALF_UP)
 
 // logging
 log.info("analysis.momentum: {}", analysis.getMomentumScore());
@@ -195,6 +196,7 @@ log.info("waveAnalysis.volatility: {}", waveAnalysis.getVolatilityScore())
 log.info("waveAnalysis.underestimate: {}", waveAnalysis.getUnderestimateScore())
 log.info("waveAnalysis.overestimate: {}", waveAnalysis.getOverestimateScore())
 log.info("tideAnalysis.momentum: {}", tideAnalysis.getMomentumScore())
+log.info("multiplier: {}", multiplier)
 
 //================================
 // trade

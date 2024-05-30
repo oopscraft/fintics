@@ -229,8 +229,9 @@ public class TradeExecutor {
                     if (buyAmount.compareTo(BigDecimal.ZERO) > 0) {
                         BigDecimal buyPrice = calculateBuyPrice(tradeAsset, orderBook, brokerClient);
                         BigDecimal buyQuantity = buyAmount.divide(buyPrice, MathContext.DECIMAL32);
-                        // if over minimum order amount
-                        if (brokerClient.isOverMinimumOrderAmount(buyQuantity, buyPrice)) {
+                        // check minimum order amount
+                        boolean canBuy = brokerClient.isOverMinimumOrderAmount(buyQuantity, buyPrice);
+                        if (canBuy) {
                             buyTradeAsset(brokerClient, trade, tradeAsset, buyQuantity, buyPrice, strategyResult);
                         }
                     }
@@ -243,8 +244,9 @@ public class TradeExecutor {
                     if (sellAmount.compareTo(BigDecimal.ZERO) > 0) {
                         BigDecimal sellPrice = calculateSellPrice(tradeAsset, orderBook, brokerClient);
                         BigDecimal sellQuantity = sellAmount.divide(sellPrice, MathContext.DECIMAL32);
-                        // if over minimum order amount
-                        if (brokerClient.isOverMinimumOrderAmount(sellQuantity, sellPrice)) {
+                        // check minimum order amount
+                        boolean canSell = brokerClient.isOverMinimumOrderAmount(sellQuantity, sellPrice);
+                        if (canSell) {
                             sellTradeAsset(brokerClient, trade, tradeAsset, sellQuantity, sellPrice, strategyResult, balanceAsset);
                         }
                     }

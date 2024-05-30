@@ -496,6 +496,43 @@
                             <td colspan="100%" class="text-align--center font-size--smaller">No Data</td>
                         </tr>
                         </tbody>
+                        <tfoot>
+                        <tr>
+                            <td colspan="100%" class="text-align--left padding--1em font-size--smaller">
+                                <span class="font-weight--bold">
+                                    <span data-th-text="#{fintics.Balance.totalAmount}"></span>
+                                    <span th:data-duice-bind="'tradeBalanceMap.get(\'' + ${trade.tradeId} + '\')'"
+                                          th:data-duice-property="totalAmount" data-duice-format="number">
+                                    </span>
+                                </span>
+                                |
+                                <span data-th-text="#{fintics.Balance.profitAmount}"></span>
+                                <span th:data-duice-bind="'tradeBalanceMap.get(\'' + ${trade.tradeId} + '\')'"
+                                      th:data-duice-property="profitAmount" data-duice-format="number">
+                                </span>
+                                |
+                                <span data-th-text="#{fintics.Balance.realizedProfitAmount}"></span>
+                                <span th:data-duice-bind="'tradeBalanceMap.get(\'' + ${trade.tradeId} + '\')'"
+                                      th:data-duice-property="realizedProfitAmount" data-duice-format="number">
+                                </span>
+                                |
+                                <span data-th-text="#{fintics.Balance.purchaseAmount}"></span>
+                                <span th:data-duice-bind="'tradeBalanceMap.get(\'' + ${trade.tradeId} + '\')'"
+                                      th:data-duice-property="purchaseAmount" data-duice-format="number">
+                                </span>
+                                |
+                                <span data-th-text="#{fintics.Balance.valuationAmount}"></span>
+                                <span th:data-duice-bind="'tradeBalanceMap.get(\'' + ${trade.tradeId} + '\')'"
+                                      th:data-duice-property="valuationAmount" data-duice-format="number">
+                                </span>
+                                |
+                                <span data-th-text="#{fintics.Balance.cashAmount}"></span>
+                                <span th:data-duice-bind="'tradeBalanceMap.get(\'' + ${trade.tradeId} + '\')'"
+                                      th:data-duice-property="cashAmount" data-duice-format="number">
+                                </span>
+                            </td>
+                        </tr>
+                        </tfoot>
                     </table>
                 </div>
             </div>
