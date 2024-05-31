@@ -168,5 +168,4 @@ public class SimpleIndiceClient extends IndiceClient {
         return headers;
     }
 
-
 }

@@ -14,12 +14,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
 public abstract class UsBrokerClient extends BrokerClient {
+
+    private static final Currency CURRENCY = Currency.getInstance("USD");
 
     private final ObjectMapper objectMapper;
 
@@ -90,7 +93,7 @@ public abstract class UsBrokerClient extends BrokerClient {
             return o2MarketCap.compareTo(o1MarketCap);
         });
 
-        return rows.stream()
+        List<Asset> assets = rows.stream()
                 .map(row -> {
                     String exchangeMic = null;
                     switch (exchange) {
@@ -105,9 +108,22 @@ public abstract class UsBrokerClient extends BrokerClient {
                             .exchange(exchangeMic)
                             .type("STOCK")
                             .dateTime(LocalDateTime.now())
+                            .marketCap(new BigDecimal(StringUtils.defaultIfBlank(row.get("marketCap"), "0")))
                             .build();
                 })
                 .collect(Collectors.toList());
+
+        // fill asset properties
+        for (int i = 0; i < 100; i ++) {
+            try {
+                fillStockAssetProperty(assets.get(i));
+            } catch (Exception e) {
+                log.warn(e.getMessage());
+            }
+        }
+
+        // return
+        return assets;
     }
 
     protected List<Asset> getEtfAssets() {
@@ -166,12 +182,16 @@ public abstract class UsBrokerClient extends BrokerClient {
                     .insecure(true)
                     .readTimeout(10_000)
                     .build();
+            HttpHeaders headers = createYahooHeader();
             for (int i = 0; i < symbols.size(); i += BATCH_SIZE) {
                 List<String> batchSymbols = symbols.subList(i, Math.min(i + BATCH_SIZE, symbols.size()));
                 String symbolParam = String.join(",", batchSymbols);
                 String url = String.format("https://query2.finance.yahoo.com/v1/finance/quoteType/?symbol=%s&lang=en-US&region=US", symbolParam);
-                String response = restTemplate.getForEntity(url, String.class).getBody();
-                JsonNode rootNode = objectMapper.readTree(response);
+                RequestEntity<Void> requestEntity = RequestEntity.get(url)
+                        .headers(headers)
+                        .build();
+                String responseBody = restTemplate.exchange(requestEntity, String.class).getBody();
+                JsonNode rootNode = objectMapper.readTree(responseBody);
                 JsonNode resultNode = rootNode.path("quoteType").path("result");
                 List<Map<String, String>> results = objectMapper.convertValue(resultNode, new TypeReference<>() {});
                 for (Map<String, String> result : results) {
@@ -192,6 +212,97 @@ public abstract class UsBrokerClient extends BrokerClient {
         return exchangeMicMap;
     }
 
+    RestTemplate restTemplate = RestTemplateBuilder.create()
+            .insecure(true)
+            .readTimeout(30_000)
+            .build();
+
+    void fillStockAssetProperty(Asset asset) {
+        BigDecimal roe = null;
+        BigDecimal roa = null;
+
+//        RestTemplate restTemplate = RestTemplateBuilder.create()
+//                .insecure(true)
+//                .readTimeout(30_000)
+//                .build();
+        HttpHeaders headers = createNasdaqHeaders();
+
+        // calls summary api
+        String summaryUrl = String.format(
+                "https://api.nasdaq.com/api/quote/%s/summary?assetclass=stocks",
+                asset.getSymbol()
+        );
+        RequestEntity<Void> summaryRequestEntity = RequestEntity.get(summaryUrl)
+                .headers(headers)
+                .build();
+        ResponseEntity<String> summaryResponseEntity = restTemplate.exchange(summaryRequestEntity, String.class);
+        JsonNode summaryRootNode;
+        try {
+            summaryRootNode = objectMapper.readTree(summaryResponseEntity.getBody());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        JsonNode summaryDataNode = summaryRootNode.path("data").path("summaryData");
+        HashMap<String,Map<String,String>> summaryDataMap = objectMapper.convertValue(summaryDataNode, new TypeReference<>() {});
+
+        // calls financial api
+        BigDecimal totalEquity = null;
+        BigDecimal totalAssets = null;
+        BigDecimal netIncome = null;
+        String financialUrl = String.format(
+                "https://api.nasdaq.com/api/company/%s/financials?frequency=1", // frequency 2 is quarterly
+                asset.getSymbol()
+        );
+        RequestEntity<Void> financialRequestEntity = RequestEntity.get(financialUrl)
+                .headers(headers)
+                .build();
+        ResponseEntity<String> financialResponseEntity = restTemplate.exchange(financialRequestEntity, String.class);
+        JsonNode financialRootNode;
+        try {
+            financialRootNode = objectMapper.readTree(financialResponseEntity.getBody());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        JsonNode balanceSheetTableRowsNode = financialRootNode.path("data").path("balanceSheetTable").path("rows");
+        List<Map<String,String>> balanceSheetTableRows = objectMapper.convertValue(balanceSheetTableRowsNode, new TypeReference<>(){});
+        JsonNode incomeStatementTableRowsNode = financialRootNode.path("data").path("incomeStatementTable").path("rows");
+        List<Map<String,String>> incomeStatementTableRows = objectMapper.convertValue(incomeStatementTableRowsNode, new TypeReference<>(){});
+
+        for(Map<String,String> row : balanceSheetTableRows) {
+            String key = row.get("value1");
+            String value = row.get("value2");
+            if("Total Equity".equals(key)) {
+                totalEquity = convertCurrencyToNumber(value);
+            }
+            if("Total Assets".equals(key)) {
+                totalAssets = convertCurrencyToNumber(value);
+            }
+        }
+
+        for(Map<String,String> row : incomeStatementTableRows) {
+            String key = row.get("value1");
+            String value = row.get("value2");
+            if("Net Income".equals(key)) {
+                netIncome = convertCurrencyToNumber(value);
+            }
+        }
+
+        // roe
+        if(netIncome != null && totalEquity != null) {
+            roe = netIncome.divide(totalEquity, 8, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100));
+        }
+
+        // roa
+        if(netIncome != null && totalAssets != null) {
+            roa = netIncome.divide(totalAssets, 8, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100));
+        }
+
+        asset.setRoe(roe);
+        asset.setRoa(roa);
+    }
+
     private static HttpHeaders createNasdaqHeaders() {
         HttpHeaders headers = new HttpHeaders();
         headers.add("authority","api.nasdaq.com");
@@ -205,6 +316,49 @@ public abstract class UsBrokerClient extends BrokerClient {
         headers.add("sec-fetch-site", "same-site");
         headers.add("user-agent","Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36");
         return headers;
+    }
+
+    private static HttpHeaders createYahooHeader() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("authority"," query1.finance.yahoo.com");
+        headers.add("Accept", "*/*");
+        headers.add("origin", "https://finance.yahoo.com");
+        headers.add("referer", "");
+        headers.add("Sec-Ch-Ua","\"Chromium\";v=\"118\", \"Google Chrome\";v=\"118\", \"Not=A?Brand\";v=\"99\"");
+        headers.add("Sec-Ch-Ua-Mobile","?0");
+        headers.add("Sec-Ch-Ua-Platform", "macOS");
+        headers.add("Sec-Fetch-Dest","document");
+        headers.add("Sec-Fetch-Mode","navigate");
+        headers.add("Sec-Fetch-Site", "none");
+        headers.add("User-Agent","Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36");
+        return headers;
+    }
+
+    public static BigDecimal convertCurrencyToNumber(String value) {
+        if(value != null) {
+            value = value.replace(CURRENCY.getSymbol(), "");
+            value = value.replace(",","");
+            return new BigDecimal(value);
+        }
+        return null;
+    }
+
+    public static BigDecimal convertStringToNumber(String value, double defaultValue) {
+        value = value.replace(",", "");
+        try {
+            return new BigDecimal(value);
+        }catch(Throwable e){
+            return BigDecimal.valueOf(defaultValue);
+        }
+    }
+
+    public static BigDecimal convertPercentageToNumber(String value) {
+        value = value.replace("%", "");
+        try {
+            return new BigDecimal(value);
+        }catch(Throwable e){
+            return null;
+        }
     }
 
 }

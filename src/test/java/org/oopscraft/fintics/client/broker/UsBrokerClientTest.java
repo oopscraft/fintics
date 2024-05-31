@@ -116,13 +116,26 @@ class UsBrokerClientTest {
 
     @Disabled
     @Test
-    void getExchangeMic() {
+    void getExchangeMap() {
         // given
         List<String> symbols = Arrays.asList("QQQ","SPY","TLT","_INVALID_");
         // when
         Map<String, String> exchangeMap = usTradeClient.getExchangeMap(symbols);
         // then
         log.info("exchangeMap: {}", exchangeMap);
+    }
+
+    @Disabled
+    @Test
+    void fillStockAssetProperty()  throws Exception {
+        // given
+        Asset asset = Asset.builder()
+                .assetId("US.AAPL")
+                .build();
+        // when
+        usTradeClient.fillStockAssetProperty(asset);
+        // then
+        log.info("asset: {}", asset);
     }
 
 }
