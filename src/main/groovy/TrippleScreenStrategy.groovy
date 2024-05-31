@@ -24,8 +24,7 @@ class Score extends LinkedHashMap<String, BigDecimal> implements Scorable {
 interface Analyzable {
     Scorable getMomentumScore()
     Scorable getVolatilityScore()
-    Scorable getUnderestimateScore()
-    Scorable getOverestimateScore()
+    Scorable getEstimateScore()
 }
 
 class Analysis implements Analyzable {
@@ -116,30 +115,8 @@ class Analysis implements Analyzable {
     }
 
     @Override
-    Scorable getUnderestimateScore() {
+    Scorable getEstimateScore() {
         def score = new Score()
-        // macd
-        score.macdValue = macd.value < 0 ? 100 : 0
-        score.macdSignal = macd.signal < 0 ? 100 : 0
-        // rsi
-        score.rsiValue = rsi.value < 50 ? 100 : 0
-        score.rsiSignal = rsi.signal < 50 ? 100 : 0
-        // cci
-        score.cciValue = cci.value < 0 ? 100 : 0
-        score.cciSignal = cci.signal < 0 ? 100 : 0
-        // stochastic slow
-        score.stochasticSlowK = stochasticSlow.slowK < 50 ? 100 : 0
-        score.stochasticSlowD = stochasticSlow.slowD < 50 ? 100 : 0
-        // return
-        return score
-    }
-
-    @Override
-    Scorable getOverestimateScore() {
-        def score = new Score()
-        // macd
-        score.macdValue = macd.value > 0 ? 100 : 0
-        score.macdSignal = macd.signal > 0 ? 100 : 0
         // rsi
         score.rsiValue = rsi.value > 50 ? 100 : 0
         score.rsiSignal = rsi.signal > 50 ? 100 : 0
@@ -159,7 +136,7 @@ class Analysis implements Analyzable {
                 momentumScore: "${this.getMomentumScore()}",
                 volatilityScore: "${this.getVolatilityScore()}",
                 underestimateScore: "${this.getUnderestimateScore()}",
-                overestimateScore: "${this.getOverestimateScore()}"
+                overestimateScore: "${this.getEstimateScore()}"
         ].toString()
     }
 }
@@ -193,8 +170,7 @@ def multiplier = (tideAnalysis.getMomentumScore().getAverage()/100).setScale(1, 
 // logging
 log.info("analysis.momentum: {}", analysis.getMomentumScore());
 log.info("waveAnalysis.volatility: {}", waveAnalysis.getVolatilityScore())
-log.info("waveAnalysis.underestimate: {}", waveAnalysis.getUnderestimateScore())
-log.info("waveAnalysis.overestimate: {}", waveAnalysis.getOverestimateScore())
+log.info("waveAnalysis.estimate: {}", waveAnalysis.getEstimateScore())
 log.info("tideAnalysis.momentum: {}", tideAnalysis.getMomentumScore())
 log.info("multiplier: {}", multiplier)
 
@@ -206,12 +182,12 @@ if (tideAnalysis.getMomentumScore().getAverage() > 50) {
     if (analysis.getMomentumScore().getAverage() > 75) {
         // default
         strategyResult = StrategyResult.of(Action.BUY, 1.0 * multiplier, "analysis.momentum: ${analysis.getMomentumScore()}")
-        // filter - volatility
+        // filter - high volatility
         if (waveAnalysis.getVolatilityScore().getAverage() < 50) {
             strategyResult = null
         }
-        // filter - overestimate
-        if (waveAnalysis.getOverestimateScore().getAverage() > 50) {
+        // filter - over estimate
+        if (waveAnalysis.getEstimateScore().getAverage() > 50) {
             strategyResult = null
         }
     }
@@ -219,12 +195,12 @@ if (tideAnalysis.getMomentumScore().getAverage() > 50) {
     if (analysis.getMomentumScore().getAverage() < 25) {
         // default
         strategyResult = StrategyResult.of(Action.SELL, 1.0 * multiplier, "analysis.momentum: ${analysis.getMomentumScore()}")
-        // filter - volatility
+        // filter - high volatility
         if (waveAnalysis.getVolatilityScore().getAverage() < 50) {
             strategyResult = null
         }
-        // filter - underestimate
-        if (waveAnalysis.getUnderestimateScore().getAverage() > 50) {
+        // filter - under estimate
+        if (waveAnalysis.getEstimateScore().getAverage() < 50) {
             strategyResult = null
         }
     }
