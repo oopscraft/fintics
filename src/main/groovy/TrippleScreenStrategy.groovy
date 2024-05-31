@@ -203,7 +203,7 @@ log.info("multiplier: {}", multiplier)
 //================================
 if (tideAnalysis.getMomentumScore().getAverage() > 50) {
     // buy
-    if (analysis.getMomentumScore().getAverage() > 80) {
+    if (analysis.getMomentumScore().getAverage() > 75) {
         // default
         strategyResult = StrategyResult.of(Action.BUY, 1.0 * multiplier, "analysis.momentum: ${analysis.getMomentumScore()}")
         // filter - volatility
@@ -216,9 +216,9 @@ if (tideAnalysis.getMomentumScore().getAverage() > 50) {
         }
     }
     // sell
-    if (analysis.getMomentumScore().getAverage() < 20) {
+    if (analysis.getMomentumScore().getAverage() < 25) {
         // default
-        strategyResult = StrategyResult.of(Action.SELL, 0.9 * multiplier, "analysis.momentum: ${analysis.getMomentumScore()}")
+        strategyResult = StrategyResult.of(Action.SELL, 1.0 * multiplier, "analysis.momentum: ${analysis.getMomentumScore()}")
         // filter - volatility
         if (waveAnalysis.getVolatilityScore().getAverage() < 50) {
             strategyResult = null
@@ -236,7 +236,7 @@ if (tideAnalysis.getMomentumScore().getAverage() > 50) {
 // tide direction and momentum
 if (tideAnalysis.getMomentumScore().getAverage() < 50) {
     // sell
-    if (analysis.getMomentumScore().getAverage() < 20) {
+    if (analysis.getMomentumScore().getAverage() < 25) {
         // default
         strategyResult = StrategyResult.of(Action.SELL, 0.0, "tideAnalysis.momentum: ${tideAnalysis.getMomentumScore()}")
     }
