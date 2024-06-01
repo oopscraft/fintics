@@ -1,3 +1,4 @@
+import org.checkerframework.checker.units.qual.A
 import org.oopscraft.fintics.model.Ohlcv
 import org.oopscraft.fintics.model.StrategyResult
 import org.oopscraft.fintics.model.StrategyResult.Action
@@ -9,6 +10,13 @@ import java.time.LocalTime
 
 interface Scorable {
     Number getAverage()
+}
+
+class ScoreGroup extends LinkedHashMap<String, Scorable> implements Scorable {
+    @Override
+    Number getAverage() {
+        return this.values().collect{it.getAverage()}.average() as Number
+    }
 }
 
 class Score extends LinkedHashMap<String, BigDecimal> implements Scorable {
@@ -25,6 +33,8 @@ interface Analyzable {
     Scorable getMomentumScore()
     Scorable getVolatilityScore()
     Scorable getEstimateScore()
+    Scorable getOversoldScore()
+    Scorable getOverboughtScore()
 }
 
 class Analysis implements Analyzable {
@@ -131,14 +141,80 @@ class Analysis implements Analyzable {
     }
 
     @Override
+    Scorable getOversoldScore() {
+        def score = new Score()
+        // rsi
+        score.rsiValue = rsi.value < 30 ? 100 : 0
+        // cci
+        score.cciValue = cci.value < -100 ? 100 : 0
+        // stochastic slow
+        score.stochasticSlowK = stochasticSlow.slowK < 20 ? 100 : 0
+        // return
+        return score
+    }
+
+    @Override
+    Scorable getOverboughtScore() {
+        def score = new Score()
+        // rsi
+        score.rsiValue = rsi.value > 70 ? 100 : 0
+        // cci
+        score.cciValue = cci.value > 100 ? 100 : 0
+        // stochastic slow
+        score.stochasticSlowK = stochasticSlow.slowK > 80 ? 100 : 0
+        // return
+        return score
+    }
+
+    @Override
     String toString() {
         return [
                 momentumScore: "${this.getMomentumScore()}",
                 volatilityScore: "${this.getVolatilityScore()}",
-                underestimateScore: "${this.getUnderestimateScore()}",
-                overestimateScore: "${this.getEstimateScore()}"
+                estimateScore: "${this.getEstimateScore()}",
+                oversoldScore: "${this.getOversoldScore()}",
+                overboughtScore: "${this.getOverboughtScore()}"
         ].toString()
     }
+}
+
+class AnalysisGroup extends LinkedHashMap<String, Analyzable> implements Analyzable {
+
+    @Override
+    Scorable getMomentumScore() {
+        def scoreGroup = new ScoreGroup()
+        this.each{it -> scoreGroup.put(it.key, it.value.getMomentumScore())}
+        return scoreGroup
+    }
+
+    @Override
+    Scorable getVolatilityScore() {
+        def scoreGroup = new ScoreGroup()
+        this.each{it -> scoreGroup.put(it.key, it.value.getVolatilityScore())}
+        return scoreGroup
+    }
+
+    @Override
+    Scorable getEstimateScore() {
+        def scoreGroup = new ScoreGroup()
+        this.each{it -> scoreGroup.put(it.key, it.value.getEstimateScore())}
+        return scoreGroup
+    }
+
+    @Override
+    Scorable getOversoldScore() {
+        def scoreGroup = new ScoreGroup()
+        this.each{it -> scoreGroup.put(it.key, it.value.getOversoldScore())}
+        return scoreGroup
+    }
+
+    @Override
+    Scorable getOverboughtScore() {
+        def scoreGroup = new ScoreGroup()
+        this.each{it -> scoreGroup.put(it.key, it.value.getOverboughtScore())}
+        return scoreGroup
+    }
+
 }
 
 //================================
@@ -167,55 +243,33 @@ def tideAnalysis = new Analysis(assetProfile.getOhlcvs(tideOhlcvType, tideOhlcvP
 // multiplier
 def multiplier = (tideAnalysis.getMomentumScore().getAverage()/100).setScale(1, RoundingMode.HALF_UP)
 
-// logging
-log.info("analysis.momentum: {}", analysis.getMomentumScore());
-log.info("waveAnalysis.volatility: {}", waveAnalysis.getVolatilityScore())
-log.info("waveAnalysis.estimate: {}", waveAnalysis.getEstimateScore())
-log.info("tideAnalysis.momentum: {}", tideAnalysis.getMomentumScore())
-log.info("multiplier: {}", multiplier)
-
 //================================
 // trade
 //================================
-if (tideAnalysis.getMomentumScore().getAverage() > 50) {
-    // buy
-    if (analysis.getMomentumScore().getAverage() > 75) {
-        // default
-        strategyResult = StrategyResult.of(Action.BUY, 1.0 * multiplier, "analysis.momentum: ${analysis.getMomentumScore()}")
-        // filter - high volatility
-        if (waveAnalysis.getVolatilityScore().getAverage() < 50) {
-            strategyResult = null
-        }
-        // filter - over estimate
-        if (waveAnalysis.getEstimateScore().getAverage() > 50) {
-            strategyResult = null
-        }
-    }
-    // sell
-    if (analysis.getMomentumScore().getAverage() < 25) {
-        // default
-        strategyResult = StrategyResult.of(Action.SELL, 1.0 * multiplier, "analysis.momentum: ${analysis.getMomentumScore()}")
-        // filter - high volatility
-        if (waveAnalysis.getVolatilityScore().getAverage() < 50) {
-            strategyResult = null
-        }
-        // filter - under estimate
-        if (waveAnalysis.getEstimateScore().getAverage() < 50) {
-            strategyResult = null
-        }
+if (analysis.getMomentumScore().getAverage() > 75) {
+    if (waveAnalysis.getOversoldScore().getAverage() > 50) {
+        strategyResult = StrategyResult.of(Action.BUY, 1.0, "")
     }
 }
 
-//================================
-// fallback
-//================================
-// tide direction and momentum
-if (tideAnalysis.getMomentumScore().getAverage() < 50) {
-    // sell
-    if (analysis.getMomentumScore().getAverage() < 25) {
-        // default
-        strategyResult = StrategyResult.of(Action.SELL, 0.0, "tideAnalysis.momentum: ${tideAnalysis.getMomentumScore()}")
+if (analysis.getMomentumScore().getAverage() < 25) {
+    if (waveAnalysis.getOverboughtScore().getAverage() > 50) {
+        strategyResult = StrategyResult.of(Action.SELL, 0.0, "")
     }
+    // filter - force to hold if not profit
+    if (balanceAsset != null && balanceAsset.getProfitPercentage() < 1.0) {
+        strategyResult = null
+    }
+}
+
+// volatility
+if (waveAnalysis.getVolatilityScore().getAverage() < 75) {
+    strategyResult = null
+}
+
+// tide
+if (tideAnalysis.getMomentumScore().getAverage() < 25) {
+    strategyResult = StrategyResult.of(Action.SELL, 0.0, "")
 }
 
 //================================
