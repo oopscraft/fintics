@@ -20,6 +20,7 @@ public class SimulateReport {
     private final List<AssetReturn> assetReturns = new ArrayList<>();
 
     @Getter
+    @Builder.Default
     private BigDecimal feeAmount = BigDecimal.ZERO;
 
     public synchronized void addTotalReturn(LocalDateTime dateTime, BigDecimal totalAmount) {

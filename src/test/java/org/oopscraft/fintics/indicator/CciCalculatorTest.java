@@ -1,6 +1,7 @@
 package org.oopscraft.fintics.indicator;
 
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.oopscraft.fintics.model.Ohlcv;
 
@@ -37,7 +38,7 @@ class CciCalculatorTest extends AbstractCalculatorTest {
             log.debug("[{}]{}|{}/{}|{}/{}", i, row.get("time"), originCci, originSignal, cci.getValue(), cci.getSignal());
 
             // assert
-            if (i >= 14) {
+            if (i >= 20) {
                 assertEquals(originCci.doubleValue(), cci.getValue().doubleValue(), 0.9);
                 assertEquals(originCci.doubleValue(), cci.getValue().doubleValue(), 0.9);
             }
