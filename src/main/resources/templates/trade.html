@@ -522,7 +522,17 @@
                         <option th:each="orderKind : ${orderKinds}" th:value="${orderKind}" th:text="#{'fintics.Order.Kind.'+${orderKind}}"></option>
                     </select>
                 </label>
-                <div class="grid-column--12">
+                <label class="grid-column--12">
+                    <span data-th-text="#{fintics.Broker}" class="font-weight--bold width--100"></span>
+                    <select data-duice-bind="trade"
+                            data-duice-property="brokerId"
+                            data-duice-option="brokers"
+                            data-duice-option-value-property="brokerId"
+                            data-duice-option-text-property="brokerName"
+                            class="width--100">
+                        <option data-th-text="'- '+#{web.global.select}+' -'"></option>
+                    </select>
+                </label>                <div class="grid-column--12">
                     <div class="display--flex justify-content--space-between">
                         <div>
                             <span data-th-text="#{fintics.TradeAsset}" class="font-weight--bold width--100"></span>
@@ -645,17 +655,6 @@
                         </table>
                     </div>
                 </div>
-                <label class="grid-column--12">
-                    <span data-th-text="#{fintics.Broker}" class="font-weight--bold width--100"></span>
-                    <select data-duice-bind="trade"
-                            data-duice-property="brokerId"
-                            data-duice-option="brokers"
-                            data-duice-option-value-property="brokerId"
-                            data-duice-option-text-property="brokerName"
-                            class="width--100">
-                        <option data-th-text="'- '+#{web.global.select}+' -'"></option>
-                    </select>
-                </label>
                 <label class="grid-column--12">
                     <span data-th-text="#{fintics.Strategy}" class="font-weight--bold width--100"></span>
                     <select data-duice-bind="trade"

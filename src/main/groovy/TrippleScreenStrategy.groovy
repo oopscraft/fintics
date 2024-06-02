@@ -5,9 +5,6 @@ import org.oopscraft.fintics.model.StrategyResult.Action
 import org.oopscraft.fintics.trade.Tools
 import org.oopscraft.fintics.indicator.*
 
-import java.math.RoundingMode
-import java.time.LocalTime
-
 interface Scorable {
     Number getAverage()
 }
@@ -38,7 +35,7 @@ interface Analyzable {
 }
 
 class Analysis implements Analyzable {
-    def pctChangePeriod = 10
+    def period = 10
     List<Ohlcv> ohlcvs
     Ohlcv ohlcv
     List<Macd> macds
@@ -97,18 +94,18 @@ class Analysis implements Analyzable {
         score.cciValueOverSignal = cci.value > cci.signal ? 100 : 0
         score.cciValue = cci.value > 0 ? 100 : 0
         // dmi
-        score.dmiPdiPctChange = Tools.pctChange(dmis.take(pctChangePeriod).collect{it.pdi}) > 0 ? 100 : 0
-        score.dmiMdiPctChange = Tools.pctChange(dmis.take(pctChangePeriod).collect{it.mdi}) < 0 ? 100 : 0
+        score.dmiPdiPctChange = Tools.pctChange(dmis.take(period).collect{it.pdi}) > 0 ? 100 : 0
+        score.dmiMdiPctChange = Tools.pctChange(dmis.take(period).collect{it.mdi}) < 0 ? 100 : 0
         score.dmiPdiOverMdi = dmi.pdi > dmi.mdi ? 100 : 0
         // obv
         score.obvValueOverSignal = obv.value > obv.signal ? 100 : 0
-        score.obvPctChange = Tools.pctChange(obvs.take(pctChangePeriod).collect{it.value}) > 0 ? 100 : 0
+        score.obvPctChange = Tools.pctChange(obvs.take(period).collect{it.value}) > 0 ? 100 : 0
         // chaikin oscillator
         score.chaikinOscillatorValueOverSignal = chaikinOscillator.value > chaikinOscillator.signal ? 100 : 0
         score.chaikinOscillatorValue = chaikinOscillator.value > 0 ? 100 : 0
         // stochastic slow
         score.stochasticSlowKOverD = stochasticSlow.slowK > stochasticSlow.slowD ? 100 : 0
-        score.stochasticSlowK = stochasticSlow.slowK > 50 && stochasticSlow.slowD > 50 ? 100 : 0
+        score.stochasticSlowK = stochasticSlow.slowK > 50 ? 100 : 0
         // bollinger band
         score.bollinerBandPriceOverMiddle = ohlcv.closePrice > bollingerBand.middle ? 100 : 0
         // return
@@ -129,13 +126,10 @@ class Analysis implements Analyzable {
         def score = new Score()
         // rsi
         score.rsiValue = rsi.value > 50 ? 100 : 0
-        score.rsiSignal = rsi.signal > 50 ? 100 : 0
         // cci
         score.cciValue = cci.value > 0 ? 100 : 0
-        score.cciSignal = cci.signal > 0 ? 100 : 0
         // stochastic slow
         score.stochasticSlowK = stochasticSlow.slowK > 50 ? 100 : 0
-        score.stochasticSlowD = stochasticSlow.slowD > 50 ? 100 : 0
         // return
         return score
     }
@@ -240,9 +234,6 @@ def waveAnalysis = new Analysis(assetProfile.getOhlcvs(waveOhlcvType, waveOhlcvP
 // tide
 def tideAnalysis = new Analysis(assetProfile.getOhlcvs(tideOhlcvType, tideOhlcvPeriod))
 
-// multiplier
-def multiplier = (tideAnalysis.getMomentumScore().getAverage()/100).setScale(1, RoundingMode.HALF_UP)
-
 //================================
 // trade
 //================================
@@ -256,19 +247,15 @@ if (analysis.getMomentumScore().getAverage() < 25) {
     if (waveAnalysis.getOverboughtScore().getAverage() > 50) {
         strategyResult = StrategyResult.of(Action.SELL, 0.0, "")
     }
-    // filter - force to hold if not profit
-    if (balanceAsset != null && balanceAsset.getProfitPercentage() < 1.0) {
-        strategyResult = null
-    }
 }
 
-// volatility
+// filter - volatility
 if (waveAnalysis.getVolatilityScore().getAverage() < 75) {
     strategyResult = null
 }
 
-// tide
-if (tideAnalysis.getMomentumScore().getAverage() < 25) {
+// filter - tide
+if (tideAnalysis.getMomentumScore().getAverage() < 50) {
     strategyResult = StrategyResult.of(Action.SELL, 0.0, "")
 }
 
