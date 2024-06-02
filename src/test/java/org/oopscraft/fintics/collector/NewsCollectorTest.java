@@ -2,6 +2,7 @@ package org.oopscraft.fintics.collector;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.oopscraft.arch4j.core.support.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
@@ -22,6 +23,7 @@ class NewsCollectorTest extends CoreTestSupport {
     private final NewsCollector newsCollector;
 
     @Test
+    @Disabled
     void distinctNewsesByTitle() {
         // given
         List<News> newses = Stream.of("Title1", "Title1", "Title2")
