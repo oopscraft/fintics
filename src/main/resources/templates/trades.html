@@ -60,6 +60,10 @@
             <span class="link font-weight--bold"
                   data-duice-bind="trade"
                   data-duice-property="tradeName"></span>
+            &nbsp;
+            <span class="badge" style="border-radius:50%;"
+                  data-duice-bind="trade"
+                  data-duice-execute="this.innerHTML=trade.tradeAssets.length;"></span>
         </div>
         <div class="grid-column--4 s__grid-column--12 border--1 padding--1em link text-align--center"
              onclick="createTrade();">
