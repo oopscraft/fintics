@@ -126,6 +126,10 @@ public abstract class UsBrokerClient extends BrokerClient {
         return assets;
     }
 
+    /**
+     * https://www.nasdaq.com/market-activity/etf/screener
+     * @return list of etf asset
+     */
     protected List<Asset> getEtfAssets() {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
@@ -200,6 +204,8 @@ public abstract class UsBrokerClient extends BrokerClient {
                     String exchangeMic = switch (exchange) {
                         case "NGM" -> "XNAS";
                         case "PCX" -> "XASE";
+                        // BATS Exchange to BATS (currently Cboe BZX Exchange)
+                        case "BTS" -> "BATS";
                         default -> "XNYS";
                     };
                     exchangeMicMap.put(symbol, exchangeMic);
@@ -212,19 +218,15 @@ public abstract class UsBrokerClient extends BrokerClient {
         return exchangeMicMap;
     }
 
-    RestTemplate restTemplate = RestTemplateBuilder.create()
-            .insecure(true)
-            .readTimeout(30_000)
-            .build();
 
     void fillStockAssetProperty(Asset asset) {
         BigDecimal roe = null;
         BigDecimal roa = null;
 
-//        RestTemplate restTemplate = RestTemplateBuilder.create()
-//                .insecure(true)
-//                .readTimeout(30_000)
-//                .build();
+        RestTemplate restTemplate = RestTemplateBuilder.create()
+                .insecure(true)
+                .readTimeout(30_000)
+                .build();
         HttpHeaders headers = createNasdaqHeaders();
 
         // calls summary api

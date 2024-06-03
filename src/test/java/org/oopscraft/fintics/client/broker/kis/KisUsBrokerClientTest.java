@@ -70,6 +70,7 @@ class KisUsBrokerClientTest extends CoreTestSupport {
         // given
         TradeAsset tradeAsset = TradeAsset.builder()
                 .assetId("US.TSLA")
+                .exchange("XNAS")
                 .build();
 
         // when

@@ -79,7 +79,7 @@ public class KisUsBrokerClient extends UsBrokerClient {
         return switch (asset.getExchange()) {
             case "XNAS" -> "NAS";
             case "XNYS" -> "NYS";
-            case "XASE" -> "AMS";
+            case "XASE", "BATS" -> "AMS";
             default -> null;
         };
     }
@@ -88,7 +88,7 @@ public class KisUsBrokerClient extends UsBrokerClient {
         return switch (asset.getExchange()) {
             case "XNAS" -> "NASD";
             case "XNYS" -> "NYSE";
-            case "XASE" -> "AMEX";
+            case "XASE", "BATS" -> "AMEX";
             default -> null;
         };
     }
