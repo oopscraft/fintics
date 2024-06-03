@@ -224,6 +224,7 @@ def tideOhlcvPeriod = variables['tideOhlcvPeriod'] as Integer
 // default
 StrategyResult strategyResult = null
 List<Ohlcv> ohlcvs = assetProfile.getOhlcvs(Ohlcv.Type.MINUTE, 1)
+def profitPercentage = balanceAsset?.getProfitPercentage() ?: 0.0
 
 // ripple
 def analysis = new Analysis(ohlcvs)
@@ -234,29 +235,61 @@ def waveAnalysis = new Analysis(assetProfile.getOhlcvs(waveOhlcvType, waveOhlcvP
 // tide
 def tideAnalysis = new Analysis(assetProfile.getOhlcvs(tideOhlcvType, tideOhlcvPeriod))
 
+// logging
+log.info("profitPercentage: {}", profitPercentage)
+log.info("analysis.momentum: {}", analysis.getMomentumScore())
+log.info("waveAnalysis.volatility: {}", waveAnalysis.getVolatilityScore())
+log.info("waveAnalysis.oversold: {}", waveAnalysis.getOversoldScore())
+log.info("waveAnalysis.overbought: {}", waveAnalysis.getOverboughtScore())
+log.info("tideAnalysis.momentum: {}", tideAnalysis.getMomentumScore())
+
 //================================
 // trade
 //================================
-if (analysis.getMomentumScore().getAverage() > 75) {
+if (analysis.getMomentumScore().getAverage() > 90) {
     if (waveAnalysis.getOversoldScore().getAverage() > 50) {
-        strategyResult = StrategyResult.of(Action.BUY, 1.0, "")
+        strategyResult = StrategyResult.of(Action.BUY, 1.0, "waveAnalysis.oversold: ${waveAnalysis.getOversoldScore()}")
+    }
+    // filter - volatility
+    if (waveAnalysis.getVolatilityScore().getAverage() < 50) {
+        strategyResult = null
     }
 }
 
-if (analysis.getMomentumScore().getAverage() < 25) {
+if (analysis.getMomentumScore().getAverage() < 10) {
     if (waveAnalysis.getOverboughtScore().getAverage() > 50) {
-        strategyResult = StrategyResult.of(Action.SELL, 0.0, "")
+        strategyResult = StrategyResult.of(Action.SELL, 0.0, "waveAnalysis.overbought: ${waveAnalysis.getOverboughtScore()}")
+    }
+    // filter - volatility
+    if (waveAnalysis.getVolatilityScore().getAverage() < 50) {
+        strategyResult = null
+    }
+
+    // fiter - stop limit
+    if (profitPercentage < 1.0) {
+        strategyResult = null
     }
 }
 
-// filter - volatility
-if (waveAnalysis.getVolatilityScore().getAverage() < 75) {
-    strategyResult = null
+
+// bullish momentum
+if (tideAnalysis.getMomentumScore().getAverage() > 90) {
+    strategyResult = StrategyResult.of(Action.BUY, 1.0, "tideAnalysis.momentum: ${tideAnalysis.getMomentumScore()}")
+
+    // filter - overbought
+    if (tideAnalysis.getOverboughtScore().getAverage() > 50) {
+        strategyResult = null
+    }
 }
 
-// filter - tide
-if (tideAnalysis.getMomentumScore().getAverage() < 50) {
-    strategyResult = StrategyResult.of(Action.SELL, 0.0, "")
+// bearish momentum
+if (tideAnalysis.getMomentumScore().getAverage() < 10) {
+    strategyResult = StrategyResult.of(Action.SELL, 0.0, "tideAnalysis.momentum: ${tideAnalysis.getMomentumScore()}")
+
+    // filter - oversold
+    if (tideAnalysis.getOversoldScore().getAverage() > 50) {
+        strategyResult = null
+    }
 }
 
 //================================
