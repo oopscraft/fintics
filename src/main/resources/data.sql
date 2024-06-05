@@ -119,17 +119,17 @@ insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name
 insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
     ('trades','ko','트레이드');
 insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`sort`,`icon`) values
-    ('assets','Y',null,'Assets','/assets',3,'/static/image/icon-asset.svg');
-insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
-    ('assets','ko','종목');
-insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`sort`,`icon`) values
-    ('strategies','Y',null,'Strategies','/strategies',4,'/static/image/icon-strategy.svg');
+    ('strategies','Y',null,'Strategies','/strategies',3,'/static/image/icon-strategy.svg');
 insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
     ('strategies','ko','매매전략');
 insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`sort`,`icon`) values
-    ('brokers','Y',null,'Brokers','/brokers',5,'/static/image/icon-broker.svg');
+    ('brokers','Y',null,'Brokers','/brokers',4,'/static/image/icon-broker.svg');
 insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
     ('brokers','ko','브로커');
+insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`sort`,`icon`) values
+    ('assets','Y',null,'Assets','/assets',5,'/static/image/icon-asset.svg');
+insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
+    ('assets','ko','종목');
 insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`sort`,`icon`) values
     ('orders','Y',null,'Orders','/orders',6,'/static/image/icon-order.svg');
 insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values

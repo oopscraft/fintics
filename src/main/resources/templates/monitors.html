@@ -374,7 +374,7 @@
     <!-- start: tab index                       -->
     <!-- ====================================== -->
     <div id="tabIndex" class="display--flex flex-wrap--nowrap overflow-x--scroll gap--1px margin-bottom--1px margin-top--1em">
-        <button th:each="trade : ${trades}" th:id="|tradeTabButton-${trade.tradeId}|" type="button" class="tab">
+        <button th:each="trade : ${trades}" th:id="|tradeTabButton-${trade.tradeId}|" type="button" class="tab" style="flex-shrink:0;">
             <img class="icon" th:src="@{/static/image/icon-trade.svg}" alt="simulate"/>
             <span data-th-text="${trade.tradeName}"></span>
         </button>
