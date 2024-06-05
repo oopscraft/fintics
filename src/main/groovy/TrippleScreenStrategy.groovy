@@ -1,4 +1,3 @@
-import org.checkerframework.checker.units.qual.A
 import org.oopscraft.fintics.model.Ohlcv
 import org.oopscraft.fintics.model.StrategyResult
 import org.oopscraft.fintics.model.StrategyResult.Action
@@ -38,6 +37,8 @@ class Analysis implements Analyzable {
     def period = 10
     List<Ohlcv> ohlcvs
     Ohlcv ohlcv
+    List<Ema> emas
+    Ema ema
     List<Macd> macds
     Macd macd
     List<Dmi> dmis
@@ -60,6 +61,8 @@ class Analysis implements Analyzable {
     Analysis(List<Ohlcv> ohlcvs) {
         this.ohlcvs = ohlcvs
         this.ohlcv = this.ohlcvs.first()
+        this.emas = Tools.indicators(ohlcvs, EmaContext.DEFAULT)
+        this.ema = this.emas.first()
         this.macds = Tools.indicators(ohlcvs, MacdContext.DEFAULT)
         this.macd = this.macds.first()
         this.dmis = Tools.indicators(ohlcvs, DmiContext.DEFAULT)
@@ -83,6 +86,8 @@ class Analysis implements Analyzable {
     @Override
     Scorable getMomentumScore() {
         def score = new Score()
+        // ema
+        score.emaValuePctChange = Tools.pctChange(emas.take(period).collect{it.value}) > 0.0 ? 100 : 0
         // macd
         score.macdValueOverSignal = macd.value > macd.signal ? 100 : 0
         score.macdOscillator = macd.oscillator > 0 ? 100 : 0
@@ -138,11 +143,11 @@ class Analysis implements Analyzable {
     Scorable getOversoldScore() {
         def score = new Score()
         // rsi
-        score.rsiValue = rsi.value < 30 ? 100 : 0
+        score.rsiValue = rsi.value < 30 || rsi.signal < 30 ? 100 : 0
         // cci
-        score.cciValue = cci.value < -100 ? 100 : 0
+        score.cciValue = cci.value < -100 || rsi.signal < -100 ? 100 : 0
         // stochastic slow
-        score.stochasticSlowK = stochasticSlow.slowK < 20 ? 100 : 0
+        score.stochasticSlowK = stochasticSlow.slowK < 20 || stochasticSlow.slowD < 20 ? 100 : 0
         // return
         return score
     }
@@ -151,11 +156,11 @@ class Analysis implements Analyzable {
     Scorable getOverboughtScore() {
         def score = new Score()
         // rsi
-        score.rsiValue = rsi.value > 70 ? 100 : 0
+        score.rsiValue = rsi.value > 70 || rsi.signal > 70 ? 100 : 0
         // cci
-        score.cciValue = cci.value > 100 ? 100 : 0
+        score.cciValue = cci.value > 100 || cci.signal > 100 ? 100 : 0
         // stochastic slow
-        score.stochasticSlowK = stochasticSlow.slowK > 80 ? 100 : 0
+        score.stochasticSlowK = stochasticSlow.slowK > 80 || stochasticSlow.slowD > 80 ? 100 : 0
         // return
         return score
     }
@@ -216,14 +221,18 @@ class AnalysisGroup extends LinkedHashMap<String, Analyzable> implements Analyza
 //================================
 // config
 log.info("variables: {}", variables)
+def ohlcvPeriod = variables['ohlcvPeriod'] as Integer
 def waveOhlcvType = variables['waveOhlcvType'] as Ohlcv.Type
 def waveOhlcvPeriod = variables['waveOhlcvPeriod'] as Integer
 def tideOhlcvType = variables['tideOhlcvType'] as Ohlcv.Type
 def tideOhlcvPeriod = variables['tideOhlcvPeriod'] as Integer
+def basePosition = variables['basePosition'] as BigDecimal
+def targetReturn = variables['targetReturn'] as BigDecimal
+def stopLoss = variables['stopLoss'] as BigDecimal
 
 // default
 StrategyResult strategyResult = null
-List<Ohlcv> ohlcvs = assetProfile.getOhlcvs(Ohlcv.Type.MINUTE, 1)
+List<Ohlcv> ohlcvs = assetProfile.getOhlcvs(Ohlcv.Type.MINUTE, ohlcvPeriod)
 def profitPercentage = balanceAsset?.getProfitPercentage() ?: 0.0
 
 // ripple
@@ -246,49 +255,52 @@ log.info("tideAnalysis.momentum: {}", tideAnalysis.getMomentumScore())
 //================================
 // trade
 //================================
-if (analysis.getMomentumScore().getAverage() > 90) {
+// 단기 상승 시
+if (analysis.getMomentumScore().getAverage() > 75) {
+    // 중기 과매도 상태인 경우
     if (waveAnalysis.getOversoldScore().getAverage() > 50) {
+        // 매수 포지션 설정
         strategyResult = StrategyResult.of(Action.BUY, 1.0, "waveAnalysis.oversold: ${waveAnalysis.getOversoldScore()}")
     }
-    // filter - volatility
+    // 변동성 없을 경우 제외
     if (waveAnalysis.getVolatilityScore().getAverage() < 50) {
         strategyResult = null
     }
-}
-
-if (analysis.getMomentumScore().getAverage() < 10) {
-    if (waveAnalysis.getOverboughtScore().getAverage() > 50) {
-        strategyResult = StrategyResult.of(Action.SELL, 0.0, "waveAnalysis.overbought: ${waveAnalysis.getOverboughtScore()}")
-    }
-    // filter - volatility
-    if (waveAnalysis.getVolatilityScore().getAverage() < 50) {
-        strategyResult = null
-    }
-
-    // fiter - stop limit
-    if (profitPercentage < 1.0) {
-        strategyResult = null
-    }
-}
-
-
-// bullish momentum
-if (tideAnalysis.getMomentumScore().getAverage() > 90) {
-    strategyResult = StrategyResult.of(Action.BUY, 1.0, "tideAnalysis.momentum: ${tideAnalysis.getMomentumScore()}")
-
-    // filter - overbought
+    // 장기 과매도 상태인 경우 제외
     if (tideAnalysis.getOverboughtScore().getAverage() > 50) {
+        strategyResult = null;
+    }
+    // 장기 하락 추세인 경우 제외
+    if (tideAnalysis.getMomentumScore().getAverage() < 25) {
         strategyResult = null
     }
 }
-
-// bearish momentum
-if (tideAnalysis.getMomentumScore().getAverage() < 10) {
-    strategyResult = StrategyResult.of(Action.SELL, 0.0, "tideAnalysis.momentum: ${tideAnalysis.getMomentumScore()}")
-
-    // filter - oversold
+// 단기 하락 시
+if (analysis.getMomentumScore().getAverage() < 25) {
+    // 중기 과매수 상태인 경우
+    if (waveAnalysis.getOverboughtScore().getAverage() > 50) {
+        // 매도 포지션 설정
+        strategyResult = StrategyResult.of(Action.SELL, basePosition, "waveAnalysis.overbought: ${waveAnalysis.getOverboughtScore()}")
+    }
+    // 중기 변동성 없을 경우 제외
+    if (waveAnalysis.getVolatilityScore().getAverage() < 50) {
+        strategyResult = null
+    }
+    // 장기 과매도 상태인 경우 제외
     if (tideAnalysis.getOversoldScore().getAverage() > 50) {
         strategyResult = null
+    }
+    // 목표 수익률 (targetReturn) 설정 시 도달 하지 못한 경우 제외
+    if (targetReturn > 0.0) {
+        if (profitPercentage < targetReturn) {
+            strategyResult = null
+        }
+    }
+    // 손실 제한 (stopLoss) 설정 시 이하로 하락 시 강제 매도
+    if (stopLoss < 0.0) {
+        if (profitPercentage < stopLoss) {
+            strategyResult = StrategyResult.of(Action.SELL, 0.0, "stopLoss: ${profitPercentage}")
+        }
     }
 }
 
