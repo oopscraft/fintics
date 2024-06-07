@@ -107,6 +107,7 @@ public class SimulateRunnable implements Runnable {
 
             // invest amount, fee rate
             BigDecimal investAmount = simulate.getInvestAmount();
+            trade.setInvestAmount(investAmount);
 
             // deposit
             simulateTradeClient.setDateTime(dateTimeFrom);
