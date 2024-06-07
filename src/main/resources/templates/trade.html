@@ -516,6 +516,10 @@
                     </label>
                 </div>
                 <label class="grid-column--6">
+                    <span data-th-text="#{fintics.Trade.investAmount}" class="font-weight--bold tag-required"></span>
+                    <input type="number" data-duice-bind="trade" data-duice-property="investAmount" data-duice-format="number" class="width--100 font-weight--bold color--red"/>
+                </label>
+                <label class="grid-column--6">
                     <span data-th-text="#{fintics.Trade.orderKind}" class="font-weight--bold tag-required"></span>
                     <select data-duice-bind="trade" data-duice-property="orderKind" class="width--100">
                         <option data-th-text="'- ' + #{web.global.select} + ' -'"></option>

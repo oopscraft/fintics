@@ -4,6 +4,7 @@ import lombok.*;
 import org.oopscraft.fintics.model.Order;
 import org.oopscraft.fintics.model.Trade;
 
+import java.math.BigDecimal;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +29,8 @@ public class TradeResponse {
     private LocalTime startAt;
 
     private LocalTime endAt;
+
+    private BigDecimal investAmount;
 
     private String brokerId;
 
@@ -55,6 +58,7 @@ public class TradeResponse {
                 .threshold(trade.getThreshold())
                 .startAt(trade.getStartAt())
                 .endAt(trade.getEndAt())
+                .investAmount(trade.getInvestAmount())
                 .brokerId(trade.getBrokerId())
                 .strategyId(trade.getStrategyId())
                 .strategyVariables(trade.getStrategyVariables())

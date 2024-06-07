@@ -66,6 +66,7 @@ public class TradeService {
         tradeEntity.setThreshold(trade.getThreshold());
         tradeEntity.setStartAt(trade.getStartAt());
         tradeEntity.setEndAt(trade.getEndAt());
+        tradeEntity.setInvestAmount(trade.getInvestAmount());
         tradeEntity.setBrokerId(trade.getBrokerId());
         tradeEntity.setStrategyId(trade.getStrategyId());
         tradeEntity.setStrategyVariables(trade.getStrategyVariables());

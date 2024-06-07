@@ -328,41 +328,55 @@
         </h2>
         <div class="display--grid grid-template-columns--12 padding--1em s__padding--0">
             <div class="grid-column--6 s__grid-column--12" style="height:150px;">
+                <div class="font-weight--bold">
+                    <img class="icon" src="/static/image/icon-ohlcv.svg" alt="ohlcv">
+                    <span>Daily</span>
+                </div>
                 <canvas id="indiceDailyOhlcvsChart"></canvas>
             </div>
             <div class="grid-column--6 s__grid-column--12" style="height:150px;">
+                <div class="font-weight--bold">
+                    <img class="icon" src="/static/image/icon-ohlcv.svg" alt="ohlcv">
+                    <span>Minute</span>
+                </div>
                 <canvas id="indiceMinuteOhlcvsChart"></canvas>
             </div>
-            <div class="grid-column--12 overflow-y--scroll overflow-x--scroll border-top--1" style="height:150px;">
-                <table class="width--100 border-top--0" style="line-height:normal;">
-                    <colgroup>
-                        <col style="width:10em;"/>
-                        <col/>
-                        <col/>
-                        <col style="width:10em;"/>
-                        <col style="width:10em;"/>
-                    </colgroup>
-                    <thead>
-                    <tr class="font-size--smaller">
-                        <th data-th-text="#{fintics.News.dateTime}"></th>
-                        <th data-th-text="#{fintics.Indice}"></th>
-                        <th data-th-text="#{fintics.News.title}" class="text-align--center"></th>
-                        <th data-th-text="#{fintics.News.sentiment}"></th>
-                        <th data-th-text="#{fintics.News.confidence}"></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr data-duice-bind="indiceNewses" data-duice-loop="indiceNews,status" class="font-size--smaller">
-                        <td data-duice-bind="indiceNews" data-duice-property="dateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
-                        <td data-duice-bind="indiceNews" data-duice-property="indiceName"></td>
-                        <td class="text-align--center">
-                            <a href="#" onclick="_openLink(this.dataset.newsUrl,'_blank');" data-duice-bind="indiceNews" data-duice-property="title" data-duice-execute="this.dataset.newsUrl=indiceNews.newsUrl;"></a>
-                        </td>
-                        <td data-duice-bind="indiceNews" data-duice-property="sentiment" class="text-align--center"></td>
-                        <td data-duice-bind="indiceNews" data-duice-property="confidence" class="text-align--center"></td>
-                    </tr>
-                    </tbody>
-                </table>
+            <div class="grid-column--12">
+                <div class="font-weight--bold">
+                    <img class="icon" src="/static/image/icon-news.svg" alt="ohlcv">
+                    <span data-th-text="#{fintics.News}"></span>
+                </div>
+                <div class="overflow-y--scroll overflow-x-scroll border-top--1" style="height:150px;">
+                    <table class="width--100 border-top--0" style="line-height:normal;">
+                        <colgroup>
+                            <col style="width:10em;"/>
+                            <col/>
+                            <col/>
+                            <col style="width:10em;"/>
+                            <col style="width:10em;"/>
+                        </colgroup>
+                        <thead>
+                        <tr class="font-size--smaller">
+                            <th data-th-text="#{fintics.News.dateTime}"></th>
+                            <th data-th-text="#{fintics.Indice}"></th>
+                            <th data-th-text="#{fintics.News.title}"></th>
+                            <th data-th-text="#{fintics.News.sentiment}"></th>
+                            <th data-th-text="#{fintics.News.confidence}"></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr data-duice-bind="indiceNewses" data-duice-loop="indiceNews,status" class="font-size--smaller">
+                            <td data-duice-bind="indiceNews" data-duice-property="dateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
+                            <td data-duice-bind="indiceNews" data-duice-property="indiceName"></td>
+                            <td>
+                                <a href="#" onclick="_openLink(this.dataset.newsUrl,'_blank');" data-duice-bind="indiceNews" data-duice-property="title" data-duice-execute="this.dataset.newsUrl=indiceNews.newsUrl;"></a>
+                            </td>
+                            <td data-duice-bind="indiceNews" data-duice-property="sentiment" class="text-align--center"></td>
+                            <td data-duice-bind="indiceNews" data-duice-property="confidence" class="text-align--center"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -411,13 +425,25 @@
         </h2>
         <div class="display--grid grid-template-columns--12 padding--1em s__padding--0">
             <div class="grid-column--6 s__grid-column--12" style="height:150px;">
+                <div class="font-weight--bold">
+                    <img class="icon" src="/static/image/icon-ohlcv.svg" alt="ohlcv">
+                    <span>Daily</span>
+                </div>
                 <canvas th:id="'tradeAssetDailyOhlcvsChart-' + ${trade.tradeId}"></canvas>
             </div>
             <div class="grid-column--6 s__grid-column--12" style="height:150px;">
+                <div class="font-weight--bold">
+                    <img class="icon" src="/static/image/icon-ohlcv.svg" alt="ohlcv">
+                    <span>Minute</span>
+                </div>
                 <canvas th:id="'tradeAssetMinuteOhlcvsChart-' + ${trade.tradeId}"></canvas>
             </div>
         </div>
         <div class="grid-column--12 padding--1em s__padding--0">
+            <div class="font-weight--bold">
+                <img class="icon" src="/static/image/icon-news.svg" alt="ohlcv">
+                <span data-th-text="#{fintics.News}"></span>
+            </div>
             <div class="overflow-y--scroll overflow-x--scroll border-top--1" style="max-height:150px;">
                 <table class="width--100 border-top--0" style="line-height:normal;">
                     <colgroup>
@@ -431,7 +457,7 @@
                     <tr class="font-size--smaller">
                         <th data-th-text="#{fintics.News.dateTime}"></th>
                         <th data-th-text="#{fintics.Asset}"></th>
-                        <th data-th-text="#{fintics.News.title}" class="text-align--center"></th>
+                        <th data-th-text="#{fintics.News.title}"></th>
                         <th data-th-text="#{fintics.News.sentiment}" class="text-align--center"></th>
                         <th data-th-text="#{fintics.News.confidence}" class="text-align--center"></th>
                     </tr>
@@ -440,7 +466,7 @@
                     <tr th:data-duice-bind="'tradeNewsesMap.get(\'' + ${trade.tradeId} + '\')'" data-duice-loop="assetNews,status" class="font-size--smaller">
                         <td data-duice-bind="assetNews" data-duice-property="dateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
                         <td data-duice-bind="assetNews" data-duice-property="assetName"></td>
-                        <td class="text-align--center">
+                        <td>
                             <a href="#" onclick="_openLink(this.dataset.newsUrl,'_blank');" data-duice-bind="assetNews" data-duice-property="title" data-duice-execute="this.dataset.newsUrl=assetNews.newsUrl;">
                             </a>
                         </td>

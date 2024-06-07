@@ -34,7 +34,7 @@ interface Analyzable {
 }
 
 class Analysis implements Analyzable {
-    def period = 10
+    def period = 20
     List<Ohlcv> ohlcvs
     Ohlcv ohlcv
     List<Ema> emas
@@ -86,7 +86,10 @@ class Analysis implements Analyzable {
     @Override
     Scorable getMomentumScore() {
         def score = new Score()
+        // ohlcv
+        score.ohlcvClosePricePctChange = Tools.pctChange(ohlcvs.take(period).collect{it.closePrice}) > 0.0 ? 100 : 0
         // ema
+        score.emaPriceOverValue = ohlcv.closePrice > ema.value ? 100 : 0
         score.emaValuePctChange = Tools.pctChange(emas.take(period).collect{it.value}) > 0.0 ? 100 : 0
         // macd
         score.macdValueOverSignal = macd.value > macd.signal ? 100 : 0
@@ -112,7 +115,7 @@ class Analysis implements Analyzable {
         score.stochasticSlowKOverD = stochasticSlow.slowK > stochasticSlow.slowD ? 100 : 0
         score.stochasticSlowK = stochasticSlow.slowK > 50 ? 100 : 0
         // bollinger band
-        score.bollinerBandPriceOverMiddle = ohlcv.closePrice > bollingerBand.middle ? 100 : 0
+        score.bollignerBandPriceOverMiddle = ohlcv.closePrice > bollingerBand.middle ? 100 : 0
         // return
         return score
     }
@@ -129,12 +132,12 @@ class Analysis implements Analyzable {
     @Override
     Scorable getEstimateScore() {
         def score = new Score()
-        // rsi
-        score.rsiValue = rsi.value > 50 ? 100 : 0
+        // ema
+        score.emaValue = ohlcv.closePrice > ema.value ? 100 : 0
+        // bollinger band
+        score.bollingerBandPriceOverMiddle = ohlcv.closePrice > bollingerBand.middle ? 100 : 0
         // cci
-        score.cciValue = cci.value > 0 ? 100 : 0
-        // stochastic slow
-        score.stochasticSlowK = stochasticSlow.slowK > 50 ? 100 : 0
+        score.cciValue = cci.value < 0 ? 100 : 0
         // return
         return score
     }
@@ -247,56 +250,67 @@ def tideAnalysis = new Analysis(assetProfile.getOhlcvs(tideOhlcvType, tideOhlcvP
 // logging
 log.info("profitPercentage: {}", profitPercentage)
 log.info("analysis.momentum: {}", analysis.getMomentumScore())
-log.info("waveAnalysis.volatility: {}", waveAnalysis.getVolatilityScore())
-log.info("waveAnalysis.oversold: {}", waveAnalysis.getOversoldScore())
-log.info("waveAnalysis.overbought: {}", waveAnalysis.getOverboughtScore())
-log.info("tideAnalysis.momentum: {}", tideAnalysis.getMomentumScore())
+log.info("wave.momentum: {}", waveAnalysis.getMomentumScore())
+log.info("wave.volatility: {}", waveAnalysis.getVolatilityScore())
+log.info("wave.estimate: {}", waveAnalysis.getEstimateScore())
+log.info("wave.oversold: {}", waveAnalysis.getOversoldScore())
+log.info("wave.overbought: {}", waveAnalysis.getOverboughtScore())
+log.info("tide.momentum: {}", tideAnalysis.getMomentumScore())
+log.info("tide.estimate: {}", tideAnalysis.getEstimateScore())
+log.info("tide.oversold: {}", tideAnalysis.getOversoldScore())
+log.info("tide.overbought: {}", tideAnalysis.getOverboughtScore())
 
 //================================
 // trade
 //================================
-// 단기 상승 시
+// buy - 단기 상승 시
 if (analysis.getMomentumScore().getAverage() > 75) {
-    // 중기 과매도 상태인 경우
+    // 1. 중기 과매도 상태인 경우 매수 포지션 설정
     if (waveAnalysis.getOversoldScore().getAverage() > 50) {
-        // 매수 포지션 설정
-        strategyResult = StrategyResult.of(Action.BUY, 1.0, "waveAnalysis.oversold: ${waveAnalysis.getOversoldScore()}")
+        strategyResult = StrategyResult.of(Action.BUY, 1.0, "wave.oversold: ${waveAnalysis.getOversoldScore()}")
     }
-    // 변동성 없을 경우 제외
+    // 2. 중기 상승 추세 + 중기 저평가 인 경우 매수 포지션 설정
+    if (waveAnalysis.getMomentumScore().getAverage() > 75 && waveAnalysis.getEstimateScore().getAverage() < 50) {
+        strategyResult = StrategyResult.of(Action.BUY, 1.0, "wave.momentum: ${waveAnalysis.getMomentumScore()}\nwave.estimate: ${waveAnalysis.getEstimateScore()}")
+    }
+    // filter - 변동성 없을 경우 제외
     if (waveAnalysis.getVolatilityScore().getAverage() < 50) {
         strategyResult = null
     }
-    // 장기 과매도 상태인 경우 제외
+    // filter - 장기 과매도 상태인 경우 제외
     if (tideAnalysis.getOverboughtScore().getAverage() > 50) {
         strategyResult = null;
     }
-    // 장기 하락 추세인 경우 제외
+    // filter - 장기 하락 추세인 경우 제외
     if (tideAnalysis.getMomentumScore().getAverage() < 25) {
         strategyResult = null
     }
 }
-// 단기 하락 시
+// sell - 단기 하락 시
 if (analysis.getMomentumScore().getAverage() < 25) {
-    // 중기 과매수 상태인 경우
+    // 1. 중기 과매수 상태인 경우 매도 포지션 설정
     if (waveAnalysis.getOverboughtScore().getAverage() > 50) {
-        // 매도 포지션 설정
-        strategyResult = StrategyResult.of(Action.SELL, basePosition, "waveAnalysis.overbought: ${waveAnalysis.getOverboughtScore()}")
+        strategyResult = StrategyResult.of(Action.SELL, basePosition, "wave.overbought: ${waveAnalysis.getOverboughtScore()}")
     }
-    // 중기 변동성 없을 경우 제외
+    // 2. 중기 하락 추세 + 중기 고평가 인 경우 매도 포지션 설정
+    if (waveAnalysis.getMomentumScore().getAverage() < 25 && waveAnalysis.getEstimateScore().getAverage() > 50) {
+        strategyResult = StrategyResult.of(Action.SELL, basePosition, "wave.momemtum: ${waveAnalysis.getMomentumScore()}\nwave.estimate: ${waveAnalysis.getEstimateScore()}")
+    }
+    // filter - 중기 변동성 없을 경우 제외
     if (waveAnalysis.getVolatilityScore().getAverage() < 50) {
         strategyResult = null
     }
-    // 장기 과매도 상태인 경우 제외
+    // filter - 장기 과매도 상태인 경우 제외
     if (tideAnalysis.getOversoldScore().getAverage() > 50) {
         strategyResult = null
     }
-    // 목표 수익률 (targetReturn) 설정 시 도달 하지 못한 경우 제외
+    // override - 목표 수익률 (targetReturn) 설정 시 도달 하지 못한 경우 제외
     if (targetReturn > 0.0) {
         if (profitPercentage < targetReturn) {
             strategyResult = null
         }
     }
-    // 손실 제한 (stopLoss) 설정 시 이하로 하락 시 강제 매도
+    // override - 손실 제한 (stopLoss) 설정 시 이하로 하락 시 강제 매도
     if (stopLoss < 0.0) {
         if (profitPercentage < stopLoss) {
             strategyResult = StrategyResult.of(Action.SELL, 0.0, "stopLoss: ${profitPercentage}")

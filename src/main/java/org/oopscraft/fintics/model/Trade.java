@@ -3,6 +3,7 @@ package org.oopscraft.fintics.model;
 import lombok.*;
 import org.oopscraft.fintics.dao.TradeEntity;
 
+import java.math.BigDecimal;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +29,8 @@ public class Trade {
     private LocalTime startAt;
 
     private LocalTime endAt;
+
+    private BigDecimal investAmount;
 
     private String brokerId;
 
@@ -55,6 +58,7 @@ public class Trade {
                 .threshold(tradeEntity.getThreshold())
                 .startAt(tradeEntity.getStartAt())
                 .endAt(tradeEntity.getEndAt())
+                .investAmount(tradeEntity.getInvestAmount())
                 .brokerId(tradeEntity.getBrokerId())
                 .strategyId(tradeEntity.getStrategyId())
                 .strategyVariables(tradeEntity.getStrategyVariables())

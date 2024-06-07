@@ -63,6 +63,7 @@ public class TradesRestController {
                 .threshold(tradeRequest.getThreshold())
                 .startAt(tradeRequest.getStartAt())
                 .endAt(tradeRequest.getEndAt())
+                .investAmount(tradeRequest.getInvestAmount())
                 .brokerId(tradeRequest.getBrokerId())
                 .strategyId(tradeRequest.getStrategyId())
                 .strategyVariables(tradeRequest.getStrategyVariables())
@@ -98,6 +99,7 @@ public class TradesRestController {
         trade.setThreshold(tradeRequest.getThreshold());
         trade.setStartAt(tradeRequest.getStartAt());
         trade.setEndAt(tradeRequest.getEndAt());
+        trade.setInvestAmount(tradeRequest.getInvestAmount());
         trade.setBrokerId(tradeRequest.getBrokerId());
         trade.setStrategyId(tradeRequest.getStrategyId());
         trade.setStrategyVariables(tradeRequest.getStrategyVariables());

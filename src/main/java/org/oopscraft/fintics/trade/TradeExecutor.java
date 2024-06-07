@@ -206,9 +206,9 @@ public class TradeExecutor {
                 // 2. apply holding weight
                 //===============================================
                 // defines
-                BigDecimal totalAmount = balance.getTotalAmount();
+                BigDecimal investAmount = trade.getInvestAmount();
                 BigDecimal holdingWeight = tradeAsset.getHoldingWeight();
-                BigDecimal holdingWeightAmount = totalAmount
+                BigDecimal holdingWeightAmount = investAmount
                         .divide(BigDecimal.valueOf(100), MathContext.DECIMAL32)
                         .multiply(holdingWeight)
                         .setScale(2, RoundingMode.HALF_UP);

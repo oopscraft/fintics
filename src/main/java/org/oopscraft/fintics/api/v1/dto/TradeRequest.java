@@ -3,6 +3,7 @@ package org.oopscraft.fintics.api.v1.dto;
 import lombok.*;
 import org.oopscraft.fintics.model.Order;
 
+import java.math.BigDecimal;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +27,8 @@ public class TradeRequest {
     private LocalTime startAt;
 
     private LocalTime endAt;
+
+    private BigDecimal investAmount;
 
     private String brokerId;
 

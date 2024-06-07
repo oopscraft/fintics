@@ -180,8 +180,8 @@ insert into `fintics_strategy`
 
 -- fintics_trade: 한국투자증권 모의투자 - 국내
 insert into `fintics_trade`
-    (`trade_id`,`trade_name`,`enabled`,`interval`,`threshold`,`start_at`,`end_at`,`broker_id`,`strategy_id`,`strategy_variables`,`alarm_id`,`order_kind`) values
-    ('06c228451ce0400fa57bb36f0568d7cb','한국투자증권 모의투자 - 국내','Y','60','3','09:00','15:30',
+    (`trade_id`,`trade_name`,`enabled`,`interval`,`threshold`,`start_at`,`end_at`,`invest_amount`,`broker_id`,`strategy_id`,`strategy_variables`,`alarm_id`,`order_kind`) values
+    ('06c228451ce0400fa57bb36f0568d7cb','한국투자증권 모의투자 - 국내','Y','60','3','09:00','15:30','1000000',
      'ca5f55cd88694715bcb4c478710d9a68','7c94187b346f4727a0f2478fdc53064f', null, null, 'LIMIT');
 insert into `fintics_trade_asset`
     (`trade_id`,`asset_id`,`enabled`, `holding_weight`)
@@ -193,8 +193,8 @@ values
 
 -- fintics_trade: 한국투자증권 모의투자 - 미국
 insert into `fintics_trade`
-    (`trade_id`,`trade_name`,`enabled`,`interval`,`threshold`,`start_at`,`end_at`,`broker_id`,`strategy_id`,`strategy_variables`,`alarm_id`,`order_kind`) values
-    ('7af6bc641eef4254b12dd9fa1d43384d','한국투자증권 모의투자 - 미국','Y','60','3','10:30','06:00',
+    (`trade_id`,`trade_name`,`enabled`,`interval`,`threshold`,`start_at`,`end_at`,`invest_amount`,`broker_id`,`strategy_id`,`strategy_variables`,`alarm_id`,`order_kind`) values
+    ('7af6bc641eef4254b12dd9fa1d43384d','한국투자증권 모의투자 - 미국','Y','60','3','10:30','06:00','1000',
      '961eb9c68c9547ce9ae61bbe3be7f037','7c94187b346f4727a0f2478fdc53064f', null, null, 'LIMIT');
 insert into `fintics_trade_asset`
     (`trade_id`,`asset_id`,`enabled`, `holding_weight`)
@@ -204,8 +204,8 @@ values
 
 -- fintics_trade: 업비트 API(장시간 외 트레이드 테스트용)
 insert into `fintics_trade`
-    (`trade_id`,`trade_name`,`enabled`,`interval`,`threshold`,`start_at`,`end_at`,`broker_id`,`strategy_id`,`strategy_variables`,`alarm_id`,`order_kind`) values
-    ('81c6a451d6da49449faa2b5b7e66041b','코인놀이방(24시간 테스트용)','N','30','3','00:00','23:59',
+    (`trade_id`,`trade_name`,`enabled`,`interval`,`threshold`,`start_at`,`end_at`,`invest_amount`,`broker_id`,`strategy_id`,`strategy_variables`,`alarm_id`,`order_kind`) values
+    ('81c6a451d6da49449faa2b5b7e66041b','코인놀이방(24시간 테스트용)','N','30','3','00:00','23:59','100000',
      'a135ee9a276f4edf81d6e1b6b9d31e39','7c94187b346f4727a0f2478fdc53064f', null, null, 'LIMIT');
 insert into `fintics_trade_asset`
     (`trade_id`,`asset_id`,`enabled`, `holding_weight`) values

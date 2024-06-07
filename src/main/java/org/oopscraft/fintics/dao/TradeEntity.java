@@ -8,6 +8,7 @@ import org.oopscraft.arch4j.core.data.converter.BooleanToYNConverter;
 import org.oopscraft.fintics.model.Order;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +44,9 @@ public class TradeEntity extends BaseEntity {
 
     @Column(name = "end_at")
     private LocalTime endAt;
+
+    @Column(name = "invest_amount")
+    private BigDecimal investAmount;
 
     @Column(name = "broker_id", length = 32)
     private String brokerId;
