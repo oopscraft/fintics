@@ -239,7 +239,7 @@ if (tideAnalysis.getDirectionScore().getAverage() > 75) {
         // 단기 모멘텀 하락 시
         if (analysis.getMomentumScore().getAverage() < 25) {
             // 매도 포지션
-            strategyResult = StrategyResult.of(Action.SELL, 0.5, "wave.overbought: ${waveAnalysis.getOverboughtScore()}")
+            strategyResult = StrategyResult.of(Action.SELL, 0.0, "wave.overbought: ${waveAnalysis.getOverboughtScore()}")
         }
     }
     // filter - 중기 변동성 이 없을 경우 제외
