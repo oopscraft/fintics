@@ -229,6 +229,10 @@ if (tideAnalysis.getDirectionScore().getAverage() > 75) {
             // 매수 포지션
             strategyResult = StrategyResult.of(Action.BUY, 1.0, "wave.oversold: ${waveAnalysis.getOversoldScore()}")
         }
+        // filter - 장기 과매수 인 경우 제외
+        if (tideAnalysis.getOverboughtScore().getAverage() > 50) {
+            strategyResult = null
+        }
     }
     // 중기 과매수 상태
     if (waveAnalysis.getOverboughtScore().getAverage() > 50) {
