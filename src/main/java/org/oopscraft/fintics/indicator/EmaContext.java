@@ -9,7 +9,7 @@ import java.math.MathContext;
 @Getter
 public class EmaContext extends IndicatorContext {
 
-    public static final EmaContext DEFAULT = EmaContext.of(10);
+    public static final EmaContext DEFAULT = EmaContext.of(20);
 
     private final int period;
 

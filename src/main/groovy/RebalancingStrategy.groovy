@@ -4,6 +4,8 @@ import org.oopscraft.fintics.model.StrategyResult.Action
 import org.oopscraft.fintics.trade.Tools
 import org.oopscraft.fintics.indicator.*
 
+import java.math.RoundingMode
+
 interface Scorable {
     Number getAverage()
 }
@@ -26,11 +28,9 @@ class Score extends LinkedHashMap<String, BigDecimal> implements Scorable {
 }
 
 interface Analyzable {
-    Scorable getBullishScore()
-    Scorable getBearishScore()
+    Scorable getDirectionScore()
     Scorable getMomentumScore()
     Scorable getVolatilityScore()
-    Scorable getEstimateScore()
     Scorable getOversoldScore()
     Scorable getOverboughtScore()
 }
@@ -43,18 +43,12 @@ class Analysis implements Analyzable {
     Ema ema
     List<Macd> macds
     Macd macd
+    List<BollingerBand> bollingerBands
+    BollingerBand bollingerBand
     List<Dmi> dmis
     Dmi dmi
     List<Rsi> rsis
     Rsi rsi
-    List<Atr> atrs
-    Atr atr
-    List<BollingerBand> bollingerBands
-    BollingerBand bollingerBand
-    List<Obv> obvs
-    Obv obv
-    List<ChaikinOscillator> chaikinOscillators
-    ChaikinOscillator chaikinOscillator
     List<Cci> ccis
     Cci cci
     List<StochasticSlow> stochasticSlows
@@ -63,22 +57,14 @@ class Analysis implements Analyzable {
     Analysis(List<Ohlcv> ohlcvs) {
         this.ohlcvs = ohlcvs
         this.ohlcv = this.ohlcvs.first()
-        this.emas = Tools.indicators(ohlcvs, EmaContext.DEFAULT)
-        this.ema = this.emas.first()
         this.macds = Tools.indicators(ohlcvs, MacdContext.DEFAULT)
         this.macd = this.macds.first()
+        this.bollingerBands = Tools.indicators(ohlcvs, BollingerBandContext.DEFAULT)
+        this.bollingerBand = bollingerBands.first()
         this.dmis = Tools.indicators(ohlcvs, DmiContext.DEFAULT)
         this.dmi = this.dmis.first()
         this.rsis = Tools.indicators(ohlcvs, RsiContext.DEFAULT)
         this.rsi = rsis.first()
-        this.atrs = Tools.indicators(ohlcvs, AtrContext.DEFAULT)
-        this.atr = atrs.first()
-        this.bollingerBands = Tools.indicators(ohlcvs, BollingerBandContext.DEFAULT)
-        this.bollingerBand = bollingerBands.first()
-        this.obvs = Tools.indicators(ohlcvs, ObvContext.DEFAULT)
-        this.obv = obvs.first()
-        this.chaikinOscillators = Tools.indicators(ohlcvs, ChaikinOscillatorContext.DEFAULT)
-        this.chaikinOscillator = chaikinOscillators.first()
         this.ccis = Tools.indicators(ohlcvs, CciContext.DEFAULT)
         this.cci = ccis.first()
         this.stochasticSlows = Tools.indicators(ohlcvs, StochasticSlowContext.DEFAULT)
@@ -86,22 +72,11 @@ class Analysis implements Analyzable {
     }
 
     @Override
-    Scorable getBullishScore() {
-        def score = new Score();
-        // macd
-        score.macdValueOverSignal = macd.value > macd.signal ? 100 : 0
-        score.macdOscillator = macd.oscillator > 0 ? 100 : 0
-
-        // return
-        return score
-    }
-
-    @Override
-    Scorable getBearishScore() {
+    Scorable getDirectionScore() {
         def score = new Score()
         // macd
-        score.macdValueUnderSignal = macd.value < macd.signal ? 100 : 0
-        score.macdOscillator = macd.oscillator < 0 ? 100 : 0
+        score.macdValueOverSignal = macd.value > macd.signal ? 100 : 0
+        score.macdOscillator = macd.oscillator > 100 ? 100 : 0
         // return
         return score
     }
@@ -111,6 +86,8 @@ class Analysis implements Analyzable {
         def score = new Score()
         // macd
         score.macdValue = macd.value > 0 ? 100 : 0
+        // bollinger band
+        score.bollingerBandPriceOverMiddle = ohlcv.closePrice > bollingerBand.middle ? 100 : 0
         // return
         return score
     }
@@ -120,19 +97,6 @@ class Analysis implements Analyzable {
         def score = new Score()
         // dmi
         score.dmiAdx = dmi.adx > 25 ? 100 : 0
-        // return
-        return score
-    }
-
-    @Override
-    Scorable getEstimateScore() {
-        def score = new Score()
-        // ema
-        score.emaValue = ohlcv.closePrice > ema.value ? 100 : 0
-        // bollinger band
-        score.bollingerBandPriceOverMiddle = ohlcv.closePrice > bollingerBand.middle ? 100 : 0
-        // cci
-        score.cciValue = cci.value < 0 ? 100 : 0
         // return
         return score
     }
@@ -166,9 +130,9 @@ class Analysis implements Analyzable {
     @Override
     String toString() {
         return [
+                directionScore: "${this.getDirectionScore()}",
                 momentumScore: "${this.getMomentumScore()}",
                 volatilityScore: "${this.getVolatilityScore()}",
-                estimateScore: "${this.getEstimateScore()}",
                 oversoldScore: "${this.getOversoldScore()}",
                 overboughtScore: "${this.getOverboughtScore()}"
         ].toString()
@@ -178,16 +142,9 @@ class Analysis implements Analyzable {
 class AnalysisGroup extends LinkedHashMap<String, Analyzable> implements Analyzable {
 
     @Override
-    Scorable getBullishScore() {
+    Scorable getDirectionScore() {
         def scoreGroup = new ScoreGroup()
-        this.each{it -> scoreGroup.put(it.key, it.value.getBullishScore())}
-        return scoreGroup
-    }
-
-    @Override
-    Scorable getBearishScore() {
-        def scoreGroup = new ScoreGroup()
-        this.each{it -> scoreGroup.put(it.key, it.value.getBearishScore())}
+        this.each{it -> scoreGroup.put(it.key, it.value.getDirectionScore())}
         return scoreGroup
     }
 
@@ -202,13 +159,6 @@ class AnalysisGroup extends LinkedHashMap<String, Analyzable> implements Analyza
     Scorable getVolatilityScore() {
         def scoreGroup = new ScoreGroup()
         this.each{it -> scoreGroup.put(it.key, it.value.getVolatilityScore())}
-        return scoreGroup
-    }
-
-    @Override
-    Scorable getEstimateScore() {
-        def scoreGroup = new ScoreGroup()
-        this.each{it -> scoreGroup.put(it.key, it.value.getEstimateScore())}
         return scoreGroup
     }
 
@@ -238,13 +188,12 @@ def waveOhlcvType = variables['waveOhlcvType'] as Ohlcv.Type
 def waveOhlcvPeriod = variables['waveOhlcvPeriod'] as Integer
 def tideOhlcvType = variables['tideOhlcvType'] as Ohlcv.Type
 def tideOhlcvPeriod = variables['tideOhlcvPeriod'] as Integer
-def basePosition = variables['basePosition'] as BigDecimal
-def targetReturn = variables['targetReturn'] as BigDecimal
-def stopLoss = variables['stopLoss'] as BigDecimal
 
 // default
 StrategyResult strategyResult = null
 List<Ohlcv> ohlcvs = assetProfile.getOhlcvs(Ohlcv.Type.MINUTE, ohlcvPeriod)
+
+// 현재 수익률
 def profitPercentage = balanceAsset?.getProfitPercentage() ?: 0.0
 
 // ripple
@@ -257,74 +206,48 @@ def waveAnalysis = new Analysis(assetProfile.getOhlcvs(waveOhlcvType, waveOhlcvP
 def tideAnalysis = new Analysis(assetProfile.getOhlcvs(tideOhlcvType, tideOhlcvPeriod))
 
 // logging
-log.info("profitPercentage: {}", profitPercentage)
 log.info("analysis.momentum: {}", analysis.getMomentumScore())
 log.info("wave.momentum: {}", waveAnalysis.getMomentumScore())
 log.info("wave.volatility: {}", waveAnalysis.getVolatilityScore())
-log.info("wave.estimate: {}", waveAnalysis.getEstimateScore())
 log.info("wave.oversold: {}", waveAnalysis.getOversoldScore())
 log.info("wave.overbought: {}", waveAnalysis.getOverboughtScore())
 log.info("tide.momentum: {}", tideAnalysis.getMomentumScore())
-log.info("tide.estimate: {}", tideAnalysis.getEstimateScore())
 log.info("tide.oversold: {}", tideAnalysis.getOversoldScore())
 log.info("tide.overbought: {}", tideAnalysis.getOverboughtScore())
+log.info("profitPercentage: {}", profitPercentage)
 
 //================================
-// trade
+// position
 //================================
-// buy - 단기 상승 시
-if (analysis.getMomentumScore().getAverage() > 75) {
-    // 1. 중기 과매도 상태인 경우 매수 포지션 설정
-    if (waveAnalysis.getOversoldScore().getAverage() > 50) {
-        strategyResult = StrategyResult.of(Action.BUY, 1.0, "wave.oversold: ${waveAnalysis.getOversoldScore()}")
-    }
-    // 2. 장기 추세 상승 + 중기 조정 시 매수 포지션 설정
-    if (tideAnalysis.getMomentumScore().getAverage() > 75 && waveAnalysis.getEstimateScore().getAverage() < 50) {
-        strategyResult = StrategyResult.of(Action.BUY, 1.0, "wave.momentum: ${waveAnalysis.getMomentumScore()}\nwave.estimate: ${waveAnalysis.getEstimateScore()}")
-    }
-    // filter - 변동성 없을 경우 제외
-    if (waveAnalysis.getVolatilityScore().getAverage() < 50) {
-        strategyResult = null
-    }
-    // filter - 장기 과매수 상태인 경우 제외
-    if (tideAnalysis.getOverboughtScore().getAverage() > 50) {
-        strategyResult = null;
-    }
-    // filter - 장기 하락 추세인 경우 제외
-    if (tideAnalysis.getMomentumScore().getAverage() < 25) {
-        strategyResult = null
+// 기본 포지션
+def position = 1.0
+// 장기 하락 시 비중 조절
+if (tideAnalysis.getDirectionScore().getAverage() < 50) {
+    position = 0.5
+}
+
+//================================
+// rebalance
+//================================
+// 과매도 상태 시
+if (waveAnalysis.getOversoldScore().getAverage() > 50) {
+    // 과매도 반등 시
+    if (analysis.getMomentumScore().getAverage() > 75) {
+        // 하락분 매수
+        strategyResult = StrategyResult.of(Action.BUY, position, "wave.oversold: ${waveAnalysis.getOversoldScore()}")
     }
 }
-// sell - 단기 하락 시
-if (analysis.getMomentumScore().getAverage() < 25) {
-    // 1. 중기 과매수 상태인 경우 매도 포지션 설정
-    if (waveAnalysis.getOverboughtScore().getAverage() > 50) {
-        strategyResult = StrategyResult.of(Action.SELL, basePosition, "wave.overbought: ${waveAnalysis.getOverboughtScore()}")
+// 과매수 상태 시
+if (waveAnalysis.getOverboughtScore().getAverage() > 50) {
+    // 과매도 반전 시
+    if (analysis.getMomentumScore().getAverage() < 25) {
+        // 상승분 매도
+        strategyResult = StrategyResult.of(Action.SELL, position, "wave.overbought: ${waveAnalysis.getOverboughtScore()}")
     }
-    // 2. 장기 추세 하락 + 중기 반등 시 매도 포지션 설정
-    if (tideAnalysis.getMomentumScore().getAverage() < 25 && waveAnalysis.getEstimateScore().getAverage() > 50) {
-        strategyResult = StrategyResult.of(Action.SELL, basePosition, "wave.momemtum: ${waveAnalysis.getMomentumScore()}\nwave.estimate: ${waveAnalysis.getEstimateScore()}")
-    }
-    // filter - 중기 변동성 없을 경우 제외
-    if (waveAnalysis.getVolatilityScore().getAverage() < 50) {
-        strategyResult = null
-    }
-    // filter - 장기 과매도 상태인 경우 제외
-    if (tideAnalysis.getOversoldScore().getAverage() > 50) {
-        strategyResult = null
-    }
-    // override - 목표 수익률 (targetReturn) 설정 시 도달 하지 못한 경우 제외
-    if (targetReturn > 0.0) {
-        if (profitPercentage < targetReturn) {
-            strategyResult = null
-        }
-    }
-    // override - 손실 제한 (stopLoss) 설정 시 이하로 하락 시 강제 매도
-    if (stopLoss < 0.0) {
-        if (profitPercentage < stopLoss) {
-            strategyResult = StrategyResult.of(Action.SELL, 0.0, "stopLoss: ${profitPercentage}")
-        }
-    }
+}
+// filter - 중기 변동성 이 없을 경우 제외
+if (waveAnalysis.getVolatilityScore().getAverage() < 50) {
+    strategyResult = null
 }
 
 //================================
