@@ -250,10 +250,10 @@ if (tideAnalysis.getDirectionScore().getAverage() > 75) {
 
 // 장기 하락 시
 if (tideAnalysis.getDirectionScore().getAverage() < 25) {
-    // 중기 과매수 상태
-    if (waveAnalysis.getOverboughtScore().getAverage() > 50) {
-        // 단기 하락 모멘텀
-        if (analysis.getMomentumScore().getAverage() < 25) {
+    // 중기 하락 시
+    if (waveAnalysis.getDirectionScore().getAverage() < 25) {
+        // 단기 하락 시
+        if (analysis.getDirectionScore().getAverage() < 25) {
             // 매도 포지션
             strategyResult = StrategyResult.of(Action.SELL, 0.0, "tide.direction: ${tideAnalysis.getDirectionScore()}")
         }
