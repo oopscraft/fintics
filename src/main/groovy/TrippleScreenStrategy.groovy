@@ -85,8 +85,6 @@ class Analysis implements Analyzable {
     @Override
     Scorable getMomentumScore() {
         def score = new Score()
-        // ema
-        score.emaPriceOverValue = ohlcv.closePrice > ema.value ? 100 : 0
         // macd
         score.macdValue = macd.value > 0 ? 100 : 0
         // rsi
