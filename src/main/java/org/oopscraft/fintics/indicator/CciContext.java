@@ -7,7 +7,7 @@ import lombok.experimental.SuperBuilder;
 @Getter
 public class CciContext extends IndicatorContext {
 
-    public static final CciContext DEFAULT = CciContext.of(20, 9);
+    public static final CciContext DEFAULT = CciContext.of(14, 9);
 
     private final int period;
 

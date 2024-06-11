@@ -55,11 +55,13 @@ class Analysis implements Analyzable {
     List<Cci> ccis
     Cci cci
     List<StochasticSlow> stochasticSlows
+    StochasticSlow stochasticSlow
+    List<WilliamsR> williamsRs
+    WilliamsR williamsR
     List<Obv> obvs
     Obv obv
     List<ChaikinOscillator> chaikinOscillators
     ChaikinOscillator chaikinOscillator
-    StochasticSlow stochasticSlow
 
     Analysis(List<Ohlcv> ohlcvs) {
         this.ohlcvs = ohlcvs
@@ -76,6 +78,8 @@ class Analysis implements Analyzable {
         this.cci = ccis.first()
         this.stochasticSlows = Tools.indicators(ohlcvs, StochasticSlowContext.DEFAULT)
         this.stochasticSlow = stochasticSlows.first()
+        this.williamsRs = Tools.indicators(ohlcvs, WilliamsRContext.DEFAULT)
+        this.williamsR = williamsRs.first()
         this.obvs = Tools.indicators(ohlcvs, ObvContext.DEFAULT)
         this.obv = obvs.first()
         this.chaikinOscillators = Tools.indicators(ohlcvs, ChaikinOscillatorContext.DEFAULT)
@@ -123,10 +127,12 @@ class Analysis implements Analyzable {
         def score = new Score()
         // rsi
         score.rsiValue = rsi.value < 30 || rsi.signal < 30 ? 100 : 0
-        // cci
-        score.cciValue = cci.value < -100 || rsi.signal < -100 ? 100 : 0
         // stochastic slow
         score.stochasticSlowK = stochasticSlow.slowK < 20 || stochasticSlow.slowD < 20 ? 100 : 0
+        // williams r
+        score.williamsRValue = williamsR.value < -80 || williamsR.signal < -80 ? 100 : 0
+        // cci
+        score.cciValue = cci.value < -100 || rsi.signal < -100 ? 100 : 0
         // return
         return score
     }
@@ -136,10 +142,12 @@ class Analysis implements Analyzable {
         def score = new Score()
         // rsi
         score.rsiValue = rsi.value > 70 || rsi.signal > 70 ? 100 : 0
-        // cci
-        score.cciValue = cci.value > 100 || cci.signal > 100 ? 100 : 0
         // stochastic slow
         score.stochasticSlowK = stochasticSlow.slowK > 80 || stochasticSlow.slowD > 80 ? 100 : 0
+        // williams r
+        score.williamsRValue = williamsR.value > -20 || williamsR.signal > -20 ? 100 : 0
+        // cci
+        score.cciValue = cci.value > 100 || cci.signal > 100 ? 100 : 0
         // return
         return score
     }
@@ -215,12 +223,12 @@ def tideAnalysis = new AnalysisGroup(
 def profitPercentage = balanceAsset?.getProfitPercentage() ?: 0.0
 
 // logging
-log.info("ripple.momentum: {}", rippleAnalysis.getMomentumScore())
+log.info("tide.momentum: {}", tideAnalysis.getMomentumScore())
 log.info("wave.momentum: {}", waveAnalysis.getMomentumScore())
 log.info("wave.oversold: {}", waveAnalysis.getOversoldScore())
 log.info("wave.overbought: {}", waveAnalysis.getOverboughtScore())
 log.info("wave.volatility: {}", waveAnalysis.getVolatilityScore())
-log.info("tide.momentum: {}", tideAnalysis.getMomentumScore())
+log.info("ripple.momentum: {}", rippleAnalysis.getMomentumScore())
 log.info("profitPercentage: {}", profitPercentage)
 
 //================================
