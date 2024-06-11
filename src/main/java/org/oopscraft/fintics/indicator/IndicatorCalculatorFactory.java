@@ -19,6 +19,7 @@ public class IndicatorCalculatorFactory {
         put(AtrContext.class, AtrCalculator.class);
         put(CciContext.class, CciCalculator.class);
         put(StochasticSlowContext.class, StochasticSlowCalculator.class);
+        put(WilliamsRContext.class, WilliamsRCalculator.class);
     }};
 
     public static <C extends IndicatorContext, R extends Indicator, T extends IndicatorCalculator<C,R>> T getIndicator(C context) {

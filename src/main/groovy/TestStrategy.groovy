@@ -200,27 +200,27 @@ def stopLoss = variables['stopLoss'] as BigDecimal
 StrategyResult strategyResult = null
 
 // ripple
-def rippleAnalysis = new Analysis(assetProfile.getOhlcvs(Ohlcv.Type.MINUTE, rippleOhlcvPeriod))
+def rippleAnalysis = new Analysis(assetProfile.getOhlcvs(Ohlcv.Type.MINUTE, 1))
 
 // wave
-def waveAnalysis = new Analysis(assetProfile.getOhlcvs(Ohlcv.Type.MINUTE, waveOhlcvPeriod))
+def waveAnalysis = new Analysis(assetProfile.getOhlcvs(Ohlcv.Type.MINUTE, 5))
 
 // tide
 def tideAnalysis = new AnalysisGroup(
-        hourly: new Analysis(assetProfile.getOhlcvs(Ohlcv.Type.MINUTE, 60)),
-        daily: new Analysis(assetProfile.getOhlcvs(Ohlcv.Type.DAILY, 1))
+        hourly: new Analysis(assetProfile.getOhlcvs(Ohlcv.Type.MINUTE, 30)),
+//        daily: new Analysis(assetProfile.getOhlcvs(Ohlcv.Type.DAILY, 1))
 )
 
 // 현재 수익률
 def profitPercentage = balanceAsset?.getProfitPercentage() ?: 0.0
 
 // logging
-log.info("ripple.momentum: {}", rippleAnalysis.getMomentumScore())
+log.info("tide.momentum: {}", tideAnalysis.getMomentumScore())
 log.info("wave.momentum: {}", waveAnalysis.getMomentumScore())
 log.info("wave.oversold: {}", waveAnalysis.getOversoldScore())
 log.info("wave.overbought: {}", waveAnalysis.getOverboughtScore())
 log.info("wave.volatility: {}", waveAnalysis.getVolatilityScore())
-log.info("tide.momentum: {}", tideAnalysis.getMomentumScore())
+log.info("ripple.momentum: {}", rippleAnalysis.getMomentumScore())
 log.info("profitPercentage: {}", profitPercentage)
 
 //================================
@@ -229,7 +229,7 @@ log.info("profitPercentage: {}", profitPercentage)
 // 장기 상승 시
 if (tideAnalysis.getMomentumScore().getAverage() > 50) {
     // 중기 과매도 시
-    if (waveAnalysis.getOversoldScore().getAverage() > 50 && waveAnalysis.getVolatilityScore().getAverage() > 50) {
+    if (waveAnalysis.getOversoldScore().getAverage() > 25 && waveAnalysis.getVolatilityScore().getAverage() > 25) {
         // 단기 상승 시
         if (rippleAnalysis.getMomentumScore().getAverage() > 75) {
             // 매수 포지션
@@ -237,7 +237,7 @@ if (tideAnalysis.getMomentumScore().getAverage() > 50) {
         }
     }
     // 중기 과매수 시
-    if (waveAnalysis.getOverboughtScore().getAverage() > 50 && waveAnalysis.getVolatilityScore().getAverage() > 50) {
+    if (waveAnalysis.getOverboughtScore().getAverage() > 25 && waveAnalysis.getVolatilityScore().getAverage() > 25) {
         // 단기 하락 시
         if (rippleAnalysis.getMomentumScore().getAverage() < 75) {
             // 매도 포지션
