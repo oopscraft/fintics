@@ -225,7 +225,7 @@ if (tideAnalysis.getMomentumScore().getAverage() > 50) {
     // 중기 과매도 시
     if (waveAnalysis.getOversoldScore().getAverage() > 50 && waveAnalysis.getVolatilityScore().getAverage() > 50) {
         // 단기 상승 시
-        if (rippleAnalysis.getMomentumScore().getAverage() > 50) {
+        if (rippleAnalysis.getMomentumScore().getAverage() > 75) {
             // 매수 포지션
             strategyResult = StrategyResult.of(Action.BUY, 1.0, "wave.oversold: ${waveAnalysis.getOversoldScore()}")
         }
@@ -233,7 +233,7 @@ if (tideAnalysis.getMomentumScore().getAverage() > 50) {
     // 중기 과매수 시
     if (waveAnalysis.getOverboughtScore().getAverage() > 50 && waveAnalysis.getVolatilityScore().getAverage() > 50) {
         // 단기 하락 시
-        if (rippleAnalysis.getMomentumScore().getAverage() < 50) {
+        if (rippleAnalysis.getMomentumScore().getAverage() < 75) {
             // 매도 포지션
             strategyResult = StrategyResult.of(Action.SELL, 0.5, "wave.overbought: ${waveAnalysis.getOverboughtScore()}")
         }
@@ -244,9 +244,9 @@ if (tideAnalysis.getMomentumScore().getAverage() < 50) {
     // 중기 과매수 시
     if (waveAnalysis.getOverboughtScore().getAverage() > 50) {
         // 단기 하락 시
-        if (rippleAnalysis.getMomentumScore().getAverage() < 50) {
+        if (rippleAnalysis.getMomentumScore().getAverage() < 25) {
             // 매도 포지션
-            strategyResult = StrategyResult.of(Action.SELL, 0.0, "wave.overbought: ${waveAnalysis.getOverboughtScore()}")
+            strategyResult = StrategyResult.of(Action.SELL, 0.0, "tide.momentum: ${tideAnalysis.getMomentumScore()}")
         }
     }
 }
