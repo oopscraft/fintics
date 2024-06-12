@@ -247,7 +247,7 @@ if (tideAnalysis.getMomentumScore().getAverage() > 50) {
     // 중기 과매수 시
     if (waveAnalysis.getOverboughtScore().getAverage() > 50 && waveAnalysis.getVolatilityScore().getAverage() > 50) {
         // 단기 하락 시
-        if (rippleAnalysis.getMomentumScore().getAverage() < 75) {
+        if (rippleAnalysis.getMomentumScore().getAverage() < 25) {
             // 매도 포지션
             strategyResult = StrategyResult.of(Action.SELL, 0.5, "wave.overbought: ${waveAnalysis.getOverboughtScore()}")
         }
@@ -273,7 +273,7 @@ if (tideAnalysis.getMomentumScore().getAverage() < 25) {
     }
 }
 // fallback - 손실 제한 (stopLoss) 설정 시 이하로 하락 시 강제 매도
-if (rippleAnalysis.getMomentumScore().getAverage() < 25) {
+if (rippleAnalysis.getMomentumScore().getAverage() <= 25) {
     if (stopLoss < 0.0) {
         if (profitPercentage < stopLoss) {
             strategyResult = StrategyResult.of(Action.SELL, 0.0, "stopLoss: ${profitPercentage}")
