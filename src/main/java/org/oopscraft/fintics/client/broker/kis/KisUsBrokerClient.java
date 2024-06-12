@@ -391,7 +391,7 @@ public class KisUsBrokerClient extends UsBrokerClient {
         // 잔고조회에서 매도재사용가능금액를 알수 없음으로 해외주식 매수가능금액조회[v1_해외주식-014]로 조회 (Apple 로 조회)
         String url = apiUrl + "/uapi/overseas-stock/v1/trading/inquire-psamount";
         HttpHeaders headers = createHeaders();
-        String trId = "TTTS3007R";
+        String trId = production ? "TTTS3007R" : "VTTS3007R";
         headers.add("tr_id", trId);
         url = UriComponentsBuilder.fromUriString(url)
                 .queryParam("CANO", accountNo.split("-")[0])

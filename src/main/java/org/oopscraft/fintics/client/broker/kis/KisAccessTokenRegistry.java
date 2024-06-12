@@ -10,10 +10,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
 public class KisAccessTokenRegistry {
@@ -26,9 +23,9 @@ public class KisAccessTokenRegistry {
         synchronized (lockObject) {
             KisAccessToken accessToken = accessTokens.stream()
                     .filter(element ->
-                            element.getApiUrl().equals(apiUrl)
-                                    && element.getAppKey().equals(appKey)
-                                    && element.getAppSecret().equals(appSecret))
+                            Objects.equals(element.getApiUrl(), apiUrl)
+                                    && Objects.equals(element.getAppKey(), appKey)
+                                    && Objects.equals(element.getAppSecret(), appSecret))
                     .findFirst()
                     .orElse(null);
 

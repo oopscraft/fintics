@@ -200,99 +200,28 @@ class AnalysisGroup extends LinkedHashMap<String, Analyzable> implements Analyza
 //================================
 // config
 log.info("variables: {}", variables)
-def rippleOhlcvPeriod = variables['rippleOhlcvPeriod'] as Integer
-def waveOhlcvPeriod = variables['waveOhlcvPeriod'] as Integer
-def stopLoss = variables['stopLoss'] as BigDecimal
 
 // default
 StrategyResult strategyResult = null
 
-// ripple
-def rippleAnalysis = new Analysis(assetProfile.getOhlcvs(Ohlcv.Type.MINUTE, rippleOhlcvPeriod))
-
-// wave
-def waveAnalysis = new Analysis(assetProfile.getOhlcvs(Ohlcv.Type.MINUTE, waveOhlcvPeriod))
-
-// tide
-def tideAnalysis = new AnalysisGroup(
-        hourly: new Analysis(assetProfile.getOhlcvs(Ohlcv.Type.MINUTE, 60)),
-        daily: new Analysis(assetProfile.getOhlcvs(Ohlcv.Type.DAILY, 1))
+// analysis
+def analysis = new AnalysisGroup(
+        fast: new Analysis(assetProfile.getOhlcvs(Ohlcv.Type.MINUTE, 1)),
+//        daily: new Analysis(assetProfile.getOhlcvs(Ohlcv.Type.DAILY, 1))
 )
 
-// 현재 수익률
-def profitPercentage = balanceAsset?.getProfitPercentage() ?: 0.0
-
 // logging
-log.info("tide.momentum: {}", tideAnalysis.getMomentumScore())
-log.info("wave.momentum: {}", waveAnalysis.getMomentumScore())
-log.info("wave.oversold: {}", waveAnalysis.getOversoldScore())
-log.info("wave.overbought: {}", waveAnalysis.getOverboughtScore())
-log.info("wave.volatility: {}", waveAnalysis.getVolatilityScore())
-log.info("ripple.momentum: {}", rippleAnalysis.getMomentumScore())
-log.info("profitPercentage: {}", profitPercentage)
+log.info("analysis.momentum: {}", tideAnalysis.getMomentumScore())
 
 //================================
 // trade
 //================================
-// 장기 중립 시
-if (75 >= tideAnalysis.getMomentumScore().getAverage() && tideAnalysis.getMomentumScore().getAverage() >= 25) {
-    // 매수 포지션 - 중기 과매도 시
-    if (waveAnalysis.getOversoldScore().getAverage() >= 50 && waveAnalysis.getVolatilityScore().getAverage() >= 50) {
-        // 단기 상승 시
-        if (rippleAnalysis.getMomentumScore().getAverage() >= 75) {
-            // 매수
-            strategyResult = StrategyResult.of(Action.BUY, 1.0, "wave.oversold: ${waveAnalysis.getOversoldScore()}")
-        }
-    }
-    // 매도 포지션 - 중기 과매수 시
-    if (waveAnalysis.getOverboughtScore().getAverage() >= 50 && waveAnalysis.getVolatilityScore().getAverage() >= 50) {
-        // 단기 하락 시작
-        if (rippleAnalysis.getMomentumScore().getAverage() <= 25) {
-            // 매도
-            strategyResult = StrategyResult.of(Action.SELL, 0.0, "wave.overbought: ${waveAnalysis.getOverboughtScore()}")
-        }
-    }
+if (analysis.getMomentumScore().getAverage() > 75) {
+    strategyResult = StrategyResult.of(Action.BUY, 1.0, "wave.oversold: ${waveAnalysis.getOversoldScore()}")
 }
 
-// 장기 추세 상승 시
-if (tideAnalysis.getMomentumScore().getAverage() >= 75) {
-    // 중기 과매도 시
-    if (waveAnalysis.getOversoldScore().getAverage() >= 25) {
-        // 단기 상승 시
-        if (rippleAnalysis.getMomentumScore().getAverage() >=75) {
-            // 매수 포지션
-            strategyResult = StrategyResult.of(Action.BUY, 1.0, "wave.oversold: ${waveAnalysis.getOversoldScore()}")
-        }
-    }
-    // 중기 과매수 시
-    if (waveAnalysis.getOverboughtScore().getAverage() >= 75 && waveAnalysis.getVolatilityScore().getAverage() > 50) {
-        // 단기 하락 시
-        if (rippleAnalysis.getMomentumScore().getAverage() <= 25) {
-            // 매도 포지션
-            strategyResult = StrategyResult.of(Action.SELL, 0.5, "wave.overbought: ${waveAnalysis.getOverboughtScore()}")
-        }
-    }
-}
-
-// 장기 추세 하락 시
-if (tideAnalysis.getMomentumScore().getAverage() <= 25) {
-    // 중기 과매수 시
-    if (waveAnalysis.getOverboughtScore().getAverage() >= 25) {
-        // 단기 하락 시
-        if (rippleAnalysis.getMomentumScore().getAverage() <= 25) {
-            // 매도 포지션
-            strategyResult = StrategyResult.of(Action.SELL, 0.0, "tide.momentum: ${tideAnalysis.getMomentumScore()}")
-        }
-    }
-}
-
-// fallback - 손실 제한 (stopLoss) 설정 시 이하로 하락 시 강제 매도
-if (rippleAnalysis.getMomentumScore().getAverage() <= 25) {
-    if (stopLoss < 0.0) {
-        if (profitPercentage < stopLoss) {
-            strategyResult = StrategyResult.of(Action.SELL, 0.0, "stopLoss: ${profitPercentage}")
-        }
-    }
+if (analysis.getMomentumScore().getAverage() < 25) {
+    strategyResult = StrategyResult.of(Action.SELL, 0.0, "wave.overbought: ${waveAnalysis.getOverboughtScore()}")
 }
 
 //================================
