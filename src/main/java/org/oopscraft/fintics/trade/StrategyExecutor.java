@@ -5,6 +5,7 @@ import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyShell;
 import lombok.Builder;
+import lombok.Setter;
 import org.oopscraft.arch4j.core.data.pbe.PbePropertiesUtil;
 import org.oopscraft.fintics.model.*;
 import org.slf4j.LoggerFactory;
@@ -39,6 +40,9 @@ public class StrategyExecutor {
 
     private Logger log = (Logger) LoggerFactory.getLogger(this.getClass());
 
+    @Setter
+    private MessageTemplate messageTemplate;
+
     @Builder
     protected StrategyExecutor(Strategy strategy, String variables, LocalDateTime dateTime, TradeAsset tradeAsset, OrderBook orderBook, Balance balance, BalanceAsset balanceAsset, List<IndiceProfile> indiceProfiles, AssetProfile assetProfile) {
         this.strategy = strategy;
@@ -70,6 +74,7 @@ public class StrategyExecutor {
         binding.setVariable("balanceAsset", balanceAsset);
         binding.setVariable("indiceProfiles", indiceProfiles);
         binding.setVariable("assetProfile", assetProfile);
+        binding.setVariable("messageTemplate", messageTemplate);
         GroovyShell groovyShell = new GroovyShell(groovyClassLoader, binding);
         Object result = groovyShell.evaluate(
                 "import " + StrategyResult.class.getName() + '\n' +

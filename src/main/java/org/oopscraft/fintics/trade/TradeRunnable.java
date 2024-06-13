@@ -43,6 +43,8 @@ public class TradeRunnable implements Runnable {
 
     private final PlatformTransactionManager transactionManager;
 
+    private final MessageTemplateFactory messageTemplateFactory;
+
     private final Logger log;
 
     @Setter
@@ -62,6 +64,7 @@ public class TradeRunnable implements Runnable {
         TradeExecutor tradeExecutor,
         IndiceClient indiceClient,
         BrokerClientFactory brokerClientFactory,
+        MessageTemplateFactory messageTemplateFactory,
         PlatformTransactionManager transactionManager
     ){
         this.tradeId = tradeId;
@@ -72,6 +75,7 @@ public class TradeRunnable implements Runnable {
         this.tradeExecutor = tradeExecutor;
         this.indiceClient = indiceClient;
         this.brokerClientFactory = brokerClientFactory;
+        this.messageTemplateFactory = messageTemplateFactory;
         this.transactionManager = transactionManager;
 
         // log
@@ -80,14 +84,19 @@ public class TradeRunnable implements Runnable {
 
     @Override
     public void run() {
+        // logger
         tradeExecutor.setLog(log);
         if(this.tradeLogAppender != null) {
             log.addAppender(this.tradeLogAppender);
             this.tradeLogAppender.start();
         }
-        log.info("Start TradeRunnable: {}", tradeId);
+
+        // message template
+        MessageTemplate messageTemplate = messageTemplateFactory.getObject(String.format("/trades/%s/message", tradeId));
+        tradeExecutor.setMessageTemplate(messageTemplate);
 
         // start loop
+        log.info("Start TradeRunnable: {}", tradeId);
         while(!Thread.currentThread().isInterrupted() && !interrupted) {
             TransactionStatus transactionStatus = null;
             try {

@@ -2,6 +2,7 @@ package org.oopscraft.fintics.trade;
 
 import ch.qos.logback.classic.Logger;
 import lombok.Builder;
+import lombok.Setter;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
 import org.oopscraft.fintics.client.broker.BrokerClient;
@@ -44,6 +45,9 @@ public class TradeExecutor {
     private final Map<String, StrategyResult> strategyResultMap = new HashMap<>();
 
     private final Map<String, Integer> strategyResultValueMatchCountMap = new HashMap<>();
+
+    @Setter
+    private MessageTemplate messageTemplate;
 
     @Builder
     private TradeExecutor(PlatformTransactionManager transactionManager, IndiceService indiceService, AssetService assetService, OrderService orderService, AlarmService alarmService) {
@@ -160,6 +164,10 @@ public class TradeExecutor {
                         .balanceAsset(balanceAsset)
                         .build();
                 strategyExecutor.setLog(log);
+                if (messageTemplate != null) {
+                    strategyExecutor.setMessageTemplate(messageTemplate.clone(tradeAsset));
+                }
+
                 Instant startTime = Instant.now();
                 StrategyResult strategyResult = strategyExecutor.execute();
                 log.info("[{} - {}] strategy execution elapsed:{}", tradeAsset.getAssetId(), tradeAsset.getAssetName(), Duration.between(startTime, Instant.now()));

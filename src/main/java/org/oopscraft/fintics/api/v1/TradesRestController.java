@@ -29,11 +29,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class TradesRestController {
 
-    private final static String TRADE_REST_CONTROLLER_GET_TRADE_ASSET_INDICATORS = "TradeRestController.getTradeAssetIndicator";
-
     private final TradeService tradeService;
-
-    private final SimulateService simulateService;
 
     @GetMapping
     public ResponseEntity<List<TradeResponse>> getTrades() {

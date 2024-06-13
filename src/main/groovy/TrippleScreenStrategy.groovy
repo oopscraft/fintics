@@ -13,7 +13,8 @@ interface Scorable {
 class ScoreGroup extends LinkedHashMap<String, Scorable> implements Scorable {
     @Override
     Number getAverage() {
-        return this.values().collect{it.getAverage()}.average() as Number
+        def average = this.values().collect{it.getAverage()}.average() as Number
+        return average.toBigDecimal().setScale(2, RoundingMode.HALF_UP)
     }
     @Override
     String toString() {
@@ -23,7 +24,8 @@ class ScoreGroup extends LinkedHashMap<String, Scorable> implements Scorable {
 
 class Score extends LinkedHashMap<String, BigDecimal> implements Scorable {
     Number getAverage() {
-        return this.values().empty ? 0 : this.values().average() as Number
+        def average = this.values().empty ? 0 : this.values().average() as Number
+        return average.toBigDecimal().setScale(2, RoundingMode.HALF_UP)
     }
     @Override
     String toString() {
@@ -102,6 +104,9 @@ class Analysis implements Analyzable {
         score.cciValueOverSignal = cci.value > cci.signal ? 100 : 0
         score.cciValue = cci.value > 0 ? 100 : 0
         // dmi
+        def dmiPdiPctChange = Tools.pctChange(dmis.take(period).collect{it.pdi})
+        def dmiMdiPctChange = Tools.pctChange(dmis.take(period).collect{it.mdi})
+        score.dmiPdiMdiPctChange = dmiPdiPctChange > 0.0 && dmiMdiPctChange < 0.0 ? 100 : 0
         score.dmiPdiOverMdi = dmi.pdi > dmi.mdi ? 100 : 0
         // obv
         score.obvValueOverSignal = obv.value > obv.signal ? 100 : 0
@@ -117,7 +122,12 @@ class Analysis implements Analyzable {
     Scorable getVolatilityScore() {
         def score = new Score()
         // dmi
-        score.dmiAdx = dmi.adx > 25 ? 100 : 0
+        def dmiAdxPctChange = Tools.pctChange(dmis.take(period).collect{it.adx})
+        if (dmiAdxPctChange > 0.0 && dmi.adx > 25) {
+            score.dmiAdxPctChange = 100
+        } else {
+            score.dmiAdxPctChange = 0
+        }
         // return
         return score
     }
@@ -216,7 +226,8 @@ def waveAnalysis = new Analysis(assetProfile.getOhlcvs(Ohlcv.Type.MINUTE, waveOh
 // tide
 def tideAnalysis = new AnalysisGroup(
         hourly: new Analysis(assetProfile.getOhlcvs(Ohlcv.Type.MINUTE, 60)),
-        daily: new Analysis(assetProfile.getOhlcvs(Ohlcv.Type.DAILY, 1))
+        daily: new Analysis(assetProfile.getOhlcvs(Ohlcv.Type.DAILY, 1)),
+        weekly: new Analysis(assetProfile.getOhlcvs(Ohlcv.Type.DAILY, 5))
 )
 
 // 현재 수익률
@@ -231,6 +242,14 @@ log.info("wave.volatility: {}", waveAnalysis.getVolatilityScore())
 log.info("ripple.momentum: {}", rippleAnalysis.getMomentumScore())
 log.info("profitPercentage: {}", profitPercentage)
 
+// message
+def message = """
+tide.momentum: ${tideAnalysis.getMomentumScore().getAverage()} (${tideAnalysis.entrySet().collect{it -> "${it.key}:${it.value.getMomentumScore().getAverage()}"}.join("/")})
+wave.oversold/overbought: ${waveAnalysis.getOversoldScore().getAverage()}/${waveAnalysis.getOverboughtScore().getAverage()}
+ripple.momentum: ${rippleAnalysis.getMomentumScore().getAverage()}
+"""
+messageTemplate.send(message)
+
 //================================
 // trade
 //================================
@@ -241,7 +260,7 @@ if (75 >= tideAnalysis.getMomentumScore().getAverage() && tideAnalysis.getMoment
         // 단기 상승 시
         if (rippleAnalysis.getMomentumScore().getAverage() >= 75) {
             // 매수
-            strategyResult = StrategyResult.of(Action.BUY, 1.0, "wave.oversold: ${waveAnalysis.getOversoldScore()}")
+            strategyResult = StrategyResult.of(Action.BUY, 1.0, message)
         }
     }
     // 매도 포지션 - 중기 과매수 시
@@ -249,7 +268,7 @@ if (75 >= tideAnalysis.getMomentumScore().getAverage() && tideAnalysis.getMoment
         // 단기 하락 시작
         if (rippleAnalysis.getMomentumScore().getAverage() <= 25) {
             // 매도
-            strategyResult = StrategyResult.of(Action.SELL, 0.0, "wave.overbought: ${waveAnalysis.getOverboughtScore()}")
+            strategyResult = StrategyResult.of(Action.SELL, 0.0, message)
         }
     }
 }
@@ -261,7 +280,7 @@ if (tideAnalysis.getMomentumScore().getAverage() >= 75) {
         // 단기 상승 시
         if (rippleAnalysis.getMomentumScore().getAverage() >=75) {
             // 매수 포지션
-            strategyResult = StrategyResult.of(Action.BUY, 1.0, "wave.oversold: ${waveAnalysis.getOversoldScore()}")
+            strategyResult = StrategyResult.of(Action.BUY, 1.0, message)
         }
     }
     // 중기 과매수 시
@@ -269,7 +288,7 @@ if (tideAnalysis.getMomentumScore().getAverage() >= 75) {
         // 단기 하락 시
         if (rippleAnalysis.getMomentumScore().getAverage() <= 25) {
             // 매도 포지션
-            strategyResult = StrategyResult.of(Action.SELL, 0.5, "wave.overbought: ${waveAnalysis.getOverboughtScore()}")
+            strategyResult = StrategyResult.of(Action.SELL, 0.5, message)
         }
     }
 }
@@ -281,7 +300,7 @@ if (tideAnalysis.getMomentumScore().getAverage() <= 25) {
         // 단기 하락 시
         if (rippleAnalysis.getMomentumScore().getAverage() <= 25) {
             // 매도 포지션
-            strategyResult = StrategyResult.of(Action.SELL, 0.0, "tide.momentum: ${tideAnalysis.getMomentumScore()}")
+            strategyResult = StrategyResult.of(Action.SELL, 0.0, message)
         }
     }
 }
@@ -290,7 +309,7 @@ if (tideAnalysis.getMomentumScore().getAverage() <= 25) {
 if (rippleAnalysis.getMomentumScore().getAverage() <= 25) {
     if (stopLoss < 0.0) {
         if (profitPercentage < stopLoss) {
-            strategyResult = StrategyResult.of(Action.SELL, 0.0, "stopLoss: ${profitPercentage}")
+            strategyResult = StrategyResult.of(Action.SELL, 0.0, "stopLoss: ${profitPercentage}\n${message}")
         }
     }
 }

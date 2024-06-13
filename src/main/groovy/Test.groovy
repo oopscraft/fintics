@@ -207,21 +207,23 @@ StrategyResult strategyResult = null
 // analysis
 def analysis = new AnalysisGroup(
         fast: new Analysis(assetProfile.getOhlcvs(Ohlcv.Type.MINUTE, 1)),
-//        daily: new Analysis(assetProfile.getOhlcvs(Ohlcv.Type.DAILY, 1))
+        slow: new Analysis(assetProfile.getOhlcvs(Ohlcv.Type.MINUTE, 5))
 )
 
 // logging
-log.info("analysis.momentum: {}", tideAnalysis.getMomentumScore())
+log.info("total: {}", analysis.getMomentumScore().getAverage())
+log.info("fast momentum: {} - {}", analysis.fast.getMomentumScore().getAverage(), analysis.fast.getMomentumScore())
+log.info("slow momentum: {} - {}", analysis.slow.getMomentumScore().getAverage(), analysis.slow.getMomentumScore())
 
 //================================
 // trade
 //================================
 if (analysis.getMomentumScore().getAverage() > 75) {
-    strategyResult = StrategyResult.of(Action.BUY, 1.0, "wave.oversold: ${waveAnalysis.getOversoldScore()}")
+    strategyResult = StrategyResult.of(Action.BUY, 1.0, "buy")
 }
 
 if (analysis.getMomentumScore().getAverage() < 25) {
-    strategyResult = StrategyResult.of(Action.SELL, 0.0, "wave.overbought: ${waveAnalysis.getOverboughtScore()}")
+    strategyResult = StrategyResult.of(Action.SELL, 0.0, "sell")
 }
 
 //================================
