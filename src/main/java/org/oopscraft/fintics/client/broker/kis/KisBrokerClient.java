@@ -18,6 +18,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -475,6 +476,15 @@ public class KisBrokerClient extends KrBrokerClient {
 
     @Override
     public Order submitOrder(Asset asset, Order order) throws InterruptedException {
+        // quantity with check
+        BigDecimal quantity = order.getQuantity().setScale(0, RoundingMode.FLOOR);
+        order.setQuantity(quantity);
+
+        // price
+        BigDecimal price = order.getPrice().setScale(0, RoundingMode.FLOOR);
+        order.setPrice(price);
+
+        // rest template
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
@@ -505,8 +515,8 @@ public class KisBrokerClient extends KrBrokerClient {
             default -> throw new RuntimeException("invalid order type");
         }
 
-        // quantity with check
-        int quantity = order.getQuantity().intValue();
+        // order quantity
+        String ordQty = String.valueOf(quantity.intValue());
 
         // request
         Map<String, String> payloadMap = new LinkedHashMap<>();
@@ -514,7 +524,7 @@ public class KisBrokerClient extends KrBrokerClient {
         payloadMap.put("ACNT_PRDT_CD", accountNo.split("-")[1]);
         payloadMap.put("PDNO", order.getSymbol());
         payloadMap.put("ORD_DVSN", ordDvsn);
-        payloadMap.put("ORD_QTY", String.valueOf(quantity));
+        payloadMap.put("ORD_QTY", ordQty);
         payloadMap.put("ORD_UNPR", ordUnpr);
         RequestEntity<Map<String, String>> requestEntity = RequestEntity
                 .post(url)

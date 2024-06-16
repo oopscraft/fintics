@@ -425,6 +425,17 @@ public class KisUsBrokerClient extends UsBrokerClient {
 
     @Override
     public Order submitOrder(Asset asset, Order order) throws InterruptedException {
+        // quantity
+        BigDecimal quantity = order.getQuantity()
+                .setScale(0, RoundingMode.FLOOR);
+        order.setQuantity(quantity);
+
+        // price
+        BigDecimal price = order.getPrice()
+                .setScale(2, RoundingMode.FLOOR);
+        order.setPrice(price);
+
+        // rest template
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
@@ -443,14 +454,6 @@ public class KisUsBrokerClient extends UsBrokerClient {
         // ovrsExcgCd
         String ovrsExcgCd = getOvrsExcgCd(asset);
 
-        // quantity with check
-        int quantity = order.getQuantity().intValue();
-
-        // price
-        double price = order.getPrice()
-                .setScale(2, RoundingMode.FLOOR)
-                .doubleValue();
-
         // sllType
         String sllType = null;
         if (order.getType() == Order.Type.SELL) {
@@ -463,8 +466,8 @@ public class KisUsBrokerClient extends UsBrokerClient {
         payloadMap.put("ACNT_PRDT_CD", accountNo.split("-")[1]);
         payloadMap.put("OVRS_EXCG_CD", ovrsExcgCd);
         payloadMap.put("PDNO", order.getSymbol());
-        payloadMap.put("ORD_QTY", String.valueOf(quantity));
-        payloadMap.put("OVRS_ORD_UNPR", String.valueOf(price));
+        payloadMap.put("ORD_QTY", String.valueOf(quantity.intValue()));
+        payloadMap.put("OVRS_ORD_UNPR", String.valueOf(price.doubleValue()));
         payloadMap.put("CTAC_TLNO", "");
         payloadMap.put("MGCO_APTM_ODNO", "");
         payloadMap.put("SLL_TYPE", sllType);
