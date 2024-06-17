@@ -8,6 +8,7 @@ import org.oopscraft.fintics.dao.IndiceOhlcvRepository;
 import org.oopscraft.fintics.dao.SimulateRepository;
 import org.oopscraft.fintics.model.*;
 import org.oopscraft.fintics.service.IndiceService;
+import org.oopscraft.fintics.trade.MessageTemplateFactory;
 import org.oopscraft.fintics.trade.TradeExecutorFactory;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
@@ -35,6 +36,8 @@ public class SimulateRunnableFactory {
 
     private final ObjectMapper objectMapper;
 
+    private final MessageTemplateFactory messageTemplateFactory;
+
     public SimulateRunnable getObject(Simulate simulate) {
         SimulateIndiceClient simulateIndiceClient = SimulateIndiceClient.builder()
                 .indiceClientProperties(indiceClientProperties)
@@ -54,6 +57,7 @@ public class SimulateRunnableFactory {
                 .simulateRepository(simulateRepository)
                 .messagingTemplate(messagingTemplate)
                 .objectMapper(objectMapper)
+                .messageTemplateFactory(messageTemplateFactory)
                 .build();
     }
 

@@ -323,19 +323,21 @@ public class TradeExecutor {
     private BigDecimal calculateBuyPrice(TradeAsset tradeAsset, OrderBook orderBook, BrokerClient brokerClient) throws InterruptedException {
         BigDecimal price = orderBook.getAskPrice();
         BigDecimal tickPrice = brokerClient.getTickPrice(tradeAsset, price);
+        // max competitive price (매도 호가 에서 1틱 유리한 가격 설정)
         if(tickPrice != null) {
             price = price.subtract(tickPrice);
         }
-        return price.max(orderBook.getBidPrice()); // max competitive price
+        return price.max(orderBook.getBidPrice());
     }
 
     private BigDecimal calculateSellPrice(TradeAsset tradeAsset, OrderBook orderBook, BrokerClient brokerClient) throws InterruptedException {
         BigDecimal price = orderBook.getBidPrice();
         BigDecimal tickPrice = brokerClient.getTickPrice(tradeAsset, price);
+        // min competitive price (매수 호가 에서 1틱 유리한 가격 설정)
         if(tickPrice != null) {
             price = price.add(tickPrice);
         }
-        return price.min(orderBook.getAskPrice()); // min competitive price
+        return price.min(orderBook.getAskPrice());
     }
 
     private void buyTradeAsset(BrokerClient brokerClient, Trade trade, TradeAsset tradeAsset, BigDecimal quantity, BigDecimal price, StrategyResult strategyResult) throws InterruptedException {

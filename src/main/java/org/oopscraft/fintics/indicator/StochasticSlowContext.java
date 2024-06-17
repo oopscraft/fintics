@@ -7,7 +7,7 @@ import lombok.experimental.SuperBuilder;
 @Getter
 public class StochasticSlowContext extends IndicatorContext {
 
-    public static final StochasticSlowContext DEFAULT = StochasticSlowContext.of(5, 3, 3);
+    public static final StochasticSlowContext DEFAULT = StochasticSlowContext.of(14, 3, 3);
 
     private final int period;
 

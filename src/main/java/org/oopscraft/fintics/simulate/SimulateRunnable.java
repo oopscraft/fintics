@@ -11,6 +11,8 @@ import org.oopscraft.fintics.dao.SimulateRepository;
 import org.oopscraft.fintics.model.Simulate;
 import org.oopscraft.fintics.model.Strategy;
 import org.oopscraft.fintics.model.Trade;
+import org.oopscraft.fintics.trade.MessageTemplate;
+import org.oopscraft.fintics.trade.MessageTemplateFactory;
 import org.oopscraft.fintics.trade.TradeExecutor;
 import org.oopscraft.fintics.trade.TradeExecutorFactory;
 import org.slf4j.LoggerFactory;
@@ -46,6 +48,8 @@ public class SimulateRunnable implements Runnable {
 
     private final ObjectMapper objectMapper;
 
+    private final MessageTemplateFactory messageTemplateFactory;
+
     @Setter
     private Logger log;
 
@@ -67,7 +71,8 @@ public class SimulateRunnable implements Runnable {
             PlatformTransactionManager transactionManager,
             SimulateRepository simulateRepository,
             SimpMessagingTemplate messagingTemplate,
-            ObjectMapper objectMapper
+            ObjectMapper objectMapper,
+            MessageTemplateFactory messageTemplateFactory
     ){
         this.simulate = simulate;
         this.simulateIndiceClient = simulateIndiceClient;
@@ -77,6 +82,7 @@ public class SimulateRunnable implements Runnable {
         this.simulateRepository = simulateRepository;
         this.messagingTemplate = messagingTemplate;
         this.objectMapper = objectMapper;
+        this.messageTemplateFactory = messageTemplateFactory;
 
         // log
         this.log = (Logger) LoggerFactory.getLogger(simulate.getSimulateId());
@@ -119,6 +125,10 @@ public class SimulateRunnable implements Runnable {
             // trade executor
             TradeExecutor tradeExecutor = tradeExecutorFactory.getObject();
             tradeExecutor.setLog(log);
+
+            // message template
+            MessageTemplate messageTemplate = messageTemplateFactory.getObject(String.format("/simulates/%s/message", simulate.getSimulateId()));
+            tradeExecutor.setMessageTemplate(messageTemplate);
 
             // loop
             for (LocalDateTime dateTime = dateTimeFrom;
