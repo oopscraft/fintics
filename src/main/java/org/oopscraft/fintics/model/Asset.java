@@ -36,11 +36,21 @@ public class Asset {
 
     private BigDecimal issuedShares;
 
+    private BigDecimal totalAssets;
+
+    private BigDecimal totalEquity;
+
+    private BigDecimal netIncome;
+
+    private BigDecimal eps;
+
     private BigDecimal per;
 
     private BigDecimal roe;
 
     private BigDecimal roa;
+
+    private BigDecimal dividendYield;
 
     public String getSymbol() {
         return Optional.ofNullable(getAssetId())

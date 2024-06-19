@@ -220,8 +220,15 @@ public abstract class UsBrokerClient extends BrokerClient {
 
 
     void fillStockAssetProperty(Asset asset) {
+        BigDecimal issuedShares = null;
+        BigDecimal totalAssets = null;
+        BigDecimal totalEquity = null;
+        BigDecimal netIncome = null;
+        BigDecimal eps = null;
+        BigDecimal per = null;
         BigDecimal roe = null;
         BigDecimal roa = null;
+        BigDecimal dividendYield = null;
 
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
@@ -247,10 +254,22 @@ public abstract class UsBrokerClient extends BrokerClient {
         JsonNode summaryDataNode = summaryRootNode.path("data").path("summaryData");
         HashMap<String,Map<String,String>> summaryDataMap = objectMapper.convertValue(summaryDataNode, new TypeReference<>() {});
 
+        // price, market cap
+        for(String name : summaryDataMap.keySet()) {
+            Map<String, String> map = summaryDataMap.get(name);
+            String value = map.get("value");
+            if (name.equals("PERatio")) {
+                per = new BigDecimal(value);
+            }
+            if(name.equals("EarningsPerShare")) {
+                eps = convertCurrencyToNumber(value);
+            }
+            if(name.equals("Yield")) {
+                dividendYield = convertPercentageToNumber(value);
+            }
+        }
+
         // calls financial api
-        BigDecimal totalEquity = null;
-        BigDecimal totalAssets = null;
-        BigDecimal netIncome = null;
         String financialUrl = String.format(
                 "https://api.nasdaq.com/api/company/%s/financials?frequency=1", // frequency 2 is quarterly
                 asset.getSymbol()
@@ -301,8 +320,14 @@ public abstract class UsBrokerClient extends BrokerClient {
                     .multiply(BigDecimal.valueOf(100));
         }
 
+        asset.setTotalAssets(totalAssets);
+        asset.setTotalEquity(totalEquity);
+        asset.setNetIncome(netIncome);
+        asset.setEps(eps);
+        asset.setPer(per);
         asset.setRoe(roe);
         asset.setRoa(roa);
+        asset.setDividendYield(dividendYield);
     }
 
     private static HttpHeaders createNasdaqHeaders() {

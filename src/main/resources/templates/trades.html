@@ -6,6 +6,8 @@
 <th:block layout:fragment="_content">
     <script th:inline="javascript">
         const trades = new duice.ArrayProxy([]);
+        const brokers = new duice.ArrayProxy(/*[[${brokers}]]*/[]);
+        const strategies = new duice.ArrayProxy(/*[[${strategies}]]*/[]);
 
         function getTrades() {
             let url = new URL(`${_apiUrl}/v1/trades`, document.location.origin);
@@ -57,15 +59,39 @@
                     }
                 "
              onclick="getTrade(this.dataset.tradeId);">
-            <span class="link font-weight--bold"
-                  data-duice-bind="trade"
-                  data-duice-property="tradeName"></span>
-            &nbsp;
-            <span class="badge" style="border-radius:1em;"
-                  data-duice-bind="trade"
-                  data-duice-execute="this.innerHTML=trade.tradeAssets.length;"></span>
+            <div>
+                 <span class="link font-weight--bold"
+                       data-duice-bind="trade"
+                       data-duice-property="tradeName"></span>
+                &nbsp;
+                <span class="badge" style="border-radius:1em;"
+                      data-duice-bind="trade"
+                      data-duice-execute="this.innerHTML=trade.tradeAssets.length;"></span>
+            </div>
+            <div class="font-size--smaller" style="line-height:1.5em;">
+                <div>
+                    <span data-th-text="#{fintics.Trade.investAmount}"></span>:
+                    <span data-duice-bind="trade" data-duice-property="investAmount" data-duice-format="number"></span>
+                </div>
+                <div>
+                    <span data-th-text="#{fintics.Broker}"></span>:
+                    <span data-duice-bind="trade"
+                          data-duice-execute="
+                          let brokerName = brokers.find(it => it.brokerId === trade.brokerId)?.brokerName;
+                          this.innerHTML = brokerName;
+                          "></span>
+                </div>
+                <div>
+                    <span data-th-text="#{fintics.Strategy}"></span>:
+                    <span data-duice-bind="trade"
+                          data-duice-execute="
+                          let strategyName = strategies.find(it => it.strategyId === trade.strategyId)?.strategyName;
+                          this.innerHTML = strategyName;
+                          "></span>
+                </div>
+            </div>
         </div>
-        <div class="grid-column--4 s__grid-column--12 border--1 padding--1em link text-align--center"
+        <div class="grid-column--4 s__grid-column--12 border--1 padding--1em link display--flex justify-content--center align-items--center"
              onclick="createTrade();">
             <img class="icon" th:src="@{/static/image/icon-add.svg}" alt="create"/>
             <span data-th-text="#{web.global.create}"></span>

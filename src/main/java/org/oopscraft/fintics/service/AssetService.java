@@ -8,9 +8,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +19,8 @@ public class AssetService {
     private final AssetRepository assetRepository;
 
     private final AssetOhlcvRepository assetOhlcvRepository;
+
+    private final AssetOhlcvSplitRepository assetOhlcvSplitRepository;
 
     private final AssetNewsRepository assetNewsRepository;
 
@@ -69,15 +71,72 @@ public class AssetService {
     }
 
     public List<Ohlcv> getAssetDailyOhlcvs(String assetId, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo, Pageable pageable) {
-        return assetOhlcvRepository.findAllByAssetIdAndType(assetId, Ohlcv.Type.DAILY, dateTimeFrom, dateTimeTo, pageable).stream()
+        List<Ohlcv> assetDailyOhlcvs = assetOhlcvRepository.findAllByAssetIdAndType(assetId, Ohlcv.Type.DAILY, dateTimeFrom, dateTimeTo, pageable).stream()
                 .map(Ohlcv::from)
                 .toList();
+
+        // apply split ratio
+        applySplitRatioIfExist(assetId, assetDailyOhlcvs);
+
+        // return
+        return assetDailyOhlcvs;
     }
 
     public List<Ohlcv> getAssetMinuteOhlcvs(String assetId, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo, Pageable pageable) {
-        return assetOhlcvRepository.findAllByAssetIdAndType(assetId, Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo, pageable).stream()
+        List<Ohlcv> assetMinuteOhlcvs = assetOhlcvRepository.findAllByAssetIdAndType(assetId, Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo, pageable).stream()
                 .map(Ohlcv::from)
                 .toList();
+
+        // apply split ratio
+        applySplitRatioIfExist(assetId, assetMinuteOhlcvs);
+
+        // return
+        return assetMinuteOhlcvs;
+    }
+
+    void applySplitRatioIfExist(String assetId, List<Ohlcv> ohlcvs) {
+        // ohlcv split data
+        LocalDateTime dateTimeFrom = ohlcvs.stream()
+                .map(Ohlcv::getDateTime)
+                .min(Comparator.naturalOrder())
+                .orElseThrow();
+        LocalDateTime dateTimeTo = ohlcvs.stream()
+                .map(Ohlcv::getDateTime)
+                .max(Comparator.naturalOrder())
+                .orElseThrow();
+        List<AssetOhlcvSplitEntity> assetOhlcvSplitEntities = assetOhlcvSplitRepository.findAllByAssetId(assetId, dateTimeFrom, dateTimeTo);
+
+        // if split data exists
+        if (!assetOhlcvSplitEntities.isEmpty()) {
+            // prepare split ratio map
+            NavigableMap<LocalDateTime, BigDecimal> cumulativeRatios = calculateCumulativeRatios(assetOhlcvSplitEntities);
+
+            // adjust split to ohlcv
+            for (Ohlcv ohlcv : ohlcvs) {
+                BigDecimal splitRatio = getCumulativeRatioForDate(ohlcv.getDateTime(), cumulativeRatios);
+                ohlcv.setOpenPrice(ohlcv.getOpenPrice().divide(splitRatio, MathContext.DECIMAL32));
+                ohlcv.setHighPrice(ohlcv.getHighPrice().divide(splitRatio, MathContext.DECIMAL32));
+                ohlcv.setLowPrice(ohlcv.getLowPrice().divide(splitRatio, MathContext.DECIMAL32));
+                ohlcv.setClosePrice(ohlcv.getClosePrice().divide(splitRatio, MathContext.DECIMAL32));
+                ohlcv.setVolume(ohlcv.getVolume().multiply(splitRatio));
+            }
+        }
+    }
+
+    NavigableMap<LocalDateTime, BigDecimal> calculateCumulativeRatios(List<AssetOhlcvSplitEntity> splitEntities) {
+        NavigableMap<LocalDateTime, BigDecimal> cumulativeRatios = new TreeMap<>();
+        BigDecimal cumulativeRatio = BigDecimal.ONE;
+        for (AssetOhlcvSplitEntity split : splitEntities) {
+            BigDecimal splitRatio = split.getSplitTo().divide(split.getSplitFrom(), MathContext.DECIMAL32);
+            cumulativeRatio = cumulativeRatio.multiply(splitRatio);
+            cumulativeRatios.put(split.getDateTime(), cumulativeRatio);
+        }
+        return cumulativeRatios;
+    }
+
+    BigDecimal getCumulativeRatioForDate(LocalDateTime dateTime, NavigableMap<LocalDateTime, BigDecimal> cumulativeRatios) {
+        return cumulativeRatios.tailMap(dateTime, false).values().stream()
+                .reduce(BigDecimal.ONE, BigDecimal::multiply);
     }
 
     public List<News> getAssetNewses(String assetId, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo, Pageable pageable) {

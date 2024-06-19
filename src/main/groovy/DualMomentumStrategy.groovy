@@ -153,12 +153,7 @@ class Analysis implements Analyzable {
     Scorable getVolatilityScore() {
         def score = new Score()
         // dmi
-        def dmiAdxPctChange = Tools.pctChange(dmis.take(period).collect{it.adx})
-        if (dmiAdxPctChange > 0.0 && dmi.adx > 25) {
-            score.dmiAdxPctChange = 100
-        } else {
-            score.dmiAdxPctChange = 0
-        }
+        score.dmiAdx = dmi.adx > 25 ? 100 : 0
         // return
         return score
     }
@@ -166,8 +161,6 @@ class Analysis implements Analyzable {
     @Override
     Scorable getWeightScore() {
         def score = new Score()
-        // direction
-        score.directionScore = directionScore.getAverage()
         // momentum
         score.momentumScore = momentumScore.getAverage()
         // return
@@ -178,13 +171,13 @@ class Analysis implements Analyzable {
     Scorable getOversoldScore() {
         def score = new Score()
         // rsi
-        score.rsiValue = rsi.value < 30 || rsi.signal < 30 ? 100 : 0
+        score.rsi = rsi.value <= 30 || rsi.signal <= 30 ? 100 : 0
         // stochastic slow
-        score.stochasticSlowK = stochasticSlow.slowK < 20 || stochasticSlow.slowD < 20 ? 100 : 0
+        score.stochastic = stochasticSlow.slowK <= 20 || stochasticSlow.slowD <= 20 ? 100 : 0
         // williams r
-        score.williamsRValue = williamsR.value < -80 || williamsR.signal < -80 ? 100 : 0
+        score.williamsR = williamsR.value <= -80 || williamsR.signal <= -80 ? 100 : 0
         // cci
-        score.cciValue = cci.value < -100 || rsi.signal < -100 ? 100 : 0
+        score.cci = cci.value <= -100 || cci.signal <= -100 ? 100 : 0
         // return
         return score
     }
@@ -193,13 +186,13 @@ class Analysis implements Analyzable {
     Scorable getOverboughtScore() {
         def score = new Score()
         // rsi
-        score.rsiValue = rsi.value > 70 || rsi.signal > 70 ? 100 : 0
+        score.rsi = rsi.value >= 70 || rsi.signal >= 70 ? 100 : 0
         // stochastic slow
-        score.stochasticSlowK = stochasticSlow.slowK > 80 || stochasticSlow.slowD > 80 ? 100 : 0
+        score.stochastic = stochasticSlow.slowK >= 80 || stochasticSlow.slowD >= 80 ? 100 : 0
         // williams r
-        score.williamsRValue = williamsR.value > -20 || williamsR.signal > -20 ? 100 : 0
+        score.williamsR = williamsR.value >= -20 || williamsR.signal >= -20 ? 100 : 0
         // cci
-        score.cciValue = cci.value > 100 || cci.signal > 100 ? 100 : 0
+        score.cci = cci.value >= 100 || cci.signal >= 100 ? 100 : 0
         // return
         return score
     }
@@ -288,13 +281,13 @@ StrategyResult strategyResult = null
 def tideAnalysis = new Analysis(assetProfile.getOhlcvs(tideOhlcvType, tideOhlcvPeriod))
 def waveAnalysis = new Analysis(assetProfile.getOhlcvs(waveOhlcvType, waveOhlcvPeriod))
 def rippleAnalysis = new Analysis(assetProfile.getOhlcvs(rippleOhlcvType, rippleOhlcvPeriod))
-log.info("tide.direction: {}", tideAnalysis.getDirectionScore().getAverage())
-log.info("tide.momentum: {}", tideAnalysis.getMomentumScore().getAverage())
-log.info("tide.weight: {}", tideAnalysis.getWeightScore().getAverage())
-log.info("wave.oversold: {}", waveAnalysis.getOversoldScore().getAverage())
-log.info("wave.overbought: {}", waveAnalysis.getOverboughtScore().getAverage())
-log.info("ripple.direction: {}", rippleAnalysis.getDirectionScore().getAverage())
-log.info("ripple.momentum: {}", rippleAnalysis.getMomentumScore().getAverage())
+log.info("tide.direction: {}", tideAnalysis.getDirectionScore())
+log.info("tide.momentum: {}", tideAnalysis.getMomentumScore())
+log.info("tide.weight: {}", tideAnalysis.getWeightScore())
+log.info("wave.oversold: {}", waveAnalysis.getOversoldScore())
+log.info("wave.overbought: {}", waveAnalysis.getOverboughtScore())
+log.info("ripple.direction: {}", rippleAnalysis.getDirectionScore())
+log.info("ripple.momentum: {}", rippleAnalysis.getMomentumScore())
 
 // position
 def marginPosition = 1.0 - basePosition
@@ -307,20 +300,20 @@ log.info("position: {}", position)
 def message = """
 position: ${position}
 tide.weight|momentum: ${tideAnalysis.getWeightScore().getAverage()}|${tideAnalysis.getMomentumScore().getAverage()}
-wave.oversold|overbought|volatility: ${waveAnalysis.getOversoldScore().getAverage()}|${waveAnalysis.getOverboughtScore().getAverage()}|${waveAnalysis.getVolatilityScore().getAverage()}
+wave.oversold|overbought|volatility|momentum: ${waveAnalysis.getOversoldScore().getAverage()}|${waveAnalysis.getOverboughtScore().getAverage()}|${waveAnalysis.getVolatilityScore().getAverage()}|${waveAnalysis.getMomentumScore().getAverage()}
 ripple.direction|momentum: ${rippleAnalysis.getDirectionScore().getAverage()}|${rippleAnalysis.getMomentumScore().getAverage()}
 """
 messageTemplate.send(message)
 
 // buy position
-if (waveAnalysis.getOversoldScore() > 50 && waveAnalysis.getVolatilityScore() > 50) {
-    if (rippleAnalysis.getDirectionScore() > 75 && rippleAnalysis.getMomentumScore() > 50) {
+if (waveAnalysis.getOversoldScore() >= 50 && waveAnalysis.getVolatilityScore() >= 50) {
+    if (rippleAnalysis.getDirectionScore() >= 75 && rippleAnalysis.getMomentumScore() >= 50) {
         strategyResult = StrategyResult.of(Action.BUY, position, message)
     }
 }
 // sell position
-if (waveAnalysis.getOverboughtScore() > 50 && waveAnalysis.getVolatilityScore() > 50) {
-    if (rippleAnalysis.getDirectionScore() < 25 && rippleAnalysis.getMomentumScore() < 50) {
+if (waveAnalysis.getOverboughtScore() >= 50 && waveAnalysis.getVolatilityScore() >= 50) {
+    if (rippleAnalysis.getDirectionScore() <= 25 && rippleAnalysis.getMomentumScore() <= 50) {
         strategyResult = StrategyResult.of(Action.SELL, position, message)
     }
 }
