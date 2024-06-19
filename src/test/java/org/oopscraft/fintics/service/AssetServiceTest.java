@@ -100,7 +100,7 @@ class AssetServiceTest extends CoreTestSupport {
     }
 
     @Test
-    void getAssetDailyOhlcvWithSplit() {
+    void getAssetDailyOhlcvWithForwardSplit() {
         // given
         String assetId = "test";
         // 액면 분할 정보
@@ -146,6 +146,55 @@ class AssetServiceTest extends CoreTestSupport {
         assertEquals(100, assetDailyOhlcvs.get(0).getClosePrice().doubleValue());
         // 액면 분할 전 가격은 액면 분할 비율이 적용된 가격 (1000 -> 100)
         assertEquals(100, assetDailyOhlcvs.get(1).getClosePrice().doubleValue());
+    }
+
+    @Test
+    void getAssetDailyOhlcvWithReverseSplit() {
+        // given
+        String assetId = "test";
+        // 액면 병합 정보
+        entityManager.persist(AssetOhlcvSplitEntity.builder()
+                .assetId(assetId)
+                .dateTime(LocalDateTime.of(2011,3,16, 0, 0, 0))
+                .splitFrom(BigDecimal.valueOf(10))
+                .splitTo(BigDecimal.valueOf(1))
+                .build());
+        // 액면 병합 전 가격 정보
+        entityManager.persist(AssetOhlcvEntity.builder()
+                .assetId(assetId)
+                .dateTime(LocalDate.of(2011, 3, 15).atStartOfDay())
+                .type(Ohlcv.Type.DAILY)
+                .openPrice(BigDecimal.valueOf(100))
+                .highPrice(BigDecimal.valueOf(101))
+                .lowPrice(BigDecimal.valueOf(99))
+                .closePrice(BigDecimal.valueOf(100))
+                .volume(BigDecimal.valueOf(1230))
+                .build());
+        // 액면 병합 후 가격 정보
+        entityManager.persist(AssetOhlcvEntity.builder()
+                .assetId(assetId)
+                .dateTime(LocalDate.of(2011, 3, 16).atStartOfDay())
+                .type(Ohlcv.Type.DAILY)
+                .openPrice(BigDecimal.valueOf(1000))
+                .highPrice(BigDecimal.valueOf(1010))
+                .lowPrice(BigDecimal.valueOf(990))
+                .closePrice(BigDecimal.valueOf(1000))
+                .volume(BigDecimal.valueOf(123))
+                .build());
+        entityManager.flush();
+        // when
+        List<Ohlcv> assetDailyOhlcvs = assetService.getAssetDailyOhlcvs(
+                assetId,
+                LocalDateTime.of(2011,1,1, 0, 0, 0),
+                LocalDateTime.of(2011,12,31, 23, 59, 59),
+                Pageable.unpaged()
+        );
+        // then
+        log.info("assetDailyOhlcvs: {}", assetDailyOhlcvs);
+        // 액면 병합 후 가격은 그대로 보존 (1000)
+        assertEquals(1000, assetDailyOhlcvs.get(0).getClosePrice().doubleValue());
+        // 액면 병합 전 가격은 액면 분할 비율이 적용된 가격 (1000 -> 10)
+        assertEquals(10, assetDailyOhlcvs.get(1).getClosePrice().doubleValue());
     }
 
     @Test

@@ -127,7 +127,15 @@ public class AssetService {
         NavigableMap<LocalDateTime, BigDecimal> cumulativeRatios = new TreeMap<>();
         BigDecimal cumulativeRatio = BigDecimal.ONE;
         for (AssetOhlcvSplitEntity split : splitEntities) {
-            BigDecimal splitRatio = split.getSplitTo().divide(split.getSplitFrom(), MathContext.DECIMAL32);
+            BigDecimal splitRatio = BigDecimal.ONE;
+            // forward split
+            if (split.getSplitTo().compareTo(split.getSplitFrom()) > 0) {
+                splitRatio = split.getSplitTo().divide(split.getSplitFrom(), MathContext.DECIMAL32);
+            }
+            // reverse split
+            if (split.getSplitTo().compareTo(split.getSplitFrom()) < 0) {
+                splitRatio = split.getSplitTo().multiply(split.getSplitFrom());
+            }
             cumulativeRatio = cumulativeRatio.multiply(splitRatio);
             cumulativeRatios.put(split.getDateTime(), cumulativeRatio);
         }
