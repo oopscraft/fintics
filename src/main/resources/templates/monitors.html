@@ -642,20 +642,20 @@
                             if (tradeAsset.quantity) {
                                 this.innerHTML = `${tradeAsset.quantity} (${tradeAsset.orderableQuantity})`;
                             }
-                            " class="font-size--smaller font-weight--bold"></span>
+                            "></span>
                         </td>
                         <td class="text-align--right">
-                            <span data-duice-bind="tradeAsset" data-duice-property="purchaseAmount" data-duice-format="number" class="font-size--smaller font-weight--bold"></span>
+                            <span data-duice-bind="tradeAsset" data-duice-property="purchaseAmount" data-duice-format="number"></span>
                         </td>
                         <td class="text-align--right">
-                            <span data-duice-bind="tradeAsset" data-duice-property="valuationAmount" data-duice-format="number" class="font-size--smaller font-weight--bold"></span>
+                            <span data-duice-bind="tradeAsset" data-duice-property="valuationAmount" data-duice-format="number"></span>
                         </td>
                         <td class="text-align--right">
                             <span data-duice-bind="tradeAsset" data-duice-property="profitAmount" data-duice-format="number"
                                   data-duice-execute="
                                 if(tradeAsset.profitAmount > 0) this.classList.add('color--red');
                                 if(tradeAsset.profitAmount < 0) this.classList.add('color--blue');
-                                " class="font-size--smaller font-weight--bold"></span>
+                                "></span>
                         </td>
                         <td class="text-align--center">
                             <span data-duice-bind="tradeAsset" data-duice-execute="
@@ -663,7 +663,7 @@
                             if (tradeAsset.profitPercentage > 0) this.classList.add('color--red');
                             if (tradeAsset.profitPercentage < 0) this.classList.add('color--blue');
                             this.innerHTML = `${tradeAsset.profitPercentage} %`;
-                            " class="font-size--smaller font-weight--bold"></span>
+                            "></span>
                         </td>
                     </tr>
                     </tbody>
