@@ -44,7 +44,6 @@ interface Analyzable {
     BigDecimal getAveragePrice()
     Scorable getMomentumScore()
     Scorable getVolatilityScore()
-    Scorable getWeightScore()
     Scorable getOversoldScore()
     Scorable getOverboughtScore()
 }
@@ -152,15 +151,6 @@ class Analysis implements Analyzable {
     }
 
     @Override
-    Scorable getWeightScore() {
-        def score = new Score()
-        // momentum
-        score.momentumScore = momentumScore.getAverage()
-        // return
-        return score
-    }
-
-    @Override
     Scorable getOversoldScore() {
         def score = new Score()
         // rsi
@@ -228,13 +218,6 @@ class AnalysisGroup extends LinkedHashMap<String, Analyzable> implements Analyza
     }
 
     @Override
-    Scorable getWeightScore() {
-        def scoreGroup = new ScoreGroup()
-        this.each{it -> scoreGroup.put(it.key, it.value.getWeightScore())}
-        return scoreGroup
-    }
-
-    @Override
     Scorable getOversoldScore() {
         def scoreGroup = new ScoreGroup()
         this.each{it -> scoreGroup.put(it.key, it.value.getOversoldScore())}
@@ -268,7 +251,6 @@ def tideAnalysis = new Analysis(assetProfile.getOhlcvs(tideOhlcvType, tideOhlcvP
 def waveAnalysis = new Analysis(assetProfile.getOhlcvs(waveOhlcvType, waveOhlcvPeriod))
 def rippleAnalysis = new Analysis(assetProfile.getOhlcvs(rippleOhlcvType, rippleOhlcvPeriod))
 log.info("tide.momentum: {}", tideAnalysis.getMomentumScore())
-log.info("tide.weight: {}", tideAnalysis.getWeightScore())
 log.info("wave.oversold: {}", waveAnalysis.getOversoldScore())
 log.info("wave.overbought: {}", waveAnalysis.getOverboughtScore())
 log.info("ripple.momentum: {}", rippleAnalysis.getMomentumScore())
@@ -282,10 +264,13 @@ log.info("position(momentumScore): {} ({})", position, momentum)
 
 // message
 def message = """
-momentum|position: ${momentum}|${position}
-wave.volatility|oversold|overbought: ${waveAnalysis.getVolatilityScore().getAverage()}|${waveAnalysis.getOversoldScore().getAverage()}|${waveAnalysis.getOverboughtScore().getAverage()}
-+ rsi:${waveAnalysis.rsi.value},sto:${waveAnalysis.stochasticSlow.slowK}, cci:${waveAnalysis.cci.value}, wlr:${waveAnalysis.williamsR.value}
-ripple.momentum: ${rippleAnalysis.getMomentumScore().getAverage()}
+position:${position}
+tide.momentum:${tideAnalysis.getMomentumScore().getAverage()}
++ macd(os):${tideAnalysis.macd.value}(${tideAnalysis.macd.oscillator}) 
+wave.volatility|oversold|overbought:${waveAnalysis.getVolatilityScore().getAverage()}|${waveAnalysis.getOversoldScore().getAverage()}|${waveAnalysis.getOverboughtScore().getAverage()}
++ rsi:${waveAnalysis.rsi.value}|sto:${waveAnalysis.stochasticSlow.slowK}|cci:${waveAnalysis.cci.value}|wil:${waveAnalysis.williamsR.value}
+ripple.momentum:${rippleAnalysis.getMomentumScore().getAverage()}
++ macd(oc):${rippleAnalysis.macd.value}(${rippleAnalysis.macd.oscillator})
 """
 messageTemplate.send(message)
 
@@ -304,12 +289,12 @@ if (waveAnalysis.getVolatilityScore() > 50) {
 }
 
 if (waveAnalysis.getVolatilityScore() < 50) {
-    if (waveAnalysis.getCurrentPrice() < waveAnalysis.getAveragePrice()) {
+    if (waveAnalysis.getMomentumScore() > 75) {
         if (rippleAnalysis.getMomentumScore() > 75) {
             strategyResult = StrategyResult.of(Action.BUY, position, message)
         }
     }
-    if (waveAnalysis.getCurrentPrice() > waveAnalysis.getAveragePrice()) {
+    if (waveAnalysis.getMomentumScore() < 25) {
         if (rippleAnalysis.getMomentumScore() < 25) {
             strategyResult = StrategyResult.of(Action.SELL, position, message)
         }
