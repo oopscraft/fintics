@@ -42,7 +42,6 @@ class Score extends LinkedHashMap<String, BigDecimal> implements Scorable {
 interface Analyzable {
     BigDecimal getCurrentPrice()
     BigDecimal getAveragePrice()
-    Scorable getDirectionScore()
     Scorable getMomentumScore()
     Scorable getVolatilityScore()
     Scorable getWeightScore()
@@ -51,7 +50,7 @@ interface Analyzable {
 }
 
 class Analysis implements Analyzable {
-    def period = 20
+    def period = 10
     List<Ohlcv> ohlcvs
     Ohlcv ohlcv
     List<Ema> emas
@@ -111,40 +110,34 @@ class Analysis implements Analyzable {
     }
 
     @Override
-    Scorable getDirectionScore() {
+    Scorable getMomentumScore() {
         def score = new Score()
         // macd
         score.macdValueOverSignal = macd.value > macd.signal ? 100 : 0
         score.macdOscillator = macd.oscillator > 0 ? 100 : 0
-        // rsi
-        score.rsiValueOverSignal = rsi.value > rsi.signal ? 100 : 0
-        // cci
-        score.cciValueOverSignal = cci.value > cci.signal ? 100 : 0
-        // obv
-        score.obvValueOverSignal = obv.value > obv.signal ? 100 : 0
-        // chaikin oscillator
-        score.chaikinOscillatorValueOverSignal = chaikinOscillator.value > chaikinOscillator.signal ? 100 : 0
-        // return
-        return score
-    }
-
-    @Override
-    Scorable getMomentumScore() {
-        def score = new Score()
-        // macd
         score.macdValue = macd.value > 0 ? 100 : 0
         // rsi
+        score.rsiValueOverSignal = rsi.value > rsi.signal ? 100 : 0
         score.rsiValue = rsi.value > 50 ? 100 : 0
         // bollinger band
         score.bollingerBandPriceOverMiddle = ohlcv.closePrice > bollingerBand.middle ? 100 : 0
         // cci
+        score.cciValueOverSignal = cci.value > cci.signal ? 100 : 0
         score.cciValue = cci.value > 0 ? 100 : 0
         // dmi
+        def dmiPdiPctChange = Tools.pctChange(dmis.take(period).collect{it.pdi})
+        def dmiMdiPctChange = Tools.pctChange(dmis.take(period).collect{it.mdi})
+        score.dmiPdiMdiPctChange = dmiPdiPctChange > 0.0 && dmiMdiPctChange < 0.0 ? 100 : 0
         score.dmiPdiOverMdi = dmi.pdi > dmi.mdi ? 100 : 0
         // obv
+        score.obvValueOverSignal = obv.value > obv.signal ? 100 : 0
         score.obvValuePctChange = Tools.pctChange(obvs.take(period).collect{it.value}) > 0.0 ? 100 : 0
         // chaikin oscillator
+        score.chaikinOscillatorValueOverSignal = chaikinOscillator.value > chaikinOscillator.signal ? 100 : 0
         score.chaikinOscillatorValue = chaikinOscillator.value > 0 ? 100 : 0
+        // stochastic slow
+        score.stochasticSlowKOverD = stochasticSlow.slowK > stochasticSlow.slowD ? 100 : 0
+        score.stochasticSlowK = stochasticSlow.slowK > 50 ? 100 : 0
         // return
         return score
     }
@@ -153,7 +146,7 @@ class Analysis implements Analyzable {
     Scorable getVolatilityScore() {
         def score = new Score()
         // dmi
-        score.dmiAdx = dmi.adx > 25 ? 100 : 0
+        score.dmiAdx = dmi.adx >= 25 ? 100 : 0
         // return
         return score
     }
@@ -173,7 +166,7 @@ class Analysis implements Analyzable {
         // rsi
         score.rsi = rsi.value <= 30 || rsi.signal <= 30 ? 100 : 0
         // stochastic slow
-        score.stochastic = stochasticSlow.slowK <= 20 || stochasticSlow.slowD <= 20 ? 100 : 0
+        score.stochasticSlow = stochasticSlow.slowK <= 20 || stochasticSlow.slowD <= 20 ? 100 : 0
         // williams r
         score.williamsR = williamsR.value <= -80 || williamsR.signal <= -80 ? 100 : 0
         // cci
@@ -188,7 +181,7 @@ class Analysis implements Analyzable {
         // rsi
         score.rsi = rsi.value >= 70 || rsi.signal >= 70 ? 100 : 0
         // stochastic slow
-        score.stochastic = stochasticSlow.slowK >= 80 || stochasticSlow.slowD >= 80 ? 100 : 0
+        score.stochasticSlow = stochasticSlow.slowK >= 80 || stochasticSlow.slowD >= 80 ? 100 : 0
         // williams r
         score.williamsR = williamsR.value >= -20 || williamsR.signal >= -20 ? 100 : 0
         // cci
@@ -218,13 +211,6 @@ class AnalysisGroup extends LinkedHashMap<String, Analyzable> implements Analyza
     @Override
     BigDecimal getAveragePrice() {
         return this.values().average() as BigDecimal
-    }
-
-    @Override
-    Scorable getDirectionScore() {
-        def scoreGroup = new ScoreGroup()
-        this.each{it -> scoreGroup.put(it.key, it.value.getDirectionScore())}
-        return scoreGroup
     }
 
     @Override
@@ -281,40 +267,52 @@ StrategyResult strategyResult = null
 def tideAnalysis = new Analysis(assetProfile.getOhlcvs(tideOhlcvType, tideOhlcvPeriod))
 def waveAnalysis = new Analysis(assetProfile.getOhlcvs(waveOhlcvType, waveOhlcvPeriod))
 def rippleAnalysis = new Analysis(assetProfile.getOhlcvs(rippleOhlcvType, rippleOhlcvPeriod))
-log.info("tide.direction: {}", tideAnalysis.getDirectionScore())
 log.info("tide.momentum: {}", tideAnalysis.getMomentumScore())
 log.info("tide.weight: {}", tideAnalysis.getWeightScore())
 log.info("wave.oversold: {}", waveAnalysis.getOversoldScore())
 log.info("wave.overbought: {}", waveAnalysis.getOverboughtScore())
-log.info("ripple.direction: {}", rippleAnalysis.getDirectionScore())
 log.info("ripple.momentum: {}", rippleAnalysis.getMomentumScore())
 
 // position
+def momentum = tideAnalysis.getMomentumScore().getAverage()
 def marginPosition = 1.0 - basePosition
-def positionPerWeightScore = (marginPosition/100)
-def weightScore = tideAnalysis.getWeightScore().getAverage()
-def position = ((basePosition + (positionPerWeightScore * weightScore)) as BigDecimal).setScale(2, RoundingMode.HALF_UP)
-log.info("position: {}", position)
+def positionPerMomentum = (marginPosition/100)
+def position = ((basePosition + (positionPerMomentum * momentum)) as BigDecimal).setScale(2, RoundingMode.HALF_UP)
+log.info("position(momentumScore): {} ({})", position, momentum)
 
 // message
 def message = """
-position: ${position}
-tide.weight|momentum: ${tideAnalysis.getWeightScore().getAverage()}|${tideAnalysis.getMomentumScore().getAverage()}
-wave.oversold|overbought|volatility|momentum: ${waveAnalysis.getOversoldScore().getAverage()}|${waveAnalysis.getOverboughtScore().getAverage()}|${waveAnalysis.getVolatilityScore().getAverage()}|${waveAnalysis.getMomentumScore().getAverage()}
-ripple.direction|momentum: ${rippleAnalysis.getDirectionScore().getAverage()}|${rippleAnalysis.getMomentumScore().getAverage()}
+momentum|position: ${momentum}|${position}
+wave.volatility|oversold|overbought: ${waveAnalysis.getVolatilityScore().getAverage()}|${waveAnalysis.getOversoldScore().getAverage()}|${waveAnalysis.getOverboughtScore().getAverage()}
++ rsi:${waveAnalysis.rsi.value},sto:${waveAnalysis.stochasticSlow.slowK}, cci:${waveAnalysis.cci.value}, wlr:${waveAnalysis.williamsR.value}
+ripple.momentum: ${rippleAnalysis.getMomentumScore().getAverage()}
 """
 messageTemplate.send(message)
 
-// buy position
-if (waveAnalysis.getOversoldScore() >= 50 && waveAnalysis.getVolatilityScore() >= 50) {
-    if (rippleAnalysis.getDirectionScore() >= 75 && rippleAnalysis.getMomentumScore() >= 50) {
-        strategyResult = StrategyResult.of(Action.BUY, position, message)
+
+if (waveAnalysis.getVolatilityScore() > 50) {
+    if (waveAnalysis.getOversoldScore() > 50) {
+        if (rippleAnalysis.getMomentumScore() > 75) {
+            strategyResult = StrategyResult.of(Action.BUY, position, message)
+        }
+    }
+    if (waveAnalysis.getOverboughtScore() > 50) {
+        if (rippleAnalysis.getMomentumScore() < 25) {
+            strategyResult = StrategyResult.of(Action.SELL, position, message)
+        }
     }
 }
-// sell position
-if (waveAnalysis.getOverboughtScore() >= 50 && waveAnalysis.getVolatilityScore() >= 50) {
-    if (rippleAnalysis.getDirectionScore() <= 25 && rippleAnalysis.getMomentumScore() <= 50) {
-        strategyResult = StrategyResult.of(Action.SELL, position, message)
+
+if (waveAnalysis.getVolatilityScore() < 50) {
+    if (waveAnalysis.getCurrentPrice() < waveAnalysis.getAveragePrice()) {
+        if (rippleAnalysis.getMomentumScore() > 75) {
+            strategyResult = StrategyResult.of(Action.BUY, position, message)
+        }
+    }
+    if (waveAnalysis.getCurrentPrice() > waveAnalysis.getAveragePrice()) {
+        if (rippleAnalysis.getMomentumScore() < 25) {
+            strategyResult = StrategyResult.of(Action.SELL, position, message)
+        }
     }
 }
 
