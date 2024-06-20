@@ -18,10 +18,9 @@ interface Scorable extends Comparable<Scorable> {
     }
 }
 
-class ScoreGroup extends LinkedHashMap<String, Scorable> implements Scorable {
-    @Override
+class Score extends LinkedHashMap<String, BigDecimal> implements Scorable {
     Number getAverage() {
-        return this.values().collect{it.getAverage()}.average() as Number
+        return this.values().empty ? 0 : this.values().average() as Number
     }
     @Override
     String toString() {
@@ -29,9 +28,10 @@ class ScoreGroup extends LinkedHashMap<String, Scorable> implements Scorable {
     }
 }
 
-class Score extends LinkedHashMap<String, BigDecimal> implements Scorable {
+class ScoreGroup extends LinkedHashMap<String, Scorable> implements Scorable {
+    @Override
     Number getAverage() {
-        return this.values().empty ? 0 : this.values().average() as Number
+        return this.values().collect{it.getAverage()}.average() as Number
     }
     @Override
     String toString() {
@@ -111,32 +111,28 @@ class Analysis implements Analyzable {
     @Override
     Scorable getMomentumScore() {
         def score = new Score()
+        // ema
+        score.emaValePctChange = Tools.pctChange(emas.take(period).collect{it.value}) > 0.0 ? 100 : 0
+        score.emaPriceOverValue = ohlcv.closePrice > ema.value ? 100 : 0
         // macd
-        score.macdValueOverSignal = macd.value > macd.signal ? 100 : 0
-        score.macdOscillator = macd.oscillator > 0 ? 100 : 0
         score.macdValue = macd.value > 0 ? 100 : 0
+        score.macdValueOverSignal = macd.value > macd.signal ? 100 : 0
         // rsi
-        score.rsiValueOverSignal = rsi.value > rsi.signal ? 100 : 0
         score.rsiValue = rsi.value > 50 ? 100 : 0
+        score.rsiValueOverSignal = rsi.value > rsi.signal || (rsi.value == 100 && rsi.signal == 100) ? 100 : 0
         // bollinger band
         score.bollingerBandPriceOverMiddle = ohlcv.closePrice > bollingerBand.middle ? 100 : 0
         // cci
-        score.cciValueOverSignal = cci.value > cci.signal ? 100 : 0
         score.cciValue = cci.value > 0 ? 100 : 0
+        score.cciValueOverSignal = cci.value > cci.signal ? 100 : 0
         // dmi
-        def dmiPdiPctChange = Tools.pctChange(dmis.take(period).collect{it.pdi})
-        def dmiMdiPctChange = Tools.pctChange(dmis.take(period).collect{it.mdi})
-        score.dmiPdiMdiPctChange = dmiPdiPctChange > 0.0 && dmiMdiPctChange < 0.0 ? 100 : 0
         score.dmiPdiOverMdi = dmi.pdi > dmi.mdi ? 100 : 0
         // obv
-        score.obvValueOverSignal = obv.value > obv.signal ? 100 : 0
         score.obvValuePctChange = Tools.pctChange(obvs.take(period).collect{it.value}) > 0.0 ? 100 : 0
+        score.obvValueOverSignal = obv.value > obv.signal ? 100 : 0
         // chaikin oscillator
-        score.chaikinOscillatorValueOverSignal = chaikinOscillator.value > chaikinOscillator.signal ? 100 : 0
         score.chaikinOscillatorValue = chaikinOscillator.value > 0 ? 100 : 0
-        // stochastic slow
-        score.stochasticSlowKOverD = stochasticSlow.slowK > stochasticSlow.slowD ? 100 : 0
-        score.stochasticSlowK = stochasticSlow.slowK > 50 ? 100 : 0
+        score.chaikinOscillatorValueOverSignal = chaikinOscillator.value > chaikinOscillator.signal ? 100 : 0
         // return
         return score
     }
@@ -251,6 +247,8 @@ def tideAnalysis = new Analysis(assetProfile.getOhlcvs(tideOhlcvType, tideOhlcvP
 def waveAnalysis = new Analysis(assetProfile.getOhlcvs(waveOhlcvType, waveOhlcvPeriod))
 def rippleAnalysis = new Analysis(assetProfile.getOhlcvs(rippleOhlcvType, rippleOhlcvPeriod))
 log.info("tide.momentum: {}", tideAnalysis.getMomentumScore())
+log.info("wave.momentum: {}", waveAnalysis.getMomentumScore())
+log.info("wave.volatility: {}", waveAnalysis.getVolatilityScore())
 log.info("wave.oversold: {}", waveAnalysis.getOversoldScore())
 log.info("wave.overbought: {}", waveAnalysis.getOverboughtScore())
 log.info("ripple.momentum: {}", rippleAnalysis.getMomentumScore())
@@ -260,21 +258,19 @@ def momentum = tideAnalysis.getMomentumScore().getAverage()
 def marginPosition = 1.0 - basePosition
 def positionPerMomentum = (marginPosition/100)
 def position = ((basePosition + (positionPerMomentum * momentum)) as BigDecimal).setScale(2, RoundingMode.HALF_UP)
-log.info("position(momentumScore): {} ({})", position, momentum)
+log.info("position(momentum): {} ({})", position, momentum)
 
 // message
 def message = """
 position:${position}
-tide.momentum:${tideAnalysis.getMomentumScore().getAverage()}
-+ macd(os):${tideAnalysis.macd.value}(${tideAnalysis.macd.oscillator}) 
-wave.volatility|oversold|overbought:${waveAnalysis.getVolatilityScore().getAverage()}|${waveAnalysis.getOversoldScore().getAverage()}|${waveAnalysis.getOverboughtScore().getAverage()}
+tide.momentum: ${tideAnalysis.getMomentumScore().toString()}
+wave.momentum|volatility|oversold|overbought:${waveAnalysis.getMomentumScore().getAverage()}|${waveAnalysis.getVolatilityScore().getAverage()}|${waveAnalysis.getOversoldScore().getAverage()}|${waveAnalysis.getOverboughtScore().getAverage()}
 + rsi:${waveAnalysis.rsi.value}|sto:${waveAnalysis.stochasticSlow.slowK}|cci:${waveAnalysis.cci.value}|wil:${waveAnalysis.williamsR.value}
 ripple.momentum:${rippleAnalysis.getMomentumScore().getAverage()}
-+ macd(oc):${rippleAnalysis.macd.value}(${rippleAnalysis.macd.oscillator})
 """
 messageTemplate.send(message)
 
-
+// mean reversion strategy
 if (waveAnalysis.getVolatilityScore() > 50) {
     if (waveAnalysis.getOversoldScore() > 50) {
         if (rippleAnalysis.getMomentumScore() > 75) {
@@ -288,6 +284,7 @@ if (waveAnalysis.getVolatilityScore() > 50) {
     }
 }
 
+// squeeze momentum strategy
 if (waveAnalysis.getVolatilityScore() < 50) {
     if (waveAnalysis.getMomentumScore() > 75) {
         if (rippleAnalysis.getMomentumScore() > 75) {
