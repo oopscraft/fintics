@@ -287,12 +287,12 @@ if (waveAnalysis.getVolatilityScore() > 50) {
 // squeeze momentum strategy
 if (waveAnalysis.getVolatilityScore() < 50) {
     if (waveAnalysis.getMomentumScore() > 75) {
-        if (rippleAnalysis.getMomentumScore() > 75) {
+        if (tideAnalysis.getMomentumScore() > 50) {
             strategyResult = StrategyResult.of(Action.BUY, position, message)
         }
     }
     if (waveAnalysis.getMomentumScore() < 25) {
-        if (rippleAnalysis.getMomentumScore() < 25) {
+        if (tideAnalysis.getMomentumScore() < 50) {
             strategyResult = StrategyResult.of(Action.SELL, position, message)
         }
     }
