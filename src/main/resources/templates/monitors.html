@@ -276,7 +276,9 @@
             if (tradeAsset) {
                 tradeAsset.quantity = balanceAsset.quantity;
                 tradeAsset.orderableQuantity = balanceAsset.orderableQuantity;
+                tradeAsset.purchasePrice = balanceAsset.purchasePrice;
                 tradeAsset.purchaseAmount = balanceAsset.purchaseAmount;
+                tradeAsset.valuationPrice = balanceAsset.valuationPrice;
                 tradeAsset.valuationAmount = balanceAsset.valuationAmount;
                 tradeAsset.profitAmount = balanceAsset.profitAmount;
                 tradeAsset.profitPercentage = balanceAsset.profitPercentage;
@@ -587,20 +589,40 @@
                         <col/>
                         <col/>
                         <col/>
-                        <col/>
                     </colgroup>
                     <thead>
                     <tr>
-                        <th data-th-text="#{web.global.no}" class="text-align--center"></th>
-                        <th data-th-text="#{fintics.TradeAsset.assetId}"></th>
-                        <th data-th-text="#{fintics.TradeAsset.assetName}"></th>
-                        <th data-th-text="#{fintics.Asset.links}"></th>
-                        <th class="text-align--center">Message</th>
-                        <th data-th-text="#{fintics.BalanceAsset.quantity}" class="text-align--right"></th>
-                        <th data-th-text="#{fintics.BalanceAsset.purchaseAmount}" class="text-align--right"></th>
-                        <th data-th-text="#{fintics.BalanceAsset.valuationAmount}" class="text-align--right"></th>
-                        <th data-th-text="#{fintics.BalanceAsset.profitAmount}" class="text-align--right"></th>
-                        <th data-th-text="#{fintics.BalanceAsset.profitPercentage}" class="text-align--center"></th>
+                        <th class="text-align--center">
+                            <span data-th-text="#{web.global.no}"></span>
+                        </th>
+                        <th>
+                            <span data-th-text="#{fintics.TradeAsset.assetId}"></span>
+                        </th>
+                        <th>
+                            <span data-th-text="#{fintics.TradeAsset.assetName}"></span>
+                        </th>
+                        <th>
+                            <span data-th-text="#{fintics.Asset.links}"></span>
+                        </th>
+                        <th class="text-align--center">
+                            <span>Message</span>
+                        </th>
+                        <th class="text-align--right">
+                            <div data-th-text="#{fintics.BalanceAsset.quantity}"></div>
+                            <div data-th-text="#{fintics.BalanceAsset.orderableQuantity}"></div>
+                        </th>
+                        <th class="text-align--right">
+                            <div data-th-text="#{fintics.BalanceAsset.purchasePrice}"></div>
+                            <div data-th-text="#{fintics.BalanceAsset.valuationPrice}"></div>
+                        </th>
+                        <th class="text-align--right">
+                            <div data-th-text="#{fintics.BalanceAsset.purchaseAmount}"></div>
+                            <div data-th-text="#{fintics.BalanceAsset.valuationAmount}"></div>
+                        </th>
+                        <th class="text-align--right padding-right--1em">
+                            <div data-th-text="#{fintics.BalanceAsset.profitAmount}"></div>
+                            <div data-th-text="#{fintics.BalanceAsset.profitPercentage}"></div>
+                        </th>
                     </tr>
                     </thead>
                     <tbody>
@@ -629,40 +651,39 @@
                                 <option value>- Link -</option>
                             </select>
                         </td>
-                        <td class="display--flex padding--1px">
-                            <textarea data-duice-bind="tradeAsset"
+                        <td>
+                            <div class="display--flex padding--1px">
+                                <textarea data-duice-bind="tradeAsset"
                                       data-duice-property="message"
                                       data-duice-execute="highlight(this);"
                                       class="font-size--smaller font-weight--bold width--100"
                                       style="min-width:20em; height:6em; line-height:1.1em; padding:0.1em 0.3em;"></textarea>
+                            </div>
                         </td>
                         <td class="text-align--right">
-                            <span data-duice-bind="tradeAsset" data-duice-execute="
-                            if (tradeAsset.quantity) {
-                                this.innerHTML = `${tradeAsset.quantity} (${tradeAsset.orderableQuantity})`;
-                            }
-                            "></span>
+                            <div data-duice-bind="tradeAsset" data-duice-property="quantity"></div>
+                            <div data-duice-bind="tradeAsset" data-duice-property="orderableQuantity"></div>
                         </td>
                         <td class="text-align--right">
-                            <span data-duice-bind="tradeAsset" data-duice-property="purchaseAmount" data-duice-format="number"></span>
+                            <div data-duice-bind="tradeAsset" data-duice-property="purchasePrice"></div>
+                            <div data-duice-bind="tradeAsset" data-duice-property="valuationPrice"></div>
                         </td>
                         <td class="text-align--right">
-                            <span data-duice-bind="tradeAsset" data-duice-property="valuationAmount" data-duice-format="number"></span>
+                            <div data-duice-bind="tradeAsset" data-duice-property="purchaseAmount" data-duice-format="number"></div>
+                            <div data-duice-bind="tradeAsset" data-duice-property="valuationAmount" data-duice-format="number"></div>
                         </td>
-                        <td class="text-align--right">
-                            <span data-duice-bind="tradeAsset" data-duice-property="profitAmount" data-duice-format="number"
+                        <td class="text-align--right padding-right--1em font-weight--bold">
+                            <div data-duice-bind="tradeAsset" data-duice-property="profitAmount" data-duice-format="number"
                                   data-duice-execute="
                                 if(tradeAsset.profitAmount > 0) this.classList.add('color--red');
                                 if(tradeAsset.profitAmount < 0) this.classList.add('color--blue');
-                                "></span>
-                        </td>
-                        <td class="text-align--center">
-                            <span data-duice-bind="tradeAsset" data-duice-execute="
-                            if (tradeAsset.profitPercentage == null) return;
-                            if (tradeAsset.profitPercentage > 0) this.classList.add('color--red');
-                            if (tradeAsset.profitPercentage < 0) this.classList.add('color--blue');
-                            this.innerHTML = `${tradeAsset.profitPercentage} %`;
-                            "></span>
+                                "></div>
+                            <div data-duice-bind="tradeAsset" data-duice-execute="
+                                if (tradeAsset.profitPercentage == null) return;
+                                if (tradeAsset.profitPercentage > 0) this.classList.add('color--red');
+                                if (tradeAsset.profitPercentage < 0) this.classList.add('color--blue');
+                                this.innerHTML = `${tradeAsset.profitPercentage} %`;
+                                "></div>
                         </td>
                     </tr>
                     </tbody>

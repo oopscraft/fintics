@@ -26,6 +26,8 @@ public class BalanceAsset extends Asset {
 
     private BigDecimal purchaseAmount;
 
+    private BigDecimal valuationPrice;
+
     private BigDecimal valuationAmount;
 
     private BigDecimal profitAmount;

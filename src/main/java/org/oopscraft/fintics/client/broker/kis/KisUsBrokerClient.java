@@ -373,6 +373,7 @@ public class KisUsBrokerClient extends UsBrokerClient {
                         .orderableQuantity(new BigDecimal(row.get("ord_psbl_qty")))
                         .purchasePrice(new BigDecimal(row.get("pchs_avg_pric")).setScale(2, RoundingMode.HALF_UP))
                         .purchaseAmount(new BigDecimal(row.get("frcr_pchs_amt1")).setScale(2, RoundingMode.HALF_UP))
+                        .valuationPrice(new BigDecimal(row.get("now_pric2")))
                         .valuationAmount(new BigDecimal(row.get("ovrs_stck_evlu_amt")).setScale(2, RoundingMode.HALF_UP))
                         .profitAmount(new BigDecimal(row.get("frcr_evlu_pfls_amt")).setScale(2, RoundingMode.HALF_UP))
                         .build())

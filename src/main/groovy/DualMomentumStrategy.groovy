@@ -251,7 +251,7 @@ log.info("wave.oversold: {}", waveAnalysis.getOversoldScore())
 log.info("wave.overbought: {}", waveAnalysis.getOverboughtScore())
 log.info("ripple.momentum: {}", rippleAnalysis.getMomentumScore())
 
-// position
+// default position
 def momentum = tideAnalysis.getMomentumScore().getAverage()
 def marginPosition = 1.0 - basePosition
 def positionPerMomentum = (marginPosition/100)
@@ -269,28 +269,14 @@ ripple.momentum:${rippleAnalysis.getMomentumScore().getAverage()}
 messageTemplate.send(message)
 
 // mean reversion strategy
-if (waveAnalysis.getVolatilityScore() > 50) {
-    if (waveAnalysis.getOversoldScore() > 50) {
+if (waveAnalysis.getVolatilityScore() >= 50) {
+    if (waveAnalysis.getOversoldScore() >= 50) {
         if (rippleAnalysis.getMomentumScore() > 75) {
             strategyResult = StrategyResult.of(Action.BUY, position, message)
         }
     }
-    if (waveAnalysis.getOverboughtScore() > 50) {
+    if (waveAnalysis.getOverboughtScore() >= 50) {
         if (rippleAnalysis.getMomentumScore() < 25) {
-            strategyResult = StrategyResult.of(Action.SELL, position, message)
-        }
-    }
-}
-
-// squeeze momentum strategy
-if (waveAnalysis.getVolatilityScore() < 50) {
-    if (waveAnalysis.getMomentumScore() > 50) {
-        if (rippleAnalysis.getMomentumScore() > 50) {
-            strategyResult = StrategyResult.of(Action.BUY, position, message)
-        }
-    }
-    if (waveAnalysis.getMomentumScore() < 50) {
-        if (rippleAnalysis.getMomentumScore() < 50) {
             strategyResult = StrategyResult.of(Action.SELL, position, message)
         }
     }

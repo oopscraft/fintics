@@ -21,7 +21,11 @@ public class BalanceAssetResponse extends AssetResponse {
 
     private BigDecimal orderableQuantity;
 
+    private BigDecimal purchasePrice;
+
     private BigDecimal purchaseAmount;
+
+    private BigDecimal valuationPrice;
 
     private BigDecimal valuationAmount;
 
@@ -36,7 +40,9 @@ public class BalanceAssetResponse extends AssetResponse {
                 .accountNo(balanceAsset.getAccountNo())
                 .quantity(balanceAsset.getQuantity())
                 .orderableQuantity(balanceAsset.getOrderableQuantity())
+                .purchasePrice(balanceAsset.getPurchasePrice())
                 .purchaseAmount(balanceAsset.getPurchaseAmount())
+                .valuationPrice(balanceAsset.getValuationPrice())
                 .valuationAmount(balanceAsset.getValuationAmount())
                 .profitAmount(balanceAsset.getProfitAmount())
                 .profitPercentage(balanceAsset.getProfitPercentage())
