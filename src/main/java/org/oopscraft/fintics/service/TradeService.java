@@ -7,6 +7,7 @@ import org.oopscraft.fintics.dao.*;
 import org.oopscraft.fintics.model.*;
 import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.client.broker.BrokerClientFactory;
+import org.oopscraft.fintics.trade.Message;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,8 @@ import java.util.stream.Collectors;
 public class TradeService {
 
     private final TradeRepository tradeRepository;
+
+    private final TradeAssetRepository tradeAssetRepository;
 
     private final OrderRepository orderRepository;
 
@@ -173,6 +176,10 @@ public class TradeService {
                 .toList();
         long total = simulateEntityPage.getTotalElements();
         return new PageImpl<>(simulates, pageable, total);
+    }
+
+    public void saveTradeAssetMessage(String tradeId, String assetId, String message) {
+        tradeAssetRepository.updateMessage(tradeId, assetId, message);
     }
 
 }

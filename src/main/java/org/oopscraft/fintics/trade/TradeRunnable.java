@@ -48,7 +48,7 @@ public class TradeRunnable implements Runnable {
     private final Logger log;
 
     @Setter
-    private TradeLogAppender tradeLogAppender;
+    private LogAppender logAppender;
 
     @Setter
     @Getter
@@ -86,13 +86,16 @@ public class TradeRunnable implements Runnable {
     public void run() {
         // logger
         tradeExecutor.setLog(log);
-        if(this.tradeLogAppender != null) {
-            log.addAppender(this.tradeLogAppender);
-            this.tradeLogAppender.start();
+        if (this.logAppender != null) {
+            log.addAppender(this.logAppender);
+            this.logAppender.start();
         }
 
         // message template
-        MessageTemplate messageTemplate = messageTemplateFactory.getObject(String.format("/trades/%s/message", tradeId));
+        String destination = String.format("/trades/%s/message", tradeId);
+        MessageTemplate messageTemplate = messageTemplateFactory.getObject(destination, message -> {
+            tradeService.saveTradeAssetMessage(message.getTradeId(), message.getAssetId(), message.getBody());
+        });
         tradeExecutor.setMessageTemplate(messageTemplate);
 
         // start loop
@@ -135,9 +138,9 @@ public class TradeRunnable implements Runnable {
             }
         }
         log.info("End TradeRunnable: {}", tradeId);
-        if(this.tradeLogAppender != null) {
-            this.tradeLogAppender.stop();
-            log.detachAppender(this.tradeLogAppender);
+        if (this.logAppender != null) {
+            this.logAppender.stop();
+            log.detachAppender(this.logAppender);
         }
     }
 

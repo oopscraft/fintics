@@ -1,26 +1,21 @@
 package org.oopscraft.fintics.trade;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
-
-import java.util.function.Consumer;
+import ch.qos.logback.core.Context;
 
 @Component
 @RequiredArgsConstructor
-public class MessageTemplateFactory {
+public class LogAppenderFactory {
 
     private final SimpMessagingTemplate messagingTemplate;
 
-    private final ObjectMapper objectMapper;
-
-    public MessageTemplate getObject(String destination, Consumer<Message> onSend) {
-        return MessageTemplate.builder()
+    public LogAppender getObject(Context context, String destination) {
+        return LogAppender.builder()
+                .context(context)
                 .messagingTemplate(messagingTemplate)
-                .objectMapper(objectMapper)
                 .destination(destination)
-                .onSend(onSend)
                 .build();
     }
 

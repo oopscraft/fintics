@@ -29,6 +29,8 @@ public class TradeThreadManager implements ApplicationListener<ContextStoppedEve
 
     private final SimpMessagingTemplate messagingTemplate;
 
+    private final LogAppenderFactory logAppenderFactory;
+
     public synchronized void startTradeThread(Trade trade) {
         synchronized (this) {
             log.info("Start TradeThread - {}", trade.getTradeId());
@@ -41,12 +43,9 @@ public class TradeThreadManager implements ApplicationListener<ContextStoppedEve
             // trade runnable
             TradeRunnable tradeRunnable = tradeRunnableFactory.getObject(trade);
             Context context = ((Logger)log).getLoggerContext();
-            TradeLogAppender tradeLogAppender = TradeLogAppender.builder()
-                    .trade(trade)
-                    .context(context)
-                    .messagingTemplate(messagingTemplate)
-                    .build();
-            tradeRunnable.setTradeLogAppender(tradeLogAppender);
+            String destination = String.format("/trades/%s/log", trade.getTradeId());
+            LogAppender logAppender = logAppenderFactory.getObject(context, destination);
+            tradeRunnable.setLogAppender(logAppender);
 
             // run thread
             TradeThread tradeThread = new TradeThread(tradeThreadGroup, tradeRunnable, trade.getTradeId());

@@ -24,6 +24,8 @@ public class TradeAsset extends Asset {
 
     private BigDecimal holdingWeight;
 
+    private String message;
+
     public static TradeAsset from(TradeAssetEntity tradeAssetEntity) {
         TradeAsset tradeAsset = TradeAsset.builder()
                 .tradeId(tradeAssetEntity.getTradeId())
@@ -31,6 +33,7 @@ public class TradeAsset extends Asset {
                 .sort(tradeAssetEntity.getSort())
                 .enabled(tradeAssetEntity.isEnabled())
                 .holdingWeight(tradeAssetEntity.getHoldingWeight())
+                .message(tradeAssetEntity.getMessage())
                 .build();
         AssetEntity assetEntity = tradeAssetEntity.getAssetEntity();
         if(assetEntity != null) {

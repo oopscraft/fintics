@@ -49,7 +49,7 @@ interface Analyzable {
 }
 
 class Analysis implements Analyzable {
-    def period = 10
+    def period = 20
     List<Ohlcv> ohlcvs
     Ohlcv ohlcv
     List<Ema> emas
@@ -113,26 +113,24 @@ class Analysis implements Analyzable {
         def score = new Score()
         // ema
         score.emaValePctChange = Tools.pctChange(emas.take(period).collect{it.value}) > 0.0 ? 100 : 0
-        score.emaPriceOverValue = ohlcv.closePrice > ema.value ? 100 : 0
         // macd
         score.macdValue = macd.value > 0 ? 100 : 0
-        score.macdValueOverSignal = macd.value > macd.signal ? 100 : 0
         // rsi
         score.rsiValue = rsi.value > 50 ? 100 : 0
-        score.rsiValueOverSignal = rsi.value > rsi.signal || (rsi.value == 100 && rsi.signal == 100) ? 100 : 0
         // bollinger band
         score.bollingerBandPriceOverMiddle = ohlcv.closePrice > bollingerBand.middle ? 100 : 0
         // cci
         score.cciValue = cci.value > 0 ? 100 : 0
-        score.cciValueOverSignal = cci.value > cci.signal ? 100 : 0
         // dmi
         score.dmiPdiOverMdi = dmi.pdi > dmi.mdi ? 100 : 0
+        // stochastic slow
+        score.stochasticSlow = stochasticSlow.slowK > 50 ? 100 : 0
+        // william r
+        score.williamsR = williamsR.value > -50 ? 100 : 0
         // obv
         score.obvValuePctChange = Tools.pctChange(obvs.take(period).collect{it.value}) > 0.0 ? 100 : 0
-        score.obvValueOverSignal = obv.value > obv.signal ? 100 : 0
         // chaikin oscillator
         score.chaikinOscillatorValue = chaikinOscillator.value > 0 ? 100 : 0
-        score.chaikinOscillatorValueOverSignal = chaikinOscillator.value > chaikinOscillator.signal ? 100 : 0
         // return
         return score
     }
@@ -286,13 +284,13 @@ if (waveAnalysis.getVolatilityScore() > 50) {
 
 // squeeze momentum strategy
 if (waveAnalysis.getVolatilityScore() < 50) {
-    if (waveAnalysis.getMomentumScore() > 75) {
-        if (tideAnalysis.getMomentumScore() > 50) {
+    if (waveAnalysis.getMomentumScore() > 50) {
+        if (rippleAnalysis.getMomentumScore() > 50) {
             strategyResult = StrategyResult.of(Action.BUY, position, message)
         }
     }
-    if (waveAnalysis.getMomentumScore() < 25) {
-        if (tideAnalysis.getMomentumScore() < 50) {
+    if (waveAnalysis.getMomentumScore() < 50) {
+        if (rippleAnalysis.getMomentumScore() < 50) {
             strategyResult = StrategyResult.of(Action.SELL, position, message)
         }
     }

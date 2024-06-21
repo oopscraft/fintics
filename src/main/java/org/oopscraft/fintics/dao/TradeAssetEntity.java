@@ -42,6 +42,10 @@ public class TradeAssetEntity extends BaseEntity {
     @Column(name = "holding_weight")
     private BigDecimal holdingWeight;
 
+    @Column(name = "message")
+    @Lob
+    private String message;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "asset_id", insertable = false, updatable = false)
     private AssetEntity assetEntity;

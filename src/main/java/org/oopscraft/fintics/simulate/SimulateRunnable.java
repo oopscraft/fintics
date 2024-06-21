@@ -11,10 +11,7 @@ import org.oopscraft.fintics.dao.SimulateRepository;
 import org.oopscraft.fintics.model.Simulate;
 import org.oopscraft.fintics.model.Strategy;
 import org.oopscraft.fintics.model.Trade;
-import org.oopscraft.fintics.trade.MessageTemplate;
-import org.oopscraft.fintics.trade.MessageTemplateFactory;
-import org.oopscraft.fintics.trade.TradeExecutor;
-import org.oopscraft.fintics.trade.TradeExecutorFactory;
+import org.oopscraft.fintics.trade.*;
 import org.slf4j.LoggerFactory;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -54,7 +51,7 @@ public class SimulateRunnable implements Runnable {
     private Logger log;
 
     @Setter
-    private SimulateLogAppender simulateLogAppender;
+    private LogAppender logAppender;
 
     @Setter
     @Getter
@@ -93,9 +90,9 @@ public class SimulateRunnable implements Runnable {
         simulate.setStatus(Simulate.Status.RUNNING);
         simulate.setStartedAt(LocalDateTime.now());
 
-        if(this.simulateLogAppender != null) {
-            log.addAppender(this.simulateLogAppender);
-            this.simulateLogAppender.start();
+        if (this.logAppender != null) {
+            log.addAppender(logAppender);
+            logAppender.start();
         }
         try {
             Trade trade = simulate.getTrade();
@@ -127,7 +124,8 @@ public class SimulateRunnable implements Runnable {
             tradeExecutor.setLog(log);
 
             // message template
-            MessageTemplate messageTemplate = messageTemplateFactory.getObject(String.format("/simulates/%s/message", simulate.getSimulateId()));
+            String messageDestination = String.format("/simulates/%s/message", simulate.getSimulateId());
+            MessageTemplate messageTemplate = messageTemplateFactory.getObject(messageDestination, null);
             tradeExecutor.setMessageTemplate(messageTemplate);
 
             // loop
@@ -185,7 +183,9 @@ public class SimulateRunnable implements Runnable {
         } catch (Exception e) {
             simulate.setStatus(Simulate.Status.FAILED);
         } finally {
-            simulateLogAppender.stop();
+            if (logAppender != null) {
+                logAppender.stop();
+            }
             this.onComplete.run();
 
             // save history

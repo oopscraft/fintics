@@ -446,12 +446,11 @@
             _webSocketClient.subscribe({
                 destination: '/trades/' + [[${trade.tradeId}]] + '/message',
                 listener: function(frame) {
-                    console.log("### message: ", frame.body);
-                    let response = JSON.parse(frame.body);
-                    let tradeAsset = tradeAssetsMap.get(response.tradeId)
-                        .find(tradeAsset => tradeAsset.assetId === response.assetId);
+                    let message = JSON.parse(frame.body);
+                    let tradeAsset = tradeAssetsMap.get(message.tradeId)
+                        .find(tradeAsset => tradeAsset.assetId === message.assetId);
                     if (tradeAsset) {
-                        tradeAsset.message = response.message;
+                        tradeAsset.message = message.body;
                     }
                 }
             });

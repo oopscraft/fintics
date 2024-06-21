@@ -3,6 +3,7 @@ package org.oopscraft.fintics.trade;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Builder;
+import lombok.Setter;
 import org.oopscraft.fintics.model.Trade;
 import org.oopscraft.fintics.model.TradeAsset;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -10,6 +11,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 @Builder
 public class MessageTemplate {
@@ -20,20 +22,26 @@ public class MessageTemplate {
 
     private final String destination;
 
+    private final Consumer<Message> onSend;
+
     private TradeAsset tradeAsset;
 
-    public void send(String message) {
-        Map<String, String> messageMap = new LinkedHashMap<>();
-        messageMap.put("tradeId", tradeAsset.getTradeId());
-        messageMap.put("assetId", tradeAsset.getAssetId());
-        messageMap.put("message", Optional.ofNullable(message).map(String::trim).orElse(null));
+    public void send(String messageBody) {
+        Message message = Message.builder()
+                .tradeId(tradeAsset.getTradeId())
+                .assetId(tradeAsset.getAssetId())
+                .body(Optional.ofNullable(messageBody).map(String::trim).orElse(null))
+                .build();
         String messageJson = null;
         try {
-            messageJson = objectMapper.writeValueAsString(messageMap);
+            messageJson = objectMapper.writeValueAsString(message);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
         messagingTemplate.convertAndSend(destination, messageJson);
+        if (onSend != null) {
+            onSend.accept(message);
+        }
     }
 
     public MessageTemplate clone(TradeAsset tradeAsset) {
@@ -41,6 +49,7 @@ public class MessageTemplate {
                 .messagingTemplate(messagingTemplate)
                 .objectMapper(objectMapper)
                 .destination(destination)
+                .onSend(onSend)
                 .tradeAsset(tradeAsset)
                 .build();
     }

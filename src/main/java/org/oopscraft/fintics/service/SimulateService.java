@@ -11,9 +11,10 @@ import org.oopscraft.fintics.dao.SimulateEntity_;
 import org.oopscraft.fintics.dao.SimulateRepository;
 import org.oopscraft.fintics.dao.SimulateSpecifications;
 import org.oopscraft.fintics.model.Simulate;
-import org.oopscraft.fintics.simulate.SimulateLogAppender;
 import org.oopscraft.fintics.simulate.SimulateRunnable;
 import org.oopscraft.fintics.simulate.SimulateRunnableFactory;
+import org.oopscraft.fintics.trade.LogAppender;
+import org.oopscraft.fintics.trade.LogAppenderFactory;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextStoppedEvent;
 import org.springframework.data.domain.*;
@@ -37,6 +38,8 @@ public class SimulateService implements ApplicationListener<ContextStoppedEvent>
     private final SimulateRunnableFactory simulateRunnableFactory;
 
     private final SimpMessagingTemplate messagingTemplate;
+
+    private final LogAppenderFactory logAppenderFactory;
 
     private final BlockingQueue<Runnable> simulateQueue = new ArrayBlockingQueue<>(10);
 
@@ -93,11 +96,12 @@ public class SimulateService implements ApplicationListener<ContextStoppedEvent>
 
         // add log appender
         Context context = ((Logger)log).getLoggerContext();
-        SimulateLogAppender simulateLogAppender = new SimulateLogAppender(simulate, context, messagingTemplate);
+        String destination = String.format("/simulates/%s/log", simulate.getSimulateId());
+        LogAppender logAppender = logAppenderFactory.getObject(context, destination);
 
         // run
         SimulateRunnable simulateRunnable = simulateRunnableFactory.getObject(simulate);
-        simulateRunnable.setSimulateLogAppender(simulateLogAppender);
+        simulateRunnable.setLogAppender(logAppender);
         simulateRunnable.onComplete(() -> {
             this.simulateRunnableMap.remove(simulate.getSimulateId());
             this.simulateFutureMap.remove(simulate.getSimulateId());

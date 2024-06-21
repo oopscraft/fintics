@@ -23,6 +23,8 @@ public class TradeAssetResponse extends AssetResponse {
 
     private BigDecimal holdingWeight;
 
+    private String message;
+
     public static TradeAssetResponse from(TradeAsset tradeAsset) {
         return TradeAssetResponse.builder()
                 .tradeId(tradeAsset.getTradeId())
@@ -39,6 +41,7 @@ public class TradeAssetResponse extends AssetResponse {
                 .roe(tradeAsset.getRoe())
                 .roa(tradeAsset.getRoa())
                 .links(LinkResponse.from(tradeAsset.getLinks()))
+                .message(tradeAsset.getMessage())
                 .build();
     }
 
