@@ -95,6 +95,7 @@ public class AssetService {
     }
 
     void applySplitRatioIfExist(String assetId, List<Ohlcv> ohlcvs) {
+        // if ohlcvs is empty, skip
         if (ohlcvs.isEmpty()) {
             return;
         }

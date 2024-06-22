@@ -399,19 +399,26 @@ public class KisBrokerClient extends KrBrokerClient {
                 .build();
 
         List<BalanceAsset> balanceAssets = output1.stream()
-                .map(row -> BalanceAsset.builder()
-                        .accountNo(accountNo)
-                        .assetId(toAssetId(row.get("pdno")))
-                        .assetName(row.get("prdt_name"))
-                        .market(getDefinition().getMarket())
-                        .quantity(new BigDecimal(row.get("hldg_qty")))
-                        .orderableQuantity(new BigDecimal(row.get("ord_psbl_qty")))
-                        .purchasePrice(new BigDecimal(row.get("pchs_avg_pric")))
-                        .purchaseAmount(new BigDecimal(row.get("pchs_amt")))
-                        .valuationPrice(new BigDecimal("prpr"))
-                        .valuationAmount(new BigDecimal(row.get("evlu_amt")))
-                        .profitAmount(new BigDecimal(row.get("evlu_pfls_amt")))
-                        .build())
+                .map(row -> {
+                    try {
+                        BalanceAsset balanceAsset = BalanceAsset.builder()
+                                .accountNo(accountNo)
+                                .assetId(toAssetId(row.get("pdno")))
+                                .assetName(row.get("prdt_name"))
+                                .market(getDefinition().getMarket())
+                                .quantity(new BigDecimal(row.get("hldg_qty")))
+                                .orderableQuantity(new BigDecimal(row.get("ord_psbl_qty")))
+                                .purchasePrice(new BigDecimal(row.get("pchs_avg_pric")))
+                                .purchaseAmount(new BigDecimal(row.get("pchs_amt")))
+                                .valuationPrice(new BigDecimal(row.get("prpr")))
+                                .valuationAmount(new BigDecimal(row.get("evlu_amt")))
+                                .profitAmount(new BigDecimal(row.get("evlu_pfls_amt")))
+                                .build();
+                        return balanceAsset;
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                })
                 .filter(balanceAsset -> balanceAsset.getQuantity().intValue() > 0)
                 .collect(Collectors.toList());
         balance.setBalanceAssets(balanceAssets);
