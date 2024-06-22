@@ -95,6 +95,9 @@ public class AssetService {
     }
 
     void applySplitRatioIfExist(String assetId, List<Ohlcv> ohlcvs) {
+        if (ohlcvs.isEmpty()) {
+            return;
+        }
         // ohlcv split data
         LocalDateTime dateTimeFrom = ohlcvs.stream()
                 .map(Ohlcv::getDateTime)
