@@ -57,7 +57,7 @@
 
         async function getIndiceNewses(indiceId) {
             let url = new URL(`${_apiUrl}/v1/indices/${indiceId}/newses`, document.location.origin);
-            return await _fetch(url);
+            return await _fetch(url, null, true);
         }
 
         async function getAssetDailyOhlcvs(assetId, dateTimeFrom, dateTimeTo) {
@@ -78,7 +78,7 @@
 
         async function getAssetNewses(assetId) {
             let url = new URL(`${_apiUrl}/v1/assets/${assetId}/newses`, document.location.origin);
-            return await _fetch(url);
+            return await _fetch(url, null, true);
         }
 
         async function getIndiceMonitor() {
