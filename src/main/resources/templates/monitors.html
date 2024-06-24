@@ -289,17 +289,6 @@
             _openLink(`${_rootUrl}/trade?tradeId=${tradeId}`, '_blank');
         }
 
-        function highlight(element) {
-            element.style.transition = 'none';
-            element.style.backgroundColor = 'lightyellow';
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    element.style.transition = 'background-color 0.5s ease';
-                    element.style.backgroundColor = '';
-                });
-            });
-        }
-
         document.addEventListener('DOMContentLoaded', () => {
             let tabItems = trades.map(trade => {
                 return duice.tabItem(
@@ -448,11 +437,14 @@
             _webSocketClient.subscribe({
                 destination: '/trades/' + [[${trade.tradeId}]] + '/status',
                 listener: function(frame) {
-                    let status = JSON.parse(frame.body);
-                    let tradeAsset = tradeAssetsMap.get(status.tradeId)
-                        .find(tradeAsset => tradeAsset.assetId === status.assetId);
+                    let tradeAssetStatus = JSON.parse(frame.body);
+                    let tradeAsset = tradeAssetsMap.get(tradeAssetStatus.tradeId)
+                        .find(tradeAsset => tradeAsset.assetId === tradeAssetStatus.assetId);
                     if (tradeAsset) {
-                        tradeAsset.status.message = status.message;
+                        tradeAsset.tradeAssetStatus.closePrice = tradeAssetStatus.closePrice;
+                        tradeAsset.tradeAssetStatus.netChange = tradeAssetStatus.netChange;
+                        tradeAsset.tradeAssetStatus.netChangePercentage = tradeAssetStatus.netChangePercentage;
+                        tradeAsset.tradeAssetStatus.message = tradeAssetStatus.message;
                     }
                 }
             });
@@ -601,7 +593,7 @@
                         <th>
                             <span data-th-text="#{fintics.TradeAsset.assetName}"></span>
                         </th>
-                        <th>
+                        <th class="text-align--center">
                             <span data-th-text="#{fintics.Asset.links}"></span>
                         </th>
                         <th class="text-align--center">
@@ -653,7 +645,7 @@
                             }
                             "></span>
                         </td>
-                        <td>
+                        <td class="text-align--center">
                             <select data-duice-bind="tradeAsset"
                                     data-duice-option="tradeAsset.links"
                                     data-duice-option-value-property="url"
@@ -666,7 +658,6 @@
                             <div class="display--flex padding--1px">
                                 <textarea data-duice-bind="tradeAsset"
                                       data-duice-property="tradeAssetStatus.message"
-                                      data-duice-execute="highlight(this);"
                                       class="font-size--smaller font-weight--bold width--100"
                                       style="min-width:20em; height:6em; line-height:1.1em; padding:0.1em 0.3em;"></textarea>
                             </div>
