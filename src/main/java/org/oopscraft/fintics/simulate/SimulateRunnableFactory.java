@@ -8,10 +8,7 @@ import org.oopscraft.fintics.dao.IndiceOhlcvRepository;
 import org.oopscraft.fintics.dao.SimulateRepository;
 import org.oopscraft.fintics.model.*;
 import org.oopscraft.fintics.service.IndiceService;
-import org.oopscraft.fintics.trade.LogAppender;
-import org.oopscraft.fintics.trade.LogAppenderFactory;
-import org.oopscraft.fintics.trade.MessageTemplateFactory;
-import org.oopscraft.fintics.trade.TradeExecutorFactory;
+import org.oopscraft.fintics.trade.*;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -19,8 +16,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 @Component
 @RequiredArgsConstructor
 public class SimulateRunnableFactory {
-
-    private final IndiceService indiceService;
 
     private final IndiceOhlcvRepository indiceOhlcvRepository;
 
@@ -38,9 +33,7 @@ public class SimulateRunnableFactory {
 
     private final ObjectMapper objectMapper;
 
-    private final LogAppenderFactory logAppenderFactory;
-
-    private final MessageTemplateFactory messageTemplateFactory;
+    private final StatusHandlerFactory statusHandlerFactory;
 
     public SimulateRunnable getObject(Simulate simulate) {
         SimulateIndiceClient simulateIndiceClient = SimulateIndiceClient.builder()
@@ -61,7 +54,7 @@ public class SimulateRunnableFactory {
                 .simulateRepository(simulateRepository)
                 .messagingTemplate(messagingTemplate)
                 .objectMapper(objectMapper)
-                .messageTemplateFactory(messageTemplateFactory)
+                .statusHandlerFactory(statusHandlerFactory)
                 .build();
     }
 

@@ -5,7 +5,6 @@ import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyShell;
 import lombok.Builder;
-import lombok.Setter;
 import org.oopscraft.arch4j.core.data.pbe.PbePropertiesUtil;
 import org.oopscraft.fintics.model.*;
 import org.slf4j.LoggerFactory;
@@ -28,6 +27,8 @@ public class StrategyExecutor {
 
     private final TradeAsset tradeAsset;
 
+    private final TradeAssetStatus tradeAssetStatus;
+
     private final OrderBook orderBook;
 
     private final Balance balance;
@@ -40,15 +41,13 @@ public class StrategyExecutor {
 
     private Logger log = (Logger) LoggerFactory.getLogger(this.getClass());
 
-    @Setter
-    private MessageTemplate messageTemplate;
-
     @Builder
-    protected StrategyExecutor(Strategy strategy, String variables, LocalDateTime dateTime, TradeAsset tradeAsset, OrderBook orderBook, Balance balance, BalanceAsset balanceAsset, List<IndiceProfile> indiceProfiles, AssetProfile assetProfile) {
+    protected StrategyExecutor(Strategy strategy, String variables, LocalDateTime dateTime, TradeAsset tradeAsset, TradeAssetStatus tradeAssetStatus, OrderBook orderBook, Balance balance, BalanceAsset balanceAsset, List<IndiceProfile> indiceProfiles, AssetProfile assetProfile) {
         this.strategy = strategy;
         this.variables = variables;
         this.dateTime = dateTime;
         this.tradeAsset = tradeAsset;
+        this.tradeAssetStatus = tradeAssetStatus;
         this.orderBook = orderBook;
         this.balance = balance;
         this.balanceAsset = balanceAsset;
@@ -69,12 +68,12 @@ public class StrategyExecutor {
         binding.setVariable("log", log);
         binding.setVariable("dateTime", dateTime);
         binding.setVariable("tradeAsset", tradeAsset);
+        binding.setVariable("tradeAssetStatus", tradeAssetStatus);
         binding.setVariable("orderBook", orderBook);
         binding.setVariable("balance", balance);
         binding.setVariable("balanceAsset", balanceAsset);
         binding.setVariable("indiceProfiles", indiceProfiles);
         binding.setVariable("assetProfile", assetProfile);
-        binding.setVariable("messageTemplate", messageTemplate);
         GroovyShell groovyShell = new GroovyShell(groovyClassLoader, binding);
         Object result = groovyShell.evaluate(
                 "import " + StrategyResult.class.getName() + '\n' +

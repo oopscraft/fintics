@@ -42,12 +42,15 @@ public class TradeAssetEntity extends BaseEntity {
     @Column(name = "holding_weight")
     private BigDecimal holdingWeight;
 
-    @Column(name = "message")
-    @Lob
-    private String message;
-
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "asset_id", insertable = false, updatable = false)
     private AssetEntity assetEntity;
+
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumns({
+            @JoinColumn(name = "trade_id", referencedColumnName = "trade_id"),
+            @JoinColumn(name = "asset_id", referencedColumnName = "asset_id")
+    })
+    private TradeAssetStatusEntity tradeAssetStatusEntity;
 
 }

@@ -446,13 +446,13 @@
                 }
             });
             _webSocketClient.subscribe({
-                destination: '/trades/' + [[${trade.tradeId}]] + '/message',
+                destination: '/trades/' + [[${trade.tradeId}]] + '/status',
                 listener: function(frame) {
-                    let message = JSON.parse(frame.body);
-                    let tradeAsset = tradeAssetsMap.get(message.tradeId)
-                        .find(tradeAsset => tradeAsset.assetId === message.assetId);
+                    let status = JSON.parse(frame.body);
+                    let tradeAsset = tradeAssetsMap.get(status.tradeId)
+                        .find(tradeAsset => tradeAsset.assetId === status.assetId);
                     if (tradeAsset) {
-                        tradeAsset.message = message.body;
+                        tradeAsset.status.message = status.message;
                     }
                 }
             });
@@ -582,7 +582,7 @@
                     <colgroup>
                         <col style="width:5em;"/>
                         <col style="width:10em;"/>
-                        <col style="width:30em;"/>
+                        <col style="width:35em;"/>
                         <col style="width:10em;"/>
                         <col/>
                         <col/>
@@ -641,6 +641,17 @@
                                         this.classList.add('font-weight--bold');
                                     }"></span>
                             <small>(<span data-duice-bind="tradeAsset" data-duice-property="holdingWeight"></span>%)</small>
+                            <small style="opacity:0.5;">|</small>
+                            <span class="font-weight--bold" data-duice-bind="tradeAsset" data-duice-property="tradeAssetStatus.netChange" data-duice-execute="
+                            if (tradeAsset.tradeAssetStatus) {
+                                let closePrice = tradeAsset.tradeAssetStatus.closePrice;
+                                let netChange = tradeAsset.tradeAssetStatus.netChange;
+                                let netChangePercentage = tradeAsset.tradeAssetStatus.netChangePercentage;
+                                if (netChange > 0) this.classList.add('color--red');
+                                if (netChange < 0) this.classList.add('color--blue');
+                                this.innerHTML = `${closePrice?.toLocaleString()||''} <small>(${netChange} | ${netChangePercentage}</small>%)`;
+                            }
+                            "></span>
                         </td>
                         <td>
                             <select data-duice-bind="tradeAsset"
@@ -654,7 +665,7 @@
                         <td>
                             <div class="display--flex padding--1px">
                                 <textarea data-duice-bind="tradeAsset"
-                                      data-duice-property="message"
+                                      data-duice-property="tradeAssetStatus.message"
                                       data-duice-execute="highlight(this);"
                                       class="font-size--smaller font-weight--bold width--100"
                                       style="min-width:20em; height:6em; line-height:1.1em; padding:0.1em 0.3em;"></textarea>

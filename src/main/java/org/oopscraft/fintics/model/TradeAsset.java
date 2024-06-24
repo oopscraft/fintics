@@ -4,6 +4,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.fintics.dao.AssetEntity;
 import org.oopscraft.fintics.dao.TradeAssetEntity;
+import org.oopscraft.fintics.dao.TradeAssetStatusEntity;
 
 import java.math.BigDecimal;
 
@@ -24,7 +25,7 @@ public class TradeAsset extends Asset {
 
     private BigDecimal holdingWeight;
 
-    private String message;
+    private TradeAssetStatus tradeAssetStatus;
 
     public static TradeAsset from(TradeAssetEntity tradeAssetEntity) {
         TradeAsset tradeAsset = TradeAsset.builder()
@@ -33,8 +34,20 @@ public class TradeAsset extends Asset {
                 .sort(tradeAssetEntity.getSort())
                 .enabled(tradeAssetEntity.isEnabled())
                 .holdingWeight(tradeAssetEntity.getHoldingWeight())
-                .message(tradeAssetEntity.getMessage())
                 .build();
+
+        // trade asset status entity
+        TradeAssetStatusEntity tradeAssetStatusEntity = tradeAssetEntity.getTradeAssetStatusEntity();
+        if (tradeAssetStatusEntity != null) {
+            tradeAsset.setTradeAssetStatus(TradeAssetStatus.from(tradeAssetStatusEntity));
+        } else {
+            tradeAsset.setTradeAssetStatus(TradeAssetStatus.builder()
+                    .tradeId(tradeAsset.getTradeId())
+                    .assetId(tradeAsset.getAssetId())
+                    .build());
+        }
+
+        // asset entity
         AssetEntity assetEntity = tradeAssetEntity.getAssetEntity();
         if(assetEntity != null) {
             tradeAsset.setAssetName(assetEntity.getAssetName());

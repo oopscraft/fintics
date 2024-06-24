@@ -27,7 +27,7 @@ public class TradeService {
 
     private final TradeRepository tradeRepository;
 
-    private final TradeAssetRepository tradeAssetRepository;
+    private final TradeAssetStatusRepository tradeAssetStatusRepository;
 
     private final OrderRepository orderRepository;
 
@@ -176,10 +176,6 @@ public class TradeService {
                 .toList();
         long total = simulateEntityPage.getTotalElements();
         return new PageImpl<>(simulates, pageable, total);
-    }
-
-    public void saveTradeAssetMessage(String tradeId, String assetId, String message) {
-        tradeAssetRepository.updateMessage(tradeId, assetId, message);
     }
 
 }

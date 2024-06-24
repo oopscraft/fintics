@@ -47,7 +47,7 @@ public class TradeExecutor {
     private final Map<String, Integer> strategyResultValueMatchCountMap = new HashMap<>();
 
     @Setter
-    private MessageTemplate messageTemplate;
+    private StatusHandler statusHandler;
 
     @Builder
     private TradeExecutor(PlatformTransactionManager transactionManager, IndiceService indiceService, AssetService assetService, OrderService orderService, AlarmService alarmService) {
@@ -151,6 +151,15 @@ public class TradeExecutor {
                 // balance asset
                 BalanceAsset balanceAsset = balance.getBalanceAsset(tradeAsset.getAssetId()).orElse(null);
 
+                // trade asset status
+                TradeAssetStatus tradeAssetStatus = TradeAssetStatus.builder()
+                        .tradeId(tradeAsset.getTradeId())
+                        .assetId(tradeAsset.getAssetId())
+                        .previousClosePrice(dailyOhlcvs.get(1).getClosePrice())
+                        .openPrice(dailyOhlcvs.get(0).getOpenPrice())
+                        .closePrice(minuteOhlcvs.get(0).getClosePrice())
+                        .build();
+
                 // executes trade asset decider
                 StrategyExecutor strategyExecutor = StrategyExecutor.builder()
                         .indiceProfiles(indiceProfiles)
@@ -159,19 +168,22 @@ public class TradeExecutor {
                         .variables(trade.getStrategyVariables())
                         .dateTime(dateTime)
                         .tradeAsset(tradeAsset)
+                        .tradeAssetStatus(tradeAssetStatus)
                         .orderBook(orderBook)
                         .balance(balance)
                         .balanceAsset(balanceAsset)
                         .build();
                 strategyExecutor.setLog(log);
-                if (messageTemplate != null) {
-                    strategyExecutor.setMessageTemplate(messageTemplate.clone(tradeAsset));
-                }
 
                 Instant startTime = Instant.now();
                 StrategyResult strategyResult = strategyExecutor.execute();
                 log.info("[{} - {}] strategy execution elapsed:{}", tradeAsset.getAssetId(), tradeAsset.getAssetName(), Duration.between(startTime, Instant.now()));
                 log.info("[{} - {}] strategy result: {}", tradeAsset.getAssetId(), tradeAsset.getAssetName(), strategyResult);
+
+                // status handler
+                if (statusHandler != null) {
+                    statusHandler.apply(tradeAssetStatus);
+                }
 
                 // check strategy result and count
                 StrategyResult previousStrategyResult = strategyResultMap.get(tradeAsset.getAssetId());
@@ -260,6 +272,7 @@ public class TradeExecutor {
                     }
                     continue;
                 }
+
 
             } catch (Throwable e) {
                 log.error(e.getMessage(), e);

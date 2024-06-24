@@ -26,10 +26,9 @@ public class TradeRunnableFactory {
 
     private final BrokerClientFactory brokerClientFactory;
 
-    private final MessageTemplateFactory messageTemplateFactory;
+    private final StatusHandlerFactory statusHandlerFactory;
 
     private final PlatformTransactionManager transactionManager;
-
 
     public TradeRunnable getObject(Trade trade) {
         return TradeRunnable.builder()
@@ -41,7 +40,7 @@ public class TradeRunnableFactory {
                 .tradeExecutor(tradeExecutorFactory.getObject())
                 .indiceClient(indiceClient)
                 .brokerClientFactory(brokerClientFactory)
-                .messageTemplateFactory(messageTemplateFactory)
+                .statusHandlerFactory(statusHandlerFactory)
                 .transactionManager(transactionManager)
                 .build();
     }

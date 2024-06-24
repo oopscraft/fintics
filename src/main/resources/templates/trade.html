@@ -267,7 +267,7 @@
             try {
                 // date time from
                 const [startAtHours, startAtMinutes, startAtSeconds] = trade.startAt.split(':');
-                let dateTimeFrom = dateFns.subDays(new Date(),3);
+                let dateTimeFrom = dateFns.subMonths(new Date(),1);
                 dateTimeFrom = dateFns.setHours(dateTimeFrom, startAtHours);
                 dateTimeFrom = dateFns.setMinutes(dateTimeFrom, startAtMinutes);
                 dateTimeFrom = dateFns.setSeconds(dateTimeFrom, startAtSeconds);

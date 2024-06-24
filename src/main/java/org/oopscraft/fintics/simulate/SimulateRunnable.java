@@ -45,7 +45,7 @@ public class SimulateRunnable implements Runnable {
 
     private final ObjectMapper objectMapper;
 
-    private final MessageTemplateFactory messageTemplateFactory;
+    private final StatusHandlerFactory statusHandlerFactory;
 
     @Setter
     private Logger log;
@@ -69,7 +69,7 @@ public class SimulateRunnable implements Runnable {
             SimulateRepository simulateRepository,
             SimpMessagingTemplate messagingTemplate,
             ObjectMapper objectMapper,
-            MessageTemplateFactory messageTemplateFactory
+            StatusHandlerFactory statusHandlerFactory
     ){
         this.simulate = simulate;
         this.simulateIndiceClient = simulateIndiceClient;
@@ -79,7 +79,7 @@ public class SimulateRunnable implements Runnable {
         this.simulateRepository = simulateRepository;
         this.messagingTemplate = messagingTemplate;
         this.objectMapper = objectMapper;
-        this.messageTemplateFactory = messageTemplateFactory;
+        this.statusHandlerFactory = statusHandlerFactory;
 
         // log
         this.log = (Logger) LoggerFactory.getLogger(simulate.getSimulateId());
@@ -123,10 +123,10 @@ public class SimulateRunnable implements Runnable {
             TradeExecutor tradeExecutor = tradeExecutorFactory.getObject();
             tradeExecutor.setLog(log);
 
-            // message template
-            String messageDestination = String.format("/simulates/%s/message", simulate.getSimulateId());
-            MessageTemplate messageTemplate = messageTemplateFactory.getObject(messageDestination, null);
-            tradeExecutor.setMessageTemplate(messageTemplate);
+            // status handler
+            String destination = String.format("/simulates/%s/message", simulate.getSimulateId());
+            StatusHandler statusHandler = statusHandlerFactory.getObject(destination, false);
+            tradeExecutor.setStatusHandler(statusHandler);
 
             // loop
             for (LocalDateTime dateTime = dateTimeFrom;

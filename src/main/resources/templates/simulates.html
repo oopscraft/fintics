@@ -363,9 +363,10 @@
                 </label>
                 <div class="grid-column--6 s__grid-column--12">
                     <span class="width--100 font-weight--bold" data-th-text="#{fintics.TradeAsset}"></span>
-                    <div class="overflow-y--scroll border-x--1" style="max-height:300px;">
+                    <div class="overflow-y--scroll border-x--1" style="max-height:400px;">
                         <table class="width--100 font-size--smaller border--0">
                             <colgroup>
+                                <col style="width:5em;"/>
                                 <col/>
                                 <col/>
                                 <col style="width:10em;"/>
@@ -373,6 +374,7 @@
                             </colgroup>
                             <thead>
                             <tr>
+                                <th data-th-text="#{web.global.no}" class="text-align--center"></th>
                                 <th data-th-text="#{fintics.TradeAsset.assetId}"></th>
                                 <th data-th-text="#{fintics.TradeAsset.assetName}"></th>
                                 <th data-th-text="#{fintics.TradeAsset.enabled}"></th>
@@ -381,8 +383,15 @@
                             </thead>
                             <tbody>
                             <tr data-duice-bind="simulateDialog.simulate.trade.tradeAssets" data-duice-loop="tradeAsset,status">
-                                <td data-duice-bind="tradeAsset" data-duice-property="assetId"></td>
-                                <td data-duice-bind="tradeAsset" data-duice-property="assetName"></td>
+                                <td class="text-align--center">
+                                    <span data-duice-bind="status" data-duice-property="count"></span>
+                                </td>
+                                <td>
+                                    <span data-duice-bind="tradeAsset" data-duice-property="assetId"></span>
+                                </td>
+                                <td>
+                                    <span data-duice-bind="tradeAsset" data-duice-property="assetName"></span>
+                                </td>
                                 <td>
                                     <label>
                                         <input type="checkbox" data-duice-bind="tradeAsset" data-duice-property="enabled"/>
@@ -406,7 +415,7 @@
                                       data-duice-property="strategyVariables">
                     </duice-codemirror>
                     <span data-th-text="#{fintics.Strategy.script}" class="width--100 font-weight--bold"></span>
-                    <duice-codemirror class="font-size--smaller" style="height:200px"
+                    <duice-codemirror class="font-size--smaller" style="height:300px"
                                       data-duice-bind="simulateDialog.simulate.strategy"
                                       data-duice-property="script"
                                       data-duice-mode="groovy"
@@ -431,7 +440,7 @@
                 <input class="width--100" type="number" data-duice-bind="simulateDialog.simulate" data-duice-property="feeRate" data-duice-format="number(4)"/>
             </label>
             <div class="grid-column--12 justify-self--end">
-                <button type="button" onclick="simulateDialog.drawAssetOhlcvsChart();">
+                <button type="button" onclick="simulateDialog.drawAssetDailyOhlcvsChart();">
                     <img class="icon" th:src="@{/static/image/icon-search.svg}" alt="search"/>
                     <span data-th-text="#{web.global.search}"></span>
                 </button>
@@ -450,8 +459,9 @@
             </div>
         </form>
         <div class="padding-y--1em s__padding--0">
-            <div>
-               Chart
+            <div class="font-weight--bold">
+                <img class="icon" src="/static/image/icon-ohlcv.svg" alt="ohlcv">
+                <span>Daily</span>
             </div>
             <div class="width--100" style="height:200px;">
                 <canvas id="simulateDialog-assetOhlcvsChart"></canvas>
@@ -459,7 +469,10 @@
         </div>
         <div class="display--grid grid-template-columns--12 padding--1em padding-y--2em s__padding--0">
             <div class="grid-column--12">
-                <span class="font-weight--bold" data-th-text="#{web.global.log}"></span>
+                <div>
+                    <img class="icon" src="/static/image/icon-log.svg" alt="log">
+                    <span class="font-weight--bold" data-th-text="#{web.global.log}"></span>
+                </div>
                 <textarea id="simulateDialog-log" class="width--100" style="min-height:200px; background-color:black; color:white;"></textarea>
             </div>
             <div class="grid-column--12">
@@ -674,7 +687,7 @@
                 strategy: {},
                 dateTimeFrom: null,
                 dateTimeTo: null,
-                investAmount: 100_000_000,
+                investAmount: 1000_000_000,
                 feeRate: 0.1,
                 dateTime: null,
                 balance: {
@@ -789,8 +802,10 @@
                 duice.ObjectProxy.assign(this.simulate, simulate);
                 this.simulate.simulateId = null;
                 this.unsubscribeSimulate();
-                await this.drawAssetOhlcvsChart();
+                await this.drawAssetDailyOhlcvsChart();
                 await this.drawSimulateReportTotalReturnsChart();
+                this.unsubscribeSimulate();
+                this.subscribeSimulate();
                 return this.dialog.open();
             },
             openForEdit: function(simulateId) {
@@ -800,7 +815,7 @@
                     .then(response => response.json())
                     .then(async simulate => {
                         duice.ObjectProxy.assign(this.simulate, simulate);
-                        await this.drawAssetOhlcvsChart();
+                        await this.drawAssetDailyOhlcvsChart();
                         await this.drawSimulateReportTotalReturnsChart();
                         await this.drawSimulateReportAssetReturnsChart();
                         this.unsubscribeSimulate();
@@ -808,22 +823,21 @@
                     });
                 return this.dialog.open();
             },
-            async getAssetOhlcvs(assetId, type, dateTimeFrom, dateTimeTo) {
-                let url = new URL(`${_apiUrl}/v1/assets/${assetId}/ohlcvs`, document.location.origin);
-                url.searchParams.append('type', type);
+            async getAssetDailyOhlcvs(assetId, dateTimeFrom, dateTimeTo) {
+                let url = new URL(`${_apiUrl}/v1/assets/${assetId}/daily-ohlcvs`, document.location.origin);
                 url.searchParams.append('dateTimeFrom', dateTimeFrom);
                 url.searchParams.append('dateTimeTo', dateTimeTo);
                 url.searchParams.append('_size', 60 * 24 * 365);
                 return await _fetch(url, null, true);
             },
-            drawAssetOhlcvsChart: function() {
+            drawAssetDailyOhlcvsChart: function() {
                 this.assetOhlcvsChart.data.datasets.length = 0;
                 let dateTimeFrom = this.simulate.dateTimeFrom;
                 let dateTimeTo = this.simulate.dateTimeTo;
                 const assetOhlcvsPromises = this.simulate.trade.tradeAssets
                     .filter(tradeAsset => tradeAsset.enabled)
                     .map(async tradeAsset => {
-                        return this.getAssetOhlcvs(tradeAsset.assetId, 'MINUTE', dateTimeFrom, dateTimeTo)
+                        return this.getAssetDailyOhlcvs(tradeAsset.assetId, dateTimeFrom, dateTimeTo)
                             .then(response => response.json())
                             .then(ohlcvs => {
                                 let timeSeries = _createTimeSeries(dateTimeFrom, dateTimeTo, ohlcvs);

@@ -43,7 +43,7 @@ public class TradeRunnable implements Runnable {
 
     private final PlatformTransactionManager transactionManager;
 
-    private final MessageTemplateFactory messageTemplateFactory;
+    private final StatusHandlerFactory statusHandlerFactory;
 
     private final Logger log;
 
@@ -64,7 +64,7 @@ public class TradeRunnable implements Runnable {
         TradeExecutor tradeExecutor,
         IndiceClient indiceClient,
         BrokerClientFactory brokerClientFactory,
-        MessageTemplateFactory messageTemplateFactory,
+        StatusHandlerFactory statusHandlerFactory,
         PlatformTransactionManager transactionManager
     ){
         this.tradeId = tradeId;
@@ -75,7 +75,7 @@ public class TradeRunnable implements Runnable {
         this.tradeExecutor = tradeExecutor;
         this.indiceClient = indiceClient;
         this.brokerClientFactory = brokerClientFactory;
-        this.messageTemplateFactory = messageTemplateFactory;
+        this.statusHandlerFactory = statusHandlerFactory;
         this.transactionManager = transactionManager;
 
         // log
@@ -91,12 +91,10 @@ public class TradeRunnable implements Runnable {
             this.logAppender.start();
         }
 
-        // message template
-        String destination = String.format("/trades/%s/message", tradeId);
-        MessageTemplate messageTemplate = messageTemplateFactory.getObject(destination, message -> {
-            tradeService.saveTradeAssetMessage(message.getTradeId(), message.getAssetId(), message.getBody());
-        });
-        tradeExecutor.setMessageTemplate(messageTemplate);
+        // status template
+        String destination = String.format("/trades/%s/status", tradeId);
+        StatusHandler statusHandler = statusHandlerFactory.getObject(destination, true);
+        tradeExecutor.setStatusHandler(statusHandler);
 
         // start loop
         log.info("Start TradeRunnable: {}", tradeId);

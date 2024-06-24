@@ -52,5 +52,5 @@ web:
 fintics:
   system-alarm-id: fintics
   ai-api-url: http://fintics-ai:8080
-  ohlcv-retention-months: 12
-  news-retention-months: 12
+  ohlcv-retention-months: 36
+  news-retention-months: 36
