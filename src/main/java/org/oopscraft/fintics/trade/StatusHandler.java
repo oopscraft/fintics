@@ -9,6 +9,8 @@ import org.oopscraft.fintics.dao.TradeAssetStatusRepository;
 import org.oopscraft.fintics.model.TradeAssetStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
+import java.util.Optional;
+
 @Builder
 @Getter
 public class StatusHandler {
@@ -24,6 +26,11 @@ public class StatusHandler {
     private final TradeAssetStatusRepository tradeAssetStatusRepository;
 
     public void apply(TradeAssetStatus tradeAssetStatus) {
+        // trim message
+        tradeAssetStatus.setMessage(Optional.ofNullable(tradeAssetStatus.getMessage())
+                .map(String::trim)
+                .orElse(null));
+
         // send message
         String jsonString = null;
         try {
