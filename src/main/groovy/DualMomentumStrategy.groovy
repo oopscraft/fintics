@@ -114,17 +114,17 @@ class Analysis implements Analyzable {
     Scorable getMomentumScore() {
         def score = new Score()
         // ema
-        score.emaValePctChange = Tools.pctChange(emas.take(period).collect{it.value}) > 0.0 ? 100 : 0
+        score.emaPriceOverValue = ohlcv.closePrice > ema.value ? 100 : 0
         // macd
-        score.macdValueOverSignal = macd.value > macd.signal ? 100 : 0
+        score.macdValue = macd.value > 0 ? 100 : 0
+        // rsi
+        score.rsiValue = rsi.value > 50 ? 100 : 0
         // bollinger band
         score.bollingerBandPriceOverMiddle = ohlcv.closePrice > bollingerBand.middle ? 100 : 0
         // cci
         score.cciValue = cci.value > 0 ? 100 : 0
         // dmi
         score.dmiPdiOverMdi = dmi.pdi > dmi.mdi ? 100 : 0
-        // obv
-        score.obvValueOverSignal = obv.value > obv.signal ? 100 : 0
         // chaikin oscillator
         score.chaikinOscillatorValue = chaikinOscillator.value > 0 ? 100 : 0
         // return
@@ -251,33 +251,36 @@ log.info("ripple.momentum: {}", rippleAnalysis.getMomentumScore())
 def momentum = tideAnalysis.getMomentumScore().getAverage()
 def marginPosition = 1.0 - basePosition
 def positionPerMomentum = (marginPosition/100)
-def position = ((basePosition + (positionPerMomentum * momentum)) as BigDecimal).setScale(2, RoundingMode.HALF_UP)
+def position = basePosition + (positionPerMomentum * momentum)
 
-// apply average price
-def averagePrice = tideAnalysis.getAveragePrice()
+// apply average price to position
+def averagePrice = waveAnalysis.getAveragePrice()
 def currentPrice = rippleAnalysis.getCurrentPrice()
-position = position * (averagePrice/currentPrice)
+position = (position * (averagePrice/currentPrice) as BigDecimal).setScale(2, RoundingMode.HALF_UP)
 log.info("averagePrice: {}", averagePrice)
 log.info("currentPrice: {}", averagePrice)
 log.info("position: {}", position)
 
 // message
 def message = """
-position|currentPrice|averagePrice:${position}|${currentPrice}|${averagePrice}
+position:${position}
+currentPrice|averagePrice:${currentPrice}|${averagePrice}
 tide.momentum: ${tideAnalysis.getMomentumScore().toString()}
 wave.momentum|volatility|oversold|overbought:${waveAnalysis.getMomentumScore().getAverage()}|${waveAnalysis.getVolatilityScore().getAverage()}|${waveAnalysis.getOversoldScore().getAverage()}|${waveAnalysis.getOverboughtScore().getAverage()}
 + rsi:${waveAnalysis.rsi.value}|sto:${waveAnalysis.stochasticSlow.slowK}|cci:${waveAnalysis.cci.value}|wil:${waveAnalysis.williamsR.value}
 ripple.momentum:${rippleAnalysis.getMomentumScore().getAverage()}
 """
-messageTemplate.send(message)
+tradeAssetStatus.setMessage(message)
 
 // volatility
 if (waveAnalysis.getVolatilityScore() > 50) {
+    // wave oversold
     if (waveAnalysis.getOversoldScore() > 50) {
         if (rippleAnalysis.getMomentumScore() > 75) {
             strategyResult = StrategyResult.of(Action.BUY, position, message)
         }
     }
+    // wave overbought
     if (waveAnalysis.getOverboughtScore() > 50) {
         if (rippleAnalysis.getMomentumScore() < 25) {
             strategyResult = StrategyResult.of(Action.SELL, position, message)

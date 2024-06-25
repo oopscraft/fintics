@@ -12,11 +12,12 @@ public class LinkFactory {
         List<Link> links = new ArrayList<>();
         switch(Optional.ofNullable(market).orElse("")) {
             case "US" -> {
-                links.add(Link.of("Yahoo", "https://finance.yahoo.com/quote/" + symbol));
-                links.add(Link.of("Naver", "https://m.stock.naver.com/worldstock/stock/" + symbol + ".O"));
+                links.add(Link.of("Finviz", "https://finviz.com/quote.ashx?t=" + symbol));
+                links.add(Link.of("Yahoo", "https://finance.yahoo.com/chart/" + symbol));
             }
             case "KR" -> {
-                links.add(Link.of("Naver", "https://finance.naver.com/item/main.naver?code=" + symbol));
+                links.add(Link.of("Alphasquare", "https://alphasquare.co.kr/home/market-summary?code=" + symbol));
+                links.add(Link.of("Naver", "https://finance.naver.com/item/fchart.naver?code=" + symbol));
             }
             case "UPBIT" -> {
                 links.add(Link.of("UPBIT", "https://upbit.com/exchange?code=CRIX.UPBIT." + symbol));
