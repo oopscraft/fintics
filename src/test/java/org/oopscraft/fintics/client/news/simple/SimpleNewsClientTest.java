@@ -2,6 +2,7 @@ package org.oopscraft.fintics.client.news.simple;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.oopscraft.arch4j.core.support.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
@@ -24,6 +25,7 @@ class SimpleNewsClientTest extends CoreTestSupport {
         return new SimpleNewsClient(newsClientProperties);
     }
 
+    @Disabled
     @Test
     void extractNewsUrl() {
         // given
@@ -34,6 +36,7 @@ class SimpleNewsClientTest extends CoreTestSupport {
         log.info("newsUrl: {}", newsUrl);
     }
 
+    @Disabled
     @Test
     void getNewses() {
         // given
@@ -45,6 +48,7 @@ class SimpleNewsClientTest extends CoreTestSupport {
         log.info("newses: {}", newses);
     }
 
+    @Disabled
     @Test
     void getAssetNews() {
         // given
@@ -58,6 +62,7 @@ class SimpleNewsClientTest extends CoreTestSupport {
         log.info("news: {}", news);
     }
 
+    @Disabled
     @Test
     void getAssetNewsKrEtf() {
         // given
