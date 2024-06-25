@@ -5,6 +5,7 @@ import lombok.experimental.SuperBuilder;
 import org.oopscraft.fintics.model.TradeAsset;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -41,7 +42,9 @@ public class TradeAssetResponse extends AssetResponse {
                 .roe(tradeAsset.getRoe())
                 .roa(tradeAsset.getRoa())
                 .links(LinkResponse.from(tradeAsset.getLinks()))
-                .tradeAssetStatusResponse(TradeAssetStatusResponse.from(tradeAsset.getTradeAssetStatus()))
+                .tradeAssetStatusResponse(Optional.ofNullable(tradeAsset.getTradeAssetStatus())
+                        .map(TradeAssetStatusResponse::from)
+                        .orElse(null))
                 .build();
     }
 

@@ -45,6 +45,7 @@ interface Analyzable {
     BigDecimal getCurrentPrice()
     BigDecimal getAveragePrice()
     Scorable getMomentumScore()
+    Scorable getDirectionScore()
     Scorable getVolatilityScore()
     Scorable getOversoldScore()
     Scorable getOverboughtScore()
@@ -117,16 +118,45 @@ class Analysis implements Analyzable {
         score.emaPriceOverValue = ohlcv.closePrice > ema.value ? 100 : 0
         // macd
         score.macdValue = macd.value > 0 ? 100 : 0
-        // rsi
-        score.rsiValue = rsi.value > 50 ? 100 : 0
         // bollinger band
         score.bollingerBandPriceOverMiddle = ohlcv.closePrice > bollingerBand.middle ? 100 : 0
+        // rsi
+        score.rsiValue = rsi.value > 50 ? 100 : 0
         // cci
         score.cciValue = cci.value > 0 ? 100 : 0
         // dmi
         score.dmiPdiOverMdi = dmi.pdi > dmi.mdi ? 100 : 0
         // chaikin oscillator
         score.chaikinOscillatorValue = chaikinOscillator.value > 0 ? 100 : 0
+        // obv
+        def obvValuePctChange = Tools.pctChange(obvs.take(period).collect{it.value})
+        score.obvValuePctChange = obvValuePctChange > 0.0 ? 100 : 0
+        // stochastic slow
+        score.stochasticSlowK = stochasticSlow.slowK > 50 ? 100 : 0
+        // williams r
+        score.williamsRValue = williamsR.value > -50 ? 100 : 0
+        // return
+        return score
+    }
+
+    @Override
+    Scorable getDirectionScore() {
+        def score = new Score()
+        // macd
+        score.macdValueOversignal = macd.value > macd.signal ? 100 : 0
+        score.macdOscillator = macd.oscillator > 0 ? 100 : 0
+        // rsi
+        score.rsiValueOverSignal = rsi.value > rsi.signal ? 100 : 0
+        // cci
+        score.cciValueOverSignal = cci.value > cci.signal ? 100 : 0
+        // obv
+        score.obvValueOverSignal = obv.value > obv.signal ? 100 : 0
+        // chaikin oscillator
+        score.chaikinOscillatorValueOverSignal = chaikinOscillator.value > chaikinOscillator.signal ? 100 : 0
+        // stochastic slow
+        score.stochasticSlowKOverD = stochasticSlow.slowK > stochasticSlow.slowD ? 100 : 0
+        // williams r
+        score.williamsRValueOverSignal = williamsR.value > williamsR.signal ? 100 : 0
         // return
         return score
     }
@@ -197,6 +227,13 @@ class AnalysisGroup extends LinkedHashMap<String, Analyzable> implements Analyza
     Scorable getMomentumScore() {
         def scoreGroup = new ScoreGroup()
         this.each{it -> scoreGroup.put(it.key, it.value.getMomentumScore())}
+        return scoreGroup
+    }
+
+    @Override
+    Scorable getDirectionScore() {
+        def scoreGroup = new ScoreGroup()
+        this.each{it -> scoreGroup.put(it.key, it.value.getDirectionScore())}
         return scoreGroup
     }
 
@@ -272,18 +309,51 @@ ripple.momentum:${rippleAnalysis.getMomentumScore().getAverage()}
 """
 tradeAssetStatus.setMessage(message)
 
-// volatility
+// volatility 상태인 경우
 if (waveAnalysis.getVolatilityScore() > 50) {
-    // wave oversold
+    // 중기 과매도 상태
     if (waveAnalysis.getOversoldScore() > 50) {
+        // 단기 상승 모멘텀
         if (rippleAnalysis.getMomentumScore() > 75) {
-            strategyResult = StrategyResult.of(Action.BUY, position, message)
+            // 매수 포지션
+            strategyResult = StrategyResult.of(Action.BUY, position, "oversold buy: " + message)
+            // filter - 장기 하락 방향인 경우 제외
+            if (tideAnalysis.getDirectionScore() < 25) {
+                strategyResult = null
+            }
         }
     }
-    // wave overbought
+    // 중기 과매수 상태
     if (waveAnalysis.getOverboughtScore() > 50) {
+        // 단기 하락 모멘텀
         if (rippleAnalysis.getMomentumScore() < 25) {
-            strategyResult = StrategyResult.of(Action.SELL, position, message)
+            strategyResult = StrategyResult.of(Action.SELL, position, "overbought sell: " + message)
+            // filter - 장기 상승 방향인 경우 제외
+            if (tideAnalysis.getDirectionScore() > 75) {
+                strategyResult = null
+            }
+        }
+    }
+}
+
+// squeeze 상태인 경우
+if (waveAnalysis.getVolatilityScore() < 50) {
+    if (waveAnalysis.getMomentumScore() > 75) {
+        if (rippleAnalysis.getMomentumScore() > 75) {
+            strategyResult = StrategyResult.of(Action.BUY, position, "squeeze buy: " + message)
+            // filter - 장기 상승 방향이 아닌 경우 제외
+            if (tideAnalysis.getDirectionScore() < 75) {
+                strategyResult = null
+            }
+        }
+    }
+    if (waveAnalysis.getMomentumScore() < 25) {
+        if (rippleAnalysis.getMomentumScore() < 25) {
+            strategyResult = StrategyResult.of(Action.SELL, position, "squeeze sell: " + message)
+            // filter - 장기 하락 방향이 아닌 경우 제외
+            if (tideAnalysis.getDirectionScore() < 25) {
+                strategyResult = null
+            }
         }
     }
 }
