@@ -289,14 +289,15 @@ def momentum = tideAnalysis.getMomentumScore().getAverage()
 def marginPosition = 1.0 - basePosition
 def positionPerMomentum = (marginPosition/100)
 def position = basePosition + (positionPerMomentum * momentum)
+log.info("position(by momentum): {}", position)
 
 // apply average price to position
 def averagePrice = waveAnalysis.getAveragePrice()
 def currentPrice = rippleAnalysis.getCurrentPrice()
 position = (position * (averagePrice/currentPrice) as BigDecimal).setScale(2, RoundingMode.HALF_UP)
 log.info("averagePrice: {}", averagePrice)
-log.info("currentPrice: {}", averagePrice)
-log.info("position: {}", position)
+log.info("currentPrice: {}", currentPrice)
+log.info("position(by price): {}", position)
 
 // message
 def message = """
@@ -330,28 +331,6 @@ if (waveAnalysis.getVolatilityScore() > 50) {
             strategyResult = StrategyResult.of(Action.SELL, position, "overbought sell: " + message)
             // filter - 장기 상승 방향인 경우 제외
             if (tideAnalysis.getDirectionScore() > 75) {
-                strategyResult = null
-            }
-        }
-    }
-}
-
-// squeeze 상태인 경우
-if (waveAnalysis.getVolatilityScore() < 50) {
-    if (waveAnalysis.getMomentumScore() > 75) {
-        if (rippleAnalysis.getMomentumScore() > 75) {
-            strategyResult = StrategyResult.of(Action.BUY, position, "squeeze buy: " + message)
-            // filter - 장기 상승 방향이 아닌 경우 제외
-            if (tideAnalysis.getDirectionScore() < 75) {
-                strategyResult = null
-            }
-        }
-    }
-    if (waveAnalysis.getMomentumScore() < 25) {
-        if (rippleAnalysis.getMomentumScore() < 25) {
-            strategyResult = StrategyResult.of(Action.SELL, position, "squeeze sell: " + message)
-            // filter - 장기 하락 방향이 아닌 경우 제외
-            if (tideAnalysis.getDirectionScore() < 25) {
                 strategyResult = null
             }
         }

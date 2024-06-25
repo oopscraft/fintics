@@ -273,7 +273,6 @@ public class TradeExecutor {
                     continue;
                 }
 
-
             } catch (Throwable e) {
                 log.error(e.getMessage(), e);
                 sendErrorAlarmIfEnabled(trade, tradeAsset, e);
