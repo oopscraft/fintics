@@ -24,38 +24,8 @@ public class AssetService {
 
     private final AssetNewsRepository assetNewsRepository;
 
-    public Page<Asset> getAssets(String assetId, String assetName, String market, Boolean favorite, BigDecimal perFrom, BigDecimal perTo, BigDecimal roeFrom, BigDecimal roeTo, BigDecimal roaFrom, BigDecimal roaTo, Pageable pageable) {
-        // where
-        Specification<AssetEntity> specification = Specification.where(null);
-        specification = specification
-                .and(Optional.ofNullable(assetId)
-                        .map(AssetSpecifications::containsAssetId)
-                        .orElse(null))
-                .and(Optional.ofNullable(assetName)
-                        .map(AssetSpecifications::containsAssetName)
-                        .orElse(null))
-                .and(Optional.ofNullable(market)
-                        .map(AssetSpecifications::equalMarket)
-                        .orElse(null))
-                .and(Optional.ofNullable(favorite)
-                        .map(AssetSpecifications::isFavorite)
-                        .orElse(null));
-        if (perFrom != null && perTo != null) {
-            specification = specification.and(AssetSpecifications.betweenPer(perFrom, perTo));
-        }
-        if (roeFrom != null && roeTo != null) {
-            specification = specification.and(AssetSpecifications.betweenRoe(roeFrom, roeTo));
-        }
-        if (roaFrom != null && roaTo != null) {
-            specification = specification.and(AssetSpecifications.betweenRoa(roaFrom, roaTo));
-        }
-
-        // sort
-        Sort sort = Sort.by(AssetEntity_.MARKET_CAP).descending();
-        pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
-
-        // find
-        Page<AssetEntity> assetEntityPage = assetRepository.findAll(specification, pageable);
+    public Page<Asset> getAssets(AssetSearch assetSearch, Pageable pageable) {
+        Page<AssetEntity> assetEntityPage = assetRepository.findAll(assetSearch, pageable);
         List<Asset> assets = assetEntityPage.getContent().stream()
                 .map(Asset::from)
                 .toList();

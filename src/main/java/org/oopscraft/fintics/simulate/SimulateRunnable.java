@@ -14,10 +14,6 @@ import org.oopscraft.fintics.model.Trade;
 import org.oopscraft.fintics.trade.*;
 import org.slf4j.LoggerFactory;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -36,8 +32,6 @@ public class SimulateRunnable implements Runnable {
     private final SimulateBrokerClient simulateTradeClient;
 
     private final TradeExecutorFactory tradeExecutorFactory;
-
-    private final PlatformTransactionManager transactionManager;
 
     private final SimulateRepository simulateRepository;
 
@@ -65,7 +59,6 @@ public class SimulateRunnable implements Runnable {
             SimulateIndiceClient simulateIndiceClient,
             SimulateBrokerClient simulateTradeClient,
             TradeExecutorFactory tradeExecutorFactory,
-            PlatformTransactionManager transactionManager,
             SimulateRepository simulateRepository,
             SimpMessagingTemplate messagingTemplate,
             ObjectMapper objectMapper,
@@ -75,7 +68,6 @@ public class SimulateRunnable implements Runnable {
         this.simulateIndiceClient = simulateIndiceClient;
         this.simulateTradeClient = simulateTradeClient;
         this.tradeExecutorFactory = tradeExecutorFactory;
-        this.transactionManager = transactionManager;
         this.simulateRepository = simulateRepository;
         this.messagingTemplate = messagingTemplate;
         this.objectMapper = objectMapper;

@@ -7,19 +7,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.oopscraft.arch4j.core.data.IdGenerator;
 import org.oopscraft.fintics.dao.SimulateEntity;
-import org.oopscraft.fintics.dao.SimulateEntity_;
 import org.oopscraft.fintics.dao.SimulateRepository;
-import org.oopscraft.fintics.dao.SimulateSpecifications;
 import org.oopscraft.fintics.model.Simulate;
+import org.oopscraft.fintics.model.SimulateSearch;
 import org.oopscraft.fintics.simulate.SimulateRunnable;
 import org.oopscraft.fintics.simulate.SimulateRunnableFactory;
 import org.oopscraft.fintics.trade.LogAppender;
 import org.oopscraft.fintics.trade.LogAppenderFactory;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextStoppedEvent;
-import org.springframework.data.domain.*;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,8 +36,6 @@ public class SimulateService implements ApplicationListener<ContextStoppedEvent>
 
     private final SimulateRunnableFactory simulateRunnableFactory;
 
-    private final SimpMessagingTemplate messagingTemplate;
-
     private final LogAppenderFactory logAppenderFactory;
 
     private final BlockingQueue<Runnable> simulateQueue = new ArrayBlockingQueue<>(10);
@@ -55,26 +52,8 @@ public class SimulateService implements ApplicationListener<ContextStoppedEvent>
 
     private final Map<String,Future<?>> simulateFutureMap = new ConcurrentHashMap<>();
 
-    public Page<Simulate> getSimulates(String tradeId, Simulate.Status status, Boolean favorite, Pageable pageable) {
-        // where
-        Specification<SimulateEntity> specification = Specification.where(null);
-        specification = specification
-                .and(Optional.ofNullable(tradeId)
-                        .map(SimulateSpecifications::equalTradeId)
-                        .orElse(null))
-                .and(Optional.ofNullable(status)
-                        .map(SimulateSpecifications::equalStatus)
-                        .orElse(null))
-                .and(Optional.ofNullable(favorite)
-                        .map(SimulateSpecifications::equalFavorite)
-                        .orElse(null));
-
-        // sort
-        Sort sort = Sort.by(SimulateEntity_.STARTED_AT).descending();
-        pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
-
-        // find
-        Page<SimulateEntity> simulateEntityPage = simulateRepository.findAll(specification, pageable);
+    public Page<Simulate> getSimulates(SimulateSearch simulateSearch, Pageable pageable) {
+        Page<SimulateEntity> simulateEntityPage = simulateRepository.findAll(simulateSearch, pageable);
         List<Simulate> simulates = simulateEntityPage.getContent().stream()
                 .map(Simulate::from)
                 .toList();

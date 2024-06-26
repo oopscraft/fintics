@@ -5,12 +5,11 @@ import org.oopscraft.arch4j.core.data.IdGenerator;
 import org.oopscraft.arch4j.core.data.pbe.PbePropertiesUtil;
 import org.oopscraft.fintics.dao.StrategyEntity;
 import org.oopscraft.fintics.dao.StrategyRepository;
-import org.oopscraft.fintics.dao.StrategySpecifications;
 import org.oopscraft.fintics.model.Strategy;
+import org.oopscraft.fintics.model.StrategySearch;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,13 +22,8 @@ public class StrategyService {
 
     private final StrategyRepository strategyRepository;
 
-    public Page<Strategy> getStrategies(String strategyName, Pageable pageable) {
-        Specification<StrategyEntity> specification = Specification.where(null);
-        specification = specification
-                .and(Optional.ofNullable(strategyName)
-                        .map(StrategySpecifications::containsRuleName)
-                        .orElse(null));
-        Page<StrategyEntity> strategyEntityPage = strategyRepository.findAll(specification, pageable);
+    public Page<Strategy> getStrategies(StrategySearch strategySearch, Pageable pageable) {
+        Page<StrategyEntity> strategyEntityPage = strategyRepository.findAll(strategySearch, pageable);
         List<Strategy> strategies = strategyEntityPage.getContent().stream()
                 .map(Strategy::from)
                 .toList();

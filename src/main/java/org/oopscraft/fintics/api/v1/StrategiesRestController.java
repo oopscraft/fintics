@@ -6,6 +6,7 @@ import org.oopscraft.arch4j.web.support.PageableUtils;
 import org.oopscraft.fintics.api.v1.dto.StrategyRequest;
 import org.oopscraft.fintics.api.v1.dto.StrategyResponse;
 import org.oopscraft.fintics.model.Strategy;
+import org.oopscraft.fintics.model.StrategySearch;
 import org.oopscraft.fintics.service.StrategyService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,7 +33,10 @@ public class StrategiesRestController {
             @RequestParam(value = "strategyName", required = false) String strategyName,
             @PageableDefault Pageable pageable
     ) {
-        Page<Strategy> strategyPage = strategyService.getStrategies(strategyName, pageable);
+        StrategySearch strategySearch = StrategySearch.builder()
+                .strategyName(strategyName)
+                .build();
+        Page<Strategy> strategyPage = strategyService.getStrategies(strategySearch, pageable);
         List<StrategyResponse> strategyResponses = strategyPage.getContent().stream()
                 .map(StrategyResponse::from)
                 .toList();

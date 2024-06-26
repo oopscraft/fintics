@@ -8,6 +8,7 @@ import org.oopscraft.fintics.api.v1.dto.AssetResponse;
 import org.oopscraft.fintics.api.v1.dto.NewsResponse;
 import org.oopscraft.fintics.api.v1.dto.OhlcvResponse;
 import org.oopscraft.fintics.model.Asset;
+import org.oopscraft.fintics.model.AssetSearch;
 import org.oopscraft.fintics.model.Ohlcv;
 import org.oopscraft.fintics.service.AssetService;
 import org.springframework.data.domain.Page;
@@ -48,7 +49,19 @@ public class AssetsRestController {
             @RequestParam(value = "roaTo", required = false) BigDecimal roaTo,
             Pageable pageable
     ) {
-        Page<Asset> assetPage = assetService.getAssets(assetId, assetName, market, favorite, perFrom, perTo, roeFrom, roeTo, roaFrom, roaTo, pageable);
+        AssetSearch assetSearch = AssetSearch.builder()
+                .assetId(assetId)
+                .assetName(assetName)
+                .market(market)
+                .favorite(favorite)
+                .perFrom(perFrom)
+                .perTo(perTo)
+                .roeFrom(roeFrom)
+                .roeTo(roeTo)
+                .roaFrom(roaFrom)
+                .roaTo(roaTo)
+                .build();
+        Page<Asset> assetPage = assetService.getAssets(assetSearch, pageable);
         List<AssetResponse> assetResponses = assetPage.getContent().stream()
                 .map(AssetResponse::from)
                 .toList();

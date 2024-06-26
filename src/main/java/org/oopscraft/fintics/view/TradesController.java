@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
 import org.oopscraft.fintics.client.broker.BrokerClientDefinition;
 import org.oopscraft.fintics.model.Broker;
+import org.oopscraft.fintics.model.BrokerSearch;
 import org.oopscraft.fintics.model.Strategy;
+import org.oopscraft.fintics.model.StrategySearch;
 import org.oopscraft.fintics.service.BrokerService;
 import org.oopscraft.fintics.service.IndiceService;
 import org.oopscraft.fintics.service.StrategyService;
@@ -30,9 +32,9 @@ public class TradesController {
     @GetMapping
     public ModelAndView getTrades() {
         ModelAndView modelAndView = new ModelAndView("trades.html");
-        List<Broker> brokers =  brokerService.getBrokers(null, Pageable.unpaged()).getContent();
+        List<Broker> brokers =  brokerService.getBrokers(BrokerSearch.builder().build(), Pageable.unpaged()).getContent();
         modelAndView.addObject("brokers", brokers);
-        List<Strategy> strategies = strategyService.getStrategies(null, Pageable.unpaged()).getContent();
+        List<Strategy> strategies = strategyService.getStrategies(StrategySearch.builder().build(), Pageable.unpaged()).getContent();
         modelAndView.addObject("strategies", strategies);
         return modelAndView;
     }

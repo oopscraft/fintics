@@ -7,6 +7,7 @@ import org.oopscraft.fintics.dao.BrokerEntity;
 import org.oopscraft.fintics.dao.BrokerRepository;
 import org.oopscraft.fintics.dao.BrokerSpecifications;
 import org.oopscraft.fintics.model.Broker;
+import org.oopscraft.fintics.model.BrokerSearch;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -23,12 +24,8 @@ public class BrokerService {
 
     private final BrokerRepository brokerRepository;
 
-    public Page<Broker> getBrokers(String brokerName, Pageable pageable) {
-        Specification<BrokerEntity> specification = Specification.where(null);
-        specification = specification.and(Optional.ofNullable(brokerName)
-                                .map(BrokerSpecifications::containsBrokerName)
-                                .orElse(null));
-        Page<BrokerEntity> brokerEntityPage = brokerRepository.findAll(specification, pageable);
+    public Page<Broker> getBrokers(BrokerSearch brokerSearch, Pageable pageable) {
+        Page<BrokerEntity> brokerEntityPage = brokerRepository.findAll(brokerSearch, pageable);
         List<Broker> brokers = brokerEntityPage.getContent().stream()
                 .map(Broker::from)
                 .toList();

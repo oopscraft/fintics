@@ -1,9 +1,7 @@
 package org.oopscraft.fintics.model;
 
-import lombok.*;
-
-import java.util.ArrayList;
-import java.util.List;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor

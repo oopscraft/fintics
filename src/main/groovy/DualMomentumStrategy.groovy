@@ -1,5 +1,6 @@
 import org.jetbrains.annotations.NotNull
 import org.oopscraft.fintics.model.Ohlcv
+import org.oopscraft.fintics.model.Profile
 import org.oopscraft.fintics.model.Strategy
 import org.oopscraft.fintics.model.StrategyResult
 import org.oopscraft.fintics.model.StrategyResult.Action
@@ -44,6 +45,7 @@ class ScoreGroup extends LinkedHashMap<String, Scorable> implements Scorable {
 interface Analyzable {
     BigDecimal getCurrentPrice()
     BigDecimal getAveragePrice()
+    Scorable getTrendScore()
     Scorable getMomentumScore()
     Scorable getDirectionScore()
     Scorable getVolatilityScore()
@@ -57,6 +59,8 @@ class Analysis implements Analyzable {
     Ohlcv ohlcv
     List<Ema> emas
     Ema ema
+    List<Ema> ema60s
+    Ema ema60
     List<Macd> macds
     Macd macd
     List<BollingerBand> bollingerBands
@@ -76,11 +80,13 @@ class Analysis implements Analyzable {
     List<ChaikinOscillator> chaikinOscillators
     ChaikinOscillator chaikinOscillator
 
-    Analysis(List<Ohlcv> ohlcvs) {
-        this.ohlcvs = ohlcvs
+    Analysis(Profile profile, Ohlcv.Type type, int period) {
+        this.ohlcvs = profile.getOhlcvs(type, period)
         this.ohlcv = this.ohlcvs.first()
         this.emas = Tools.indicators(ohlcvs, EmaContext.DEFAULT)
         this.ema = emas.first()
+        this.ema60s = Tools.indicators(ohlcvs, EmaContext.of(60))
+        this.ema60 = ema60s.first()
         this.macds = Tools.indicators(ohlcvs, MacdContext.DEFAULT)
         this.macd = this.macds.first()
         this.bollingerBands = Tools.indicators(ohlcvs, BollingerBandContext.DEFAULT)
@@ -109,6 +115,19 @@ class Analysis implements Analyzable {
     @Override
     BigDecimal getAveragePrice() {
         return Tools.mean(ohlcvs.take(period).collect{it.closePrice})
+    }
+
+    @Override
+    Scorable getTrendScore() {
+        def score = new Score()
+        // ema60
+        score.ema60Value = ohlcv.closePrice > ema60.value ? 100 : 0
+        // macd
+        score.macdValue = macd.value > 0 ? 100 : 0
+        // bollinger band
+        score.bollingerBandPriceOverMiddle = ohlcv.closePrice > bollingerBand.middle ? 100 : 0
+        // return
+        return score
     }
 
     @Override
@@ -224,6 +243,13 @@ class AnalysisGroup extends LinkedHashMap<String, Analyzable> implements Analyza
     }
 
     @Override
+    Scorable getTrendScore() {
+        def scoreGroup = new ScoreGroup()
+        this.each{it -> scoreGroup.put(it.key, it.value.getTrendScore())}
+        return scoreGroup
+    }
+
+    @Override
     Scorable getMomentumScore() {
         def scoreGroup = new ScoreGroup()
         this.each{it -> scoreGroup.put(it.key, it.value.getMomentumScore())}
@@ -274,9 +300,9 @@ def basePosition = variables['basePosition'] as BigDecimal
 StrategyResult strategyResult = null
 
 // analysis
-def tideAnalysis = new Analysis(assetProfile.getOhlcvs(tideOhlcvType, tideOhlcvPeriod))
-def waveAnalysis = new Analysis(assetProfile.getOhlcvs(waveOhlcvType, waveOhlcvPeriod))
-def rippleAnalysis = new Analysis(assetProfile.getOhlcvs(rippleOhlcvType, rippleOhlcvPeriod))
+def tideAnalysis = new Analysis(assetProfile, tideOhlcvType, tideOhlcvPeriod)
+def waveAnalysis = new Analysis(assetProfile, waveOhlcvType, waveOhlcvPeriod)
+def rippleAnalysis = new Analysis(assetProfile, rippleOhlcvType, rippleOhlcvPeriod)
 log.info("tide.momentum: {}", tideAnalysis.getMomentumScore())
 log.info("wave.momentum: {}", waveAnalysis.getMomentumScore())
 log.info("wave.volatility: {}", waveAnalysis.getVolatilityScore())
@@ -285,10 +311,13 @@ log.info("wave.overbought: {}", waveAnalysis.getOverboughtScore())
 log.info("ripple.momentum: {}", rippleAnalysis.getMomentumScore())
 
 // default position
-def momentum = tideAnalysis.getMomentumScore().getAverage()
+def positionScore = [
+        tideAnalysis.getTrendScore().getAverage(),
+        tideAnalysis.getMomentumScore().getAverage()
+].average() as BigDecimal
 def marginPosition = 1.0 - basePosition
-def positionPerMomentum = (marginPosition/100)
-def position = basePosition + (positionPerMomentum * momentum)
+def positionPerScore = (marginPosition/100)
+def position = basePosition + (positionPerScore * positionScore)
 log.info("position(by momentum): {}", position)
 
 // apply average price to position
@@ -319,7 +348,11 @@ if (waveAnalysis.getVolatilityScore() > 50) {
             // 매수 포지션
             strategyResult = StrategyResult.of(Action.BUY, position, "oversold buy: " + message)
             // filter - 장기 하락 방향인 경우 제외
-            if (tideAnalysis.getDirectionScore() < 25) {
+            if (tideAnalysis.getDirectionScore() < 50) {
+                strategyResult = null
+            }
+            // filter - 장기 과매수 상태인 경우 제외
+            if (tideAnalysis.getOverboughtScore() > 50) {
                 strategyResult = null
             }
         }
@@ -330,7 +363,11 @@ if (waveAnalysis.getVolatilityScore() > 50) {
         if (rippleAnalysis.getMomentumScore() < 25) {
             strategyResult = StrategyResult.of(Action.SELL, position, "overbought sell: " + message)
             // filter - 장기 상승 방향인 경우 제외
-            if (tideAnalysis.getDirectionScore() > 75) {
+            if (tideAnalysis.getDirectionScore() > 50) {
+                strategyResult = null
+            }
+            // filter - 장기 과매도 상태인 경우 제외
+            if (tideAnalysis.getOversoldScore() > 50) {
                 strategyResult = null
             }
         }

@@ -40,7 +40,12 @@ public class SimulatesRestController {
             @RequestParam(value = "favorite", required = false) Boolean favorite,
             @PageableDefault Pageable pageable
     ){
-        Page<Simulate> simulatePage = simulateService.getSimulates(tradeId, status, favorite, pageable);
+        SimulateSearch simulateSearch = SimulateSearch.builder()
+                .tradeId(tradeId)
+                .status(status)
+                .favorite(favorite)
+                .build();
+        Page<Simulate> simulatePage = simulateService.getSimulates(simulateSearch, pageable);
         List<SimulateResponse> simulateResponses = simulatePage.getContent().stream()
                 .map(SimulateResponse::from)
                 .toList();

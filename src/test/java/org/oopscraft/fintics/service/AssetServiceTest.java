@@ -2,14 +2,15 @@ package org.oopscraft.fintics.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.oopscraft.arch4j.core.support.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
-import org.oopscraft.fintics.dao.*;
+import org.oopscraft.fintics.dao.AssetEntity;
+import org.oopscraft.fintics.dao.AssetNewsEntity;
+import org.oopscraft.fintics.dao.AssetOhlcvEntity;
+import org.oopscraft.fintics.dao.AssetOhlcvSplitEntity;
 import org.oopscraft.fintics.model.Asset;
-import org.oopscraft.fintics.model.Indice;
+import org.oopscraft.fintics.model.AssetSearch;
 import org.oopscraft.fintics.model.News;
 import org.oopscraft.fintics.model.Ohlcv;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,17 +20,16 @@ import org.springframework.data.domain.Pageable;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest(classes = FinticsConfiguration.class)
 @RequiredArgsConstructor
@@ -52,7 +52,10 @@ class AssetServiceTest extends CoreTestSupport {
                 .build());
         entityManager.flush();
         // when
-        Page<Asset> assetPage = assetService.getAssets(assetId, null, null, null, null, null, null, null, null, null, PageRequest.of(0, 10));
+        AssetSearch assetSearch = AssetSearch.builder()
+                .assetId(assetId)
+                .build();
+        Page<Asset> assetPage = assetService.getAssets(assetSearch, PageRequest.of(0, 10));
         // then
         assertTrue(assetPage.getContent().stream().anyMatch(it -> Objects.equals(it.getAssetId(), assetId)));
         assertEquals(assetId, assetPage.getContent().get(0).getAssetId());
@@ -196,6 +199,57 @@ class AssetServiceTest extends CoreTestSupport {
         // 액면 병합 전 가격은 액면 분할 비율이 적용된 가격 (1000 -> 10)
         assertEquals(10, assetDailyOhlcvs.get(1).getClosePrice().doubleValue());
     }
+
+
+    @Test
+    void getAssetDailyOhlcvWithAVGOSplit() {
+        // given
+        String assetId = "US.AVGO";
+        // 브로드컴(AVGO) 2024-07-15 10->1 액면 분할
+        entityManager.persist(AssetOhlcvSplitEntity.builder()
+                .assetId(assetId)
+                .dateTime(LocalDateTime.of(2024,7,15, 0, 0, 0))
+                .splitFrom(BigDecimal.valueOf(1))
+                .splitTo(BigDecimal.valueOf(10))
+                .build());
+        // 액면 분할 전 가격 정보
+        entityManager.persist(AssetOhlcvEntity.builder()
+                .assetId(assetId)
+                .dateTime(LocalDate.of(2024, 7, 14).atStartOfDay())
+                .type(Ohlcv.Type.DAILY)
+                .openPrice(BigDecimal.valueOf(1606.34))
+                .highPrice(BigDecimal.valueOf(1614.28))
+                .lowPrice(BigDecimal.valueOf(1598.66))
+                .closePrice(BigDecimal.valueOf(1599.23))
+                .volume(BigDecimal.valueOf(2946))
+                .build());
+        // 액면 분할 후 가격 정보
+        entityManager.persist(AssetOhlcvEntity.builder()
+                .assetId(assetId)
+                .dateTime(LocalDate.of(2024, 7, 15).atStartOfDay())
+                .type(Ohlcv.Type.DAILY)
+                .openPrice(BigDecimal.valueOf(160.634))
+                .highPrice(BigDecimal.valueOf(161.428))
+                .lowPrice(BigDecimal.valueOf(159.866))
+                .closePrice(BigDecimal.valueOf(159.923))
+                .volume(BigDecimal.valueOf(29460))
+                .build());
+        entityManager.flush();
+        // when
+        List<Ohlcv> assetDailyOhlcvs = assetService.getAssetDailyOhlcvs(
+                assetId,
+                LocalDateTime.of(2024,1,1, 0, 0, 0),
+                LocalDateTime.of(2024,12,31, 23, 59, 59),
+                Pageable.unpaged()
+        );
+        // then
+        log.info("assetDailyOhlcvs: {}", assetDailyOhlcvs);
+        // 액면 분할 후 가격은 그대로 보존 (1000)
+        assertEquals(159.923, assetDailyOhlcvs.get(0).getClosePrice().doubleValue());
+        // 액면 분할 전 가격은 액면 분할 비율이 적용된 가격 (1000 -> 10)
+        assertEquals(159.923, assetDailyOhlcvs.get(1).getClosePrice().doubleValue());
+    }
+
 
     @Test
     void getAssetMinuteOhlcvs() {

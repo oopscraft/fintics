@@ -2,10 +2,6 @@ package org.oopscraft.fintics.model;
 
 import lombok.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
 @Data
 @Builder
 @NoArgsConstructor

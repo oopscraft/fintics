@@ -26,8 +26,6 @@ public class TradeService {
 
     private final TradeRepository tradeRepository;
 
-    private final TradeAssetStatusRepository tradeAssetStatusRepository;
-
     private final OrderRepository orderRepository;
 
     private final BrokerService brokerService;

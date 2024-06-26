@@ -6,6 +6,7 @@ import org.oopscraft.arch4j.web.support.PageableUtils;
 import org.oopscraft.fintics.api.v1.dto.BrokerRequest;
 import org.oopscraft.fintics.api.v1.dto.BrokerResponse;
 import org.oopscraft.fintics.model.Broker;
+import org.oopscraft.fintics.model.BrokerSearch;
 import org.oopscraft.fintics.service.BrokerService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,7 +32,10 @@ public class BrokersRestController {
             @RequestParam(value = "brokerName", required = false) String brokerName,
             @PageableDefault Pageable pageable
     ) {
-        Page<Broker> brokerPage = brokerService.getBrokers(brokerName, pageable);
+        BrokerSearch brokerSearch = BrokerSearch.builder()
+                .brokerName(brokerName)
+                .build();
+        Page<Broker> brokerPage = brokerService.getBrokers(brokerSearch, pageable);
         List<BrokerResponse> brokerResponses = brokerPage.getContent().stream()
                 .map(BrokerResponse::from)
                 .toList();
