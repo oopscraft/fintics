@@ -3,41 +3,57 @@ package org.oopscraft.fintics.dao;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.arch4j.core.data.BaseEntity;
-import org.oopscraft.arch4j.core.data.converter.BooleanToYNConverter;
-import org.oopscraft.fintics.model.Ohlcv;
+import org.oopscraft.fintics.model.AssetOhlcv;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
-@MappedSuperclass
+@Entity
+@Table(name = "fintics_ohlcv")
+@IdClass(AssetOhlcvEntity.Pk.class)
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
 @NoArgsConstructor
-@AllArgsConstructor(access = AccessLevel.PROTECTED)
-public abstract class OhlcvEntity extends BaseEntity {
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+public class AssetOhlcvEntity extends BaseEntity {
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class Pk implements Serializable {
+        private String assetId;
+        private AssetOhlcv.Type type;
+        private Instant datetime;
+    }
+
+    @Id
+    @Column(name = "asset_id", length = 32)
+    private String assetId;
 
     @Id
     @Column(name = "type", length = 32)
     @Enumerated(EnumType.STRING)
-    private Ohlcv.Type type;
+    private AssetOhlcv.Type type;
 
     @Id
-    @Column(name = "date_time")
-    private LocalDateTime dateTime;
+    @Column(name = "datetime")
+    private Instant datetime;
 
-    @Column(name = "open_price", scale = 4)
-    private BigDecimal openPrice;
+    @Column(name = "open", scale = 4)
+    private BigDecimal open;
 
-    @Column(name = "high_price", scale = 4)
-    private BigDecimal highPrice;
+    @Column(name = "high", scale = 4)
+    private BigDecimal high;
 
-    @Column(name = "low_price", scale = 4)
-    private BigDecimal lowPrice;
+    @Column(name = "low", scale = 4)
+    private BigDecimal low;
 
-    @Column(name = "close_price", scale = 4)
-    private BigDecimal closePrice;
+    @Column(name = "close", scale = 4)
+    private BigDecimal close;
 
     @Column(name = "volume")
     private BigDecimal volume;

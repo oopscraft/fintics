@@ -6,15 +6,15 @@ import org.oopscraft.fintics.dao.NewsEntity;
 
 import javax.persistence.Converter;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class News {
+public class AssetNews {
 
-    private LocalDateTime dateTime;
+    private Instant datetime;
 
     private String newsId;
 
@@ -35,9 +35,9 @@ public class News {
     @Converter(autoApply = true)
     public static class SentimentConverter extends AbstractEnumConverter<Sentiment> {}
 
-    public static News from(NewsEntity newsEntity) {
-        return News.builder()
-                .dateTime(newsEntity.getDateTime())
+    public static AssetNews from(NewsEntity newsEntity) {
+        return AssetNews.builder()
+                .datetime(newsEntity.getDatetime())
                 .newsId(newsEntity.getNewsId())
                 .newsUrl(newsEntity.getNewsUrl())
                 .title(newsEntity.getTitle())

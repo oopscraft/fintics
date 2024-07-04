@@ -3,26 +3,40 @@ package org.oopscraft.fintics.dao;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.arch4j.core.data.BaseEntity;
-import org.oopscraft.fintics.model.News;
+import org.oopscraft.fintics.model.AssetNews;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Lob;
-import javax.persistence.MappedSuperclass;
+import javax.persistence.*;
+import java.io.Serializable;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
-@MappedSuperclass
+@Entity
+@Table(name = "fintics_asset_news")
+@IdClass(AssetNewsEntity.Pk.class)
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
 @NoArgsConstructor
-@AllArgsConstructor(access = AccessLevel.PROTECTED)
-public class NewsEntity extends BaseEntity {
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+public class AssetNewsEntity extends BaseEntity {
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class Pk implements Serializable {
+        private String assetId;
+        private Instant datetime;
+        private String newsId;
+    }
 
     @Id
-    @Column(name = "date_time")
-    private LocalDateTime dateTime;
+    @Column(name = "asset_id", length = 32)
+    private String assetId;
+
+    @Id
+    @Column(name = "datetime")
+    private Instant datetime;
 
     @Id
     @Column(name = "news_id", length = 32)
@@ -37,7 +51,7 @@ public class NewsEntity extends BaseEntity {
     private String title;
 
     @Column(name = "sentiment", length = 16)
-    private News.Sentiment sentiment;
+    private AssetNews.Sentiment sentiment;
 
     @Column(name = "confidence", scale = 2)
     private BigDecimal confidence;

@@ -1,40 +1,39 @@
 package org.oopscraft.fintics.api.v1.dto;
 
 import lombok.*;
-import lombok.experimental.SuperBuilder;
 import org.oopscraft.fintics.model.Ohlcv;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-public class OhlcvResponse {
+public class AssetOhlcvResponse {
 
     private Ohlcv.Type type;
 
-    private LocalDateTime dateTime;
+    private Instant datetime;
 
-    private BigDecimal openPrice;
+    private BigDecimal open;
 
-    private BigDecimal highPrice;
+    private BigDecimal high;
 
-    private BigDecimal lowPrice;
+    private BigDecimal low;
 
-    private BigDecimal closePrice;
+    private BigDecimal close;
 
     private BigDecimal volume;
 
-    public static OhlcvResponse from(Ohlcv ohlcv) {
-        return OhlcvResponse.builder()
-                .dateTime(ohlcv.getDateTime())
+    public static AssetOhlcvResponse from(Ohlcv ohlcv) {
+        return AssetOhlcvResponse.builder()
+                .datetime(ohlcv.getDatetime())
                 .type(ohlcv.getType())
-                .openPrice(ohlcv.getOpenPrice())
-                .highPrice(ohlcv.getHighPrice())
-                .lowPrice(ohlcv.getLowPrice())
-                .closePrice(ohlcv.getClosePrice())
+                .open(ohlcv.getOpen())
+                .high(ohlcv.getHigh())
+                .low(ohlcv.getLow())
+                .close(ohlcv.getClose())
                 .volume(ohlcv.getVolume())
                 .build();
     }

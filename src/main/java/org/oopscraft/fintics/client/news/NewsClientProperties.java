@@ -1,23 +1,22 @@
-package org.oopscraft.fintics.client.news;
+package org.oopscraft.fintics.client.asset;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import org.oopscraft.fintics.client.ohlcv.OhlcvClient;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.ConstructorBinding;
 
 import java.util.Map;
 import java.util.Optional;
 
-@ConfigurationProperties(prefix = "fintics.news-client")
+@ConfigurationProperties(prefix = "fintics.asset-news-client")
 @ConstructorBinding
 @AllArgsConstructor
 @Getter
 @Builder
-public class NewsClientProperties {
+public class AssetNewsClientProperties {
 
-    private final Class<? extends NewsClient> className;
+    private final Class<? extends AssetNewsClient> className;
 
     private final Map<String, String> properties;
 

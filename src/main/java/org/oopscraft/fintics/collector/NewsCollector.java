@@ -1,22 +1,22 @@
 package org.oopscraft.fintics.collector;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.oopscraft.arch4j.core.data.IdGenerator;
 import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
 import org.oopscraft.fintics.FinticsProperties;
 import org.oopscraft.fintics.client.news.NewsClient;
-import org.oopscraft.fintics.client.ohlcv.OhlcvClient;
-import org.oopscraft.fintics.dao.*;
-import org.oopscraft.fintics.model.*;
-import org.oopscraft.fintics.service.IndiceService;
+import org.oopscraft.fintics.dao.NewsEntity;
+import org.oopscraft.fintics.dao.NewsRepository;
+import org.oopscraft.fintics.dao.TradeEntity;
+import org.oopscraft.fintics.dao.TradeRepository;
+import org.oopscraft.fintics.model.Asset;
+import org.oopscraft.fintics.model.News;
+import org.oopscraft.fintics.model.Trade;
+import org.oopscraft.fintics.model.TradeAsset;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
@@ -24,22 +24,17 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class NewsCollector extends AbstractCollector {
+public class AssetNewsCollector extends AbstractCollector {
 
-    @PersistenceContext
-    private final EntityManager entityManager;
+    private final FinticsProperties finticsProperties;
 
     private final ObjectMapper objectMapper;
 
@@ -47,24 +42,14 @@ public class NewsCollector extends AbstractCollector {
 
     private final TradeRepository tradeRepository;
 
-    private final AssetOhlcvRepository assetOhlcvRepository;
-
-    private final IndiceOhlcvRepository indiceOhlcvRepository;
-
-    private final FinticsProperties finticsProperties;
-
-    private final IndiceService indiceService;
-
     private final NewsClient newsClient;
 
-    private final AssetNewsRepository assetNewsRepository;
-
-    private final IndiceNewsRepository indiceNewsRepository;
+    private final NewsRepository assetNewsRepository;
 
     @Scheduled(initialDelay = 10_000, fixedDelay = 3600_000)
     public void collect() {
         try {
-            log.info("NewsCollector - Start collect news.");
+            log.info("AssetNewsCollector - Start collect news.");
             // asset
             List<TradeEntity> tradeEntities = tradeRepository.findAll();
             for (TradeEntity tradeEntity : tradeEntities) {
@@ -82,17 +67,7 @@ public class NewsCollector extends AbstractCollector {
                     }
                 }
             }
-            // indice
-            List<Indice> indices = indiceService.getIndices();
-            for (Indice indice : indices) {
-                try {
-                    collectIndiceNews(indice);
-                } catch (Exception e) {
-                    log.warn(e.getMessage());
-                    sendSystemAlarm(this.getClass(), String.format("[%s] %s - %s", indice.getIndiceId(), indice.getIndiceName(), e.getMessage()));
-                }
-            }
-            log.info("NewsCollector - End collect news");
+            log.info("AssetNewsCollector - End collect news");
         } catch(Throwable e) {
             log.error(e.getMessage(), e);
             sendSystemAlarm(this.getClass(), e.getMessage());
@@ -101,20 +76,20 @@ public class NewsCollector extends AbstractCollector {
     }
 
     void collectAssetNews(Asset asset) {
-        List<News> assetNewses = distinctNewsesByTitle(newsClient.getAssetNewses(asset));
+        List<News> assetNewses = distinctAssetNewsesByTitle(newsClient.getNewses(asset));
         for (News assetNews : assetNewses) {
             try {
                 String newsId = IdGenerator.md5(assetNews.getNewsUrl());
-                AssetNewsEntity assetNewsEntity = assetNewsRepository.findById(AssetNewsEntity.Pk.builder()
+                NewsEntity assetNewsEntity = assetNewsRepository.findById(NewsEntity.Pk.builder()
                                 .assetId(newsId)
-                                .dateTime(assetNews.getDateTime())
+                                .datetime(assetNews.getDatetime())
                                 .newsId(assetNews.getNewsId())
                                 .build())
                         .orElse(null);
                 if (assetNewsEntity == null) {
-                    assetNewsEntity = AssetNewsEntity.builder()
+                    assetNewsEntity = NewsEntity.builder()
                             .assetId(asset.getAssetId())
-                            .dateTime(assetNews.getDateTime())
+                            .datetime(assetNews.getDatetime())
                             .newsId(newsId)
                             .newsUrl(assetNews.getNewsUrl())
                             .title(assetNews.getTitle())
@@ -123,11 +98,11 @@ public class NewsCollector extends AbstractCollector {
 
                 // analysis
                 if (assetNewsEntity.getSentiment() == null) {
-                    analysisNews(assetNewsEntity);
+                    analysisAssetNews(assetNewsEntity);
                 }
 
                 // save news
-                String unitName = String.format("assetNewsEntity[%s]: {}", asset.getAssetName(), assetNewsEntity.getTitle());
+                String unitName = String.format("assetNewsEntity[%s]: %s", asset.getAssetName(), assetNewsEntity.getTitle());
                 saveEntities(unitName, List.of(assetNewsEntity), transactionManager, assetNewsRepository);
             } catch (Exception e) {
                 log.warn(e.getMessage());
@@ -135,43 +110,8 @@ public class NewsCollector extends AbstractCollector {
         }
     }
 
-    void collectIndiceNews(Indice indice) {
-        List<News> indiceNewses = distinctNewsesByTitle(newsClient.getIndiceNewses(indice));
-        for (News indiceNews : indiceNewses) {
-            try {
-                String newsId = IdGenerator.md5(indiceNews.getNewsUrl());
-                IndiceNewsEntity indiceNewsEntity = indiceNewsRepository.findById(IndiceNewsEntity.Pk.builder()
-                                .indiceId(indice.getIndiceId())
-                                .dateTime(indiceNews.getDateTime())
-                                .newsId(indiceNews.getNewsId())
-                                .build())
-                        .orElse(null);
-                if (indiceNewsEntity == null) {
-                    indiceNewsEntity = IndiceNewsEntity.builder()
-                            .indiceId(indice.getIndiceId())
-                            .dateTime(indiceNews.getDateTime())
-                            .newsId(newsId)
-                            .newsUrl(indiceNews.getNewsUrl())
-                            .title(indiceNews.getTitle())
-                            .build();
-                }
-
-                // analysis
-                if (indiceNewsEntity.getSentiment() == null) {
-                    analysisNews(indiceNewsEntity);
-                }
-
-                // save news
-                String unitName = String.format("indiceNewsEntity[%s]: %s", indice.getIndiceName(), indiceNewsEntity.getTitle());
-                saveEntities(unitName, List.of(indiceNewsEntity), transactionManager, indiceNewsRepository);
-            } catch (Exception e) {
-                log.warn(e.getMessage());
-            }
-        }
-    }
-
-    List<News> distinctNewsesByTitle(List<News> newses) {
-        return new ArrayList<>(newses.stream()
+    List<News> distinctAssetNewsesByTitle(List<News> assetNewses) {
+        return new ArrayList<>(assetNewses.stream()
                 .collect(Collectors.toMap(
                         News::getTitle, // key
                         news -> news,   // value
@@ -180,7 +120,7 @@ public class NewsCollector extends AbstractCollector {
                 .values());
     }
 
-    void analysisNews(NewsEntity newsEntity) {
+    void analysisAssetNews(NewsEntity newsEntity) {
         // config not setting
         if (StringUtils.isBlank(finticsProperties.getAiApiUrl())) {
             return;
@@ -213,5 +153,6 @@ public class NewsCollector extends AbstractCollector {
             log.warn(e.getMessage());
         }
     }
+
 
 }

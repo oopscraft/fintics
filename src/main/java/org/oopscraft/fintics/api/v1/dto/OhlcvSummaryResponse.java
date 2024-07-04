@@ -3,8 +3,7 @@ package org.oopscraft.fintics.api.v1.dto;
 import lombok.*;
 import org.oopscraft.fintics.model.OhlcvSummary;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,7 +11,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class OhlcvSummaryResponse {
+public class AssetOhlcvSummaryResponse {
 
     private String id;
 
@@ -20,30 +19,30 @@ public class OhlcvSummaryResponse {
 
     private Long dailyCount;
 
-    private LocalDateTime dailyMinDateTime;
+    private Instant dailyMinDatetime;
 
-    private LocalDateTime dailyMaxDateTime;
+    private Instant dailyMaxDatetime;
 
     private Long minuteCount;
 
-    private LocalDateTime minuteMinDateTime;
+    private Instant minuteMinDatetime;
 
-    private LocalDateTime minuteMaxDateTime;
+    private Instant minuteMaxDatetime;
 
     @Builder.Default
     @Setter
     private List<OhlcvStatisticResponse> ohlcvStatistics = new ArrayList<>();
 
-    public static OhlcvSummaryResponse from(OhlcvSummary ohlcvSummary) {
-        return OhlcvSummaryResponse.builder()
+    public static AssetOhlcvSummaryResponse from(OhlcvSummary ohlcvSummary) {
+        return AssetOhlcvSummaryResponse.builder()
                 .id(ohlcvSummary.getId())
                 .name(ohlcvSummary.getName())
                 .dailyCount(ohlcvSummary.getDailyCount())
-                .dailyMinDateTime(ohlcvSummary.getDailyMinDateTime())
-                .dailyMaxDateTime(ohlcvSummary.getDailyMaxDateTime())
+                .dailyMinDatetime(ohlcvSummary.getDailyMinDatetime())
+                .dailyMaxDatetime(ohlcvSummary.getDailyMaxDatetime())
                 .minuteCount(ohlcvSummary.getMinuteCount())
-                .minuteMinDateTime(ohlcvSummary.getMinuteMinDateTime())
-                .minuteMaxDateTime(ohlcvSummary.getMinuteMaxDateTime())
+                .minuteMinDatetime(ohlcvSummary.getMinuteMinDatetime())
+                .minuteMaxDatetime(ohlcvSummary.getMinuteMaxDatetime())
                 .ohlcvStatistics(ohlcvSummary.getOhlcvStatistics().stream()
                         .map(OhlcvStatisticResponse::from)
                         .toList())
@@ -55,7 +54,7 @@ public class OhlcvSummaryResponse {
     @NoArgsConstructor
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public static class OhlcvStatisticResponse {
-        private LocalDate date;
+        private Instant date;
         private Long count;
 
         public static OhlcvStatisticResponse from(OhlcvSummary.OhlcvStatistic ohlcvStatistic) {

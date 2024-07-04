@@ -7,25 +7,27 @@ import org.oopscraft.fintics.dao.OhlcvEntity;
 
 import javax.persistence.Converter;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Data
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class Ohlcv {
+public class AssetOhlcv {
+
+    private String assetId;
 
     private Type type;
 
-    private LocalDateTime dateTime;
+    private Instant datetime;
 
-    private BigDecimal openPrice;
+    private BigDecimal open;
 
-    private BigDecimal highPrice;
+    private BigDecimal high;
 
-    private BigDecimal lowPrice;
+    private BigDecimal low;
 
-    private BigDecimal closePrice;
+    private BigDecimal close;
 
     private BigDecimal volume;
 
@@ -34,26 +36,28 @@ public class Ohlcv {
     @Converter(autoApply = true)
     public static class TypeConverter extends AbstractEnumConverter<Type> {}
 
-    public static Ohlcv of(LocalDateTime dateTime, double openPrice, double highPrice, double lowPrice, double closePrice, double volume) {
-        return Ohlcv.builder()
-                .dateTime(dateTime)
-                .openPrice(BigDecimal.valueOf(openPrice))
-                .highPrice(BigDecimal.valueOf(highPrice))
-                .lowPrice(BigDecimal.valueOf(lowPrice))
-                .closePrice(BigDecimal.valueOf(closePrice))
+    public static AssetOhlcv of(String assetId, Instant dateTime, double open, double high, double low, double close, double volume) {
+        return AssetOhlcv.builder()
+                .assetId(assetId)
+                .datetime(dateTime)
+                .open(BigDecimal.valueOf(open))
+                .high(BigDecimal.valueOf(high))
+                .low(BigDecimal.valueOf(low))
+                .close(BigDecimal.valueOf(close))
                 .volume(BigDecimal.valueOf(volume))
                 .build();
     }
 
-    public static Ohlcv from(OhlcvEntity ohlcvEntity) {
-        return Ohlcv.builder()
-                .type(ohlcvEntity.getType())
-                .dateTime(ohlcvEntity.getDateTime())
-                .openPrice(ohlcvEntity.getOpenPrice())
-                .highPrice(ohlcvEntity.getHighPrice())
-                .lowPrice(ohlcvEntity.getLowPrice())
-                .closePrice(ohlcvEntity.getClosePrice())
-                .volume(ohlcvEntity.getVolume())
+    public static AssetOhlcv from(OhlcvEntity assetOhlcvEntity) {
+        return AssetOhlcv.builder()
+                .assetId(assetOhlcvEntity.getAssetId())
+                .type(assetOhlcvEntity.getType())
+                .datetime(assetOhlcvEntity.getDatetime())
+                .open(assetOhlcvEntity.getOpen())
+                .high(assetOhlcvEntity.getHigh())
+                .low(assetOhlcvEntity.getLow())
+                .close(assetOhlcvEntity.getClose())
+                .volume(assetOhlcvEntity.getVolume())
                 .build();
     }
 

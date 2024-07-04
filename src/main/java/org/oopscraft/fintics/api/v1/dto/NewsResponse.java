@@ -4,15 +4,15 @@ import lombok.*;
 import org.oopscraft.fintics.model.News;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class NewsResponse {
+public class AssetNewsResponse {
 
-    private LocalDateTime dateTime;
+    private Instant datetime;
 
     private String newsId;
 
@@ -26,15 +26,15 @@ public class NewsResponse {
 
     private String reason;
 
-    public static NewsResponse from(News news) {
-        return NewsResponse.builder()
-                .dateTime(news.getDateTime())
-                .newsId(news.getNewsId())
-                .newsUrl(news.getNewsUrl())
-                .title(news.getTitle())
-                .sentiment(news.getSentiment())
-                .confidence(news.getConfidence())
-                .reason(news.getReason())
+    public static AssetNewsResponse from(News assetNews) {
+        return AssetNewsResponse.builder()
+                .datetime(assetNews.getDatetime())
+                .newsId(assetNews.getNewsId())
+                .newsUrl(assetNews.getNewsUrl())
+                .title(assetNews.getTitle())
+                .sentiment(assetNews.getSentiment())
+                .confidence(assetNews.getConfidence())
+                .reason(assetNews.getReason())
                 .build();
     }
 

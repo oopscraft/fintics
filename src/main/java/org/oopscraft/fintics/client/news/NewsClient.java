@@ -1,24 +1,20 @@
-package org.oopscraft.fintics.client.news;
+package org.oopscraft.fintics.client.asset;
 
 import lombok.Getter;
-import org.oopscraft.fintics.client.ohlcv.OhlcvClientProperties;
 import org.oopscraft.fintics.model.Asset;
-import org.oopscraft.fintics.model.Indice;
-import org.oopscraft.fintics.model.News;
+import org.oopscraft.fintics.model.AssetNews;
 
 import java.util.List;
 
-public abstract class NewsClient {
+public abstract class AssetNewsClient {
 
     @Getter
-    private final NewsClientProperties newsClientProperties;
+    private final AssetNewsClientProperties newsClientProperties;
 
-    public NewsClient(NewsClientProperties newsClientProperties) {
+    public AssetNewsClient(AssetNewsClientProperties newsClientProperties) {
         this.newsClientProperties = newsClientProperties;
     }
 
-    public abstract List<News> getAssetNewses(Asset asset);
-
-    public abstract List<News> getIndiceNewses(Indice indice);
+    public abstract List<AssetNews> getNewses(Asset asset);
 
 }

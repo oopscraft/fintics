@@ -3,8 +3,7 @@ package org.oopscraft.fintics.api.v1.dto;
 import lombok.*;
 import org.oopscraft.fintics.model.NewsSummary;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,7 +11,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class NewsSummaryResponse {
+public class AssetNewsSummaryResponse {
 
     private String id;
 
@@ -20,23 +19,23 @@ public class NewsSummaryResponse {
 
     private Long totalCount;
 
-    private LocalDateTime maxDateTime;
+    private Instant maxDatetime;
 
-    private LocalDateTime minDateTime;
+    private Instant minDatetime;
 
     @Builder.Default
     @Setter
-    private List<NewsSummaryResponse.NewsStatisticResponse> newsStatistics = new ArrayList<>();
+    private List<AssetNewsSummaryResponse.NewsStatisticResponse> newsStatistics = new ArrayList<>();
 
-    public static NewsSummaryResponse from(NewsSummary newsSummary) {
-        return NewsSummaryResponse.builder()
+    public static AssetNewsSummaryResponse from(NewsSummary newsSummary) {
+        return AssetNewsSummaryResponse.builder()
                 .id(newsSummary.getId())
                 .name(newsSummary.getName())
                 .totalCount(newsSummary.getTotalCount())
-                .maxDateTime(newsSummary.getMaxDateTime())
-                .minDateTime(newsSummary.getMinDateTime())
+                .maxDatetime(newsSummary.getMaxDatetime())
+                .minDatetime(newsSummary.getMinDatetime())
                 .newsStatistics(newsSummary.getNewsStatisticList().stream()
-                        .map(NewsSummaryResponse.NewsStatisticResponse::from)
+                        .map(AssetNewsSummaryResponse.NewsStatisticResponse::from)
                         .toList())
                 .build();
     }
@@ -46,11 +45,12 @@ public class NewsSummaryResponse {
     @NoArgsConstructor
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public static class NewsStatisticResponse {
-        private LocalDate date;
+
+        private Instant date;
         private Long count;
 
-        public static NewsSummaryResponse.NewsStatisticResponse from(NewsSummary.NewsStatistic newsStatistic) {
-            return NewsSummaryResponse.NewsStatisticResponse.builder()
+        public static AssetNewsSummaryResponse.NewsStatisticResponse from(NewsSummary.NewsStatistic newsStatistic) {
+            return AssetNewsSummaryResponse.NewsStatisticResponse.builder()
                     .date(newsStatistic.getDate())
                     .count(newsStatistic.getCount())
                     .build();

@@ -4,8 +4,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.io.Serializable;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,7 +12,7 @@ import java.util.List;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class OhlcvSummary implements Serializable {
+public class AssetOhlcvSummary implements Serializable {
 
     private String id;
 
@@ -21,15 +20,15 @@ public class OhlcvSummary implements Serializable {
 
     private Long dailyCount;
 
-    private LocalDateTime dailyMinDateTime;
+    private Instant dailyMinDatetime;
 
-    private LocalDateTime dailyMaxDateTime;
+    private Instant dailyMaxDatetime;
 
     private Long minuteCount;
 
-    private LocalDateTime minuteMinDateTime;
+    private Instant minuteMinDatetime;
 
-    private LocalDateTime minuteMaxDateTime;
+    private Instant minuteMaxDatetime;
 
     @Builder.Default
     @Setter
@@ -40,7 +39,7 @@ public class OhlcvSummary implements Serializable {
     @NoArgsConstructor
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public static class OhlcvStatistic implements Serializable {
-        private LocalDate date;
+        private Instant date;
         private Long count;
     }
 
