@@ -23,9 +23,9 @@ public class CciCalculator extends IndicatorCalculator<CciContext, Cci> {
 
         // typical price
         List<BigDecimal> typicalPrices = series.stream()
-                .map(ohlcv -> ohlcv.getHighPrice()
-                        .add(ohlcv.getLowPrice())
-                        .add(ohlcv.getClosePrice())
+                .map(ohlcv -> ohlcv.getHigh()
+                        .add(ohlcv.getLow())
+                        .add(ohlcv.getClose())
                         .divide(BigDecimal.valueOf(3), mathContext))
                 .toList();
 

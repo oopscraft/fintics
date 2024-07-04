@@ -1,5 +1,7 @@
 package org.oopscraft.fintics.api.v1;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.oopscraft.arch4j.web.support.PageableUtils;
@@ -28,10 +30,21 @@ public class StrategiesRestController {
 
     private final StrategyService strategyService;
 
+    /**
+     * gets strategies
+     * @param strategyName strategy name
+     * @param pageable pageable
+     * @return list of strategy
+     */
     @GetMapping
+    @Operation(description = "gets strategies")
     public ResponseEntity<List<StrategyResponse>> getStrategies(
-            @RequestParam(value = "strategyName", required = false) String strategyName,
-            @PageableDefault Pageable pageable
+            @RequestParam(value = "strategyName", required = false)
+            @Parameter(description = "strategy name")
+                    String strategyName,
+            @PageableDefault
+            @Parameter(hidden = true)
+                    Pageable pageable
     ) {
         StrategySearch strategySearch = StrategySearch.builder()
                 .strategyName(strategyName)
@@ -46,18 +59,38 @@ public class StrategiesRestController {
                 .body(strategyResponses);
     }
 
+    /**
+     * gets specified strategy
+     * @param strategyId strategy id
+     * @return strategy info
+     */
     @GetMapping("{strategyId}")
-    public ResponseEntity<StrategyResponse> getStrategy(@PathVariable("strategyId")String strategyId) {
+    @Operation(description = "gets specified strategy")
+    public ResponseEntity<StrategyResponse> getStrategy(
+            @PathVariable("strategyId")
+            @Parameter(description = "strategy id")
+                    String strategyId
+    ) {
         StrategyResponse ruleResponse = strategyService.getStrategy(strategyId)
                 .map(StrategyResponse::from)
                 .orElseThrow();
         return ResponseEntity.ok(ruleResponse);
     }
 
+    /**
+     * creates strategy
+     * @param strategyRequest strategy request
+     * @return created strategy
+     */
     @PostMapping
     @PreAuthorize("hasAuthority('API_STRATEGIES_EDIT')")
     @Transactional
-    public ResponseEntity<StrategyResponse> createStrategy(@RequestBody StrategyRequest strategyRequest) {
+    @Operation(description = "gets specified strategy")
+    public ResponseEntity<StrategyResponse> createStrategy(
+            @RequestBody
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "strategy request")
+                    StrategyRequest strategyRequest
+    ) {
         Strategy strategy = Strategy.builder()
                 .strategyName(strategyRequest.getStrategyName())
                 .language(strategyRequest.getLanguage())
@@ -68,10 +101,24 @@ public class StrategiesRestController {
         return ResponseEntity.ok(StrategyResponse.from(savedStrategy));
     }
 
+    /**
+     * modifies strategy
+     * @param strategyId strategy id
+     * @param strategyRequest strategy info
+     * @return changed strategy info
+     */
     @PutMapping("{strategyId}")
     @PreAuthorize("hasAuthority('API_STRATEGIES_EDIT')")
     @Transactional
-    public ResponseEntity<StrategyResponse> modifyStrategy(@PathVariable("strategyId")String strategyId, @RequestBody StrategyRequest strategyRequest) {
+    @Operation(description = "modifies strategy")
+    public ResponseEntity<StrategyResponse> modifyStrategy(
+            @PathVariable("strategyId")
+            @Parameter(description = "strategy id")
+                    String strategyId,
+            @RequestBody
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "strategy request")
+                    StrategyRequest strategyRequest
+    ) {
         Strategy strategy = strategyService.getStrategy(strategyId).orElseThrow();
         strategy.setStrategyName(strategyRequest.getStrategyName());
         strategy.setLanguage(strategyRequest.getLanguage());
@@ -81,10 +128,19 @@ public class StrategiesRestController {
         return ResponseEntity.ok(StrategyResponse.from(savedStrategy));
     }
 
+    /**
+     * deletes strategy
+     * @param strategyId strategy id
+     */
     @DeleteMapping("{strategyId}")
     @PreAuthorize("hasAuthority('API_STRATEGIES_EDIT')")
     @Transactional
-    public void deleteStrategy(@PathVariable("strategyId") String strategyId) {
+    @Operation(description = "deletes strategy")
+    public void deleteStrategy(
+            @PathVariable("strategyId")
+            @Parameter(description = "strategy id")
+                    String strategyId
+    ) {
         strategyService.deleteStrategy(strategyId);
     }
 

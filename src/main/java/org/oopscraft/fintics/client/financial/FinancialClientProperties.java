@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.client.asset;
+package org.oopscraft.fintics.client.financial;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,9 +12,9 @@ import java.util.Optional;
 @ConstructorBinding
 @AllArgsConstructor
 @Getter
-public class AssetFinancialClientProperties {
+public class FinancialClientProperties {
 
-    private Class<? extends AssetFinancialClient> className;
+    private Class<? extends FinancialClient> className;
 
     private Map<String, String> properties;
 

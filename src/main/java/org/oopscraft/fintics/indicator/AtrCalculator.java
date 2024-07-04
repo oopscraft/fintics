@@ -17,9 +17,9 @@ public class AtrCalculator extends IndicatorCalculator<AtrContext, Atr> {
         // tr
         List<BigDecimal> trs = new ArrayList<>();
         for(int i = 0; i < series.size(); i ++ ) {
-            BigDecimal high = series.get(i).getHighPrice();
-            BigDecimal low = series.get(i).getLowPrice();
-            BigDecimal previousClose = series.get(Math.max(i-1,0)).getClosePrice();
+            BigDecimal high = series.get(i).getHigh();
+            BigDecimal low = series.get(i).getLow();
+            BigDecimal previousClose = series.get(Math.max(i-1,0)).getClose();
             BigDecimal hl = high.subtract(low);
             BigDecimal hc = high.subtract(previousClose);
             BigDecimal cl = previousClose.subtract(low);

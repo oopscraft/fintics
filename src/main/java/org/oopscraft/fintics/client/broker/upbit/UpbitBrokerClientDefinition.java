@@ -4,6 +4,7 @@ import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.client.broker.BrokerClientDefinition;
 import org.springframework.stereotype.Component;
 
+import java.time.ZoneId;
 import java.util.StringJoiner;
 
 @Component
@@ -36,6 +37,11 @@ public class UpbitBrokerClientDefinition implements BrokerClientDefinition {
     @Override
     public String getMarket() {
         return "UPBIT";
+    }
+
+    @Override
+    public ZoneId getTimezone() {
+        return ZoneId.of("Asia/Seoul");
     }
 
 }

@@ -10,6 +10,7 @@ import org.oopscraft.fintics.model.News;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -18,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @SpringBootTest(classes = FinticsConfiguration.class)
 @RequiredArgsConstructor
 @Slf4j
-class AssetNewsCollectorTest extends CoreTestSupport {
+class NewsCollectorTest extends CoreTestSupport {
 
     private final NewsCollector newsCollector;
 
@@ -28,12 +29,12 @@ class AssetNewsCollectorTest extends CoreTestSupport {
         // given
         List<News> newses = Stream.of("Title1", "Title1", "Title2")
                 .map(title -> News.builder()
-                        .datetime(Instant.now())
+                        .dateTime(LocalDateTime.now())
                         .title(title)
                         .build())
                 .toList();
         // when
-        List<News> distinctNewses = newsCollector.distinctAssetNewsesByTitle(newses);
+        List<News> distinctNewses = newsCollector.distinctNewsesByTitle(newses);
         // then
         assertEquals(2, distinctNewses.size());
     }

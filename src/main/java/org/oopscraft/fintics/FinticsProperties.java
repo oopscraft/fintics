@@ -16,8 +16,6 @@ public final class FinticsProperties {
 
     private final String aiApiUrl;
 
-    private final Integer ohlcvRetentionMonths;
-
-    private final Integer newsRetentionMonths;
+    private final Integer dataRetentionMonths;
 
 }

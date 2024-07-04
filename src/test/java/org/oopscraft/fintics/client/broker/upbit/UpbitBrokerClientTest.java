@@ -59,7 +59,7 @@ class UpbitBrokerClientTest {
         LocalDateTime toDateTime = LocalDateTime.now();
 
         // when
-        List<Ohlcv> minuteOhlcvs = getUpbitTradeClient().getMinuteOhlcvs(tradeAsset, LocalDateTime.now());
+        List<Ohlcv> minuteOhlcvs = getUpbitTradeClient().getMinuteOhlcvs(tradeAsset);
 
         // then
         log.info("minuteOhlcvs:{}", minuteOhlcvs);
@@ -74,7 +74,7 @@ class UpbitBrokerClientTest {
         LocalDate toDate = LocalDate.now();
 
         // when
-        List<Ohlcv> dailyOhlcvs = getUpbitTradeClient().getDailyOhlcvs(tradeAsset, LocalDateTime.now());
+        List<Ohlcv> dailyOhlcvs = getUpbitTradeClient().getDailyOhlcvs(tradeAsset);
 
         // then
         log.info("dailyOhlcvs:{}", dailyOhlcvs);

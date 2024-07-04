@@ -28,14 +28,14 @@ public class StochasticSlowCalculator extends IndicatorCalculator<StochasticSlow
                     i + 1
             );
             BigDecimal high = periodSeries.stream()
-                    .map(Ohlcv::getHighPrice)
+                    .map(Ohlcv::getHigh)
                     .max(BigDecimal::compareTo)
                     .get();
             BigDecimal low = periodSeries.stream()
-                    .map(Ohlcv::getLowPrice)
+                    .map(Ohlcv::getLow)
                     .min(BigDecimal::compareTo)
                     .get();
-            BigDecimal close = series.get(i).getClosePrice();
+            BigDecimal close = series.get(i).getClose();
 
             BigDecimal rawK = BigDecimal.valueOf(50);   // neutral
             if(high.compareTo(low) != 0) {

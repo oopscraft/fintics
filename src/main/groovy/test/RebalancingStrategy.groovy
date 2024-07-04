@@ -1,4 +1,8 @@
 import org.oopscraft.fintics.model.Ohlcv
+import org.oopscraft.fintics.model.Ohlcv
+import org.oopscraft.fintics.model.Ohlcv
+import org.oopscraft.fintics.model.Ohlcv
+import org.oopscraft.fintics.model.Ohlcv
 import org.oopscraft.fintics.model.StrategyResult
 import org.oopscraft.fintics.model.StrategyResult.Action
 import org.oopscraft.fintics.trade.Tools
@@ -87,7 +91,7 @@ class Analysis implements Analyzable {
         // macd
         score.macdValue = macd.value > 0 ? 100 : 0
         // bollinger band
-        score.bollingerBandPriceOverMiddle = ohlcv.closePrice > bollingerBand.middle ? 100 : 0
+        score.bollingerBandPriceOverMiddle = ohlcv.getClose > bollingerBand.middle ? 100 : 0
         // return
         return score
     }

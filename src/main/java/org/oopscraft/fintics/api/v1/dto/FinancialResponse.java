@@ -9,7 +9,7 @@ import java.time.Instant;
 
 @Builder
 @Getter
-public class AssetFinancialResponse {
+public class FinancialResponse {
 
     private String assetId;
 
@@ -35,20 +35,25 @@ public class AssetFinancialResponse {
 
     private BigDecimal dividendYield;
 
-    public static AssetFinancialResponse from(Financial assetFinancial) {
-        return AssetFinancialResponse.builder()
-                .assetId(assetFinancial.getAssetId())
-                .datetime(assetFinancial.getDatetime())
-                .issuedShares(assetFinancial.getIssuedShares())
-                .totalAssets(assetFinancial.getTotalAssets())
-                .totalEquity(assetFinancial.getTotalEquity())
-                .netIncome(assetFinancial.getNetIncome())
-                .eps(assetFinancial.getEps())
-                .per(assetFinancial.getPer())
-                .roe(assetFinancial.getRoe())
-                .roa(assetFinancial.getRoa())
-                .ebitda(assetFinancial.getEbitda())
-                .dividendYield(assetFinancial.getDividendYield())
+    /**
+     * factory method financial to financial response
+     * @param financial financial model
+     * @return financial response
+     */
+    public static FinancialResponse from(Financial financial) {
+        return FinancialResponse.builder()
+                .assetId(financial.getAssetId())
+                .datetime(financial.getDatetime())
+                .issuedShares(financial.getIssuedShares())
+                .totalAssets(financial.getTotalAssets())
+                .totalEquity(financial.getTotalEquity())
+                .netIncome(financial.getNetIncome())
+                .eps(financial.getEps())
+                .per(financial.getPer())
+                .roe(financial.getRoe())
+                .roa(financial.getRoa())
+                .ebitda(financial.getEbitda())
+                .dividendYield(financial.getDividendYield())
                 .build();
     }
 

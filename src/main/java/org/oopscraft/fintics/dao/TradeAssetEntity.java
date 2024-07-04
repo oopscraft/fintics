@@ -3,7 +3,7 @@ package org.oopscraft.fintics.dao;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.arch4j.core.data.BaseEntity;
-import org.oopscraft.arch4j.core.data.converter.BooleanToYNConverter;
+import org.oopscraft.arch4j.core.data.converter.BooleanConverter;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -36,7 +36,7 @@ public class TradeAssetEntity extends BaseEntity {
     private Integer sort;
 
     @Column(name = "enabled", length = 1)
-    @Convert(converter = BooleanToYNConverter.class)
+    @Convert(converter = BooleanConverter.class)
     private boolean enabled;
 
     @Column(name = "holding_weight")

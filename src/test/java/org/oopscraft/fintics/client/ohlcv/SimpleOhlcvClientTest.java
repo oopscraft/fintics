@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.client.asset;
+package org.oopscraft.fintics.client.ohlcv;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -8,17 +8,12 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.oopscraft.arch4j.core.support.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
-import org.oopscraft.fintics.client.ohlcv.OhlcvClientProperties;
-import org.oopscraft.fintics.client.ohlcv.SimpleOhlcvClient;
 import org.oopscraft.fintics.dao.AssetEntity;
 import org.oopscraft.fintics.model.Asset;
 import org.oopscraft.fintics.model.Ohlcv;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -28,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @SpringBootTest(classes = FinticsConfiguration.class)
 @RequiredArgsConstructor
 @Slf4j
-class SimpleAssetOhlcvClientTest extends CoreTestSupport {
+class SimpleOhlcvClientTest extends CoreTestSupport {
 
     private final OhlcvClientProperties ohlcvClientProperties;
 
@@ -92,132 +87,40 @@ class SimpleAssetOhlcvClientTest extends CoreTestSupport {
                 .exchange(exchange)
                 .build();
         saveAsset(asset);
-        Instant datetimeFrom = Instant.now().minus(30, ChronoUnit.DAYS);
-        Instant datetimeTo = Instant.now();
+        LocalDateTime dateTimeFrom = LocalDateTime.now().minusDays(30);
+        LocalDateTime dateTimeTo = LocalDateTime.now();
 
         // when
-        List<Ohlcv> ohlcvs = getSimpleOhlcvClient().getOhlcvs(asset, Ohlcv.Type.MINUTE, datetimeFrom, datetimeTo);
+        List<Ohlcv> ohlcvs = getSimpleOhlcvClient().getOhlcvs(asset, Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo);
 
         // then
         log.debug("ohlcvs.size():{}", ohlcvs.size());
         assertTrue(ohlcvs.size() >= 60 * 4 * 15);
         Ohlcv firstOhlcv = ohlcvs.get(0);
         Ohlcv lastOhlcv = ohlcvs.get(ohlcvs.size()-1);
-        assertTrue(firstOhlcv.getDatetime().isBefore(datetimeTo));
-        assertTrue(lastOhlcv.getDatetime().isAfter(datetimeFrom));
+        assertTrue(firstOhlcv.getDateTime().isBefore(dateTimeTo));
+        assertTrue(lastOhlcv.getDateTime().isAfter(dateTimeFrom));
     }
 
     @ParameterizedTest
     @MethodSource("getAssetInfos")
-    void getMinuteOhlcvAcross30DaysAgo(String assetId, String exchange) {
+    void getDailyOhlcvs(String assetId, String exchange) {
         // given
         Asset asset = Asset.builder()
                 .assetId(assetId)
                 .exchange(exchange)
                 .build();
         saveAsset(asset);
-        Instant datetimeFrom = Instant.now().minus(60, ChronoUnit.DAYS);
-        Instant dateTimeTo = Instant.now().minus(15, ChronoUnit.DAYS);
+        LocalDateTime dateTimeFrom = LocalDateTime.now()
+                .minusMonths(11);
+        LocalDateTime dateTimeTo = LocalDateTime.now();
 
         // when
-        List<Ohlcv> ohlcvs = getSimpleOhlcvClient().getOhlcvs(asset, Ohlcv.Type.MINUTE, datetimeFrom, dateTimeTo);
-
-        // then
-        log.debug("ohlcvs.size():{}", ohlcvs.size());
-        assertTrue(ohlcvs.size() >= 60 * 4 * 7);
-        Ohlcv firstOhlcv = ohlcvs.get(0);
-        Ohlcv lastOhlcv = ohlcvs.get(ohlcvs.size()-1);
-        assertTrue(firstOhlcv.getDatetime().isBefore(dateTimeTo));
-        assertTrue(lastOhlcv.getDatetime().isAfter(datetimeFrom));
-    }
-
-    @ParameterizedTest
-    @MethodSource("getAssetInfos")
-    void getMinuteOhlcvsBefore30DaysAgo(String assetId, String exchange) {
-        // given
-        Asset asset = Asset.builder()
-                .assetId(assetId)
-                .exchange(exchange)
-                .build();
-        saveAsset(asset);
-        Instant datetimeFrom = Instant.now().minus(60, ChronoUnit.DAYS);
-        Instant datetimeTo = Instant.now().minus(30, ChronoUnit.DAYS);
-        // when
-        List<Ohlcv> ohlcvs = getSimpleOhlcvClient().getOhlcvs(asset, Ohlcv.Type.MINUTE, datetimeFrom, datetimeTo);
-
-        // then
-        log.debug("ohlcvs.size():{}", ohlcvs.size());
-        assertTrue(ohlcvs.size() < 1);
-    }
-
-    @ParameterizedTest
-    @MethodSource("getAssetInfos")
-    void getDailyOhlcvsAfter1YearsAgo(String assetId, String exchange) {
-        // given
-        Asset asset = Asset.builder()
-                .assetId(assetId)
-                .exchange(exchange)
-                .build();
-        saveAsset(asset);
-        Instant datetimeFrom = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC)
-                .minusMonths(11)
-                .toInstant(ZoneOffset.UTC);
-        Instant datetimeTo = Instant.now();
-
-        // when
-        List<Ohlcv> ohlcvs = getSimpleOhlcvClient().getOhlcvs(asset, Ohlcv.Type.DAILY, datetimeFrom, datetimeTo);
+        List<Ohlcv> ohlcvs = getSimpleOhlcvClient().getOhlcvs(asset, Ohlcv.Type.DAILY, dateTimeFrom, dateTimeTo);
 
         // then
         log.debug("ohlcvs.size():{}", ohlcvs.size());
         assertTrue(ohlcvs.size() > 0);
-    }
-
-    @ParameterizedTest
-    @MethodSource("getAssetInfos")
-    void getDailyOhlcvAcross1YearsAgo(String assetId, String exchange) {
-        // given
-        Asset asset = Asset.builder()
-                .assetId(assetId)
-                .exchange(exchange)
-                .build();
-        saveAsset(asset);
-        Instant datetimeFrom = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC)
-                .minusYears(2)
-                .toInstant(ZoneOffset.UTC);
-        Instant datetimeTo = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC)
-                .minusMonths(6)
-                .toInstant(ZoneOffset.UTC);
-
-        // when
-        List<Ohlcv> ohlcvs = getSimpleOhlcvClient().getOhlcvs(asset, Ohlcv.Type.DAILY, datetimeFrom, datetimeTo);
-
-        // then
-        log.debug("ohlcvs.size():{}", ohlcvs.size());
-        assertTrue(ohlcvs.size() > 0);
-    }
-
-    @ParameterizedTest
-    @MethodSource("getAssetInfos")
-    void getAssetDailyOhlcvsBefore1YearsAgo(String assetId, String exchange) {
-        // given
-        Asset asset = Asset.builder()
-                .assetId(assetId)
-                .exchange(exchange)
-                .build();
-        saveAsset(asset);
-        Instant datetimeFrom = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC)
-                .minusYears(2)
-                .toInstant(ZoneOffset.UTC);
-        Instant datetimeTo = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC)
-                .minusYears(1)
-                .toInstant(ZoneOffset.UTC);
-
-        // when
-        List<Ohlcv> ohlcvs = getSimpleOhlcvClient().getOhlcvs(asset, Ohlcv.Type.DAILY, datetimeFrom, datetimeTo);
-
-        // then
-        log.debug("ohlcvs.size():{}", ohlcvs.size());
-        assertTrue(ohlcvs.size() < 1);
     }
 
 }

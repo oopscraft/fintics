@@ -14,6 +14,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 
+/**
+ * Tools for strategy script
+ */
 public class Tools {
 
     /**

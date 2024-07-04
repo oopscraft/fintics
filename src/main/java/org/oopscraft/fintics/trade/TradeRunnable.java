@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.client.broker.BrokerClientFactory;
-import org.oopscraft.fintics.client.indice.IndiceClient;
 import org.oopscraft.fintics.model.Broker;
 import org.oopscraft.fintics.model.Strategy;
 import org.oopscraft.fintics.model.Trade;
@@ -19,7 +18,9 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 public class TradeRunnable implements Runnable {
 
@@ -36,8 +37,6 @@ public class TradeRunnable implements Runnable {
     private final BrokerService brokerService;
 
     private final TradeExecutor tradeExecutor;
-
-    private final IndiceClient indiceClient;
 
     private final BrokerClientFactory brokerClientFactory;
 
@@ -62,7 +61,6 @@ public class TradeRunnable implements Runnable {
         StrategyService strategyService,
         BrokerService brokerService,
         TradeExecutor tradeExecutor,
-        IndiceClient indiceClient,
         BrokerClientFactory brokerClientFactory,
         StatusHandlerFactory statusHandlerFactory,
         PlatformTransactionManager transactionManager
@@ -73,7 +71,6 @@ public class TradeRunnable implements Runnable {
         this.strategyService = strategyService;
         this.brokerService = brokerService;
         this.tradeExecutor = tradeExecutor;
-        this.indiceClient = indiceClient;
         this.brokerClientFactory = brokerClientFactory;
         this.statusHandlerFactory = statusHandlerFactory;
         this.transactionManager = transactionManager;
@@ -111,12 +108,15 @@ public class TradeRunnable implements Runnable {
                 transactionStatus = transactionManager.getTransaction(transactionDefinition);
 
                 // call trade executor
-                LocalDateTime dateTime = LocalDateTime.now();
                 Trade trade = tradeService.getTrade(tradeId).orElseThrow();
                 Strategy strategy = strategyService.getStrategy(trade.getStrategyId()).orElseThrow();
                 Broker broker = brokerService.getBroker(trade.getBrokerId()).orElseThrow();
                 BrokerClient brokerClient = brokerClientFactory.getObject(broker);
-                tradeExecutor.execute(trade, strategy, dateTime, indiceClient, brokerClient);
+                ZoneId timezone = brokerClient.getDefinition().getTimezone();
+                LocalDateTime dateTime = Instant.now()
+                        .atZone(timezone)
+                        .toLocalDateTime();
+                tradeExecutor.execute(trade, strategy, dateTime, brokerClient);
 
                 // end transaction
                 transactionManager.commit(transactionStatus);

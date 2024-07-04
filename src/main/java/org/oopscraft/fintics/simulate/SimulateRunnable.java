@@ -18,6 +18,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -27,9 +28,7 @@ public class SimulateRunnable implements Runnable {
     @Getter
     private final Simulate simulate;
 
-    private final SimulateIndiceClient simulateIndiceClient;
-
-    private final SimulateBrokerClient simulateTradeClient;
+    private final SimulateBrokerClient simulateBrokerClient;
 
     private final TradeExecutorFactory tradeExecutorFactory;
 
@@ -56,7 +55,6 @@ public class SimulateRunnable implements Runnable {
     @Builder
     protected SimulateRunnable(
             Simulate simulate,
-            SimulateIndiceClient simulateIndiceClient,
             SimulateBrokerClient simulateTradeClient,
             TradeExecutorFactory tradeExecutorFactory,
             SimulateRepository simulateRepository,
@@ -65,8 +63,7 @@ public class SimulateRunnable implements Runnable {
             StatusHandlerFactory statusHandlerFactory
     ){
         this.simulate = simulate;
-        this.simulateIndiceClient = simulateIndiceClient;
-        this.simulateTradeClient = simulateTradeClient;
+        this.simulateBrokerClient = simulateTradeClient;
         this.tradeExecutorFactory = tradeExecutorFactory;
         this.simulateRepository = simulateRepository;
         this.messagingTemplate = messagingTemplate;
@@ -80,7 +77,7 @@ public class SimulateRunnable implements Runnable {
     @Override
     public void run() {
         simulate.setStatus(Simulate.Status.RUNNING);
-        simulate.setStartedAt(LocalDateTime.now());
+        simulate.setStartedAt(Instant.now());
 
         if (this.logAppender != null) {
             log.addAppender(logAppender);
@@ -96,8 +93,8 @@ public class SimulateRunnable implements Runnable {
             trade.setAlarmOnOrder(false);
 
             // date time, interval
-            LocalDateTime dateTimeFrom = simulate.getDateTimeFrom();
-            LocalDateTime dateTimeTo = simulate.getDateTimeTo();
+            LocalDateTime investFrom = simulate.getInvestFrom();
+            LocalDateTime investTo = simulate.getInvestTo();
             Integer interval = trade.getInterval();
 
             // invest amount, fee rate
@@ -105,8 +102,8 @@ public class SimulateRunnable implements Runnable {
             trade.setInvestAmount(investAmount);
 
             // deposit
-            simulateTradeClient.setDateTime(dateTimeFrom);
-            simulateTradeClient.deposit(investAmount);
+            simulateBrokerClient.setDatetime(investFrom);
+            simulateBrokerClient.deposit(investAmount);
 
             // start
             saveSimulate();
@@ -121,17 +118,16 @@ public class SimulateRunnable implements Runnable {
             tradeExecutor.setStatusHandler(statusHandler);
 
             // loop
-            for (LocalDateTime dateTime = dateTimeFrom;
-                 dateTime.isBefore(dateTimeTo) || dateTime.isEqual(dateTimeTo);
+            for (LocalDateTime dateTime = investFrom;
+                 dateTime.isBefore(investTo) || dateTime.equals(investTo);
                  dateTime = dateTime.plusSeconds(interval)
             ) {
                 try {
                     // change date time
-                    log.info("== dateTime:{}", dateTime);
-                    simulate.setDateTime(dateTime);
-                    simulateIndiceClient.setDateTime(dateTime);
-                    simulateTradeClient.setDateTime(dateTime);
-                    sendMessage("dateTime", dateTime.format(DateTimeFormatter.ISO_DATE_TIME));
+                    log.info("== datetime:{}", dateTime);
+                    simulate.setDatetime(dateTime);
+                    simulateBrokerClient.setDatetime(dateTime);
+                    sendMessage("dateTime", DateTimeFormatter.ISO_DATE_TIME.format(dateTime));
 
                     // check interrupted
                     if (interrupted) {
@@ -143,18 +139,18 @@ public class SimulateRunnable implements Runnable {
                     }
 
                     // check market open
-                    if (!simulateTradeClient.isOpened(dateTime)) {
+                    if (!simulateBrokerClient.isOpened(dateTime)) {
                         log.info("market not open:{}", dateTime);
                         continue;
                     }
 
                     // executes trade
-                    tradeExecutor.execute(trade, strategy, dateTime, simulateIndiceClient, simulateTradeClient);
+                    tradeExecutor.execute(trade, strategy, dateTime, simulateBrokerClient);
 
                     // send balance message
-                    sendMessage("balance", simulateTradeClient.getBalance());
-                    sendMessage("orders", simulateTradeClient.getOrders());
-                    sendMessage("simulateReport", simulateTradeClient.getSimulateReport());
+                    sendMessage("balance", simulateBrokerClient.getBalance());
+                    sendMessage("orders", simulateBrokerClient.getOrders());
+                    sendMessage("simulateReport", simulateBrokerClient.getSimulateReport());
 
                 } catch (InterruptedException e) {
                     log.warn(e.getMessage(), e);
@@ -181,18 +177,18 @@ public class SimulateRunnable implements Runnable {
             this.onComplete.run();
 
             // save history
-            simulate.setEndedAt(LocalDateTime.now());
+            simulate.setEndedAt(Instant.now());
             saveSimulate();
         }
     }
 
-    private boolean isOperatingTime(Trade trade, LocalDateTime dateTime) {
-        if(trade.getStartAt() == null || trade.getEndAt() == null) {
+    private boolean isOperatingTime(Trade trade, LocalDateTime datetime) {
+        if(trade.getStartTime() == null || trade.getEndTime() == null) {
             return false;
         }
-        LocalTime startTime = trade.getStartAt();
-        LocalTime endTime = trade.getEndAt();
-        LocalTime currentTime = dateTime.toLocalTime();
+        LocalTime startTime = trade.getStartTime();
+        LocalTime endTime = trade.getEndTime();
+        LocalTime currentTime = datetime.toLocalTime();
         if (startTime.isAfter(endTime)) {
             return !(currentTime.isBefore(startTime) || currentTime.equals(startTime))
                     || !(currentTime.isAfter(endTime) || currentTime.equals(endTime));
@@ -231,31 +227,31 @@ public class SimulateRunnable implements Runnable {
                     .tradeName(simulate.getTradeName())
                     .tradeData(toDataString(simulate.getTrade()))
                     .strategyData(toDataString(simulate.getStrategy()))
-                    .dateTimeFrom(simulate.getDateTimeFrom())
-                    .dateTimeTo(simulate.getDateTimeTo())
+                    .investFrom(simulate.getInvestFrom())
+                    .investTo(simulate.getInvestTo())
                     .investAmount(simulate.getInvestAmount())
                     .feeRate(simulate.getFeeRate())
-                    .startedAt(LocalDateTime.now())
+                    .startedAt(Instant.now())
                     .build();
         }
         simulateEntity.setStartedAt(simulate.getStartedAt());
         simulateEntity.setEndedAt(simulate.getEndedAt());
         simulateEntity.setStatus(simulate.getStatus());
-        simulateEntity.setDateTime(simulate.getDateTime());
+        simulateEntity.setDateTime(simulate.getDatetime());
 
         // setting detail properties
         try {
             BigDecimal investAmount = simulateEntity.getInvestAmount();
-            BigDecimal balanceTotalAmount = simulateTradeClient.getBalance().getTotalAmount();
+            BigDecimal balanceTotalAmount = simulateBrokerClient.getBalance().getTotalAmount();
             BigDecimal profitAmount = balanceTotalAmount.subtract(investAmount);
             BigDecimal profitPercentage = profitAmount.divide(investAmount, MathContext.DECIMAL32)
                     .multiply(BigDecimal.valueOf(100))
                     .setScale(2, RoundingMode.FLOOR);
             simulateEntity.setProfitAmount(profitAmount);
             simulateEntity.setProfitPercentage(profitPercentage);
-            simulateEntity.setBalanceData(toDataString(simulateTradeClient.getBalance()));
-            simulateEntity.setOrdersData(toDataString(simulateTradeClient.getOrders()));
-            simulateEntity.setSimulateReportData(toDataString(simulateTradeClient.getSimulateReport()));
+            simulateEntity.setBalanceData(toDataString(simulateBrokerClient.getBalance()));
+            simulateEntity.setOrdersData(toDataString(simulateBrokerClient.getOrders()));
+            simulateEntity.setSimulateReportData(toDataString(simulateBrokerClient.getSimulateReport()));
         } catch (Exception ignore) {
             log.warn(ignore.getMessage());
         }

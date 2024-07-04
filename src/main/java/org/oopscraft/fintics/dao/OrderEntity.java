@@ -7,6 +7,7 @@ import org.oopscraft.fintics.model.Order;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Entity
@@ -28,7 +29,7 @@ public class OrderEntity extends BaseEntity {
     private String orderId;
 
     @Column(name = "order_at")
-    private LocalDateTime orderAt;
+    private Instant orderAt;
 
     @Column(name = "type", length = 8)
     private Order.Type type;

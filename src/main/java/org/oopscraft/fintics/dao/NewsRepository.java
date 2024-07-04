@@ -7,19 +7,20 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
-public interface AssetNewsRepository extends JpaRepository<AssetNewsEntity, AssetNewsEntity.Pk> {
+public interface NewsRepository extends JpaRepository<NewsEntity, NewsEntity.Pk> {
 
-    @Query("select a from AssetNewsEntity a" +
+    @Query("select a from NewsEntity a" +
             " where a.assetId = :assetId" +
-            " and a.datetime between :datetimeFrom and :datetimeTo" +
-            " order by a.datetime desc")
-    List<AssetNewsEntity> findAllByAssetId(
+            " and a.dateTime between :dateTimeFrom and :dateTimeTo" +
+            " order by a.dateTime desc")
+    List<NewsEntity> findAllByAssetId(
            @Param("assetId") String assetId,
-           @Param("datetimeFrom") Instant datetimeFrom,
-           @Param("datetimeTo") Instant datetimeTo,
+           @Param("dateTimeFrom") LocalDateTime dateTimeFrom,
+           @Param("dateTimeTo") LocalDateTime dateTimeTo,
            Pageable pageable
     );
 

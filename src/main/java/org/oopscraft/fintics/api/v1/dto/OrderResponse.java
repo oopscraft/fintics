@@ -6,6 +6,7 @@ import lombok.Setter;
 import org.oopscraft.fintics.model.Order;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -17,7 +18,7 @@ public class OrderResponse {
 
     private String orderId;
 
-    private LocalDateTime orderAt;
+    private Instant orderAt;
 
     private Order.Type type;
 

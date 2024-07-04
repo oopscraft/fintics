@@ -7,64 +7,58 @@
 
     <cache eviction="FIFO" flushInterval="60000" size="512"/>
 
-    <select id="selectAssetOhlcvSummaries" resultType="org.oopscraft.fintics.model.OhlcvSummary">
-        SELECT 	    asset_id as "id",
-                    SUM(CASE WHEN fao.type = 'DAILY' THEN 1 ELSE 0 END) AS "dailyCount",
-                    MIN(CASE WHEN fao.type = 'DAILY' THEN fao.date_time ELSE NULL END) AS "dailyMinDateTime",
-                    MAX(CASE WHEN fao.type = 'DAILY' THEN fao.date_time ELSE NULL END) AS "dailyMaxDateTime",
-                    SUM(CASE WHEN fao.type = 'MINUTE' THEN 1 ELSE 0 END) AS "minuteCount",
-                    MIN(CASE WHEN fao.type = 'MINUTE' THEN fao.date_time ELSE NULL END) AS "minuteMinDateTime",
-                    MAX(CASE WHEN fao.type = 'MINUTE' THEN fao.date_time ELSE NULL END) AS "minuteMaxDateTime"
-        FROM 		fintics_asset_ohlcv fao
+    <select id="selectAssets" resultType="org.oopscraft.fintics.model.Asset" useCache="false">
+        SELECT      fa.asset_id as "assetId",
+                    fa.asset_name as "assetName",
+                    fa.market as "market",
+                    fa.exchange as "exchange",
+                    fa.type as "type",
+                    fa.market_cap as "marketCap"
+        FROM        fintics_asset fa
+        WHERE       1 = 1
+        <if test="assetId != null">
+        AND         asset_id like #{assetId}
+        </if>
+        <if test="assetName != null">
+        AND         asset_name like #{assetName}
+        </if>
+        <if test="market != null">
+        AND         market = #{market}
+        </if>
+    </select>
+
+    <select id="selectOhlcvSummaries" resultType="org.oopscraft.fintics.model.OhlcvSummary">
+        SELECT 	    asset_id as "assetId",
+                    SUM(CASE WHEN fo.type = 'DAILY' THEN 1 ELSE 0 END) AS "dailyCount",
+                    MIN(CASE WHEN fo.type = 'DAILY' THEN fo.date_time ELSE NULL END) AS "dailyMinDateTime",
+                    MAX(CASE WHEN fo.type = 'DAILY' THEN fo.date_time ELSE NULL END) AS "dailyMaxDateTime",
+                    SUM(CASE WHEN fo.type = 'MINUTE' THEN 1 ELSE 0 END) AS "minuteCount",
+                    MIN(CASE WHEN fo.type = 'MINUTE' THEN fo.date_time ELSE NULL END) AS "minuteMinDateTime",
+                    MAX(CASE WHEN fo.type = 'MINUTE' THEN fo.date_time ELSE NULL END) AS "minuteMaxDateTime"
+        FROM 		fintics_ohlcv fo
         WHERE       1 = 1
         <if test="assetId!= null">
-        AND         fao.asset_id = #{assetId}
+        AND         fo.asset_id = #{assetId}
         </if>
-        GROUP BY 	fao.asset_id
+        GROUP BY 	fo.asset_id
     </select>
 
-    <select id="selectIndiceOhlcvSummaries" resultType="org.oopscraft.fintics.model.OhlcvSummary">
-        SELECT 	    indice_id AS "id",
-                    SUM(CASE WHEN type = 'DAILY' THEN 1 ELSE 0 END) AS "dailyCount",
-                    MIN(CASE WHEN type = 'DAILY' THEN date_time ELSE NULL END) AS "dailyMinDateTime",
-                    MAX(CASE WHEN type = 'DAILY' THEN date_time ELSE NULL END) AS "dailyMaxDateTime",
-                    SUM(CASE WHEN type = 'MINUTE' THEN 1 ELSE 0 END) AS "minuteCount",
-                    MIN(CASE WHEN type = 'MINUTE' THEN date_time ELSE NULL END) AS "minuteMinDateTime",
-                    MAX(CASE WHEN type = 'MINUTE' THEN date_time ELSE NULL END) AS "minuteMaxDateTime"
-        FROM 		fintics_indice_ohlcv
-        WHERE       1 = 1
-        <if test="indiceId != null">
-        AND         indice_id = #{indiceId}
-        </if>
-        GROUP BY 	indice_id
-    </select>
-
-    <select id="selectAssetOhlcvStatistics" resultType="org.oopscraft.fintics.model.OhlcvSummary$OhlcvStatistic" useCache="false">
+    <select id="selectOhlcvStatistics" resultType="org.oopscraft.fintics.model.OhlcvSummary$OhlcvStatistic" useCache="false">
         SELECT 		DATE(date_time) AS "date",
                     COUNT(*) AS "count"
-        FROM 		fintics_asset_ohlcv
+        FROM 		fintics_ohlcv
         WHERE 		1 = 1
         AND 		asset_id = #{assetId}
         GROUP BY	DATE(date_time)
         ORDER BY    DATE(date_time) DESC
     </select>
 
-    <select id="selectIndiceOhlcvStatistics" resultType="org.oopscraft.fintics.model.OhlcvSummary$OhlcvStatistic" useCache="false">
-        SELECT 		DATE(date_time) AS "date",
-                    COUNT(*) AS "count"
-        FROM 		fintics_indice_ohlcv
-        WHERE 		1 = 1
-        AND 		indice_id = #{indiceId}
-        GROUP BY	DATE(date_time)
-        ORDER BY    DATE(date_time) DESC
-    </select>
-
-    <select id="selectAssetNewsSummaries" resultType="org.oopscraft.fintics.model.NewsSummary">
-        SELECT 	    asset_id AS "id",
+    <select id="selectNewsSummaries" resultType="org.oopscraft.fintics.model.NewsSummary">
+        SELECT 	    asset_id AS "assetId",
                     COUNT(*) AS "totalCount",
                     MIN(date_time) AS "minDateTime",
                     MAX(date_time) AS "maxDateTime"
-        FROM 		fintics_asset_news fan
+        FROM 		fintics_news
         WHERE       1 = 1
         <if test="assetId != null">
         AND         asset_id = #{assetId}
@@ -72,35 +66,12 @@
         GROUP BY 	asset_id
     </select>
 
-    <select id="selectIndiceNewsSummaries" resultType="org.oopscraft.fintics.model.NewsSummary">
-        SELECT 	    indice_id AS "id",
-                    COUNT(*) AS "totalCount",
-                    MIN(date_time) AS "minDateTime",
-                    MAX(date_time) AS "maxDateTime"
-        FROM 		fintics_indice_news fin
-        WHERE       1 = 1
-        <if test="indiceId != null">
-        AND         indice_id = #{indiceId}
-        </if>
-        GROUP BY 	indice_id
-    </select>
-
-    <select id="selectAssetNewsStatistics" resultType="org.oopscraft.fintics.model.NewsSummary$NewsStatistic" useCache="false">
+    <select id="selectNewsStatistics" resultType="org.oopscraft.fintics.model.NewsSummary$NewsStatistic" useCache="false">
         SELECT 		DATE(date_time) AS "date",
                     COUNT(*) AS "count"
-        FROM 		fintics_asset_news
+        FROM 		fintics_news
         WHERE 		1 = 1
           AND 		asset_id = #{assetId}
-        GROUP BY	DATE(date_time)
-        ORDER BY    DATE(date_time) DESC
-    </select>
-
-    <select id="selectIndiceNewsStatistics" resultType="org.oopscraft.fintics.model.NewsSummary$NewsStatistic" useCache="false">
-        SELECT 		DATE(date_time) AS "date",
-                    COUNT(*) AS "count"
-        FROM 		fintics_indice_news
-        WHERE 		1 = 1
-          AND 		indice_id = #{indiceId}
         GROUP BY	DATE(date_time)
         ORDER BY    DATE(date_time) DESC
     </select>

@@ -20,8 +20,6 @@ class DataServiceTest extends CoreTestSupport {
 
     private final DataService dataService;
 
-    private final EntityManager entityManager;
-
     @Test
     void getAssets() {
         // given
@@ -35,7 +33,7 @@ class DataServiceTest extends CoreTestSupport {
     void getAssetOhlcvSummaries() {
         // given
         // when
-        List<OhlcvSummary> assetOhlcvSummaries = dataService.getAssetOhlcvSummaries();
+        List<OhlcvSummary> assetOhlcvSummaries = dataService.getOhlcvSummaries();
         // then
         log.info("assetOhlcvSummaries: {}", assetOhlcvSummaries);
     }

@@ -1,7 +1,6 @@
 package org.oopscraft.fintics.api.v1.dto;
 
 import lombok.*;
-import org.oopscraft.fintics.model.AssetSearch;
 
 import java.math.BigDecimal;
 

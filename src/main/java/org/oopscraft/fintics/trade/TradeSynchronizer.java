@@ -20,6 +20,9 @@ public class TradeSynchronizer {
 
     private final TradeThreadManager tradeThreadManager;
 
+    /**
+     * synchronizes thread and database info
+     */
     @Scheduled(initialDelay = 1_000, fixedDelay = 10_000)
     @Transactional(readOnly = true)
     public void synchronize() {
@@ -61,6 +64,9 @@ public class TradeSynchronizer {
         }
     }
 
+    /**
+     * force sleep
+     */
     private static void sleep() {
         try {
             Thread.sleep(3_000);

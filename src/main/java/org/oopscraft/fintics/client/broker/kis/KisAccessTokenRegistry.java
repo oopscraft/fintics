@@ -12,6 +12,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+/**
+ * kis access token registry in memory
+ */
 @Slf4j
 public class KisAccessTokenRegistry {
 
@@ -57,6 +60,14 @@ public class KisAccessTokenRegistry {
         }
     }
 
+    /**
+     * refresh access token
+     * @param apiUrl api url
+     * @param appKey app key
+     * @param appSecret app secret
+     * @return kis access token object
+     * @see [접근토큰발급(P)[인증-001]](https://apiportal.koreainvestment.com/apiservice/oauth2#L_fa778c98-f68d-451e-8fff-b1c6bfe5cd30)
+     */
     private synchronized static KisAccessToken refreshAccessToken(String apiUrl, String appKey, String appSecret) throws InterruptedException {
         log.info("Refresh Access Token - {}", apiUrl);
         RestTemplate restTemplate = RestTemplateBuilder.create()

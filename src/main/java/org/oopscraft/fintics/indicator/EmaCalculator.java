@@ -15,7 +15,7 @@ public class EmaCalculator extends IndicatorCalculator<EmaContext, Ema> {
     @Override
     public List<Ema> calculate(List<Ohlcv> series) {
         List<BigDecimal> closePrices = series.stream()
-                .map(Ohlcv::getClosePrice)
+                .map(Ohlcv::getClose)
                 .toList();
         List<BigDecimal> emaValues = emas(closePrices, getContext().getPeriod(), getContext().getMathContext());
         List<Ema> emas = new ArrayList<>();

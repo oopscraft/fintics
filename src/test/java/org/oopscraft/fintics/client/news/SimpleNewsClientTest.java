@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.client.asset;
+package org.oopscraft.fintics.client.news;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -6,8 +6,6 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.oopscraft.arch4j.core.support.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
-import org.oopscraft.fintics.client.news.NewsClientProperties;
-import org.oopscraft.fintics.client.news.SimpleNewsClient;
 import org.oopscraft.fintics.model.Asset;
 import org.oopscraft.fintics.model.News;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,7 +16,7 @@ import java.util.Locale;
 @SpringBootTest(classes = FinticsConfiguration.class)
 @RequiredArgsConstructor
 @Slf4j
-class SimpleAssetNewsClientTest extends CoreTestSupport {
+class SimpleNewsClientTest extends CoreTestSupport {
 
     private final NewsClientProperties newsClientProperties;
 

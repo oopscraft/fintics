@@ -10,6 +10,7 @@ import org.oopscraft.fintics.dao.OrderEntity;
 
 import javax.persistence.Converter;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -22,7 +23,7 @@ public class Order {
 
     private String orderId;
 
-    private LocalDateTime orderAt;
+    private Instant orderAt;
 
     private Type type;
 

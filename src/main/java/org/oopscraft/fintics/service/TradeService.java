@@ -64,8 +64,8 @@ public class TradeService {
         tradeEntity.setEnabled(trade.isEnabled());
         tradeEntity.setInterval(trade.getInterval());
         tradeEntity.setThreshold(trade.getThreshold());
-        tradeEntity.setStartAt(trade.getStartAt());
-        tradeEntity.setEndAt(trade.getEndAt());
+        tradeEntity.setStartAt(trade.getStartTime());
+        tradeEntity.setEndAt(trade.getEndTime());
         tradeEntity.setInvestAmount(trade.getInvestAmount());
         tradeEntity.setBrokerId(trade.getBrokerId());
         tradeEntity.setStrategyId(trade.getStrategyId());
@@ -139,11 +139,9 @@ public class TradeService {
             balance.getBalanceAssets().forEach(balanceAsset -> {
                 assetRepository.findById(balanceAsset.getAssetId()).ifPresent(assetEntity -> {
                     balanceAsset.setType(assetEntity.getType());
-                    balanceAsset.setIssuedShares(assetEntity.getIssuedShares());
-                    balanceAsset.setMarketCap(assetEntity.getMarketCap());
-                    balanceAsset.setPer(assetEntity.getPer());
-                    balanceAsset.setRoe(assetEntity.getRoe());
-                    balanceAsset.setRoa(assetEntity.getRoa());
+                    balanceAsset.setAssetFinancial(Optional.ofNullable(assetEntity.getFinancialEntity())
+                            .map(Financial::from)
+                            .orElse(Financial.builder().build()));
                 });
             });
             return Optional.of(balance);

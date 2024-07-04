@@ -25,10 +25,10 @@ public class ChaikinOscillatorCalculatorTest extends AbstractCalculatorTest {
         List<Ohlcv> ohlcvs = inputRows.stream()
                 .map(row -> {
                     return Ohlcv.builder()
-                            .openPrice(new BigDecimal(row.get("open").replaceAll(",","")))
-                            .highPrice(new BigDecimal(row.get("high").replaceAll(",", "")))
-                            .lowPrice(new BigDecimal(row.get("low").replaceAll(",","")))
-                            .closePrice(new BigDecimal(row.get("close").replaceAll(",","")))
+                            .open(new BigDecimal(row.get("open").replaceAll(",","")))
+                            .high(new BigDecimal(row.get("high").replaceAll(",", "")))
+                            .low(new BigDecimal(row.get("low").replaceAll(",","")))
+                            .close(new BigDecimal(row.get("close").replaceAll(",","")))
                             .volume(new BigDecimal(row.get("volume").replaceAll(",","")))
                             .build();
                 })
@@ -55,7 +55,7 @@ public class ChaikinOscillatorCalculatorTest extends AbstractCalculatorTest {
 
             log.info("[{}] {},{},{},{},{},{},{} / {},{},{},{},{},{},{}", i,
                     originOpenPrice, originHighPrice, originLowPrice, originClosePrice, originVolume, originCo, originSignal,
-                    ohlcv.getOpenPrice(), ohlcv.getHighPrice(), ohlcv.getLowPrice(), ohlcv.getClosePrice(), ohlcv.getVolume(), chaikinOscillator.getValue(), chaikinOscillator.getSignal());
+                    ohlcv.getOpen(), ohlcv.getHigh(), ohlcv.getLow(), ohlcv.getClose(), ohlcv.getVolume(), chaikinOscillator.getValue(), chaikinOscillator.getSignal());
 
             // assert
             assertEquals(originCo.doubleValue(), chaikinOscillator.getValue().doubleValue(), 0.1);

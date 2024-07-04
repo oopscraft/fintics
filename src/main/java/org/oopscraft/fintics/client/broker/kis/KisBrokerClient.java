@@ -21,11 +21,17 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * 한국투자증권 국내 주식 broker client
+ */
 @Slf4j
 public class KisBrokerClient extends KrBrokerClient {
+
+    private final static Object LOCK_OBJECT = new Object();
 
     private final boolean production;
 
@@ -39,6 +45,11 @@ public class KisBrokerClient extends KrBrokerClient {
 
     private final ObjectMapper objectMapper;
 
+    /**
+     * constructor
+     * @param definition broker definition
+     * @param properties broker properties
+     */
     public KisBrokerClient(BrokerClientDefinition definition, Properties properties) {
         super(definition, properties);
         this.production = Boolean.parseBoolean(properties.getProperty("production"));
@@ -49,6 +60,10 @@ public class KisBrokerClient extends KrBrokerClient {
         this.objectMapper = new ObjectMapper();
     }
 
+    /**
+     * creates headers
+     * @return headers
+     */
     HttpHeaders createHeaders() throws InterruptedException {
         KisAccessToken accessToken = KisAccessTokenRegistry.getAccessToken(apiUrl, appKey, appSecret);
         HttpHeaders httpHeaders = new HttpHeaders();
@@ -59,23 +74,35 @@ public class KisBrokerClient extends KrBrokerClient {
         return httpHeaders;
     }
 
-    private synchronized static void sleep() throws InterruptedException {
-        Thread.sleep(300);
+    /**
+     * force sleep
+     */
+    private synchronized void sleep() throws InterruptedException {
+        synchronized (LOCK_OBJECT) {
+            if (production) {
+                Thread.sleep(300);
+            } else {
+                Thread.sleep(1000);
+            }
+        }
     }
 
     @Override
-    public boolean isOpened(LocalDateTime dateTime) throws InterruptedException {
-        // check kr super (weekend)
-        if (!super.isOpened(dateTime)) {
+    public boolean isOpened(LocalDateTime datetime) throws InterruptedException {
+        // check us super (weekend and fixed holiday)
+        if (!super.isOpened(datetime)) {
             return false;
         }
-
         // check holiday
-        ZonedDateTime systemZonedDateTime = dateTime.atZone(ZoneId.systemDefault());
-        ZonedDateTime koreaZonedDateTime = systemZonedDateTime.withZoneSameInstant(ZoneId.of("Asia/Seoul"));
-        return !isHoliday(koreaZonedDateTime.toLocalDateTime());
+        return !isHoliday(datetime);
     }
 
+    /**
+     * checks holiday
+     * @param dateTime date time
+     * @return whether is holiday
+     * @see [국내휴장일조회[국내주식-040]](https://apiportal.koreainvestment.com/apiservice/apiservice-domestic-index-quotations#L_5c488ab2-59fd-486e-bf74-b68e813e35c0)
+     */
     boolean isHoliday(LocalDateTime dateTime) throws InterruptedException {
         // 모의 투자는 휴장일 조회 API 제공 하지 않음
         if(!production) {
@@ -89,6 +116,7 @@ public class KisBrokerClient extends KrBrokerClient {
         HttpHeaders headers = createHeaders();
         headers.add("tr_id", "CTCA0903R");
 
+        // convert date time
         String baseDt = dateTime.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         url = UriComponentsBuilder.fromUriString(url)
                 .queryParam("BASS_DT", baseDt)
@@ -135,8 +163,14 @@ public class KisBrokerClient extends KrBrokerClient {
         return holiday;
     }
 
+    /**
+     * returns minute ohlcvs
+     * @param asset asset
+     * @return minute ohlcvs
+     * @see [주식당일분봉조회[v1_국내주식-022]](https://apiportal.koreainvestment.com/apiservice/apiservice-domestic-stock-quotations2#L_eddbb36a-1d55-461a-b242-3067ba1e5640)
+     */
     @Override
-    public List<Ohlcv> getMinuteOhlcvs(Asset asset, LocalDateTime dateTime) throws InterruptedException {
+    public List<Ohlcv> getMinuteOhlcvs(Asset asset) throws InterruptedException {
         List<Ohlcv> minuteOhlcvs = new ArrayList<>();
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
@@ -144,10 +178,11 @@ public class KisBrokerClient extends KrBrokerClient {
         String fidEtcClsCode = "";
         String fidCondMrktDivCode = "J";
         String fidInputIscd = asset.getSymbol();
-        LocalTime time = dateTime.toLocalTime();
+        LocalTime time = ZonedDateTime.now(getDefinition().getTimezone()).toLocalTime();
         LocalTime closeTime = LocalTime.of(15,30);
         LocalTime fidInputHour1Time = (time.isAfter(closeTime) ? closeTime : time);
 
+        // loop by page
         for(int i = 0; i < 20; i ++) {
             String url = apiUrl + "/uapi/domestic-stock/v1/quotations/inquire-time-itemchartprice";
             HttpHeaders headers = createHeaders();
@@ -185,22 +220,25 @@ public class KisBrokerClient extends KrBrokerClient {
 
             List<Ohlcv> minuteOhlcvsPage = output2.stream()
                     .map(row -> {
-                        LocalDateTime ohlcvDateTime = LocalDateTime.parse(
+                        LocalDateTime datetime = LocalDateTime.parse(
                                 row.get("stck_bsop_date") + row.get("stck_cntg_hour"),
-                                DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
-                        );
-                        BigDecimal openPrice = new BigDecimal(row.get("stck_oprc"));
-                        BigDecimal highPrice = new BigDecimal(row.get("stck_hgpr"));
-                        BigDecimal lowPrice = new BigDecimal(row.get("stck_lwpr"));
-                        BigDecimal closePrice = new BigDecimal(row.get("stck_prpr"));
+                                        DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
+                                .truncatedTo(ChronoUnit.MINUTES);
+                        ZoneId timezone = getDefinition().getTimezone();
+                        BigDecimal open = new BigDecimal(row.get("stck_oprc"));
+                        BigDecimal high = new BigDecimal(row.get("stck_hgpr"));
+                        BigDecimal low = new BigDecimal(row.get("stck_lwpr"));
+                        BigDecimal close = new BigDecimal(row.get("stck_prpr"));
                         BigDecimal volume = new BigDecimal(row.get("cntg_vol"));
                         return Ohlcv.builder()
+                                .assetId(asset.getAssetId())
                                 .type(Ohlcv.Type.MINUTE)
-                                .dateTime(ohlcvDateTime)
-                                .openPrice(openPrice)
-                                .highPrice(highPrice)
-                                .lowPrice(lowPrice)
-                                .closePrice(closePrice)
+                                .dateTime(datetime)
+                                .timeZone(timezone)
+                                .open(open)
+                                .high(high)
+                                .low(low)
+                                .close(close)
                                 .volume(volume)
                                 .build();
                     })
@@ -223,8 +261,14 @@ public class KisBrokerClient extends KrBrokerClient {
         return minuteOhlcvs;
     }
 
+    /**
+     * return daily ohlcvs
+     * @param asset asset
+     * @return daily ohlcvs
+     * @see [국내주식기간별시세(일/주/월/년)[v1_국내주식-016]](https://apiportal.koreainvestment.com/apiservice/apiservice-domestic-stock-quotations2#L_a08c3421-e50f-4f24-b1fe-64c12f723c77)
+     */
     @Override
-    public List<Ohlcv> getDailyOhlcvs(Asset asset, LocalDateTime dateTime) throws InterruptedException {
+    public List<Ohlcv> getDailyOhlcvs(Asset asset) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .build();
@@ -270,25 +314,36 @@ public class KisBrokerClient extends KrBrokerClient {
 
         return output2.stream()
                 .map(row -> {
-                    LocalDateTime ohlcvDateTime = LocalDateTime.parse(row.get("stck_bsop_date")+"000000", DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-                    BigDecimal openPrice = new BigDecimal(row.get("stck_oprc"));
-                    BigDecimal highPrice = new BigDecimal(row.get("stck_hgpr"));
-                    BigDecimal lowPrice = new BigDecimal(row.get("stck_lwpr"));
-                    BigDecimal closePrice = new BigDecimal(row.get("stck_clpr"));
+                    LocalDateTime datetime = LocalDate.parse(row.get("stck_bsop_date"), DateTimeFormatter.ofPattern("yyyyMMdd"))
+                            .atTime(LocalTime.MIN)
+                            .truncatedTo(ChronoUnit.DAYS);
+                    ZoneId timezone = getDefinition().getTimezone();
+                    BigDecimal open = new BigDecimal(row.get("stck_oprc"));
+                    BigDecimal high = new BigDecimal(row.get("stck_hgpr"));
+                    BigDecimal low = new BigDecimal(row.get("stck_lwpr"));
+                    BigDecimal close = new BigDecimal(row.get("stck_clpr"));
                     BigDecimal volume = new BigDecimal(row.get("acml_vol"));
                     return Ohlcv.builder()
+                            .assetId(asset.getAssetId())
                             .type(Ohlcv.Type.DAILY)
-                            .dateTime(ohlcvDateTime)
-                            .openPrice(openPrice)
-                            .highPrice(highPrice)
-                            .lowPrice(lowPrice)
-                            .closePrice(closePrice)
+                            .dateTime(datetime)
+                            .timeZone(timezone)
+                            .open(open)
+                            .high(high)
+                            .low(low)
+                            .close(close)
                             .volume(volume)
                             .build();
                 })
                 .collect(Collectors.toList());
     }
 
+    /**
+     * return order book
+     * @param asset asset
+     * @return order book
+     * @see [주식현재가 호가/예상체결[v1_국내주식-011]](https://apiportal.koreainvestment.com/apiservice/apiservice-domestic-stock-quotations2#L_af3d3794-92c0-4f3b-8041-4ca4ddcda5de)
+     */
     @Override
     public OrderBook getOrderBook(Asset asset) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
@@ -337,11 +392,22 @@ public class KisBrokerClient extends KrBrokerClient {
                 .build();
     }
 
+    /**
+     * check minimum order amount
+     * @param quantity quantity
+     * @param price price
+     * @return whether is over minimum
+     */
     @Override
     public boolean isOverMinimumOrderAmount(BigDecimal quantity, BigDecimal price) throws InterruptedException {
         return quantity.compareTo(BigDecimal.ONE) >= 0;
     }
 
+    /**
+     * return account balance
+     * @return balance
+     * @see [주식잔고조회[v1_국내주식-006]](https://apiportal.koreainvestment.com/apiservice/apiservice-domestic-stock-order#L_66c61080-674f-4c91-a0cc-db5e64e9a5e6)
+     */
     @Override
     public Balance getBalance() throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
@@ -390,6 +456,7 @@ public class KisBrokerClient extends KrBrokerClient {
         JsonNode output2Node = rootNode.path("output2");
         List<Map<String, String>> output2 = objectMapper.convertValue(output2Node, new TypeReference<>(){});
 
+        // balance
         Balance balance = Balance.builder()
                 .accountNo(accountNo)
                 .totalAmount(new BigDecimal(output2.get(0).get("tot_evlu_amt")))
@@ -398,10 +465,11 @@ public class KisBrokerClient extends KrBrokerClient {
                 .valuationAmount(new BigDecimal(output2.get(0).get("evlu_amt_smtl_amt")))
                 .build();
 
+        // balance asset
         List<BalanceAsset> balanceAssets = output1.stream()
                 .map(row -> {
                     try {
-                        BalanceAsset balanceAsset = BalanceAsset.builder()
+                        return BalanceAsset.builder()
                                 .accountNo(accountNo)
                                 .assetId(toAssetId(row.get("pdno")))
                                 .assetName(row.get("prdt_name"))
@@ -414,7 +482,6 @@ public class KisBrokerClient extends KrBrokerClient {
                                 .valuationAmount(new BigDecimal(row.get("evlu_amt")))
                                 .profitAmount(new BigDecimal(row.get("evlu_pfls_amt")))
                                 .build();
-                        return balanceAsset;
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
@@ -423,19 +490,27 @@ public class KisBrokerClient extends KrBrokerClient {
                 .collect(Collectors.toList());
         balance.setBalanceAssets(balanceAssets);
 
+        // calculates profit amount
         BigDecimal profitAmount = balanceAssets.stream()
                 .map(BalanceAsset::getProfitAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         balance.setProfitAmount(profitAmount);
 
+        // calculates realized profit amount (모의 투자는 지원 하지 않음)
         if(production) {
             BigDecimal realizedProfitAmount = getBalanceRealizedProfitAmount();
             balance.setRealizedProfitAmount(realizedProfitAmount);
         }
 
+        // return
         return balance;
     }
 
+    /**
+     * gets balance realized profit amount
+     * @return realized profit amount
+     * @see [주식잔고조회_실현손익[v1_국내주식-041]](https://apiportal.koreainvestment.com/apiservice/apiservice-domestic-stock-order#L_ff79302e-6014-495e-a188-6dca69fc952e)
+     */
     private BigDecimal getBalanceRealizedProfitAmount() throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
@@ -483,6 +558,13 @@ public class KisBrokerClient extends KrBrokerClient {
         return new BigDecimal(output2.get(0).get("rlzt_pfls"));
     }
 
+    /**
+     * submit order
+     * @param asset asset
+     * @param order order
+     * @return submitted order
+     * @see [주식주문(현금)[v1_국내주식-001]](https://apiportal.koreainvestment.com/apiservice/apiservice-domestic-stock-order#L_aade4c72-5fb7-418a-9ff2-254b4d5f0ceb)
+     */
     @Override
     public Order submitOrder(Asset asset, Order order) throws InterruptedException {
         // quantity with check
@@ -501,7 +583,7 @@ public class KisBrokerClient extends KrBrokerClient {
         HttpHeaders headers = createHeaders();
 
         // order type
-        String trId = null;
+        String trId;
         switch(order.getType()) {
             case BUY -> trId = production ? "TTTC0802U" : "VTTC0802U";
             case SELL -> trId = production ? "TTTC0801U" : "VTTC0801U";
@@ -510,8 +592,8 @@ public class KisBrokerClient extends KrBrokerClient {
         headers.add("tr_id", trId);
 
         // order kind
-        String ordDvsn = null;
-        String ordUnpr = null;
+        String ordDvsn;
+        String ordUnpr;
         switch(order.getKind()) {
             case LIMIT -> {
                 ordDvsn = "00";
@@ -558,6 +640,11 @@ public class KisBrokerClient extends KrBrokerClient {
         return order;
     }
 
+    /**
+     * gets waiting orders
+     * @return waiting orders
+     * @see [주식정정취소가능주문조회[v1_국내주식-004]](https://apiportal.koreainvestment.com/apiservice/apiservice-domestic-stock-order#L_d4537e9c-73f7-414c-9fb0-4eae3bc397d0)
+     */
     @Override
     public List<Order> getWaitingOrders() throws InterruptedException {
         // supported in only production
@@ -637,6 +724,13 @@ public class KisBrokerClient extends KrBrokerClient {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * amends order
+     * @param asset asset
+     * @param order order
+     * @return amended order
+     * @see [주식주문(정정취소)[v1_국내주식-003]](https://apiportal.koreainvestment.com/apiservice/apiservice-domestic-stock-order#L_4bfdfb2b-34a7-43f6-935a-e637724f960a)
+     */
     @Override
     public Order amendOrder(Asset asset, Order order) throws InterruptedException {
         RestTemplate restTemplate = RestTemplateBuilder.create()
@@ -650,7 +744,7 @@ public class KisBrokerClient extends KrBrokerClient {
         headers.add("tr_id", trId);
 
         // order type
-        String ordDvsn = null;
+        String ordDvsn;
         switch(order.getKind()) {
             case LIMIT -> {
                 ordDvsn = "00";

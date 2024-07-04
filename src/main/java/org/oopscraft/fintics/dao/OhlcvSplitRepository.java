@@ -7,19 +7,20 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
-public interface AssetOhlcvSplitRepository extends JpaRepository<AssetOhlcvSplitEntity, AssetOhlcvSplitEntity.Pk>, JpaSpecificationExecutor<AssetOhlcvSplitEntity> {
+public interface OhlcvSplitRepository extends JpaRepository<OhlcvSplitEntity, OhlcvSplitEntity.Pk>, JpaSpecificationExecutor<OhlcvSplitEntity> {
 
-    @Query("select a from AssetOhlcvSplitEntity a " +
+    @Query("select a from OhlcvSplitEntity a " +
             " where a.assetId = :assetId" +
-            " and a.datetime between :datetimeFrom and :datetimeTo" +
-            " order by a.datetime desc")
-    List<AssetOhlcvSplitEntity> findAllByAssetId(
+            " and a.dateTime between :datetimeFrom and :datetimeTo" +
+            " order by a.dateTime desc")
+    List<OhlcvSplitEntity> findAllByAssetId(
             @Param("assetId") String assetId,
-            @Param("datetimeFrom") Instant datetimeFrom,
-            @Param("datetimeTo") Instant datetimeTo
+            @Param("datetimeFrom") LocalDateTime datetimeFrom,
+            @Param("datetimeTo") LocalDateTime datetimeTo
     );
 
 }

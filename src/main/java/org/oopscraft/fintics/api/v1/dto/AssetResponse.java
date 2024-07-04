@@ -3,10 +3,8 @@ package org.oopscraft.fintics.api.v1.dto;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.fintics.model.Asset;
-import org.oopscraft.fintics.model.Link;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -27,22 +25,14 @@ public class AssetResponse {
 
     private String type;
 
-    private boolean favorite;
-
-    private LocalDateTime dateTime;
-
     private BigDecimal marketCap;
 
-    private BigDecimal issuedShares;
-
-    private BigDecimal per;
-
-    private BigDecimal roe;
-
-    private BigDecimal roa;
+    private boolean favorite;
 
     @Builder.Default
     private List<LinkResponse> links = new ArrayList<>();
+
+    private FinancialResponse assetFinancial;
 
     public static AssetResponse from(Asset asset) {
         return AssetResponse.builder()
@@ -51,14 +41,12 @@ public class AssetResponse {
                 .market(asset.getMarket())
                 .exchange(asset.getExchange())
                 .type(asset.getType())
-                .favorite(asset.isFavorite())
-                .dateTime(asset.getDateTime())
                 .marketCap(asset.getMarketCap())
-                .issuedShares(asset.getIssuedShares())
-                .per(asset.getPer())
-                .roe(asset.getRoe())
-                .roa(asset.getRoa())
+                .favorite(asset.isFavorite())
                 .links(LinkResponse.from(asset.getLinks()))
+                .assetFinancial(Optional.ofNullable(asset.getAssetFinancial())
+                        .map(FinancialResponse::from)
+                        .orElse(null))
                 .build();
     }
 

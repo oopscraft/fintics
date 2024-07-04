@@ -3,8 +3,8 @@ package org.oopscraft.fintics.model;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,15 +23,15 @@ public class SimulateReport {
     @Builder.Default
     private BigDecimal feeAmount = BigDecimal.ZERO;
 
-    public synchronized void addTotalReturn(LocalDateTime dateTime, BigDecimal totalAmount) {
-        LocalDate date = dateTime.toLocalDate();
+    public synchronized void addTotalReturn(LocalDateTime datetime, BigDecimal totalAmount) {
+        LocalDateTime date = datetime.truncatedTo(ChronoUnit.DAYS);
         TotalReturn totalReturn = totalReturns.stream()
-                .filter(it -> it.date.isEqual(date))
+                .filter(it -> it.datetime.truncatedTo(ChronoUnit.DAYS).equals(date))
                 .findFirst()
                 .orElse(null);
         if (totalReturn == null) {
             this.totalReturns.add(TotalReturn.builder()
-                    .date(date)
+                    .datetime(date)
                     .totalAmount(totalAmount)
                     .build());
         } else {
@@ -39,7 +39,7 @@ public class SimulateReport {
         }
     }
 
-    public synchronized void addAssetReturn(Asset asset, LocalDateTime dateTime, BigDecimal profitAmount) {
+    public synchronized void addAssetReturn(Asset asset, LocalDateTime datetime, BigDecimal profitAmount) {
         AssetReturn assetReturn = this.assetReturns.stream()
                 .filter(it -> it.getAssetId().equals(asset.getAssetId()))
                 .findFirst()
@@ -66,7 +66,7 @@ public class SimulateReport {
 
         // add asset profit
         AssetProfit assetProfit = AssetProfit.builder()
-                .dateTime(dateTime)
+                .datetime(datetime)
                 .profitAmount(profitAmount)
                 .accumulatedProfitAmount(accumulatedProfitAmount)
                 .build();
@@ -82,7 +82,7 @@ public class SimulateReport {
     @NoArgsConstructor
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public static class TotalReturn {
-        private LocalDate date;
+        private LocalDateTime datetime;
         private BigDecimal totalAmount;
     }
 
@@ -102,7 +102,7 @@ public class SimulateReport {
     @NoArgsConstructor
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public static class AssetProfit {
-        LocalDateTime dateTime;
+        LocalDateTime datetime;
         BigDecimal profitAmount;
         BigDecimal accumulatedProfitAmount;
     }

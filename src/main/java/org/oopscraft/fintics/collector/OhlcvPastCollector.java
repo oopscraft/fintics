@@ -18,10 +18,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -29,7 +26,7 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class AssetOhlcvPastCollector extends AbstractCollector {
+public class OhlcvPastCollector extends AbstractCollector {
 
     @PersistenceContext
     private final EntityManager entityManager;
@@ -47,11 +44,10 @@ public class AssetOhlcvPastCollector extends AbstractCollector {
     @Scheduled(initialDelay = 10_000, fixedDelay = 600_000)
     public void collect() {
         try {
-            log.info("PastAssetOhlcvCollector - Start collect past asset ohlcv.");
+            log.info("OhlcvPastCollector - Start collect past ohlcv.");
             // expired date time
-            Instant expiredDatetime = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC)
-                    .minusMonths(finticsProperties.getDataRetentionMonths())
-                    .toInstant(ZoneOffset.UTC);
+            LocalDateTime expiredDatetime = LocalDateTime.now()
+                    .minusMonths(finticsProperties.getDataRetentionMonths());
             // asset
             List<TradeEntity> tradeEntities = tradeRepository.findAll();
             for (TradeEntity tradeEntity : tradeEntities) {
@@ -68,7 +64,7 @@ public class AssetOhlcvPastCollector extends AbstractCollector {
                     }
                 }
             }
-            log.info("PastAssetOhlcvCollector - End collect past asset ohlcv");
+            log.info("OhlcvPastCollector - End collect past ohlcv");
         } catch(Throwable e) {
             log.error(e.getMessage(), e);
             sendSystemAlarm(this.getClass(), e.getMessage());
@@ -76,11 +72,11 @@ public class AssetOhlcvPastCollector extends AbstractCollector {
         }
     }
 
-    void collectPastDailyOhlcvs(Asset asset, Instant expiredDatetime) {
+    void collectPastDailyOhlcvs(Asset asset, LocalDateTime expiredDatetime) {
         // date time
-        Instant datetimeTo = getMinDatetime(asset.getAssetId(), Ohlcv.Type.DAILY)
-                .orElse(Instant.now());
-        Instant datetimeFrom = datetimeTo.minus(1, ChronoUnit.YEARS);
+        LocalDateTime datetimeTo = getMinDatetime(asset.getAssetId(), Ohlcv.Type.DAILY)
+                .orElse(LocalDateTime.now());
+        LocalDateTime datetimeFrom = datetimeTo.minusYears(1);
         // check expired date time
         if(datetimeFrom.isBefore(expiredDatetime)) {
             datetimeFrom = expiredDatetime;
@@ -91,7 +87,8 @@ public class AssetOhlcvPastCollector extends AbstractCollector {
         List<OhlcvEntity> assetDailyOhlcvEntities = ohlcvs.stream()
                 .map(ohlcv -> OhlcvEntity.builder()
                         .assetId(asset.getAssetId())
-                        .datetime(ohlcv.getDatetime())
+                        .dateTime(ohlcv.getDateTime())
+                        .timeZone(ohlcv.getTimeZone())
                         .type(ohlcv.getType())
                         .open(ohlcv.getOpen())
                         .high(ohlcv.getHigh())
@@ -101,22 +98,25 @@ public class AssetOhlcvPastCollector extends AbstractCollector {
                         .build())
                 .collect(Collectors.toList());
         String unitName = String.format("pastAssetDailyOhlcvEntities[%s]", asset.getAssetName());
-        log.info("PastOhlcvCollector - save {}:{}", unitName, assetDailyOhlcvEntities.size());
+        log.info("OhlcvPastCollector - save {}:{}", unitName, assetDailyOhlcvEntities.size());
         saveEntities(unitName, assetDailyOhlcvEntities, transactionManager, assetOhlcvRepository);
     }
 
-    void collectPastMinuteOhlcvs(Asset asset, Instant expiredDatetime) {
-        Instant datetimeTo = getMinDatetime(asset.getAssetId(), Ohlcv.Type.MINUTE)
-                .orElse(Instant.now());
-        Instant datetimeFrom = LocalDateTime.ofInstant(datetimeTo, ZoneOffset.UTC)
-                .minusMonths(1)
-                .toInstant(ZoneOffset.UTC);
+    /**
+     * collect past minute ohlcvs
+     * @param asset asset
+     * @param expiredDatetime expired datetime
+     */
+    void collectPastMinuteOhlcvs(Asset asset, LocalDateTime expiredDatetime) {
+        LocalDateTime datetimeTo = getMinDatetime(asset.getAssetId(), Ohlcv.Type.MINUTE)
+                .orElse(LocalDateTime.now());
+        LocalDateTime datetimeFrom = datetimeTo.minusMonths(1);
         // check expired date time
         if(datetimeFrom.isBefore(expiredDatetime)) {
             datetimeFrom = expiredDatetime;
         }
         // check daily min date time (in case of new IPO security)
-        Instant dailyMinDatetime = getMinDatetime(asset.getAssetId(), Ohlcv.Type.DAILY).orElse(null);
+        LocalDateTime dailyMinDatetime = getMinDatetime(asset.getAssetId(), Ohlcv.Type.DAILY).orElse(null);
         if (dailyMinDatetime != null) {
             if (datetimeFrom.isBefore(dailyMinDatetime)) {
                 datetimeFrom = dailyMinDatetime;
@@ -128,7 +128,8 @@ public class AssetOhlcvPastCollector extends AbstractCollector {
         List<OhlcvEntity> assetMinuteOhlcvEntities = ohlcvs.stream()
                 .map(ohlcv -> OhlcvEntity.builder()
                         .assetId(asset.getAssetId())
-                        .datetime(ohlcv.getDatetime())
+                        .dateTime(ohlcv.getDateTime())
+                        .timeZone(ohlcv.getTimeZone())
                         .type(ohlcv.getType())
                         .open(ohlcv.getOpen())
                         .high(ohlcv.getHigh())
@@ -142,13 +143,19 @@ public class AssetOhlcvPastCollector extends AbstractCollector {
         saveEntities(unitName, assetMinuteOhlcvEntities, transactionManager, assetOhlcvRepository);
     }
 
-    Optional<Instant> getMinDatetime(String assetId, Ohlcv.Type type) {
-        Instant minDatetime = entityManager.createQuery("select " +
-                                " min(a.datetime) " +
+    /**
+     * get minimum date time
+     * @param assetId asset id
+     * @param type ohlcv type
+     * @return return minimum datetime
+     */
+    Optional<LocalDateTime> getMinDatetime(String assetId, Ohlcv.Type type) {
+        LocalDateTime minDatetime = entityManager.createQuery("select " +
+                                " min(a.dateTime) " +
                                 " from OhlcvEntity a " +
                                 " where a.assetId = :assetId " +
                                 " and a.type = :type",
-                        Instant.class)
+                        LocalDateTime.class)
                 .setParameter("assetId", assetId)
                 .setParameter("type", type)
                 .getSingleResult();

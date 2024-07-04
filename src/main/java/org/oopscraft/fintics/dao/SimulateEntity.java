@@ -3,12 +3,12 @@ package org.oopscraft.fintics.dao;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.arch4j.core.data.BaseEntity;
-import org.oopscraft.arch4j.core.data.converter.AbstractEnumConverter;
-import org.oopscraft.arch4j.core.data.converter.BooleanToYNConverter;
+import org.oopscraft.arch4j.core.data.converter.BooleanConverter;
 import org.oopscraft.fintics.model.*;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Entity
@@ -28,10 +28,10 @@ public class SimulateEntity extends BaseEntity {
     private String simulateId;
 
     @Column(name = "started_at")
-    private LocalDateTime startedAt;
+    private Instant startedAt;
 
     @Column(name = "ended_at")
-    private LocalDateTime endedAt;
+    private Instant endedAt;
 
     @Column(name = "status", length = 16)
     @Convert(converter = Simulate.StatusConverter.class)
@@ -51,11 +51,11 @@ public class SimulateEntity extends BaseEntity {
     @Lob
     private String strategyData;
 
-    @Column(name = "date_time_from")
-    private LocalDateTime dateTimeFrom;
+    @Column(name = "invest_from")
+    private LocalDateTime investFrom;
 
-    @Column(name = "date_time_to")
-    private LocalDateTime dateTimeTo;
+    @Column(name = "invest_to")
+    private LocalDateTime investTo;
 
     @Column(name = "invest_amount")
     private BigDecimal investAmount;
@@ -64,7 +64,7 @@ public class SimulateEntity extends BaseEntity {
     private BigDecimal feeRate;
 
     @Column(name = "favorite")
-    @Convert(converter = BooleanToYNConverter.class)
+    @Convert(converter = BooleanConverter.class)
     private boolean favorite;
 
     @Column(name = "date_time")

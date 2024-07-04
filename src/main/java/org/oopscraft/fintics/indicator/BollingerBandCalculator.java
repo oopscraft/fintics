@@ -20,7 +20,7 @@ public class BollingerBandCalculator extends IndicatorCalculator<BollingerBandCo
         MathContext mathContext = getContext().getMathContext();
 
         List<BigDecimal> closePrices = series.stream()
-                .map(Ohlcv::getClosePrice)
+                .map(Ohlcv::getClose)
                 .toList();
         List<BigDecimal> smas = smas(closePrices, period, mathContext);
         List<BigDecimal> sds = sds(closePrices, period, mathContext);

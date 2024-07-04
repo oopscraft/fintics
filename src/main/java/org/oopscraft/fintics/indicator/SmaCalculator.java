@@ -15,7 +15,7 @@ public class SmaCalculator extends IndicatorCalculator<SmaContext, Sma> {
     @Override
     public List<Sma> calculate(List<Ohlcv> series) {
         List<BigDecimal> closePrices = series.stream()
-                .map(Ohlcv::getClosePrice)
+                .map(Ohlcv::getClose)
                 .toList();
         List<BigDecimal> smaValues = smas(closePrices, getContext().getPeriod(), getContext().getMathContext());
         List<Sma> smas = new ArrayList<>();

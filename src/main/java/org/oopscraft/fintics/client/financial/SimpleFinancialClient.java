@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.client.asset;
+package org.oopscraft.fintics.client.financial;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -6,10 +6,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
-import org.oopscraft.fintics.client.asset.AssetFinancialClient;
-import org.oopscraft.fintics.client.asset.AssetFinancialClientProperties;
 import org.oopscraft.fintics.model.Asset;
-import org.oopscraft.fintics.model.AssetFinancial;
+import org.oopscraft.fintics.model.Financial;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -41,15 +39,15 @@ import java.math.RoundingMode;
 import java.util.*;
 
 @Component
-@ConditionalOnProperty(prefix = "fintics", name = "asset-financial-client.class-name", havingValue="org.oopscraft.fintics.client.asset.SimpleAssetFinancialClient")
+@ConditionalOnProperty(prefix = "fintics", name = "financial-client.class-name", havingValue="org.oopscraft.fintics.client.financial.SimpleFinancialClient")
 @Slf4j
-public class SimpleAssetFinancialClient extends AssetFinancialClient {
+public class SimpleFinancialClient extends FinancialClient {
 
     private static final Currency CURRENCY_USD = Currency.getInstance("USD");
 
     private final ObjectMapper objectMapper;
 
-    protected SimpleAssetFinancialClient(AssetFinancialClientProperties financialClientProperties, ObjectMapper objectMapper) {
+    protected SimpleFinancialClient(FinancialClientProperties financialClientProperties, ObjectMapper objectMapper) {
         super(financialClientProperties);
         this.objectMapper = objectMapper;
     }
@@ -82,7 +80,7 @@ public class SimpleAssetFinancialClient extends AssetFinancialClient {
     }
 
     @Override
-    public AssetFinancial getAssetFinancial(Asset asset) {
+    public Financial getAssetFinancial(Asset asset) {
         if (asset.getAssetId().startsWith("US.")) {
             return getUsAssetFinancial(asset);
         }
@@ -92,7 +90,7 @@ public class SimpleAssetFinancialClient extends AssetFinancialClient {
         throw new UnsupportedOperationException(String.format("not supporting asset[%s]", asset.getAssetId()));
     }
 
-    AssetFinancial getUsAssetFinancial(Asset asset) {
+    Financial getUsAssetFinancial(Asset asset) {
         BigDecimal issuedShares = null;
         BigDecimal totalAssets = null;
         BigDecimal totalEquity = null;
@@ -193,7 +191,7 @@ public class SimpleAssetFinancialClient extends AssetFinancialClient {
                     .multiply(BigDecimal.valueOf(100));
         }
 
-        return AssetFinancial.builder()
+        return Financial.builder()
                 .issuedShares(issuedShares)
                 .totalAssets(totalAssets)
                 .totalEquity(totalEquity)
@@ -221,8 +219,8 @@ public class SimpleAssetFinancialClient extends AssetFinancialClient {
         return headers;
     }
 
-    AssetFinancial getKrAssetFinancial(Asset asset) {
-        AssetFinancial assetFinancial = AssetFinancial.builder()
+    Financial getKrAssetFinancial(Asset asset) {
+        Financial assetFinancial = Financial.builder()
                 .build();
         return assetFinancial;
     }

@@ -1,23 +1,22 @@
 package org.oopscraft.fintics.model;
 
 import lombok.*;
-import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * profile
+ */
 @Data
-@SuperBuilder
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-public abstract class Profile<T> {
-
-    public abstract String getProfileName();
-
-    private T target;
+public class Profile {
 
     @Builder.Default
     private final List<Ohlcv> dailyOhlcvs = new ArrayList<>();
@@ -28,6 +27,12 @@ public abstract class Profile<T> {
     @Builder.Default
     private final List<News> newses = new ArrayList<>();
 
+    /**
+     * returns OHLCV list
+     * @param type ohlcv type
+     * @param period period
+     * @return ohlcvs
+     */
     public List<Ohlcv> getOhlcvs(Ohlcv.Type type, int period) {
         List<Ohlcv> ohlcvs;
         switch(type) {
@@ -38,6 +43,12 @@ public abstract class Profile<T> {
         return Collections.unmodifiableList(ohlcvs);
     }
 
+    /**
+     * resample ohlcvs by period
+     * @param ohlcvs ohlcvs
+     * @param period period
+     * @return resampled ohlcvs
+     */
     private List<Ohlcv> resampleOhlcvs(List<Ohlcv> ohlcvs, int period) {
         if (ohlcvs.isEmpty() || period <= 0) {
             return Collections.emptyList();
@@ -58,48 +69,58 @@ public abstract class Profile<T> {
         return resampledOhlcvs;
     }
 
+    /**
+     * creates resampled ohlcvs
+     * @param ohlcvs ohlcvs
+     * @return resampled ohlcvs
+     */
     private Ohlcv createResampledOhlcv(List<Ohlcv> ohlcvs) {
+        // convert to series
         List<Ohlcv> series = new ArrayList<>(ohlcvs);
         Collections.reverse(series);
 
+        // merge ohlcv
         Ohlcv.Type type = null;
-        LocalDateTime dateTime = null;
-        BigDecimal openPrice = BigDecimal.ZERO;
-        BigDecimal highPrice = BigDecimal.ZERO;
-        BigDecimal lowPrice = BigDecimal.ZERO;
-        BigDecimal closePrice = BigDecimal.ZERO;
+        LocalDateTime datetime = null;
+        ZoneId timezone = null;
+        BigDecimal open = BigDecimal.ZERO;
+        BigDecimal high = BigDecimal.ZERO;
+        BigDecimal low = BigDecimal.ZERO;
+        BigDecimal close = BigDecimal.ZERO;
         BigDecimal volume = BigDecimal.ZERO;
-
         for(int i = 0; i < series.size(); i ++ ) {
             Ohlcv ohlcv = series.get(i);
             if(i == 0) {
                 type = ohlcv.getType();
-                dateTime = ohlcv.getDateTime();
-                openPrice = ohlcv.getOpenPrice();
-                highPrice = ohlcv.getHighPrice();
-                lowPrice = ohlcv.getLowPrice();
-                closePrice = ohlcv.getClosePrice();
+                datetime = ohlcv.getDateTime();
+                timezone = ohlcv.getTimeZone();
+                open = ohlcv.getOpen();
+                high = ohlcv.getHigh();
+                low  = ohlcv.getLow();
+                close = ohlcv.getClose();
                 volume = ohlcv.getVolume();
             }else{
-                dateTime = ohlcv.getDateTime();
-                if(ohlcv.getHighPrice().compareTo(highPrice) > 0) {
-                    highPrice = ohlcv.getHighPrice();
+                datetime = ohlcv.getDateTime();
+                if(ohlcv.getHigh().compareTo(high) > 0) {
+                    high = ohlcv.getHigh();
                 }
-                if(ohlcv.getLowPrice().compareTo(lowPrice) < 0) {
-                    lowPrice = ohlcv.getLowPrice();
+                if(ohlcv.getLow().compareTo(low ) < 0) {
+                    low  = ohlcv.getLow();
                 }
-                closePrice = ohlcv.getClosePrice();
+                close = ohlcv.getClose();
                 volume = volume.add(ohlcv.getVolume());
             }
         }
 
+        // return resampled ohlcvs
         return Ohlcv.builder()
                 .type(type)
-                .dateTime(dateTime)
-                .openPrice(openPrice)
-                .highPrice(highPrice)
-                .lowPrice(lowPrice)
-                .closePrice(closePrice)
+                .dateTime(datetime)
+                .timeZone(timezone)
+                .open(open)
+                .high(high)
+                .low(low )
+                .close(close)
                 .volume(volume)
                 .build();
     }

@@ -2,8 +2,6 @@ package org.oopscraft.fintics.api.v1.dto;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import net.bytebuddy.implementation.bind.annotation.Super;
-import org.oopscraft.fintics.model.Asset;
 import org.oopscraft.fintics.model.BalanceAsset;
 
 import java.math.BigDecimal;
@@ -47,11 +45,6 @@ public class BalanceAssetResponse extends AssetResponse {
                 .profitAmount(balanceAsset.getProfitAmount())
                 .profitPercentage(balanceAsset.getProfitPercentage())
                 .type(balanceAsset.getType())
-                .marketCap(balanceAsset.getMarketCap())
-                .issuedShares(balanceAsset.getIssuedShares())
-                .per(balanceAsset.getPer())
-                .roe(balanceAsset.getRoe())
-                .roa(balanceAsset.getRoa())
                 .links(LinkResponse.from(balanceAsset.getLinks()))
                 .build();
     }

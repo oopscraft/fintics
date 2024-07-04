@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class AssetNewsCollector extends AbstractCollector {
+public class NewsCollector extends AbstractCollector {
 
     private final FinticsProperties finticsProperties;
 
@@ -44,12 +44,12 @@ public class AssetNewsCollector extends AbstractCollector {
 
     private final NewsClient newsClient;
 
-    private final NewsRepository assetNewsRepository;
+    private final NewsRepository newsRepository;
 
     @Scheduled(initialDelay = 10_000, fixedDelay = 3600_000)
     public void collect() {
         try {
-            log.info("AssetNewsCollector - Start collect news.");
+            log.info("NewsCollector - Start collect news.");
             // asset
             List<TradeEntity> tradeEntities = tradeRepository.findAll();
             for (TradeEntity tradeEntity : tradeEntities) {
@@ -58,7 +58,7 @@ public class AssetNewsCollector extends AbstractCollector {
                     for (TradeAsset tradeAsset : trade.getTradeAssets()) {
                         try {
                             if (tradeAsset.isEnabled()) {
-                                collectAssetNews(tradeAsset);
+                                collectNews(tradeAsset);
                             }
                         } catch (Exception e) {
                             log.warn(e.getMessage());
@@ -67,7 +67,7 @@ public class AssetNewsCollector extends AbstractCollector {
                     }
                 }
             }
-            log.info("AssetNewsCollector - End collect news");
+            log.info("NewsCollector - End collect news");
         } catch(Throwable e) {
             log.error(e.getMessage(), e);
             sendSystemAlarm(this.getClass(), e.getMessage());
@@ -75,42 +75,42 @@ public class AssetNewsCollector extends AbstractCollector {
         }
     }
 
-    void collectAssetNews(Asset asset) {
-        List<News> assetNewses = distinctAssetNewsesByTitle(newsClient.getNewses(asset));
-        for (News assetNews : assetNewses) {
+    void collectNews(Asset asset) {
+        List<News> newses = distinctNewsesByTitle(newsClient.getNewses(asset));
+        for (News news : newses) {
             try {
-                String newsId = IdGenerator.md5(assetNews.getNewsUrl());
-                NewsEntity assetNewsEntity = assetNewsRepository.findById(NewsEntity.Pk.builder()
+                String newsId = IdGenerator.md5(news.getNewsUrl());
+                NewsEntity newsEntity = newsRepository.findById(NewsEntity.Pk.builder()
                                 .assetId(newsId)
-                                .datetime(assetNews.getDatetime())
-                                .newsId(assetNews.getNewsId())
+                                .dateTime(news.getDateTime())
+                                .newsId(news.getNewsId())
                                 .build())
                         .orElse(null);
-                if (assetNewsEntity == null) {
-                    assetNewsEntity = NewsEntity.builder()
+                if (newsEntity == null) {
+                    newsEntity = NewsEntity.builder()
                             .assetId(asset.getAssetId())
-                            .datetime(assetNews.getDatetime())
+                            .dateTime(news.getDateTime())
                             .newsId(newsId)
-                            .newsUrl(assetNews.getNewsUrl())
-                            .title(assetNews.getTitle())
+                            .newsUrl(news.getNewsUrl())
+                            .title(news.getTitle())
                             .build();
                 }
 
                 // analysis
-                if (assetNewsEntity.getSentiment() == null) {
-                    analysisAssetNews(assetNewsEntity);
+                if (newsEntity.getSentiment() == null) {
+                    analysisNews(newsEntity);
                 }
 
                 // save news
-                String unitName = String.format("assetNewsEntity[%s]: %s", asset.getAssetName(), assetNewsEntity.getTitle());
-                saveEntities(unitName, List.of(assetNewsEntity), transactionManager, assetNewsRepository);
+                String unitName = String.format("assetNewsEntity[%s]: %s", asset.getAssetName(), newsEntity.getTitle());
+                saveEntities(unitName, List.of(newsEntity), transactionManager, newsRepository);
             } catch (Exception e) {
                 log.warn(e.getMessage());
             }
         }
     }
 
-    List<News> distinctAssetNewsesByTitle(List<News> assetNewses) {
+    List<News> distinctNewsesByTitle(List<News> assetNewses) {
         return new ArrayList<>(assetNewses.stream()
                 .collect(Collectors.toMap(
                         News::getTitle, // key
@@ -120,7 +120,7 @@ public class AssetNewsCollector extends AbstractCollector {
                 .values());
     }
 
-    void analysisAssetNews(NewsEntity newsEntity) {
+    void analysisNews(NewsEntity newsEntity) {
         // config not setting
         if (StringUtils.isBlank(finticsProperties.getAiApiUrl())) {
             return;
@@ -153,6 +153,5 @@ public class AssetNewsCollector extends AbstractCollector {
             log.warn(e.getMessage());
         }
     }
-
 
 }

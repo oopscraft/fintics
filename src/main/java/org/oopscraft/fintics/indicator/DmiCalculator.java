@@ -15,13 +15,13 @@ public class DmiCalculator extends IndicatorCalculator<DmiContext, Dmi> {
     @Override
     public List<Dmi> calculate(List<Ohlcv> series) {
         List<BigDecimal> highSeries = series.stream()
-                .map(Ohlcv::getHighPrice)
+                .map(Ohlcv::getHigh)
                 .toList();
         List<BigDecimal> lowSeries = series.stream()
-                .map(Ohlcv::getLowPrice)
+                .map(Ohlcv::getLow)
                 .toList();
         List<BigDecimal> closeSeries = series.stream()
-                .map(Ohlcv::getClosePrice)
+                .map(Ohlcv::getClose)
                 .toList();
 
         List<BigDecimal> pdms = new ArrayList<>();

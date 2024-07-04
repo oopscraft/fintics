@@ -19,9 +19,9 @@ public class ChaikinOscillatorCalculator extends IndicatorCalculator<ChaikinOsci
         List<BigDecimal> adValues = new ArrayList<>();
         BigDecimal adValue = BigDecimal.ZERO;
         for (Ohlcv ohlcv : series) {
-            BigDecimal closeLowDiff = ohlcv.getClosePrice().subtract(ohlcv.getLowPrice());
-            BigDecimal highCloseDiff = ohlcv.getHighPrice().subtract(ohlcv.getClosePrice());
-            BigDecimal highLowDiff = ohlcv.getHighPrice().subtract(ohlcv.getLowPrice());
+            BigDecimal closeLowDiff = ohlcv.getClose().subtract(ohlcv.getLow());
+            BigDecimal highCloseDiff = ohlcv.getHigh().subtract(ohlcv.getClose());
+            BigDecimal highLowDiff = ohlcv.getHigh().subtract(ohlcv.getLow());
             BigDecimal mfm;
             if (highLowDiff.compareTo(BigDecimal.ZERO) == 0) {
                 mfm = BigDecimal.ZERO;

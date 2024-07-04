@@ -2,10 +2,10 @@ package org.oopscraft.fintics.collector;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.oopscraft.fintics.dao.*;
-import org.oopscraft.fintics.model.Broker;
 import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.client.broker.BrokerClientFactory;
+import org.oopscraft.fintics.dao.*;
+import org.oopscraft.fintics.model.Broker;
 import org.oopscraft.fintics.model.Trade;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -74,10 +74,6 @@ public class AssetCollector extends AbstractCollector {
                         .exchange(asset.getExchange())
                         .type(asset.getType())
                         .marketCap(asset.getMarketCap())
-                        .issuedShares(asset.getIssuedShares())
-                        .per(asset.getPer())
-                        .roe(asset.getRoe())
-                        .roa(asset.getRoa())
                         .build())
                 .collect(Collectors.toList());
         log.info("AssetCollector - save assetEntities:{}", assetEntities.size());

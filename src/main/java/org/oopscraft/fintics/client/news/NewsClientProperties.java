@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.client.asset;
+package org.oopscraft.fintics.client.news;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,9 +14,9 @@ import java.util.Optional;
 @AllArgsConstructor
 @Getter
 @Builder
-public class AssetNewsClientProperties {
+public class NewsClientProperties {
 
-    private final Class<? extends AssetNewsClient> className;
+    private final Class<? extends NewsClient> className;
 
     private final Map<String, String> properties;
 

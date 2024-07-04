@@ -15,7 +15,7 @@ public class MacdCalculator extends IndicatorCalculator<MacdContext, Macd> {
     @Override
     public List<Macd> calculate(List<Ohlcv> series) {
         List<BigDecimal> closePrices = series.stream()
-                .map(Ohlcv::getClosePrice)
+                .map(Ohlcv::getClose)
                 .toList();
 
         List<BigDecimal> values = new ArrayList<>();

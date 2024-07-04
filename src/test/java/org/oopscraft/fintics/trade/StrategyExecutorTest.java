@@ -12,14 +12,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Slf4j
 class StrategyExecutorTest {
@@ -45,49 +40,17 @@ class StrategyExecutorTest {
                 .build();
     }
 
-    List<IndiceProfile> getTestIndiceProfiles() {
-        List<IndiceProfile> indiceProfiles = new ArrayList<>();
-        for(Indice.Id indiceId : Indice.Id.values()) {
-            Indice indice = Indice.from(indiceId);
-            indiceProfiles.add(IndiceProfile.builder()
-                    .target(indice)
-                    .minuteOhlcvs(new ArrayList<Ohlcv>(){{
-                        add(Ohlcv.builder()
-                                .dateTime(LocalDateTime.now())
-                                .openPrice(BigDecimal.TEN)
-                                .highPrice(BigDecimal.TEN)
-                                .lowPrice(BigDecimal.TEN)
-                                .closePrice(BigDecimal.TEN)
-                                .volume(BigDecimal.TEN)
-                                .build());
-                    }})
-                    .dailyOhlcvs(new ArrayList<Ohlcv>(){{
-                        add(Ohlcv.builder()
-                                .dateTime(LocalDate.now().atTime(0,0,0))
-                                .openPrice(BigDecimal.TEN)
-                                .highPrice(BigDecimal.TEN)
-                                .lowPrice(BigDecimal.TEN)
-                                .closePrice(BigDecimal.TEN)
-                                .volume(BigDecimal.TEN)
-                                .build());
-                    }})
-                    .build());
-        }
-        return indiceProfiles;
-    }
-
-    AssetProfile getTestAssetProfile(TradeAsset tradeAsset) {
-        return AssetProfile.builder()
-                .target(tradeAsset)
+    Profile getTestProfile(TradeAsset tradeAsset) {
+        return Profile.builder()
                 .minuteOhlcvs(IntStream.range(1,501)
                         .mapToObj(i -> {
                             BigDecimal price = BigDecimal.valueOf(1000 - (i*10));
                             return Ohlcv.builder()
                                     .dateTime(LocalDateTime.now().minusMinutes(i))
-                                    .openPrice(price)
-                                    .highPrice(price)
-                                    .lowPrice(price)
-                                    .closePrice(price)
+                                    .open(price)
+                                    .high(price)
+                                    .low(price)
+                                    .close(price)
                                     .volume(BigDecimal.valueOf(100))
                                     .build();
                         })
@@ -96,11 +59,11 @@ class StrategyExecutorTest {
                         .mapToObj(i -> {
                             BigDecimal price = BigDecimal.valueOf(1000 - (i*10));
                             return Ohlcv.builder()
-                                    .dateTime(LocalDateTime.now().minusDays(i))
-                                    .openPrice(price)
-                                    .highPrice(price)
-                                    .lowPrice(price)
-                                    .closePrice(price)
+                                    .dateTime(LocalDateTime.now().minusMinutes(i))
+                                    .open(price)
+                                    .high(price)
+                                    .low(price)
+                                    .close(price)
                                     .volume(BigDecimal.valueOf(10000))
                                     .build();
                         })
@@ -131,8 +94,7 @@ class StrategyExecutorTest {
         // given
         Trade trade = getTestTrade();
         TradeAsset tradeAsset = getTestTradeAsset();
-        List<IndiceProfile> indiceProfiles = getTestIndiceProfiles();
-        AssetProfile assetProfile = getTestAssetProfile(tradeAsset);
+        Profile profile = getTestProfile(tradeAsset);
         OrderBook orderBook = getTestOrderBook();
         trade.setStrategyVariables("");
         Strategy strategy = Strategy.builder()
@@ -141,8 +103,7 @@ class StrategyExecutorTest {
 
         // when
         StrategyExecutor strategyExecutor = StrategyExecutor.builder()
-                .indiceProfiles(indiceProfiles)
-                .assetProfile(assetProfile)
+                .profile(profile)
                 .strategy(strategy)
                 .dateTime(LocalDateTime.now())
                 .orderBook(orderBook)

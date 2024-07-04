@@ -5,8 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.client.broker.BrokerClientFactory;
 import org.oopscraft.fintics.dao.*;
-import org.oopscraft.fintics.model.Ohlcv;
 import org.oopscraft.fintics.model.Broker;
+import org.oopscraft.fintics.model.Ohlcv;
 import org.oopscraft.fintics.model.Trade;
 import org.oopscraft.fintics.model.TradeAsset;
 import org.springframework.data.domain.Pageable;
@@ -16,14 +16,14 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class AssetOhlcvCollector extends AbstractCollector {
+public class OhlcvCollector extends AbstractCollector {
 
     private final TradeRepository tradeRepository;
 
@@ -38,20 +38,20 @@ public class AssetOhlcvCollector extends AbstractCollector {
     @Scheduled(initialDelay = 1_000, fixedDelay = 60_000)
     public void collect() {
         try {
-            log.info("AssetOhlcvCollector - Start collect asset ohlcv.");
+            log.info("OhlcvCollector - Start collect ohlcv.");
             List<TradeEntity> tradeEntities = tradeRepository.findAll();
             for (TradeEntity tradeEntity : tradeEntities) {
                 try {
                     Trade trade = Trade.from(tradeEntity);
                     for (TradeAsset tradeAsset : trade.getTradeAssets()) {
-                        saveMinuteAssetOhlcvs(trade, tradeAsset);
-                        saveDailyAssetOhlcvs(trade, tradeAsset);
+                        saveMinuteOhlcvs(trade, tradeAsset);
+                        saveDailyOhlcvs(trade, tradeAsset);
                     }
                 } catch (Throwable e) {
                     log.warn(e.getMessage());
                 }
             }
-            log.info("AssetOhlcvCollector - End collect asset ohlcv");
+            log.info("OhlcvCollector - End collect ohlcv");
         } catch (Throwable e) {
             log.error(e.getMessage(), e);
             sendSystemAlarm(this.getClass(), e.getMessage());
@@ -59,13 +59,13 @@ public class AssetOhlcvCollector extends AbstractCollector {
         }
     }
 
-    private void saveMinuteAssetOhlcvs(Trade trade, TradeAsset tradeAsset) throws InterruptedException {
+    private void saveMinuteOhlcvs(Trade trade, TradeAsset tradeAsset) throws InterruptedException {
         // current
         Broker broker = brokerRepository.findById(trade.getBrokerId())
                 .map(Broker::from)
                 .orElseThrow();
         BrokerClient brokerClient = tradeClientFactory.getObject(broker);
-        List<Ohlcv> minuteOhlcvs = brokerClient.getMinuteAssetOhlcvs(tradeAsset);
+        List<Ohlcv> minuteOhlcvs = brokerClient.getMinuteOhlcvs(tradeAsset);
         if(minuteOhlcvs.isEmpty()) {
             return;
         }
@@ -74,23 +74,23 @@ public class AssetOhlcvCollector extends AbstractCollector {
                 .toList();
 
         // previous
-        Instant datetimeFrom = minuteOhlcvs.get(minuteOhlcvs.size()-1).getDatetime();
-        Instant datetimeTo = minuteOhlcvs.get(0).getDatetime();
+        LocalDateTime datetimeFrom = minuteOhlcvs.get(minuteOhlcvs.size()-1).getDateTime();
+        LocalDateTime datetimeTo = minuteOhlcvs.get(0).getDateTime();
         List<OhlcvEntity> previousMinuteEntities = assetOhlcvRepository.findAllByAssetIdAndType(tradeAsset.getAssetId(), Ohlcv.Type.MINUTE, datetimeFrom, datetimeTo, Pageable.unpaged());
 
         // save new or changed
         List<OhlcvEntity> newOrChangedMinuteOhlcvEntities = extractNewOrChangedOhlcvEntities(minuteOhlcvEntities, previousMinuteEntities);
-        String unitName = String.format("assetMinuteOhlcvEntities[%s]", tradeAsset.getAssetName());
-        log.info("AssetOhlcvCollector - save {}:{}", unitName, newOrChangedMinuteOhlcvEntities.size());
+        String unitName = String.format("minuteOhlcvEntities[%s]", tradeAsset.getAssetName());
+        log.info("OhlcvCollector - save {}:{}", unitName, newOrChangedMinuteOhlcvEntities.size());
         saveEntities(unitName, newOrChangedMinuteOhlcvEntities, transactionManager, assetOhlcvRepository);
     }
 
-    private void saveDailyAssetOhlcvs(Trade trade, TradeAsset tradeAsset) throws InterruptedException {
+    private void saveDailyOhlcvs(Trade trade, TradeAsset tradeAsset) throws InterruptedException {
         Broker broker = brokerRepository.findById(trade.getBrokerId())
                 .map(Broker::from)
                 .orElseThrow();
         BrokerClient brokerClient = tradeClientFactory.getObject(broker);
-        List<Ohlcv> dailyOhlcvs = brokerClient.getDailyAssetOhlcvs(tradeAsset);
+        List<Ohlcv> dailyOhlcvs = brokerClient.getDailyOhlcvs(tradeAsset);
         if(dailyOhlcvs.isEmpty()) {
             return;
         }
@@ -101,21 +101,22 @@ public class AssetOhlcvCollector extends AbstractCollector {
                 .toList();
 
         // previous
-        Instant datetimeFrom = dailyOhlcvs.get(dailyOhlcvs.size()-1).getDatetime();
-        Instant datetimeTo = dailyOhlcvs.get(0).getDatetime();
+        LocalDateTime datetimeFrom = dailyOhlcvs.get(dailyOhlcvs.size()-1).getDateTime();
+        LocalDateTime datetimeTo = dailyOhlcvs.get(0).getDateTime();
         List<OhlcvEntity> previousDailyOhlcvEntities = assetOhlcvRepository.findAllByAssetIdAndType(tradeAsset.getAssetId(), Ohlcv.Type.DAILY, datetimeFrom, datetimeTo, Pageable.unpaged());
 
         // save new or changed
         List<OhlcvEntity> newOrChangedDailyOhlcvEntities = extractNewOrChangedOhlcvEntities(dailyOhlcvEntities, previousDailyOhlcvEntities);
-        String unitName = String.format("assetDailyOhlcvEntities[%s]", tradeAsset.getAssetName());
-        log.info("AssetOhlcvCollector - save {}:{}", unitName, newOrChangedDailyOhlcvEntities.size());
+        String unitName = String.format("dailyOhlcvEntities[%s]", tradeAsset.getAssetName());
+        log.info("OhlcvCollector - save {}:{}", unitName, newOrChangedDailyOhlcvEntities.size());
         saveEntities(unitName, newOrChangedDailyOhlcvEntities, transactionManager, assetOhlcvRepository);
     }
 
     private OhlcvEntity toAssetOhlcvEntity(String assetId, Ohlcv ohlcv) {
         return OhlcvEntity.builder()
                 .assetId(assetId)
-                .datetime(ohlcv.getDatetime())
+                .dateTime(ohlcv.getDateTime())
+                .timeZone(ohlcv.getTimeZone())
                 .type(ohlcv.getType())
                 .open(ohlcv.getOpen())
                 .high(ohlcv.getHigh())
@@ -129,7 +130,7 @@ public class AssetOhlcvCollector extends AbstractCollector {
         return ohlcvEntities.stream()
                 .filter(ohlcvEntity -> {
                     OhlcvEntity previousOhlcvEntity = previousOhlcvEntities.stream()
-                            .filter(item -> item.getDatetime().equals(ohlcvEntity.getDatetime()))
+                            .filter(item -> item.getDateTime().equals(ohlcvEntity.getDateTime()))
                             .findFirst()
                             .orElse(null);
                     return previousOhlcvEntity == null || !equalsOhlcvContent(ohlcvEntity, previousOhlcvEntity);

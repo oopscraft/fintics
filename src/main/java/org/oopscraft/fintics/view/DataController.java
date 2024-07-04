@@ -4,8 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.oopscraft.fintics.client.broker.BrokerClientDefinition;
 import org.oopscraft.fintics.client.broker.BrokerClientDefinitionRegistry;
 import org.oopscraft.fintics.model.Asset;
-import org.oopscraft.fintics.model.Indice;
-import org.oopscraft.fintics.service.IndiceService;
 import org.oopscraft.fintics.service.TradeService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -24,8 +22,6 @@ public class DataController {
 
     private final TradeService tradeService;
 
-    private final IndiceService indiceService;
-
     private final BrokerClientDefinitionRegistry brokerClientDefinitionRegistry;
 
     @GetMapping
@@ -43,9 +39,7 @@ public class DataController {
             assets.addAll(trade.getTradeAssets());
         });
         modelAndView.addObject("assets", assets);
-        // indices
-        List<Indice> indices = indiceService.getIndices();
-        modelAndView.addObject("indices", indices);
+        // return
         return modelAndView;
     }
 

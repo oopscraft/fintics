@@ -7,19 +7,22 @@ import org.oopscraft.fintics.dao.OhlcvEntity;
 
 import javax.persistence.Converter;
 import java.math.BigDecimal;
-import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Data
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class AssetOhlcv {
+public class Ohlcv {
 
     private String assetId;
 
     private Type type;
 
-    private Instant datetime;
+    private LocalDateTime dateTime;
+
+    private ZoneId timeZone;
 
     private BigDecimal open;
 
@@ -36,10 +39,11 @@ public class AssetOhlcv {
     @Converter(autoApply = true)
     public static class TypeConverter extends AbstractEnumConverter<Type> {}
 
-    public static AssetOhlcv of(String assetId, Instant dateTime, double open, double high, double low, double close, double volume) {
-        return AssetOhlcv.builder()
+    public static Ohlcv of(String assetId, LocalDateTime dateTime, ZoneId timeZone, double open, double high, double low, double close, double volume) {
+        return Ohlcv.builder()
                 .assetId(assetId)
-                .datetime(dateTime)
+                .dateTime(dateTime)
+                .timeZone(timeZone)
                 .open(BigDecimal.valueOf(open))
                 .high(BigDecimal.valueOf(high))
                 .low(BigDecimal.valueOf(low))
@@ -48,16 +52,17 @@ public class AssetOhlcv {
                 .build();
     }
 
-    public static AssetOhlcv from(OhlcvEntity assetOhlcvEntity) {
-        return AssetOhlcv.builder()
-                .assetId(assetOhlcvEntity.getAssetId())
-                .type(assetOhlcvEntity.getType())
-                .datetime(assetOhlcvEntity.getDatetime())
-                .open(assetOhlcvEntity.getOpen())
-                .high(assetOhlcvEntity.getHigh())
-                .low(assetOhlcvEntity.getLow())
-                .close(assetOhlcvEntity.getClose())
-                .volume(assetOhlcvEntity.getVolume())
+    public static Ohlcv from(OhlcvEntity ohlcvEntity) {
+        return Ohlcv.builder()
+                .assetId(ohlcvEntity.getAssetId())
+                .type(ohlcvEntity.getType())
+                .dateTime(ohlcvEntity.getDateTime())
+                .timeZone(ohlcvEntity.getTimeZone())
+                .open(ohlcvEntity.getOpen())
+                .high(ohlcvEntity.getHigh())
+                .low(ohlcvEntity.getLow())
+                .close(ohlcvEntity.getClose())
+                .volume(ohlcvEntity.getVolume())
                 .build();
     }
 

@@ -16,6 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.stream.Stream;
@@ -25,17 +26,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @SpringBootTest(classes = FinticsConfiguration.class)
 @RequiredArgsConstructor
 @Slf4j
-class AssetOhlcvPastCollectorTest extends CoreTestSupport {
+class OhlcvPastCollectorTest extends CoreTestSupport {
 
     private final OhlcvPastCollector pastOhlcvCollector;
 
     @PersistenceContext
     private final EntityManager entityManager;
 
-    private final Instant expiredDatetime = Instant.now()
-            .atZone(ZoneId.systemDefault())
-            .minusMonths(1)
-            .toInstant();
+    private final LocalDateTime expiredDatetime = LocalDateTime.now().minusMonths(1);
 
     @Disabled
     @Test
@@ -68,7 +66,7 @@ class AssetOhlcvPastCollectorTest extends CoreTestSupport {
                                 " a from OhlcvEntity a " +
                                 " where a.assetId = :assetId" +
                                 " and a.type = 'MINUTE'" +
-                                "order by a.datetime desc",
+                                "order by a.dateTime desc",
                         OhlcvEntity.class)
                 .setParameter("assetId", asset.getAssetId())
                 .getResultList();
@@ -91,7 +89,7 @@ class AssetOhlcvPastCollectorTest extends CoreTestSupport {
                                 " a from OhlcvEntity a " +
                                 " where a.assetId = :assetId" +
                                 " and a.type = 'DAILY'" +
-                                " order by a.datetime desc",
+                                " order by a.dateTime desc",
                         OhlcvEntity.class)
                 .setParameter("assetId", asset.getAssetId())
                 .getResultList();

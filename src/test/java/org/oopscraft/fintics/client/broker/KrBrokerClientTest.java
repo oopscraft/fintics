@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
 class KrBrokerClientTest {
@@ -41,17 +41,17 @@ class KrBrokerClientTest {
     KrBrokerClient krTradeClient = new KrBrokerClient(krTradeClientDefinition, null) {
 
         @Override
-        public boolean isOpened(LocalDateTime dateTime) throws InterruptedException {
+        public boolean isOpened(LocalDateTime datetime) throws InterruptedException {
             return false;
         }
 
         @Override
-        public List<Ohlcv> getMinuteOhlcvs(Asset asset, LocalDateTime dateTime) throws InterruptedException {
+        public List<Ohlcv> getMinuteOhlcvs(Asset asset) throws InterruptedException {
             return null;
         }
 
         @Override
-        public List<Ohlcv> getDailyOhlcvs(Asset asset, LocalDateTime dateTime) throws InterruptedException {
+        public List<Ohlcv> getDailyOhlcvs(Asset asset) throws InterruptedException {
             return null;
         }
 

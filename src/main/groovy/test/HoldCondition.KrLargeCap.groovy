@@ -14,7 +14,12 @@ import org.oopscraft.fintics.indicator.Obv
 import org.oopscraft.fintics.indicator.ObvContext
 import org.oopscraft.fintics.indicator.Rsi
 import org.oopscraft.fintics.indicator.RsiContext
+import org.oopscraft.fintics.model.Ohlcv
+import org.oopscraft.fintics.model.Ohlcv
+import org.oopscraft.fintics.model.Ohlcv
 import org.oopscraft.fintics.model.BalanceAsset
+import org.oopscraft.fintics.model.Ohlcv
+import org.oopscraft.fintics.model.Ohlcv
 import org.oopscraft.fintics.model.Ohlcv
 
 import java.time.LocalTime
@@ -83,7 +88,7 @@ def getScore(Analysis analysis) {
     // ohlcv
     def ohlcvs = analysis.ohlcvs.take(period)
     def ohlcv = ohlcvs.first()
-    def prices = ohlcvs.collect{it.closePrice}
+    def prices = ohlcvs.collect{it.getClose}
     def pricePctChange =  tool.pctChange(prices)
     score.pricePctChange = pricePctChange > 0 ? 100 : 0
 
@@ -92,7 +97,7 @@ def getScore(Analysis analysis) {
     def ema = emas.first()
     def emaValues = emas.collect{it.value}
     def emaValuePctChange = tool.pctChange(emaValues)
-    score.emaPriceOverValue = ohlcv.closePrice > ema.value ? 100 : 0
+    score.emaPriceOverValue = ohlcv.getClose > ema.value ? 100 : 0
     score.emaValuePctChange = emaValuePctChange > 0 ? 100 : 0
 
     // bb
@@ -101,7 +106,7 @@ def getScore(Analysis analysis) {
     def bbMbbs = bbs.collect{it.getMiddle}
     def bbMbbPctChange = tool.pctChange(bbMbbs)
     score.bbMbbPctChange = bbMbbPctChange > 0 ? 100 : 0
-    score.bbPriceOverMbb = ohlcv.closePrice > bb.getMiddle ? 100 : 0
+    score.bbPriceOverMbb = ohlcv.getClose > bb.getMiddle ? 100 : 0
 
     // macd
     def macds = analysis.macds.take(period)
@@ -180,7 +185,7 @@ def assetName = "${assetIndicator.getAssetName()}(${assetId})"
 
 // ohlcv
 List<Ohlcv> ohlcvs = assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, ohlcvPeriod)
-def prices = ohlcvs.collect{it.closePrice}
+def prices = ohlcvs.collect{it.getClose}
 def price = prices.first()
 
 // zScore

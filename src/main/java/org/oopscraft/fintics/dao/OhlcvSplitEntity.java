@@ -1,20 +1,22 @@
 package org.oopscraft.fintics.dao;
 
 import lombok.*;
+import org.oopscraft.arch4j.core.data.converter.ZoneIdConverter;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Entity
 @Table(name = "fintics_ohlcv_split")
-@IdClass(AssetOhlcvSplitEntity.Pk.class)
+@IdClass(OhlcvSplitEntity.Pk.class)
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 @NoArgsConstructor
-public class AssetOhlcvSplitEntity {
+public class OhlcvSplitEntity {
 
     @Builder
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -22,7 +24,7 @@ public class AssetOhlcvSplitEntity {
     @NoArgsConstructor
     public static class Pk implements Serializable {
         private String assetId;
-        private Instant datetime;
+        private LocalDateTime dateTime;
     }
 
     @Id
@@ -30,8 +32,12 @@ public class AssetOhlcvSplitEntity {
     private String assetId;
 
     @Id
-    @Column(name = "datetime")
-    private Instant datetime;
+    @Column(name = "date_time")
+    private LocalDateTime dateTime;
+
+    @Column(name = "time_zone")
+    @Convert(converter = ZoneIdConverter.class)
+    private ZoneId timeZone;
 
     @Column(name = "split_from")
     private BigDecimal splitFrom;

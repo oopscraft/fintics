@@ -17,9 +17,9 @@ public class SmaCalculatorTest {
     void test1() {
         // given
         List<Ohlcv> ohlcvs = new ArrayList<>(){{
-            add(Ohlcv.builder().closePrice(BigDecimal.valueOf(100)).build());
-            add(Ohlcv.builder().closePrice(BigDecimal.valueOf(200)).build());
-            add(Ohlcv.builder().closePrice(BigDecimal.valueOf(300)).build());
+            add(Ohlcv.builder().close(BigDecimal.valueOf(100)).build());
+            add(Ohlcv.builder().close(BigDecimal.valueOf(200)).build());
+            add(Ohlcv.builder().close(BigDecimal.valueOf(300)).build());
         }};
 
         // when

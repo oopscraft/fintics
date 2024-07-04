@@ -9,7 +9,7 @@ import java.time.Instant;
 
 @Builder
 @Getter
-public class AssetFinancial {
+public class Financial {
 
     private String assetId;
 
@@ -35,10 +35,10 @@ public class AssetFinancial {
 
     private BigDecimal dividendYield;
 
-    public static AssetFinancial from(FinancialEntity assetFinancialEntity) {
-        return AssetFinancial.builder()
+    public static Financial from(FinancialEntity assetFinancialEntity) {
+        return Financial.builder()
                 .assetId(assetFinancialEntity.getAssetId())
-                .datetime(assetFinancialEntity.getDatetime())
+                .datetime(assetFinancialEntity.getDateTime())
                 .issuedShares(assetFinancialEntity.getIssuedShares())
                 .totalAssets(assetFinancialEntity.getTotalAssets())
                 .totalEquity(assetFinancialEntity.getTotalEquity())

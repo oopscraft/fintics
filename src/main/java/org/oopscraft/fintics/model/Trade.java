@@ -5,6 +5,7 @@ import org.oopscraft.fintics.dao.TradeEntity;
 
 import java.math.BigDecimal;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,9 +27,11 @@ public class Trade {
 
     private Integer threshold;
 
-    private LocalTime startAt;
+    private ZoneId timezone;
 
-    private LocalTime endAt;
+    private LocalTime startTime;
+
+    private LocalTime endTime;
 
     private BigDecimal investAmount;
 
@@ -56,8 +59,8 @@ public class Trade {
                 .enabled(tradeEntity.isEnabled())
                 .interval(tradeEntity.getInterval())
                 .threshold(tradeEntity.getThreshold())
-                .startAt(tradeEntity.getStartAt())
-                .endAt(tradeEntity.getEndAt())
+                .startTime(tradeEntity.getStartAt())
+                .endTime(tradeEntity.getEndAt())
                 .investAmount(tradeEntity.getInvestAmount())
                 .brokerId(tradeEntity.getBrokerId())
                 .strategyId(tradeEntity.getStrategyId())

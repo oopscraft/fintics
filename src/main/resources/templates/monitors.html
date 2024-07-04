@@ -8,14 +8,7 @@
     <script th:inline="javascript">
         Chart.defaults.font.size = 8;
         Chart.defaults.animation = false;
-
-        const indices = /*[[${indices}]]*/[];
         const trades = /*[[${trades}]]*/[];
-
-        let indiceDailyOhlcvsChart = null;
-        let indiceMinuteOhlcvsChart = null;
-        const indiceNewses = new duice.ArrayProxy([]);
-
         const tradeAssetDailyOhlcvsChartMap = new Map();
         const tradeAssetMinuteOhlcvsChartMap = new Map();
         const tradeNewsesMap = new Map();
@@ -32,125 +25,20 @@
         trades.forEach(trade => {
             tradeOrdersMap.set(trade.tradeId, new duice.ArrayProxy([]));
         });
-        const tradeLogEventSourceMap = new Map();
 
-        function initializeIndiceMonitor() {
-            indiceDailyOhlcvsChart = _createDailyOhlcvsChart('indiceDailyOhlcvsChart');
-            indiceMinuteOhlcvsChart = _createMinuteOhlcvsChart('indiceMinuteOhlcvsChart');
-        }
-
-        async function getIndiceDailyOhlcvs(indiceId, dateTimeFrom, dateTimeTo) {
-            let url = new URL(`${_apiUrl}/v1/indices/${indiceId}/daily-ohlcvs`, document.location.origin);
-            url.searchParams.append('dateTimeFrom', dateTimeFrom.toISOString());
-            url.searchParams.append('dateTimeTo', dateTimeTo.toISOString());
-            url.searchParams.append('_size', 1000);
+        async function getDailyOhlcvs(assetId) {
+            let url = new URL(`${_apiUrl}/v1/ohlcvs/${assetId}/daily`, document.location.origin);
             return await _fetch(url, null, true);
         }
 
-        async function getIndiceMinuteOhlcvs(indiceId, dateTimeFrom, dateTimeTo) {
-            let url = new URL(`${_apiUrl}/v1/indices/${indiceId}/minute-ohlcvs`, document.location.origin);
-            url.searchParams.append('dateTimeFrom', dateTimeFrom.toISOString());
-            url.searchParams.append('dateTimeTo', dateTimeTo.toISOString());
-            url.searchParams.append('_size', 1000);
+        async function getMinuteOhlcvs(assetId) {
+            let url = new URL(`${_apiUrl}/v1/ohlcvs/${assetId}/minute`, document.location.origin);
             return await _fetch(url, null, true);
         }
 
-        async function getIndiceNewses(indiceId) {
-            let url = new URL(`${_apiUrl}/v1/indices/${indiceId}/newses`, document.location.origin);
+        async function getNewses(assetId) {
+            let url = new URL(`${_apiUrl}/v1/newses/${assetId}`, document.location.origin);
             return await _fetch(url, null, true);
-        }
-
-        async function getAssetDailyOhlcvs(assetId, dateTimeFrom, dateTimeTo) {
-            let url = new URL(`${_apiUrl}/v1/assets/${assetId}/daily-ohlcvs`, document.location.origin);
-            url.searchParams.append('dateTimeFrom', dateTimeFrom.toISOString());
-            url.searchParams.append('dateTimeTo', dateTimeTo.toISOString());
-            url.searchParams.append('_size', 1000);
-            return await _fetch(url, null, true);
-        }
-
-        async function getAssetMinuteOhlcvs(assetId, dateTimeFrom, dateTimeTo) {
-            let url = new URL(`${_apiUrl}/v1/assets/${assetId}/minute-ohlcvs`, document.location.origin);
-            url.searchParams.append('dateTimeFrom', dateTimeFrom.toISOString());
-            url.searchParams.append('dateTimeTo', dateTimeTo.toISOString());
-            url.searchParams.append('_size', 1000);
-            return await _fetch(url, null, true);
-        }
-
-        async function getAssetNewses(assetId) {
-            let url = new URL(`${_apiUrl}/v1/assets/${assetId}/newses`, document.location.origin);
-            return await _fetch(url, null, true);
-        }
-
-        async function getIndiceMonitor() {
-            // define
-            let now = new Date();
-            let dailyFrom = dateFns.subDays(now, 30);
-            let dailyTo = new Date(now.getTime());
-            let minuteFrom = dateFns.subHours(now, 12);
-            let minuteTo = new Date(now.getTime());
-
-            // clear chart
-            indiceDailyOhlcvsChart.data.datasets.length = 0;
-            indiceMinuteOhlcvsChart.data.datasets.length = 0;
-
-            // daily
-            let dailyPromises = indices.map(indice => {
-                return getIndiceDailyOhlcvs(indice.indiceId, dailyFrom, dailyTo)
-                    .then(response => response.json())
-                    .then(ohlcvs => {
-                        let timeSeries = _createTimeSeries(dailyFrom, dailyTo, ohlcvs, 60000*60*24);
-                        return {
-                            label: indice.indiceName,
-                            data: timeSeries,
-                            borderWidth: 1,
-                            pointStyle: false
-                        };
-                    });
-            });
-            Promise.all(dailyPromises).then(results => {
-                results.forEach(dataset => indiceDailyOhlcvsChart.data.datasets.push(dataset));
-                indiceDailyOhlcvsChart.update();
-            });
-
-            // minute
-            let minutePromises = indices.map(indice => {
-                return getIndiceMinuteOhlcvs(indice.indiceId, minuteFrom, minuteTo)
-                    .then(response => response.json())
-                    .then(ohlcvs => {
-                        let timeSeries = _createTimeSeries(minuteFrom, minuteTo, ohlcvs, 60000);
-                        return {
-                            label: indice.indiceName,
-                            data: timeSeries,
-                            borderWidth: 1,
-                            pointStyle: false
-                        };
-                    });
-            });
-            Promise.all(minutePromises).then(results => {
-                results.forEach(dataset => indiceMinuteOhlcvsChart.data.datasets.push(dataset));
-                indiceMinuteOhlcvsChart.update();
-            });
-
-            // news
-            let newsPromises = indices.map(indice => {
-                return getIndiceNewses(indice.indiceId)
-                    .then(response => response.json())
-                    .then(indiceNewses => {
-                        indiceNewses.forEach(it => {
-                            it.indiceId = indice.indiceId;
-                            it.indiceName = indice.indiceName;
-                        });
-                        return indiceNewses;
-                    });
-            });
-            Promise.all(newsPromises).then(results => {
-                let newses = [];
-                results.forEach(result => {
-                    newses.push.apply(newses, result);
-                });
-                newses.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
-                duice.ArrayProxy.assign(indiceNewses, newses);
-            });
         }
 
         function initializeTradeMonitors() {
@@ -174,20 +62,12 @@
         }
 
         async function getTradeMonitor(trade) {
-            // define date from
-            let now = new Date();
-            let dailyFrom = dateFns.subDays(now, 30);
-            let dailyTo = new Date(now.getTime());
-            let minuteFrom = dateFns.subHours(now, 12);
-            let minuteTo = new Date(now.getTime());
-
             // asset chart
             let dailyOhlcvsChart = tradeAssetDailyOhlcvsChartMap.get(trade.tradeId);
             let minuteOhlcvsChart = tradeAssetMinuteOhlcvsChartMap.get(trade.tradeId);
-            dailyOhlcvsChart.options.scales.x.min = dailyFrom;
-            dailyOhlcvsChart.options.scales.x.max = dailyTo;
-            minuteOhlcvsChart.options.scales.x.min = minuteFrom;
-            minuteOhlcvsChart.options.scales.x.max = minuteTo;
+            const now = new Date();
+            dailyOhlcvsChart.options.scales.x.max = now;
+            minuteOhlcvsChart.options.scales.x.max = now;
             dailyOhlcvsChart.data.datasets.length = 0;
             minuteOhlcvsChart.data.datasets.length = 0;
 
@@ -195,10 +75,10 @@
             const dailyPromises = trade.tradeAssets
                 .filter(tradeAsset => tradeAsset.enabled)
                 .map(async tradeAsset => {
-                    return getAssetDailyOhlcvs(tradeAsset.assetId, dailyFrom, dailyTo)
+                    return getDailyOhlcvs(tradeAsset.assetId)
                         .then(response => response.json())
                         .then(ohlcvs => {
-                            let timeSeries = _createTimeSeries(dailyFrom, dailyTo, ohlcvs);
+                            let timeSeries = _createTimeSeries(ohlcvs);
                             return {
                                 label: tradeAsset.assetName,
                                 data: timeSeries,
@@ -216,10 +96,10 @@
             const minutePromises = trade.tradeAssets
                 .filter(tradeAsset => tradeAsset.enabled)
                 .map(async tradeAsset => {
-                    return getAssetMinuteOhlcvs(tradeAsset.assetId, minuteFrom, minuteTo)
+                    return getMinuteOhlcvs(tradeAsset.assetId)
                         .then(response => response.json())
                         .then(ohlcvs => {
-                            let timeSeries = _createTimeSeries(minuteFrom, minuteTo, ohlcvs);
+                            let timeSeries = _createTimeSeries(ohlcvs);
                             return {
                                 label: tradeAsset.assetName,
                                 data: timeSeries,
@@ -235,7 +115,7 @@
 
             // news
             let newsPromises = trade.tradeAssets.map(asset => {
-                return getAssetNewses(asset.assetId)
+                return getNewses(asset.assetId)
                     .then(response => response.json())
                     .then(newses => {
                         newses.forEach(it => {
@@ -301,14 +181,11 @@
             tabFolder.setActive(0);
 
             // initialize
-            initializeIndiceMonitor();
             initializeTradeMonitors();
 
             // refresh
-            getIndiceMonitor();
             getTradeMonitors();
             setInterval(function() {
-                getIndiceMonitor();
                 getTradeMonitors();
             }, 1000*60);
         });
@@ -338,72 +215,6 @@
     <!-- ====================================== -->
     <!-- end: title                             -->
     <!-- ====================================== -->
-
-    <!-- ================================== -->
-    <!-- start: indice                      -->
-    <!-- ================================== -->
-    <div class="border--1 padding--1em">
-        <h2>
-            <img class="icon" th:src="@{/static/image/icon-indice.svg}" alt="indice"/>
-            <span data-th-text="#{fintics.Indice}"></span>
-        </h2>
-        <div class="display--grid grid-template-columns--12 padding--1em s__padding--0">
-            <div class="grid-column--6 s__grid-column--12" style="height:150px;">
-                <div class="font-weight--bold">
-                    <img class="icon" src="/static/image/icon-ohlcv.svg" alt="ohlcv">
-                    <span>Daily</span>
-                </div>
-                <canvas id="indiceDailyOhlcvsChart"></canvas>
-            </div>
-            <div class="grid-column--6 s__grid-column--12" style="height:150px;">
-                <div class="font-weight--bold">
-                    <img class="icon" src="/static/image/icon-ohlcv.svg" alt="ohlcv">
-                    <span>Minute</span>
-                </div>
-                <canvas id="indiceMinuteOhlcvsChart"></canvas>
-            </div>
-            <div class="grid-column--12">
-                <div class="font-weight--bold">
-                    <img class="icon" src="/static/image/icon-news.svg" alt="ohlcv">
-                    <span data-th-text="#{fintics.News}"></span>
-                </div>
-                <div class="overflow-y--scroll overflow-x-scroll border-top--1" style="height:150px;">
-                    <table class="width--100 border-top--0" style="line-height:normal;">
-                        <colgroup>
-                            <col style="width:10em;"/>
-                            <col/>
-                            <col/>
-                            <col style="width:10em;"/>
-                            <col style="width:10em;"/>
-                        </colgroup>
-                        <thead>
-                        <tr class="font-size--smaller">
-                            <th data-th-text="#{fintics.News.dateTime}"></th>
-                            <th data-th-text="#{fintics.Indice}"></th>
-                            <th data-th-text="#{fintics.News.title}"></th>
-                            <th data-th-text="#{fintics.News.sentiment}" class="text-align--center"></th>
-                            <th data-th-text="#{fintics.News.confidence}" class="text-align--center"></th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr data-duice-bind="indiceNewses" data-duice-loop="indiceNews,status" class="font-size--smaller">
-                            <td data-duice-bind="indiceNews" data-duice-property="dateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
-                            <td data-duice-bind="indiceNews" data-duice-property="indiceName"></td>
-                            <td>
-                                <a href="#" onclick="_openLink(this.dataset.newsUrl,'_blank');" data-duice-bind="indiceNews" data-duice-property="title" data-duice-execute="this.dataset.newsUrl=indiceNews.newsUrl;"></a>
-                            </td>
-                            <td data-duice-bind="indiceNews" data-duice-property="sentiment" class="text-align--center"></td>
-                            <td data-duice-bind="indiceNews" data-duice-property="confidence" class="text-align--center"></td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- ================================== -->
-    <!-- end: indice                        -->
-    <!-- ================================== -->
 
     <!-- ====================================== -->
     <!-- start: tab index                       -->
@@ -441,7 +252,7 @@
                     let tradeAsset = tradeAssetsMap.get(tradeAssetStatus.tradeId)
                         .find(tradeAsset => tradeAsset.assetId === tradeAssetStatus.assetId);
                     if (tradeAsset) {
-                        tradeAsset.tradeAssetStatus.closePrice = tradeAssetStatus.closePrice;
+                        tradeAsset.tradeAssetStatus.close = tradeAssetStatus.close;
                         tradeAsset.tradeAssetStatus.netChange = tradeAssetStatus.netChange;
                         tradeAsset.tradeAssetStatus.netChangePercentage = tradeAssetStatus.netChangePercentage;
                         tradeAsset.tradeAssetStatus.message = tradeAssetStatus.message;
@@ -636,12 +447,12 @@
                             <small style="opacity:0.5;">|</small>
                             <span class="font-weight--bold" data-duice-bind="tradeAsset" data-duice-property="tradeAssetStatus.netChange" data-duice-execute="
                             if (tradeAsset.tradeAssetStatus) {
-                                let closePrice = tradeAsset.tradeAssetStatus.closePrice;
+                                let close = tradeAsset.tradeAssetStatus.close;
                                 let netChange = tradeAsset.tradeAssetStatus.netChange;
                                 let netChangePercentage = tradeAsset.tradeAssetStatus.netChangePercentage;
                                 if (netChange > 0) this.classList.add('color--red');
                                 if (netChange < 0) this.classList.add('color--blue');
-                                this.innerHTML = `${closePrice?.toLocaleString()||''} <small>(${netChange} | ${netChangePercentage}</small>%)`;
+                                this.innerHTML = `${close?.toLocaleString()||''} <small>(${netChange} | ${netChangePercentage}</small>%)`;
                             }
                             "></span>
                         </td>

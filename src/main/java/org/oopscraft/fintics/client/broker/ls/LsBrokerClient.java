@@ -1,7 +1,7 @@
-package org.oopscraft.fintics.client.broker.ebest;
+package org.oopscraft.fintics.client.broker.ls;
 
 /**
- * TODO
+ * TODO LS투자증권
  */
-public class EbestBrokerClient {
+public class LsBrokerClient {
 }

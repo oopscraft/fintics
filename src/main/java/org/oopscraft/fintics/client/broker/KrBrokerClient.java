@@ -26,34 +26,45 @@ import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
-import java.time.DayOfWeek;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * KR market abstract broker client
+ * 한국 시장 증권사 연동 추상 클래스
+ */
 public abstract class KrBrokerClient extends BrokerClient {
 
+    /**
+     * constructor
+     * @param definition client definition
+     * @param properties client properties
+     */
     public KrBrokerClient(BrokerClientDefinition definition, Properties properties) {
         super(definition, properties);
     }
 
+    /**
+     * check exchange opened
+     * @param datetime datetime
+     * @return is open
+     */
     @Override
-    public boolean isOpened(LocalDateTime dateTime) throws InterruptedException {
-        ZonedDateTime systemZonedDateTime = dateTime.atZone(ZoneId.systemDefault());
-        ZonedDateTime koreaZonedDateTime = systemZonedDateTime.withZoneSameInstant(ZoneId.of("Asia/Seoul"));
-
-        // weekend
-        DayOfWeek dayOfWeek = koreaZonedDateTime.getDayOfWeek();
+    public boolean isOpened(LocalDateTime datetime) throws InterruptedException {
+        // check weekend
+        DayOfWeek dayOfWeek = datetime.getDayOfWeek();
         if (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
             return false;
         }
-
         // default
         return true;
     }
 
+    /**
+     * returns assets to trade
+     * @return assets
+     */
     @Override
     public List<Asset> getAssets() {
         List<Asset> assets = new ArrayList<>();
@@ -63,6 +74,12 @@ public abstract class KrBrokerClient extends BrokerClient {
         return assets;
     }
 
+    /**
+     * returns asset list by exchange type
+     * 코스피, 코스닥 여부에 따라 다른 부분이 존재 함.
+     * @param exchangeType exchange type
+     * @return assets
+     */
     protected List<Asset> getStockAssetsByExchangeType(String exchangeType) {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
@@ -126,16 +143,15 @@ public abstract class KrBrokerClient extends BrokerClient {
                         .market(market)
                         .exchange(exchange)
                         .type("STOCK")
-                        .dateTime(LocalDateTime.now())
                         .marketCap(toNumber(row.get("MARTP_TOTAMT"), null))
-                        .issuedShares(toNumber(row.get("TOT_ISSU_STKQTY"), null))
-                        .per(toNumber(row.get("PER"), null))
-                        .roe(toNumber(row.get("ROE"), null))
-                        .roa(toNumber(row.get("ROA"), null))
                         .build())
                 .collect(Collectors.toList());
     }
 
+    /**
+     * returns ETF assets
+     * @return ETF assets
+     */
     protected List<Asset> getEtfAssets() {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
@@ -204,13 +220,17 @@ public abstract class KrBrokerClient extends BrokerClient {
                             .market(market)
                             .exchange(exchange)
                             .type("ETF")
-                            .dateTime(LocalDateTime.now())
                             .marketCap(marketCap)
                             .build();
                 })
                 .collect(Collectors.toList());
     }
 
+    /**
+     * returns seibro api header
+     * @param w2xPath w2xPath
+     * @return http headers for seibro
+     */
     private static HttpHeaders createSeibroHeaders(String w2xPath) {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Accept", "application/xml");
@@ -219,6 +239,13 @@ public abstract class KrBrokerClient extends BrokerClient {
         return headers;
     }
 
+    /**
+     * creates payload XML string
+     * @param action seibro api action
+     * @param task seibro api task
+     * @param payloadMap payload map
+     * @return payload XML string
+     */
     protected static String createPayloadXml(String action, String task, Map<String,String> payloadMap) {
         // Create a new Document
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -266,6 +293,11 @@ public abstract class KrBrokerClient extends BrokerClient {
         }
     }
 
+    /**
+     * convert seibro response XML to list
+     * @param responseXml response XML
+     * @return list of seibro response map
+     */
     public static List<Map<String, String>> convertXmlToList(String responseXml) {
         List<Map<String,String>> list = new ArrayList<>();
         InputSource inputSource;
@@ -305,33 +337,12 @@ public abstract class KrBrokerClient extends BrokerClient {
         return list;
     }
 
-    protected static Map<String, String> convertXmlToMap(String responseXml) {
-        Map<String, String> map  = new LinkedHashMap<>();
-        InputSource inputSource;
-        StringReader stringReader;
-        try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            stringReader = new StringReader(responseXml);
-            inputSource = new InputSource(stringReader);
-            Document document = builder.parse(inputSource);
-            XPathFactory xPathFactory = XPathFactory.newInstance();
-            XPath xPath = xPathFactory.newXPath();
-
-            XPathExpression expr = xPath.compile("/result/*");
-            NodeList propertyNodes = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
-            for(int i = 0; i < propertyNodes.getLength(); i++) {
-                Element propertyElement = (Element) propertyNodes.item(i);
-                String propertyName = propertyElement.getTagName();
-                String propertyValue = propertyElement.getAttribute("value");
-                map.put(propertyName, propertyValue);
-            }
-        }catch(Throwable e) {
-            throw new RuntimeException(e);
-        }
-        return map;
-    }
-
+    /**
+     * convert to string to number
+     * @param value number string
+     * @param defaultValue default number
+     * @return converted number
+     */
     public static BigDecimal toNumber(Object value, BigDecimal defaultValue) {
         try {
             String valueString = value.toString().replace(",", "");
@@ -341,48 +352,8 @@ public abstract class KrBrokerClient extends BrokerClient {
         }
     }
 
-    protected static String getIsin(String symbol) {
-        Map<String, String> map = getSecInfo(symbol);
-        return Optional.ofNullable(map.get("ISIN"))
-                .orElseThrow();
-    }
-
-    protected static String getIssucoCustNo(String symbol) {
-        Map<String, String> map = getSecInfo(symbol);
-        return Optional.ofNullable(map.get("ISSUCO_CUSTNO"))
-                .orElseThrow();
-    }
-
-    protected static Map<String, String> getSecInfo(String symbol) {
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .readTimeout(30_000)
-                .build();
-
-        String url = "https://seibro.or.kr/websquare/engine/proworks/callServletService.jsp";
-
-        String w2xPath = "/IPORTAL/user/stock/BIP_CNTS02006V.xml";
-        HttpHeaders headers = createSeibroHeaders(w2xPath);
-        headers.setContentType(MediaType.APPLICATION_XML);
-
-        String action = "secnInfoDefault";
-        String task = "ksd.safe.bip.cnts.Stock.process.SecnInfoPTask";
-        Map<String,String> payloadMap = new LinkedHashMap<>(){{
-            put("W2XPATH", w2xPath);
-            put("SHOTN_ISIN", symbol);
-        }};
-        String payloadXml = createPayloadXml(action, task, payloadMap);
-
-        RequestEntity<String> requestEntity = RequestEntity.post(url)
-                .headers(headers)
-                .body(payloadXml);
-        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
-
-        String responseBody = responseEntity.getBody();
-        return convertXmlToMap(responseBody);
-    }
-
     /**
+     * 호가 단위 반환 (정책은 아래 주소를 참조)
      * https://securities.koreainvestment.com/main/customer/notice/Notice.jsp?&cmd=TF04ga000002&currentPage=1&num=39930
      */
     @Override

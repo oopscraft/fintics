@@ -1,30 +1,22 @@
 package org.oopscraft.fintics.api.v1;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.web.support.PageableUtils;
 import org.oopscraft.fintics.api.v1.dto.*;
-import org.oopscraft.fintics.model.*;
 import org.oopscraft.fintics.service.DataService;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/data")
@@ -34,21 +26,33 @@ import java.util.stream.Collectors;
 @Tag(name = "data", description = "Data")
 public class DataRestController {
 
-    private static final List<OhlcvSummaryResponse> assetOhlcvSummaryResponses = new CopyOnWriteArrayList<>();
+    private static final List<OhlcvSummaryResponse> ohlcvSummaryResponses = new CopyOnWriteArrayList<>();
 
-    private static CompletableFuture<Void> assetOhlcvSummaryResponsesFuture = new CompletableFuture<>();
-
-    private static final List<OhlcvSummaryResponse> indiceOhlcvSummaryResponses = new CopyOnWriteArrayList<>();
-
-    private static CompletableFuture<Void> indiceOhlcvSummaryResponsesFuture = new CompletableFuture<>();
+    private static CompletableFuture<Void> ohlcvSummaryResponsesFuture = new CompletableFuture<>();
 
     private final DataService dataService;
 
+    /**
+     * gets assets
+     * @param assetId asset id
+     * @param assetName asset name
+     * @param market market
+     * @param pageable pageable
+     * @return list of assets
+     */
     @GetMapping("assets")
+    @Operation(description = "gets assets")
     public ResponseEntity<List<AssetResponse>> getAssets(
-            @RequestParam(value = "assetId", required = false) String assetId,
-            @RequestParam(value = "assetName", required = false) String assetName,
-            @RequestParam(value = "market", required = false) String market,
+            @RequestParam(value = "assetId", required = false)
+            @Parameter(description = "asset id")
+                    String assetId,
+            @RequestParam(value = "assetName", required = false)
+            @Parameter(description = "asset name")
+                    String assetName,
+            @RequestParam(value = "market", required = false)
+            @Parameter(description = "market")
+                    String market,
+            @Parameter(hidden = true)
             Pageable pageable
     ) {
         List<AssetResponse> assetResponses = dataService.getAssets(assetId, assetName, market, pageable).stream()
@@ -59,89 +63,75 @@ public class DataRestController {
                 .body(assetResponses);
     }
 
-    @GetMapping("asset-ohlcv-summaries")
-    public ResponseEntity<List<OhlcvSummaryResponse>> getAssetOhlcvSummaries() {
-        if (assetOhlcvSummaryResponses.isEmpty()) {
-            assetOhlcvSummaryResponses.addAll(dataService.getAssetOhlcvSummaries().stream()
+    /**
+     * gets ohlcv summary list
+     * @return ohlcv summary list
+     */
+    @GetMapping("ohlcv-summaries")
+    @Operation(description = "ohlcv summaries")
+    public ResponseEntity<List<OhlcvSummaryResponse>> getOhlcvSummaries() {
+        if (ohlcvSummaryResponses.isEmpty()) {
+            ohlcvSummaryResponses.addAll(dataService.getOhlcvSummaries().stream()
                     .map(OhlcvSummaryResponse::from)
                     .toList());
-            return ResponseEntity.ok(assetOhlcvSummaryResponses);
+            return ResponseEntity.ok(ohlcvSummaryResponses);
         } else {
-            if (assetOhlcvSummaryResponsesFuture.isDone()) {
-                assetOhlcvSummaryResponsesFuture = CompletableFuture.runAsync(() -> {
-                    assetOhlcvSummaryResponses.clear();
-                    assetOhlcvSummaryResponses.addAll(dataService.getAssetOhlcvSummaries().stream()
+            if (ohlcvSummaryResponsesFuture.isDone()) {
+                ohlcvSummaryResponsesFuture = CompletableFuture.runAsync(() -> {
+                    ohlcvSummaryResponses.clear();
+                    ohlcvSummaryResponses.addAll(dataService.getOhlcvSummaries().stream()
                             .map(OhlcvSummaryResponse::from)
                             .toList());
                 });
             }
-            return ResponseEntity.ok(assetOhlcvSummaryResponses);
+            return ResponseEntity.ok(ohlcvSummaryResponses);
         }
     }
 
-    @GetMapping("asset-ohlcv-summaries/{assetId}")
-    public ResponseEntity<OhlcvSummaryResponse> getAssetOhlcvSummary(@PathVariable("assetId") String assetId) {
-        OhlcvSummaryResponse assetOhlcvSummaryResponse = dataService.getAssetOhlcvSummary(assetId)
+    /**
+     * gets ohlcv summary info
+     * @param assetId asset id
+     * @return ohlcv summary
+     */
+    @GetMapping("ohlcv-summaries/{assetId}")
+    @Operation(description = "gets ohlcv summaries")
+    public ResponseEntity<OhlcvSummaryResponse> getOhlcvSummary(
+            @PathVariable("assetId")
+            @Parameter(description = "asset id")
+                    String assetId
+    ) {
+        OhlcvSummaryResponse assetOhlcvSummaryResponse = dataService.getOhlcvSummary(assetId)
                 .map(OhlcvSummaryResponse::from)
                 .orElseThrow();
         return ResponseEntity.ok(assetOhlcvSummaryResponse);
     }
 
-    @GetMapping("indice-ohlcv-summaries")
-    public ResponseEntity<List<OhlcvSummaryResponse>> getIndiceOhlcvSummaries() {
-        if (indiceOhlcvSummaryResponses.isEmpty()) {
-            indiceOhlcvSummaryResponses.addAll(dataService.getIndiceOhlcvSummaries().stream()
-                    .map(OhlcvSummaryResponse::from)
-                    .toList());
-            return ResponseEntity.ok(indiceOhlcvSummaryResponses);
-        } else {
-            if (indiceOhlcvSummaryResponsesFuture.isDone()) {
-                indiceOhlcvSummaryResponsesFuture = CompletableFuture.runAsync(() -> {
-                    indiceOhlcvSummaryResponses.clear();
-                    indiceOhlcvSummaryResponses.addAll(dataService.getIndiceOhlcvSummaries().stream()
-                            .map(OhlcvSummaryResponse::from)
-                            .toList());
-                });
-            }
-            return ResponseEntity.ok(indiceOhlcvSummaryResponses);
-        }
-    }
-
-    @GetMapping("indice-ohlcv-summaries/{indiceId}")
-    public ResponseEntity<OhlcvSummaryResponse> getIndiceOhlcvSummary(@PathVariable("indiceId") Indice.Id indiceId) {
-        OhlcvSummaryResponse indiceOhlcvSummaryResponse = dataService.getIndiceOhlcvSummary(indiceId)
-                .map(OhlcvSummaryResponse::from)
-                .orElseThrow();
-        return ResponseEntity.ok(indiceOhlcvSummaryResponse);
-    }
-
-    @GetMapping("asset-news-summaries")
-    public ResponseEntity<List<NewsSummaryResponse>> getAssetNewsSummaries() {
-        List<NewsSummaryResponse> assetNewsSummaryResponses = dataService.getAssetNewsSummaries().stream()
+    /**
+     * gets news summaries
+     * @return list of news summary
+     */
+    @GetMapping("news-summaries")
+    @Operation(description = "gets news summaries")
+    public ResponseEntity<List<NewsSummaryResponse>> getNewsSummaries() {
+        List<NewsSummaryResponse> assetNewsSummaryResponses = dataService.getNewsSummaries().stream()
                 .map(NewsSummaryResponse::from)
                 .toList();
         return ResponseEntity.ok(assetNewsSummaryResponses);
     }
 
-    @GetMapping("asset-news-summaries/{assetId}")
-    public ResponseEntity<NewsSummaryResponse> getAssetNewSummary(@PathVariable("assetId") String assetId) {
-        NewsSummaryResponse newsSummaryResponse = dataService.getAssetNewsSummary(assetId)
-                .map(NewsSummaryResponse::from)
-                .orElseThrow();
-        return ResponseEntity.ok(newsSummaryResponse);
-    }
-
-    @GetMapping("indice-news-summaries")
-    public ResponseEntity<List<NewsSummaryResponse>> getIndiceNewsSummaries() {
-        List<NewsSummaryResponse> indiceNewsSummaryResponses = dataService.getIndiceNewsSummaries().stream()
-                .map(NewsSummaryResponse::from)
-                .toList();
-        return ResponseEntity.ok(indiceNewsSummaryResponses);
-    }
-
-    @GetMapping("indice-news-summaries/{indiceId}")
-    public ResponseEntity<NewsSummaryResponse> getIndiceNewsSummary(@PathVariable("indiceId") Indice.Id indiceId) {
-        NewsSummaryResponse newsSummaryResponse = dataService.getIndiceNewsSummary(indiceId)
+    /**
+     * gets news summary
+     * @param assetId asset id
+     * @return news summary
+     */
+    @GetMapping("news-summaries/{assetId}")
+    @Operation(description = "gets news summary")
+    public ResponseEntity<NewsSummaryResponse> getNewSummary(
+            @PathVariable("assetId")
+            @Parameter(description = "asset id")
+                    String assetId
+    ) {
+        NewsSummaryResponse newsSummaryResponse = dataService.getNewsSummary(assetId)
                 .map(NewsSummaryResponse::from)
                 .orElseThrow();
         return ResponseEntity.ok(newsSummaryResponse);

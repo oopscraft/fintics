@@ -13,6 +13,7 @@ import org.oopscraft.fintics.dao.SimulateEntity;
 
 import javax.persistence.Converter;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,10 +27,10 @@ public class Simulate {
     private String simulateId;
 
     @Setter
-    private LocalDateTime startedAt;
+    private Instant startedAt;
 
     @Setter
-    private LocalDateTime endedAt;
+    private Instant endedAt;
 
     @Setter
     @Builder.Default
@@ -43,9 +44,9 @@ public class Simulate {
 
     private final Strategy strategy;
 
-    private final LocalDateTime dateTimeFrom;
+    private final LocalDateTime investFrom;
 
-    private final LocalDateTime dateTimeTo;
+    private final LocalDateTime investTo;
 
     private BigDecimal investAmount;
 
@@ -55,7 +56,7 @@ public class Simulate {
     private boolean favorite;
 
     @Setter
-    private LocalDateTime dateTime;
+    private LocalDateTime datetime;
 
     @Setter
     private BigDecimal totalAmount;
@@ -143,11 +144,11 @@ public class Simulate {
                 .tradeName(simulateEntity.getTradeName())
                 .trade(trade)
                 .strategy(strategy)
-                .dateTimeFrom(simulateEntity.getDateTimeFrom())
-                .dateTimeTo(simulateEntity.getDateTimeTo())
+                .investFrom(simulateEntity.getInvestFrom())
+                .investTo(simulateEntity.getInvestTo())
                 .investAmount(simulateEntity.getInvestAmount())
                 .feeRate(simulateEntity.getFeeRate())
-                .dateTime(simulateEntity.getDateTime())
+                .datetime(simulateEntity.getDateTime())
                 .favorite(simulateEntity.isFavorite())
                 .totalAmount(simulateEntity.getTotalAmount())
                 .profitAmount(simulateEntity.getProfitAmount())

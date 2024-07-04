@@ -3,11 +3,10 @@ package org.oopscraft.fintics.dao;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.arch4j.core.data.BaseEntity;
-import org.oopscraft.arch4j.core.data.converter.BooleanToYNConverter;
+import org.oopscraft.arch4j.core.data.converter.BooleanConverter;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "fintics_asset")
@@ -34,26 +33,15 @@ public class AssetEntity extends BaseEntity {
     @Column(name = "type", length = 16)
     private String type;
 
-    @Column(name = "favorite")
-    @Convert(converter = BooleanToYNConverter.class)
-    private boolean favorite;
-
-    @Column(name = "date_time")
-    private LocalDateTime dateTime;
-
     @Column(name = "market_cap", precision = 32)
     private BigDecimal marketCap;
 
-    @Column(name = "issued_shares", precision = 32)
-    private BigDecimal issuedShares;
+    @Column(name = "favorite")
+    @Convert(converter = BooleanConverter.class)
+    private boolean favorite;
 
-    @Column(name = "per", scale = 2)
-    private BigDecimal per;
-
-    @Column(name = "roe", scale = 2)
-    private BigDecimal roe;
-
-    @Column(name = "roa", scale = 2)
-    private BigDecimal roa;
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "asset_id")
+    private FinancialEntity financialEntity;
 
 }

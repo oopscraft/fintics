@@ -3,12 +3,14 @@ package org.oopscraft.fintics.dao;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.arch4j.core.data.BaseEntity;
-import org.oopscraft.arch4j.core.data.converter.BooleanToYNConverter;
+import org.oopscraft.arch4j.core.data.converter.BooleanConverter;
+import org.oopscraft.arch4j.core.data.converter.ZoneIdConverter;
 import org.oopscraft.fintics.model.Order;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,7 +31,7 @@ public class TradeEntity extends BaseEntity {
     private String tradeName;
 
     @Column(name = "enabled", length = 1)
-    @Convert(converter = BooleanToYNConverter.class)
+    @Convert(converter = BooleanConverter.class)
     private boolean enabled;
 
     @Column(name = "interval")
@@ -64,11 +66,11 @@ public class TradeEntity extends BaseEntity {
     private String alarmId;
 
     @Column(name = "alarm_on_error", length = 1)
-    @Convert(converter = BooleanToYNConverter.class)
+    @Convert(converter = BooleanConverter.class)
     private boolean alarmOnError;
 
     @Column(name = "alarm_on_order", length = 1)
-    @Convert(converter = BooleanToYNConverter.class)
+    @Convert(converter = BooleanConverter.class)
     private boolean alarmOnOrder;
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)

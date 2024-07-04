@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.client.asset;
+package org.oopscraft.fintics.client.ohlcv;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,9 +14,9 @@ import java.util.Optional;
 @AllArgsConstructor
 @Getter
 @Builder
-public class AssetOhlcvClientProperties {
+public class OhlcvClientProperties {
 
-    private final Class<? extends AssetOhlcvClient> className;
+    private final Class<? extends OhlcvClient> className;
 
     private final Map<String, String> properties;
 

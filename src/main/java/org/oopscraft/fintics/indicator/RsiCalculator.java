@@ -23,8 +23,8 @@ public class RsiCalculator extends IndicatorCalculator<RsiContext, Rsi> {
                 priceChanges.add(BigDecimal.ZERO);
                 continue;
             }
-            BigDecimal priceChange = series.get(i).getClosePrice()
-                    .subtract(series.get(i - 1).getClosePrice());
+            BigDecimal priceChange = series.get(i).getClose()
+                    .subtract(series.get(i - 1).getClose());
             priceChanges.add(priceChange);
         }
 

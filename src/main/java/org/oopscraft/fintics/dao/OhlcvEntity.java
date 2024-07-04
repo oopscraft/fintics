@@ -3,22 +3,25 @@ package org.oopscraft.fintics.dao;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.arch4j.core.data.BaseEntity;
-import org.oopscraft.fintics.model.AssetOhlcv;
+import org.oopscraft.arch4j.core.data.converter.BooleanConverter;
+import org.oopscraft.arch4j.core.data.converter.ZoneIdConverter;
+import org.oopscraft.fintics.model.Ohlcv;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Entity
 @Table(name = "fintics_ohlcv")
-@IdClass(AssetOhlcvEntity.Pk.class)
+@IdClass(OhlcvEntity.Pk.class)
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class AssetOhlcvEntity extends BaseEntity {
+public class OhlcvEntity extends BaseEntity {
 
     @Data
     @Builder
@@ -26,8 +29,8 @@ public class AssetOhlcvEntity extends BaseEntity {
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public static class Pk implements Serializable {
         private String assetId;
-        private AssetOhlcv.Type type;
-        private Instant datetime;
+        private Ohlcv.Type type;
+        private LocalDateTime dateTime;
     }
 
     @Id
@@ -35,13 +38,17 @@ public class AssetOhlcvEntity extends BaseEntity {
     private String assetId;
 
     @Id
-    @Column(name = "type", length = 32)
+    @Column(name = "type", length = 16)
     @Enumerated(EnumType.STRING)
-    private AssetOhlcv.Type type;
+    private Ohlcv.Type type;
 
     @Id
-    @Column(name = "datetime")
-    private Instant datetime;
+    @Column(name = "date_time")
+    private LocalDateTime dateTime;
+
+    @Column(name = "time_zone")
+    @Convert(converter = ZoneIdConverter.class)
+    private ZoneId timeZone;
 
     @Column(name = "open", scale = 4)
     private BigDecimal open;

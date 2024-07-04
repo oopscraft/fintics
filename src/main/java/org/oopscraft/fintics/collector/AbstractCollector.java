@@ -1,5 +1,6 @@
 package org.oopscraft.fintics.collector;
 
+import lombok.experimental.SuperBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
 import org.oopscraft.fintics.FinticsProperties;

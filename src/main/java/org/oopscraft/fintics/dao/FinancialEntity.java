@@ -15,14 +15,14 @@ import java.time.Instant;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class AssetFinancialEntity extends BaseEntity {
+public class FinancialEntity extends BaseEntity {
 
     @Id
     @Column(name = "asset_id")
     private String assetId;
 
-    @Column(name = "datetime")
-    private Instant datetime;
+    @Column(name = "date_time")
+    private Instant dateTime;
 
     @Column(name = "issued_shares", precision = 32)
     private BigDecimal issuedShares;

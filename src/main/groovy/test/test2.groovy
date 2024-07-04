@@ -15,7 +15,12 @@ import org.oopscraft.fintics.indicator.Obv
 import org.oopscraft.fintics.indicator.ObvContext
 import org.oopscraft.fintics.indicator.Rsi
 import org.oopscraft.fintics.indicator.RsiContext
+import org.oopscraft.fintics.model.Ohlcv
+import org.oopscraft.fintics.model.Ohlcv
+import org.oopscraft.fintics.model.Ohlcv
 import org.oopscraft.fintics.model.BalanceAsset
+import org.oopscraft.fintics.model.Ohlcv
+import org.oopscraft.fintics.model.Ohlcv
 import org.oopscraft.fintics.model.Ohlcv
 import org.oopscraft.fintics.trade.Tool
 
@@ -105,7 +110,7 @@ def ohlcvPeriod = 5
 // ohlcv
 List<Ohlcv> ohlcvs = assetIndicator.getOhlcvs(ohlcvType, ohlcvPeriod)
 //.findAll{it.dateTime.toLocalDate().equals(dateTime.toLocalDate())}
-def prices = ohlcvs.collect{it.closePrice}
+def prices = ohlcvs.collect{it.getClose}
 def price = prices.first()
 List<Ema> priceMas = Tool.calculate(ohlcvs, EmaContext.of(60))
 def priceMa = priceMas.first()

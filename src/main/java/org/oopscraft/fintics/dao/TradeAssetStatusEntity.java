@@ -5,7 +5,6 @@ import lombok.experimental.SuperBuilder;
 import org.oopscraft.arch4j.core.data.BaseEntity;
 
 import javax.persistence.*;
-import java.io.Serializable;
 import java.math.BigDecimal;
 
 @Entity
@@ -26,14 +25,14 @@ public class TradeAssetStatusEntity extends BaseEntity {
     @Column(name = "asset_id")
     private String assetId;
 
-    @Column(name = "previous_close_price")
-    private BigDecimal previousClosePrice;
+    @Column(name = "previous_close")
+    private BigDecimal previousClose;
 
-    @Column(name = "open_price")
-    private BigDecimal openPrice;
+    @Column(name = "open")
+    private BigDecimal open;
 
-    @Column(name = "close_price")
-    private BigDecimal closePrice;
+    @Column(name = "close")
+    private BigDecimal close;
 
     @Column(name = "message")
     @Lob

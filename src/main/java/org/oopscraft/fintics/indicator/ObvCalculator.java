@@ -23,7 +23,7 @@ public class ObvCalculator extends IndicatorCalculator<ObvContext, Obv> {
             Ohlcv prevOhlcv = series.get(i-1);
             Ohlcv currentOhlcv = series.get(i);
             BigDecimal volume = currentOhlcv.getVolume();
-            BigDecimal priceDiff = currentOhlcv.getClosePrice().subtract(prevOhlcv.getClosePrice());
+            BigDecimal priceDiff = currentOhlcv.getClose().subtract(prevOhlcv.getClose());
             if(priceDiff.compareTo(BigDecimal.ZERO) > 0) {
                 obvValue = obvValue.add(volume);
             }else if(priceDiff.compareTo(BigDecimal.ZERO) < 0) {

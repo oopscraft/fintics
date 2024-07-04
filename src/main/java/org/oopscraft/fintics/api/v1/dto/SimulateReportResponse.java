@@ -4,12 +4,9 @@ import lombok.*;
 import org.oopscraft.fintics.model.SimulateReport;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Builder
@@ -41,11 +38,11 @@ public class SimulateReportResponse {
     @NoArgsConstructor
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public static class TotalReturnResponse {
-        private LocalDate date;
+        private LocalDateTime datetime;
         private BigDecimal totalAmount;
         public static TotalReturnResponse from(SimulateReport.TotalReturn totalReturn) {
             return TotalReturnResponse.builder()
-                    .date(totalReturn.getDate())
+                    .datetime(totalReturn.getDatetime())
                     .totalAmount(totalReturn.getTotalAmount())
                     .build();
         }
@@ -72,12 +69,12 @@ public class SimulateReportResponse {
     @Builder
     @Getter
     public static class AssetProfitResponse {
-        private LocalDateTime dateTime;
+        private LocalDateTime datetime;
         private BigDecimal profitAmount;
         private BigDecimal accumulatedProfitAmount;
         public static AssetProfitResponse from(SimulateReport.AssetProfit assetProfit) {
             return AssetProfitResponse.builder()
-                    .dateTime(assetProfit.getDateTime())
+                    .datetime(assetProfit.getDatetime())
                     .profitAmount(assetProfit.getProfitAmount())
                     .accumulatedProfitAmount(assetProfit.getAccumulatedProfitAmount())
                     .build();

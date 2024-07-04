@@ -8,7 +8,6 @@ import org.oopscraft.fintics.client.broker.BrokerClientDefinition;
 import org.oopscraft.fintics.client.broker.BrokerClientDefinitionRegistry;
 import org.oopscraft.fintics.model.*;
 import org.oopscraft.fintics.service.BrokerService;
-import org.oopscraft.fintics.service.IndiceService;
 import org.oopscraft.fintics.service.StrategyService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,8 +27,6 @@ public class TradeController {
 
     private final AlarmService alarmService;
 
-    private final IndiceService indiceService;
-
     private final BrokerService brokerService;
 
     private final StrategyService strategyService;
@@ -48,7 +45,6 @@ public class TradeController {
         modelAndView.addObject("brokerClientDefinitions", brokerClientDefinitions);
         List<Strategy> strategies = strategyService.getStrategies(StrategySearch.builder().build(), Pageable.unpaged()).getContent();
         modelAndView.addObject("strategies", strategies);
-        modelAndView.addObject("indices", indiceService.getIndices());
         modelAndView.addObject("simulateStatus", Simulate.Status.values());
         modelAndView.addObject("orderKinds", Order.Kind.values());
         return modelAndView;

@@ -3,7 +3,6 @@ package org.oopscraft.fintics.client.broker.kis;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.oopscraft.arch4j.core.support.CoreTestSupport;
@@ -14,7 +13,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -57,9 +55,9 @@ class KisUsBrokerClientTest extends CoreTestSupport {
     @Test
     void isOpened() throws InterruptedException {
         // given
-        LocalDateTime dateTime = LocalDateTime.now();
+        LocalDateTime datetime = LocalDateTime.now();
         // when
-        boolean opened = getKisUsClient().isOpened(dateTime);
+        boolean opened = getKisUsClient().isOpened(datetime);
         // then
         log.info("== opened:{}", opened);
     }
@@ -91,7 +89,7 @@ class KisUsBrokerClientTest extends CoreTestSupport {
                 .build();
 
         // when
-        List<Ohlcv> minuteOhlcvs = getKisUsClient().getMinuteOhlcvs(tradeAsset, LocalDateTime.now());
+        List<Ohlcv> minuteOhlcvs = getKisUsClient().getMinuteOhlcvs(tradeAsset);
 
         // then
         assertNotNull(minuteOhlcvs);
@@ -106,7 +104,7 @@ class KisUsBrokerClientTest extends CoreTestSupport {
                 .build();
 
         // when
-        List<Ohlcv> dailyOhlcvs = getKisUsClient().getDailyOhlcvs(tradeAsset, LocalDateTime.now());
+        List<Ohlcv> dailyOhlcvs = getKisUsClient().getDailyOhlcvs(tradeAsset);
 
         // then
         assertNotNull(dailyOhlcvs);

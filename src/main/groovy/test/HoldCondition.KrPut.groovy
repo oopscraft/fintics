@@ -14,7 +14,10 @@ import org.oopscraft.fintics.indicator.Obv
 import org.oopscraft.fintics.indicator.ObvContext
 import org.oopscraft.fintics.indicator.Rsi
 import org.oopscraft.fintics.indicator.RsiContext
+import org.oopscraft.fintics.model.Ohlcv
 import org.oopscraft.fintics.model.BalanceAsset
+import org.oopscraft.fintics.model.Ohlcv
+import org.oopscraft.fintics.model.Ohlcv
 import org.oopscraft.fintics.model.Ohlcv
 
 import java.time.LocalTime
@@ -103,7 +106,7 @@ def assetName = "${assetIndicator.getAssetName()}(${assetId})"
 
 // ohlcv
 List<Ohlcv> ohlcvs = assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE, 1)
-def prices = ohlcvs.collect{it.closePrice}
+def prices = ohlcvs.collect{it.getClose}
 def price = prices.first()
 def priceZScore = tool.zScore(prices.take(zScorePeriod))
 log.info("[{}] priceZScore: {}", assetName, priceZScore)

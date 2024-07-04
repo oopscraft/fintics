@@ -16,7 +16,7 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class AssetFinancialCollector extends AbstractCollector {
+public class FinancialCollector extends AbstractCollector {
 
     private final AssetRepository assetRepository;
 
@@ -42,7 +42,7 @@ public class AssetFinancialCollector extends AbstractCollector {
                     Financial assetFinancial = financialClient.getAssetFinancial(asset);
                     FinancialEntity assetFinancialEntity = FinancialEntity.builder()
                             .assetId(assetEntity.getAssetId())
-                            .datetime(Instant.now())
+                            .dateTime(Instant.now())
                             .issuedShares(assetFinancial.getIssuedShares())
                             .totalAssets(assetFinancial.getTotalAssets())
                             .totalEquity(assetFinancial.getTotalEquity())

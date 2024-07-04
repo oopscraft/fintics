@@ -1,5 +1,7 @@
 package org.oopscraft.fintics.api.v1;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.oopscraft.arch4j.web.support.PageableUtils;
@@ -28,17 +30,34 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/v1/simulates")
 @PreAuthorize("hasAuthority('API_SIMULATES')")
 @RequiredArgsConstructor
-@Tag(name = "simulate", description = "Simulates")
+@Tag(name = "simulates", description = "simulate operations")
 public class SimulatesRestController {
 
     private final SimulateService simulateService;
 
+    /**
+     * get list of simulate
+     * @param tradeId trade id
+     * @param status status
+     * @param favorite favorite
+     * @param pageable pageable
+     * @return list of simulate
+     */
     @GetMapping
+    @Operation(description = "gets simulates")
     public ResponseEntity<List<SimulateResponse>> getSimulates(
-            @RequestParam(value = "tradeId", required = false) String tradeId,
-            @RequestParam(value = "status", required = false) Simulate.Status status,
-            @RequestParam(value = "favorite", required = false) Boolean favorite,
-            @PageableDefault Pageable pageable
+            @RequestParam(value = "tradeId", required = false)
+            @Parameter(description = "trade id")
+                    String tradeId,
+            @RequestParam(value = "status", required = false)
+            @Parameter(description = "status")
+                    Simulate.Status status,
+            @RequestParam(value = "favorite", required = false)
+            @Parameter(description = "favorite")
+                    Boolean favorite,
+            @PageableDefault
+            @Parameter(hidden = true)
+                    Pageable pageable
     ){
         SimulateSearch simulateSearch = SimulateSearch.builder()
                 .tradeId(tradeId)
@@ -55,18 +74,38 @@ public class SimulatesRestController {
                 .body(simulateResponses);
     }
 
+    /**
+     * gets specified simulate
+     * @param simulateId simulate id
+     * @return simulate info
+     */
     @GetMapping("{simulateId}")
-    public ResponseEntity<SimulateResponse> getSimulate(@PathVariable("simulateId") String simulateId) {
+    @Operation(description = "get specified simulate")
+    public ResponseEntity<SimulateResponse> getSimulate(
+            @PathVariable("simulateId")
+            @Parameter(description = "simulate id")
+                    String simulateId
+    ) {
         SimulateResponse simulateResponse = simulateService.getSimulate(simulateId)
                 .map(SimulateResponse::from)
                 .orElseThrow();
         return ResponseEntity.ok(simulateResponse);
     }
 
+    /**
+     * runs simulate
+     * @param simulateRequest simulate request
+     * @return running simulate
+     */
     @PostMapping
     @PreAuthorize("hasAuthority('API_SIMULATES_EDIT')")
     @Transactional
-    public ResponseEntity<SimulateResponse> runSimulate(@RequestBody SimulateRequest simulateRequest) {
+    @Operation(description = "run simulate")
+    public ResponseEntity<SimulateResponse> runSimulate(
+            @RequestBody
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "simulate info to run")
+                    SimulateRequest simulateRequest
+    ) {
         // trade
         TradeRequest tradeRequest = simulateRequest.getTrade();
         Trade trade = Trade.builder()
@@ -74,8 +113,8 @@ public class SimulatesRestController {
                 .tradeName(tradeRequest.getTradeName())
                 .interval(tradeRequest.getInterval())
                 .threshold(tradeRequest.getThreshold())
-                .startAt(tradeRequest.getStartAt())
-                .endAt(tradeRequest.getEndAt())
+                .startTime(tradeRequest.getStartAt())
+                .endTime(tradeRequest.getEndAt())
                 .strategyVariables(tradeRequest.getStrategyVariables())
                 .build();
         List<TradeAsset> tradeAssets = tradeRequest.getTradeAssets().stream()
@@ -99,12 +138,6 @@ public class SimulatesRestController {
                 .script(strategyRequest.getScript())
                 .build();
 
-        LocalDateTime dateTimeFrom = simulateRequest.getDateTimeFrom()
-                .withZoneSameInstant(ZoneId.systemDefault())
-                .toLocalDateTime();
-        LocalDateTime dateTimeTo = simulateRequest.getDateTimeTo()
-                .withZoneSameInstant(ZoneId.systemDefault())
-                .toLocalDateTime();
         BigDecimal investAmount = simulateRequest.getInvestAmount();
         BigDecimal feeRate = simulateRequest.getFeeRate();
         Simulate simulate = Simulate.builder()
@@ -112,8 +145,8 @@ public class SimulatesRestController {
                 .strategy(strategy)
                 .tradeId(trade.getTradeId())
                 .tradeName(trade.getTradeName())
-                .dateTimeFrom(dateTimeFrom)
-                .dateTimeTo(dateTimeTo)
+                .investFrom(simulateRequest.getInvestFrom())
+                .investTo(simulateRequest.getInvestTo())
                 .investAmount(investAmount)
                 .feeRate(feeRate)
                 .build();
@@ -122,18 +155,42 @@ public class SimulatesRestController {
         return ResponseEntity.ok(simulateResponse);
     }
 
+    /**
+     * stops simulate
+     * @param simulateId simulate id
+     * @return void
+     */
     @PutMapping("{simulateId}/stop")
     @PreAuthorize("hasAuthority('API_SIMULATES_EDIT')")
     @Transactional
-    public ResponseEntity<Void> stopSimulate(@PathVariable("simulateId") String simulateId) {
+    @Operation(description = "stop simulate")
+    public ResponseEntity<Void> stopSimulate(
+            @PathVariable("simulateId")
+            @Parameter(description = "simulate id")
+                    String simulateId
+    ) {
         simulateService.stopSimulate(simulateId);
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * modified specified simulate info
+     * @param simulateId simulate id
+     * @param simulateRequest modified simulate info
+     * @return modified simulate info
+     */
     @PutMapping("{simulateId}")
     @PreAuthorize("hasAuthority('API_SIMULATES_EDIT')")
     @Transactional
-    public ResponseEntity<SimulateResponse> modifySimulate(@PathVariable("simulateId") String simulateId, @RequestBody SimulateRequest simulateRequest) {
+    @Operation(description = "modifies simulate")
+    public ResponseEntity<SimulateResponse> modifySimulate(
+            @PathVariable("simulateId")
+            @Parameter(description = "simulate id")
+                    String simulateId,
+            @RequestBody
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "simulate info")
+                    SimulateRequest simulateRequest
+    ) {
         Simulate simulate = simulateService.getSimulate(simulateId).orElseThrow();
         if (simulateRequest.getFavorite() != null) {
             simulate.setFavorite(simulateRequest.getFavorite());
@@ -145,10 +202,20 @@ public class SimulatesRestController {
         return ResponseEntity.ok(SimulateResponse.from(savedSimulate));
     }
 
+    /**
+     * deletes simulate info
+     * @param simulateId simulate id
+     * @return void
+     */
     @DeleteMapping("{simulateId}")
     @PreAuthorize("hasAuthority('API_SIMULATES_EDIT')")
     @Transactional
-    public ResponseEntity<Void> deleteSimulate(@PathVariable("simulateId") String simulateId) {
+    @Operation(description = "deletes simulate")
+    public ResponseEntity<Void> deleteSimulate(
+            @PathVariable("simulateId")
+            @Parameter(description = "simulate id")
+                    String simulateId
+    ) {
         simulateService.deleteSimulate(simulateId);
         return ResponseEntity.ok().build();
     }

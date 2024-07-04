@@ -3,24 +3,21 @@ package org.oopscraft.fintics.client.broker.kis;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.oopscraft.arch4j.core.support.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
-import org.oopscraft.fintics.client.broker.kis.KisBrokerClient;
-import org.oopscraft.fintics.client.broker.kis.KisBrokerClientDefinition;
 import org.oopscraft.fintics.model.*;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
-import java.util.Optional;
 import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest(classes = FinticsConfiguration.class)
 @RequiredArgsConstructor
@@ -60,9 +57,9 @@ class KisBrokerClientTest extends CoreTestSupport {
     @Test
     void isOpened() throws InterruptedException {
         // given
-        LocalDateTime dateTime = LocalDateTime.now();
+        LocalDateTime datetime = LocalDateTime.now();
         // when
-        boolean opened = getKisClient().isOpened(dateTime);
+        boolean opened = getKisClient().isOpened(datetime);
         // then
         log.info("== opened:{}", opened);
     }
@@ -71,10 +68,9 @@ class KisBrokerClientTest extends CoreTestSupport {
     @Test
     void isHoliday() throws InterruptedException {
         // given
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime dateTime = LocalDateTime.of(now.getYear(), 12, 25, 0, 0, 0);
+        LocalDateTime datetime = LocalDateTime.of(2020, 12, 25, 0, 0, 0);
         // when
-        boolean holiday = getKisClient().isHoliday(dateTime);
+        boolean holiday = getKisClient().isHoliday(datetime);
         // then
         log.info("== holiday: {}", holiday);
     }
@@ -105,7 +101,7 @@ class KisBrokerClientTest extends CoreTestSupport {
                 .build();
 
         // when
-        List<Ohlcv> minuteOhlcvs = getKisClient().getMinuteOhlcvs(tradeAsset, LocalDateTime.now());
+        List<Ohlcv> minuteOhlcvs = getKisClient().getMinuteOhlcvs(tradeAsset);
 
         // then
         assertNotNull(minuteOhlcvs);
@@ -120,7 +116,7 @@ class KisBrokerClientTest extends CoreTestSupport {
                 .build();
 
         // when
-        List<Ohlcv> dailyOhlcvs = getKisClient().getDailyOhlcvs(tradeAsset, LocalDateTime.now());
+        List<Ohlcv> dailyOhlcvs = getKisClient().getDailyOhlcvs(tradeAsset);
 
         // then
         assertNotNull(dailyOhlcvs);

@@ -45,9 +45,9 @@ public class StatusHandler {
             TradeAssetStatusEntity tradeAssetStatusEntity = TradeAssetStatusEntity.builder()
                     .tradeId(tradeAssetStatus.getTradeId())
                     .assetId(tradeAssetStatus.getAssetId())
-                    .previousClosePrice(tradeAssetStatus.getPreviousClosePrice())
-                    .openPrice(tradeAssetStatus.getOpenPrice())
-                    .closePrice(tradeAssetStatus.getClosePrice())
+                    .previousClose(tradeAssetStatus.getPreviousClose())
+                    .open(tradeAssetStatus.getOpen())
+                    .close(tradeAssetStatus.getClose())
                     .message(tradeAssetStatus.getMessage())
                     .build();
             tradeAssetStatusRepository.save(tradeAssetStatusEntity);

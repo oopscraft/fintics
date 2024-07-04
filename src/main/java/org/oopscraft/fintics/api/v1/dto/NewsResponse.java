@@ -5,14 +5,15 @@ import org.oopscraft.fintics.model.News;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class AssetNewsResponse {
+public class NewsResponse {
 
-    private Instant datetime;
+    private LocalDateTime dateTime;
 
     private String newsId;
 
@@ -26,9 +27,9 @@ public class AssetNewsResponse {
 
     private String reason;
 
-    public static AssetNewsResponse from(News assetNews) {
-        return AssetNewsResponse.builder()
-                .datetime(assetNews.getDatetime())
+    public static NewsResponse from(News assetNews) {
+        return NewsResponse.builder()
+                .dateTime(assetNews.getDateTime())
                 .newsId(assetNews.getNewsId())
                 .newsUrl(assetNews.getNewsUrl())
                 .title(assetNews.getTitle())

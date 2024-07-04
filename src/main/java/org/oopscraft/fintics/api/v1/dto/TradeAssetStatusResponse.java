@@ -2,7 +2,6 @@ package org.oopscraft.fintics.api.v1.dto;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.oopscraft.fintics.model.TradeAsset;
 import org.oopscraft.fintics.model.TradeAssetStatus;
 
 import java.math.BigDecimal;
@@ -18,11 +17,11 @@ public class TradeAssetStatusResponse extends AssetResponse {
 
     private String assetId;
 
-    private BigDecimal previousClosePrice;
+    private BigDecimal previousClose;
 
-    private BigDecimal openPrice;
+    private BigDecimal open;
 
-    private BigDecimal closePrice;
+    private BigDecimal close;
 
     private BigDecimal netChange;
 
@@ -38,9 +37,9 @@ public class TradeAssetStatusResponse extends AssetResponse {
         return TradeAssetStatusResponse.builder()
                 .tradeId(tradeAssetStatus.getTradeId())
                 .assetId(tradeAssetStatus.getAssetId())
-                .previousClosePrice(tradeAssetStatus.getPreviousClosePrice())
-                .openPrice(tradeAssetStatus.getOpenPrice())
-                .closePrice(tradeAssetStatus.getClosePrice())
+                .previousClose(tradeAssetStatus.getPreviousClose())
+                .open(tradeAssetStatus.getOpen())
+                .close(tradeAssetStatus.getClose())
                 .netChange(tradeAssetStatus.getNetChange())
                 .netChangePercentage(tradeAssetStatus.getNetChangePercentage())
                 .intraDayNetChange(tradeAssetStatus.getIntraDayNetChange())

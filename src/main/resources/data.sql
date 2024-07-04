@@ -7,7 +7,8 @@ delete from `core_alarm`;
 -- core_authority
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_ASSETS','Y','Assets Access API Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_ASSETS_EDIT','Y','Assets Edit API Authority');
-insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_INDICES','Y','Indices API Authority');
+insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_OHLCVS','Y','Ohlcvs API Authority');
+insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_NEWSES','Y','News API Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_ORDERS','Y','Orders API Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_SIMULATES','Y','Simulates API Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_SIMULATES_EDIT','Y','Simulates Edit API Authority');
@@ -37,6 +38,8 @@ insert into `core_authority` (`authority_id`,`system_required`,`authority_name`)
 -- core_role
 insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
     ('MONITORS','Y','Monitors Access Role','N','Y');
+insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
+    ('OHLCVS','Y','Ohlcvs Access Role','N','Y');
 insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
     ('TRADES','Y','Trades Access Role','N','Y');
 insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
@@ -68,6 +71,8 @@ insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`au
 insert into `core_role_authority` (`role_id`,`authority_id`) values
     ('MONITORS','MONITORS'),
     ('MONITORS','API_ASSETS'),
+    ('MONITORS','API_OHLCVS'),
+    ('MONITORS','API_NEWSES'),
     ('MONITORS','API_TRADES');
 insert into `core_role_authority` (`role_id`,`authority_id`) values
     ('TRADES','TRADES'),
@@ -104,7 +109,10 @@ insert into `core_role_authority` (`role_id`,`authority_id`) values
     ('ORDERS','API_ORDERS');
 insert into `core_role_authority` (`role_id`,`authority_id`) values
     ('DATA','DATA'),
-    ('DATA','API_DATA');
+    ('DATA','API_DATA'),
+    ('DATA','API_ASSETS'),
+    ('DATA','API_OHLCVS'),
+    ('DATA','API_NEWSES');
 insert into `core_role_authority` (`role_id`,`authority_id`) values
     ('DATA_EDIT','DATA_EDIT'),
     ('DATA_EDIT','API_DATA_EDIT');
@@ -161,8 +169,10 @@ insert into `fintics_asset`
     ('KR.251340','KODEX 코스닥150선물인버스','KR','XKRX','ETF'),
     ('KR.005930','삼성전자','KR','XKRX','STOCK'),
     ('KR.000660','에스케이하이닉스','KR','XKRX','STOCK'),
-    ('US.AAPL','Apple Inc. Common Stock','US','XNAS','STOCK'),
     ('US.SPY','SPDR S&P 500','US','XASE','ETF'),
+    ('US.QQQ','Invesco QQQ Trust Series 1','US','XNAS','ETF'),
+    ('US.AAPL','Apple Inc. Common Stock','US','XNAS','STOCK'),
+    ('US.MSFT','Microsoft Corporation Common Stock','US','XNAS','STOCK'),
     ('UPBIT.KRW-BTC','Bitcoin','UPBIT','UPBIT',null),
     ('UPBIT.KRW-ETH','Ethereum','UPBIT','UPBIT',null);
 
@@ -181,7 +191,7 @@ insert into `fintics_strategy`
 -- fintics_trade: 한국투자증권 모의투자 - 국내
 insert into `fintics_trade`
     (`trade_id`,`trade_name`,`enabled`,`interval`,`threshold`,`start_at`,`end_at`,`invest_amount`,`broker_id`,`strategy_id`,`strategy_variables`,`alarm_id`,`order_kind`) values
-    ('06c228451ce0400fa57bb36f0568d7cb','한국투자증권 모의투자 - 국내','Y','60','3','09:00','15:30','1000000',
+    ('06c228451ce0400fa57bb36f0568d7cb','한국투자증권 모의투자 - 국내','Y','60','2','09:00','15:30','1000000',
      'ca5f55cd88694715bcb4c478710d9a68','7c94187b346f4727a0f2478fdc53064f', null, null, 'LIMIT');
 insert into `fintics_trade_asset`
     (`trade_id`,`asset_id`,`enabled`, `holding_weight`)
@@ -194,13 +204,15 @@ values
 -- fintics_trade: 한국투자증권 모의투자 - 미국
 insert into `fintics_trade`
     (`trade_id`,`trade_name`,`enabled`,`interval`,`threshold`,`start_at`,`end_at`,`invest_amount`,`broker_id`,`strategy_id`,`strategy_variables`,`alarm_id`,`order_kind`) values
-    ('7af6bc641eef4254b12dd9fa1d43384d','한국투자증권 모의투자 - 미국','Y','60','3','10:30','06:00','1000',
+    ('7af6bc641eef4254b12dd9fa1d43384d','한국투자증권 모의투자 - 미국','Y','60','2','09:30','16:00','1000',
      '961eb9c68c9547ce9ae61bbe3be7f037','7c94187b346f4727a0f2478fdc53064f', null, null, 'LIMIT');
 insert into `fintics_trade_asset`
     (`trade_id`,`asset_id`,`enabled`, `holding_weight`)
 values
-    ('7af6bc641eef4254b12dd9fa1d43384d','US.AAPL','Y','40'),
-    ('7af6bc641eef4254b12dd9fa1d43384d','US.SPY','Y','40');
+    ('7af6bc641eef4254b12dd9fa1d43384d','US.SPY','Y','20'),
+    ('7af6bc641eef4254b12dd9fa1d43384d','US.QQQ','Y','20'),
+    ('7af6bc641eef4254b12dd9fa1d43384d','US.AAPL','Y','20'),
+    ('7af6bc641eef4254b12dd9fa1d43384d','US.MSFT','Y','20');
 
 -- fintics_trade: 업비트 API(장시간 외 트레이드 테스트용)
 insert into `fintics_trade`
@@ -223,5 +235,52 @@ INSERT INTO fintics_order
 (`order_id`, order_at, type, trade_id, asset_id, asset_name, quantity, result, error_message)
 VALUES('62b521b88ee742239753c5b1157d7407', '2023-11-10 14:47:14.000', 'SELL', '06c228451ce0400fa57bb36f0568d7cb', 'KR.122630', 'KODEX 레버리지(테스트)', 264, 'COMPLETED', NULL);
 
+
+
+-- for test
+update fintics_broker set broker_client_properties='
+production=false
+apiUrl=https://openapivts.koreainvestment.com:29443
+appKey=PS2ttZ9KmXgyrRWUFmWHTon8qVVJFOD60nUI
+appSecret=ul1fmcIF/FfKoo7CSsNf2TLx0wuIyKqrhHR5L4BBwTRHMKfuRfcwszIIL7qwSzs0cVU/wfvNgAWa/UamyRvDIFwqb3+XmAHP4aUrXlyAjY51F//qMLCCGIJGVzwl/j5AmftPeSF7COOZv0Y1H+htoaR4a9YEGEKD07xmDHCV2h3gLXEDLxo=
+accountNo=50112058-01
+'
+where broker_id in ('ca5f55cd88694715bcb4c478710d9a68','961eb9c68c9547ce9ae61bbe3be7f037');
+
+update fintics_strategy set script = '
+import org.oopscraft.fintics.model.Ohlcv
+import org.oopscraft.fintics.model.Profile
+import org.oopscraft.fintics.model.Strategy
+import org.oopscraft.fintics.model.StrategyResult
+import org.oopscraft.fintics.model.StrategyResult.Action
+import org.oopscraft.fintics.trade.Tools
+import org.oopscraft.fintics.indicator.*
+
+def ohlcvs = profile.getOhlcvs(Ohlcv.Type.MINUTE, 1)
+def ohlcv = ohlcvs.first()
+def smas = Tools.indicators(ohlcvs, SmaContext.of(5));
+def sma = smas.first()
+
+def message = """
+ohlcv: ${ohlcv}
+sma: ${sma}
+"""
+tradeAssetStatus.setMessage(message)
+
+if (ohlcv.close > sma.value) {
+    return StrategyResult.of(Action.BUY, 1.0, "buy")
+}
+if (ohlcv.close < sma.value) {
+    return StrategyResult.of(Action.SELL, 0.0, "sell")
+}
+'
+where strategy_id = '7c94187b346f4727a0f2478fdc53064f';
+
+update fintics_trade
+set `interval` = '10',
+    threshold = '1',
+    order_kind='MARKET'
+where trade_id in ('06c228451ce0400fa57bb36f0568d7cb','7af6bc641eef4254b12dd9fa1d43384d')
+;
 
 

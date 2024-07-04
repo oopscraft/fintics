@@ -12,11 +12,9 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.StringReader;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
+@Builder
 public class StrategyExecutor {
 
     private final Strategy strategy;
@@ -35,26 +33,10 @@ public class StrategyExecutor {
 
     private final BalanceAsset balanceAsset;
 
-    private final Map<String, IndiceProfile> indiceProfiles;
+    private final Profile profile;
 
-    private final AssetProfile assetProfile;
-
-    private Logger log = (Logger) LoggerFactory.getLogger(this.getClass());
-
-    @Builder
-    protected StrategyExecutor(Strategy strategy, String variables, LocalDateTime dateTime, TradeAsset tradeAsset, TradeAssetStatus tradeAssetStatus, OrderBook orderBook, Balance balance, BalanceAsset balanceAsset, List<IndiceProfile> indiceProfiles, AssetProfile assetProfile) {
-        this.strategy = strategy;
-        this.variables = variables;
-        this.dateTime = dateTime;
-        this.tradeAsset = tradeAsset;
-        this.tradeAssetStatus = tradeAssetStatus;
-        this.orderBook = orderBook;
-        this.balance = balance;
-        this.balanceAsset = balanceAsset;
-        this.indiceProfiles = indiceProfiles.stream()
-                .collect(Collectors.toMap(indiceProfile -> indiceProfile.getTarget().getIndiceId().name(), indiceProfile -> indiceProfile));
-        this.assetProfile = assetProfile;
-    }
+    @Builder.Default
+    private Logger log = (Logger) LoggerFactory.getLogger(StrategyExecutor.class);
 
     public void setLog(Logger log) {
         this.log = log;
@@ -72,8 +54,7 @@ public class StrategyExecutor {
         binding.setVariable("orderBook", orderBook);
         binding.setVariable("balance", balance);
         binding.setVariable("balanceAsset", balanceAsset);
-        binding.setVariable("indiceProfiles", indiceProfiles);
-        binding.setVariable("assetProfile", assetProfile);
+        binding.setVariable("profile", profile);
         GroovyShell groovyShell = new GroovyShell(groovyClassLoader, binding);
         Object result = groovyShell.evaluate(
                 "import " + StrategyResult.class.getName() + '\n' +

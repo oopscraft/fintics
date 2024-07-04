@@ -17,7 +17,7 @@ class EmaCalculatorTest {
         List<Ohlcv> series = new ArrayList<>();
         for(int i = 0; i < 500; i ++) {
             series.add(Ohlcv.builder()
-                    .closePrice(BigDecimal.valueOf(Math.random() * (12000-1000) + 1000))
+                    .close(BigDecimal.valueOf(Math.random() * (12000-1000) + 1000))
                     .build());
         }
 

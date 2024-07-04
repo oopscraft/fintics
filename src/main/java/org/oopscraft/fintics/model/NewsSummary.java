@@ -3,7 +3,8 @@ package org.oopscraft.fintics.model;
 import lombok.*;
 
 import java.io.Serializable;
-import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,17 +12,17 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class AssetNewsSummary implements Serializable {
+public class NewsSummary implements Serializable {
 
-    private String id;
+    private String assetId;
 
-    private String name;
+    private String assetName;
 
     private Long totalCount;
 
-    private Instant maxDatetime;
+    private LocalDateTime maxDateTime;
 
-    private Instant minDatetime;
+    private LocalDateTime minDateTime;
 
     @Builder.Default
     private List<NewsStatistic> newsStatisticList = new ArrayList<>();
@@ -31,8 +32,11 @@ public class AssetNewsSummary implements Serializable {
     @NoArgsConstructor
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public static class NewsStatistic implements Serializable {
-        private Instant date;
+
+        private LocalDate date;
+
         private Long count;
+
     }
 
 }

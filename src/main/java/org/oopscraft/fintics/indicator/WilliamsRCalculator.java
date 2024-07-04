@@ -25,17 +25,17 @@ public class WilliamsRCalculator extends IndicatorCalculator<WilliamsRContext, W
 
             // high price
             BigDecimal highestHigh = series.subList(i - getContext().getPeriod() + 1, i + 1).stream()
-                    .map(Ohlcv::getHighPrice)
+                    .map(Ohlcv::getHigh)
                     .max(BigDecimal::compareTo)
                     .orElse(BigDecimal.ZERO);
 
             // low price
             BigDecimal lowestLow = series.subList(i - getContext().getPeriod() + 1, i + 1).stream()
-                    .map(Ohlcv::getLowPrice)
+                    .map(Ohlcv::getLow)
                     .min(BigDecimal::compareTo)
                     .orElse(BigDecimal.ZERO);
 
-            BigDecimal closePrice = series.get(i).getClosePrice();
+            BigDecimal closePrice = series.get(i).getClose();
 
             // williams R
             BigDecimal williamsRValue = (highestHigh.equals(lowestLow))

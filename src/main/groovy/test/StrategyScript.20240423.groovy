@@ -1,4 +1,9 @@
 import org.oopscraft.fintics.model.Ohlcv
+import org.oopscraft.fintics.model.Ohlcv
+import org.oopscraft.fintics.model.Ohlcv
+import org.oopscraft.fintics.model.Ohlcv
+import org.oopscraft.fintics.model.Ohlcv
+import org.oopscraft.fintics.model.Ohlcv
 import org.oopscraft.fintics.trade.Tool
 import org.oopscraft.fintics.indicator.*
 
@@ -160,7 +165,7 @@ log.info("minuteOhlcvPeriod: {}", minuteOhlcvPeriod)
 // default
 def hold = null
 List<Ohlcv> ohlcvs = assetProfile.getOhlcvs(Ohlcv.Type.MINUTE, 1)
-def priceZScore = Tool.zScore(ohlcvs.take(10).collect{it.closePrice})
+def priceZScore = Tool.zScore(ohlcvs.take(10).collect{it.getClose})
 
 // analysis
 def analysis = new AnalysisGroup(

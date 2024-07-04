@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.client.asset;
+package org.oopscraft.fintics.client.news;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -8,7 +8,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
 import org.oopscraft.fintics.model.Asset;
-import org.oopscraft.fintics.model.AssetNews;
+import org.oopscraft.fintics.model.News;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.RequestEntity;
@@ -18,25 +18,23 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Component
-@ConditionalOnProperty(prefix = "fintics", name = "asset-news-client.class-name", havingValue="org.oopscraft.fintics.client.asset.SimpleAssetNewsClient")
+@ConditionalOnProperty(prefix = "fintics", name = "news-client.class-name", havingValue="org.oopscraft.fintics.client.news.SimpleNewsClient")
 @Slf4j
-public class SimpleAssetNewsClient extends AssetNewsClient {
+public class SimpleNewsClient extends NewsClient {
 
-    public SimpleAssetNewsClient(AssetNewsClientProperties newsClientProperties) {
+    public SimpleNewsClient(NewsClientProperties newsClientProperties) {
         super(newsClientProperties);
     }
 
     @Override
-    public List<AssetNews> getNewses(Asset asset) {
+    public List<News> getNewses(Asset asset) {
         // keyword
         String keyword = switch (Optional.ofNullable(asset.getMarket()).orElse("")) {
             case "US" -> asset.getSymbol() + "+" + asset.getAssetName().split("\\s+")[0];
@@ -55,7 +53,7 @@ public class SimpleAssetNewsClient extends AssetNewsClient {
         };
     }
 
-    List<AssetNews> getNewses(String keyword, Locale locale) {
+    List<News> getNewses(String keyword, Locale locale) {
         try {
             RestTemplate restTemplate = RestTemplateBuilder.create()
                     .insecure(true)
@@ -79,7 +77,7 @@ public class SimpleAssetNewsClient extends AssetNewsClient {
 
             // find article elements
             Elements articleElements = doc.getElementsByTag("article");
-            List<AssetNews> newses = new ArrayList<>();
+            List<News> newses = new ArrayList<>();
             for (Element articleElement : articleElements) {
                 Element aElement = articleElement.getElementsByTag("a").stream()
                         .filter(it -> StringUtils.isNotBlank(it.text()))
@@ -88,11 +86,9 @@ public class SimpleAssetNewsClient extends AssetNewsClient {
                 String newsUrl = extractNewsUrl(aElement.attr("href"));
                 String title = aElement.text();
                 String datetimeString = articleElement.getElementsByTag("time").first().attr("datetime");
-                Instant dateTime = LocalDateTime.parse(datetimeString, DateTimeFormatter.ISO_DATE_TIME)
-                        .atZone(ZoneId.systemDefault())
-                        .toInstant();
-                AssetNews news = AssetNews.builder()
-                        .datetime(dateTime)
+                LocalDateTime dateTime = LocalDateTime.parse(datetimeString, DateTimeFormatter.ISO_DATE_TIME);
+                News news = News.builder()
+                        .dateTime(dateTime)
                         .newsUrl(newsUrl)
                         .title(title)
                         .build();
@@ -100,7 +96,7 @@ public class SimpleAssetNewsClient extends AssetNewsClient {
             }
 
             // sort
-            newses.sort(Comparator.comparing(AssetNews::getDatetime)
+            newses.sort(Comparator.comparing(News::getDateTime)
                     .reversed());
 
             // return

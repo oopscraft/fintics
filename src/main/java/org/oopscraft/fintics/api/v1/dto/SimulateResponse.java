@@ -3,9 +3,9 @@ package org.oopscraft.fintics.api.v1.dto;
 import lombok.Builder;
 import lombok.Getter;
 import org.oopscraft.fintics.model.Simulate;
-import org.oopscraft.fintics.model.SimulateReport;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,9 +16,9 @@ public class SimulateResponse {
 
     private String simulateId;
 
-    private LocalDateTime startedAt;
+    private Instant startedAt;
 
-    private LocalDateTime endedAt;
+    private Instant endedAt;
 
     private Simulate.Status status;
 
@@ -30,9 +30,9 @@ public class SimulateResponse {
 
     private StrategyResponse strategy;
 
-    private LocalDateTime dateTimeFrom;
+    private LocalDateTime investFrom;
 
-    private LocalDateTime dateTimeTo;
+    private LocalDateTime investTo;
 
     private BigDecimal investAmount;
 
@@ -40,7 +40,7 @@ public class SimulateResponse {
 
     private String holdCondition;
 
-    private LocalDateTime dateTime;
+    private LocalDateTime datetime;
 
     private boolean favorite;
 
@@ -57,6 +57,11 @@ public class SimulateResponse {
 
     private SimulateReportResponse simulateReport;
 
+    /**
+     * creates simulate response
+     * @param simulate simulate
+     * @return simulate response
+     */
     public static SimulateResponse from(Simulate simulate) {
         return SimulateResponse.builder()
                 .simulateId(simulate.getSimulateId())
@@ -67,11 +72,11 @@ public class SimulateResponse {
                 .tradeName(simulate.getTradeName())
                 .trade(TradeResponse.from(simulate.getTrade()))
                 .strategy(StrategyResponse.from(simulate.getStrategy()))
-                .dateTimeFrom(simulate.getDateTimeFrom())
-                .dateTimeTo(simulate.getDateTimeTo())
+                .investFrom(simulate.getInvestFrom())
+                .investTo(simulate.getInvestTo())
                 .investAmount(simulate.getInvestAmount())
                 .feeRate(simulate.getFeeRate())
-                .dateTime(simulate.getDateTime())
+                .datetime(simulate.getDatetime())
                 .favorite(simulate.isFavorite())
                 .totalAmount(simulate.getTotalAmount())
                 .profitAmount(simulate.getProfitAmount())

@@ -1,18 +1,18 @@
-package org.oopscraft.fintics.client.asset;
+package org.oopscraft.fintics.client.financial;
 
 import lombok.Getter;
 import org.oopscraft.fintics.model.Asset;
-import org.oopscraft.fintics.model.AssetFinancial;
+import org.oopscraft.fintics.model.Financial;
 
-public abstract class AssetFinancialClient {
+public abstract class FinancialClient {
 
     @Getter
-    private final AssetFinancialClientProperties financialClientProperties;
+    private final FinancialClientProperties financialClientProperties;
 
-    protected AssetFinancialClient(AssetFinancialClientProperties financialClientProperties) {
+    protected FinancialClient(FinancialClientProperties financialClientProperties) {
         this.financialClientProperties = financialClientProperties;
     }
 
-    public abstract AssetFinancial getAssetFinancial(Asset asset);
+    public abstract Financial getAssetFinancial(Asset asset);
 
 }

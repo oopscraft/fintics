@@ -25,7 +25,7 @@ public class ObvCalculatorTest extends AbstractCalculatorTest {
         List<Ohlcv> ohlcvs = inputRows.stream()
                 .map(row -> {
                     return Ohlcv.builder()
-                            .closePrice(new BigDecimal(row.get("close").replaceAll(",","")))
+                            .close(new BigDecimal(row.get("close").replaceAll(",","")))
                             .volume(new BigDecimal(row.get("volume").replaceAll(",","")))
                             .build();
                 })
@@ -48,7 +48,7 @@ public class ObvCalculatorTest extends AbstractCalculatorTest {
 
             log.info("[{}] {},{},{}({}) / {},{},{}({})", i,
                     originClosePrice, originVolume, originObv, originSignal,
-                    ohlcv.getClosePrice(), ohlcv.getVolume(), obv.getValue(), obv.getSignal());
+                    ohlcv.getClose(), ohlcv.getVolume(), obv.getValue(), obv.getSignal());
             assertEquals(originObv.doubleValue(), obv.getValue().doubleValue(), 1.0);
             assertEquals(originSignal.doubleValue(), obv.getSignal().doubleValue(), 1.0);
         }

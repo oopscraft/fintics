@@ -9,8 +9,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.data.IdGenerator;
 import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
-import org.oopscraft.fintics.client.broker.BrokerClientDefinition;
 import org.oopscraft.fintics.client.broker.BrokerClient;
+import org.oopscraft.fintics.client.broker.BrokerClientDefinition;
 import org.oopscraft.fintics.model.*;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
@@ -25,7 +25,9 @@ import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -50,7 +52,7 @@ public class UpbitBrokerClient extends BrokerClient {
     }
 
     @Override
-    public boolean isOpened(LocalDateTime dateTime) throws InterruptedException {
+    public boolean isOpened(LocalDateTime datetime) throws InterruptedException {
         return true;
     }
 
@@ -65,15 +67,13 @@ public class UpbitBrokerClient extends BrokerClient {
         ResponseEntity<List<Map<String, String>>> responseEntity = restTemplate.exchange(requestEntity, new ParameterizedTypeReference<>() {
         });
         return responseEntity.getBody().stream()
-                .map(map -> {
-                    return Asset.builder()
-                            .assetId(toAssetId(map.get("market")))
-                            .assetName(map.get("english_name"))
-                            .market(getDefinition().getMarket())
-                            .exchange(getDefinition().getMarket())
-                            .type("CRYPTOCURRENCY")
-                            .build();
-                })
+                .map(map -> Asset.builder()
+                        .assetId(toAssetId(map.get("market")))
+                        .assetName(map.get("english_name"))
+                        .market(getDefinition().getMarket())
+                        .exchange(getDefinition().getMarket())
+                        .type("CRYPTOCURRENCY")
+                        .build())
                 .collect(Collectors.toList());
     }
 
@@ -146,12 +146,12 @@ public class UpbitBrokerClient extends BrokerClient {
     }
 
     @Override
-    public List<Ohlcv> getMinuteOhlcvs(Asset asset, LocalDateTime dateTime) throws InterruptedException {
+    public List<Ohlcv> getMinuteOhlcvs(Asset asset) throws InterruptedException {
         return getOhlcvs(asset, Ohlcv.Type.MINUTE);
     }
 
     @Override
-    public List<Ohlcv> getDailyOhlcvs(Asset asset, LocalDateTime dateTime) throws InterruptedException {
+    public List<Ohlcv> getDailyOhlcvs(Asset asset) throws InterruptedException {
         return getOhlcvs(asset, Ohlcv.Type.DAILY);
     }
 
@@ -181,17 +181,20 @@ public class UpbitBrokerClient extends BrokerClient {
         }
         return rows.stream()
                 .map(row -> {
-                    LocalDateTime dateTime = LocalDateTime.parse(
-                            row.get("candle_date_time_kst"),
-                            DateTimeFormatter.ISO_LOCAL_DATE_TIME
-                    );
+                    LocalDateTime dateTime = LocalDateTime.parse(row.get("candle_date_time_kst"), DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+                            .truncatedTo(ChronoUnit.MINUTES);
+                    if (ohlcvType == Ohlcv.Type.DAILY) {
+                        dateTime = dateTime.truncatedTo(ChronoUnit.DAYS);
+                    }
+                    ZoneId timezone = getDefinition().getTimezone();
                     return Ohlcv.builder()
                             .type(ohlcvType)
                             .dateTime(dateTime)
-                            .openPrice(new BigDecimal(row.get("opening_price")).setScale(2, RoundingMode.HALF_UP))
-                            .highPrice(new BigDecimal(row.get("high_price")).setScale(2, RoundingMode.HALF_UP))
-                            .lowPrice(new BigDecimal(row.get("low_price")).setScale(2, RoundingMode.HALF_UP))
-                            .closePrice(new BigDecimal(row.get("trade_price")).setScale(2, RoundingMode.HALF_UP))
+                            .timeZone(timezone)
+                            .open(new BigDecimal(row.get("opening_price")).setScale(2, RoundingMode.HALF_UP))
+                            .high(new BigDecimal(row.get("high_price")).setScale(2, RoundingMode.HALF_UP))
+                            .low(new BigDecimal(row.get("low_price")).setScale(2, RoundingMode.HALF_UP))
+                            .close(new BigDecimal(row.get("trade_price")).setScale(2, RoundingMode.HALF_UP))
                             .volume(new BigDecimal(row.get("candle_acc_trade_volume")).setScale(2, RoundingMode.HALF_UP))
                             .build();
                 })

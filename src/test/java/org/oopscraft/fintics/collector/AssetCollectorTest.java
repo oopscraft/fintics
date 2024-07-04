@@ -5,7 +5,10 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.oopscraft.arch4j.core.support.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
+import org.oopscraft.fintics.client.broker.kis.KisBrokerClient;
+import org.oopscraft.fintics.client.broker.kis.KisBrokerClientDefinition;
 import org.oopscraft.fintics.dao.AssetEntity;
+import org.oopscraft.fintics.dao.BrokerEntity;
 import org.oopscraft.fintics.dao.TradeEntity;
 import org.oopscraft.fintics.model.Trade;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -49,10 +52,15 @@ class AssetCollectorTest extends CoreTestSupport {
 
     @Disabled
     @Test
-    void saveBrokerAssets() {
+    void saveAssets() {
         // given
+        entityManager.persist(BrokerEntity.builder()
+                .brokerId("test")
+                .brokerClientId("KIS")
+                .build());
         Trade trade = Trade.builder()
                 .tradeId("test")
+                .brokerId("test")
                 .build();
         // when
         assetCollector.saveAssets(trade);

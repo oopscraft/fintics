@@ -4,17 +4,20 @@ import lombok.*;
 import org.oopscraft.fintics.model.Ohlcv;
 
 import java.math.BigDecimal;
-import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-public class AssetOhlcvResponse {
+public class OhlcvResponse {
 
     private Ohlcv.Type type;
 
-    private Instant datetime;
+    private LocalDateTime dateTime;
+
+    private ZoneId timeZone;
 
     private BigDecimal open;
 
@@ -26,9 +29,15 @@ public class AssetOhlcvResponse {
 
     private BigDecimal volume;
 
-    public static AssetOhlcvResponse from(Ohlcv ohlcv) {
-        return AssetOhlcvResponse.builder()
-                .datetime(ohlcv.getDatetime())
+    /**
+     * creates ohlcv response
+     * @param ohlcv ohlcv
+     * @return ohlcv response
+     */
+    public static OhlcvResponse from(Ohlcv ohlcv) {
+        return OhlcvResponse.builder()
+                .dateTime(ohlcv.getDateTime())
+                .timeZone(ohlcv.getTimeZone())
                 .type(ohlcv.getType())
                 .open(ohlcv.getOpen())
                 .high(ohlcv.getHigh())

@@ -6,10 +6,10 @@ import lombok.Setter;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
 import org.oopscraft.fintics.client.broker.BrokerClient;
-import org.oopscraft.fintics.client.indice.IndiceClient;
 import org.oopscraft.fintics.model.*;
 import org.oopscraft.fintics.service.AssetService;
-import org.oopscraft.fintics.service.IndiceService;
+import org.oopscraft.fintics.service.NewsService;
+import org.oopscraft.fintics.service.OhlcvService;
 import org.oopscraft.fintics.service.OrderService;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
@@ -22,19 +22,19 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.util.*;
 
+@Builder
 public class TradeExecutor {
 
     private final PlatformTransactionManager transactionManager;
 
-    private final IndiceService indiceService;
-
     private final AssetService assetService;
+
+    private final OhlcvService ohlcvService;
+
+    private final NewsService newsService;
 
     private final OrderService orderService;
 
@@ -49,59 +49,40 @@ public class TradeExecutor {
     @Setter
     private StatusHandler statusHandler;
 
-    @Builder
-    private TradeExecutor(PlatformTransactionManager transactionManager, IndiceService indiceService, AssetService assetService, OrderService orderService, AlarmService alarmService) {
-        this.transactionManager = transactionManager;
-        this.indiceService = indiceService;
-        this.assetService = assetService;
-        this.orderService = orderService;
-        this.alarmService = alarmService;
-    }
-
+    /**
+     * sets specific logger
+     * @param log logger
+     */
     public void setLog(Logger log) {
         this.log = log;
     }
 
-    public void execute(Trade trade, Strategy strategy, LocalDateTime dateTime, IndiceClient indiceClient, BrokerClient brokerClient) throws InterruptedException {
-        log.info("[{}] Check trade", trade.getTradeName());
+    /**
+     * executes trade
+     * @param trade trade info
+     * @param strategy strategy info
+     * @param dateTime date time
+     * @param brokerClient broker client
+     */
+    public void execute(Trade trade, Strategy strategy, LocalDateTime dateTime, BrokerClient brokerClient) throws InterruptedException {
+        log.info("=".repeat(80));
+        log.info("[{}] execute trade", trade.getTradeName());
 
-        // check market opened
-        if(!brokerClient.isOpened(dateTime)) {
-            log.info("[{}] Market not opened.", trade.getTradeName());
-            return;
-        }
+        // time zone
+        ZoneId timeZone = brokerClient.getDefinition().getTimezone();
+        log.info("[{}] market timeZone: {}", trade.getTradeName(), timeZone);
+        log.info("[{}] market dateTime: {}", trade.getTradeName(), dateTime);
 
         // checks start,end time
         if (!isOperatingTime(trade, dateTime)) {
-            log.info("[{}] Not operating time - {} ~ {}", trade.getTradeName(), trade.getStartAt(), trade.getEndAt());
+            log.info("[{}] not operating time - {} ~ {}", trade.getTradeName(), trade.getStartTime(), trade.getEndTime());
             return;
         }
 
-        // indice profiles
-        List<Indice> indices = indiceService.getIndices();
-        List<IndiceProfile> indiceProfiles = new ArrayList<>();
-        for(Indice indice : indices) {
-            // minute ohlcvs
-            List<Ohlcv> minuteOhlcvs = indiceClient.getMinuteOhlcvs(indice.getIndiceId(), dateTime);
-            List<Ohlcv> previousMinuteOhlcvs = getPreviousIndiceMinuteOhlcvs(indice.getIndiceId(), minuteOhlcvs, dateTime);
-            minuteOhlcvs.addAll(previousMinuteOhlcvs);
-
-            // daily ohlcvs
-            List<Ohlcv> dailyOhlcvs = indiceClient.getDailyOhlcvs(indice.getIndiceId(), dateTime);
-            List<Ohlcv> previousDailyOhlcvs = getPreviousIndiceDailyOhlcvs(indice.getIndiceId(), dailyOhlcvs, dateTime);
-            dailyOhlcvs.addAll(previousDailyOhlcvs);
-
-            // newses
-            List<News> newses = indiceService.getIndiceNewses(indice.getIndiceId(), dateTime.minusWeeks(1), dateTime, Pageable.unpaged());
-
-            // indice profile
-            IndiceProfile indiceProfile = IndiceProfile.builder()
-                    .target(indice)
-                    .minuteOhlcvs(minuteOhlcvs)
-                    .dailyOhlcvs(dailyOhlcvs)
-                    .newses(newses)
-                    .build();
-            indiceProfiles.add(indiceProfile);
+        // check market opened
+        if(!brokerClient.isOpened(dateTime)) {
+            log.info("[{}] market not opened.", trade.getTradeName());
+            return;
         }
 
         // balance
@@ -118,32 +99,36 @@ public class TradeExecutor {
                 }
 
                 // logging
+                log.info("-".repeat(80));
                 log.info("[{} - {}] check asset", tradeAsset.getAssetId(), tradeAsset.getAssetName());
 
                 // daily ohlcvs
-                List<Ohlcv> dailyOhlcvs = brokerClient.getDailyOhlcvs(tradeAsset, dateTime);
-                List<Ohlcv> previousDailyOhlcvs = getPreviousAssetDailyOhlcvs(tradeAsset.getAssetId(), dailyOhlcvs, dateTime);
+                List<Ohlcv> dailyOhlcvs = brokerClient.getDailyOhlcvs(tradeAsset);
+                List<Ohlcv> previousDailyOhlcvs = getPreviousDailyOhlcvs(tradeAsset.getAssetId(), dailyOhlcvs, dateTime);
                 dailyOhlcvs.addAll(previousDailyOhlcvs);
 
                 // minute ohlcvs
-                List<Ohlcv> minuteOhlcvs = brokerClient.getMinuteOhlcvs(tradeAsset, dateTime);
-                List<Ohlcv> previousMinuteOhlcvs = getPreviousAssetMinuteOhlcvs(tradeAsset.getAssetId(), minuteOhlcvs, dateTime);
+                List<Ohlcv> minuteOhlcvs = brokerClient.getMinuteOhlcvs(tradeAsset);
+                List<Ohlcv> previousMinuteOhlcvs = getPreviousMinuteOhlcvs(tradeAsset.getAssetId(), minuteOhlcvs, dateTime);
                 minuteOhlcvs.addAll(previousMinuteOhlcvs);
 
                 // newses
-                List<News> newses = assetService.getAssetNewses(tradeAsset.getAssetId(), dateTime.minusWeeks(1), dateTime, Pageable.unpaged());
+                List<News> newses = assetService.getNewses(
+                        tradeAsset.getAssetId(),
+                        dateTime.minusWeeks(1),
+                        dateTime,
+                        Pageable.unpaged());
 
                 // asset profile
-                AssetProfile assetProfile = AssetProfile.builder()
-                        .target(tradeAsset)
+                Profile profile = Profile.builder()
                         .dailyOhlcvs(dailyOhlcvs)
                         .minuteOhlcvs(minuteOhlcvs)
                         .newses(newses)
                         .build();
 
                 // logging
-                log.info("[{} - {}] dailyOhlcvs({}):{}", tradeAsset.getAssetId(), tradeAsset.getAssetName(), assetProfile.getDailyOhlcvs().size(), assetProfile.getDailyOhlcvs().isEmpty() ? null : assetProfile.getDailyOhlcvs().get(0));
-                log.info("[{} - {}] minuteOhlcvs({}):{}", tradeAsset.getAssetId(), tradeAsset.getAssetName(), assetProfile.getMinuteOhlcvs().size(), assetProfile.getMinuteOhlcvs().isEmpty() ? null : assetProfile.getMinuteOhlcvs().get(0));
+                log.info("[{} - {}] dailyOhlcvs({}):{}", tradeAsset.getAssetId(), tradeAsset.getAssetName(), profile.getDailyOhlcvs().size(), profile.getDailyOhlcvs().isEmpty() ? null : profile.getDailyOhlcvs().get(0));
+                log.info("[{} - {}] minuteOhlcvs({}):{}", tradeAsset.getAssetId(), tradeAsset.getAssetName(), profile.getMinuteOhlcvs().size(), profile.getMinuteOhlcvs().isEmpty() ? null : profile.getMinuteOhlcvs().get(0));
 
                 // order book
                 OrderBook orderBook = brokerClient.getOrderBook(tradeAsset);
@@ -155,15 +140,14 @@ public class TradeExecutor {
                 TradeAssetStatus tradeAssetStatus = TradeAssetStatus.builder()
                         .tradeId(tradeAsset.getTradeId())
                         .assetId(tradeAsset.getAssetId())
-                        .previousClosePrice(dailyOhlcvs.get(1).getClosePrice())
-                        .openPrice(dailyOhlcvs.get(0).getOpenPrice())
-                        .closePrice(minuteOhlcvs.get(0).getClosePrice())
+                        .previousClose(dailyOhlcvs.get(1).getClose())
+                        .open(dailyOhlcvs.get(0).getOpen())
+                        .close(minuteOhlcvs.get(0).getClose())
                         .build();
 
                 // executes trade asset decider
                 StrategyExecutor strategyExecutor = StrategyExecutor.builder()
-                        .indiceProfiles(indiceProfiles)
-                        .assetProfile(assetProfile)
+                        .profile(profile)
                         .strategy(strategy)
                         .variables(trade.getStrategyVariables())
                         .dateTime(dateTime)
@@ -248,7 +232,9 @@ public class TradeExecutor {
                     BigDecimal buyAmount = positionAmount.subtract(currentOwnedAmount);
                     if (buyAmount.compareTo(BigDecimal.ZERO) > 0) {
                         BigDecimal buyPrice = calculateBuyPrice(tradeAsset, orderBook, brokerClient);
-                        BigDecimal buyQuantity = buyAmount.divide(buyPrice, MathContext.DECIMAL32);
+                        BigDecimal buyQuantity = buyAmount
+                                .divide(buyPrice, MathContext.DECIMAL32)
+                                .setScale(0, RoundingMode.HALF_UP);
                         // check minimum order amount
                         boolean canBuy = brokerClient.isOverMinimumOrderAmount(buyQuantity, buyPrice);
                         if (canBuy) {
@@ -263,7 +249,9 @@ public class TradeExecutor {
                     BigDecimal sellAmount = currentOwnedAmount.subtract(positionAmount);
                     if (sellAmount.compareTo(BigDecimal.ZERO) > 0) {
                         BigDecimal sellPrice = calculateSellPrice(tradeAsset, orderBook, brokerClient);
-                        BigDecimal sellQuantity = sellAmount.divide(sellPrice, MathContext.DECIMAL32);
+                        BigDecimal sellQuantity = sellAmount
+                                .divide(sellPrice, MathContext.DECIMAL32)
+                                .setScale(0, RoundingMode.HALF_UP);
                         // check minimum order amount
                         boolean canSell = brokerClient.isOverMinimumOrderAmount(sellQuantity, sellPrice);
                         if (canSell) {
@@ -280,12 +268,18 @@ public class TradeExecutor {
         }
     }
 
+    /**
+     * checks operating time
+     * @param trade trade info
+     * @param dateTime date time
+     * @return whether date time is operable
+     */
     private boolean isOperatingTime(Trade trade, LocalDateTime dateTime) {
-        if(trade.getStartAt() == null || trade.getEndAt() == null) {
+        if(trade.getStartTime() == null || trade.getEndTime() == null) {
             return false;
         }
-        LocalTime startTime = trade.getStartAt();
-        LocalTime endTime = trade.getEndAt();
+        LocalTime startTime = trade.getStartTime();
+        LocalTime endTime = trade.getEndTime();
         LocalTime currentTime = dateTime.toLocalTime();
         if (startTime.isAfter(endTime)) {
             return !(currentTime.isBefore(startTime) || currentTime.equals(startTime))
@@ -296,42 +290,49 @@ public class TradeExecutor {
         }
     }
 
-    private List<Ohlcv> getPreviousIndiceDailyOhlcvs(Indice.Id indiceId, List<Ohlcv> ohlcvs, LocalDateTime dateTime) {
+    /**
+     * return previous daily ohlcvs
+     * @param assetId asset id
+     * @param ohlcvs ohlcvs
+     * @param dateTime date time
+     * @return previous daily ohlcvs
+     */
+    private List<Ohlcv> getPreviousDailyOhlcvs(String assetId, List<Ohlcv> ohlcvs, LocalDateTime dateTime) {
         LocalDateTime dateTimeFrom = dateTime.minusYears(1);
-        LocalDateTime dateTimeTo = ohlcvs.isEmpty() ? dateTime : ohlcvs.get(ohlcvs.size()-1).getDateTime().minusDays(1);
+        LocalDateTime dateTimeTo = ohlcvs.isEmpty()
+                ? dateTime
+                : ohlcvs.get(ohlcvs.size()-1).getDateTime().minusDays(1);
         if(dateTimeTo.isBefore(dateTimeFrom)) {
             return new ArrayList<>();
         }
-        return indiceService.getIndiceDailyOhlcvs(indiceId, dateTimeFrom, dateTimeTo, PageRequest.of(0, 360));
+        return ohlcvService.getDailyOhlcvs(assetId, dateTimeFrom, dateTimeTo, PageRequest.of(0, 360));
     }
 
-    private List<Ohlcv> getPreviousIndiceMinuteOhlcvs(Indice.Id indiceId, List<Ohlcv> ohlcvs, LocalDateTime dateTime) {
+    /**
+     * return previous minute ohlcvs
+     * @param assetId asset id
+     * @param ohlcvs ohlcvs
+     * @param dateTime date time
+     * @return previous minute ohlcvs
+     */
+    private List<Ohlcv> getPreviousMinuteOhlcvs(String assetId, List<Ohlcv> ohlcvs, LocalDateTime dateTime) {
         LocalDateTime dateTimeFrom = dateTime.minusWeeks(1);
-        LocalDateTime dateTimeTo = ohlcvs.isEmpty() ? dateTime : ohlcvs.get(ohlcvs.size()-1).getDateTime().minusMinutes(1);
+        LocalDateTime dateTimeTo = ohlcvs.isEmpty()
+                ? dateTime
+                : ohlcvs.get(ohlcvs.size()-1).getDateTime().minusMinutes(1);
         if(dateTimeTo.isBefore(dateTimeFrom)) {
             return new ArrayList<>();
         }
-        return indiceService.getIndiceMinuteOhlcvs(indiceId, dateTimeFrom, dateTimeTo, PageRequest.of(0, 1000));
+        return ohlcvService.getMinuteOhlcvs(assetId, dateTimeFrom, dateTimeTo, PageRequest.of(0, 1000));
     }
 
-    private List<Ohlcv> getPreviousAssetDailyOhlcvs(String assetId, List<Ohlcv> ohlcvs, LocalDateTime dateTime) {
-        LocalDateTime dateTimeFrom = dateTime.minusYears(1);
-        LocalDateTime dateTimeTo = ohlcvs.isEmpty() ? dateTime : ohlcvs.get(ohlcvs.size()-1).getDateTime().minusDays(1);
-        if(dateTimeTo.isBefore(dateTimeFrom)) {
-            return new ArrayList<>();
-        }
-        return assetService.getAssetDailyOhlcvs(assetId, dateTimeFrom, dateTimeTo, PageRequest.of(0, 360));
-    }
-
-    private List<Ohlcv> getPreviousAssetMinuteOhlcvs(String assetId, List<Ohlcv> ohlcvs, LocalDateTime dateTime) {
-        LocalDateTime dateTimeFrom = dateTime.minusWeeks(1);
-        LocalDateTime dateTimeTo = ohlcvs.isEmpty() ? dateTime : ohlcvs.get(ohlcvs.size()-1).getDateTime().minusMinutes(1);
-        if(dateTimeTo.isBefore(dateTimeFrom)) {
-            return new ArrayList<>();
-        }
-        return assetService.getAssetMinuteOhlcvs(assetId, dateTimeFrom, dateTimeTo, PageRequest.of(0, 1000));
-    }
-
+    /**
+     * calculates buy price
+     * @param tradeAsset trade asset
+     * @param orderBook order book
+     * @param brokerClient broker client
+     * @return buy price
+     */
     private BigDecimal calculateBuyPrice(TradeAsset tradeAsset, OrderBook orderBook, BrokerClient brokerClient) throws InterruptedException {
         BigDecimal price = orderBook.getAskPrice();
         BigDecimal tickPrice = brokerClient.getTickPrice(tradeAsset, price);
@@ -342,6 +343,13 @@ public class TradeExecutor {
         return price.max(orderBook.getBidPrice());
     }
 
+    /**
+     * calculates sell price
+     * @param tradeAsset trade asset
+     * @param orderBook order book
+     * @param brokerClient broker client
+     * @return sell price
+     */
     private BigDecimal calculateSellPrice(TradeAsset tradeAsset, OrderBook orderBook, BrokerClient brokerClient) throws InterruptedException {
         BigDecimal price = orderBook.getBidPrice();
         BigDecimal tickPrice = brokerClient.getTickPrice(tradeAsset, price);
@@ -352,9 +360,18 @@ public class TradeExecutor {
         return price.min(orderBook.getAskPrice());
     }
 
+    /**
+     * buys trade asset
+     * @param brokerClient broker client
+     * @param trade trade
+     * @param tradeAsset trade asset
+     * @param quantity buy quantity
+     * @param price buy price for unit
+     * @param strategyResult strategy result
+     */
     private void buyTradeAsset(BrokerClient brokerClient, Trade trade, TradeAsset tradeAsset, BigDecimal quantity, BigDecimal price, StrategyResult strategyResult) throws InterruptedException {
         Order order = Order.builder()
-                .orderAt(LocalDateTime.now())
+                .orderAt(Instant.now())
                 .type(Order.Type.BUY)
                 .kind(trade.getOrderKind())
                 .tradeId(tradeAsset.getTradeId())
@@ -399,9 +416,19 @@ public class TradeExecutor {
         }
     }
 
+    /**
+     * sells trade asset
+     * @param brokerClient broker client
+     * @param trade trade
+     * @param tradeAsset trade asset
+     * @param quantity sell quantity
+     * @param price sell price
+     * @param strategyResult strategy result
+     * @param balanceAsset balance asset
+     */
     private void sellTradeAsset(BrokerClient brokerClient, Trade trade, TradeAsset tradeAsset, BigDecimal quantity, BigDecimal price, StrategyResult strategyResult, BalanceAsset balanceAsset) throws InterruptedException {
         Order order = Order.builder()
-                .orderAt(LocalDateTime.now())
+                .orderAt(Instant.now())
                 .type(Order.Type.SELL)
                 .kind(trade.getOrderKind())
                 .tradeId(trade.getTradeId())
@@ -456,6 +483,10 @@ public class TradeExecutor {
         }
     }
 
+    /**
+     * saves trade order
+     * @param order order info
+     */
     private void saveTradeOrder(Order order) {
         DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager, transactionDefinition);
@@ -463,6 +494,12 @@ public class TradeExecutor {
                 orderService.saveOrder(order));
     }
 
+    /**
+     * send error alarm if enable
+     * @param trade trade
+     * @param tradeAsset trade asset
+     * @param t throwable
+     */
     private void sendErrorAlarmIfEnabled(Trade trade, TradeAsset tradeAsset, Throwable t) {
         if(trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
             if (trade.isAlarmOnError()) {
@@ -473,6 +510,11 @@ public class TradeExecutor {
         }
     }
 
+    /**
+     * send order alarm if enable
+     * @param trade trade
+     * @param order order
+     */
     private void sendOrderAlarmIfEnabled(Trade trade, Order order) {
         if (trade.isAlarmOnOrder()) {
             if (trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {

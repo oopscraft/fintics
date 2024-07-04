@@ -4,7 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.oopscraft.fintics.client.broker.BrokerClient;
-import org.oopscraft.fintics.dao.AssetOhlcvRepository;
+import org.oopscraft.fintics.dao.OhlcvRepository;
 import org.oopscraft.fintics.model.*;
 import org.springframework.data.domain.Pageable;
 
@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -19,12 +20,14 @@ import java.util.stream.Collectors;
 
 public class SimulateBrokerClient extends BrokerClient {
 
-    private final AssetOhlcvRepository assetOhlcvRepository;
+    private final OhlcvRepository assetOhlcvRepository;
+
+    private final ZoneId timezone;
 
     private final BigDecimal feeRate;
 
     @Setter
-    private LocalDateTime dateTime;
+    private LocalDateTime datetime;
 
     private final Map<String, List<Ohlcv>> minuteOhlcvsMap = new HashMap<>();
 
@@ -41,9 +44,10 @@ public class SimulateBrokerClient extends BrokerClient {
     private final SimulateReport simulateReport = new SimulateReport();
 
     @Builder
-    protected SimulateBrokerClient(AssetOhlcvRepository assetOhlcvRepository, BigDecimal feeRate) {
+    protected SimulateBrokerClient(OhlcvRepository assetOhlcvRepository, ZoneId timezone, BigDecimal feeRate) {
         super(null, new Properties());
         this.assetOhlcvRepository = assetOhlcvRepository;
+        this.timezone = timezone;
         this.feeRate = feeRate;
     }
 
@@ -72,11 +76,13 @@ public class SimulateBrokerClient extends BrokerClient {
                 .setScale(2, RoundingMode.CEILING);
     }
 
-    private void loadOhlcvsIfNotExist(Asset asset, LocalDateTime dateTime) {
+    private void loadOhlcvsIfNotExist(Asset asset, LocalDateTime datetime) {
         // minutes
         List<Ohlcv> minuteOhlcvs = minuteOhlcvsMap.get(asset.getAssetId());
-        if(minuteOhlcvs == null || minuteOhlcvs.isEmpty() || minuteOhlcvs.get(0).getDateTime().isBefore(dateTime)) {
-            minuteOhlcvs = assetOhlcvRepository.findAllByAssetIdAndType(asset.getAssetId(), Ohlcv.Type.MINUTE, dateTime.minusMonths(1), dateTime.plusMonths(1), Pageable.unpaged())
+        if(minuteOhlcvs == null || minuteOhlcvs.isEmpty() || minuteOhlcvs.get(0).getDateTime().isBefore(datetime)) {
+            LocalDateTime datetimeFrom = datetime.minusMonths(1);
+            LocalDateTime datetimeTo = datetime.plusMonths(1);
+            minuteOhlcvs = assetOhlcvRepository.findAllByAssetIdAndType(asset.getAssetId(), Ohlcv.Type.MINUTE, datetimeFrom, datetimeTo, Pageable.unpaged())
                     .stream()
                     .map(Ohlcv::from)
                     .toList();
@@ -85,8 +91,10 @@ public class SimulateBrokerClient extends BrokerClient {
 
         // daily
         List<Ohlcv> dailyOhlcvs = dailyOhlcvsMap.get(asset.getAssetId());
-        if(dailyOhlcvs == null || dailyOhlcvs.isEmpty() || dailyOhlcvs.get(0).getDateTime().isBefore(dateTime)) {
-            dailyOhlcvs = assetOhlcvRepository.findAllByAssetIdAndType(asset.getAssetId(), Ohlcv.Type.DAILY, dateTime.minusYears(1), dateTime.plusYears(1), Pageable.unpaged())
+        if(dailyOhlcvs == null || dailyOhlcvs.isEmpty() || dailyOhlcvs.get(0).getDateTime().isBefore(datetime)) {
+            LocalDateTime datetimeFrom = datetime.minusYears(1);
+            LocalDateTime datetimeTo = datetime.plusYears(1);
+            dailyOhlcvs = assetOhlcvRepository.findAllByAssetIdAndType(asset.getAssetId(), Ohlcv.Type.DAILY, datetimeFrom, datetimeTo, Pageable.unpaged())
                     .stream()
                     .map(Ohlcv::from)
                     .toList();
@@ -95,7 +103,7 @@ public class SimulateBrokerClient extends BrokerClient {
     }
 
     @Override
-    public boolean isOpened(LocalDateTime dateTime) throws InterruptedException {
+    public boolean isOpened(LocalDateTime datetime) throws InterruptedException {
         return true;
     }
 
@@ -105,46 +113,46 @@ public class SimulateBrokerClient extends BrokerClient {
     }
 
     @Override
-    public List<Ohlcv> getMinuteOhlcvs(Asset asset, LocalDateTime dateTime) throws InterruptedException {
-        loadOhlcvsIfNotExist(asset, dateTime);
-        LocalDateTime dateTimeFrom = dateTime.minusWeeks(1);
-        LocalDateTime dateTimeTo = dateTime.minusMinutes(0);
+    public List<Ohlcv> getMinuteOhlcvs(Asset asset) throws InterruptedException {
+        loadOhlcvsIfNotExist(asset, datetime);
+        LocalDateTime datetimeFrom = datetime.minusWeeks(1);
+        LocalDateTime datetimeTo = datetime;
         return minuteOhlcvsMap.get(asset.getAssetId()).stream()
-                .filter(ohlcv -> (ohlcv.getDateTime().isAfter(dateTimeFrom) || ohlcv.getDateTime().isEqual(dateTimeFrom))
-                        && (ohlcv.getDateTime().isBefore(dateTimeTo) || ohlcv.getDateTime().isEqual(dateTimeTo)))
+                .filter(ohlcv -> (ohlcv.getDateTime().isAfter(datetimeFrom) || ohlcv.getDateTime().equals(datetimeFrom))
+                        && (ohlcv.getDateTime().isBefore(datetimeTo) || ohlcv.getDateTime().equals(datetimeTo)))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<Ohlcv> getDailyOhlcvs(Asset asset, LocalDateTime dateTime) throws InterruptedException {
-        loadOhlcvsIfNotExist(asset, dateTime);
-        LocalDateTime dateTimeFrom = dateTime.minusYears(1);
-        LocalDateTime dateTimeTo = dateTime.minusDays(0);
+    public List<Ohlcv> getDailyOhlcvs(Asset asset) throws InterruptedException {
+        loadOhlcvsIfNotExist(asset, datetime);
+        LocalDateTime datetimeFrom = datetime.minusYears(1);
+        LocalDateTime datetimeTo = datetime;
         List<Ohlcv> dailyOhlcvs = dailyOhlcvsMap.get(asset.getAssetId()).stream()
-                .filter(ohlcv -> (ohlcv.getDateTime().isAfter(dateTimeFrom) || ohlcv.getDateTime().isEqual(dateTimeFrom))
-                        && (ohlcv.getDateTime().isBefore(dateTimeTo) || ohlcv.getDateTime().isEqual(dateTimeTo)))
+                .filter(ohlcv -> (ohlcv.getDateTime().isAfter(datetimeFrom) || ohlcv.getDateTime().equals(datetimeFrom))
+                        && (ohlcv.getDateTime().isBefore(datetimeTo) || ohlcv.getDateTime().equals(datetimeTo)))
                 .collect(Collectors.toList());
 
         // 저정된 이전 일봉 데이터는 그날 장종료 후 데이터 이므로 현재 분봉의 데이터를 반영
-        List<Ohlcv> todayMinuteOhlcvs = getMinuteOhlcvs(asset, dateTime).stream()
-                .filter(ohlcv -> ohlcv.getDateTime().toLocalDate().isEqual(dateTime.toLocalDate()))
+        List<Ohlcv> todayMinuteOhlcvs = getMinuteOhlcvs(asset).stream()
+                .filter(ohlcv -> ohlcv.getDateTime().truncatedTo(ChronoUnit.DAYS).equals(datetime.truncatedTo(ChronoUnit.DAYS)))
                 .collect(Collectors.toList());
-        BigDecimal highPrice = todayMinuteOhlcvs.stream()
-                .map(Ohlcv::getHighPrice)
+        BigDecimal high = todayMinuteOhlcvs.stream()
+                .map(Ohlcv::getHigh)
                 .reduce(BigDecimal::max)
                 .orElseThrow();
-        BigDecimal lowPrice = todayMinuteOhlcvs.stream()
-                .map(Ohlcv::getLowPrice)
+        BigDecimal low = todayMinuteOhlcvs.stream()
+                .map(Ohlcv::getLow)
                 .reduce(BigDecimal::min)
                 .orElseThrow();
-        BigDecimal closePrice = todayMinuteOhlcvs.get(0).getClosePrice();
+        BigDecimal closePrice = todayMinuteOhlcvs.get(0).getClose();
         BigDecimal volume = todayMinuteOhlcvs.stream()
                 .map(Ohlcv::getVolume)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         Ohlcv todayDailyOhlcv = dailyOhlcvs.get(0);
-        todayDailyOhlcv.setHighPrice(highPrice);
-        todayDailyOhlcv.setLowPrice(lowPrice);
-        todayDailyOhlcv.setClosePrice(closePrice);
+        todayDailyOhlcv.setHigh(high);
+        todayDailyOhlcv.setLow(low);
+        todayDailyOhlcv.setClose(closePrice);
         todayDailyOhlcv.setVolume(volume);
 
         // return
@@ -163,18 +171,18 @@ public class SimulateBrokerClient extends BrokerClient {
 
     @Override
     public OrderBook getOrderBook(Asset asset) {
-        loadOhlcvsIfNotExist(asset, dateTime);
-        LocalDateTime dateTimeTo = dateTime.truncatedTo(ChronoUnit.MINUTES);
-        LocalDateTime dateTimeFrom = dateTimeTo.minusMinutes(1);
+        loadOhlcvsIfNotExist(asset, datetime);
+        LocalDateTime datetimeTo = datetime.truncatedTo(ChronoUnit.MINUTES);
+        LocalDateTime datetimeFrom = datetimeTo.minus(1, ChronoUnit.MINUTES);
         List<Ohlcv> minuteOhlcvs = minuteOhlcvsMap.get(asset.getAssetId());
         Ohlcv minuteOhlcv = minuteOhlcvs.stream()
-                .filter(assetOhlcv -> (assetOhlcv.getDateTime().isAfter(dateTimeFrom) || assetOhlcv.getDateTime().isEqual(dateTimeFrom))
-                        && (assetOhlcv.getDateTime().isBefore(dateTimeTo) || assetOhlcv.getDateTime().isEqual(dateTimeTo)))
+                .filter(assetOhlcv -> (assetOhlcv.getDateTime().isAfter(datetimeFrom) || assetOhlcv.getDateTime().equals(datetimeFrom))
+                        && (assetOhlcv.getDateTime().isBefore(datetimeTo) || assetOhlcv.getDateTime().equals(datetimeTo)))
                 .findFirst()
                 .orElse(null);
-        BigDecimal price = minuteOhlcv.getClosePrice();
-        BigDecimal bidPrice = minuteOhlcv.getClosePrice();
-        BigDecimal askPrice = minuteOhlcv.getClosePrice();
+        BigDecimal price = minuteOhlcv.getClose();
+        BigDecimal bidPrice = minuteOhlcv.getClose();
+        BigDecimal askPrice = minuteOhlcv.getClose();
         return OrderBook.builder()
                 .price(price)
                 .bidPrice(bidPrice)
@@ -213,7 +221,7 @@ public class SimulateBrokerClient extends BrokerClient {
 
     @Override
     public Order submitOrder(Asset asset, Order order) throws InterruptedException {
-        order.setOrderAt(dateTime);
+        order.setOrderAt(datetime.atZone(timezone).toInstant());
 
         // order book
         OrderBook orderBook = getOrderBook(asset);
@@ -275,7 +283,7 @@ public class SimulateBrokerClient extends BrokerClient {
             BigDecimal realizedProfitAmount = sellPrice
                     .subtract(balanceAsset.getPurchasePrice())
                     .multiply(sellQuantity, MathContext.DECIMAL32);
-            simulateReport.addAssetReturn(balanceAsset, dateTime, realizedProfitAmount);
+            simulateReport.addAssetReturn(balanceAsset, datetime, realizedProfitAmount);
 
             // updates balance asset
             BigDecimal remainedQuantity = balanceAsset.getQuantity().subtract(sellQuantity);
@@ -318,7 +326,7 @@ public class SimulateBrokerClient extends BrokerClient {
 
     void snapshotSimulateReport() {
         Balance balance = getBalance();
-        simulateReport.addTotalReturn(dateTime, balance.getTotalAmount());
+        simulateReport.addTotalReturn(datetime, balance.getTotalAmount());
     }
 
 }

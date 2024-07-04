@@ -16,27 +16,15 @@
         });
         const assets = new duice.ArrayProxy([]);
 
-        // asset ohlcv
-        const assetOhlcvSummaries = new duice.ArrayProxy([]);
-        const assetOhlcvSummary = new duice.ObjectProxy({
+        // ohlcv summary
+        const ohlcvSummaries = new duice.ArrayProxy([]);
+        const ohlcvSummary = new duice.ObjectProxy({
             ohlcvStatistics: []
         });
 
-        // indice ohlcv
-        const indiceOhlcvSummaries = new duice.ArrayProxy([]);
-        const indiceOhlcvSummary = new duice.ObjectProxy({
-            ohlcvStatistics: []
-        });
-
-        // asset news
-        const assetNewsSummaries = new duice.ArrayProxy([]);
-        const assetNewsSummary = new duice.ObjectProxy({
-            newsStatistics: []
-        });
-
-        // indice news
-        const indiceNewsSummaries = new duice.ArrayProxy([]);
-        const indiceNewsSummary = new duice.ObjectProxy({
+        // news summary
+        const newsSummaries = new duice.ArrayProxy([]);
+        const newsSummary = new duice.ObjectProxy({
             newsStatistics: []
         });
 
@@ -64,90 +52,48 @@
             getAssets();
         }
 
-        function getAssetOhlcvSummaries() {
-            let url = new URL(`${_apiUrl}/v1/data/asset-ohlcv-summaries`, document.location.origin);
+        function getOhlcvSummaries() {
+            let url = new URL(`${_apiUrl}/v1/data/ohlcv-summaries`, document.location.origin);
             _fetch(url)
                 .then(response => response.json())
                 .then(responseBody => {
-                    duice.ArrayProxy.assign(assetOhlcvSummaries, responseBody);
+                    duice.ArrayProxy.assign(ohlcvSummaries, responseBody);
                 });
         }
 
-        function getAssetOhlcvSummary(id) {
-            duice.ObjectProxy.clear(assetOhlcvSummary);
-            let url = new URL(`${_apiUrl}/v1/data/asset-ohlcv-summaries/${id}`, document.location.origin);
+        function getOhlcvSummary(id) {
+            duice.ObjectProxy.clear(ohlcvSummary);
+            let url = new URL(`${_apiUrl}/v1/data/ohlcv-summaries/${id}`, document.location.origin);
             _fetch(url).then(response => response.json())
             .then(responseBody => {
                 console.log(responseBody);
-                duice.ObjectProxy.assign(assetOhlcvSummary, responseBody);
+                duice.ObjectProxy.assign(ohlcvSummary, responseBody);
             });
         }
 
-        function getAssetOhlcvs(id, date) {
-            ohlcvsDialog.open('assets', id, date);
+        function getOhlcvs(assetId, date) {
+            ohlcvsDialog.open(assetId, date);
         }
 
-        function getIndiceOhlcvSummaries() {
-            let url = new URL(`${_apiUrl}/v1/data/indice-ohlcv-summaries`, document.location.origin);
-            _fetch(url)
-                .then(response => response.json())
-                .then(responseBody => {
-                    duice.ArrayProxy.assign(indiceOhlcvSummaries, responseBody);
-                });
-        }
-
-        function getIndiceOhlcvSummary(id) {
-            duice.ObjectProxy.clear(indiceOhlcvSummary);
-            let url = new URL(`${_apiUrl}/v1/data/indice-ohlcv-summaries/${id}`, document.location.origin);
-            _fetch(url).then(response => response.json())
-                .then(responseBody => {
-                    duice.ObjectProxy.assign(indiceOhlcvSummary, responseBody);
-                });
-        }
-
-        function getIndiceOhlcvs(id, date) {
-            ohlcvsDialog.open('indices', id, date);
-        }
-
-        function getAssetNewsSummaries() {
-            let url = new URL(`${_apiUrl}/v1/data/asset-news-summaries`, document.location.origin);
+        function getNewsSummaries() {
+            let url = new URL(`${_apiUrl}/v1/data/news-summaries`, document.location.origin);
             _fetch(url).then(response => response.json())
             .then(responseBody => {
-                duice.ArrayProxy.assign(assetNewsSummaries, responseBody);
+                duice.ArrayProxy.assign(newsSummaries, responseBody);
             });
         }
 
-        function getAssetNewsSummary(id) {
-            duice.ObjectProxy.clear(assetNewsSummary);
-            let url = new URL(`${_apiUrl}/v1/data/asset-news-summaries/${id}`, document.location.origin);
+        function getNewsSummary(assetId) {
+            duice.ObjectProxy.clear(newsSummary);
+            let url = new URL(`${_apiUrl}/v1/data/news-summaries/${assetId}`, document.location.origin);
             _fetch(url).then(response => response.json())
             .then(responseBody => {
-                duice.ObjectProxy.assign(assetNewsSummary, responseBody);
+                duice.ObjectProxy.assign(newsSummary, responseBody);
             });
         }
 
-        function getAssetNews(id, date) {
-            newsesDialog.open('assets', id, date);
-        }
-
-        function getIndiceNewsSummaries() {
-            let url = new URL(`${_apiUrl}/v1/data/indice-news-summaries`, document.location.origin);
-            _fetch(url).then(response => response.json())
-            .then(responseBody => {
-                duice.ArrayProxy.assign(indiceNewsSummaries, responseBody);
-            });
-        }
-
-        function getIndiceNewsSummary(id) {
-            let url = new URL(`${_apiUrl}/v1/data/indice-news-summaries/${id}`, document.location.origin);
-            _fetch(url).then(response => response.json())
-            .then(responseBody => {
-                duice.ObjectProxy.assign(indiceNewsSummary, responseBody);
-            });
-        }
-
-        function getIndiceNews(id, date) {
-            newsesDialog.open('indices', id, date);
+        function getNews(assetId, date) {
+            newsesDialog.open(assetId, date);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -159,28 +105,16 @@
                         getAssets();
                     }),
                 duice.tabItem(
-                    document.getElementById('assetOhlcvTabButton'),
-                    document.getElementById('assetOhlcvTabContent'),
+                    document.getElementById('ohlcvTabButton'),
+                    document.getElementById('ohlcvTabContent'),
                     () => {
-                        getAssetOhlcvSummaries();
+                        getOhlcvSummaries();
                     }),
                 duice.tabItem(
-                    document.getElementById('indiceOhlcvTabButton'),
-                    document.getElementById('indiceOhlcvTabContent'),
+                    document.getElementById('newsTabButton'),
+                    document.getElementById('newsTabContent'),
                     () => {
-                        getIndiceOhlcvSummaries();
-                    }),
-                duice.tabItem(
-                    document.getElementById('assetNewsTabButton'),
-                    document.getElementById('assetNewsTabContent'),
-                    () => {
-                        getAssetNewsSummaries();
-                    }),
-                duice.tabItem(
-                    document.getElementById('indiceNewsTabButton'),
-                    document.getElementById('indiceNewsTabContent'),
-                    () => {
-                        getIndiceNewsSummaries();
+                        getNewsSummaries();
                     })
             );
             tabFolder.setActive(0);
@@ -208,21 +142,13 @@
             <img class="icon" th:src="@{/static/image/icon-asset.svg}" alt="asset"/>
             <span data-th-text="#{fintics.Asset}"></span>
         </button>
-        <button id="assetOhlcvTabButton" type="button" class="tab">
+        <button id="ohlcvTabButton" type="button" class="tab">
             <img class="icon" th:src="@{/static/image/icon-ohlcv.svg}" alt="asset-ohlcv"/>
-            <span data-th-text="|#{fintics.Asset} #{fintics.Ohlcv}|"></span>
+            <span data-th-text="#{fintics.Ohlcv}"></span>
         </button>
-        <button id="indiceOhlcvTabButton" type="button" class="tab">
-            <img class="icon" th:src="@{/static/image/icon-ohlcv.svg}" alt="indice-ohlcv"/>
-            <span data-th-text="|#{fintics.Indice} #{fintics.Ohlcv}|"></span>
-        </button>
-        <button id="assetNewsTabButton" type="button" class="tab">
+        <button id="newsTabButton" type="button" class="tab">
             <img class="icon" th:src="@{/static/image/icon-news.svg}" alt="asset-news"/>
-            <span data-th-text="|#{fintics.Asset} #{fintics.News}|"></span>
-        </button>
-        <button id="indiceNewsTabButton" type="button" class="tab">
-            <img class="icon" th:src="@{/static/image/icon-news.svg}" alt="indice-news"/>
-            <span data-th-text="|#{fintics.Indice} #{fintics.News}|"></span>
+            <span data-th-text="#{fintics.News}"></span>
         </button>
     </div>
     <!-- ====================================== -->
@@ -338,9 +264,9 @@
     <!-- ====================================== -->
 
     <!-- ====================================== -->
-    <!-- start: asseOhlcv                       -->
+    <!-- start: ohlcv                           -->
     <!-- ====================================== -->
-    <div id="assetOhlcvTabContent" class="border--1 padding--1em">
+    <div id="ohlcvTabContent" class="border--1 padding--1em">
         <h2>
             <img class="icon" th:src="@{/static/image/icon-ohlcv.svg}" alt="ohlcv"/>
             <span data-th-text="|#{fintics.Asset} #{fintics.Ohlcv}|"></span>
@@ -361,20 +287,20 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr data-duice-bind="assetOhlcvSummaries" data-duice-loop="assetOhlcvSummary,status" data-duice-selected-item-class="selected"
-                    data-duice-execute="this.dataset.id=assetOhlcvSummary.id;"
-                    onclick="getAssetOhlcvSummary(this.dataset.id);" class="link">
+                <tr data-duice-bind="ohlcvSummaries" data-duice-loop="ohlcvSummary,status" data-duice-selected-item-class="selected"
+                    data-duice-execute="this.dataset.assetId=ohlcvSummary.assetId;"
+                    onclick="getOhlcvSummary(this.dataset.assetId);" class="link">
                     <td data-duice-bind="status" data-duice-property="count"></td>
-                    <td data-duice-bind="assetOhlcvSummary" data-duice-property="id" class="font-weight--bold"></td>
-                    <td data-duice-bind="assetOhlcvSummary" data-duice-property="name"></td>
-                    <td data-duice-bind="assetOhlcvSummary" data-duice-property="dailyCount" data-duice-format="number"></td>
-                    <td data-duice-bind="assetOhlcvSummary" data-duice-property="dailyMinDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
-                    <td data-duice-bind="assetOhlcvSummary" data-duice-property="dailyMaxDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
-                    <td data-duice-bind="assetOhlcvSummary" data-duice-property="minuteCount" data-duice-format="number"></td>
-                    <td data-duice-bind="assetOhlcvSummary" data-duice-property="minuteMinDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
-                    <td data-duice-bind="assetOhlcvSummary" data-duice-property="minuteMaxDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
+                    <td data-duice-bind="ohlcvSummary" data-duice-property="assetId" class="font-weight--bold"></td>
+                    <td data-duice-bind="ohlcvSummary" data-duice-property="assetName"></td>
+                    <td data-duice-bind="ohlcvSummary" data-duice-property="dailyCount" data-duice-format="number"></td>
+                    <td data-duice-bind="ohlcvSummary" data-duice-property="dailyMinDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
+                    <td data-duice-bind="ohlcvSummary" data-duice-property="dailyMaxDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
+                    <td data-duice-bind="ohlcvSummary" data-duice-property="minuteCount" data-duice-format="number"></td>
+                    <td data-duice-bind="ohlcvSummary" data-duice-property="minuteMinDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
+                    <td data-duice-bind="ohlcvSummary" data-duice-property="minuteMaxDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
                 </tr>
-                <tr data-duice-bind="assetOhlcvSummaries" data-duice-if="return assetOhlcvSummaries.length === 0;">
+                <tr data-duice-bind="ohlcvSummaries" data-duice-if="return ohlcvSummaries.length === 0;">
                     <td colspan="100%" class="text-align--center">No Data</td>
                 </tr>
                 </tbody>
@@ -382,12 +308,12 @@
         </div>
         <div class="margin-top--1em font-weight--bold">
             &nbsp;
-            <span data-duice-bind="assetOhlcvSummary" data-duice-property="id"></span>
+            <span data-duice-bind="ohlcvSummary" data-duice-property="assetId"></span>
             -
-            <span data-duice-bind="assetOhlcvSummary" data-duice-property="name"></span>
+            <span data-duice-bind="ohlcvSummary" data-duice-property="assetName"></span>
         </div>
         <div class="display--grid grid-template-columns--12">
-            <div data-duice-bind="assetOhlcvSummary.ohlcvStatistics" data-duice-loop="ohlcvStatistic,status"
+            <div data-duice-bind="ohlcvSummary.ohlcvStatistics" data-duice-loop="ohlcvStatistic,status"
                  data-duice-execute="
                  this.dataset.date = ohlcvStatistic.date;
                  if (ohlcvStatistic.count < 200) {
@@ -397,7 +323,7 @@
                     this.classList.add('background-color--red');
                  }
                 "
-                 onclick="getAssetOhlcvs(assetOhlcvSummary.id, this.dataset.date);"
+                 onclick="getOhlcvs(ohlcvSummary.assetId, this.dataset.date);"
                  class="grid-column--1 s__grid-column--3 margin--1px border--1 padding--1em padding-x--1px font-size--smaller link">
                 <span data-duice-bind="ohlcvStatistic" data-duice-property="date" class="font-weight--bold"></span>
                 <br/>
@@ -406,85 +332,13 @@
         </div>
     </div>
     <!-- ====================================== -->
-    <!-- end: assetOhlcv                        -->
+    <!-- end: ohlcv                             -->
     <!-- ====================================== -->
 
     <!-- ====================================== -->
-    <!-- start: indiceOhlcv                     -->
+    <!-- start: news                            -->
     <!-- ====================================== -->
-    <div id="indiceOhlcvTabContent" class="border--1 padding--1em">
-        <h2>
-            <img class="icon" th:src="@{/static/image/icon-ohlcv.svg}" alt="ohlcv"/>
-            <span data-th-text="|#{fintics.Indice} #{fintics.Ohlcv}|"></span>
-        </h2>
-        <div class="overflow-y--scroll border-x--1" style="max-height:30vh;">
-            <table class="width--100 border--0 text-align--center font-size--smaller">
-                <thead>
-                <tr>
-                    <th data-th-text="#{web.global.no}"></th>
-                    <th>indiceId</th>
-                    <th>indiceName</th>
-                    <th>dailyCount</th>
-                    <th>dailyMinDateTime</th>
-                    <th>dailyMaxDateTime</th>
-                    <th>minuteCount</th>
-                    <th>minuteMinDateTime</th>
-                    <th>minuteMaxDateTime</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr data-duice-bind="indiceOhlcvSummaries" data-duice-loop="indiceOhlcvSummary,status" data-duice-selected-item-class="selected"
-                    data-duice-execute="this.dataset.id=indiceOhlcvSummary.id;"
-                    onclick="getIndiceOhlcvSummary(this.dataset.id);" class="link">
-                    <td data-duice-bind="status" data-duice-property="count"></td>
-                    <td data-duice-bind="indiceOhlcvSummary" data-duice-property="id" class="font-weight--bold"></td>
-                    <td data-duice-bind="indiceOhlcvSummary" data-duice-property="name"></td>
-                    <td data-duice-bind="indiceOhlcvSummary" data-duice-property="dailyCount" data-duice-format="number"></td>
-                    <td data-duice-bind="indiceOhlcvSummary" data-duice-property="dailyMinDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
-                    <td data-duice-bind="indiceOhlcvSummary" data-duice-property="dailyMaxDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
-                    <td data-duice-bind="indiceOhlcvSummary" data-duice-property="minuteCount" data-duice-format="number"></td>
-                    <td data-duice-bind="indiceOhlcvSummary" data-duice-property="minuteMinDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
-                    <td data-duice-bind="indiceOhlcvSummary" data-duice-property="minuteMaxDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
-                </tr>
-                <tr data-duice-bind="indiceOhlcvSummaries" data-duice-if="return indiceOhlcvSummaries.length === 0;">
-                    <td colspan="100%" class="text-align--center">No Data</td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-        <div class="margin-top--1em font-weight--bold">
-            &nbsp;
-            <span data-duice-bind="indiceOhlcvSummary" data-duice-property="id"></span>
-            -
-            <span data-duice-bind="indiceOhlcvSummary" data-duice-property="name"></span>
-        </div>
-        <div class="display--grid grid-template-columns--12">
-            <div data-duice-bind="indiceOhlcvSummary.ohlcvStatistics" data-duice-loop="ohlcvStatistic,status"
-                 data-duice-execute="
-                 this.dataset.date = ohlcvStatistic.date;
-                 if (ohlcvStatistic.count < 200) {
-                    this.classList.add('background-color--yellow');
-                 }
-                 if (ohlcvStatistic.count < 2) {
-                    this.classList.add('background-color--red');
-                 }
-                "
-                 onclick="getIndiceOhlcvs(indiceOhlcvSummary.id, this.dataset.date);"
-                 class="grid-column--1 s__grid-column--3 margin--1px border--1 padding--1em padding-x--1px font-size--smaller link">
-                <span data-duice-bind="ohlcvStatistic" data-duice-property="date" class="font-weight--bold"></span>
-                <br/>
-                <span data-duice-bind="ohlcvStatistic" data-duice-property="count"></span>
-            </div>
-        </div>
-    </div>
-    <!-- ====================================== -->
-    <!-- end: indiceOhlcv                       -->
-    <!-- ====================================== -->
-
-    <!-- ====================================== -->
-    <!-- start: asseNews                        -->
-    <!-- ====================================== -->
-    <div id="assetNewsTabContent" class="border--1 padding--1em">
+    <div id="newsTabContent" class="border--1 padding--1em">
         <h2>
             <img class="icon" th:src="@{/static/image/icon-news.svg}" alt="news"/>
             <span data-th-text="|#{fintics.Asset} #{fintics.News}|"></span>
@@ -502,17 +356,17 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr data-duice-bind="assetNewsSummaries" data-duice-loop="assetNewsSummary,status" data-duice-selected-item-class="selected"
-                    data-duice-execute="this.dataset.id=assetNewsSummary.id;"
-                    onclick="getAssetNewsSummary(this.dataset.id);" class="link">
+                <tr data-duice-bind="newsSummaries" data-duice-loop="newsSummary,status" data-duice-selected-item-class="selected"
+                    data-duice-execute="this.dataset.assetId=newsSummary.assetId;"
+                    onclick="getNewsSummary(this.dataset.assetId);" class="link">
                     <td data-duice-bind="status" data-duice-property="count"></td>
-                    <td data-duice-bind="assetNewsSummary" data-duice-property="id" class="font-weight--bold"></td>
-                    <td data-duice-bind="assetNewsSummary" data-duice-property="name"></td>
-                    <td data-duice-bind="assetNewsSummary" data-duice-property="totalCount" data-duice-format="number"></td>
-                    <td data-duice-bind="assetNewsSummary" data-duice-property="minDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
-                    <td data-duice-bind="assetNewsSummary" data-duice-property="maxDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
+                    <td data-duice-bind="newsSummary" data-duice-property="assetId" class="font-weight--bold"></td>
+                    <td data-duice-bind="newsSummary" data-duice-property="assetName"></td>
+                    <td data-duice-bind="newsSummary" data-duice-property="totalCount" data-duice-format="number"></td>
+                    <td data-duice-bind="newsSummary" data-duice-property="minDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
+                    <td data-duice-bind="newsSummary" data-duice-property="maxDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
                 </tr>
-                <tr data-duice-bind="assetNewsSummaries" data-duice-if="return assetNewsSummaries.length === 0;">
+                <tr data-duice-bind="newsSummaries" data-duice-if="return newsSummaries.length === 0;">
                     <td colspan="100%" class="text-align--center">No Data</td>
                 </tr>
                 </tbody>
@@ -520,14 +374,14 @@
         </div>
         <div class="margin-top--1em font-weight--bold">
             &nbsp;
-            <span data-duice-bind="assetNewsSummary" data-duice-property="id"></span>
+            <span data-duice-bind="newsSummary" data-duice-property="assetId"></span>
             -
-            <span data-duice-bind="assetNewsSummary" data-duice-property="name"></span>
+            <span data-duice-bind="newsSummary" data-duice-property="assetName"></span>
         </div>
         <div class="display--grid grid-template-columns--12">
-            <div data-duice-bind="assetNewsSummary.newsStatistics" data-duice-loop="newsStatistic,status"
+            <div data-duice-bind="newsSummary.newsStatistics" data-duice-loop="newsStatistic,status"
                  data-duice-execute="this.dataset.date = newsStatistic.date;"
-                 onclick="getAssetNews(assetNewsSummary.id, this.dataset.date);"
+                 onclick="getNews(newsSummary.assetId, this.dataset.date);"
                  class="grid-column--1 s__grid-column--3 margin--1px border--1 padding--1em padding-x--1px font-size--smaller link">
                 <span data-duice-bind="newsStatistic" data-duice-property="date" class="font-weight--bold"></span>
                 <br/>
@@ -536,65 +390,7 @@
         </div>
     </div>
     <!-- ====================================== -->
-    <!-- start: asseNews                        -->
-    <!-- ====================================== -->
-
-    <!-- ====================================== -->
-    <!-- start: indiceNews                      -->
-    <!-- ====================================== -->
-    <div id="indiceNewsTabContent" class="border--1 padding--1em">
-        <h2>
-            <img class="icon" th:src="@{/static/image/icon-news.svg}" alt="news"/>
-            <span data-th-text="|#{fintics.Indice} #{fintics.News}|"></span>
-        </h2>
-        <div class="overflow-y--scroll border-x--1" style="max-height:30vh;">
-            <table class="width--100 border--0 text-align--center font-size--smaller">
-                <thead>
-                <tr>
-                    <th data-th-text="#{web.global.no}"></th>
-                    <th>assetId</th>
-                    <th>assetName</th>
-                    <th>totalCount</th>
-                    <th>minDateTime</th>
-                    <th>maxDateTime</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr data-duice-bind="indiceNewsSummaries" data-duice-loop="indiceNewsSummary,status" data-duice-selected-item-class="selected"
-                    data-duice-execute="this.dataset.id=indiceNewsSummary.id;"
-                    onclick="getIndiceNewsSummary(this.dataset.id);" class="link">
-                    <td data-duice-bind="status" data-duice-property="count"></td>
-                    <td data-duice-bind="indiceNewsSummary" data-duice-property="id" class="font-weight--bold"></td>
-                    <td data-duice-bind="indiceNewsSummary" data-duice-property="name"></td>
-                    <td data-duice-bind="indiceNewsSummary" data-duice-property="totalCount" data-duice-format="number"></td>
-                    <td data-duice-bind="indiceNewsSummary" data-duice-property="minDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
-                    <td data-duice-bind="indiceNewsSummary" data-duice-property="maxDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
-                </tr>
-                <tr data-duice-bind="indiceNewsSummaries" data-duice-if="return indiceNewsSummaries.length === 0;">
-                    <td colspan="100%" class="text-align--center">No Data</td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-        <div class="margin-top--1em font-weight--bold">
-            &nbsp;
-            <span data-duice-bind="assetNewsSummary" data-duice-property="id"></span>
-            -
-            <span data-duice-bind="assetNewsSummary" data-duice-property="name"></span>
-        </div>
-        <div class="display--grid grid-template-columns--12">
-            <div data-duice-bind="indiceNewsSummary.newsStatistics" data-duice-loop="newsStatistic,status"
-                 data-duice-execute="this.dataset.date = newsStatistic.date;"
-                 onclick="getIndiceNews(indiceNewsSummary.id, this.dataset.date);"
-                 class="grid-column--1 s__grid-column--3 margin--1px border--1 padding--1em padding-x--1px font-size--smaller link">
-                <span data-duice-bind="newsStatistic" data-duice-property="date" class="font-weight--bold"></span>
-                <br/>
-                <span data-duice-bind="newsStatistic" data-duice-property="count"></span>
-            </div>
-        </div>
-    </div>
-    <!-- ====================================== -->
-    <!-- start: indiceNews                      -->
+    <!-- start: news                            -->
     <!-- ====================================== -->
 
     <!-- ====================================== -->
@@ -622,10 +418,10 @@
                     <th data-th-text="#{web.global.no}"></th>
                     <th data-th-text="#{fintics.Ohlcv.type}"></th>
                     <th data-th-text="#{fintics.Ohlcv.dateTime}"></th>
-                    <th data-th-text="#{fintics.Ohlcv.openPrice}"></th>
-                    <th data-th-text="#{fintics.Ohlcv.highPrice}"></th>
-                    <th data-th-text="#{fintics.Ohlcv.lowPrice}"></th>
-                    <th data-th-text="#{fintics.Ohlcv.closePrice}"></th>
+                    <th data-th-text="#{fintics.Ohlcv.open}"></th>
+                    <th data-th-text="#{fintics.Ohlcv.high}"></th>
+                    <th data-th-text="#{fintics.Ohlcv.low}"></th>
+                    <th data-th-text="#{fintics.Ohlcv.close}"></th>
                     <th data-th-text="#{fintics.Ohlcv.volume}"></th>
                 </tr>
                 </thead>
@@ -634,10 +430,10 @@
                     <td data-duice-bind="ohlcv" data-duice-execute="this.innerHTML=status.count;"></td>
                     <td data-duice-bind="ohlcv" data-duice-property="type" class="font-weight--bold"></td>
                     <td data-duice-bind="ohlcv" data-duice-property="dateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')" class="font-weight--bold"></td>
-                    <td data-duice-bind="ohlcv" data-duice-property="openPrice" data-duice-format="number"></td>
-                    <td data-duice-bind="ohlcv" data-duice-property="highPrice" data-duice-format="number"></td>
-                    <td data-duice-bind="ohlcv" data-duice-property="lowPrice" data-duice-format="number"></td>
-                    <td data-duice-bind="ohlcv" data-duice-property="closePrice" data-duice-format="number"></td>
+                    <td data-duice-bind="ohlcv" data-duice-property="open" data-duice-format="number"></td>
+                    <td data-duice-bind="ohlcv" data-duice-property="high" data-duice-format="number"></td>
+                    <td data-duice-bind="ohlcv" data-duice-property="low" data-duice-format="number"></td>
+                    <td data-duice-bind="ohlcv" data-duice-property="close" data-duice-format="number"></td>
                     <td data-duice-bind="ohlcv" data-duice-property="volume" data-duice-format="number"></td>
                 </tr>
                 <tr data-duice-bind="ohlcvsDialog.ohlcvs" data-duice-if="return ohlcvsDialog.ohlcvs.length===0;">
@@ -652,24 +448,22 @@
     <script th:inline="javascript">
         const ohlcvsDialog = {
             dialog: new duice.dialog.Dialog(document.getElementById('ohlcvsDialog')),
-            target: null,
-            id: null,
+            assetId: null,
             date: null,
             ohlcvs: new duice.ArrayProxy([]),
-            open: function(target, id, date) {
-                this.target = target;
-                this.id = id;
+            open: function(assetId, date) {
+                this.assetId = assetId;
                 this.date = date;
                 duice.ArrayProxy.clear(this.ohlcvs);
                 this.getOhlcvs();
                 return this.dialog.open();
             },
             getOhlcvs: function() {
-                let dateTimeFrom = dateFns.startOfDay(new Date(this.date)).toISOString();
-                let dateTimeTo = dateFns.endOfDay(new Date(this.date)).toISOString();
+                let dateTimeFrom = `${this.date}T00:00:00`;
+                let dateTimeTo = `${this.date}T23:59:59`;
                 let urls = [
-                    new URL(`${_apiUrl}/v1/${this.target}/${this.id}/daily-ohlcvs`, document.location.origin),
-                    new URL(`${_apiUrl}/v1/${this.target}/${this.id}/minute-ohlcvs`, document.location.origin)
+                    new URL(`${_apiUrl}/v1/ohlcvs/${this.assetId}/daily`, document.location.origin),
+                    new URL(`${_apiUrl}/v1/ohlcvs/${this.assetId}/minute`, document.location.origin)
                 ];
                 const promises = urls.map(url => {
                     url.searchParams.append('dateTimeFrom', dateTimeFrom);
@@ -745,21 +539,20 @@
         const newsesDialog = {
             dialog: new duice.dialog.Dialog(document.getElementById('newsesDialog')),
             target: null,
-            id: null,
+            assetId: null,
             date: null,
             newses: new duice.ArrayProxy([]),
-            open: function(target, id, date) {
-                this.target = target;
-                this.id = id;
+            open: function(assetId, date) {
+                this.assetId = assetId;
                 this.date = date;
                 duice.ArrayProxy.clear(this.newses);
                 this.getNewses();
                 return this.dialog.open();
             },
             getNewses: function() {
-                let dateTimeFrom = dateFns.startOfDay(new Date(this.date)).toISOString();
-                let dateTimeTo = dateFns.endOfDay(new Date(this.date)).toISOString();
-                let url = new URL(`${_apiUrl}/v1/${this.target}/${this.id}/newses`, document.location.origin);
+                let dateTimeFrom = `${this.date}T00:00:00`;
+                let dateTimeTo = `${this.date}T23:59:59`;
+                let url = new URL(`${_apiUrl}/v1/newses/${this.assetId}`, document.location.origin);
                 url.searchParams.append('dateTimeFrom', dateTimeFrom);
                 url.searchParams.append('dateTimeTo', dateTimeTo);
                 url.searchParams.append('_size', 1000);

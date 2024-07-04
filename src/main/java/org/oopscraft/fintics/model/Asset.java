@@ -7,8 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.fintics.dao.AssetEntity;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,7 +16,7 @@ import java.util.Optional;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class Asset {
+public class Asset implements Serializable {
 
     private String assetId;
 
@@ -28,29 +28,11 @@ public class Asset {
 
     private String type;
 
-    private boolean favorite;
-
-    private LocalDateTime dateTime;
-
     private BigDecimal marketCap;
 
-    private BigDecimal issuedShares;
+    private boolean favorite;
 
-    private BigDecimal totalAssets;
-
-    private BigDecimal totalEquity;
-
-    private BigDecimal netIncome;
-
-    private BigDecimal eps;
-
-    private BigDecimal per;
-
-    private BigDecimal roe;
-
-    private BigDecimal roa;
-
-    private BigDecimal dividendYield;
+    private Financial assetFinancial;
 
     public String getSymbol() {
         return Optional.ofNullable(getAssetId())
@@ -65,20 +47,24 @@ public class Asset {
     }
 
     public static Asset from(AssetEntity assetEntity) {
-        return Asset.builder()
+        Asset asset = Asset.builder()
                 .assetId(assetEntity.getAssetId())
                 .assetName(assetEntity.getAssetName())
                 .market(assetEntity.getMarket())
                 .exchange(assetEntity.getExchange())
                 .type(assetEntity.getType())
-                .favorite(assetEntity.isFavorite())
-                .dateTime(assetEntity.getDateTime())
                 .marketCap(assetEntity.getMarketCap())
-                .issuedShares(assetEntity.getIssuedShares())
-                .per(assetEntity.getPer())
-                .roe(assetEntity.getRoe())
-                .roa(assetEntity.getRoa())
+                .favorite(assetEntity.isFavorite())
                 .build();
+        // financial
+        Financial assetFinancial = Optional.ofNullable(assetEntity.getFinancialEntity())
+                .map(Financial::from)
+                .orElse(Financial.builder()
+                        .assetId(asset.getAssetId())
+                        .build());
+        asset.setAssetFinancial(assetFinancial);
+        // return
+        return asset;
     }
 
 }

@@ -54,10 +54,6 @@ public class TradeAsset extends Asset {
             tradeAsset.setMarket(assetEntity.getMarket());
             tradeAsset.setExchange(assetEntity.getExchange());
             tradeAsset.setType(assetEntity.getType());
-            tradeAsset.setMarketCap(assetEntity.getMarketCap());
-            tradeAsset.setPer(assetEntity.getPer());
-            tradeAsset.setRoe(assetEntity.getRoe());
-            tradeAsset.setRoa(assetEntity.getRoa());
         }
         return tradeAsset;
     }

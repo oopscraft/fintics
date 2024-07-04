@@ -60,7 +60,7 @@ function _createDailyOhlcvsChart(elementId) {
                 tooltip: {
                     callbacks: {
                         label: function(context) {
-                            return context.dataset.label + ': ' + context.raw['closePrice'].toLocaleString() +
+                            return context.dataset.label + ': ' + context.raw['close'].toLocaleString() +
                                 ' (' + context.raw['pctChange'] + '%)';
                         }
                     }
@@ -132,7 +132,7 @@ function _createMinuteOhlcvsChart(elementId) {
                 tooltip: {
                     callbacks: {
                         label: function(context) {
-                            return context.dataset.label + ': ' + context.raw['closePrice'].toLocaleString() +
+                            return context.dataset.label + ': ' + context.raw['close'].toLocaleString() +
                                 ' (' + context.raw['pctChange'] + '%)';
                         }
                     }
@@ -144,22 +144,20 @@ function _createMinuteOhlcvsChart(elementId) {
 
 /**
  * creates time series from ohlcv data
- * @param dateFrom
- * @param dateTo
  * @param ohlcvs
  * @returns {*}
  * @private
  */
-function _createTimeSeries(dateFrom, dateTo, ohlcvs) {
+function _createTimeSeries(ohlcvs) {
     let timeSeries = JSON.parse(JSON.stringify(ohlcvs)).reverse();
 
     // fill pct change
     let basePrice;
     timeSeries.forEach(ohlcv => {
         if(!basePrice) {
-            basePrice = ohlcv.openPrice;
+            basePrice = ohlcv.open;
         }
-        ohlcv.pctChange = Number((ohlcv.closePrice - basePrice)/basePrice * 100).toFixed(4);
+        ohlcv.pctChange = Number((ohlcv.close - basePrice)/basePrice * 100).toFixed(4);
     });
     return timeSeries;
 }

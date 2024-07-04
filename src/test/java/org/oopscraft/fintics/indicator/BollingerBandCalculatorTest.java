@@ -26,10 +26,10 @@ public class BollingerBandCalculatorTest extends AbstractCalculatorTest {
         List<Ohlcv> ohlcvs = inputRows.stream()
                 .map(row -> {
                     return Ohlcv.builder()
-                            .openPrice(new BigDecimal(row.get("open").replaceAll(",","")))
-                            .highPrice(new BigDecimal(row.get("high").replaceAll(",", "")))
-                            .lowPrice(new BigDecimal(row.get("low").replaceAll(",","")))
-                            .closePrice(new BigDecimal(row.get("close").replaceAll(",","")))
+                            .open(new BigDecimal(row.get("open").replaceAll(",","")))
+                            .high(new BigDecimal(row.get("high").replaceAll(",", "")))
+                            .low(new BigDecimal(row.get("low").replaceAll(",","")))
+                            .close(new BigDecimal(row.get("close").replaceAll(",","")))
                             .build();
                 })
                 .collect(Collectors.toList());

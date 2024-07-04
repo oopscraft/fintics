@@ -197,8 +197,8 @@ if(analysisAverage < 50) {
 // 1. early trading session, detect price dislocation(over-estimated gap-up/gap-down)
 if(dateTime.toLocalTime().isBefore(LocalTime.of(9,30))) {
     log.info("[{}] filter price pctChange before 9:30", assetAlias)
-    def yesterdayClosePrice = assetIndicator.getOhlcvs(Ohlcv.Type.DAILY,1)[1].closePrice
-    def currentClosePrice = assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE,1).first().closePrice
+    def yesterdayClosePrice = assetIndicator.getOhlcvs(Ohlcv.Type.DAILY,1)[1].getClose
+    def currentClosePrice = assetIndicator.getOhlcvs(Ohlcv.Type.MINUTE,1).first().getClose
     def initialPricePctChange = tool.pctChange([currentClosePrice, yesterdayClosePrice])
     log.info("[{}] closePricePctChange: {} -> {} ({}%)", assetAlias, yesterdayClosePrice, currentClosePrice, initialPricePctChange)
     if(initialPricePctChange.abs() > 2.0) {
