@@ -197,4 +197,76 @@ class SimpleOhlcvClientTest extends CoreTestSupport {
         });
     }
 
+    @ParameterizedTest
+    @MethodSource({"getUsAssetInfos", "getKrAssetInfos"})
+    void getDailyOhlcvInExpiredRange(String assetId, String exchange) {
+        // given
+        Asset asset = Asset.builder()
+                .assetId(assetId)
+                .exchange(exchange)
+                .build();
+        LocalDateTime dateTimeFrom = LocalDateTime.now().minusYears(6);
+        LocalDateTime dateTimeTo = LocalDateTime.now().minusYears(3);
+
+        // when
+        List<Ohlcv> ohlcvs = getSimpleOhlcvClient().getOhlcvs(asset, Ohlcv.Type.DAILY, dateTimeFrom, dateTimeTo);
+
+        // then - check size
+        log.debug("ohlcvs.size():{}", ohlcvs.size());
+    }
+
+    @ParameterizedTest
+    @MethodSource({"getUsAssetInfos", "getKrAssetInfos"})
+    void getMinuteOhlcvInExpiredRange(String assetId, String exchange) {
+        // given
+        Asset asset = Asset.builder()
+                .assetId(assetId)
+                .exchange(exchange)
+                .build();
+        LocalDateTime dateTimeFrom = LocalDateTime.now().minusMonths(3);
+        LocalDateTime dateTimeTo = LocalDateTime.now().minusMonths(2);
+
+        // when
+        List<Ohlcv> ohlcvs = getSimpleOhlcvClient().getOhlcvs(asset, Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo);
+
+        // then - check size
+        log.debug("ohlcvs.size():{}", ohlcvs.size());
+    }
+
+    @Test
+    void getDailyOhlcvOfInvalidAsset() {
+        // given
+        Asset asset = Asset.builder()
+                .assetId("KR.invalid")
+                .exchange("XKRX")
+                .build();
+        LocalDateTime dateTimeFrom = LocalDateTime.now().minusYears(6);
+        LocalDateTime dateTimeTo = LocalDateTime.now().minusYears(3);
+
+        // when
+        List<Ohlcv> ohlcvs = getSimpleOhlcvClient().getOhlcvs(asset, Ohlcv.Type.DAILY, dateTimeFrom, dateTimeTo);
+
+        // then - check size
+        log.debug("ohlcvs.size():{}", ohlcvs.size());
+        assertTrue(ohlcvs.size() < 1);
+    }
+
+    @Test
+    void getMinuteOhlcvOfInvalidAsset() {
+        // given
+        Asset asset = Asset.builder()
+                .assetId("KR.invalid")
+                .exchange("XKRX")
+                .build();
+        LocalDateTime dateTimeFrom = LocalDateTime.now().minusMonths(3);
+        LocalDateTime dateTimeTo = LocalDateTime.now().minusMonths(2);
+
+        // when
+        List<Ohlcv> ohlcvs = getSimpleOhlcvClient().getOhlcvs(asset, Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo);
+
+        // then - check size
+        log.debug("ohlcvs.size():{}", ohlcvs.size());
+        assertTrue(ohlcvs.size() < 1);
+    }
+
 }

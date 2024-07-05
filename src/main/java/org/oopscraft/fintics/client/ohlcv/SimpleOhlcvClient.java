@@ -10,9 +10,11 @@ import org.oopscraft.fintics.model.Asset;
 import org.oopscraft.fintics.model.Ohlcv;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -142,7 +144,31 @@ public class SimpleOhlcvClient extends OhlcvClient {
                     .get(url)
                     .headers(headers)
                     .build();
-            ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+            ResponseEntity<String> responseEntity = null;
+            try {
+                responseEntity = restTemplate.exchange(requestEntity, String.class);
+            } catch (HttpClientErrorException e) {
+                if (e.getStatusCode() == HttpStatus.BAD_REQUEST) {
+                    String responseBody = e.getResponseBodyAsString();
+                    try {
+                        ObjectMapper objectMapper = new ObjectMapper();
+                        JsonNode errorNode = objectMapper.readTree(responseBody).path("error");
+                        if (errorNode.isObject()) {
+                            String code = errorNode.path("code").asText();
+                            String description = errorNode.path("description").asText();
+                            if ("Bad Request".equals(code) && description.contains("Data doesn't exist")) {
+                                log.debug(description);
+                                return new ArrayList<>();
+                            }
+                        }
+                    } catch (JsonProcessingException jsonProcessingException) {
+                        throw new RuntimeException("Failed to parse error response", jsonProcessingException);
+                    }
+                } else {
+                    throw e;
+                }
+            }
+
             JsonNode rootNode;
             try {
                 rootNode = objectMapper.readTree(responseEntity.getBody());
@@ -213,7 +239,30 @@ public class SimpleOhlcvClient extends OhlcvClient {
                 .get(url)
                 .headers(headers)
                 .build();
-        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+        ResponseEntity<String> responseEntity = null;
+        try {
+            responseEntity = restTemplate.exchange(requestEntity, String.class);
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode() == HttpStatus.BAD_REQUEST) {
+                String responseBody = e.getResponseBodyAsString();
+                try {
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    JsonNode errorNode = objectMapper.readTree(responseBody).path("error");
+                    if (errorNode.isObject()) {
+                        String code = errorNode.path("code").asText();
+                        String description = errorNode.path("description").asText();
+                        if ("Bad Request".equals(code) && description.contains("Data doesn't exist")) {
+                            log.debug(description);
+                            return new ArrayList<>();
+                        }
+                    }
+                } catch (JsonProcessingException jsonProcessingException) {
+                    throw new RuntimeException("Failed to parse error response", jsonProcessingException);
+                }
+            } else {
+                throw e;
+            }
+        }
         JsonNode rootNode;
         try {
             rootNode = objectMapper.readTree(responseEntity.getBody());
