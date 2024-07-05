@@ -33,8 +33,6 @@ class OhlcvPastCollectorTest extends CoreTestSupport {
     @PersistenceContext
     private final EntityManager entityManager;
 
-    private final LocalDateTime expiredDatetime = LocalDateTime.now().minusMonths(1);
-
     @Disabled
     @Test
     void collect() {
@@ -47,7 +45,9 @@ class OhlcvPastCollectorTest extends CoreTestSupport {
     static Stream<Arguments> getTestAssetArguments() {
         return Stream.of(
                 Arguments.of("KR.005930", "XKRX"),      // samsung electronics
-                Arguments.of("KR.122630", "XKRX")       // KODEX leverage
+                Arguments.of("KR.122630", "XKRX"),      // KODEX leverage
+                Arguments.of("US.AAPL", "XNAS"),        // Apple
+                Arguments.of("US.MSFT", "XNAS")         // Microsoft
         );
     }
 
@@ -59,8 +59,9 @@ class OhlcvPastCollectorTest extends CoreTestSupport {
                 .assetId(assetId)
                 .exchange(exchange)
                 .build();
+        LocalDateTime expiredDateTime = LocalDateTime.now().minusMonths(1);
         // when
-        pastOhlcvCollector.collectPastMinuteOhlcvs(asset, expiredDatetime);
+        pastOhlcvCollector.collectPastMinuteOhlcvs(asset, expiredDateTime);
         // then
         List<OhlcvEntity> ohlcvEntities = entityManager.createQuery("select " +
                                 " a from OhlcvEntity a " +
@@ -74,16 +75,17 @@ class OhlcvPastCollectorTest extends CoreTestSupport {
         assertTrue(ohlcvEntities.size() > 0);
     }
 
-    @Disabled
-    @Test
-    void collectPastDailyOhlcvs() {
+    @ParameterizedTest
+    @MethodSource("getTestAssetArguments")
+    void collectPastDailyOhlcvs(String assetId, String exchange) {
         // given
         Asset asset = Asset.builder()
-                .assetId("KR.005930")
-                .exchange("XKRX")
+                .assetId(assetId)
+                .exchange(exchange)
                 .build();
+        LocalDateTime expiredDateTime = LocalDateTime.now().minusMonths(1);
         // when
-        pastOhlcvCollector.collectPastDailyOhlcvs(asset, expiredDatetime);
+        pastOhlcvCollector.collectPastDailyOhlcvs(asset, expiredDateTime);
         // then
         List<OhlcvEntity> ohlcvEntities = entityManager.createQuery("select " +
                                 " a from OhlcvEntity a " +
