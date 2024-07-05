@@ -32,17 +32,32 @@ public class SimpleOhlcvClient extends OhlcvClient {
 
     private final ObjectMapper objectMapper;
 
+    /**
+     * constructor
+     * @param ohlcvClientProperties client properties
+     * @param objectMapper object mapper
+     */
     public SimpleOhlcvClient(OhlcvClientProperties ohlcvClientProperties, ObjectMapper objectMapper) {
         super(ohlcvClientProperties);
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * checks supported asset
+     * @param asset asset
+     * @return whether is supported
+     */
     @Override
     public boolean isSupported(Asset asset) {
         String yahooSymbol = convertToYahooSymbol(asset);
         return isSupported(yahooSymbol);
     }
 
+    /**
+     * checks yahoo symbol
+     * @param yahooSymbol yahoo symbol
+     * @return whether yahoo symbol is valid
+     */
     boolean isSupported(String yahooSymbol) {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
@@ -68,6 +83,14 @@ public class SimpleOhlcvClient extends OhlcvClient {
         return false;
     }
 
+    /**
+     * get ohlcvs
+     * @param asset sset
+     * @param type ohlcv type
+     * @param datetimeFrom date time from
+     * @param datetimeTo date time to
+     * @return ohlcvs
+     */
     @Override
     public List<Ohlcv> getOhlcvs(Asset asset, Ohlcv.Type type, LocalDateTime datetimeFrom, LocalDateTime datetimeTo) {
         return switch (type) {
@@ -76,6 +99,11 @@ public class SimpleOhlcvClient extends OhlcvClient {
         };
     }
 
+    /**
+     * get asset time zone
+     * @param asset asset
+     * @return time zone
+     */
     ZoneId getTimezone(Asset asset) {
         String market = asset.getAssetId().split("\\.")[0];
         return switch(market) {
@@ -85,6 +113,11 @@ public class SimpleOhlcvClient extends OhlcvClient {
         };
     }
 
+    /**
+     * convert asset to yahoo symbol
+     * @param asset asset
+     * @return yahoo symbol
+     */
     String convertToYahooSymbol(Asset asset) {
         String yahooSymbol;
         String exchange = Optional.ofNullable(asset.getExchange()).orElseThrow(() -> new RuntimeException("exchange is null"));
@@ -96,6 +129,13 @@ public class SimpleOhlcvClient extends OhlcvClient {
         return yahooSymbol;
     }
 
+    /**
+     * gets minute ohlcvs
+     * @param asset asset
+     * @param datetimeFrom data time from
+     * @param datetimeTo date time to
+     * @return list of minute ohlcv
+     */
     List<Ohlcv> getMinuteOhlcvs(Asset asset, LocalDateTime datetimeFrom, LocalDateTime datetimeTo) {
         // yahoo finance 의 경우 분봉은 30일 까지만 제공
         int validDays = 29;
@@ -144,29 +184,14 @@ public class SimpleOhlcvClient extends OhlcvClient {
                     .get(url)
                     .headers(headers)
                     .build();
-            ResponseEntity<String> responseEntity = null;
+            ResponseEntity<String> responseEntity;
             try {
                 responseEntity = restTemplate.exchange(requestEntity, String.class);
             } catch (HttpClientErrorException e) {
-                if (e.getStatusCode() == HttpStatus.BAD_REQUEST) {
-                    String responseBody = e.getResponseBodyAsString();
-                    try {
-                        ObjectMapper objectMapper = new ObjectMapper();
-                        JsonNode errorNode = objectMapper.readTree(responseBody).path("error");
-                        if (errorNode.isObject()) {
-                            String code = errorNode.path("code").asText();
-                            String description = errorNode.path("description").asText();
-                            if ("Bad Request".equals(code) && description.contains("Data doesn't exist")) {
-                                log.debug(description);
-                                return new ArrayList<>();
-                            }
-                        }
-                    } catch (JsonProcessingException jsonProcessingException) {
-                        throw new RuntimeException("Failed to parse error response", jsonProcessingException);
-                    }
-                } else {
-                    throw e;
+                if (isDataNotFoundError(e)) {
+                    return new ArrayList<>();
                 }
+                throw e;
             }
 
             JsonNode rootNode;
@@ -204,6 +229,13 @@ public class SimpleOhlcvClient extends OhlcvClient {
         return minuteOhlcvs;
     }
 
+    /**
+     * gets daily ohlcvs
+     * @param asset asset
+     * @param datetimeFrom date time from
+     * @param datetimeTo data time to
+     * @return list of daily ohlcv
+     */
     List<Ohlcv> getDailyOhlcvs(Asset asset, LocalDateTime datetimeFrom, LocalDateTime datetimeTo) {
         // check date time to
         ZoneId timezone = getTimezone(asset);
@@ -239,29 +271,14 @@ public class SimpleOhlcvClient extends OhlcvClient {
                 .get(url)
                 .headers(headers)
                 .build();
-        ResponseEntity<String> responseEntity = null;
+        ResponseEntity<String> responseEntity;
         try {
             responseEntity = restTemplate.exchange(requestEntity, String.class);
         } catch (HttpClientErrorException e) {
-            if (e.getStatusCode() == HttpStatus.BAD_REQUEST) {
-                String responseBody = e.getResponseBodyAsString();
-                try {
-                    ObjectMapper objectMapper = new ObjectMapper();
-                    JsonNode errorNode = objectMapper.readTree(responseBody).path("error");
-                    if (errorNode.isObject()) {
-                        String code = errorNode.path("code").asText();
-                        String description = errorNode.path("description").asText();
-                        if ("Bad Request".equals(code) && description.contains("Data doesn't exist")) {
-                            log.debug(description);
-                            return new ArrayList<>();
-                        }
-                    }
-                } catch (JsonProcessingException jsonProcessingException) {
-                    throw new RuntimeException("Failed to parse error response", jsonProcessingException);
-                }
-            } else {
-                throw e;
+            if (isDataNotFoundError(e)) {
+                return new ArrayList<>();
             }
+            throw e;
         }
         JsonNode rootNode;
         try {
@@ -287,6 +304,36 @@ public class SimpleOhlcvClient extends OhlcvClient {
         return dailyOhlcvs;
     }
 
+    /**
+     * detects data not found exception
+     * @param e http client error exception
+     * @return is data not found error
+     */
+    boolean isDataNotFoundError(HttpClientErrorException e) {
+        if (e.getStatusCode() == HttpStatus.BAD_REQUEST) {
+            String responseBody = e.getResponseBodyAsString();
+            try {
+                ObjectMapper objectMapper = new ObjectMapper();
+                JsonNode errorNode = objectMapper.readTree(responseBody).path("chart").path("error");
+                String code = errorNode.path("code").asText();
+                String description = errorNode.path("description").asText();
+                if ("Bad Request".equals(code) && description.contains("Data doesn't exist")) {
+                    return true;
+                }
+            } catch (JsonProcessingException jsonProcessingException) {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * converts root node to ohlcv map
+     * @param asset asset
+     * @param type type
+     * @param rootNode root node
+     * @return map of ohlcv
+     */
     Map<LocalDateTime, Ohlcv> convertRootNodeToOhlcv(Asset asset, Ohlcv.Type type, JsonNode rootNode) {
         JsonNode resultNode = rootNode.path("chart").path("result").get(0);
         List<Long> timestamps = objectMapper.convertValue(resultNode.path("timestamp"), new TypeReference<>(){});
@@ -341,6 +388,10 @@ public class SimpleOhlcvClient extends OhlcvClient {
         return ohlcvMap;
     }
 
+    /**
+     * creates yahoo http header
+     * @return http headers
+     */
     private HttpHeaders createYahooHeader() {
         HttpHeaders headers = new HttpHeaders();
         headers.add("authority"," query1.finance.yahoo.com");
