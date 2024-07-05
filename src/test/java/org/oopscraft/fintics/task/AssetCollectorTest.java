@@ -1,12 +1,10 @@
-package org.oopscraft.fintics.collector;
+package org.oopscraft.fintics.task;
 
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.oopscraft.arch4j.core.support.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
-import org.oopscraft.fintics.client.broker.kis.KisBrokerClient;
-import org.oopscraft.fintics.client.broker.kis.KisBrokerClientDefinition;
 import org.oopscraft.fintics.dao.AssetEntity;
 import org.oopscraft.fintics.dao.BrokerEntity;
 import org.oopscraft.fintics.dao.TradeEntity;

@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.collector;
+package org.oopscraft.fintics.task;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class NewsCollector extends AbstractCollector {
+public class NewsCollector extends AbstractTask {
 
     private final FinticsProperties finticsProperties;
 
@@ -46,6 +46,9 @@ public class NewsCollector extends AbstractCollector {
 
     private final NewsRepository newsRepository;
 
+    /**
+     * schedule collect
+     */
     @Scheduled(initialDelay = 10_000, fixedDelay = 3600_000)
     public void collect() {
         try {
@@ -75,6 +78,10 @@ public class NewsCollector extends AbstractCollector {
         }
     }
 
+    /**
+     * collects newses
+     * @param asset asset info
+     */
     void collectNews(Asset asset) {
         List<News> newses = distinctNewsesByTitle(newsClient.getNewses(asset));
         for (News news : newses) {
@@ -110,8 +117,13 @@ public class NewsCollector extends AbstractCollector {
         }
     }
 
-    List<News> distinctNewsesByTitle(List<News> assetNewses) {
-        return new ArrayList<>(assetNewses.stream()
+    /**
+     * makes distinct newses as title
+     * @param newses list of news
+     * @return distinct list of news
+     */
+    List<News> distinctNewsesByTitle(List<News> newses) {
+        return new ArrayList<>(newses.stream()
                 .collect(Collectors.toMap(
                         News::getTitle, // key
                         news -> news,   // value
@@ -120,6 +132,10 @@ public class NewsCollector extends AbstractCollector {
                 .values());
     }
 
+    /**
+     * analyzes news
+     * @param newsEntity news entity
+     */
     void analysisNews(NewsEntity newsEntity) {
         // config not setting
         if (StringUtils.isBlank(finticsProperties.getAiApiUrl())) {

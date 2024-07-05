@@ -8,12 +8,18 @@ import org.springframework.context.annotation.FullyQualifiedAnnotationBeanNameGe
 
 import java.util.Arrays;
 
-
+/**
+ * fintics application
+ */
 @SpringBootApplication(
         nameGenerator = FullyQualifiedAnnotationBeanNameGenerator.class
 )
 public class FinticsApplication {
 
+    /**
+     * runs application
+     * @param args arguments
+     */
     public static void main(String[] args) {
 
         // install

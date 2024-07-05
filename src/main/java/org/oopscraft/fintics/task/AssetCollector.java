@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.collector;
+package org.oopscraft.fintics.task;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class AssetCollector extends AbstractCollector {
+public class AssetCollector extends AbstractTask {
 
     private final TradeRepository tradeRepository;
 
@@ -30,11 +30,17 @@ public class AssetCollector extends AbstractCollector {
 
     private final PlatformTransactionManager transactionManager;
 
+    /**
+     * initial run
+     */
     @Scheduled(initialDelay = 10_000, fixedDelay = Long.MAX_VALUE)
     public void onStartup() {
         collect();
     }
 
+    /**
+     * schedule collect
+     */
     @Scheduled(cron = "0 0 18 * * *")
     public void collect() {
         try {
@@ -61,6 +67,10 @@ public class AssetCollector extends AbstractCollector {
         }
     }
 
+    /**
+     * save assets
+     * @param trade trade info
+     */
     protected void saveAssets(Trade trade) {
         Broker broker = brokerRepository.findById(trade.getBrokerId())
                 .map(Broker::from)

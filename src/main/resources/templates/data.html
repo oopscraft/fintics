@@ -412,17 +412,21 @@
                     <col/>
                     <col/>
                     <col/>
+                    <col/>
+                    <col/>
                 </colgroup>
                 <thead>
                 <tr>
                     <th data-th-text="#{web.global.no}"></th>
                     <th data-th-text="#{fintics.Ohlcv.type}"></th>
                     <th data-th-text="#{fintics.Ohlcv.dateTime}"></th>
+                    <th data-th-text="#{fintics.Ohlcv.timeZone}"></th>
                     <th data-th-text="#{fintics.Ohlcv.open}"></th>
                     <th data-th-text="#{fintics.Ohlcv.high}"></th>
                     <th data-th-text="#{fintics.Ohlcv.low}"></th>
                     <th data-th-text="#{fintics.Ohlcv.close}"></th>
                     <th data-th-text="#{fintics.Ohlcv.volume}"></th>
+                    <th data-th-text="#{fintics.Ohlcv.interpolated}"></th>
                 </tr>
                 </thead>
                 <tbody class="font-size--smaller">
@@ -430,11 +434,13 @@
                     <td data-duice-bind="ohlcv" data-duice-execute="this.innerHTML=status.count;"></td>
                     <td data-duice-bind="ohlcv" data-duice-property="type" class="font-weight--bold"></td>
                     <td data-duice-bind="ohlcv" data-duice-property="dateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')" class="font-weight--bold"></td>
+                    <td data-duice-bind="ohlcv" data-duice-property="timeZone"></td>
                     <td data-duice-bind="ohlcv" data-duice-property="open" data-duice-format="number"></td>
                     <td data-duice-bind="ohlcv" data-duice-property="high" data-duice-format="number"></td>
                     <td data-duice-bind="ohlcv" data-duice-property="low" data-duice-format="number"></td>
                     <td data-duice-bind="ohlcv" data-duice-property="close" data-duice-format="number"></td>
                     <td data-duice-bind="ohlcv" data-duice-property="volume" data-duice-format="number"></td>
+                    <td data-duice-bind="ohlcv" data-duice-property="interpolated"></td>
                 </tr>
                 <tr data-duice-bind="ohlcvsDialog.ohlcvs" data-duice-if="return ohlcvsDialog.ohlcvs.length===0;">
                     <td colspan="100%" class="text-align--center">

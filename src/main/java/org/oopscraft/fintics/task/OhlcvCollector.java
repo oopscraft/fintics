@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.collector;
+package org.oopscraft.fintics.task;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +23,7 @@ import java.util.Optional;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class OhlcvCollector extends AbstractCollector {
+public class OhlcvCollector extends AbstractTask {
 
     private final TradeRepository tradeRepository;
 
@@ -35,6 +35,9 @@ public class OhlcvCollector extends AbstractCollector {
 
     private final PlatformTransactionManager transactionManager;
 
+    /**
+     * schedule collect
+     */
     @Scheduled(initialDelay = 1_000, fixedDelay = 60_000)
     public void collect() {
         try {
@@ -59,6 +62,11 @@ public class OhlcvCollector extends AbstractCollector {
         }
     }
 
+    /**
+     * saves minute ohlcvs
+     * @param trade trade
+     * @param tradeAsset trade asset
+     */
     private void saveMinuteOhlcvs(Trade trade, TradeAsset tradeAsset) throws InterruptedException {
         // current
         Broker broker = brokerRepository.findById(trade.getBrokerId())
@@ -85,6 +93,11 @@ public class OhlcvCollector extends AbstractCollector {
         saveEntities(unitName, newOrChangedMinuteOhlcvEntities, transactionManager, assetOhlcvRepository);
     }
 
+    /**
+     * saves daily ohlcvs
+     * @param trade trade
+     * @param tradeAsset trade asset
+     */
     private void saveDailyOhlcvs(Trade trade, TradeAsset tradeAsset) throws InterruptedException {
         Broker broker = brokerRepository.findById(trade.getBrokerId())
                 .map(Broker::from)
@@ -112,6 +125,12 @@ public class OhlcvCollector extends AbstractCollector {
         saveEntities(unitName, newOrChangedDailyOhlcvEntities, transactionManager, assetOhlcvRepository);
     }
 
+    /**
+     * convert ohlcv to entity
+     * @param assetId asset id
+     * @param ohlcv ohlcvs
+     * @return ohlcv entity
+     */
     private OhlcvEntity toAssetOhlcvEntity(String assetId, Ohlcv ohlcv) {
         return OhlcvEntity.builder()
                 .assetId(assetId)
@@ -123,9 +142,17 @@ public class OhlcvCollector extends AbstractCollector {
                 .low(ohlcv.getLow())
                 .close(ohlcv.getClose())
                 .volume(ohlcv.getVolume())
+                .interpolated(ohlcv.isInterpolated())
                 .build();
     }
 
+    /**
+     * extracts new or changed ohlcvs
+     * @param ohlcvEntities ohlcv entities
+     * @param previousOhlcvEntities previous ohlcv entities
+     * @param <T> entity type
+     * @return new or changed ohlcvs
+     */
     protected <T extends OhlcvEntity> List<T> extractNewOrChangedOhlcvEntities(List<T> ohlcvEntities, List<T> previousOhlcvEntities) {
         return ohlcvEntities.stream()
                 .filter(ohlcvEntity -> {
@@ -138,6 +165,12 @@ public class OhlcvCollector extends AbstractCollector {
                 .toList();
     }
 
+    /**
+     * check equals ohlcv content
+     * @param ohlcvEntity ohlcv entity
+     * @param previousOhlcvEntity previous ohlcv entity
+     * @return whether new or changed
+     */
     protected boolean equalsOhlcvContent(OhlcvEntity ohlcvEntity, OhlcvEntity previousOhlcvEntity) {
         int priceScale = Math.min(Optional.ofNullable(ohlcvEntity.getClose()).map(BigDecimal::scale).orElse(0), Optional.ofNullable(previousOhlcvEntity.getClose()).map(BigDecimal::scale).orElse(0));
         int volumeScale = Math.min(Optional.ofNullable(ohlcvEntity.getVolume()).map(BigDecimal::scale).orElse(0), Optional.ofNullable(previousOhlcvEntity.getVolume()).map(BigDecimal::scale).orElse(0));

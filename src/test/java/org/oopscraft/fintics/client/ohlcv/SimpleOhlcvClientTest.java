@@ -83,7 +83,7 @@ class SimpleOhlcvClientTest extends CoreTestSupport {
                 .assetId(assetId)
                 .exchange(exchange)
                 .build();
-        LocalDateTime dateTimeFrom = LocalDateTime.now().minusDays(30);
+        LocalDateTime dateTimeFrom = LocalDateTime.now().minusYears(1);
         LocalDateTime dateTimeTo = LocalDateTime.now();
 
         // when
@@ -111,7 +111,7 @@ class SimpleOhlcvClientTest extends CoreTestSupport {
                 .assetId(assetId)
                 .exchange(exchange)
                 .build();
-        LocalDateTime dateTimeFrom = LocalDateTime.now().minusDays(30);
+        LocalDateTime dateTimeFrom = LocalDateTime.now().minusYears(1);
         LocalDateTime dateTimeTo = LocalDateTime.now();
 
         // when
@@ -195,42 +195,6 @@ class SimpleOhlcvClientTest extends CoreTestSupport {
             assertTrue(time.equals(timeRangeFrom) || time.isAfter(timeRangeFrom));
             assertTrue(time.equals(timeRangeTo) || time.isBefore(timeRangeTo));
         });
-    }
-
-    @ParameterizedTest
-    @MethodSource({"getUsAssetInfos", "getKrAssetInfos"})
-    void getDailyOhlcvInExpiredRange(String assetId, String exchange) {
-        // given
-        Asset asset = Asset.builder()
-                .assetId(assetId)
-                .exchange(exchange)
-                .build();
-        LocalDateTime dateTimeFrom = LocalDateTime.now().minusYears(6);
-        LocalDateTime dateTimeTo = LocalDateTime.now().minusYears(3);
-
-        // when
-        List<Ohlcv> ohlcvs = getSimpleOhlcvClient().getOhlcvs(asset, Ohlcv.Type.DAILY, dateTimeFrom, dateTimeTo);
-
-        // then - check size
-        log.debug("ohlcvs.size():{}", ohlcvs.size());
-    }
-
-    @ParameterizedTest
-    @MethodSource({"getUsAssetInfos", "getKrAssetInfos"})
-    void getMinuteOhlcvInExpiredRange(String assetId, String exchange) {
-        // given
-        Asset asset = Asset.builder()
-                .assetId(assetId)
-                .exchange(exchange)
-                .build();
-        LocalDateTime dateTimeFrom = LocalDateTime.now().minusMonths(3);
-        LocalDateTime dateTimeTo = LocalDateTime.now().minusMonths(2);
-
-        // when
-        List<Ohlcv> ohlcvs = getSimpleOhlcvClient().getOhlcvs(asset, Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo);
-
-        // then - check size
-        log.debug("ohlcvs.size():{}", ohlcvs.size());
     }
 
     @Test

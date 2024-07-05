@@ -20,6 +20,11 @@ public class OhlcvClientProperties {
 
     private final Map<String, String> properties;
 
+    /**
+     * gets property by name
+     * @param name property name
+     * @return property value
+     */
     public Optional<String> getProperty(String name) {
         return Optional.ofNullable(properties.get(name));
     }

@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.collector;
+package org.oopscraft.fintics.task;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,7 +9,6 @@ import org.oopscraft.fintics.FinticsConfiguration;
 import org.oopscraft.fintics.model.News;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Stream;

@@ -6,6 +6,9 @@ import org.oopscraft.arch4j.web.security.SecurityPolicy;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.ConstructorBinding;
 
+/**
+ * fintics properties
+ */
 @ConfigurationProperties(prefix = "fintics")
 @ConstructorBinding
 @AllArgsConstructor

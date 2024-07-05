@@ -1,6 +1,5 @@
-package org.oopscraft.fintics.collector;
+package org.oopscraft.fintics.task;
 
-import lombok.experimental.SuperBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
 import org.oopscraft.fintics.FinticsProperties;
@@ -14,7 +13,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import java.util.List;
 
 @Slf4j
-public abstract class AbstractCollector {
+public abstract class AbstractTask {
 
     @Autowired
     private FinticsProperties finticsProperties;
@@ -22,6 +21,15 @@ public abstract class AbstractCollector {
     @Autowired
     private AlarmService alarmService;
 
+    /**
+     * chunk save entities via specified repository
+     * @param unitName unit name
+     * @param entities entities
+     * @param transactionManager transaction manager
+     * @param jpaRepository jpa repository
+     * @param <T> entity type
+     * @param <P> id class type
+     */
     protected <T, P> void saveEntities(String unitName, List<T> entities, PlatformTransactionManager transactionManager, JpaRepository<T,P> jpaRepository) {
         if (entities.isEmpty()) {
             return;
@@ -55,6 +63,11 @@ public abstract class AbstractCollector {
         }
     }
 
+    /**
+     * send system alarm
+     * @param classType class type
+     * @param content message content
+     */
     protected void sendSystemAlarm(Class<?> classType, String content) {
         alarmService.sendAlarm(finticsProperties.getSystemAlarmId(), classType.getSimpleName(), content);
     }

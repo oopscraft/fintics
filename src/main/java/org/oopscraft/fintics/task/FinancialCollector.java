@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.collector;
+package org.oopscraft.fintics.task;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,21 +16,27 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class FinancialCollector extends AbstractCollector {
+public class FinancialCollector extends AbstractTask {
 
     private final AssetRepository assetRepository;
 
-    private final FinancialRepository assetFinancialRepository;
+    private final FinancialRepository financialRepository;
 
     private final FinancialClient financialClient;
 
     private final PlatformTransactionManager transactionManager;
 
+    /**
+     * initial invoke
+     */
     @Scheduled(initialDelay = 600_000, fixedDelay = Long.MAX_VALUE)
     public void onStartup() {
         collect();
     }
 
+    /**
+     * schedule collect
+     */
     @Scheduled(cron = "0 0 19 * * *")
     public void collect() {
         try {
@@ -55,7 +61,7 @@ public class FinancialCollector extends AbstractCollector {
                             .dividendYield(assetFinancial.getDividendYield())
                             .build();
                     String unitName = String.format("assetFinancialEntity[%s]: %s", asset.getAssetName(), assetFinancialEntity);
-                    saveEntities(unitName, List.of(assetFinancialEntity), transactionManager, assetFinancialRepository);
+                    saveEntities(unitName, List.of(assetFinancialEntity), transactionManager, financialRepository);
 
                 } catch (Throwable e) {
                     log.warn(e.getMessage());

@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.collector;
+package org.oopscraft.fintics.task;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -7,8 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.oopscraft.arch4j.core.support.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
 import org.oopscraft.fintics.dao.OhlcvEntity;
-import org.oopscraft.fintics.dao.TradeAssetEntity;
-import org.oopscraft.fintics.dao.TradeEntity;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;

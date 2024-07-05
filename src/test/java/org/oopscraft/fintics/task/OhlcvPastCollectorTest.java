@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.collector;
+package org.oopscraft.fintics.task;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,9 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.stream.Stream;
 

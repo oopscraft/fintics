@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.collector;
+package org.oopscraft.fintics.task;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class OhlcvPastCollector extends AbstractCollector {
+public class OhlcvPastCollector extends AbstractTask {
 
     @PersistenceContext
     private final EntityManager entityManager;
@@ -41,6 +41,9 @@ public class OhlcvPastCollector extends AbstractCollector {
 
     private final OhlcvClient ohlcvClient;
 
+    /**
+     * schedule collect
+     */
     @Scheduled(initialDelay = 10_000, fixedDelay = 600_000)
     public void collect() {
         try {
@@ -131,7 +134,7 @@ public class OhlcvPastCollector extends AbstractCollector {
         // get minute ohlcvs
         List<Ohlcv> ohlcvs = ohlcvClient.getOhlcvs(asset, Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo);
         // convert and save
-        List<OhlcvEntity> assetMinuteOhlcvEntities = ohlcvs.stream()
+        List<OhlcvEntity> minuteOhlcvEntities = ohlcvs.stream()
                 .map(ohlcv -> OhlcvEntity.builder()
                         .assetId(asset.getAssetId())
                         .dateTime(ohlcv.getDateTime())
@@ -142,12 +145,12 @@ public class OhlcvPastCollector extends AbstractCollector {
                         .low(ohlcv.getLow())
                         .close(ohlcv.getClose())
                         .volume(ohlcv.getVolume())
-                        .interpolated(true)
+                        .interpolated(ohlcv.isInterpolated())
                         .build())
                 .collect(Collectors.toList());
-        String unitName = String.format("pastAssetMinuteOhlcvEntities[%s]", asset.getAssetName());
-        log.info("PastOhlcvCollector - save {}:{}", unitName, assetMinuteOhlcvEntities.size());
-        saveEntities(unitName, assetMinuteOhlcvEntities, transactionManager, assetOhlcvRepository);
+        String unitName = String.format("pastMinuteOhlcvEntities[%s]", asset.getAssetName());
+        log.info("PastOhlcvCollector - save {}:{}", unitName, minuteOhlcvEntities.size());
+        saveEntities(unitName, minuteOhlcvEntities, transactionManager, assetOhlcvRepository);
     }
 
     /**
