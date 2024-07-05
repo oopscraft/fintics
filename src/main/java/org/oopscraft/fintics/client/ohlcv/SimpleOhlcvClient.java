@@ -95,6 +95,7 @@ public class SimpleOhlcvClient extends OhlcvClient {
     }
 
     List<Ohlcv> getMinuteOhlcvs(Asset asset, LocalDateTime datetimeFrom, LocalDateTime datetimeTo) {
+        // yahoo finance 의 경우 분봉은 30일 까지만 제공
         int validDays = 29;
 
         // check date time to
@@ -180,11 +181,12 @@ public class SimpleOhlcvClient extends OhlcvClient {
     List<Ohlcv> getDailyOhlcvs(Asset asset, LocalDateTime datetimeFrom, LocalDateTime datetimeTo) {
         // check date time to
         ZoneId timezone = getTimezone(asset);
-        Instant validDatetime = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC)
+        Instant instantFrom = datetimeFrom.atZone(timezone).toInstant();
+        Instant instantTo = datetimeTo.atZone(timezone).toInstant();
+        Instant validInstant = LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC)
                 .minusYears(1)
                 .toInstant(ZoneOffset.UTC);
-        Instant datetimeToInstant = datetimeTo.atZone(timezone).toInstant();
-        if(datetimeToInstant.isBefore(validDatetime)) {
+        if(instantTo.isBefore(validInstant)) {
             return new ArrayList<>();
         }
 
@@ -196,14 +198,14 @@ public class SimpleOhlcvClient extends OhlcvClient {
                 .build();
         HttpHeaders headers = createYahooHeader();
         String interval = "1d";
-        LocalDateTime period1 = datetimeFrom.truncatedTo(ChronoUnit.DAYS);
-        LocalDateTime period2 = LocalDateTime.now().truncatedTo(ChronoUnit.DAYS);
+        Instant period1 = instantFrom.truncatedTo(ChronoUnit.DAYS);
+        Instant period2 = instantTo.truncatedTo(ChronoUnit.DAYS);
         String url = String.format("https://query1.finance.yahoo.com/v8/finance/chart/%s", yahooSymbol);
         url = UriComponentsBuilder.fromUriString(url)
                 .queryParam("symbol", yahooSymbol)
                 .queryParam("interval", interval)
-                .queryParam("period1", period1.atZone(ZoneId.systemDefault()).toEpochSecond())
-                .queryParam("period2", period2.atZone(ZoneId.systemDefault()).toEpochSecond())
+                .queryParam("period1", period1.atOffset(ZoneOffset.UTC).toEpochSecond())
+                .queryParam("period2", period2.atOffset(ZoneOffset.UTC).toEpochSecond())
                 .queryParam("corsDomain", "finance.yahoo.com")
                 .build()
                 .toUriString();

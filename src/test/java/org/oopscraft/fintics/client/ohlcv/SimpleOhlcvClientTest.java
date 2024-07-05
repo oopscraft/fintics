@@ -16,6 +16,7 @@ import org.oopscraft.fintics.model.Ohlcv;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestExecutionListeners;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
@@ -72,6 +73,62 @@ class SimpleOhlcvClientTest extends CoreTestSupport {
                 Arguments.of("US.AAPL", "XNAS"),        // Apple
                 Arguments.of("US.SPY", "XASE")          // SPY ETF
         );
+    }
+
+    @ParameterizedTest
+    @MethodSource("getKrAssetInfos")
+    void getDailyOhlcvInKrMarket(String assetId, String exchange) {
+        // given
+        Asset asset = Asset.builder()
+                .assetId(assetId)
+                .exchange(exchange)
+                .build();
+        LocalDateTime dateTimeFrom = LocalDateTime.now().minusDays(30);
+        LocalDateTime dateTimeTo = LocalDateTime.now();
+
+        // when
+        List<Ohlcv> ohlcvs = getSimpleOhlcvClient().getOhlcvs(asset, Ohlcv.Type.DAILY, dateTimeFrom, dateTimeTo);
+
+        // then - check size
+        log.debug("ohlcvs.size():{}", ohlcvs.size());
+        assertTrue(ohlcvs.size() > 0);
+        // then - check time range
+        ohlcvs.forEach(ohlcv -> {
+            LocalDate date = ohlcv.getDateTime().toLocalDate();
+            log.info("date:{}", date);
+            LocalDate dateRangeFrom = dateTimeFrom.toLocalDate();
+            LocalDate dateRangeTo = dateTimeTo.toLocalDate();
+            assertTrue(date.equals(dateRangeFrom) || date.isAfter(dateRangeFrom));
+            assertTrue(date.equals(dateRangeTo) || date.isBefore(dateRangeTo));
+        });
+    }
+
+    @ParameterizedTest
+    @MethodSource("getUsAssetInfos")
+    void getDailyOhlcvInUsMarket(String assetId, String exchange) {
+        // given
+        Asset asset = Asset.builder()
+                .assetId(assetId)
+                .exchange(exchange)
+                .build();
+        LocalDateTime dateTimeFrom = LocalDateTime.now().minusDays(30);
+        LocalDateTime dateTimeTo = LocalDateTime.now();
+
+        // when
+        List<Ohlcv> ohlcvs = getSimpleOhlcvClient().getOhlcvs(asset, Ohlcv.Type.DAILY, dateTimeFrom, dateTimeTo);
+
+        // then - check size
+        log.debug("ohlcvs.size():{}", ohlcvs.size());
+        assertTrue(ohlcvs.size() > 0);
+        // then - check time range
+        ohlcvs.forEach(ohlcv -> {
+            LocalDate date = ohlcv.getDateTime().toLocalDate();
+            log.info("date:{}", date);
+            LocalDate dateRangeFrom = dateTimeFrom.toLocalDate();
+            LocalDate dateRangeTo = dateTimeTo.toLocalDate();
+            assertTrue(date.equals(dateRangeFrom) || date.isAfter(dateRangeFrom));
+            assertTrue(date.equals(dateRangeTo) || date.isBefore(dateRangeTo));
+        });
     }
 
     @ParameterizedTest
