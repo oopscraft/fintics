@@ -41,7 +41,7 @@ public class OhlcvPastCollector extends AbstractCollector {
 
     private final OhlcvClient ohlcvClient;
 
-    //@Scheduled(initialDelay = 10_000, fixedDelay = 600_000)
+    @Scheduled(initialDelay = 10_000, fixedDelay = 600_000)
     public void collect() {
         try {
             log.info("OhlcvPastCollector - Start collect past ohlcv.");

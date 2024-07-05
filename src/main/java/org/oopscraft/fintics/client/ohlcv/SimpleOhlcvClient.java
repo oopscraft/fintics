@@ -96,12 +96,17 @@ public class SimpleOhlcvClient extends OhlcvClient {
 
     List<Ohlcv> getMinuteOhlcvs(Asset asset, LocalDateTime datetimeFrom, LocalDateTime datetimeTo) {
         int validDays = 29;
+
         // check date time to
         ZoneId timezone = getTimezone(asset);
-        Instant datetimeToInstant = datetimeTo.atZone(timezone).toInstant();
-        if(datetimeToInstant.isBefore(Instant.now().minus(validDays, ChronoUnit.DAYS))) {
+        Instant instantTo = datetimeTo.atZone(timezone).toInstant();
+        Instant instantFrom = datetimeFrom.atZone(timezone).toInstant();
+
+        // instantTo 가 유효 기간 이전 이면 empty array 반환
+        if(instantTo.isBefore(Instant.now().minus(validDays, ChronoUnit.DAYS))) {
             return new ArrayList<>();
         }
+
         // yahoo symbol
         String yahooSymbol = convertToYahooSymbol(asset);
 
@@ -110,17 +115,17 @@ public class SimpleOhlcvClient extends OhlcvClient {
                 .build();
         HttpHeaders headers = createYahooHeader();
         String interval = "1m";
-        LocalDateTime period2 = datetimeTo.truncatedTo(ChronoUnit.MINUTES);
-        LocalDateTime period1;
+        Instant period2 = instantTo.truncatedTo(ChronoUnit.MINUTES);    // start period to
+        Instant period1;
         Map<LocalDateTime, Ohlcv> minuteOhlcvMap = new LinkedHashMap<>();
         for (int i = 0; i < 10; i ++) {
-            // period1
-            period1 = period2.minusDays(7);
-            if (period1.isBefore(datetimeFrom)) {
-                period1 = datetimeFrom.truncatedTo(ChronoUnit.MINUTES);
+            // defines period1
+            period1 = period2.minus(7, ChronoUnit.DAYS);
+            if (period1.isBefore(instantFrom)) {
+                period1 = instantFrom.truncatedTo(ChronoUnit.MINUTES);
             }
-            if (period1.isBefore(LocalDateTime.now().minusDays(validDays))) {
-                period1 = LocalDateTime.now().minusDays(validDays);
+            if (period1.isBefore(Instant.now().minus(validDays, ChronoUnit.DAYS))) {
+                period1 = Instant.now().minus(validDays, ChronoUnit.DAYS);
             }
 
             String url = String.format("https://query1.finance.yahoo.com/v8/finance/chart/%s", yahooSymbol);
@@ -147,11 +152,11 @@ public class SimpleOhlcvClient extends OhlcvClient {
             minuteOhlcvMap.putAll(ohlcvMap);
 
             // next period2 and check break
-            period2 = period1.minusMinutes(1);
-            if (period2.isBefore(datetimeFrom)) {
+            period2 = period1.minus(1, ChronoUnit.MINUTES);
+            if (period2.isBefore(instantFrom)) {
                 break;
             }
-            if (period2.isBefore(LocalDateTime.now().minusDays(validDays))) {
+            if (period2.isBefore(Instant.now().minus(validDays, ChronoUnit.DAYS))) {
                 break;
             }
         }

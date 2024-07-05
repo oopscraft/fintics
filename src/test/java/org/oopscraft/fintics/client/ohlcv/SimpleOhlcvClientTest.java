@@ -3,6 +3,8 @@ package org.oopscraft.fintics.client.ohlcv;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.bytebuddy.asm.Advice;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -12,8 +14,10 @@ import org.oopscraft.fintics.dao.AssetEntity;
 import org.oopscraft.fintics.model.Asset;
 import org.oopscraft.fintics.model.Ohlcv;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestExecutionListeners;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -33,18 +37,6 @@ class SimpleOhlcvClientTest extends CoreTestSupport {
         return new SimpleOhlcvClient(ohlcvClientProperties, objectMapper);
     }
 
-    void saveAsset(Asset asset) {
-        AssetEntity assetEntity = entityManager.find(AssetEntity.class, asset.getAssetId());
-        if (assetEntity == null) {
-            assetEntity = AssetEntity.builder()
-                    .assetId(asset.getAssetId())
-                    .build();
-        }
-        assetEntity.setExchange(asset.getExchange());
-        entityManager.persist(assetEntity);
-        entityManager.flush();
-    }
-
     static Stream<Arguments> getIsSupportedArguments() {
         return Stream.of(
                 Arguments.of("US.AAPL", "XNAS", true),
@@ -55,72 +47,97 @@ class SimpleOhlcvClientTest extends CoreTestSupport {
     }
 
     @ParameterizedTest
-    @MethodSource("getIsSupportedArguments")
+    @MethodSource({"getIsSupportedArguments"})
     void isSupported(String assetId, String exchange, boolean expected) {
         // given
         Asset asset = Asset.builder()
                 .assetId(assetId)
                 .exchange(exchange)
                 .build();
-        saveAsset(asset);
         // when
         boolean supported = getSimpleOhlcvClient().isSupported(asset);
         // then
         assertEquals(expected, supported);
     }
 
-    static Stream<Arguments> getAssetInfos() {
+    static Stream<Arguments> getKrAssetInfos() {
         return Stream.of(
                 Arguments.of("KR.005930", "XKRX"),      // samsung electronics
-                Arguments.of("KR.122630", "XKRX"),      // KODEX Leverage ETF
+                Arguments.of("KR.122630", "XKRX")       // KODEX Leverage ETF
+        );
+    }
+
+    static Stream<Arguments> getUsAssetInfos() {
+        return Stream.of(
                 Arguments.of("US.AAPL", "XNAS"),        // Apple
                 Arguments.of("US.SPY", "XASE")          // SPY ETF
         );
     }
 
     @ParameterizedTest
-    @MethodSource("getAssetInfos")
-    void getMinuteOhlcvsAfter30Days(String assetId, String exchange) {
+    @MethodSource("getKrAssetInfos")
+    void getMinuteOhlcvInKrMarket(String assetId, String exchange) {
         // given
         Asset asset = Asset.builder()
                 .assetId(assetId)
                 .exchange(exchange)
                 .build();
-        saveAsset(asset);
         LocalDateTime dateTimeFrom = LocalDateTime.now().minusDays(30);
         LocalDateTime dateTimeTo = LocalDateTime.now();
 
         // when
         List<Ohlcv> ohlcvs = getSimpleOhlcvClient().getOhlcvs(asset, Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo);
 
-        // then
+        // then - check size
         log.debug("ohlcvs.size():{}", ohlcvs.size());
         assertTrue(ohlcvs.size() >= 60 * 4 * 15);
+        // then - check date time range
         Ohlcv firstOhlcv = ohlcvs.get(0);
         Ohlcv lastOhlcv = ohlcvs.get(ohlcvs.size()-1);
         assertTrue(firstOhlcv.getDateTime().isBefore(dateTimeTo));
         assertTrue(lastOhlcv.getDateTime().isAfter(dateTimeFrom));
+        // then - check time range
+        ohlcvs.forEach(ohlcv -> {
+            LocalTime time = ohlcv.getDateTime().toLocalTime();
+            log.info("time:{}", time);
+            LocalTime timeRangeFrom = LocalTime.of(9, 0);
+            LocalTime timeRangeTo = LocalTime.of(15, 30);
+            assertTrue(time.equals(timeRangeFrom) || time.isAfter(timeRangeFrom));
+            assertTrue(time.equals(timeRangeTo) || time.isBefore(timeRangeTo));
+        });
     }
 
     @ParameterizedTest
-    @MethodSource("getAssetInfos")
-    void getDailyOhlcvs(String assetId, String exchange) {
+    @MethodSource("getUsAssetInfos")
+    void getMinuteOhlcvInUsMarket(String assetId, String exchange) {
         // given
         Asset asset = Asset.builder()
                 .assetId(assetId)
                 .exchange(exchange)
                 .build();
-        saveAsset(asset);
-        LocalDateTime dateTimeFrom = LocalDateTime.now()
-                .minusMonths(11);
+        LocalDateTime dateTimeFrom = LocalDateTime.now().minusDays(30);
         LocalDateTime dateTimeTo = LocalDateTime.now();
 
         // when
-        List<Ohlcv> ohlcvs = getSimpleOhlcvClient().getOhlcvs(asset, Ohlcv.Type.DAILY, dateTimeFrom, dateTimeTo);
+        List<Ohlcv> ohlcvs = getSimpleOhlcvClient().getOhlcvs(asset, Ohlcv.Type.MINUTE, dateTimeFrom, dateTimeTo);
 
-        // then
+        // then - check size
         log.debug("ohlcvs.size():{}", ohlcvs.size());
-        assertTrue(ohlcvs.size() > 0);
+        assertTrue(ohlcvs.size() >= 60 * 4 * 15);
+        // then - check date time range
+        Ohlcv firstOhlcv = ohlcvs.get(0);
+        Ohlcv lastOhlcv = ohlcvs.get(ohlcvs.size()-1);
+        assertTrue(firstOhlcv.getDateTime().isBefore(dateTimeTo));
+        assertTrue(lastOhlcv.getDateTime().isAfter(dateTimeFrom));
+        // then - check time range
+        ohlcvs.forEach(ohlcv -> {
+            LocalTime time = ohlcv.getDateTime().toLocalTime();
+            log.info("time:{}", time);
+            LocalTime timeRangeFrom = LocalTime.of(9, 30);
+            LocalTime timeRangeTo = LocalTime.of(16, 0);
+            assertTrue(time.equals(timeRangeFrom) || time.isAfter(timeRangeFrom));
+            assertTrue(time.equals(timeRangeTo) || time.isBefore(timeRangeTo));
+        });
     }
 
 }
