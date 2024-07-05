@@ -34,12 +34,14 @@ public class Ohlcv {
 
     private BigDecimal volume;
 
+    private boolean interpolated;
+
     public enum Type { MINUTE, DAILY }
 
     @Converter(autoApply = true)
     public static class TypeConverter extends AbstractEnumConverter<Type> {}
 
-    public static Ohlcv of(String assetId, LocalDateTime dateTime, ZoneId timeZone, double open, double high, double low, double close, double volume) {
+    public static Ohlcv of(String assetId, LocalDateTime dateTime, ZoneId timeZone, double open, double high, double low, double close, double volume, boolean interpolated) {
         return Ohlcv.builder()
                 .assetId(assetId)
                 .dateTime(dateTime)
@@ -63,6 +65,7 @@ public class Ohlcv {
                 .low(ohlcvEntity.getLow())
                 .close(ohlcvEntity.getClose())
                 .volume(ohlcvEntity.getVolume())
+                .interpolated(ohlcvEntity.isInterpolated())
                 .build();
     }
 

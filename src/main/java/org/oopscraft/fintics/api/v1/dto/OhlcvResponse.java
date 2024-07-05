@@ -29,6 +29,8 @@ public class OhlcvResponse {
 
     private BigDecimal volume;
 
+    private boolean interpolated;
+
     /**
      * creates ohlcv response
      * @param ohlcv ohlcv
@@ -44,6 +46,7 @@ public class OhlcvResponse {
                 .low(ohlcv.getLow())
                 .close(ohlcv.getClose())
                 .volume(ohlcv.getVolume())
+                .interpolated(ohlcv.isInterpolated())
                 .build();
     }
 

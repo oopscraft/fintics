@@ -72,6 +72,11 @@ public class OhlcvPastCollector extends AbstractCollector {
         }
     }
 
+    /**
+     * collect past daily ohlcv
+     * @param asset asset
+     * @param expiredDateTime expired date time
+     */
     void collectPastDailyOhlcvs(Asset asset, LocalDateTime expiredDateTime) {
         // date time
         LocalDateTime dateTimeTo = getMinDatetime(asset.getAssetId(), Ohlcv.Type.DAILY)
@@ -95,6 +100,7 @@ public class OhlcvPastCollector extends AbstractCollector {
                         .low(ohlcv.getLow())
                         .close(ohlcv.getClose())
                         .volume(ohlcv.getVolume())
+                        .interpolated(true)
                         .build())
                 .collect(Collectors.toList());
         String unitName = String.format("pastAssetDailyOhlcvEntities[%s]", asset.getAssetName());
@@ -136,6 +142,7 @@ public class OhlcvPastCollector extends AbstractCollector {
                         .low(ohlcv.getLow())
                         .close(ohlcv.getClose())
                         .volume(ohlcv.getVolume())
+                        .interpolated(true)
                         .build())
                 .collect(Collectors.toList());
         String unitName = String.format("pastAssetMinuteOhlcvEntities[%s]", asset.getAssetName());
