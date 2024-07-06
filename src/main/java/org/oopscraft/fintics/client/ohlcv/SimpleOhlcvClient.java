@@ -147,20 +147,36 @@ public class SimpleOhlcvClient extends OhlcvClient {
                 .toUriString();
 
         // intervals
-        List<String> intervals = switch(type) {
-            case MINUTE -> List.of("1m","2m","5m","15m","30m","60m","90m");
-            case DAILY -> List.of("1d","5d");
+        List<String> intervals = null;
+        switch(type) {
+            case MINUTE -> {
+                intervals = List.of("1m","2m","5m","15m","30m","60m","90m");
+            }
+            case DAILY -> {
+                intervals = List.of("1d","5d");
+            }
         };
 
         // try request
         String interval = null;
+        long period1 = dateTimeFrom.atOffset(ZoneOffset.UTC).toEpochSecond();
         ResponseEntity<String> responseEntity = null;
         Map<LocalDateTime,Ohlcv> totalOhlcvMap = new HashMap<>();
         for(int i = intervals.size()-1; i >= 0; i --) {
             interval = intervals.get(i);
+            if (type == Ohlcv.Type.MINUTE) {
+                // 1m 기긴의 경우 일주일 이전 만 제공
+                if ("1m".equals(interval)) {
+                    period1 = Math.max(
+                            Instant.now().minus(24*7, ChronoUnit.HOURS).atOffset(ZoneOffset.UTC).toEpochSecond(),
+                            period1
+                    );
+                }
+            }
             try {
                 url = UriComponentsBuilder.fromUriString(url)
                         .replaceQueryParam("interval", interval)
+                        .replaceQueryParam("period1", period1)
                         .build()
                         .toUriString();
                 RequestEntity<Void> requestEntity = RequestEntity
@@ -179,7 +195,9 @@ public class SimpleOhlcvClient extends OhlcvClient {
                 // add to total ohlcv map
                 Map<LocalDateTime,Ohlcv> ohlcvMap = convertRootNodeToOhlcv(asset, type, interval, rootNode);
                 totalOhlcvMap.putAll(ohlcvMap);
-            } catch(Throwable ignore) {}
+            } catch(Throwable ignore) {
+                log.debug(ignore.getMessage());
+            }
         }
 
         // check date time is in range

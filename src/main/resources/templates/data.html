@@ -316,7 +316,7 @@
             <div data-duice-bind="ohlcvSummary.ohlcvStatistics" data-duice-loop="ohlcvStatistic,status"
                  data-duice-execute="
                  this.dataset.date = ohlcvStatistic.date;
-                 if (ohlcvStatistic.count < 200) {
+                 if (ohlcvStatistic.count < 200 || ohlcvStatistic.interpolatedCount > 0) {
                     this.classList.add('background-color--yellow');
                  }
                  if (ohlcvStatistic.count < 2) {

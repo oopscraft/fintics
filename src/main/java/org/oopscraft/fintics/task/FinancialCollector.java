@@ -40,7 +40,7 @@ public class FinancialCollector extends AbstractTask {
     @Scheduled(cron = "0 0 19 * * *")
     public void collect() {
         try {
-            log.info("AssetFinancialCollector - Start collect asset financial.");
+            log.info("financialCollector - Start collect asset financial.");
             List<AssetEntity> assetEntities = assetRepository.findAll();
             for (AssetEntity assetEntity : assetEntities) {
                 try {
@@ -60,7 +60,7 @@ public class FinancialCollector extends AbstractTask {
                             .ebitda(assetFinancial.getEbitda())
                             .dividendYield(assetFinancial.getDividendYield())
                             .build();
-                    String unitName = String.format("assetFinancialEntity[%s]: %s", asset.getAssetName(), assetFinancialEntity);
+                    String unitName = String.format("financialEntity[%s]: %s", asset.getAssetName(), assetFinancialEntity);
                     saveEntities(unitName, List.of(assetFinancialEntity), transactionManager, financialRepository);
 
                 } catch (Throwable e) {
