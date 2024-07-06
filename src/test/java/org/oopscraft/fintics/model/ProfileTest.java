@@ -17,11 +17,12 @@ public class ProfileTest {
     void getOhlcvs() {
         // given
         String assetId = "test";
+        Ohlcv.Type type = Ohlcv.Type.MINUTE;
         LocalDateTime now = LocalDateTime.now();
         List<Ohlcv> minuteOhlcvs = new ArrayList<>(){{
-            add(Ohlcv.of(assetId, now.minusMinutes(1), null, 1000, 1100, 900, 1050, 100, false));
-            add(Ohlcv.of(assetId, now.minusMinutes(2), null, 1060, 1200, 1030, 1040, 200, false));
-            add(Ohlcv.of(assetId, now.minusMinutes(3), null, 1050, 1400, 800, 900, 300, false));
+            add(Ohlcv.of(assetId, type, now.minusMinutes(1), null, 1000, 1100, 900, 1050, 100, false));
+            add(Ohlcv.of(assetId, type, now.minusMinutes(2), null, 1060, 1200, 1030, 1040, 200, false));
+            add(Ohlcv.of(assetId, type, now.minusMinutes(3), null, 1050, 1400, 800, 900, 300, false));
         }};
 
         // when
@@ -45,10 +46,11 @@ public class ProfileTest {
     void getOhlcvsWithUnderPeriod() {
         // given
         String assetId = "test";
+        Ohlcv.Type type = Ohlcv.Type.MINUTE;
         LocalDateTime now = LocalDateTime.now();
         List<Ohlcv> minuteOhlcvs = new ArrayList<>(){{
-            add(Ohlcv.of(assetId, now.minusMinutes(1), null, 1000, 1100, 900, 1050, 100, false));
-            add(Ohlcv.of(assetId, now.minusMinutes(2), null, 1060, 1200, 1030, 1040, 200, false));
+            add(Ohlcv.of(assetId, type, now.minusMinutes(1), null, 1000, 1100, 900, 1050, 100, false));
+            add(Ohlcv.of(assetId, type, now.minusMinutes(2), null, 1060, 1200, 1030, 1040, 200, false));
         }};
 
         // when
@@ -72,13 +74,14 @@ public class ProfileTest {
     void getOhlcvWithOverPeriod() {
         // given
         String assetId = "test";
+        Ohlcv.Type type = Ohlcv.Type.MINUTE;
         LocalDateTime now = LocalDateTime.now();
         List<Ohlcv> minuteOhlcvs = new ArrayList<>(){{
-            add(Ohlcv.of(assetId, now.minusMinutes(1), null, 1000, 1100, 900, 1050, 100, false));
-            add(Ohlcv.of(assetId, now.minusMinutes(2), null, 1060, 1200, 1030, 1040, 200, false));
-            add(Ohlcv.of(assetId, now.minusMinutes(3), null, 1050, 1400, 800, 900, 300, false));
-            add(Ohlcv.of(assetId, now.minusMinutes(4), null, 1010, 1300, 1000, 1050, 200, false));
-            add(Ohlcv.of(assetId, now.minusMinutes(5), null, 990, 1100, 980, 1000, 100, false));
+            add(Ohlcv.of(assetId, type, now.minusMinutes(1), null, 1000, 1100, 900, 1050, 100, false));
+            add(Ohlcv.of(assetId, type, now.minusMinutes(2), null, 1060, 1200, 1030, 1040, 200, false));
+            add(Ohlcv.of(assetId, type, now.minusMinutes(3), null, 1050, 1400, 800, 900, 300, false));
+            add(Ohlcv.of(assetId, type, now.minusMinutes(4), null, 1010, 1300, 1000, 1050, 200, false));
+            add(Ohlcv.of(assetId, type, now.minusMinutes(5), null, 990, 1100, 980, 1000, 100, false));
         }};
 
         // when

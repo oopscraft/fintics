@@ -60,10 +60,13 @@ public class OhlcvSummaryResponse {
 
         private Long count;
 
+        private Long interpolatedCount;
+
         public static OhlcvStatisticResponse from(OhlcvSummary.OhlcvStatistic ohlcvStatistic) {
             return OhlcvStatisticResponse.builder()
                     .date(ohlcvStatistic.getDate())
                     .count(ohlcvStatistic.getCount())
+                    .interpolatedCount(ohlcvStatistic.getInterpolatedCount())
                     .build();
         }
 

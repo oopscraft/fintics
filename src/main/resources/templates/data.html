@@ -328,6 +328,7 @@
                 <span data-duice-bind="ohlcvStatistic" data-duice-property="date" class="font-weight--bold"></span>
                 <br/>
                 <span data-duice-bind="ohlcvStatistic" data-duice-property="count"></span>
+                (<span data-duice-bind="ohlcvStatistic" data-duice-property="interpolatedCount"></span>)
             </div>
         </div>
     </div>
@@ -414,10 +415,12 @@
                     <col/>
                     <col/>
                     <col/>
+                    <col/>
                 </colgroup>
                 <thead>
                 <tr>
                     <th data-th-text="#{web.global.no}"></th>
+                    <th data-th-text="#{fintics.Ohlcv.assetId}"></th>
                     <th data-th-text="#{fintics.Ohlcv.type}"></th>
                     <th data-th-text="#{fintics.Ohlcv.dateTime}"></th>
                     <th data-th-text="#{fintics.Ohlcv.timeZone}"></th>
@@ -430,8 +433,12 @@
                 </tr>
                 </thead>
                 <tbody class="font-size--smaller">
-                <tr data-duice-bind="ohlcvsDialog.ohlcvs" data-duice-loop="ohlcv,status">
+                <tr data-duice-bind="ohlcvsDialog.ohlcvs" data-duice-loop="ohlcv,status"
+                    data-duice-execute="
+                    if (ohlcv.interpolated) this.classList.add('background-color--yellow');
+                    ">
                     <td data-duice-bind="ohlcv" data-duice-execute="this.innerHTML=status.count;"></td>
+                    <td data-duice-bind="ohlcv" data-duice-property="assetId" class="font-weight--bold"></td>
                     <td data-duice-bind="ohlcv" data-duice-property="type" class="font-weight--bold"></td>
                     <td data-duice-bind="ohlcv" data-duice-property="dateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')" class="font-weight--bold"></td>
                     <td data-duice-bind="ohlcv" data-duice-property="timeZone"></td>

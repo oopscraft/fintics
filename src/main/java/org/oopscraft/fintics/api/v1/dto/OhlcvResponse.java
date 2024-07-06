@@ -13,6 +13,8 @@ import java.time.ZoneId;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class OhlcvResponse {
 
+    private String assetId;
+
     private Ohlcv.Type type;
 
     private LocalDateTime dateTime;
@@ -38,9 +40,10 @@ public class OhlcvResponse {
      */
     public static OhlcvResponse from(Ohlcv ohlcv) {
         return OhlcvResponse.builder()
+                .assetId(ohlcv.getAssetId())
+                .type(ohlcv.getType())
                 .dateTime(ohlcv.getDateTime())
                 .timeZone(ohlcv.getTimeZone())
-                .type(ohlcv.getType())
                 .open(ohlcv.getOpen())
                 .high(ohlcv.getHigh())
                 .low(ohlcv.getLow())

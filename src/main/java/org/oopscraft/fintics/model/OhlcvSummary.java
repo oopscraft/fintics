@@ -45,6 +45,8 @@ public class OhlcvSummary implements Serializable {
 
         private Long count;
 
+        private Long interpolatedCount;
+
     }
 
 }

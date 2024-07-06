@@ -103,7 +103,7 @@ public class OhlcvPastCollector extends AbstractTask {
                         .low(ohlcv.getLow())
                         .close(ohlcv.getClose())
                         .volume(ohlcv.getVolume())
-                        .interpolated(true)
+                        .interpolated(ohlcv.isInterpolated())
                         .build())
                 .collect(Collectors.toList());
         String unitName = String.format("pastAssetDailyOhlcvEntities[%s]", asset.getAssetName());

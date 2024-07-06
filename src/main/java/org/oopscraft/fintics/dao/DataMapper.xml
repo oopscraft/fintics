@@ -45,7 +45,8 @@
 
     <select id="selectOhlcvStatistics" resultType="org.oopscraft.fintics.model.OhlcvSummary$OhlcvStatistic" useCache="false">
         SELECT 		DATE(date_time) AS "date",
-                    COUNT(*) AS "count"
+                    COUNT(*) AS "count",
+                    SUM(CASE WHEN interpolated = 'Y' THEN 1 ELSE 0 END) AS "interpolatedCount"
         FROM 		fintics_ohlcv
         WHERE 		1 = 1
         AND 		asset_id = #{assetId}

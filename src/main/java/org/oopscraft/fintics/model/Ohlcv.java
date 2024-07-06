@@ -41,9 +41,10 @@ public class Ohlcv {
     @Converter(autoApply = true)
     public static class TypeConverter extends AbstractEnumConverter<Type> {}
 
-    public static Ohlcv of(String assetId, LocalDateTime dateTime, ZoneId timeZone, double open, double high, double low, double close, double volume, boolean interpolated) {
+    public static Ohlcv of(String assetId, Ohlcv.Type type, LocalDateTime dateTime, ZoneId timeZone, double open, double high, double low, double close, double volume, boolean interpolated) {
         return Ohlcv.builder()
                 .assetId(assetId)
+                .type(type)
                 .dateTime(dateTime)
                 .timeZone(timeZone)
                 .open(BigDecimal.valueOf(open))
@@ -51,6 +52,7 @@ public class Ohlcv {
                 .low(BigDecimal.valueOf(low))
                 .close(BigDecimal.valueOf(close))
                 .volume(BigDecimal.valueOf(volume))
+                .interpolated(interpolated)
                 .build();
     }
 
