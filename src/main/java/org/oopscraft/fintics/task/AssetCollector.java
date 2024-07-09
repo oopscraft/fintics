@@ -2,15 +2,20 @@ package org.oopscraft.fintics.task;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.oopscraft.fintics.client.asset.AssetClient;
 import org.oopscraft.fintics.client.broker.BrokerClient;
+import org.oopscraft.fintics.client.broker.BrokerClientDefinitionRegistry;
 import org.oopscraft.fintics.client.broker.BrokerClientFactory;
 import org.oopscraft.fintics.dao.*;
+import org.oopscraft.fintics.model.Asset;
+import org.oopscraft.fintics.model.AssetMeta;
 import org.oopscraft.fintics.model.Broker;
 import org.oopscraft.fintics.model.Trade;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,15 +25,13 @@ import java.util.stream.Collectors;
 @Slf4j
 public class AssetCollector extends AbstractTask {
 
-    private final TradeRepository tradeRepository;
-
-    private final BrokerRepository brokerRepository;
-
-    private final BrokerClientFactory brokerClientFactory;
-
     private final AssetRepository assetRepository;
 
+    private final AssetMetaRepository assetMetaRepository;
+
     private final PlatformTransactionManager transactionManager;
+
+    private final AssetClient assetClient;
 
     /**
      * initial run
@@ -44,22 +47,10 @@ public class AssetCollector extends AbstractTask {
     @Scheduled(cron = "0 0 18 * * *")
     public void collect() {
         try {
-            log.info("AssetCollector - Start collect broker asset.");
-            List<TradeEntity> tradeEntities = tradeRepository.findAll();
-            List<String> completedBrokerIds = new ArrayList<>();
-            for (TradeEntity tradeEntity : tradeEntities) {
-                try {
-                    String brokerId = tradeEntity.getBrokerId();
-                    if (!completedBrokerIds.contains(brokerId)) {
-                        Trade trade = Trade.from(tradeEntity);
-                        saveAssets(trade);
-                        completedBrokerIds.add(brokerId);
-                    }
-                } catch (Throwable e) {
-                    log.warn(e.getMessage());
-                }
-            }
-            log.info("AssetCollector - End collect broker asset");
+            log.info("AssetCollector - Start collect asset.");
+            saveAssets();
+            saveAssetMetas();
+            log.info("AssetCollector - End collect asset");
         } catch(Throwable e) {
             log.error(e.getMessage(), e);
             sendSystemAlarm(this.getClass(), e.getMessage());
@@ -67,16 +58,9 @@ public class AssetCollector extends AbstractTask {
         }
     }
 
-    /**
-     * save assets
-     * @param trade trade info
-     */
-    protected void saveAssets(Trade trade) {
-        Broker broker = brokerRepository.findById(trade.getBrokerId())
-                .map(Broker::from)
-                .orElseThrow();
-        BrokerClient brokerClient = brokerClientFactory.getObject(broker);
-        List<AssetEntity> assetEntities = brokerClient.getAssets().stream()
+    void saveAssets() {
+        List<Asset> assets = assetClient.getAssets();
+        List<AssetEntity> assetEntities = assets.stream()
                 .map(asset -> AssetEntity.builder()
                         .assetId(asset.getAssetId())
                         .assetName(asset.getAssetName())
@@ -88,6 +72,45 @@ public class AssetCollector extends AbstractTask {
                 .collect(Collectors.toList());
         log.info("AssetCollector - save assetEntities:{}", assetEntities.size());
         saveEntities("assetEntities", assetEntities, transactionManager, assetRepository);
+    }
+
+    void saveAssetMetas() {
+        List<AssetEntity> assetEntities = assetRepository.findAll();
+        Instant dateTime = Instant.now();
+        Instant expiredDateTime = dateTime.minusSeconds(60*24*7);
+        for(AssetEntity assetEntity : assetEntities) {
+            Asset asset = Asset.from(assetEntity);
+            try {
+                // check previous data
+                List<AssetMetaEntity> previousAssetMetas = assetMetaRepository.findAllByAssetId(asset.getAssetId());
+                if (previousAssetMetas.size() > 0) {
+                    Instant previousDateTime = previousAssetMetas.get(0).getDateTime();
+                    if (previousDateTime.isAfter(expiredDateTime)) {
+                        continue;
+                    }
+                }
+
+                // updates data
+                List<AssetMeta> assetMetas = assetClient.getAssetMetas(asset);
+                List<AssetMetaEntity> assetMetaEntities = new ArrayList<>();
+                for (int i = 0; i < assetMetas.size(); i ++ ) {
+                    AssetMeta assetMeta = assetMetas.get(i);
+                    AssetMetaEntity assetMetaEntity = AssetMetaEntity.builder()
+                            .assetId(assetMeta.getAssetId())
+                            .name(assetMeta.getName())
+                            .value(assetMeta.getValue())
+                            .dateTime(dateTime)
+                            .sort(i)
+                            .build();
+                    assetMetaEntities.add(assetMetaEntity);
+                }
+                saveEntities("assetMetaEntities", assetMetaEntities, transactionManager, assetMetaRepository);
+                // force sleep
+                Thread.sleep(1000);
+            } catch (Throwable e) {
+                log.warn(e.getMessage());
+            }
+        }
     }
 
 }

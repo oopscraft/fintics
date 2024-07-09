@@ -5,10 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.client.broker.BrokerClientFactory;
 import org.oopscraft.fintics.dao.*;
-import org.oopscraft.fintics.model.Broker;
-import org.oopscraft.fintics.model.Ohlcv;
-import org.oopscraft.fintics.model.Trade;
-import org.oopscraft.fintics.model.TradeAsset;
+import org.oopscraft.fintics.model.*;
+import org.oopscraft.fintics.service.BasketService;
+import org.oopscraft.fintics.service.TradeService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -25,13 +24,15 @@ import java.util.Optional;
 @Slf4j
 public class OhlcvCollector extends AbstractTask {
 
-    private final TradeRepository tradeRepository;
+    private final TradeService tradeService;
+
+    private final BasketService basketService;
 
     private final BrokerRepository brokerRepository;
 
     private final BrokerClientFactory tradeClientFactory;
 
-    private final OhlcvRepository assetOhlcvRepository;
+    private final OhlcvRepository ohlcvRepository;
 
     private final PlatformTransactionManager transactionManager;
 
@@ -42,16 +43,23 @@ public class OhlcvCollector extends AbstractTask {
     public void collect() {
         try {
             log.info("OhlcvCollector - Start collect ohlcv.");
-            List<TradeEntity> tradeEntities = tradeRepository.findAll();
-            for (TradeEntity tradeEntity : tradeEntities) {
-                try {
-                    Trade trade = Trade.from(tradeEntity);
-                    for (TradeAsset tradeAsset : trade.getTradeAssets()) {
-                        saveMinuteOhlcvs(trade, tradeAsset);
-                        saveDailyOhlcvs(trade, tradeAsset);
+            List<Trade> trades = tradeService.getTrades();
+            for (Trade trade : trades) {
+                if (trade.getBasketId() == null) {
+                    continue;
+                }
+                Basket basket = basketService.getBasket(trade.getBasketId()).orElse(null);
+                if (basket == null) {
+                    continue;
+                }
+                List<BasketAsset> basketAssets = basket.getBasketAssets();
+                for (BasketAsset basketAsset : basketAssets) {
+                    try {
+                        saveMinuteOhlcvs(trade, basketAsset);
+                        saveDailyOhlcvs(trade, basketAsset);
+                    } catch (Throwable e){
+                        log.warn(e.getMessage());
                     }
-                } catch (Throwable e) {
-                    log.warn(e.getMessage());
                 }
             }
             log.info("OhlcvCollector - End collect ohlcv");
@@ -65,64 +73,64 @@ public class OhlcvCollector extends AbstractTask {
     /**
      * saves minute ohlcvs
      * @param trade trade
-     * @param tradeAsset trade asset
+     * @param basketAsset basket asset
      */
-    private void saveMinuteOhlcvs(Trade trade, TradeAsset tradeAsset) throws InterruptedException {
+    private void saveMinuteOhlcvs(Trade trade, BasketAsset basketAsset) throws InterruptedException {
         // current
         Broker broker = brokerRepository.findById(trade.getBrokerId())
                 .map(Broker::from)
                 .orElseThrow();
         BrokerClient brokerClient = tradeClientFactory.getObject(broker);
-        List<Ohlcv> minuteOhlcvs = brokerClient.getMinuteOhlcvs(tradeAsset);
+        List<Ohlcv> minuteOhlcvs = brokerClient.getMinuteOhlcvs(basketAsset);
         if(minuteOhlcvs.isEmpty()) {
             return;
         }
         List<OhlcvEntity> minuteOhlcvEntities = minuteOhlcvs.stream()
-                .map(ohlcv -> toAssetOhlcvEntity(tradeAsset.getAssetId(), ohlcv))
+                .map(ohlcv -> toAssetOhlcvEntity(basketAsset.getAssetId(), ohlcv))
                 .toList();
 
         // previous
         LocalDateTime datetimeFrom = minuteOhlcvs.get(minuteOhlcvs.size()-1).getDateTime();
         LocalDateTime datetimeTo = minuteOhlcvs.get(0).getDateTime();
-        List<OhlcvEntity> previousMinuteEntities = assetOhlcvRepository.findAllByAssetIdAndType(tradeAsset.getAssetId(), Ohlcv.Type.MINUTE, datetimeFrom, datetimeTo, Pageable.unpaged());
+        List<OhlcvEntity> previousMinuteEntities = ohlcvRepository.findAllByAssetIdAndType(basketAsset.getAssetId(), Ohlcv.Type.MINUTE, datetimeFrom, datetimeTo, Pageable.unpaged());
 
         // save new or changed
         List<OhlcvEntity> newOrChangedMinuteOhlcvEntities = extractNewOrChangedOhlcvEntities(minuteOhlcvEntities, previousMinuteEntities);
-        String unitName = String.format("minuteOhlcvEntities[%s]", tradeAsset.getAssetName());
+        String unitName = String.format("minuteOhlcvEntities[%s]", basketAsset.getAssetName());
         log.info("OhlcvCollector - save {}:{}", unitName, newOrChangedMinuteOhlcvEntities.size());
-        saveEntities(unitName, newOrChangedMinuteOhlcvEntities, transactionManager, assetOhlcvRepository);
+        saveEntities(unitName, newOrChangedMinuteOhlcvEntities, transactionManager, ohlcvRepository);
     }
 
     /**
      * saves daily ohlcvs
      * @param trade trade
-     * @param tradeAsset trade asset
+     * @param basketAsset basket asset
      */
-    private void saveDailyOhlcvs(Trade trade, TradeAsset tradeAsset) throws InterruptedException {
+    private void saveDailyOhlcvs(Trade trade, BasketAsset basketAsset) throws InterruptedException {
         Broker broker = brokerRepository.findById(trade.getBrokerId())
                 .map(Broker::from)
                 .orElseThrow();
         BrokerClient brokerClient = tradeClientFactory.getObject(broker);
-        List<Ohlcv> dailyOhlcvs = brokerClient.getDailyOhlcvs(tradeAsset);
+        List<Ohlcv> dailyOhlcvs = brokerClient.getDailyOhlcvs(basketAsset);
         if(dailyOhlcvs.isEmpty()) {
             return;
         }
 
         // current
         List<OhlcvEntity> dailyOhlcvEntities = dailyOhlcvs.stream()
-                .map(ohlcv -> toAssetOhlcvEntity(tradeAsset.getAssetId(), ohlcv))
+                .map(ohlcv -> toAssetOhlcvEntity(basketAsset.getAssetId(), ohlcv))
                 .toList();
 
         // previous
         LocalDateTime datetimeFrom = dailyOhlcvs.get(dailyOhlcvs.size()-1).getDateTime();
         LocalDateTime datetimeTo = dailyOhlcvs.get(0).getDateTime();
-        List<OhlcvEntity> previousDailyOhlcvEntities = assetOhlcvRepository.findAllByAssetIdAndType(tradeAsset.getAssetId(), Ohlcv.Type.DAILY, datetimeFrom, datetimeTo, Pageable.unpaged());
+        List<OhlcvEntity> previousDailyOhlcvEntities = ohlcvRepository.findAllByAssetIdAndType(basketAsset.getAssetId(), Ohlcv.Type.DAILY, datetimeFrom, datetimeTo, Pageable.unpaged());
 
         // save new or changed
         List<OhlcvEntity> newOrChangedDailyOhlcvEntities = extractNewOrChangedOhlcvEntities(dailyOhlcvEntities, previousDailyOhlcvEntities);
-        String unitName = String.format("dailyOhlcvEntities[%s]", tradeAsset.getAssetName());
+        String unitName = String.format("dailyOhlcvEntities[%s]", basketAsset.getAssetName());
         log.info("OhlcvCollector - save {}:{}", unitName, newOrChangedDailyOhlcvEntities.size());
-        saveEntities(unitName, newOrChangedDailyOhlcvEntities, transactionManager, assetOhlcvRepository);
+        saveEntities(unitName, newOrChangedDailyOhlcvEntities, transactionManager, ohlcvRepository);
     }
 
     /**

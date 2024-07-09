@@ -25,15 +25,11 @@ public class StrategyExecutor {
 
     private final TradeAsset tradeAsset;
 
-    private final TradeAssetStatus tradeAssetStatus;
-
     private final OrderBook orderBook;
 
     private final Balance balance;
 
     private final BalanceAsset balanceAsset;
-
-    private final Profile profile;
 
     @Builder.Default
     private Logger log = (Logger) LoggerFactory.getLogger(StrategyExecutor.class);
@@ -50,11 +46,9 @@ public class StrategyExecutor {
         binding.setVariable("log", log);
         binding.setVariable("dateTime", dateTime);
         binding.setVariable("tradeAsset", tradeAsset);
-        binding.setVariable("tradeAssetStatus", tradeAssetStatus);
         binding.setVariable("orderBook", orderBook);
         binding.setVariable("balance", balance);
         binding.setVariable("balanceAsset", balanceAsset);
-        binding.setVariable("profile", profile);
         GroovyShell groovyShell = new GroovyShell(groovyClassLoader, binding);
         Object result = groovyShell.evaluate(
                 "import " + StrategyResult.class.getName() + '\n' +

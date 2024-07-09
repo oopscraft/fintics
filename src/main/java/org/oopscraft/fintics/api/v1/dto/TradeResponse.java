@@ -34,6 +34,8 @@ public class TradeResponse {
 
     private String brokerId;
 
+    private String basketId;
+
     private String strategyId;
 
     private String strategyVariables;
@@ -46,11 +48,8 @@ public class TradeResponse {
 
     private boolean alarmOnOrder;
 
-    @Builder.Default
-    private List<TradeAssetResponse> tradeAssets = new ArrayList<>();
-
     public static TradeResponse from(Trade trade) {
-        TradeResponse tradeResponse = TradeResponse.builder()
+        return TradeResponse.builder()
                 .tradeId(trade.getTradeId())
                 .tradeName(trade.getTradeName())
                 .enabled(trade.isEnabled())
@@ -60,6 +59,7 @@ public class TradeResponse {
                 .endAt(trade.getEndTime())
                 .investAmount(trade.getInvestAmount())
                 .brokerId(trade.getBrokerId())
+                .basketId(trade.getBasketId())
                 .strategyId(trade.getStrategyId())
                 .strategyVariables(trade.getStrategyVariables())
                 .orderKind(trade.getOrderKind())
@@ -67,15 +67,6 @@ public class TradeResponse {
                 .alarmOnError(trade.isAlarmOnError())
                 .alarmOnOrder(trade.isAlarmOnOrder())
                 .build();
-
-        // trade asset
-        List<TradeAssetResponse> tradeAssetResponses = trade.getTradeAssets().stream()
-                .map(TradeAssetResponse::from)
-                .collect(Collectors.toList());
-        tradeResponse.setTradeAssets(tradeAssetResponses);
-
-        // returns
-        return tradeResponse;
     }
 
 }

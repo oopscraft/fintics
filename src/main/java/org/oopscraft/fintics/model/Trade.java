@@ -37,6 +37,8 @@ public class Trade {
 
     private String brokerId;
 
+    private String basketId;
+
     private String strategyId;
 
     private String strategyVariables;
@@ -49,11 +51,13 @@ public class Trade {
 
     private boolean alarmOnOrder;
 
-    @Builder.Default
-    private List<TradeAsset> tradeAssets = new ArrayList<>();
-
+    /**
+     * from factory method
+     * @param tradeEntity trade entity
+     * @return trade
+     */
     public static Trade from(TradeEntity tradeEntity) {
-        Trade trade = Trade.builder()
+        return Trade.builder()
                 .tradeId(tradeEntity.getTradeId())
                 .tradeName(tradeEntity.getTradeName())
                 .enabled(tradeEntity.isEnabled())
@@ -63,6 +67,7 @@ public class Trade {
                 .endTime(tradeEntity.getEndAt())
                 .investAmount(tradeEntity.getInvestAmount())
                 .brokerId(tradeEntity.getBrokerId())
+                .basketId(tradeEntity.getBasketId())
                 .strategyId(tradeEntity.getStrategyId())
                 .strategyVariables(tradeEntity.getStrategyVariables())
                 .orderKind(tradeEntity.getOrderKind())
@@ -70,15 +75,6 @@ public class Trade {
                 .alarmOnError(tradeEntity.isAlarmOnError())
                 .alarmOnOrder(tradeEntity.isAlarmOnOrder())
                 .build();
-
-        // trade assets
-        List<TradeAsset> tradeAssets = tradeEntity.getTradeAssets().stream()
-                .map(TradeAsset::from)
-                .collect(Collectors.toList());
-        trade.setTradeAssets(tradeAssets);
-
-        // return
-        return trade;
     }
 
 }

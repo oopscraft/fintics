@@ -7,10 +7,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
 import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.model.*;
-import org.oopscraft.fintics.service.AssetService;
-import org.oopscraft.fintics.service.NewsService;
-import org.oopscraft.fintics.service.OhlcvService;
-import org.oopscraft.fintics.service.OrderService;
+import org.oopscraft.fintics.service.*;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +27,8 @@ public class TradeExecutor {
 
     private final PlatformTransactionManager transactionManager;
 
+    private final BasketService basketService;
+
     private final AssetService assetService;
 
     private final OhlcvService ohlcvService;
@@ -47,7 +46,7 @@ public class TradeExecutor {
     private final Map<String, Integer> strategyResultValueMatchCountMap = new HashMap<>();
 
     @Setter
-    private StatusHandler statusHandler;
+    private TradeAssetStore tradeAssetStore;
 
     /**
      * sets specific logger
@@ -85,74 +84,77 @@ public class TradeExecutor {
             return;
         }
 
+        // basket
+        Basket basket = basketService.getBasket(trade.getBasketId()).orElseThrow();
+        log.info("[{}] basket: {}", trade.getTradeName(), basket.getBasketName());
+
         // balance
         Balance balance = brokerClient.getBalance();
 
         // checks buy condition
-        for (TradeAsset tradeAsset : trade.getTradeAssets()) {
+        for (BasketAsset basketAsset : basket.getBasketAssets()) {
             try {
                 Thread.sleep(100);
 
                 // check enabled
-                if (!tradeAsset.isEnabled()) {
+                if (!basketAsset.isEnabled()) {
                     continue;
                 }
 
                 // logging
                 log.info("-".repeat(80));
-                log.info("[{} - {}] check asset", tradeAsset.getAssetId(), tradeAsset.getAssetName());
+                log.info("[{} - {}] check asset", basketAsset.getAssetId(), basketAsset.getAssetName());
 
                 // daily ohlcvs
-                List<Ohlcv> dailyOhlcvs = brokerClient.getDailyOhlcvs(tradeAsset);
-                List<Ohlcv> previousDailyOhlcvs = getPreviousDailyOhlcvs(tradeAsset.getAssetId(), dailyOhlcvs, dateTime);
+                List<Ohlcv> dailyOhlcvs = brokerClient.getDailyOhlcvs(basketAsset);
+                List<Ohlcv> previousDailyOhlcvs = getPreviousDailyOhlcvs(basketAsset.getAssetId(), dailyOhlcvs, dateTime);
                 dailyOhlcvs.addAll(previousDailyOhlcvs);
 
                 // minute ohlcvs
-                List<Ohlcv> minuteOhlcvs = brokerClient.getMinuteOhlcvs(tradeAsset);
-                List<Ohlcv> previousMinuteOhlcvs = getPreviousMinuteOhlcvs(tradeAsset.getAssetId(), minuteOhlcvs, dateTime);
+                List<Ohlcv> minuteOhlcvs = brokerClient.getMinuteOhlcvs(basketAsset);
+                List<Ohlcv> previousMinuteOhlcvs = getPreviousMinuteOhlcvs(basketAsset.getAssetId(), minuteOhlcvs, dateTime);
                 minuteOhlcvs.addAll(previousMinuteOhlcvs);
 
                 // newses
                 List<News> newses = assetService.getNewses(
-                        tradeAsset.getAssetId(),
+                        basketAsset.getAssetId(),
                         dateTime.minusWeeks(1),
                         dateTime,
                         Pageable.unpaged());
 
-                // asset profile
-                Profile profile = Profile.builder()
+                // trade asset
+                TradeAsset tradeAsset = TradeAsset.builder()
+                        .tradeId(trade.getTradeId())
+                        .assetId(basketAsset.getAssetId())
+                        .assetName(basketAsset.getAssetName())
+                        .market(basketAsset.getMarket())
+                        .type(basketAsset.getType())
+                        .exchange(basketAsset.getExchange())
+                        .marketCap(basketAsset.getMarketCap())
+                        .previousClose(dailyOhlcvs.get(1).getClose())
+                        .open(dailyOhlcvs.get(0).getOpen())
+                        .close(minuteOhlcvs.get(0).getClose())
                         .dailyOhlcvs(dailyOhlcvs)
                         .minuteOhlcvs(minuteOhlcvs)
                         .newses(newses)
                         .build();
 
                 // logging
-                log.info("[{} - {}] dailyOhlcvs({}):{}", tradeAsset.getAssetId(), tradeAsset.getAssetName(), profile.getDailyOhlcvs().size(), profile.getDailyOhlcvs().isEmpty() ? null : profile.getDailyOhlcvs().get(0));
-                log.info("[{} - {}] minuteOhlcvs({}):{}", tradeAsset.getAssetId(), tradeAsset.getAssetName(), profile.getMinuteOhlcvs().size(), profile.getMinuteOhlcvs().isEmpty() ? null : profile.getMinuteOhlcvs().get(0));
+                log.info("[{} - {}] dailyOhlcvs({}):{}", tradeAsset.getAssetId(), tradeAsset.getAssetName(), tradeAsset.getDailyOhlcvs().size(), tradeAsset.getDailyOhlcvs().isEmpty() ? null : tradeAsset.getDailyOhlcvs().get(0));
+                log.info("[{} - {}] minuteOhlcvs({}):{}", tradeAsset.getAssetId(), tradeAsset.getAssetName(), tradeAsset.getMinuteOhlcvs().size(), tradeAsset.getMinuteOhlcvs().isEmpty() ? null : tradeAsset.getMinuteOhlcvs().get(0));
 
                 // order book
-                OrderBook orderBook = brokerClient.getOrderBook(tradeAsset);
+                OrderBook orderBook = brokerClient.getOrderBook(basketAsset);
 
                 // balance asset
-                BalanceAsset balanceAsset = balance.getBalanceAsset(tradeAsset.getAssetId()).orElse(null);
-
-                // trade asset status
-                TradeAssetStatus tradeAssetStatus = TradeAssetStatus.builder()
-                        .tradeId(tradeAsset.getTradeId())
-                        .assetId(tradeAsset.getAssetId())
-                        .previousClose(dailyOhlcvs.get(1).getClose())
-                        .open(dailyOhlcvs.get(0).getOpen())
-                        .close(minuteOhlcvs.get(0).getClose())
-                        .build();
+                BalanceAsset balanceAsset = balance.getBalanceAsset(basketAsset.getAssetId()).orElse(null);
 
                 // executes trade asset decider
                 StrategyExecutor strategyExecutor = StrategyExecutor.builder()
-                        .profile(profile)
                         .strategy(strategy)
                         .variables(trade.getStrategyVariables())
                         .dateTime(dateTime)
                         .tradeAsset(tradeAsset)
-                        .tradeAssetStatus(tradeAssetStatus)
                         .orderBook(orderBook)
                         .balance(balance)
                         .balanceAsset(balanceAsset)
@@ -161,36 +163,36 @@ public class TradeExecutor {
 
                 Instant startTime = Instant.now();
                 StrategyResult strategyResult = strategyExecutor.execute();
-                log.info("[{} - {}] strategy execution elapsed:{}", tradeAsset.getAssetId(), tradeAsset.getAssetName(), Duration.between(startTime, Instant.now()));
-                log.info("[{} - {}] strategy result: {}", tradeAsset.getAssetId(), tradeAsset.getAssetName(), strategyResult);
+                log.info("[{} - {}] strategy execution elapsed:{}", basketAsset.getAssetId(), basketAsset.getAssetName(), Duration.between(startTime, Instant.now()));
+                log.info("[{} - {}] strategy result: {}", basketAsset.getAssetId(), basketAsset.getAssetName(), strategyResult);
 
-                // status handler
-                if (statusHandler != null) {
-                    statusHandler.apply(tradeAssetStatus);
+                // save trade asset to store
+                if (tradeAssetStore != null) {
+                    tradeAssetStore.save(tradeAsset);
                 }
 
                 // check strategy result and count
-                StrategyResult previousStrategyResult = strategyResultMap.get(tradeAsset.getAssetId());
-                int strategyResultValueMatchCount = strategyResultValueMatchCountMap.getOrDefault(tradeAsset.getAssetId(), 0);
+                StrategyResult previousStrategyResult = strategyResultMap.get(basketAsset.getAssetId());
+                int strategyResultValueMatchCount = strategyResultValueMatchCountMap.getOrDefault(basketAsset.getAssetId(), 0);
                 if (Objects.equals(strategyResult, previousStrategyResult)) {
                     strategyResultValueMatchCount ++;
                 } else {
                     strategyResultValueMatchCount = 1;
                 }
-                strategyResultMap.put(tradeAsset.getAssetId(), strategyResult);
-                strategyResultValueMatchCountMap.put(tradeAsset.getAssetId(), strategyResultValueMatchCount);
+                strategyResultMap.put(basketAsset.getAssetId(), strategyResult);
+                strategyResultValueMatchCountMap.put(basketAsset.getAssetId(), strategyResultValueMatchCount);
 
                 // checks threshold exceeded
-                log.info("[{} - {}] strategyResultValueMatchCount: {}", tradeAsset.getAssetId(), tradeAsset.getAssetName(), strategyResultValueMatchCount);
+                log.info("[{} - {}] strategyResultValueMatchCount: {}", basketAsset.getAssetId(), basketAsset.getAssetName(), strategyResultValueMatchCount);
                 if (strategyResultValueMatchCount < trade.getThreshold()) {
-                    log.info("[{} - {}] threshold has not been exceeded yet - threshold is {}", tradeAsset.getAssetId(), tradeAsset.getAssetName(), trade.getThreshold());
+                    log.info("[{} - {}] threshold has not been exceeded yet - threshold is {}", basketAsset.getAssetId(), basketAsset.getAssetName(), trade.getThreshold());
                     continue;
                 }
 
                 //===============================================
                 // 0. holding weight is zero
                 //===============================================
-                if (tradeAsset.getHoldingWeight().compareTo(BigDecimal.ZERO) == 0) {
+                if (basketAsset.getHoldingWeight().compareTo(BigDecimal.ZERO) == 0) {
                     if (balanceAsset != null) {
                         BigDecimal price = calculateSellPrice(tradeAsset, orderBook, brokerClient);
                         BigDecimal quantity = balanceAsset.getOrderableQuantity();
@@ -211,7 +213,7 @@ public class TradeExecutor {
                 //===============================================
                 // defines
                 BigDecimal investAmount = trade.getInvestAmount();
-                BigDecimal holdingWeight = tradeAsset.getHoldingWeight();
+                BigDecimal holdingWeight = basketAsset.getHoldingWeight();
                 BigDecimal holdingWeightAmount = investAmount
                         .divide(BigDecimal.valueOf(100), MathContext.DECIMAL32)
                         .multiply(holdingWeight)
@@ -223,7 +225,7 @@ public class TradeExecutor {
                         .multiply(position)
                         .setScale(2, RoundingMode.HALF_UP);
 
-                BigDecimal currentOwnedAmount = balance.getBalanceAsset(tradeAsset.getAssetId())
+                BigDecimal currentOwnedAmount = balance.getBalanceAsset(basketAsset.getAssetId())
                         .map(BalanceAsset::getValuationAmount)
                         .orElse(BigDecimal.ZERO);
 
@@ -263,7 +265,7 @@ public class TradeExecutor {
 
             } catch (Throwable e) {
                 log.error(e.getMessage(), e);
-                sendErrorAlarmIfEnabled(trade, tradeAsset, e);
+                sendErrorAlarmIfEnabled(trade, basketAsset, e);
             }
         }
     }
@@ -374,7 +376,7 @@ public class TradeExecutor {
                 .orderAt(Instant.now())
                 .type(Order.Type.BUY)
                 .kind(trade.getOrderKind())
-                .tradeId(tradeAsset.getTradeId())
+                .tradeId(trade.getTradeId())
                 .assetId(tradeAsset.getAssetId())
                 .assetName(tradeAsset.getAssetName())
                 .quantity(quantity)
@@ -420,7 +422,7 @@ public class TradeExecutor {
      * sells trade asset
      * @param brokerClient broker client
      * @param trade trade
-     * @param tradeAsset trade asset
+     * @param tradeAsset basket asset
      * @param quantity sell quantity
      * @param price sell price
      * @param strategyResult strategy result
@@ -497,13 +499,13 @@ public class TradeExecutor {
     /**
      * send error alarm if enable
      * @param trade trade
-     * @param tradeAsset trade asset
+     * @param asset basket asset
      * @param t throwable
      */
-    private void sendErrorAlarmIfEnabled(Trade trade, TradeAsset tradeAsset, Throwable t) {
+    private void sendErrorAlarmIfEnabled(Trade trade, Asset asset, Throwable t) {
         if(trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
             if (trade.isAlarmOnError()) {
-                String subject = String.format("[%s - %s] Error", trade.getTradeName(), tradeAsset != null ? tradeAsset.getAssetName() : "");
+                String subject = String.format("[%s - %s] Error", trade.getTradeName(), asset != null ? asset.getAssetName() : "");
                 String content = ExceptionUtils.getRootCause(t).getMessage();
                 alarmService.sendAlarm(trade.getAlarmId(), subject, content);
             }

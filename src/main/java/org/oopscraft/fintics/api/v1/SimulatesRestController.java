@@ -117,16 +117,6 @@ public class SimulatesRestController {
                 .endTime(tradeRequest.getEndAt())
                 .strategyVariables(tradeRequest.getStrategyVariables())
                 .build();
-        List<TradeAsset> tradeAssets = tradeRequest.getTradeAssets().stream()
-                .map(tradeAssetResponse -> TradeAsset.builder()
-                        .tradeId(tradeRequest.getTradeId())
-                        .assetId(tradeAssetResponse.getAssetId())
-                        .assetName(tradeAssetResponse.getAssetName())
-                        .enabled(tradeAssetResponse.isEnabled())
-                        .holdingWeight(tradeAssetResponse.getHoldingWeight())
-                        .build())
-                .collect(Collectors.toList());
-        trade.setTradeAssets(tradeAssets);
 
         // strategy
         StrategyRequest strategyRequest = simulateRequest.getStrategy();

@@ -25,13 +25,6 @@ class StrategyExecutorTest {
                 .build();
     }
 
-    TradeAsset getTestTradeAsset() {
-        return TradeAsset.builder()
-                .tradeId("test")
-                .assetName("Test")
-                .build();
-    }
-
     OrderBook getTestOrderBook() {
         return OrderBook.builder()
                 .price(BigDecimal.valueOf(10000))
@@ -40,8 +33,8 @@ class StrategyExecutorTest {
                 .build();
     }
 
-    Profile getTestProfile(TradeAsset tradeAsset) {
-        return Profile.builder()
+    TradeAsset getTestTradeAsset() {
+        return TradeAsset.builder()
                 .minuteOhlcvs(IntStream.range(1,501)
                         .mapToObj(i -> {
                             BigDecimal price = BigDecimal.valueOf(1000 - (i*10));
@@ -94,7 +87,6 @@ class StrategyExecutorTest {
         // given
         Trade trade = getTestTrade();
         TradeAsset tradeAsset = getTestTradeAsset();
-        Profile profile = getTestProfile(tradeAsset);
         OrderBook orderBook = getTestOrderBook();
         trade.setStrategyVariables("");
         Strategy strategy = Strategy.builder()
@@ -103,7 +95,7 @@ class StrategyExecutorTest {
 
         // when
         StrategyExecutor strategyExecutor = StrategyExecutor.builder()
-                .profile(profile)
+                .tradeAsset(tradeAsset)
                 .strategy(strategy)
                 .dateTime(LocalDateTime.now())
                 .orderBook(orderBook)

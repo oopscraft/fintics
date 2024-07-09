@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.client.financial;
+package org.oopscraft.fintics.client.asset;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -8,13 +8,13 @@ import org.springframework.boot.context.properties.ConstructorBinding;
 import java.util.Map;
 import java.util.Optional;
 
-@ConfigurationProperties(prefix = "fintics.asset-financial-client")
+@ConfigurationProperties(prefix = "fintics.asset-client")
 @ConstructorBinding
 @AllArgsConstructor
 @Getter
-public class FinancialClientProperties {
+public class AssetClientProperties {
 
-    private Class<? extends FinancialClient> className;
+    private Class<? extends AssetClient> className;
 
     private Map<String, String> properties;
 

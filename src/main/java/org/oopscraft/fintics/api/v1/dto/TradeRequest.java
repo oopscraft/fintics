@@ -43,6 +43,9 @@ public class TradeRequest {
     @Schema(description = "broker id")
     private String brokerId;
 
+    @Schema(description = "basket id")
+    private String basketId;
+
     @Schema(description = "strategy id")
     private String strategyId;
 
@@ -60,9 +63,5 @@ public class TradeRequest {
 
     @Schema(description = "alarm on order", example = "false")
     private boolean alarmOnOrder;
-
-    @Builder.Default
-    @Schema(description = "trade assets")
-    private List<TradeAssetResponse> tradeAssets = new ArrayList<>();
 
 }

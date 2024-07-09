@@ -45,6 +45,7 @@ public class BalanceAssetResponse extends AssetResponse {
                 .profitAmount(balanceAsset.getProfitAmount())
                 .profitPercentage(balanceAsset.getProfitPercentage())
                 .type(balanceAsset.getType())
+                .icon(balanceAsset.getIcon())
                 .links(LinkResponse.from(balanceAsset.getLinks()))
                 .build();
     }

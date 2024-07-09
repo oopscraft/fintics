@@ -108,11 +108,6 @@ public class SimulateBrokerClient extends BrokerClient {
     }
 
     @Override
-    public List<Asset> getAssets() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public List<Ohlcv> getMinuteOhlcvs(Asset asset) throws InterruptedException {
         loadOhlcvsIfNotExist(asset, datetime);
         LocalDateTime datetimeFrom = datetime.minusWeeks(1);

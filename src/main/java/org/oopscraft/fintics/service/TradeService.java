@@ -15,8 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,7 +26,11 @@ public class TradeService {
 
     private final TradeRepository tradeRepository;
 
+    private final TradeAssetRepository tradeAssetRepository;
+
     private final OrderRepository orderRepository;
+
+    private final BasketService basketService;
 
     private final BrokerService brokerService;
 
@@ -68,27 +72,13 @@ public class TradeService {
         tradeEntity.setEndAt(trade.getEndTime());
         tradeEntity.setInvestAmount(trade.getInvestAmount());
         tradeEntity.setBrokerId(trade.getBrokerId());
+        tradeEntity.setBasketId(trade.getBasketId());
         tradeEntity.setStrategyId(trade.getStrategyId());
         tradeEntity.setStrategyVariables(trade.getStrategyVariables());
         tradeEntity.setOrderKind(trade.getOrderKind());
         tradeEntity.setAlarmId(trade.getAlarmId());
         tradeEntity.setAlarmOnError(trade.isAlarmOnError());
         tradeEntity.setAlarmOnOrder(trade.isAlarmOnOrder());
-
-        // trade asset
-        tradeEntity.getTradeAssets().clear();
-        AtomicInteger sort = new AtomicInteger(0);
-        List<TradeAssetEntity> tradeAssetEntities = trade.getTradeAssets().stream()
-                .map(tradeAsset ->
-                        TradeAssetEntity.builder()
-                                .tradeId(tradeEntity.getTradeId())
-                                .assetId(tradeAsset.getAssetId())
-                                .sort(sort.getAndIncrement())
-                                .enabled(tradeAsset.isEnabled())
-                                .holdingWeight(tradeAsset.getHoldingWeight())
-                                .build())
-                .collect(Collectors.toList());
-        tradeEntity.getTradeAssets().addAll(tradeAssetEntities);
 
         // save and return
         TradeEntity savedTradeEntity = tradeRepository.saveAndFlush(tradeEntity);
@@ -100,6 +90,38 @@ public class TradeService {
     public void deleteTrade(String tradeId) {
         tradeRepository.deleteById(tradeId);
         tradeRepository.flush();
+    }
+
+    /**
+     * gets trade assets
+     * @param tradeId trade id
+     * @return trade assets
+     */
+    public List<TradeAsset> getTradeAssets(String tradeId) {
+        Trade trade = getTrade(tradeId).orElseThrow();
+        Basket basket = basketService.getBasket(trade.getBasketId()).orElseThrow();
+        List<BasketAsset> basketAssets = basket.getBasketAssets();
+        List<TradeAssetEntity> tradeAssetEntities = tradeAssetRepository.findAllByTradeId(tradeId);
+        return basketAssets.stream()
+                .map(basketAsset -> {
+                    TradeAsset tradeAsset = TradeAsset.builder()
+                            .tradeId(tradeId)
+                            .assetId(basketAsset.getAssetId())
+                            .assetName(basketAsset.getAssetName())
+                            .build();
+                    TradeAssetEntity tradeAssetEntity = tradeAssetEntities.stream()
+                            .filter(it -> Objects.equals(it.getAssetId(), basketAsset.getAssetId()))
+                            .findFirst()
+                            .orElse(null);
+                    if (tradeAssetEntity != null) {
+                       tradeAsset.setPreviousClose(tradeAssetEntity.getPreviousClose());
+                       tradeAsset.setOpen(tradeAssetEntity.getOpen());
+                       tradeAsset.setClose(tradeAssetEntity.getClose());
+                       tradeAsset.setMessage(tradeAssetEntity.getMessage());
+                    }
+                    return tradeAsset;
+                })
+                .collect(Collectors.toList());
     }
 
     public Page<Order> getOrders(String tradeId, String assetId, Order.Type type, Order.Result result, Pageable pageable) {
@@ -138,10 +160,9 @@ public class TradeService {
             Balance balance = brokerClient.getBalance();
             balance.getBalanceAssets().forEach(balanceAsset -> {
                 assetRepository.findById(balanceAsset.getAssetId()).ifPresent(assetEntity -> {
+                    balanceAsset.setMarket(assetEntity.getMarket());
                     balanceAsset.setType(assetEntity.getType());
-                    balanceAsset.setAssetFinancial(Optional.ofNullable(assetEntity.getFinancialEntity())
-                            .map(Financial::from)
-                            .orElse(Financial.builder().build()));
+                    balanceAsset.setExchange(assetEntity.getExchange());
                 });
             });
             return Optional.of(balance);

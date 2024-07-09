@@ -26,7 +26,7 @@ public class ProfileTest {
         }};
 
         // when
-        Profile profile = Profile.builder()
+        TradeAsset profile = TradeAsset.builder()
                 .minuteOhlcvs(minuteOhlcvs)
                 .build();
         List<Ohlcv> resampleOhlcvs = profile.getOhlcvs(Ohlcv.Type.MINUTE, 3);
@@ -54,7 +54,7 @@ public class ProfileTest {
         }};
 
         // when
-        Profile profile = Profile.builder()
+        TradeAsset profile = TradeAsset.builder()
                 .minuteOhlcvs(minuteOhlcvs)
                 .build();
         List<Ohlcv> resampleOhlcvs = profile.getOhlcvs(Ohlcv.Type.MINUTE, 3);
@@ -85,7 +85,7 @@ public class ProfileTest {
         }};
 
         // when
-        Profile profile = Profile.builder()
+        TradeAsset profile = TradeAsset.builder()
                 .minuteOhlcvs(minuteOhlcvs)
                 .build();
         List<Ohlcv> resampleOhlcvs = profile.getOhlcvs(Ohlcv.Type.MINUTE, 3);

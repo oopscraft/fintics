@@ -6,8 +6,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
+import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.client.broker.BrokerClientDefinition;
-import org.oopscraft.fintics.client.broker.KrBrokerClient;
 import org.oopscraft.fintics.model.*;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
  * 한국투자증권 국내 주식 broker client
  */
 @Slf4j
-public class KisBrokerClient extends KrBrokerClient {
+public class KisBrokerClient extends BrokerClient {
 
     private final static Object LOCK_OBJECT = new Object();
 
@@ -89,8 +89,9 @@ public class KisBrokerClient extends KrBrokerClient {
 
     @Override
     public boolean isOpened(LocalDateTime datetime) throws InterruptedException {
-        // check us super (weekend and fixed holiday)
-        if (!super.isOpened(datetime)) {
+        // check weekend
+        DayOfWeek dayOfWeek = datetime.getDayOfWeek();
+        if (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
             return false;
         }
         // check holiday
@@ -390,6 +391,36 @@ public class KisBrokerClient extends KrBrokerClient {
                 .bidPrice(bidPrice)
                 .askPrice(askPrice)
                 .build();
+    }
+
+    /**
+     * 호가 단위 반환 (정책은 아래 주소를 참조)
+     * https://securities.koreainvestment.com/main/customer/notice/Notice.jsp?&cmd=TF04ga000002&currentPage=1&num=39930
+     */
+    @Override
+    public BigDecimal getTickPrice(Asset asset, BigDecimal price) throws InterruptedException {
+        // etf, etn, elw
+        if(Arrays.asList("ETF","ETN","ELW").contains(asset.getType())) {
+            return BigDecimal.valueOf(5);
+        }
+        // default fallback (stock)
+        BigDecimal priceTick = null;
+        if (price.compareTo(BigDecimal.valueOf(2_000)) <= 0) {
+            priceTick = BigDecimal.valueOf(1);
+        } else if (price.compareTo(BigDecimal.valueOf(5_000)) <= 0) {
+            priceTick = BigDecimal.valueOf(5);
+        } else if (price.compareTo(BigDecimal.valueOf(20_000)) <= 0) {
+            priceTick = BigDecimal.valueOf(10);
+        } else if (price.compareTo(BigDecimal.valueOf(50_000)) <= 0) {
+            priceTick = BigDecimal.valueOf(50);
+        } else if (price.compareTo(BigDecimal.valueOf(200_000)) <= 0) {
+            priceTick = BigDecimal.valueOf(100);
+        } else if (price.compareTo(BigDecimal.valueOf(500_000)) <= 0) {
+            priceTick = BigDecimal.valueOf(500);
+        } else {
+            priceTick = BigDecimal.valueOf(1_000);
+        }
+        return priceTick;
     }
 
     /**

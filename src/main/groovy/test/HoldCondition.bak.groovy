@@ -18,7 +18,7 @@ import java.time.LocalTime
  * @param ohlcvPeriod period
  * @return result map
  */
-def analyzeIndicator(Profile indicator, Ohlcv.Type ohlcvType, int ohlcvPeriod) {
+def analyzeIndicator(TradeAsset indicator, Ohlcv.Type ohlcvType, int ohlcvPeriod) {
     // info
     def name = indicator.getProfileName() + ':' + ohlcvType + ':' + ohlcvPeriod
     def pctChangePeriod = 10

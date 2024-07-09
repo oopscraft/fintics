@@ -2,10 +2,7 @@ package org.oopscraft.fintics.trade;
 
 import lombok.RequiredArgsConstructor;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
-import org.oopscraft.fintics.service.AssetService;
-import org.oopscraft.fintics.service.NewsService;
-import org.oopscraft.fintics.service.OhlcvService;
-import org.oopscraft.fintics.service.OrderService;
+import org.oopscraft.fintics.service.*;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -16,6 +13,8 @@ public class TradeExecutorFactory {
     private final PlatformTransactionManager transactionManager;
 
     private final AssetService assetService;
+
+    private final BasketService basketService;
 
     private final OhlcvService ohlcvService;
 
@@ -29,6 +28,7 @@ public class TradeExecutorFactory {
         return TradeExecutor.builder()
                 .transactionManager(transactionManager)
                 .assetService(assetService)
+                .basketService(basketService)
                 .ohlcvService(ohlcvService)
                 .newsService(newsService)
                 .orderService(orderService)

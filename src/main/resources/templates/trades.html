@@ -7,6 +7,7 @@
     <script th:inline="javascript">
         const trades = new duice.ArrayProxy([]);
         const brokers = new duice.ArrayProxy(/*[[${brokers}]]*/[]);
+        const baskets = new duice.ArrayProxy(/*[[${baskets}]]*/[]);
         const strategies = new duice.ArrayProxy(/*[[${strategies}]]*/[]);
 
         function getTrades() {
@@ -60,15 +61,15 @@
                 "
              onclick="getTrade(this.dataset.tradeId);">
             <div>
-                 <span class="link font-weight--bold"
-                       data-duice-bind="trade"
-                       data-duice-property="tradeName"></span>
-                &nbsp;
-                <span class="badge" style="border-radius:1em;"
+                <span class="link font-weight--bold"
                       data-duice-bind="trade"
-                      data-duice-execute="this.innerHTML=trade.tradeAssets.length;"></span>
+                      data-duice-property="tradeName"></span>
             </div>
             <div class="font-size--smaller" style="line-height:1.5em;">
+                <div>
+                    <span data-th-text="#{fintics.Trade.startAt}"></span> - <span data-th-text="#{fintics.Trade.endAt}"></span>:
+                    <span data-duice-bind="trade" data-duice-property="startAt"></span> - <span data-duice-bind="trade" data-duice-property="endAt"></span>
+                </div>
                 <div>
                     <span data-th-text="#{fintics.Trade.investAmount}"></span>:
                     <span data-duice-bind="trade" data-duice-property="investAmount" data-duice-format="number"></span>
@@ -82,16 +83,20 @@
                           "></span>
                 </div>
                 <div>
+                    <span data-th-text="#{fintics.Basket}"></span>:
+                    <span data-duice-bind="trade"
+                          data-duice-execute="
+                          let basketName = baskets.find(it => it.basketId === trade.basketId)?.basketName;
+                          this.innerHTML = basketName;
+                          "></span>
+                </div>
+                <div>
                     <span data-th-text="#{fintics.Strategy}"></span>:
                     <span data-duice-bind="trade"
                           data-duice-execute="
                           let strategyName = strategies.find(it => it.strategyId === trade.strategyId)?.strategyName;
                           this.innerHTML = strategyName;
                           "></span>
-                </div>
-                <div>
-                    <span data-th-text="#{fintics.Trade.startAt}"></span> - <span data-th-text="#{fintics.Trade.endAt}"></span>:
-                    <span data-duice-bind="trade" data-duice-property="startAt"></span> - <span data-duice-bind="trade" data-duice-property="endAt"></span>
                 </div>
             </div>
         </div>

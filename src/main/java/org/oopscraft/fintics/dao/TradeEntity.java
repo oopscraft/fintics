@@ -52,6 +52,9 @@ public class TradeEntity extends BaseEntity {
     @Column(name = "broker_id", length = 32)
     private String brokerId;
 
+    @Column(name = "basket_id", length = 32)
+    private String basketId;
+
     @Column(name = "strategy_id", length = 32)
     private String strategyId;
 
@@ -72,12 +75,5 @@ public class TradeEntity extends BaseEntity {
     @Column(name = "alarm_on_order", length = 1)
     @Convert(converter = BooleanConverter.class)
     private boolean alarmOnOrder;
-
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "trade_id", updatable = false)
-    @OrderBy(TradeAssetEntity_.SORT)
-    @Builder.Default
-    @Setter(AccessLevel.NONE)
-    private List<TradeAssetEntity> tradeAssets = new ArrayList<>();
 
 }

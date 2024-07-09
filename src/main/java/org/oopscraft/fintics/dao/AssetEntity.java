@@ -7,6 +7,8 @@ import org.oopscraft.arch4j.core.data.converter.BooleanConverter;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "fintics_asset")
@@ -40,8 +42,10 @@ public class AssetEntity extends BaseEntity {
     @Convert(converter = BooleanConverter.class)
     private boolean favorite;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany
     @JoinColumn(name = "asset_id")
-    private FinancialEntity financialEntity;
+    @OrderBy(AssetMetaEntity_.SORT)
+    @Builder.Default
+    private List<AssetMetaEntity> assetMetaEntities = new ArrayList<>();
 
 }

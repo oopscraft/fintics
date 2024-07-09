@@ -38,7 +38,7 @@ public class SimulateRunnable implements Runnable {
 
     private final ObjectMapper objectMapper;
 
-    private final StatusHandlerFactory statusHandlerFactory;
+    private final TradeAssetStoreFactory statusHandlerFactory;
 
     @Setter
     private Logger log;
@@ -60,7 +60,7 @@ public class SimulateRunnable implements Runnable {
             SimulateRepository simulateRepository,
             SimpMessagingTemplate messagingTemplate,
             ObjectMapper objectMapper,
-            StatusHandlerFactory statusHandlerFactory
+            TradeAssetStoreFactory statusHandlerFactory
     ){
         this.simulate = simulate;
         this.simulateBrokerClient = simulateTradeClient;
@@ -114,8 +114,8 @@ public class SimulateRunnable implements Runnable {
 
             // status handler
             String destination = String.format("/simulates/%s/message", simulate.getSimulateId());
-            StatusHandler statusHandler = statusHandlerFactory.getObject(destination, false);
-            tradeExecutor.setStatusHandler(statusHandler);
+            TradeAssetStore statusHandler = statusHandlerFactory.getObject(destination, false);
+            tradeExecutor.setTradeAssetStore(statusHandler);
 
             // loop
             for (LocalDateTime dateTime = investFrom;

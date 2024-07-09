@@ -31,11 +31,9 @@ public class AssetRepositoryCustomImpl implements AssetRepositoryCustom {
     @Override
     public Page<AssetEntity> findAll(AssetSearch assetSearch, Pageable pageable) {
         QAssetEntity qAssetEntity = QAssetEntity.assetEntity;
-        QFinancialEntity qAssetFinancialEntity = QFinancialEntity.financialEntity;
+        QAssetMetaEntity qAssetMetaEntity = QAssetMetaEntity.assetMetaEntity;
         JPAQuery<AssetEntity> query = jpaQueryFactory
                 .selectFrom(qAssetEntity)
-                .leftJoin(qAssetFinancialEntity)
-                .on(qAssetFinancialEntity.assetId.eq(qAssetEntity.assetId))
                 .where(
                         Optional.ofNullable(assetSearch.getAssetId())
                                 .map(qAssetEntity.assetId::contains)
@@ -43,30 +41,11 @@ public class AssetRepositoryCustomImpl implements AssetRepositoryCustom {
                         Optional.ofNullable(assetSearch.getAssetName())
                                 .map(qAssetEntity.assetName::contains)
                                 .orElse(null),
-                        Optional.ofNullable(assetSearch.getMarket())
-                                .map(qAssetEntity.market::contains)
-                                .orElse(null),
                         Optional.ofNullable(assetSearch.getFavorite())
                                 .map(qAssetEntity.favorite::eq)
-                                .orElse(null),
-                        assetSearch.getPerFrom() != null && assetSearch.getPerTo() != null ?
-                                qAssetFinancialEntity.per.between(assetSearch.getPerFrom(), assetSearch.getPerTo())
-                                : null,
-                        assetSearch.getRoeFrom() != null && assetSearch.getPerTo() != null ?
-                                qAssetFinancialEntity.roe.between(assetSearch.getRoeFrom(), assetSearch.getRoeTo())
-                                : null
+                                .orElse(null)
                 )
-                .orderBy(Stream.of(
-                        Optional.ofNullable(pageable.getSort().getOrderFor(FinancialEntity_.PER))
-                                .map(order -> order.getDirection() == Sort.Direction.DESC ? qAssetFinancialEntity.per.desc() : qAssetFinancialEntity.per.asc())
-                                .orElse(null),
-                        Optional.ofNullable(pageable.getSort().getOrderFor(FinancialEntity_.ROE))
-                                .map(order -> order.getDirection() == Sort.Direction.DESC ? qAssetFinancialEntity.roe.desc() : qAssetFinancialEntity.roe.asc())
-                                .orElse(null),
-                        qAssetEntity.marketCap.desc()
-                        ).filter(Objects::nonNull)
-                        .toArray(OrderSpecifier[]::new)
-                );
+                .orderBy(qAssetEntity.marketCap.desc());
         // list
         List<AssetEntity> assetEntities = query.clone()
                 .limit(pageable.getPageSize())

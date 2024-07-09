@@ -66,7 +66,7 @@ class KisUsBrokerClientTest extends CoreTestSupport {
     @Test
     void getOrderBook() throws InterruptedException {
         // given
-        TradeAsset tradeAsset = TradeAsset.builder()
+        Asset tradeAsset = Asset.builder()
                 .assetId("US.TSLA")
                 .exchange("XNAS")
                 .build();
@@ -84,7 +84,7 @@ class KisUsBrokerClientTest extends CoreTestSupport {
     @Test
     void getMinuteOhlcvs() throws InterruptedException {
         // given
-        TradeAsset tradeAsset = TradeAsset.builder()
+        Asset tradeAsset = Asset.builder()
                 .assetId("US.TSLA")
                 .build();
 
@@ -99,7 +99,7 @@ class KisUsBrokerClientTest extends CoreTestSupport {
     @Test
     void getDailyOhlcvs() throws InterruptedException {
         // given
-        TradeAsset tradeAsset = TradeAsset.builder()
+        Asset tradeAsset = Asset.builder()
                 .assetId("US.TSLA")
                 .build();
 

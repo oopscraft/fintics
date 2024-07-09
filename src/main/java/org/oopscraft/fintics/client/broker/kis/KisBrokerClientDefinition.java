@@ -1,13 +1,14 @@
 package org.oopscraft.fintics.client.broker.kis;
 
 import org.oopscraft.fintics.client.broker.BrokerClient;
-import org.oopscraft.fintics.client.broker.KrBrokerClientDefinition;
+import org.oopscraft.fintics.client.broker.BrokerClientDefinition;
 import org.springframework.stereotype.Component;
 
+import java.time.ZoneId;
 import java.util.StringJoiner;
 
 @Component
-public class KisBrokerClientDefinition extends KrBrokerClientDefinition {
+public class KisBrokerClientDefinition implements BrokerClientDefinition {
 
     @Override
     public String getBrokerClientId() {
@@ -33,6 +34,16 @@ public class KisBrokerClientDefinition extends KrBrokerClientDefinition {
         template.add("appSecret=[Application Secret]");
         template.add("accountNo=[Account Number]");
         return template.toString();
+    }
+
+    @Override
+    public String getMarket() {
+        return "KR";
+    }
+
+    @Override
+    public ZoneId getTimezone() {
+        return ZoneId.of("Asia/Seoul");
     }
 
 }

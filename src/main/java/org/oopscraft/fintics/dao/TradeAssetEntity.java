@@ -3,7 +3,6 @@ package org.oopscraft.fintics.dao;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.arch4j.core.data.BaseEntity;
-import org.oopscraft.arch4j.core.data.converter.BooleanConverter;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -19,38 +18,34 @@ import java.math.BigDecimal;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class TradeAssetEntity extends BaseEntity {
 
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public static class Pk implements Serializable {
         private String tradeId;
         private String assetId;
     }
 
     @Id
-    @Column(name = "trade_id", length = 32)
+    @Column(name = "trade_id")
     private String tradeId;
 
     @Id
-    @Column(name = "asset_id", length = 32)
+    @Column(name = "asset_id")
     private String assetId;
 
-    @Column(name = "sort")
-    private Integer sort;
+    @Column(name = "previous_close")
+    private BigDecimal previousClose;
 
-    @Column(name = "enabled", length = 1)
-    @Convert(converter = BooleanConverter.class)
-    private boolean enabled;
+    @Column(name = "open")
+    private BigDecimal open;
 
-    @Column(name = "holding_weight")
-    private BigDecimal holdingWeight;
+    @Column(name = "close")
+    private BigDecimal close;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "asset_id", insertable = false, updatable = false)
-    private AssetEntity assetEntity;
-
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumns({
-            @JoinColumn(name = "trade_id", referencedColumnName = "trade_id"),
-            @JoinColumn(name = "asset_id", referencedColumnName = "asset_id")
-    })
-    private TradeAssetStatusEntity tradeAssetStatusEntity;
+    @Column(name = "message")
+    @Lob
+    private String message;
 
 }

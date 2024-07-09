@@ -3,6 +3,7 @@ package org.oopscraft.fintics.api.v1.dto;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.fintics.model.Asset;
+import org.oopscraft.fintics.model.AssetMeta;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -29,10 +30,13 @@ public class AssetResponse {
 
     private boolean favorite;
 
+    private String icon;
+
     @Builder.Default
     private List<LinkResponse> links = new ArrayList<>();
 
-    private FinancialResponse assetFinancial;
+    @Builder.Default
+    private List<AssetMetaResponse> assetMetas = new ArrayList<>();
 
     public static AssetResponse from(Asset asset) {
         return AssetResponse.builder()
@@ -43,10 +47,11 @@ public class AssetResponse {
                 .type(asset.getType())
                 .marketCap(asset.getMarketCap())
                 .favorite(asset.isFavorite())
+                .icon(asset.getIcon())
                 .links(LinkResponse.from(asset.getLinks()))
-                .assetFinancial(Optional.ofNullable(asset.getAssetFinancial())
-                        .map(FinancialResponse::from)
-                        .orElse(null))
+                .assetMetas(asset.getAssetMetas().stream()
+                        .map(AssetMetaResponse::from)
+                        .toList())
                 .build();
     }
 

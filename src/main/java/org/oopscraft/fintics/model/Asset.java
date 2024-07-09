@@ -1,16 +1,15 @@
 package org.oopscraft.fintics.model;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.fintics.dao.AssetEntity;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Data
 @SuperBuilder
@@ -32,8 +31,13 @@ public class Asset implements Serializable {
 
     private boolean favorite;
 
-    private Financial assetFinancial;
+    @Builder.Default
+    private List<AssetMeta> assetMetas = new ArrayList<>();
 
+    /**
+     * gets symbol
+     * @return symbol
+     */
     public String getSymbol() {
         return Optional.ofNullable(getAssetId())
                 .map(string -> string.split("\\."))
@@ -42,6 +46,18 @@ public class Asset implements Serializable {
                 .orElseThrow(() -> new RuntimeException(String.format("invalid assetId[%s]", getAssetId())));
     }
 
+    /**
+     * get asset icon
+     * @return icon url
+     */
+    public String getIcon() {
+        return IconFactory.getIcon(this);
+    }
+
+    /**
+     * gets asset link
+     * @return link url
+     */
     public List<Link> getLinks() {
         return LinkFactory.getLinks(this);
     }
@@ -56,13 +72,11 @@ public class Asset implements Serializable {
                 .marketCap(assetEntity.getMarketCap())
                 .favorite(assetEntity.isFavorite())
                 .build();
-        // financial
-        Financial assetFinancial = Optional.ofNullable(assetEntity.getFinancialEntity())
-                .map(Financial::from)
-                .orElse(Financial.builder()
-                        .assetId(asset.getAssetId())
-                        .build());
-        asset.setAssetFinancial(assetFinancial);
+        // asset metas
+        List<AssetMeta> assetMetas = assetEntity.getAssetMetaEntities().stream()
+                .map(AssetMeta::from)
+                .toList();
+        asset.setAssetMetas(assetMetas);
         // return
         return asset;
     }

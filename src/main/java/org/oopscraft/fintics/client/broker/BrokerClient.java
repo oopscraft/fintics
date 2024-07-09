@@ -39,12 +39,6 @@ public abstract class BrokerClient {
     public abstract boolean isOpened(LocalDateTime datetime) throws InterruptedException;
 
     /**
-     * returns broker assets
-     * @return assets
-     */
-    public abstract List<Asset> getAssets();
-
-    /**
      * returns minute ohlcvs
      * @param asset asset
      * @return minute ohlcvs
@@ -109,6 +103,11 @@ public abstract class BrokerClient {
      */
     public abstract Order amendOrder(Asset asset, Order order) throws InterruptedException;
 
+    /**
+     * convert to asset id
+     * @param symbol symbol
+     * @return asset id
+     */
     public final String toAssetId(String symbol) {
         return String.format("%s.%s", this.definition.getMarket(), symbol);
     }

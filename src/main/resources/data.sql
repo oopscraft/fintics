@@ -14,6 +14,8 @@ insert into `core_authority` (`authority_id`,`system_required`,`authority_name`)
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_SIMULATES_EDIT','Y','Simulates Edit API Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_TRADES','Y','Trades API Access Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_TRADES_EDIT','Y','Trades Edit API Authority');
+insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_BASKETS','Y','Baskets API Authority');
+insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_BASKETS_EDIT','Y','Baskets Edit API Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_STRATEGIES','Y','Strategies API Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_STRATEGIES_EDIT','Y','Strategies Edit API Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_BROKERS','Y','Brokers API Access Authority');
@@ -25,6 +27,8 @@ insert into `core_authority` (`authority_id`,`system_required`,`authority_name`)
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('TRADES_EDIT','Y','Trade Edit Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('ASSETS','Y','Assets Access Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('ASSETS_EDIT','Y','Assets Edit Authority');
+insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('BASKETS','Y','Baskets Access Authority');
+insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('BASKETS_EDIT','Y','Baskets Edit Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('STRATEGIES','Y','Strategies Access Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('STRATEGIES_EDIT','Y','Strategies Edit Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('BROKERS','Y','Brokers Access Authority');
@@ -48,6 +52,10 @@ insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`au
     ('ASSETS','Y','Assets Access Role','N','Y');
 insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
     ('ASSETS_EDIT','Y','Assets Edit Role','N','Y');
+insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
+    ('BASKETS','Y','Baskets Access Role','N','Y');
+insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
+    ('BASKETS_EDIT','Y','Baskets Edit Role','N','N');
 insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
     ('STRATEGIES','Y','Strategies Access Role','N','Y');
 insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
@@ -86,6 +94,12 @@ insert into `core_role_authority` (`role_id`,`authority_id`) values
 insert into `core_role_authority` (`role_id`,`authority_id`) values
     ('ASSETS_EDIT','ASSETS_EDIT'),
     ('ASSETS_EDIT','API_ASSETS_EDIT');
+insert into `core_role_authority` (`role_id`,`authority_id`) values
+    ('BASKETS','BASKETS'),
+    ('BASKETS','API_BASKETS');
+insert into `core_role_authority` (`role_id`,`authority_id`) values
+    ('BASKETS_EDIT','BASKETS_EDIT'),
+    ('BASKETS_EDIT','API_BASKETS_EDIT');
 insert into `core_role_authority` (`role_id`,`authority_id`) values
     ('STRATEGIES','STRATEGIES'),
     ('STRATEGIES','API_STRATEGIES');
@@ -127,27 +141,31 @@ insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name
 insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
     ('trades','ko','트레이드');
 insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`sort`,`icon`) values
-    ('strategies','Y',null,'Strategies','/strategies',3,'/static/image/icon-strategy.svg');
+    ('basket','Y',null,'Basket','/baskets',3,'/static/image/icon-basket.svg');
+insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
+    ('basket','ko','바스켓');
+insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`sort`,`icon`) values
+    ('strategies','Y',null,'Strategies','/strategies',4,'/static/image/icon-strategy.svg');
 insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
     ('strategies','ko','매매전략');
 insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`sort`,`icon`) values
-    ('brokers','Y',null,'Brokers','/brokers',4,'/static/image/icon-broker.svg');
+    ('brokers','Y',null,'Brokers','/brokers',5,'/static/image/icon-broker.svg');
 insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
     ('brokers','ko','브로커');
 insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`sort`,`icon`) values
-    ('assets','Y',null,'Assets','/assets',5,'/static/image/icon-asset.svg');
+    ('assets','Y',null,'Assets','/assets',6,'/static/image/icon-asset.svg');
 insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
     ('assets','ko','종목');
 insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`sort`,`icon`) values
-    ('orders','Y',null,'Orders','/orders',6,'/static/image/icon-order.svg');
+    ('orders','Y',null,'Orders','/orders',7,'/static/image/icon-order.svg');
 insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
     ('orders','ko','거래이력');
 insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`sort`,`icon`) values
-    ('simulates','Y',null,'Simulates','/simulates',7,'/static/image/icon-simulate.svg');
+    ('simulates','Y',null,'Simulates','/simulates',8,'/static/image/icon-simulate.svg');
 insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
     ('simulates','ko','시뮬레이션');
 insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`sort`,`icon`) values
-    ('data','Y',null,'Data','/data',8,'/static/image/icon-data.svg');
+    ('data','Y',null,'Data','/data',9,'/static/image/icon-data.svg');
 insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
     ('data','ko','데이터');
 insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`target`,`sort`,`icon`) values
@@ -183,6 +201,30 @@ insert into `fintics_broker`
     ('961eb9c68c9547ce9ae61bbe3be7f037','Korea Investment US Test','KIS_US',null),
     ('a135ee9a276f4edf81d6e1b6b9d31e39','Upbit Test','UPBIT',null);
 
+-- fintics_basket - 국내대형주
+insert into `fintics_basket`
+    (`basket_id`, `basket_name`) values
+    ('e5b2dda4ede54176b5e01eed7c4b9ed8','국내대형주');
+insert into `fintics_basket_asset`
+    (`basket_id`,`asset_id`,`enabled`, `holding_weight`)
+values
+    ('e5b2dda4ede54176b5e01eed7c4b9ed8','KR.122630','Y','20'),
+    ('e5b2dda4ede54176b5e01eed7c4b9ed8','KR.229200','Y','20'),
+    ('e5b2dda4ede54176b5e01eed7c4b9ed8','KR.005930','Y','20'),
+    ('e5b2dda4ede54176b5e01eed7c4b9ed8','KR.000660','Y','20');
+
+-- fintics_basket - 미국대형주
+insert into `fintics_basket`
+    (`basket_id`, `basket_name`) values
+    ('a920f8813c6f46fda2947cee1c8cfb1d','미국대형주');
+insert into `fintics_basket_asset`
+    (`basket_id`,`asset_id`,`enabled`, `holding_weight`)
+values
+    ('a920f8813c6f46fda2947cee1c8cfb1d','US.SPY','Y','20'),
+    ('a920f8813c6f46fda2947cee1c8cfb1d','US.QQQ','Y','20'),
+    ('a920f8813c6f46fda2947cee1c8cfb1d','US.AAPL','Y','20'),
+    ('a920f8813c6f46fda2947cee1c8cfb1d','US.MSFT','Y','20');
+
 -- fintics_strategy
 insert into `fintics_strategy`
     (`strategy_id`,`strategy_name`,`language`,`script`) values
@@ -190,39 +232,21 @@ insert into `fintics_strategy`
 
 -- fintics_trade: 한국투자증권 모의투자 - 국내
 insert into `fintics_trade`
-    (`trade_id`,`trade_name`,`enabled`,`interval`,`threshold`,`start_at`,`end_at`,`invest_amount`,`broker_id`,`strategy_id`,`strategy_variables`,`alarm_id`,`order_kind`) values
+    (`trade_id`,`trade_name`,`enabled`,`interval`,`threshold`,`start_at`,`end_at`,`invest_amount`,`broker_id`,`basket_id`,`strategy_id`,`strategy_variables`,`alarm_id`,`order_kind`) values
     ('06c228451ce0400fa57bb36f0568d7cb','한국투자증권 모의투자 - 국내','Y','60','2','09:00','15:30','1000000',
-     'ca5f55cd88694715bcb4c478710d9a68','7c94187b346f4727a0f2478fdc53064f', null, null, 'LIMIT');
-insert into `fintics_trade_asset`
-    (`trade_id`,`asset_id`,`enabled`, `holding_weight`)
-values
-    ('06c228451ce0400fa57bb36f0568d7cb','KR.122630','Y','20'),
-    ('06c228451ce0400fa57bb36f0568d7cb','KR.229200','Y','20'),
-    ('06c228451ce0400fa57bb36f0568d7cb','KR.005930','Y','20'),
-    ('06c228451ce0400fa57bb36f0568d7cb','KR.000660','Y','20');
+     'ca5f55cd88694715bcb4c478710d9a68','e5b2dda4ede54176b5e01eed7c4b9ed8','7c94187b346f4727a0f2478fdc53064f', null, null, 'LIMIT');
 
 -- fintics_trade: 한국투자증권 모의투자 - 미국
 insert into `fintics_trade`
-    (`trade_id`,`trade_name`,`enabled`,`interval`,`threshold`,`start_at`,`end_at`,`invest_amount`,`broker_id`,`strategy_id`,`strategy_variables`,`alarm_id`,`order_kind`) values
+    (`trade_id`,`trade_name`,`enabled`,`interval`,`threshold`,`start_at`,`end_at`,`invest_amount`,`broker_id`,`basket_id`,`strategy_id`,`strategy_variables`,`alarm_id`,`order_kind`) values
     ('7af6bc641eef4254b12dd9fa1d43384d','한국투자증권 모의투자 - 미국','Y','60','2','09:30','16:00','1000',
-     '961eb9c68c9547ce9ae61bbe3be7f037','7c94187b346f4727a0f2478fdc53064f', null, null, 'LIMIT');
-insert into `fintics_trade_asset`
-    (`trade_id`,`asset_id`,`enabled`, `holding_weight`)
-values
-    ('7af6bc641eef4254b12dd9fa1d43384d','US.SPY','Y','20'),
-    ('7af6bc641eef4254b12dd9fa1d43384d','US.QQQ','Y','20'),
-    ('7af6bc641eef4254b12dd9fa1d43384d','US.AAPL','Y','20'),
-    ('7af6bc641eef4254b12dd9fa1d43384d','US.MSFT','Y','20');
+     '961eb9c68c9547ce9ae61bbe3be7f037','a920f8813c6f46fda2947cee1c8cfb1d','7c94187b346f4727a0f2478fdc53064f', null, null, 'LIMIT');
 
 -- fintics_trade: 업비트 API(장시간 외 트레이드 테스트용)
 insert into `fintics_trade`
     (`trade_id`,`trade_name`,`enabled`,`interval`,`threshold`,`start_at`,`end_at`,`invest_amount`,`broker_id`,`strategy_id`,`strategy_variables`,`alarm_id`,`order_kind`) values
     ('81c6a451d6da49449faa2b5b7e66041b','코인놀이방(24시간 테스트용)','N','30','3','00:00','23:59','100000',
      'a135ee9a276f4edf81d6e1b6b9d31e39','7c94187b346f4727a0f2478fdc53064f', null, null, 'LIMIT');
-insert into `fintics_trade_asset`
-    (`trade_id`,`asset_id`,`enabled`, `holding_weight`) values
-    ('81c6a451d6da49449faa2b5b7e66041b','UPBIT.KRW-BTC','N','20'),
-    ('81c6a451d6da49449faa2b5b7e66041b','UPBIT.KRW-ETH','N','20');
 
 -- fintics_order
 INSERT INTO fintics_order
@@ -249,14 +273,14 @@ where broker_id in ('ca5f55cd88694715bcb4c478710d9a68','961eb9c68c9547ce9ae61bbe
 
 update fintics_strategy set script = '
 import org.oopscraft.fintics.model.Ohlcv
-import org.oopscraft.fintics.model.Profile
+import org.oopscraft.fintics.model.TradeAsset
 import org.oopscraft.fintics.model.Strategy
 import org.oopscraft.fintics.model.StrategyResult
 import org.oopscraft.fintics.model.StrategyResult.Action
 import org.oopscraft.fintics.trade.Tools
 import org.oopscraft.fintics.indicator.*
 
-def ohlcvs = profile.getOhlcvs(Ohlcv.Type.MINUTE, 1)
+def ohlcvs = tradeAsset.getOhlcvs(Ohlcv.Type.MINUTE, 1)
 def ohlcv = ohlcvs.first()
 def smas = Tools.indicators(ohlcvs, SmaContext.of(5));
 def sma = smas.first()
@@ -265,7 +289,7 @@ def message = """
 ohlcv: ${ohlcv}
 sma: ${sma}
 """
-tradeAssetStatus.setMessage(message)
+tradeAsset.setMessage(message)
 
 if (ohlcv.close > sma.value) {
     return StrategyResult.of(Action.BUY, 1.0, "buy")

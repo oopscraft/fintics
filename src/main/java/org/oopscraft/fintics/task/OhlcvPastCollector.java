@@ -4,14 +4,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.fintics.FinticsProperties;
 import org.oopscraft.fintics.client.ohlcv.OhlcvClient;
-import org.oopscraft.fintics.dao.OhlcvEntity;
-import org.oopscraft.fintics.dao.OhlcvRepository;
-import org.oopscraft.fintics.dao.TradeEntity;
-import org.oopscraft.fintics.dao.TradeRepository;
-import org.oopscraft.fintics.model.Asset;
-import org.oopscraft.fintics.model.Ohlcv;
-import org.oopscraft.fintics.model.Trade;
-import org.oopscraft.fintics.model.TradeAsset;
+import org.oopscraft.fintics.dao.*;
+import org.oopscraft.fintics.model.*;
+import org.oopscraft.fintics.service.BasketService;
+import org.oopscraft.fintics.service.TradeService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -28,16 +24,18 @@ import java.util.stream.Collectors;
 @Slf4j
 public class OhlcvPastCollector extends AbstractTask {
 
+    private final FinticsProperties finticsProperties;
+
     @PersistenceContext
     private final EntityManager entityManager;
 
     private final PlatformTransactionManager transactionManager;
 
-    private final TradeRepository tradeRepository;
+    private final TradeService tradeService;
+
+    private final BasketService basketService;
 
     private final OhlcvRepository assetOhlcvRepository;
-
-    private final FinticsProperties finticsProperties;
 
     private final OhlcvClient ohlcvClient;
 
@@ -51,20 +49,29 @@ public class OhlcvPastCollector extends AbstractTask {
             // expired date time
             LocalDateTime expiredDateTime = LocalDateTime.now()
                     .minusMonths(finticsProperties.getDataRetentionMonths());
-            // asset
-            List<TradeEntity> tradeEntities = tradeRepository.findAll();
-            for (TradeEntity tradeEntity : tradeEntities) {
-                Trade trade = Trade.from(tradeEntity);
-                for (TradeAsset tradeAsset : trade.getTradeAssets()) {
+            // loop trades
+            List<Trade> trades = tradeService.getTrades();
+            for (Trade trade : trades) {
+                // check basket id
+                if (trade.getBasketId() == null) {
+                    continue;
+                }
+                Basket basket = basketService.getBasket(trade.getBasketId()).orElse(null);
+                if (basket == null) {
+                    continue;
+                }
+                List<BasketAsset> basketAssets = basket.getBasketAssets();
+                for (BasketAsset basketAsset : basketAssets) {
                     try {
-                        if (ohlcvClient.isSupported(tradeAsset)) {
-                            collectPastDailyOhlcvs(tradeAsset, expiredDateTime);
-                            collectPastMinuteOhlcvs(tradeAsset, expiredDateTime);
+                        if (ohlcvClient.isSupported(basketAsset)) {
+                            collectPastDailyOhlcvs(basketAsset, expiredDateTime);
+                            collectPastMinuteOhlcvs(basketAsset, expiredDateTime);
                         }
                     } catch (Throwable e) {
                         log.warn(e.getMessage());
-                        sendSystemAlarm(this.getClass(), String.format("[%s] %s - %s", tradeEntity.getTradeName(), tradeAsset.getAssetName(), e.getMessage()));
+                        sendSystemAlarm(this.getClass(), String.format("[%s] %s - %s", trade.getTradeName(), basketAsset.getAssetName(), e.getMessage()));
                     }
+
                 }
             }
             log.info("OhlcvPastCollector - End collect past ohlcv");

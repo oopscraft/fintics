@@ -56,27 +56,6 @@ public class UpbitBrokerClient extends BrokerClient {
         return true;
     }
 
-    @Override
-    public List<Asset> getAssets() {
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .build();
-        RequestEntity<Void> requestEntity = RequestEntity
-                .get(API_URL + "/v1/market/all")
-                .build();
-        ResponseEntity<List<Map<String, String>>> responseEntity = restTemplate.exchange(requestEntity, new ParameterizedTypeReference<>() {
-        });
-        return responseEntity.getBody().stream()
-                .map(map -> Asset.builder()
-                        .assetId(toAssetId(map.get("market")))
-                        .assetName(map.get("english_name"))
-                        .market(getDefinition().getMarket())
-                        .exchange(getDefinition().getMarket())
-                        .type("CRYPTOCURRENCY")
-                        .build())
-                .collect(Collectors.toList());
-    }
-
     private synchronized static void sleep() throws InterruptedException {
         Thread.sleep(300);
     }

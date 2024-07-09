@@ -1,7 +1,10 @@
-package org.oopscraft.fintics.client.broker;
+package org.oopscraft.fintics.client.asset.market;
 
 import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
+import org.oopscraft.fintics.client.asset.AssetClient;
+import org.oopscraft.fintics.client.asset.AssetClientProperties;
 import org.oopscraft.fintics.model.Asset;
+import org.oopscraft.fintics.model.AssetMeta;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
@@ -26,39 +29,19 @@ import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
-import java.time.*;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * KR market abstract broker client
- * 한국 시장 증권사 연동 추상 클래스
- */
-public abstract class KrBrokerClient extends BrokerClient {
+public class KrAssetClient extends AssetClient {
 
-    /**
-     * constructor
-     * @param definition client definition
-     * @param properties client properties
-     */
-    public KrBrokerClient(BrokerClientDefinition definition, Properties properties) {
-        super(definition, properties);
-    }
+    private static final String MARKET_KR = "KR";
 
-    /**
-     * check exchange opened
-     * @param datetime datetime
-     * @return is open
-     */
-    @Override
-    public boolean isOpened(LocalDateTime datetime) throws InterruptedException {
-        // check weekend
-        DayOfWeek dayOfWeek = datetime.getDayOfWeek();
-        if (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
-            return false;
-        }
-        // default
-        return true;
+    public KrAssetClient(AssetClientProperties assetClientProperties) {
+        super(assetClientProperties);
     }
 
     /**
@@ -74,13 +57,21 @@ public abstract class KrBrokerClient extends BrokerClient {
         return assets;
     }
 
+    @Override
+    public List<AssetMeta> getAssetMetas(Asset asset) {
+        if ("STOCK".equals(asset.getType())) {
+            return getStockAssetMetas(asset);
+        }
+        return new ArrayList<>();
+    }
+
     /**
      * returns asset list by exchange type
      * 코스피, 코스닥 여부에 따라 다른 부분이 존재 함.
      * @param exchangeType exchange type
      * @return assets
      */
-    protected List<Asset> getStockAssetsByExchangeType(String exchangeType) {
+    List<Asset> getStockAssetsByExchangeType(String exchangeType) {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .readTimeout(30_000)
@@ -128,7 +119,6 @@ public abstract class KrBrokerClient extends BrokerClient {
         });
 
         // market, exchange
-        String market = getDefinition().getMarket();
         String exchange;
         switch(exchangeType) {
             case "11" -> exchange = "XKRX";
@@ -138,9 +128,9 @@ public abstract class KrBrokerClient extends BrokerClient {
 
         return rows.stream()
                 .map(row -> Asset.builder()
-                        .assetId(toAssetId(row.get("SHOTN_ISIN")))
+                        .assetId(toAssetId(MARKET_KR, row.get("SHOTN_ISIN")))
                         .assetName(row.get("KOR_SECN_NM"))
-                        .market(market)
+                        .market(MARKET_KR)
                         .exchange(exchange)
                         .type("STOCK")
                         .marketCap(toNumber(row.get("MARTP_TOTAMT"), null))
@@ -152,7 +142,7 @@ public abstract class KrBrokerClient extends BrokerClient {
      * returns ETF assets
      * @return ETF assets
      */
-    protected List<Asset> getEtfAssets() {
+    List<Asset> getEtfAssets() {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .readTimeout(30_000)
@@ -200,7 +190,6 @@ public abstract class KrBrokerClient extends BrokerClient {
         });
 
         // market, exchange
-        String market = getDefinition().getMarket();
         String exchange = "XKRX";
 
         // convert assets
@@ -215,9 +204,9 @@ public abstract class KrBrokerClient extends BrokerClient {
 
                     // return
                     return Asset.builder()
-                            .assetId(toAssetId(row.get("SHOTN_ISIN")))
+                            .assetId(toAssetId(MARKET_KR, row.get("SHOTN_ISIN")))
                             .assetName(row.get("KOR_SECN_NM"))
-                            .market(market)
+                            .market(MARKET_KR)
                             .exchange(exchange)
                             .type("ETF")
                             .marketCap(marketCap)
@@ -227,11 +216,177 @@ public abstract class KrBrokerClient extends BrokerClient {
     }
 
     /**
+     * returns asset meta list
+     * @param asset asset
+     * @return list of meta
+     */
+    List<AssetMeta> getStockAssetMetas(Asset asset) {
+        BigDecimal per = null;
+        BigDecimal roe = null;
+        BigDecimal roa = null;
+        BigDecimal dividendYield = null;
+
+        // check stock
+        if (!Objects.equals(asset.getType(), "STOCK")) {
+            return new ArrayList<>();
+        }
+
+        // request template
+        RestTemplate restTemplate = RestTemplateBuilder.create()
+                .insecure(true)
+                .readTimeout(30_000)
+                .build();
+        String url = "https://seibro.or.kr/websquare/engine/proworks/callServletService.jsp";
+
+        // sec info
+        Map<String,String> secInfo = getSecInfo(asset.getSymbol());
+        String isin = secInfo.get("ISIN");
+        String shotnIsin = secInfo.get("SHOTN_ISIN");
+        String issucoCustno = secInfo.get("ISSUCO_CUSTNO");
+
+        // calls service 1
+        try {
+            String w2xPath = "/IPORTAL/user/stock/BIP_CNTS02006V.xml";
+            HttpHeaders headers = createSeibroHeaders(w2xPath);
+            headers.setContentType(MediaType.APPLICATION_XML);
+            String action = "indtpSincView";
+            String task = "ksd.safe.bip.cnts.Stock.process.SecnInfoPTask";
+            Map<String,String> payloadMap = new LinkedHashMap<>(){{
+                put("W2XPATH", w2xPath);
+                put("ISIN", isin);
+                put("SHOTN_ISIN", shotnIsin);
+                put("ISSUCO_CUSTNO", issucoCustno);
+            }};
+            String payloadXml = createPayloadXml(action, task, payloadMap);
+            RequestEntity<String> requestEntity = RequestEntity.post(url)
+                    .headers(headers)
+                    .body(payloadXml);
+            // exchange
+            ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+            // response
+            String responseBody = responseEntity.getBody();
+            List<Map<String,String>> responseList = convertXmlToList(responseBody);
+            // find value
+            for(Map<String,String> row : responseList) {
+                String name = row.get("HB");
+                String value = row.get("CO_VALUE");
+                if (name.startsWith("PER")) {
+                    per = toNumber(value, null);
+                }
+                if (name.startsWith("ROE")) {
+                    roe = toNumber(value, null);
+                }
+                if (name.startsWith("배당")) {
+                    dividendYield = toNumber(value, null);
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        // calls service 2
+        try {
+            String w2xPath = "/IPORTAL/user/stock/BIP_CNTS02006V.xml";
+            HttpHeaders headers = createSeibroHeaders(w2xPath);
+            headers.setContentType(MediaType.APPLICATION_XML);
+            String action = "finaRatioList";
+            String task = "ksd.safe.bip.cnts.Company.process.EntrBySecIssuPTask";
+            ZonedDateTime now = ZonedDateTime.now(ZoneId.of("Asia/Seoul"));
+            Map<String,String> payloadMap = new LinkedHashMap<>(){{
+                put("W2XPATH", w2xPath);
+                put("ISIN", isin);
+                put("SHOTN_ISIN", shotnIsin);
+                put("ISSUCO_CUSTNO", issucoCustno);
+                put("STD_DT", now.format(DateTimeFormatter.ofPattern("yyyyMMdd")));
+                put("SETACC_YYMM3", now.minusYears(1).format(DateTimeFormatter.ofPattern("yyyy")));
+            }};
+            String payloadXml = createPayloadXml(action, task, payloadMap);
+            RequestEntity<String> requestEntity = RequestEntity.post(url)
+                    .headers(headers)
+                    .body(payloadXml);
+            // exchange
+            ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+            // response
+            String responseBody = responseEntity.getBody();
+            List<Map<String,String>> responseList = convertXmlToList(responseBody);
+            // find value
+            for(Map<String,String> row : responseList) {
+                String name = row.get("HB");
+                String value = row.get("A3");
+                if (name.startsWith("ROA")) {
+                    roa = toNumber(value, null);
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        // return
+        String assetId = asset.getAssetId();
+        Instant dateTime = Instant.now();
+        return List.of(
+                AssetMeta.builder()
+                        .assetId(assetId)
+                        .name("PER")
+                        .value(Objects.toString(per))
+                        .dateTime(dateTime)
+                        .build(),
+                AssetMeta.builder()
+                        .assetId(assetId)
+                        .name("ROE")
+                        .value(Objects.toString(roe))
+                        .dateTime(dateTime)
+                        .build(),
+                AssetMeta.builder()
+                        .assetId(assetId)
+                        .name("ROA")
+                        .value(Objects.toString(roa))
+                        .dateTime(dateTime)
+                        .build(),
+                AssetMeta.builder()
+                        .assetId(assetId)
+                        .name("Dividend Yield")
+                        .value(Objects.toString(dividendYield))
+                        .dateTime(dateTime)
+                        .build()
+        );
+    }
+
+    /**
+     * gets SEC info
+     * @param symbol symbol
+     * @return sec info
+     */
+    Map<String, String> getSecInfo(String symbol) {
+        RestTemplate restTemplate = RestTemplateBuilder.create()
+                .insecure(true)
+                .readTimeout(30_000)
+                .build();
+        String url = "https://seibro.or.kr/websquare/engine/proworks/callServletService.jsp";
+        String w2xPath = "/IPORTAL/user/stock/BIP_CNTS02006V.xml";
+        HttpHeaders headers = createSeibroHeaders(w2xPath);
+        headers.setContentType(MediaType.APPLICATION_XML);
+        String action = "secnInfoDefault";
+        String task = "ksd.safe.bip.cnts.Stock.process.SecnInfoPTask";
+        Map<String,String> payloadMap = new LinkedHashMap<>(){{
+            put("W2XPATH", w2xPath);
+            put("SHOTN_ISIN", symbol);
+        }};
+        String payloadXml = createPayloadXml(action, task, payloadMap);
+        RequestEntity<String> requestEntity = RequestEntity.post(url)
+                .headers(headers)
+                .body(payloadXml);
+        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+        String responseBody = responseEntity.getBody();
+        return convertXmlToMap(responseBody);
+    }
+
+    /**
      * returns seibro api header
      * @param w2xPath w2xPath
      * @return http headers for seibro
      */
-    private static HttpHeaders createSeibroHeaders(String w2xPath) {
+    HttpHeaders createSeibroHeaders(String w2xPath) {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Accept", "application/xml");
         headers.add("Origin","https://seibro.or.kr");
@@ -246,7 +401,7 @@ public abstract class KrBrokerClient extends BrokerClient {
      * @param payloadMap payload map
      * @return payload XML string
      */
-    protected static String createPayloadXml(String action, String task, Map<String,String> payloadMap) {
+    String createPayloadXml(String action, String task, Map<String,String> payloadMap) {
         // Create a new Document
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder ;
@@ -291,6 +446,38 @@ public abstract class KrBrokerClient extends BrokerClient {
         }catch(Throwable e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * convert seibro xml response to map
+     * @param responseXml response xml
+     * @return map
+     */
+    Map<String, String> convertXmlToMap(String responseXml) {
+        Map<String, String> map  = new LinkedHashMap<>();
+        InputSource inputSource;
+        StringReader stringReader;
+        try {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            stringReader = new StringReader(responseXml);
+            inputSource = new InputSource(stringReader);
+            Document document = builder.parse(inputSource);
+            XPathFactory xPathFactory = XPathFactory.newInstance();
+            XPath xPath = xPathFactory.newXPath();
+
+            XPathExpression expr = xPath.compile("/result/*");
+            NodeList propertyNodes = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
+            for(int i = 0; i < propertyNodes.getLength(); i++) {
+                Element propertyElement = (Element) propertyNodes.item(i);
+                String propertyName = propertyElement.getTagName();
+                String propertyValue = propertyElement.getAttribute("value");
+                map.put(propertyName, propertyValue);
+            }
+        }catch(Throwable e) {
+            throw new RuntimeException(e);
+        }
+        return map;
     }
 
     /**
@@ -343,43 +530,13 @@ public abstract class KrBrokerClient extends BrokerClient {
      * @param defaultValue default number
      * @return converted number
      */
-    public static BigDecimal toNumber(Object value, BigDecimal defaultValue) {
+    BigDecimal toNumber(Object value, BigDecimal defaultValue) {
         try {
             String valueString = value.toString().replace(",", "");
             return new BigDecimal(valueString);
         }catch(Throwable e){
             return defaultValue;
         }
-    }
-
-    /**
-     * 호가 단위 반환 (정책은 아래 주소를 참조)
-     * https://securities.koreainvestment.com/main/customer/notice/Notice.jsp?&cmd=TF04ga000002&currentPage=1&num=39930
-     */
-    @Override
-    public BigDecimal getTickPrice(Asset asset, BigDecimal price) throws InterruptedException {
-        // etf, etn, elw
-        if(Arrays.asList("ETF","ETN","ELW").contains(asset.getType())) {
-            return BigDecimal.valueOf(5);
-        }
-        // default fallback (stock)
-        BigDecimal priceTick = null;
-        if (price.compareTo(BigDecimal.valueOf(2_000)) <= 0) {
-            priceTick = BigDecimal.valueOf(1);
-        } else if (price.compareTo(BigDecimal.valueOf(5_000)) <= 0) {
-            priceTick = BigDecimal.valueOf(5);
-        } else if (price.compareTo(BigDecimal.valueOf(20_000)) <= 0) {
-            priceTick = BigDecimal.valueOf(10);
-        } else if (price.compareTo(BigDecimal.valueOf(50_000)) <= 0) {
-            priceTick = BigDecimal.valueOf(50);
-        } else if (price.compareTo(BigDecimal.valueOf(200_000)) <= 0) {
-            priceTick = BigDecimal.valueOf(100);
-        } else if (price.compareTo(BigDecimal.valueOf(500_000)) <= 0) {
-            priceTick = BigDecimal.valueOf(500);
-        } else {
-            priceTick = BigDecimal.valueOf(1_000);
-        }
-        return priceTick;
     }
 
 }

@@ -6,8 +6,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
+import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.client.broker.BrokerClientDefinition;
-import org.oopscraft.fintics.client.broker.UsBrokerClient;
 import org.oopscraft.fintics.model.*;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
  * 한국투자증권 해외 주식 broker client
  */
 @Slf4j
-public class KisUsBrokerClient extends UsBrokerClient {
+public class KisUsBrokerClient extends BrokerClient {
 
     private final static Object LOCK_OBJECT = new Object();
 
@@ -96,11 +96,21 @@ public class KisUsBrokerClient extends UsBrokerClient {
      */
     @Override
     public boolean isOpened(LocalDateTime datetime) throws InterruptedException {
-        // check us super (weekend and fixed holiday)
-        if (!super.isOpened(datetime)) {
+        // check weekend
+        DayOfWeek dayOfWeek = datetime.getDayOfWeek();
+        if (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
             return false;
         }
-        // broker agent is not providing api
+
+        // check holiday
+        Set<LocalDate> fixedHolidays = new HashSet<>();
+        int year = datetime.getYear();
+        fixedHolidays.add(LocalDate.of(year, Month.JANUARY, 1)); // New Year's Day
+        fixedHolidays.add(LocalDate.of(year, Month.JULY, 4));    // Independence Day
+        fixedHolidays.add(LocalDate.of(year, Month.DECEMBER, 25)); // Christmas Day
+        if (fixedHolidays.contains(datetime.toLocalDate())) {
+            return false;
+        }
         // default
         return true;
     }

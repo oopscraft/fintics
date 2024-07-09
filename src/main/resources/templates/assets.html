@@ -127,7 +127,7 @@
     <!-- start: title                           -->
     <!-- ====================================== -->
     <h1 id="title">
-        <img class="icon" th:src="@{/static/image/icon-asset.svg}" alt="asset"/>
+        <img class="icon" th:src="@{icon-basket.svg}" alt="asset"/>
         <span data-th-text="#{fintics.Asset}"></span>
     </h1>
     <!-- ====================================== -->
@@ -242,10 +242,8 @@
                     <th data-th-text="#{fintics.Asset.exchange}"></th>
                     <th class="text-align--center" data-th-text="#{fintics.Asset.type}"></th>
                     <th class="text-align--center" data-th-text="#{fintics.Asset.marketCap}"></th>
-                    <th class="text-align--center" data-th-text="#{fintics.Asset.per}"></th>
-                    <th class="text-align--center" data-th-text="#{fintics.Asset.roe}"></th>
-                    <th class="text-align--center" data-th-text="#{fintics.Asset.roa}"></th>
-                    <th></th>
+                    <th class="text-align--left" data-th-text="#{fintics.AssetMeta}"></th>
+                    <th data-th-text="#{fintics.Asset.links}"></th>
                 </tr>
                 </thead>
                 <tbody class="font-size--smaller">
@@ -270,14 +268,11 @@
                     <td class="text-align--center">
                         <span data-duice-bind="asset" data-duice-property="marketCap" data-duice-format="number"></span>
                     </td>
-                    <td class="text-align--center">
-                        <span data-duice-bind="asset" data-duice-property="per" data-duice-format="number"></span>
-                    </td>
-                    <td class="text-align--center">
-                        <span data-duice-bind="asset" data-duice-property="roe" data-duice-format="number"></span>
-                    </td>
-                    <td class="text-align--center">
-                        <span data-duice-bind="asset" data-duice-property="roa" data-duice-format="number"></span>
+                    <td class="text-align--left">
+                        <span data-duice-bind="asset.assetMetas" data-duice-loop="assetMeta,status">
+                            <span data-duice-bind="assetMeta" data-duice-property="name"></span>:
+                            <span data-duice-bind="assetMeta" data-duice-property="value"></span>
+                        </span>
                     </td>
                     <td class="text-align--right font-size--smaller">
                         <select data-duice-bind="asset"

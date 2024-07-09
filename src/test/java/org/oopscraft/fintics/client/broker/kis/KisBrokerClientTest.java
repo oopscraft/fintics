@@ -11,9 +11,7 @@ import org.oopscraft.fintics.model.*;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.Properties;
 
@@ -79,7 +77,7 @@ class KisBrokerClientTest extends CoreTestSupport {
     @Test
     void getOrderBook() throws InterruptedException {
         // given
-        TradeAsset tradeAsset = TradeAsset.builder()
+        Asset tradeAsset = Asset.builder()
                 .assetId("KR.005930")
                 .build();
 
@@ -91,12 +89,11 @@ class KisBrokerClientTest extends CoreTestSupport {
         assertNotNull(orderBook);
     }
 
-
     @Disabled
     @Test
     void getMinuteOhlcvs() throws InterruptedException {
         // given
-        TradeAsset tradeAsset = TradeAsset.builder()
+        Asset tradeAsset = Asset.builder()
                 .assetId("KR.005930")
                 .build();
 
@@ -111,7 +108,7 @@ class KisBrokerClientTest extends CoreTestSupport {
     @Test
     void getDailyOhlcvs() throws InterruptedException {
         // given
-        TradeAsset tradeAsset = TradeAsset.builder()
+        Asset tradeAsset = Asset.builder()
                 .assetId("KR.005930")
                 .build();
 

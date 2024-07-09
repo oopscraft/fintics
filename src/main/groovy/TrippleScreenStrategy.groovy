@@ -1,7 +1,7 @@
 import org.jetbrains.annotations.NotNull
 import org.oopscraft.fintics.indicator.*
 import org.oopscraft.fintics.model.Ohlcv
-import org.oopscraft.fintics.model.Profile
+import org.oopscraft.fintics.model.TradeAsset
 import org.oopscraft.fintics.model.StrategyResult
 import org.oopscraft.fintics.model.StrategyResult.Action
 import org.oopscraft.fintics.trade.Tools
@@ -80,7 +80,7 @@ class Analysis implements Analyzable {
     List<ChaikinOscillator> chaikinOscillators
     ChaikinOscillator chaikinOscillator
 
-    Analysis(Profile profile, Ohlcv.Type type, int period) {
+    Analysis(TradeAsset profile, Ohlcv.Type type, int period) {
         this.ohlcvs = profile.getOhlcvs(type, period)
         this.ohlcv = this.ohlcvs.first()
         this.sma20s = Tools.indicators(ohlcvs, SmaContext.of(20))

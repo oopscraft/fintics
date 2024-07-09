@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.client.broker;
+package org.oopscraft.fintics.client.asset.market;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -7,47 +7,33 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
+import org.oopscraft.fintics.client.asset.AssetClient;
+import org.oopscraft.fintics.client.asset.AssetClientProperties;
 import org.oopscraft.fintics.model.Asset;
+import org.oopscraft.fintics.model.AssetMeta;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
-import java.time.*;
+import java.math.RoundingMode;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
-public abstract class UsBrokerClient extends BrokerClient {
+public class UsAssetClient extends AssetClient {
+
+    private static final String MARKET_US = "US";
+
+    private static final Currency CURRENCY_USD = Currency.getInstance("USD");
 
     private final ObjectMapper objectMapper;
 
-    public UsBrokerClient(BrokerClientDefinition definition, Properties properties) {
-        super(definition, properties);
-        this.objectMapper = new ObjectMapper();
-    }
-
-    @Override
-    public boolean isOpened(LocalDateTime datetime) throws InterruptedException {
-        // check weekend
-        DayOfWeek dayOfWeek = datetime.getDayOfWeek();
-        if (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
-            return false;
-        }
-
-        // check holiday
-        Set<LocalDate> fixedHolidays = new HashSet<>();
-        int year = datetime.getYear();
-        fixedHolidays.add(LocalDate.of(year, Month.JANUARY, 1)); // New Year's Day
-        //fixedHolidays.add(LocalDate.of(year, Month.JULY, 4));    // Independence Day
-        fixedHolidays.add(LocalDate.of(year, Month.DECEMBER, 25)); // Christmas Day
-        if (fixedHolidays.contains(datetime.toLocalDate())) {
-            return false;
-        }
-
-        // default
-        return true;
+    public UsAssetClient(AssetClientProperties assetClientProperties, ObjectMapper objectMapper) {
+        super(assetClientProperties);
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -58,6 +44,11 @@ public abstract class UsBrokerClient extends BrokerClient {
         assets.addAll(getStockAssets("AMEX"));
         assets.addAll(getEtfAssets());
         return assets;
+    }
+
+    @Override
+    public List<AssetMeta> getAssetMetas(Asset asset) {
+        return getStockAssetMetas(asset);
     }
 
     protected List<Asset> getStockAssets(String exchange) {
@@ -96,9 +87,9 @@ public abstract class UsBrokerClient extends BrokerClient {
                         case "AMEX" -> exchangeMic = "XASE";
                     }
                     return Asset.builder()
-                            .assetId(toAssetId(row.get("symbol")))
+                            .assetId(toAssetId(MARKET_US, row.get("symbol")))
                             .assetName(row.get("name"))
-                            .market(getDefinition().getMarket())
+                            .market(MARKET_US)
                             .exchange(exchangeMic)
                             .type("STOCK")
                             .marketCap(new BigDecimal(StringUtils.defaultIfBlank(row.get("marketCap"), "0")))
@@ -140,9 +131,9 @@ public abstract class UsBrokerClient extends BrokerClient {
 
         List<Asset> assets = rows.stream()
                 .map(row -> Asset.builder()
-                        .assetId(toAssetId(row.get("symbol")))
+                        .assetId(toAssetId(MARKET_US, row.get("symbol")))
                         .assetName(row.get("companyName"))
-                        .market(getDefinition().getMarket())
+                        .market(MARKET_US)
                         .type("ETF")
                         .build())
                 .collect(Collectors.toList());
@@ -190,10 +181,141 @@ public abstract class UsBrokerClient extends BrokerClient {
                 }
             }
         } catch (Exception e) {
-            log.warn("Error fetching exchange information: {}", e.getMessage(), e);
+            throw new RuntimeException("Error fetching exchange information", e);
         }
         // return
         return exchangeMicMap;
+    }
+
+    List<AssetMeta> getStockAssetMetas(Asset asset) {
+        BigDecimal totalAssets = null;
+        BigDecimal totalEquity = null;
+        BigDecimal netIncome = null;
+        BigDecimal eps = null;
+        BigDecimal per = null;
+        BigDecimal roe = null;
+        BigDecimal roa = null;
+        BigDecimal dividendYield = null;
+
+        RestTemplate restTemplate = RestTemplateBuilder.create()
+                .insecure(true)
+                .readTimeout(30_000)
+                .build();
+        HttpHeaders headers = createNasdaqHeaders();
+
+        // calls summary api
+        String summaryUrl = String.format(
+                "https://api.nasdaq.com/api/quote/%s/summary?assetclass=stocks",
+                asset.getSymbol()
+        );
+        RequestEntity<Void> summaryRequestEntity = RequestEntity.get(summaryUrl)
+                .headers(headers)
+                .build();
+        ResponseEntity<String> summaryResponseEntity = restTemplate.exchange(summaryRequestEntity, String.class);
+        JsonNode summaryRootNode;
+        try {
+            summaryRootNode = objectMapper.readTree(summaryResponseEntity.getBody());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        JsonNode summaryDataNode = summaryRootNode.path("data").path("summaryData");
+        HashMap<String, Map<String,String>> summaryDataMap = objectMapper.convertValue(summaryDataNode, new TypeReference<>() {});
+
+        // price, market cap
+        for(String name : summaryDataMap.keySet()) {
+            Map<String, String> map = summaryDataMap.get(name);
+            String value = map.get("value");
+            if (name.equals("PERatio")) {
+                per = new BigDecimal(value);
+            }
+            if(name.equals("EarningsPerShare")) {
+                eps = convertCurrencyToNumber(value);
+            }
+            if(name.equals("Yield")) {
+                dividendYield = convertPercentageToNumber(value);
+            }
+        }
+
+        // calls financial api
+        String financialUrl = String.format(
+                "https://api.nasdaq.com/api/company/%s/financials?frequency=1", // frequency 2 is quarterly
+                asset.getSymbol()
+        );
+        RequestEntity<Void> financialRequestEntity = RequestEntity.get(financialUrl)
+                .headers(headers)
+                .build();
+        ResponseEntity<String> financialResponseEntity = restTemplate.exchange(financialRequestEntity, String.class);
+        JsonNode financialRootNode;
+        try {
+            financialRootNode = objectMapper.readTree(financialResponseEntity.getBody());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        JsonNode balanceSheetTableRowsNode = financialRootNode.path("data").path("balanceSheetTable").path("rows");
+        List<Map<String,String>> balanceSheetTableRows = objectMapper.convertValue(balanceSheetTableRowsNode, new TypeReference<>(){});
+        JsonNode incomeStatementTableRowsNode = financialRootNode.path("data").path("incomeStatementTable").path("rows");
+        List<Map<String,String>> incomeStatementTableRows = objectMapper.convertValue(incomeStatementTableRowsNode, new TypeReference<>(){});
+
+        for(Map<String,String> row : balanceSheetTableRows) {
+            String key = row.get("value1");
+            String value = row.get("value2");
+            if("Total Equity".equals(key)) {
+                totalEquity = convertCurrencyToNumber(value);
+            }
+            if("Total Assets".equals(key)) {
+                totalAssets = convertCurrencyToNumber(value);
+            }
+        }
+
+        for(Map<String,String> row : incomeStatementTableRows) {
+            String key = row.get("value1");
+            String value = row.get("value2");
+            if("Net Income".equals(key)) {
+                netIncome = convertCurrencyToNumber(value);
+            }
+        }
+
+        // roe
+        if(netIncome != null && totalEquity != null) {
+            roe = netIncome.divide(totalEquity, 8, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100));
+        }
+
+        // roa
+        if(netIncome != null && totalAssets != null) {
+            roa = netIncome.divide(totalAssets, 8, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100));
+        }
+
+        // return
+        String assetId = asset.getAssetId();
+        Instant dateTime = Instant.now();
+        return List.of(
+                AssetMeta.builder()
+                        .assetId(assetId)
+                        .name("PER")
+                        .value(Objects.toString(per))
+                        .dateTime(dateTime)
+                        .build(),
+                AssetMeta.builder()
+                        .assetId(assetId)
+                        .name("ROE")
+                        .value(Objects.toString(roe))
+                        .dateTime(dateTime)
+                        .build(),
+                AssetMeta.builder()
+                        .assetId(assetId)
+                        .name("ROA")
+                        .value(Objects.toString(roa))
+                        .dateTime(dateTime)
+                        .build(),
+                AssetMeta.builder()
+                        .assetId(assetId)
+                        .name("Dividend Yield")
+                        .value(Objects.toString(dividendYield))
+                        .dateTime(dateTime)
+                        .build()
+        );
     }
 
     private static HttpHeaders createNasdaqHeaders() {
@@ -225,6 +347,24 @@ public abstract class UsBrokerClient extends BrokerClient {
         headers.add("Sec-Fetch-Site", "none");
         headers.add("User-Agent","Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36");
         return headers;
+    }
+
+    public static BigDecimal convertCurrencyToNumber(String value) {
+        if(value != null) {
+            value = value.replace(CURRENCY_USD.getSymbol(), "");
+            value = value.replace(",","");
+            return new BigDecimal(value);
+        }
+        return null;
+    }
+
+    public static BigDecimal convertPercentageToNumber(String value) {
+        value = value.replace("%", "");
+        try {
+            return new BigDecimal(value);
+        }catch(Throwable e){
+            return null;
+        }
     }
 
 }

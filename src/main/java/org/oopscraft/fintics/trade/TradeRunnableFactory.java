@@ -26,7 +26,7 @@ public class TradeRunnableFactory {
 
     private final BrokerClientFactory brokerClientFactory;
 
-    private final StatusHandlerFactory statusHandlerFactory;
+    private final TradeAssetStoreFactory statusHandlerFactory;
 
     private final PlatformTransactionManager transactionManager;
 

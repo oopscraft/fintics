@@ -9,7 +9,7 @@ import org.oopscraft.fintics.indicator.ObvContext
 import org.oopscraft.fintics.indicator.RsiContext
 import org.oopscraft.fintics.model.*
 
-def getIndicatorData(Profile indicator, Ohlcv.Type ohlcvType, int ohlcvPeriod) {
+def getIndicatorData(TradeAsset indicator, Ohlcv.Type ohlcvType, int ohlcvPeriod) {
     Map<String,Collection> result = [:]
     result.shortMas = indicator.calculate(ohlcvType, ohlcvPeriod, EmaContext.of(10))
     result.longMas = indicator.calculate(ohlcvType, ohlcvPeriod, EmaContext.of(30))

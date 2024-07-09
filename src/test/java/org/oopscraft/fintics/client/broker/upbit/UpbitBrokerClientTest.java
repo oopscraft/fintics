@@ -30,8 +30,8 @@ class UpbitBrokerClientTest {
         return new UpbitBrokerClient(new UpbitBrokerClientDefinition(), properties);
     }
 
-    TradeAsset getTestTradeAsset() {
-        return TradeAsset.builder()
+    Asset getTestAsset() {
+        return Asset.builder()
                 .assetId("UPBIT.KRW-BTC")
                 .assetName("Bitcoin")
                 .build();
@@ -41,7 +41,7 @@ class UpbitBrokerClientTest {
     @Test
     void getOrderBook() throws Exception {
         // given
-        TradeAsset tradeAsset = getTestTradeAsset();
+        Asset tradeAsset = getTestAsset();
 
         // when
         OrderBook orderBook = getUpbitTradeClient().getOrderBook(tradeAsset);
@@ -54,7 +54,7 @@ class UpbitBrokerClientTest {
     @Test
     void getMinuteOhlcvs() throws Exception {
         // given
-        TradeAsset tradeAsset = getTestTradeAsset();
+        Asset tradeAsset = getTestAsset();
         LocalDateTime fromDateTime = LocalDateTime.now().minusWeeks(1);
         LocalDateTime toDateTime = LocalDateTime.now();
 
@@ -69,7 +69,7 @@ class UpbitBrokerClientTest {
     @Test
     void getDailyOhlcvs() throws Exception {
         // given
-        TradeAsset tradeAsset = getTestTradeAsset();
+        Asset tradeAsset = getTestAsset();
         LocalDate fromDate = LocalDate.now().minusYears(1);
         LocalDate toDate = LocalDate.now();
 

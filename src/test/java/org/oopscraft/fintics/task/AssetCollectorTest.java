@@ -6,17 +6,14 @@ import org.junit.jupiter.api.Test;
 import org.oopscraft.arch4j.core.support.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
 import org.oopscraft.fintics.dao.AssetEntity;
-import org.oopscraft.fintics.dao.BrokerEntity;
 import org.oopscraft.fintics.dao.TradeEntity;
-import org.oopscraft.fintics.model.Trade;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest(classes = FinticsConfiguration.class)
 @RequiredArgsConstructor
@@ -52,21 +49,22 @@ class AssetCollectorTest extends CoreTestSupport {
     @Test
     void saveAssets() {
         // given
-        entityManager.persist(BrokerEntity.builder()
-                .brokerId("test")
-                .brokerClientId("KIS")
-                .build());
-        Trade trade = Trade.builder()
-                .tradeId("test")
-                .brokerId("test")
-                .build();
         // when
-        assetCollector.saveAssets(trade);
+        assetCollector.saveAssets();
         // then
         List<AssetEntity> brokerAssetEntities = entityManager
                 .createQuery("select a from AssetEntity a", AssetEntity.class)
                 .getResultList();
         assertTrue(brokerAssetEntities.size() > 0);
+    }
+
+    @Disabled
+    @Test
+    void saveAssetMetas() {
+        // given
+        // when
+        assetCollector.saveAssetMetas();
+        // then
     }
 
 }

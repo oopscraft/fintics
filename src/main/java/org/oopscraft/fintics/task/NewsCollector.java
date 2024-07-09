@@ -11,12 +11,9 @@ import org.oopscraft.fintics.FinticsProperties;
 import org.oopscraft.fintics.client.news.NewsClient;
 import org.oopscraft.fintics.dao.NewsEntity;
 import org.oopscraft.fintics.dao.NewsRepository;
-import org.oopscraft.fintics.dao.TradeEntity;
-import org.oopscraft.fintics.dao.TradeRepository;
-import org.oopscraft.fintics.model.Asset;
-import org.oopscraft.fintics.model.News;
-import org.oopscraft.fintics.model.Trade;
-import org.oopscraft.fintics.model.TradeAsset;
+import org.oopscraft.fintics.model.*;
+import org.oopscraft.fintics.service.BasketService;
+import org.oopscraft.fintics.service.TradeService;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
@@ -40,7 +37,9 @@ public class NewsCollector extends AbstractTask {
 
     private final PlatformTransactionManager transactionManager;
 
-    private final TradeRepository tradeRepository;
+    private final TradeService tradeService;
+
+    private final BasketService basketService;
 
     private final NewsClient newsClient;
 
@@ -53,20 +52,22 @@ public class NewsCollector extends AbstractTask {
     public void collect() {
         try {
             log.info("NewsCollector - Start collect news.");
-            // asset
-            List<TradeEntity> tradeEntities = tradeRepository.findAll();
-            for (TradeEntity tradeEntity : tradeEntities) {
-                Trade trade = Trade.from(tradeEntity);
-                if (trade.isEnabled()) {
-                    for (TradeAsset tradeAsset : trade.getTradeAssets()) {
-                        try {
-                            if (tradeAsset.isEnabled()) {
-                                collectNews(tradeAsset);
-                            }
-                        } catch (Exception e) {
-                            log.warn(e.getMessage());
-                            sendSystemAlarm(this.getClass(), String.format("[%s] %s - %s", tradeEntity.getTradeName(), tradeAsset.getAssetName(), e.getMessage()));
-                        }
+            List<Trade> trades = tradeService.getTrades();
+            for (Trade trade : trades) {
+                if (trade.getBasketId() == null) {
+                    continue;
+                }
+                Basket basket = basketService.getBasket(trade.getBasketId()).orElse(null);
+                if (basket == null) {
+                    continue;
+                }
+                List<BasketAsset> basketAssets = basket.getBasketAssets();
+                for (BasketAsset basketAsset : basketAssets) {
+                    try {
+                        collectNews(basketAsset);
+                    } catch (Throwable e) {
+                        log.warn(e.getMessage());
+                        sendSystemAlarm(this.getClass(), String.format("[%s] %s - %s", trade.getTradeName(), basketAsset.getAssetName(), e.getMessage()));
                     }
                 }
             }

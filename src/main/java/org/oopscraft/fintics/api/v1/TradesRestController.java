@@ -52,7 +52,7 @@ public class TradesRestController {
      * @return trade info
      */
     @GetMapping("{tradeId}")
-    @Operation(description = "gets tarde")
+    @Operation(description = "gets trade")
     public ResponseEntity<TradeResponse> getTrade(
             @PathVariable("tradeId")
             @Parameter(description = "trade id")
@@ -88,6 +88,7 @@ public class TradesRestController {
                 .endTime(tradeRequest.getEndAt())
                 .investAmount(tradeRequest.getInvestAmount())
                 .brokerId(tradeRequest.getBrokerId())
+                .basketId(tradeRequest.getBasketId())
                 .strategyId(tradeRequest.getStrategyId())
                 .strategyVariables(tradeRequest.getStrategyVariables())
                 .orderKind(tradeRequest.getOrderKind())
@@ -95,17 +96,6 @@ public class TradesRestController {
                 .alarmOnError(tradeRequest.isAlarmOnError())
                 .alarmOnOrder(tradeRequest.isAlarmOnOrder())
                 .build();
-        List<TradeAsset> tradeAssets = tradeRequest.getTradeAssets().stream()
-                .map(tradeAssetRequest ->
-                        TradeAsset.builder()
-                                .tradeId(tradeAssetRequest.getTradeId())
-                                .assetId(tradeAssetRequest.getAssetId())
-                                .assetName(tradeAssetRequest.getAssetName())
-                                .enabled(tradeAssetRequest.isEnabled())
-                                .holdingWeight(tradeAssetRequest.getHoldingWeight())
-                                .build())
-                .collect(Collectors.toList());
-        trade.setTradeAssets(tradeAssets);
         Trade savedTrade = tradeService.saveTrade(trade);
         TradeResponse savedTradeResponse = TradeResponse.from(savedTrade);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedTradeResponse);
@@ -138,23 +128,13 @@ public class TradesRestController {
         trade.setEndTime(tradeRequest.getEndAt());
         trade.setInvestAmount(tradeRequest.getInvestAmount());
         trade.setBrokerId(tradeRequest.getBrokerId());
+        trade.setBasketId(tradeRequest.getBasketId());
         trade.setStrategyId(tradeRequest.getStrategyId());
         trade.setStrategyVariables(tradeRequest.getStrategyVariables());
         trade.setOrderKind(tradeRequest.getOrderKind());
         trade.setAlarmId(tradeRequest.getAlarmId());
         trade.setAlarmOnError(tradeRequest.isAlarmOnError());
         trade.setAlarmOnOrder(tradeRequest.isAlarmOnOrder());
-        List<TradeAsset> tradeAssets = tradeRequest.getTradeAssets().stream()
-                .map(tradeAssetRequest ->
-                        TradeAsset.builder()
-                                .tradeId(tradeAssetRequest.getTradeId())
-                                .assetId(tradeAssetRequest.getAssetId())
-                                .assetName(tradeAssetRequest.getAssetName())
-                                .enabled(tradeAssetRequest.isEnabled())
-                                .holdingWeight(tradeAssetRequest.getHoldingWeight())
-                                .build())
-                .collect(Collectors.toList());
-        trade.setTradeAssets(tradeAssets);
         Trade savedTrade = tradeService.saveTrade(trade);
         TradeResponse savedTradeResponse = TradeResponse.from(savedTrade);
         return ResponseEntity.ok(savedTradeResponse);
@@ -176,6 +156,23 @@ public class TradesRestController {
     ) {
         tradeService.deleteTrade(tradeId);
         return ResponseEntity.ok().build();
+    }
+
+    /**
+     * get trade profiles
+     * @param tradeId trade id
+     * @return profiles
+     */
+    @GetMapping("{tradeId}/assets")
+    public ResponseEntity<List<TradeAssetResponse>> getAssets(
+            @PathVariable("tradeId")
+            @Parameter(description = "trade id")
+                    String tradeId
+    ) {
+        List<TradeAssetResponse> tradeAssetResponses = tradeService.getTradeAssets(tradeId).stream()
+                .map(TradeAssetResponse::from)
+                .toList();
+        return ResponseEntity.ok(tradeAssetResponses);
     }
 
     /**

@@ -7,6 +7,7 @@ import org.oopscraft.arch4j.core.alarm.AlarmService;
 import org.oopscraft.fintics.client.broker.BrokerClientDefinition;
 import org.oopscraft.fintics.client.broker.BrokerClientDefinitionRegistry;
 import org.oopscraft.fintics.model.*;
+import org.oopscraft.fintics.service.BasketService;
 import org.oopscraft.fintics.service.BrokerService;
 import org.oopscraft.fintics.service.StrategyService;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +30,8 @@ public class TradeController {
 
     private final BrokerService brokerService;
 
+    private final BasketService basketService;
+
     private final StrategyService strategyService;
 
     private final BrokerClientDefinitionRegistry brokerClientDefinitionRegistry;
@@ -43,6 +46,8 @@ public class TradeController {
         modelAndView.addObject("brokers", brokers);
         List<BrokerClientDefinition> brokerClientDefinitions = brokerClientDefinitionRegistry.getBrokerClientDefinitions();
         modelAndView.addObject("brokerClientDefinitions", brokerClientDefinitions);
+        List<Basket> baskets = basketService.getBaskets(BasketSearch.builder().build(), Pageable.unpaged()).getContent();
+        modelAndView.addObject("baskets", baskets);
         List<Strategy> strategies = strategyService.getStrategies(StrategySearch.builder().build(), Pageable.unpaged()).getContent();
         modelAndView.addObject("strategies", strategies);
         modelAndView.addObject("simulateStatus", Simulate.Status.values());

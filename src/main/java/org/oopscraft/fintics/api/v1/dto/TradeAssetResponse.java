@@ -1,49 +1,57 @@
 package org.oopscraft.fintics.api.v1.dto;
 
 import lombok.*;
-import lombok.experimental.SuperBuilder;
 import org.oopscraft.fintics.model.TradeAsset;
 
 import java.math.BigDecimal;
-import java.util.Optional;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
-@EqualsAndHashCode(callSuper = true)
-@SuperBuilder
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class TradeAssetResponse extends AssetResponse {
+public class TradeAssetResponse {
 
     private String tradeId;
 
     private String assetId;
 
-    private String assetName;
+    private BigDecimal previousClose;
 
-    private boolean enabled;
+    private BigDecimal open;
 
-    private BigDecimal holdingWeight;
+    private BigDecimal close;
 
-    private TradeAssetStatusResponse tradeAssetStatusResponse;
+    private BigDecimal netChange;
 
-    public static TradeAssetResponse from(TradeAsset tradeAsset) {
+    private BigDecimal netChangePercentage;
+
+    private BigDecimal intraDayNetChange;
+
+    private BigDecimal intraDayNetChangePercentage;
+
+    private String message;
+
+    public static TradeAssetResponse from(TradeAsset profile) {
         return TradeAssetResponse.builder()
-                .tradeId(tradeAsset.getTradeId())
-                .assetId(tradeAsset.getAssetId())
-                .assetName(tradeAsset.getAssetName())
-                .links(LinkResponse.from(tradeAsset.getLinks()))
-                .enabled(tradeAsset.isEnabled())
-                .holdingWeight(tradeAsset.getHoldingWeight())
-                .exchange(tradeAsset.getExchange())
-                .type(tradeAsset.getType())
-                .links(LinkResponse.from(tradeAsset.getLinks()))
-                .assetFinancial(Optional.ofNullable(tradeAsset.getAssetFinancial())
-                        .map(FinancialResponse::from)
-                        .orElse(null))
-                .tradeAssetStatusResponse(Optional.ofNullable(tradeAsset.getTradeAssetStatus())
-                        .map(TradeAssetStatusResponse::from)
-                        .orElse(null))
+                .tradeId(profile.getTradeId())
+                .assetId(profile.getAssetId())
+                .previousClose(profile.getPreviousClose())
+                .open(profile.getOpen())
+                .close(profile.getClose())
+                .netChange(profile.getNetChange())
+                .netChangePercentage(profile.getNetChangePercentage())
+                .intraDayNetChange(profile.getIntraDayNetChange())
+                .intraDayNetChangePercentage(profile.getIntraDayNetChangePercentage())
+                .message(profile.getMessage())
                 .build();
+    }
+
+    public static List<TradeAssetResponse> from(List<TradeAsset> profiles) {
+        return profiles.stream()
+                .map(TradeAssetResponse::from)
+                .collect(Collectors.toList());
     }
 
 }
