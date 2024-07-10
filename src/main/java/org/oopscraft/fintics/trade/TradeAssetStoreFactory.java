@@ -16,6 +16,12 @@ public class TradeAssetStoreFactory {
 
     private final TradeAssetRepository profileRepository;
 
+    /**
+     * gets trade asset score
+     * @param destination stomp message destination
+     * @param persist persist or not
+     * @return trade asset store
+     */
     public TradeAssetStore getObject(String destination, boolean persist) {
         return TradeAssetStore.builder()
                 .messagingTemplate(messagingTemplate)

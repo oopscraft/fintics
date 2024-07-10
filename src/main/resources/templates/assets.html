@@ -127,7 +127,7 @@
     <!-- start: title                           -->
     <!-- ====================================== -->
     <h1 id="title">
-        <img class="icon" th:src="@{icon-basket.svg}" alt="asset"/>
+        <img class="icon" th:src="@{/static/image/icon-asset.svg}" alt="asset"/>
         <span data-th-text="#{fintics.Asset}"></span>
     </h1>
     <!-- ====================================== -->
@@ -237,12 +237,12 @@
                 <thead>
                 <tr>
                     <th class="text-align--center">-</th>
-                    <th data-th-text="#{fintics.Asset.assetId}"></th>
-                    <th data-th-text="#{fintics.Asset.assetName}"></th>
+                    <th data-th-text="#{fintics.Asset.assetId}" class="text-align--left"></th>
+                    <th data-th-text="#{fintics.Asset.assetName}" class="text-align--left"></th>
                     <th data-th-text="#{fintics.Asset.exchange}"></th>
-                    <th class="text-align--center" data-th-text="#{fintics.Asset.type}"></th>
-                    <th class="text-align--center" data-th-text="#{fintics.Asset.marketCap}"></th>
-                    <th class="text-align--left" data-th-text="#{fintics.AssetMeta}"></th>
+                    <th data-th-text="#{fintics.Asset.type}"></th>
+                    <th data-th-text="#{fintics.Asset.marketCap}"></th>
+                    <th data-th-text="#{fintics.AssetMeta}" class="text-align--left"></th>
                     <th data-th-text="#{fintics.Asset.links}"></th>
                 </tr>
                 </thead>
@@ -253,19 +253,21 @@
                               data-duice-execute="this.innerHTML=assetSearch._size*assetSearch._page + status.count;">
                         </span>
                     </td>
-                    <td>
-                        <span data-duice-bind="asset" data-duice-property="assetId" class="font-weight--bold"></span>
+                    <td class="text-align--left">
+                        <span data-duice-bind="asset" data-duice-property="assetId" class="text-align--left font-weight--bold"></span>
                     </td>
-                    <td>
+                    <td class="text-align--left">
+                        <img class="icon icon--circle font-size--large" data-duice-bind="asset" data-duice-property="icon" th:onerror="|this.onerror=null; this.src='@{/static/image/icon-asset.svg}';|" alt=""/>
+                        &nbsp;
                         <span data-duice-bind="asset" data-duice-property="assetName"></span>
                     </td>
-                    <td class="text-align--center">
+                    <td>
                         <span data-duice-bind="asset" data-duice-property="exchange" class="badge"></span>
                     </td>
-                    <td class="text-align--center">
+                    <td>
                         <span data-duice-bind="asset" data-duice-property="type" class="badge"></span>
                     </td>
-                    <td class="text-align--center">
+                    <td>
                         <span data-duice-bind="asset" data-duice-property="marketCap" data-duice-format="number"></span>
                     </td>
                     <td class="text-align--left">

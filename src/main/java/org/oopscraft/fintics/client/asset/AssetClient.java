@@ -4,6 +4,9 @@ import lombok.Getter;
 import org.oopscraft.fintics.model.Asset;
 import org.oopscraft.fintics.model.AssetMeta;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.List;
 
 public abstract class AssetClient {
@@ -16,6 +19,8 @@ public abstract class AssetClient {
     }
 
     public abstract List<Asset> getAssets();
+
+    public abstract boolean isSupported(Asset asset);
 
     public abstract List<AssetMeta> getAssetMetas(Asset asset);
 

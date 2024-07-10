@@ -118,7 +118,9 @@
                     </td>
                 </tr>
                 <tr data-duice-bind="baskets" data-duice-if="return baskets.length === 0;" hidden>
-                    <td colspan="100%" class="text-align--center">No Data</td>
+                    <td colspan="100%" class="text-align--center">
+                        <span data-th-text="#{web.global.itemNotFound(#{fintics.Basket})}"></span>
+                    </td>
                 </tr>
                 </tbody>
             </table>

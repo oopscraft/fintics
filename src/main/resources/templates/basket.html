@@ -37,6 +37,7 @@
                     marketCap: asset.marketCap,
                     enabled: false,
                     holdingWeight: 0,
+                    icon: asset.icon,
                     links: asset.links,
                     assetMetas: asset.assetMetas
                 });
@@ -248,8 +249,8 @@
                         <td>
                             <span data-duice-bind="basketAsset" data-duice-property="assetId"></span>
                         </td>
-                        <td class="text-align--left">
-                            <img class="icon font-size--large" data-duice-bind="basketAsset" data-duice-property="icon" th:onerror="|this.onerror=null; this.src='@{/static/image/icon-asset.svg}';|" alt=""/>
+                        <td class="text-align--left white-space--nowrap overflow--hidden text-overflow--ellipsis">
+                            <img class="icon icon--circle font-size--large" data-duice-bind="basketAsset" data-duice-property="icon" th:onerror="|this.onerror=null; this.src='@{/static/image/icon-asset.svg}';|" alt=""/>
                             &nbsp;
                             <span data-duice-bind="basketAsset" data-duice-property="assetName"></span>
                         </td>
@@ -294,8 +295,10 @@
                         </td>
                     </tr>
                     <tr data-duice-bind="basket.basketAssets"
-                        data-duice-execute="if(basket.basketAssets.length === 0) this.hidden=false;" hidden>
-                        <td colspan="100%" class="text-align--center">No Data</td>
+                        data-duice-if="return basket.basketAssets.length === 0;" hidden>
+                        <td colspan="100%" class="text-align--center">
+                            <span data-th-text="#{web.global.itemNotFound(#{fintics.BasketAsset})}"></span>
+                        </td>
                     </tr>
                     </tbody>
                 </table>

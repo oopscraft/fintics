@@ -39,7 +39,7 @@ public class BasketAssetEntity extends BaseEntity {
     @Column(name = "sort")
     private Integer sort;
 
-    @Column(name = "fixed")
+    @Column(name = "fixed", length = 1)
     @Convert(converter = BooleanConverter.class)
     private boolean fixed;
 
@@ -47,7 +47,7 @@ public class BasketAssetEntity extends BaseEntity {
     @Convert(converter = BooleanConverter.class)
     private boolean enabled;
 
-    @Column(name = "holding_weight")
+    @Column(name = "holding_weight", scale = 2)
     private BigDecimal holdingWeight;
 
     @ManyToOne(fetch = FetchType.EAGER)

@@ -11,6 +11,12 @@ public class LogAppenderFactory {
 
     private final SimpMessagingTemplate messagingTemplate;
 
+    /**
+     * gets object
+     * @param context context
+     * @param destination stomp messaging destination
+     * @return log appender
+     */
     public LogAppender getObject(Context context, String destination) {
         return LogAppender.builder()
                 .context(context)

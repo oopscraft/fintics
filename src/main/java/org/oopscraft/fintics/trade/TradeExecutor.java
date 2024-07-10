@@ -122,7 +122,7 @@ public class TradeExecutor {
                         dateTime,
                         Pageable.unpaged());
 
-                // trade asset
+                // creates trade asset
                 TradeAsset tradeAsset = TradeAsset.builder()
                         .tradeId(trade.getTradeId())
                         .assetId(basketAsset.getAssetId())
@@ -160,7 +160,6 @@ public class TradeExecutor {
                         .balanceAsset(balanceAsset)
                         .build();
                 strategyExecutor.setLog(log);
-
                 Instant startTime = Instant.now();
                 StrategyResult strategyResult = strategyExecutor.execute();
                 log.info("[{} - {}] strategy execution elapsed:{}", basketAsset.getAssetId(), basketAsset.getAssetName(), Duration.between(startTime, Instant.now()));

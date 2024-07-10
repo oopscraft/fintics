@@ -62,11 +62,13 @@ public class BasketService {
      */
     @Transactional
     public Basket saveBasket(Basket basket) {
-        BasketEntity basketEntity = basketRepository.findById(basket.getBasketId()).orElse(null);
-        if (basketEntity == null) {
+        BasketEntity basketEntity;
+        if (basket.getBasketId() == null) {
             basketEntity = BasketEntity.builder()
                     .basketId(IdGenerator.uuid())
                     .build();
+        } else {
+            basketEntity = basketRepository.findById(basket.getBasketId()).orElseThrow();
         }
         basketEntity.setBasketName(basket.getBasketName());
 

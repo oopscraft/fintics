@@ -38,6 +38,10 @@ public class AssetEntity extends BaseEntity {
     @Column(name = "market_cap", precision = 32)
     private BigDecimal marketCap;
 
+    @Column(name = "icon")
+    @Lob
+    private String icon;
+
     @Column(name = "favorite")
     @Convert(converter = BooleanConverter.class)
     private boolean favorite;

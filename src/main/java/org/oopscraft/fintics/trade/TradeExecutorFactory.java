@@ -24,6 +24,10 @@ public class TradeExecutorFactory {
 
     private final AlarmService alarmService;
 
+    /**
+     * gets trade executor
+     * @return trade executor
+     */
     public TradeExecutor getObject() {
         return TradeExecutor.builder()
                 .transactionManager(transactionManager)

@@ -40,9 +40,9 @@ public class TradeRunnable implements Runnable {
 
     private final BrokerClientFactory brokerClientFactory;
 
-    private final PlatformTransactionManager transactionManager;
+    private final TradeAssetStoreFactory tradeAssetStoreFactory;
 
-    private final TradeAssetStoreFactory statusHandlerFactory;
+    private final PlatformTransactionManager transactionManager;
 
     private final Logger log;
 
@@ -53,6 +53,18 @@ public class TradeRunnable implements Runnable {
     @Getter
     private boolean interrupted = false;
 
+    /**
+     * constructor
+     * @param tradeId trade id
+     * @param interval interval(seconds)
+     * @param tradeService trade service
+     * @param strategyService strategy service
+     * @param brokerService broker service
+     * @param tradeExecutor trade executor
+     * @param brokerClientFactory broker client factory
+     * @param tradeAssetStoreFactory trade asset store factory
+     * @param transactionManager transaction manager
+     */
     @Builder
     protected TradeRunnable(
         String tradeId,
@@ -62,7 +74,7 @@ public class TradeRunnable implements Runnable {
         BrokerService brokerService,
         TradeExecutor tradeExecutor,
         BrokerClientFactory brokerClientFactory,
-        TradeAssetStoreFactory statusHandlerFactory,
+        TradeAssetStoreFactory tradeAssetStoreFactory,
         PlatformTransactionManager transactionManager
     ){
         this.tradeId = tradeId;
@@ -72,13 +84,16 @@ public class TradeRunnable implements Runnable {
         this.brokerService = brokerService;
         this.tradeExecutor = tradeExecutor;
         this.brokerClientFactory = brokerClientFactory;
-        this.statusHandlerFactory = statusHandlerFactory;
+        this.tradeAssetStoreFactory = tradeAssetStoreFactory;
         this.transactionManager = transactionManager;
 
         // log
         this.log = (Logger) LoggerFactory.getLogger(tradeId);
     }
 
+    /**
+     * runs trade
+     */
     @Override
     public void run() {
         // logger
@@ -90,7 +105,7 @@ public class TradeRunnable implements Runnable {
 
         // status template
         String destination = String.format("/trades/%s/assets", tradeId);
-        TradeAssetStore statusHandler = statusHandlerFactory.getObject(destination, true);
+        TradeAssetStore statusHandler = tradeAssetStoreFactory.getObject(destination, true);
         tradeExecutor.setTradeAssetStore(statusHandler);
 
         // start loop

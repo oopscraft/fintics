@@ -26,7 +26,7 @@ public class TradeRunnableFactory {
 
     private final BrokerClientFactory brokerClientFactory;
 
-    private final TradeAssetStoreFactory statusHandlerFactory;
+    private final TradeAssetStoreFactory tradeAssetStoreFactory;
 
     private final PlatformTransactionManager transactionManager;
 
@@ -44,7 +44,7 @@ public class TradeRunnableFactory {
                 .brokerService(brokerService)
                 .tradeExecutor(tradeExecutorFactory.getObject())
                 .brokerClientFactory(brokerClientFactory)
-                .statusHandlerFactory(statusHandlerFactory)
+                .tradeAssetStoreFactory(tradeAssetStoreFactory)
                 .transactionManager(transactionManager)
                 .build();
     }

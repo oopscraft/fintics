@@ -34,10 +34,18 @@ public class StrategyExecutor {
     @Builder.Default
     private Logger log = (Logger) LoggerFactory.getLogger(StrategyExecutor.class);
 
+    /**
+     * sets logger
+     * @param log
+     */
     public void setLog(Logger log) {
         this.log = log;
     }
 
+    /**
+     * executes strategy script
+     * @return result of execution
+     */
     public StrategyResult execute() {
         ClassLoader classLoader = this.getClass().getClassLoader();
         GroovyClassLoader groovyClassLoader = new GroovyClassLoader(classLoader);
@@ -61,6 +69,11 @@ public class StrategyExecutor {
         return null;
     }
 
+    /**
+     * loads properties string to properties object
+     * @param propertiesString property string
+     * @return properties
+     */
     private Properties loadRuleConfigAsProperties(String propertiesString) {
         Properties properties = new Properties();
         if (propertiesString != null && !propertiesString.isBlank()) {

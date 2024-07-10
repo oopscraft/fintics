@@ -51,6 +51,10 @@ public class Order {
 
     private String errorMessage;
 
+    /**
+     * gets symbol
+     * @return symbol
+     */
     public String getSymbol() {
         return Optional.ofNullable(assetId)
                 .map(string -> string.split("\\."))

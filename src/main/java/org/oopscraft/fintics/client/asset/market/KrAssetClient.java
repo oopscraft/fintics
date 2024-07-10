@@ -58,6 +58,11 @@ public class KrAssetClient extends AssetClient {
     }
 
     @Override
+    public boolean isSupported(Asset asset) {
+        return asset.getAssetId().startsWith("KR.");
+    }
+
+    @Override
     public List<AssetMeta> getAssetMetas(Asset asset) {
         if ("STOCK".equals(asset.getType())) {
             return getStockAssetMetas(asset);

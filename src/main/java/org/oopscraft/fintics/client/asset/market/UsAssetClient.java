@@ -16,8 +16,11 @@ import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -47,11 +50,21 @@ public class UsAssetClient extends AssetClient {
     }
 
     @Override
+    public boolean isSupported(Asset asset) {
+        return asset.getAssetId().startsWith("US.");
+    }
+
+    @Override
     public List<AssetMeta> getAssetMetas(Asset asset) {
         return getStockAssetMetas(asset);
     }
 
-    protected List<Asset> getStockAssets(String exchange) {
+    /**
+     * gets stock assets
+     * @param exchange exchange code
+     * @return list of stock asset
+     */
+    List<Asset> getStockAssets(String exchange) {
         RestTemplate restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
                 .readTimeout(30_000)
@@ -78,6 +91,7 @@ public class UsAssetClient extends AssetClient {
             return o2MarketCap.compareTo(o1MarketCap);
         });
 
+        // return
         return rows.stream()
                 .map(row -> {
                     String exchangeMic = null;
@@ -147,6 +161,11 @@ public class UsAssetClient extends AssetClient {
         return assets;
     }
 
+    /**
+     * gets exchange map
+     * @param symbols list of symbols to retrieve
+     * @return exchange map
+     */
     Map<String, String> getExchangeMap(List<String> symbols) {
         Map<String, String> exchangeMicMap = new LinkedHashMap<>();
         final int BATCH_SIZE = 100;
@@ -187,138 +206,151 @@ public class UsAssetClient extends AssetClient {
         return exchangeMicMap;
     }
 
+    /**
+     * gets stock asset metas
+     * @param asset asset
+     * @return list of asset meta
+     */
     List<AssetMeta> getStockAssetMetas(Asset asset) {
-        BigDecimal totalAssets = null;
-        BigDecimal totalEquity = null;
-        BigDecimal netIncome = null;
-        BigDecimal eps = null;
-        BigDecimal per = null;
-        BigDecimal roe = null;
-        BigDecimal roa = null;
-        BigDecimal dividendYield = null;
-
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .readTimeout(30_000)
-                .build();
-        HttpHeaders headers = createNasdaqHeaders();
-
-        // calls summary api
-        String summaryUrl = String.format(
-                "https://api.nasdaq.com/api/quote/%s/summary?assetclass=stocks",
-                asset.getSymbol()
-        );
-        RequestEntity<Void> summaryRequestEntity = RequestEntity.get(summaryUrl)
-                .headers(headers)
-                .build();
-        ResponseEntity<String> summaryResponseEntity = restTemplate.exchange(summaryRequestEntity, String.class);
-        JsonNode summaryRootNode;
         try {
-            summaryRootNode = objectMapper.readTree(summaryResponseEntity.getBody());
-        } catch (JsonProcessingException e) {
+            BigDecimal totalAssets = null;
+            BigDecimal totalEquity = null;
+            BigDecimal netIncome = null;
+            BigDecimal eps = null;
+            BigDecimal per = null;
+            BigDecimal roe = null;
+            BigDecimal roa = null;
+            BigDecimal dividendYield = null;
+
+            RestTemplate restTemplate = RestTemplateBuilder.create()
+                    .insecure(true)
+                    .readTimeout(30_000)
+                    .build();
+            HttpHeaders headers = createNasdaqHeaders();
+
+            // calls summary api
+            String summaryUrl = String.format(
+                    "https://api.nasdaq.com/api/quote/%s/summary?assetclass=stocks",
+                    asset.getSymbol()
+            );
+            RequestEntity<Void> summaryRequestEntity = RequestEntity.get(summaryUrl)
+                    .headers(headers)
+                    .build();
+            ResponseEntity<String> summaryResponseEntity = restTemplate.exchange(summaryRequestEntity, String.class);
+            JsonNode summaryRootNode;
+            try {
+                summaryRootNode = objectMapper.readTree(summaryResponseEntity.getBody());
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+            JsonNode summaryDataNode = summaryRootNode.path("data").path("summaryData");
+            HashMap<String, Map<String,String>> summaryDataMap = objectMapper.convertValue(summaryDataNode, new TypeReference<>() {});
+
+            // price, market cap
+            for(String name : summaryDataMap.keySet()) {
+                Map<String, String> map = summaryDataMap.get(name);
+                String value = map.get("value");
+                if (name.equals("PERatio")) {
+                    per = new BigDecimal(value);
+                }
+                if(name.equals("EarningsPerShare")) {
+                    eps = convertCurrencyToNumber(value);
+                }
+                if(name.equals("Yield")) {
+                    dividendYield = convertPercentageToNumber(value);
+                }
+            }
+
+            // calls financial api
+            String financialUrl = String.format(
+                    "https://api.nasdaq.com/api/company/%s/financials?frequency=1", // frequency 2 is quarterly
+                    asset.getSymbol()
+            );
+            RequestEntity<Void> financialRequestEntity = RequestEntity.get(financialUrl)
+                    .headers(headers)
+                    .build();
+            ResponseEntity<String> financialResponseEntity = restTemplate.exchange(financialRequestEntity, String.class);
+            JsonNode financialRootNode;
+            try {
+                financialRootNode = objectMapper.readTree(financialResponseEntity.getBody());
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+            JsonNode balanceSheetTableRowsNode = financialRootNode.path("data").path("balanceSheetTable").path("rows");
+            List<Map<String,String>> balanceSheetTableRows = objectMapper.convertValue(balanceSheetTableRowsNode, new TypeReference<>(){});
+            JsonNode incomeStatementTableRowsNode = financialRootNode.path("data").path("incomeStatementTable").path("rows");
+            List<Map<String,String>> incomeStatementTableRows = objectMapper.convertValue(incomeStatementTableRowsNode, new TypeReference<>(){});
+
+            for(Map<String,String> row : balanceSheetTableRows) {
+                String key = row.get("value1");
+                String value = row.get("value2");
+                if("Total Equity".equals(key)) {
+                    totalEquity = convertCurrencyToNumber(value);
+                }
+                if("Total Assets".equals(key)) {
+                    totalAssets = convertCurrencyToNumber(value);
+                }
+            }
+
+            for(Map<String,String> row : incomeStatementTableRows) {
+                String key = row.get("value1");
+                String value = row.get("value2");
+                if("Net Income".equals(key)) {
+                    netIncome = convertCurrencyToNumber(value);
+                }
+            }
+
+            // roe
+            if(netIncome != null && totalEquity != null) {
+                roe = netIncome.divide(totalEquity, 8, RoundingMode.HALF_UP)
+                        .multiply(BigDecimal.valueOf(100));
+            }
+
+            // roa
+            if(netIncome != null && totalAssets != null) {
+                roa = netIncome.divide(totalAssets, 8, RoundingMode.HALF_UP)
+                        .multiply(BigDecimal.valueOf(100));
+            }
+
+            // return
+            String assetId = asset.getAssetId();
+            Instant dateTime = Instant.now();
+            return List.of(
+                    AssetMeta.builder()
+                            .assetId(assetId)
+                            .name("PER")
+                            .value(Objects.toString(per))
+                            .dateTime(dateTime)
+                            .build(),
+                    AssetMeta.builder()
+                            .assetId(assetId)
+                            .name("ROE")
+                            .value(Objects.toString(roe))
+                            .dateTime(dateTime)
+                            .build(),
+                    AssetMeta.builder()
+                            .assetId(assetId)
+                            .name("ROA")
+                            .value(Objects.toString(roa))
+                            .dateTime(dateTime)
+                            .build(),
+                    AssetMeta.builder()
+                            .assetId(assetId)
+                            .name("Dividend Yield")
+                            .value(Objects.toString(dividendYield))
+                            .dateTime(dateTime)
+                            .build()
+            );
+        } catch (Throwable e) {
             throw new RuntimeException(e);
         }
-        JsonNode summaryDataNode = summaryRootNode.path("data").path("summaryData");
-        HashMap<String, Map<String,String>> summaryDataMap = objectMapper.convertValue(summaryDataNode, new TypeReference<>() {});
-
-        // price, market cap
-        for(String name : summaryDataMap.keySet()) {
-            Map<String, String> map = summaryDataMap.get(name);
-            String value = map.get("value");
-            if (name.equals("PERatio")) {
-                per = new BigDecimal(value);
-            }
-            if(name.equals("EarningsPerShare")) {
-                eps = convertCurrencyToNumber(value);
-            }
-            if(name.equals("Yield")) {
-                dividendYield = convertPercentageToNumber(value);
-            }
-        }
-
-        // calls financial api
-        String financialUrl = String.format(
-                "https://api.nasdaq.com/api/company/%s/financials?frequency=1", // frequency 2 is quarterly
-                asset.getSymbol()
-        );
-        RequestEntity<Void> financialRequestEntity = RequestEntity.get(financialUrl)
-                .headers(headers)
-                .build();
-        ResponseEntity<String> financialResponseEntity = restTemplate.exchange(financialRequestEntity, String.class);
-        JsonNode financialRootNode;
-        try {
-            financialRootNode = objectMapper.readTree(financialResponseEntity.getBody());
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-        JsonNode balanceSheetTableRowsNode = financialRootNode.path("data").path("balanceSheetTable").path("rows");
-        List<Map<String,String>> balanceSheetTableRows = objectMapper.convertValue(balanceSheetTableRowsNode, new TypeReference<>(){});
-        JsonNode incomeStatementTableRowsNode = financialRootNode.path("data").path("incomeStatementTable").path("rows");
-        List<Map<String,String>> incomeStatementTableRows = objectMapper.convertValue(incomeStatementTableRowsNode, new TypeReference<>(){});
-
-        for(Map<String,String> row : balanceSheetTableRows) {
-            String key = row.get("value1");
-            String value = row.get("value2");
-            if("Total Equity".equals(key)) {
-                totalEquity = convertCurrencyToNumber(value);
-            }
-            if("Total Assets".equals(key)) {
-                totalAssets = convertCurrencyToNumber(value);
-            }
-        }
-
-        for(Map<String,String> row : incomeStatementTableRows) {
-            String key = row.get("value1");
-            String value = row.get("value2");
-            if("Net Income".equals(key)) {
-                netIncome = convertCurrencyToNumber(value);
-            }
-        }
-
-        // roe
-        if(netIncome != null && totalEquity != null) {
-            roe = netIncome.divide(totalEquity, 8, RoundingMode.HALF_UP)
-                    .multiply(BigDecimal.valueOf(100));
-        }
-
-        // roa
-        if(netIncome != null && totalAssets != null) {
-            roa = netIncome.divide(totalAssets, 8, RoundingMode.HALF_UP)
-                    .multiply(BigDecimal.valueOf(100));
-        }
-
-        // return
-        String assetId = asset.getAssetId();
-        Instant dateTime = Instant.now();
-        return List.of(
-                AssetMeta.builder()
-                        .assetId(assetId)
-                        .name("PER")
-                        .value(Objects.toString(per))
-                        .dateTime(dateTime)
-                        .build(),
-                AssetMeta.builder()
-                        .assetId(assetId)
-                        .name("ROE")
-                        .value(Objects.toString(roe))
-                        .dateTime(dateTime)
-                        .build(),
-                AssetMeta.builder()
-                        .assetId(assetId)
-                        .name("ROA")
-                        .value(Objects.toString(roa))
-                        .dateTime(dateTime)
-                        .build(),
-                AssetMeta.builder()
-                        .assetId(assetId)
-                        .name("Dividend Yield")
-                        .value(Objects.toString(dividendYield))
-                        .dateTime(dateTime)
-                        .build()
-        );
     }
 
-    private static HttpHeaders createNasdaqHeaders() {
+    /**
+     * creates nasdaq http headers
+     * @return http headers
+     */
+    HttpHeaders createNasdaqHeaders() {
         HttpHeaders headers = new HttpHeaders();
         headers.add("authority","api.nasdaq.com");
         headers.add("origin","https://www.nasdaq.com");
@@ -333,7 +365,11 @@ public class UsAssetClient extends AssetClient {
         return headers;
     }
 
-    private static HttpHeaders createYahooHeader() {
+    /**
+     * creates yahoo finance http headers
+     * @return http headers
+     */
+    HttpHeaders createYahooHeader() {
         HttpHeaders headers = new HttpHeaders();
         headers.add("authority"," query1.finance.yahoo.com");
         headers.add("Accept", "*/*");
@@ -349,7 +385,12 @@ public class UsAssetClient extends AssetClient {
         return headers;
     }
 
-    public static BigDecimal convertCurrencyToNumber(String value) {
+    /**
+     * converts currency string to number
+     * @param value currency string
+     * @return currency number
+     */
+    BigDecimal convertCurrencyToNumber(String value) {
         if(value != null) {
             value = value.replace(CURRENCY_USD.getSymbol(), "");
             value = value.replace(",","");
@@ -358,7 +399,12 @@ public class UsAssetClient extends AssetClient {
         return null;
     }
 
-    public static BigDecimal convertPercentageToNumber(String value) {
+    /**
+     * converts percentage string to number
+     * @param value percentage string
+     * @return percentage number
+     */
+    BigDecimal convertPercentageToNumber(String value) {
         value = value.replace("%", "");
         try {
             return new BigDecimal(value);

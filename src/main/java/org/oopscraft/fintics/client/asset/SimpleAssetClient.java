@@ -9,8 +9,12 @@ import org.oopscraft.fintics.model.AssetMeta;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @ConditionalOnProperty(prefix = "fintics", name = "asset-client.class-name", havingValue="org.oopscraft.fintics.client.asset.SimpleAssetClient")
@@ -28,6 +32,7 @@ public class SimpleAssetClient extends AssetClient {
     @Override
     public List<Asset> getAssets() {
         List<Asset> assets = new ArrayList<>();
+
         for(AssetClient assetClient : assetClients) {
             try {
                 assets.addAll(assetClient.getAssets());
@@ -39,15 +44,24 @@ public class SimpleAssetClient extends AssetClient {
     }
 
     @Override
+    public boolean isSupported(Asset asset) {
+        for(AssetClient assetClient : assetClients) {
+            if (assetClient.isSupported(asset)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
     public List<AssetMeta> getAssetMetas(Asset asset) {
         List<AssetMeta> assetMetas = new ArrayList<>();
-        for(AssetClient assetClient : assetClients) {
-            try {
+        for (AssetClient assetClient : assetClients) {
+            if (assetClient.isSupported(asset)) {
                 assetMetas.addAll(assetClient.getAssetMetas(asset));
-            } catch (Throwable e) {
-                log.warn(e.getMessage());
             }
         }
         return assetMetas;
     }
+
 }

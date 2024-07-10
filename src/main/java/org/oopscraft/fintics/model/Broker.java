@@ -17,6 +17,11 @@ public class Broker {
 
     private String brokerClientProperties;
 
+    /**
+     * from factory method
+     * @param brokerEntity broker entity
+     * @return broker
+     */
     public static Broker from(BrokerEntity brokerEntity) {
         return Broker.builder()
                 .brokerId(brokerEntity.getBrokerId())

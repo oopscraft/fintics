@@ -31,7 +31,3 @@ fintics:
     class-name: org.oopscraft.fintics.client.news.SimpleNewsClient
     properties:
       name: value
-  financial-client:
-    class-name: org.oopscraft.fintics.client.financial.SimpleFinancialClient
-    properties:
-      name: value

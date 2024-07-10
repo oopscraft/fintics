@@ -25,16 +25,22 @@ public class TradeAssetStore {
 
     private final TradeAssetRepository profileRepository;
 
-    public void save(TradeAsset profile) {
+    /**
+     * saves trade asset
+     * 1. sends stomp message to specific destination
+     * 2. if persist flag is true, save to database table
+     * @param tradeAsset trade asset to handle
+     */
+    public void save(TradeAsset tradeAsset) {
         // trim message
-        profile.setMessage(Optional.ofNullable(profile.getMessage())
+        tradeAsset.setMessage(Optional.ofNullable(tradeAsset.getMessage())
                 .map(String::trim)
                 .orElse(null));
 
         // send message
         String jsonString = null;
         try {
-            jsonString = objectMapper.writeValueAsString(profile);
+            jsonString = objectMapper.writeValueAsString(tradeAsset);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
@@ -43,12 +49,12 @@ public class TradeAssetStore {
         // persist entity
         if (this.persist) {
             TradeAssetEntity statusEntity = TradeAssetEntity.builder()
-                    .tradeId(profile.getTradeId())
-                    .assetId(profile.getAssetId())
-                    .previousClose(profile.getPreviousClose())
-                    .open(profile.getOpen())
-                    .close(profile.getClose())
-                    .message(profile.getMessage())
+                    .tradeId(tradeAsset.getTradeId())
+                    .assetId(tradeAsset.getAssetId())
+                    .previousClose(tradeAsset.getPreviousClose())
+                    .open(tradeAsset.getOpen())
+                    .close(tradeAsset.getClose())
+                    .message(tradeAsset.getMessage())
                     .build();
             profileRepository.save(statusEntity);
         }

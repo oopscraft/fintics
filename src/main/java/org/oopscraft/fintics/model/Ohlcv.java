@@ -41,6 +41,20 @@ public class Ohlcv {
     @Converter(autoApply = true)
     public static class TypeConverter extends AbstractEnumConverter<Type> {}
 
+    /**
+     * of factory method
+     * @param assetId asset id
+     * @param type ohlcv type
+     * @param dateTime date time
+     * @param timeZone time zone
+     * @param open open price
+     * @param high high price
+     * @param low low price
+     * @param close low close
+     * @param volume volume
+     * @param interpolated whether interpolated or not
+     * @return ohlcv
+     */
     public static Ohlcv of(String assetId, Ohlcv.Type type, LocalDateTime dateTime, ZoneId timeZone, double open, double high, double low, double close, double volume, boolean interpolated) {
         return Ohlcv.builder()
                 .assetId(assetId)
@@ -56,6 +70,11 @@ public class Ohlcv {
                 .build();
     }
 
+    /**
+     * from factory method
+     * @param ohlcvEntity ohlcv entity
+     * @return ohlcv
+     */
     public static Ohlcv from(OhlcvEntity ohlcvEntity) {
         return Ohlcv.builder()
                 .assetId(ohlcvEntity.getAssetId())
