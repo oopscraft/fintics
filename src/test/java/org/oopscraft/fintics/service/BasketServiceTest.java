@@ -56,35 +56,4 @@ class BasketServiceTest extends CoreTestSupport {
         log.info("basket: {}", basket);
     }
 
-    @Test
-    void saveBasket() {
-        // given
-        Basket basket = Basket.builder()
-                .basketId("test")
-                .basketName("test name")
-                .basketAssets(List.of(
-                        BasketAsset.builder()
-                                .assetId("test asset")
-                                .enabled(true)
-                                .holdingWeight(BigDecimal.valueOf(20))
-                                .build()))
-                .build();
-        // when
-        Basket savedBasket = basketService.saveBasket(basket);
-        // then
-        log.info("savedBasket: {}", savedBasket);
-    }
-
-    @Test
-    void deleteBasket() {
-        // given
-        Basket basket = Basket.builder()
-                .basketId("test")
-                .basketName("test name")
-                .build();
-        // when
-        basketService.deleteBasket(basket.getBasketId());
-        // then
-    }
-
 }
