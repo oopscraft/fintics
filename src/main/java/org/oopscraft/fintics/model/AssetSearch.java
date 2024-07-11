@@ -16,6 +16,8 @@ public class AssetSearch {
 
     private String market;
 
+    private String type;
+
     private Boolean favorite;
 
     private BigDecimal perFrom;

@@ -1,6 +1,5 @@
 package org.oopscraft.fintics.dao;
 
-import org.oopscraft.fintics.model.Asset;
 import org.oopscraft.fintics.model.Order;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -11,9 +10,14 @@ public class OrderSpecifications {
                 criteriaBuilder.equal(root.get(OrderEntity_.TRADE_ID), tradeId);
     }
 
-    public static Specification<OrderEntity> equalAssetId(String assetId) {
+    public static Specification<OrderEntity> likeAssetId(String assetId) {
         return ((root, query, criteriaBuilder) ->
-                criteriaBuilder.equal(root.get(OrderEntity_.ASSET_ID), assetId));
+                criteriaBuilder.equal(root.get(OrderEntity_.ASSET_ID), '%' + assetId + '%'));
+    }
+
+    public static Specification<OrderEntity> likeAssetName(String assetName) {
+        return ((root, query, criteriaBuilder) ->
+                criteriaBuilder.like(root.get(OrderEntity_.ASSET_NAME), '%' + assetName + '%'));
     }
 
     public static Specification<OrderEntity> equalType(Order.Type type) {

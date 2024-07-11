@@ -35,13 +35,13 @@ public class TradeAssetEntity extends BaseEntity {
     @Column(name = "asset_id")
     private String assetId;
 
-    @Column(name = "previous_close")
+    @Column(name = "previous_close", scale = 4)
     private BigDecimal previousClose;
 
-    @Column(name = "open")
+    @Column(name = "open", scale = 4)
     private BigDecimal open;
 
-    @Column(name = "close")
+    @Column(name = "close", scale = 4)
     private BigDecimal close;
 
     @Column(name = "message")

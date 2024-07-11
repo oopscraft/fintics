@@ -11,6 +11,8 @@ public class OrderSearch {
 
     private String assetId;
 
+    private String assetName;
+
     private Order.Type type;
 
     private Order.Result result;

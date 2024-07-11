@@ -14,6 +14,9 @@
             _size: 100,
             _count: 0
         });
+        duice.ObjectProxy.onPropertyChanged(assetSearch, () => {
+            getAssets();
+        });
         const assets = new duice.ArrayProxy([]);
 
         // ohlcv summary

@@ -41,6 +41,12 @@ public class AssetRepositoryCustomImpl implements AssetRepositoryCustom {
                         Optional.ofNullable(assetSearch.getAssetName())
                                 .map(qAssetEntity.assetName::contains)
                                 .orElse(null),
+                        Optional.ofNullable(assetSearch.getMarket())
+                                .map(qAssetEntity.market::eq)
+                                .orElse(null),
+                        Optional.ofNullable(assetSearch.getType())
+                                .map(qAssetEntity.type::eq)
+                                .orElse(null),
                         Optional.ofNullable(assetSearch.getFavorite())
                                 .map(qAssetEntity.favorite::eq)
                                 .orElse(null)

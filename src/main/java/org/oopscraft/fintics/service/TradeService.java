@@ -130,7 +130,7 @@ public class TradeService {
         specification = specification
                 .and(OrderSpecifications.equalTradeId(tradeId))
                 .and(Optional.ofNullable(assetId)
-                        .map(OrderSpecifications::equalAssetId)
+                        .map(OrderSpecifications::likeAssetId)
                         .orElse(null))
                 .and(Optional.ofNullable(type)
                         .map(OrderSpecifications::equalType)

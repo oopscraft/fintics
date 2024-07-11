@@ -317,9 +317,9 @@ def basePosition = variables['basePosition'] as BigDecimal
 StrategyResult strategyResult = null
 
 // analysis
-def tideAnalysis = new Analysis(profile, tideOhlcvType, tideOhlcvPeriod)
-def waveAnalysis = new Analysis(profile, waveOhlcvType, waveOhlcvPeriod)
-def rippleAnalysis = new Analysis(profile, rippleOhlcvType, rippleOhlcvPeriod)
+def tideAnalysis = new Analysis(tradeAsset, tideOhlcvType, tideOhlcvPeriod)
+def waveAnalysis = new Analysis(tradeAsset, waveOhlcvType, waveOhlcvPeriod)
+def rippleAnalysis = new Analysis(tradeAsset, rippleOhlcvType, rippleOhlcvPeriod)
 log.info("tide.momentum: {}", tideAnalysis.getMomentumScore())
 log.info("wave.momentum: {}", waveAnalysis.getMomentumScore())
 log.info("wave.volatility: {}", waveAnalysis.getVolatilityScore())
@@ -352,7 +352,7 @@ wave.mom:${waveAnalysis.getMomentumScore().getAverage()}|vol:${waveAnalysis.getV
 + rsi:${waveAnalysis.rsi.value}|sto:${waveAnalysis.stochasticSlow.slowK}|cci:${waveAnalysis.cci.value}|wil:${waveAnalysis.williamsR.value}
 ripple.mom:${rippleAnalysis.getMomentumScore().getAverage()}
 """
-tradeAssetStatus.setMessage(message)
+tradeAsset.setMessage(message)
 
 // wave volatility 상태인 경우
 if (waveAnalysis.getVolatilityScore() > 50) {

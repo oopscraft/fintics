@@ -59,6 +59,9 @@ public class AssetsRestController {
             @RequestParam(value = "market", required = false)
             @Parameter(name= "market", description = "US|KR|...")
                     String market,
+            @RequestParam(value = "type", required = false)
+            @Parameter(name = "type", description = "STOCK|ETF")
+                    String type,
             @RequestParam(value = "favorite", required = false)
             @Parameter(name = "favorite", description = "favorite")
                     Boolean favorite,
@@ -87,6 +90,7 @@ public class AssetsRestController {
                 .assetId(assetId)
                 .assetName(assetName)
                 .market(market)
+                .type(type)
                 .favorite(favorite)
                 .perFrom(perFrom)
                 .perTo(perTo)

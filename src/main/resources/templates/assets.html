@@ -7,6 +7,7 @@
     <script th:inline="javascript">
         const assetSearch = new duice.ObjectProxy({
             market: null,
+            type: null,
             key: 'assetName',
             value: null,
             favorite: null,
@@ -26,6 +27,9 @@
         duice.ObjectProxy.setDisable(assetSearch, 'roeTo', true);
         duice.ObjectProxy.setDisable(assetSearch, 'roaFrom', true);
         duice.ObjectProxy.setDisable(assetSearch, 'roaTo', true);
+        duice.ObjectProxy.onPropertyChanged(assetSearch, () => {
+            getAssets();
+        });
 
         const assets = new duice.ArrayProxy([]);
 
@@ -36,6 +40,9 @@
             let url = new URL(`${_apiUrl}/v1/assets`, document.location.origin);
             if (assetSearch.market != null) {
                 url.searchParams.append('market', assetSearch.market);
+            }
+            if (assetSearch.type != null) {
+                url.searchParams.append('type', assetSearch.type);
             }
             if (assetSearch.key && assetSearch.value) {
                 url.searchParams.append(assetSearch.key, assetSearch.value);
@@ -145,6 +152,13 @@
                     <option th:each="market : ${markets}" th:value="${market}" th:text="${market}"></option>
                 </select>
             </label>
+            <label class="grid-column--2 s__grid-column--12">
+                <select data-duice-bind="assetSearch" data-duice-property="type" class="width--100">
+                    <option value="" data-th-text="'- ' + #{fintics.Asset.type} + ' -'"></option>
+                    <option value="STOCK">STOCK</option>
+                    <option value="ETF">ETF</option>
+                </select>
+            </label>
             <label class="grid-column--2 s-grid-column-4">
                 <select class="width--100" data-duice-bind="assetSearch" data-duice-property="key">
                     <option value="assetName" th:text="#{fintics.Asset.assetName}"></option>
@@ -158,12 +172,12 @@
                 <input type="checkbox" data-duice-bind="assetSearch" data-duice-property="favorite"/>
                 <span data-th-text="#{fintics.Asset.favorite}"></span>
             </label>
-            <div class="grid-column--4"></div>
+            <div class="grid-column--2"></div>
             <div class="grid-column--3">
                 <div class="display--grid grid-template-columns--12">
                     <label class="grid-column--2">
                         <input type="checkbox" onclick="togglePerCheckbox(this);"/>
-                        <span data-th-text="#{fintics.Asset.per}"></span>
+                        <span data-th-text="#{fintics.AssetMeta.name.PER}"></span>
                     </label>
                     <label class="grid-column--5">
                         <input type="range" data-duice-bind="assetSearch" data-duice-property="perFrom" min="0" max="100" step="10" class="width--75 vertical-align--middle"/>
@@ -180,7 +194,7 @@
                 <div class="display--grid grid-template-columns--12">
                     <label class="grid-column--2">
                         <input type="checkbox" onclick="toggleRoeCheckbox(this);"/>
-                        <span data-th-text="#{fintics.Asset.roe}"></span>
+                        <span data-th-text="#{fintics.AssetMeta.name.ROE}"></span>
                     </label>
                     <label class="grid-column--5">
                         <input type="range" data-duice-bind="assetSearch" data-duice-property="roeFrom" min="0" max="100" step="10" class="width--75 vertical-align--middle"/>
@@ -197,7 +211,7 @@
                 <div class="display--grid grid-template-columns--12">
                     <label class="grid-column--2">
                         <input type="checkbox" onclick="toggleRoaCheckbox(this);"/>
-                        <span data-th-text="#{fintics.Asset.roa}"></span>
+                        <span data-th-text="#{fintics.AssetMeta.name.ROA}"></span>
                     </label>
                     <label class="grid-column--5">
                         <input type="range" data-duice-bind="assetSearch" data-duice-property="roaFrom" min="0" max="100" step="10" class="width--75 vertical-align--middle"/>

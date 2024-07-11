@@ -10,20 +10,14 @@
             assetId: null,
             type: null,
             result: null,
+            key: 'assetName',
+            value: null,
             _page: 0,
             _size: 20,
             _count: 0
         });
         duice.ObjectProxy.onPropertyChanged(orderSearch, (event) => {
-            // trade id changed, change trade assets
-            if(event.property === 'tradeId') {
-                let index = trades.findIndex(trade => trade.tradeId === event.value);
-                if(index > -1) {
-                    duice.ArrayProxy.assign(tradeAssets, trades[index].tradeAssets);
-                }else{
-                    duice.ArrayProxy.clear(tradeAssets);
-                }
-            }
+            getOrders();
         });
         const orders = new duice.ArrayProxy([]);
         const trades = new duice.ArrayProxy([]);
@@ -34,17 +28,20 @@
                 orderSearch._page = page;
             }
             let url = new URL(`${_apiUrl}/v1/orders`, document.location.origin);
-            if(orderSearch.tradeId) {
+            if (orderSearch.tradeId) {
                 url.searchParams.append('tradeId', orderSearch.tradeId);
             }
-            if(orderSearch.assetId) {
+            if (orderSearch.assetId) {
                 url.searchParams.append('assetId', orderSearch.assetId);
             }
-            if(orderSearch.type) {
+            if (orderSearch.type) {
                 url.searchParams.append('type', orderSearch.type);
             }
-            if(orderSearch.result) {
+            if (orderSearch.result) {
                 url.searchParams.append('result', orderSearch.result);
+            }
+            if (orderSearch.key && orderSearch.value) {
+                url.searchParams.append(orderSearch.key, orderSearch.value);
             }
             url.searchParams.append('_page', orderSearch._page);
             url.searchParams.append('_size', orderSearch._size);
@@ -108,16 +105,6 @@
                         <option value="" data-th-text="'- ' + #{fintics.Trade} + ' -'"></option>
                     </select>
                 </label>
-                <label class="grid-column--2 s__grid-column--12">
-                    <select class="width--100"
-                            data-duice-bind="orderSearch"
-                            data-duice-property="assetId"
-                            data-duice-option="tradeAssets"
-                            data-duice-option-value-property="assetId"
-                            data-duice-option-text-property="assetName">
-                        <option value="" data-th-text="'- ' + #{fintics.Asset} + ' -'"></option>
-                    </select>
-                </label>
                 <label class="grid-column--1 s__grid-column--12">
                     <select class="width--100" data-duice-bind="orderSearch" data-duice-property="type">
                         <option value="" data-th-text="'- ' + #{fintics.Order.type} + ' -'"></option>
@@ -132,7 +119,16 @@
                         <option value="FAILED">FAILED</option>
                     </select>
                 </label>
-                <div class="grid-column--5 s__grid-column--12 justify-self--end">
+                <label class="grid-column--1 s-grid-column-4">
+                    <select class="width--100" data-duice-bind="orderSearch" data-duice-property="key">
+                        <option value="assetName" th:text="#{fintics.Order.assetName}"></option>
+                        <option value="assetId" th:text="#{fintics.Order.assetId}"></option>
+                    </select>
+                </label>
+                <label class="grid-column--2 s-grid-column--8">
+                    <input class="width--100" type="text" data-duice-bind="orderSearch" data-duice-property="value"/>
+                </label>
+                <div class="grid-column--4 s__grid-column--12 justify-self--end">
                     <button type="submit" onclick="getOrders();">
                         <img class="icon" th:src="@{/static/image/icon-search.svg}" alt="search"/>
                         <span data-th-text="#{web.global.search}"></span>
@@ -145,7 +141,7 @@
             </div>
         </form>
         <div class="overflow-x--scroll">
-            <table class="width--100 text-align--center">
+            <table class="width--100">
                 <colgroup>
                     <col style="width:7em;"/>
                     <col style="width:10em;"/>
@@ -167,11 +163,11 @@
                     <th data-th-text="#{fintics.Order.type}"></th>
                     <th data-th-text="#{fintics.Trade.tradeName}"></th>
                     <th data-th-text="#{fintics.Asset.assetName}"></th>
-                    <th data-th-text="#{fintics.Order.quantity}"></th>
-                    <th data-th-text="#{fintics.Order.price}"></th>
+                    <th data-th-text="#{fintics.Order.quantity}" class="text-align--right"></th>
+                    <th data-th-text="#{fintics.Order.price}" class="text-align--right"></th>
                     <th data-th-text="#{fintics.StrategyResult}"></th>
-                    <th data-th-text="#{fintics.Order.purchasePrice}"></th>
-                    <th data-th-text="#{fintics.Order.realizedProfitAmount}"></th>
+                    <th data-th-text="#{fintics.Order.purchasePrice}" class="text-align--right"></th>
+                    <th data-th-text="#{fintics.Order.realizedProfitAmount}" class="text-align--right"></th>
                     <th data-th-text="#{fintics.Order.result}"></th>
                     <th data-th-text="#{fintics.Order.errorMessage}"></th>
                 </tr>
@@ -201,19 +197,19 @@
                     <td>
                         <span data-duice-bind="order" data-duice-property="assetName"></span>
                     </td>
-                    <td>
+                    <td class="text-align--right">
                         <span data-duice-bind="order" data-duice-property="quantity" data-duice-format="number"></span>
                     </td>
-                    <td>
+                    <td class="text-align--right">
                         <span data-duice-bind="order" data-duice-property="price" data-duice-format="number"></span>
                     </td>
                     <td class="display--flex padding--1px">
                         <textarea data-duice-bind="order" data-duice-execute="this.value=JSON.stringify(order.strategyResult,null,2);" class="height-100 width--100"></textarea>
                     </td>
-                    <td>
+                    <td class="text-align--right">
                         <span data-duice-bind="order" data-duice-property="purchasePrice" data-duice-format="number"></span>
                     </td>
-                    <td>
+                    <td class="text-align--right">
                         <span data-duice-bind="order" data-duice-property="realizedProfitAmount" data-duice-format="number"></span>
                     </td>
                     <td>

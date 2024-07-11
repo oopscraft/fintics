@@ -53,6 +53,9 @@ public class OrdersRestController {
             @RequestParam(value = "assetId", required = false)
             @Parameter(description = "asset id")
                     String assetId,
+            @RequestParam(value = "assetName", required = false)
+            @Parameter(description = "asset name")
+                    String assetName,
             @RequestParam(value = "type", required = false)
             @Parameter(description = "type")
                     Order.Type type,
@@ -66,6 +69,7 @@ public class OrdersRestController {
         OrderSearch orderSearch = OrderSearch.builder()
                 .tradeId(tradeId)
                 .assetId(assetId)
+                .assetName(assetName)
                 .type(type)
                 .result(result)
                 .build();

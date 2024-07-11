@@ -15,6 +15,12 @@ import java.util.Optional;
 @Repository
 public interface OrderRepository extends JpaRepository<OrderEntity, String>, JpaSpecificationExecutor<OrderEntity> {
 
+    /**
+     * finds order entities by order search
+     * @param orderSearch order search
+     * @param pageable pageable
+     * @return page of order entity
+     */
     default Page<OrderEntity> findAll(OrderSearch orderSearch, Pageable pageable) {
         // where
         Specification<OrderEntity> specification = Specification.where(null);
@@ -23,7 +29,10 @@ public interface OrderRepository extends JpaRepository<OrderEntity, String>, Jpa
                         .map(OrderSpecifications::equalTradeId)
                         .orElse(null))
                 .and(Optional.ofNullable(orderSearch.getAssetId())
-                        .map(OrderSpecifications::equalAssetId)
+                        .map(OrderSpecifications::likeAssetId)
+                        .orElse(null))
+                .and(Optional.ofNullable(orderSearch.getAssetName())
+                        .map(OrderSpecifications::likeAssetName)
                         .orElse(null))
                 .and(Optional.ofNullable(orderSearch.getType())
                         .map(OrderSpecifications::equalType)

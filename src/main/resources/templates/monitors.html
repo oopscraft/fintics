@@ -9,243 +9,221 @@
         Chart.defaults.font.size = 8;
         Chart.defaults.animation = false;
         const trades = new duice.ArrayProxy(/*[[${trades}]]*/[]);
-        const baskets = new duice.ArrayProxy(/*[[${baskets}]]*/[]);
+        const baskets = /*[[${baskets}]]*/[];
+
+        // creates monitor map
+        const monitorMap = new Map();
         trades.forEach(trade => {
-            // newses
-            trade['newses'] = new duice.ArrayProxy([]);
+            const monitor = new duice.ObjectProxy({
+                trade: trade,
+                dailyOhlcvsChart: null,
+                minuteOhlcvsChart: null,
+                newses: [],
+                basket: JSON.parse(JSON.stringify(baskets.find(it => it.basketId === trade.basketId) || {
+                    basketAssets: []
+                })),
+                balance: {},
+                /**
+                 * initialize
+                 */
+                initialize: function() {
+                    let _this = this;
+                    // creates chart
+                    this.dailyOhlcvsChart = _createDailyOhlcvsChart(`tradeDailyOhlcvsChart-${trade.tradeId}`);
+                    this.minuteOhlcvsChart = _createMinuteOhlcvsChart(`tradeMinuteOhlcvsChart-${trade.tradeId}`);
 
-            // basket
-            let basket = baskets.find(it => it.basketId === trade.basketId);
-            trade['basket'] = basket || new duice.ObjectProxy({
-                basketAssets: []
+                    // subscribes web socket
+                    _webSocketClient.subscribe({
+                        destination: `/trades/${_this.trade.tradeId}/logs`,
+                        listener: function(frame) {
+                            let tradeLog = document.getElementById(`tradeLog-${_this.trade.tradeId}`);
+                            if (tradeLog.value.length > 1024 * 1024) {
+                                tradeLog.value = '';
+                            }
+                            tradeLog.value += frame.body + '\n';
+                            tradeLog.scrollTop = tradeLog.scrollHeight;
+                        }
+                    });
+                    _webSocketClient.subscribe({
+                        destination: `/trades/${_this.trade.tradeId}/assets`,
+                        listener: function(frame) {
+                            let tradeAsset = JSON.parse(frame.body);
+                            _this.applyTradeAsset(tradeAsset);
+                        }
+                    });
+
+                    // refresh
+                    this.refresh();
+                },
+                /**
+                 * refresh
+                 */
+                refresh: function() {
+                    this.getDailyOhlcvsChart();
+                    this.getMinuteOhlcvsChart();
+                    this.getNewses();
+                    this.getTradeAssets();
+                    this.getBalance();
+                },
+                /**
+                 * gets daily ohlcvs chart
+                 */
+                getDailyOhlcvsChart: function() {
+                    this.dailyOhlcvsChart.options.scales.x.max = new Date();
+                    this.dailyOhlcvsChart.data.datasets.length = 0;
+                    const promises = this.basket.basketAssets
+                        .filter(basketAsset => basketAsset.enabled)
+                        .map(async basketAsset => {
+                            let url = new URL(`${_apiUrl}/v1/ohlcvs/${basketAsset.assetId}/daily`, document.location.origin);
+                            return _fetch(url, null, true)
+                                .then(response => response.json())
+                                .then(ohlcvs => {
+                                    let timeSeries = _createTimeSeries(ohlcvs);
+                                    return {
+                                        label: basketAsset.assetName,
+                                        data: timeSeries,
+                                        borderWidth: 1,
+                                        pointStyle: false
+                                    };
+                                });
+                        });
+                    Promise.all(promises).then(results => {
+                        results.forEach(dataset => this.dailyOhlcvsChart.data.datasets.push(dataset));
+                        this.dailyOhlcvsChart.update();
+                    });
+                },
+                /**
+                 * gets minute ohlcvs chart
+                 */
+                getMinuteOhlcvsChart: function() {
+                    this.minuteOhlcvsChart.options.scales.x.max = new Date();
+                    this.minuteOhlcvsChart.data.datasets.length = 0;
+                    // daily
+                    const promises = this.basket.basketAssets
+                        .filter(basketAsset => basketAsset.enabled)
+                        .map(async basketAsset => {
+                            let url = new URL(`${_apiUrl}/v1/ohlcvs/${basketAsset.assetId}/minute`, document.location.origin);
+                            return _fetch(url, null, true)
+                                .then(response => response.json())
+                                .then(ohlcvs => {
+                                    let timeSeries = _createTimeSeries(ohlcvs);
+                                    return {
+                                        label: basketAsset.assetName,
+                                        data: timeSeries,
+                                        borderWidth: 1,
+                                        pointStyle: false
+                                    };
+                                });
+                        });
+                    Promise.all(promises).then(results => {
+                        results.forEach(dataset => this.minuteOhlcvsChart.data.datasets.push(dataset));
+                        this.minuteOhlcvsChart.update();
+                    });
+                },
+                /**
+                 * gets newses
+                 */
+                getNewses: function() {
+                    let promises = this.basket.basketAssets.map(basketAsset => {
+                        let url = new URL(`${_apiUrl}/v1/newses/${basketAsset.assetId}`, document.location.origin);
+                        return _fetch(url, null, true)
+                            .then(response => response.json())
+                            .then(newses => {
+                                newses.forEach(it => {
+                                    it.assetId = basketAsset.assetId;
+                                    it.assetName = basketAsset.assetName;
+                                });
+                                return newses;
+                            });
+                    });
+                    Promise.all(promises).then(results => {
+                        let newses = [];
+                        results.forEach(result => {
+                            newses.push.apply(newses, result);
+                        });
+                        newses.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
+                        duice.ArrayProxy.assign(this.newses, newses);
+                    })
+                },
+                /**
+                 * gets trade assets
+                 */
+                getTradeAssets: function() {
+                    let url = new URL(`${_apiUrl}/v1/trades/${this.trade.tradeId}/assets`, document.location.origin);
+                    _fetch(url, null, true)
+                        .then(response => response.json())
+                        .then(tradeAssets => {
+                            tradeAssets.forEach(tradeAsset => {
+                                this.applyTradeAsset(tradeAsset);
+                            });
+                        });
+                },
+                /**
+                 * applies trade asset
+                 * @param tradeAsset trade asset
+                 */
+                applyTradeAsset: function(tradeAsset) {
+                    let basketAsset = this.basket.basketAssets.find(it => it.assetId === tradeAsset.assetId);
+                    if (basketAsset) {
+                        basketAsset.close = tradeAsset.close;
+                        basketAsset.netChange = tradeAsset.netChange;
+                        basketAsset.netChangePercentage = tradeAsset.netChangePercentage;
+                        basketAsset.intraDayNetChange = tradeAsset.intraDayNetChange;
+                        basketAsset.intraDayNetChangePercentage = tradeAsset.intraDayNetChangePercentage;
+                        basketAsset.message = tradeAsset.message;
+                    }
+                },
+                /**
+                 * gets balance
+                 */
+                getBalance: function() {
+                    let url = new URL(`${_apiUrl}/v1/trades/${this.trade.tradeId}/balance`, document.location.origin);
+                    _fetch(url, null, true)
+                        .then(response => response.json())
+                        .then(balance => {
+                            this.applyBalance(balance);
+                        });
+                },
+                /**
+                 * applies balance
+                 * @param balance balance
+                 */
+                applyBalance: function(balance) {
+                    duice.ObjectProxy.assign(this.balance, balance);
+                    balance.balanceAssets.forEach(balanceAsset => {
+                        let basketAsset = this.basket.basketAssets.find(it => it.assetId === balanceAsset.assetId);
+                        if (basketAsset) {
+                            basketAsset.quantity = balanceAsset.quantity;
+                            basketAsset.orderableQuantity = balanceAsset.orderableQuantity;
+                            basketAsset.purchasePrice = balanceAsset.purchasePrice;
+                            basketAsset.purchaseAmount = balanceAsset.purchaseAmount;
+                            basketAsset.valuationPrice = balanceAsset.valuationPrice;
+                            basketAsset.valuationAmount = balanceAsset.valuationAmount;
+                            basketAsset.profitAmount = balanceAsset.profitAmount;
+                            basketAsset.profitPercentage = balanceAsset.profitPercentage;
+                        }
+                    });
+                }
             });
-
-            // balance
-            trade['balance'] = new duice.ObjectProxy({});
+            // saves monitor to map
+            monitorMap.set(trade.tradeId, monitor);
         });
-
-        /**
-         * initializes trade daily chart
-         * @param tradeId trade id
-         */
-        function initializeTradeDailyOhlcvs(tradeId) {
-            let trade = trades.find(it => it.tradeId === tradeId);
-            trade.dailyOhlcvsChart = _createDailyOhlcvsChart(`tradeDailyOhlcvsChart-${trade.tradeId}`);
-        }
-
-        /**
-         * initializes trade minute ohlcv
-         * @param tradeId
-         */
-        function initializeTradeMinuteOhlcvs(tradeId) {
-            let trade = trades.find(it => it.tradeId === tradeId);
-            trade.minuteOhlcvsChart = _createMinuteOhlcvsChart(`tradeMinuteOhlcvsChart-${trade.tradeId}`);
-        }
-
-        /**
-         * gets trade daily ohlcvs
-         * @param tradeId trade id
-         */
-        function getTradeDailyOhlcvs(tradeId) {
-            let trade = trades.find(it => it.tradeId === tradeId);
-            let dailyOhlcvsChart = trade.dailyOhlcvsChart;
-            const now = new Date();
-            dailyOhlcvsChart.options.scales.x.max = now;
-            dailyOhlcvsChart.data.datasets.length = 0;
-            // daily
-            const promises = trade.basket.basketAssets
-                .filter(basketAsset => basketAsset.enabled)
-                .map(async basketAsset => {
-                    let url = new URL(`${_apiUrl}/v1/ohlcvs/${basketAsset.assetId}/daily`, document.location.origin);
-                    return _fetch(url, null, true)
-                        .then(response => response.json())
-                        .then(ohlcvs => {
-                            let timeSeries = _createTimeSeries(ohlcvs);
-                            return {
-                                label: basketAsset.assetName,
-                                data: timeSeries,
-                                borderWidth: 1,
-                                pointStyle: false
-                            };
-                        });
-                });
-            Promise.all(promises).then(results => {
-                results.forEach(dataset => dailyOhlcvsChart.data.datasets.push(dataset));
-                dailyOhlcvsChart.update();
-            });
-        }
-
-        /**
-         * gets trade minute ohlcvs
-         * @param tradeId trade id
-         */
-        function getTradeMinuteOhlcvs(tradeId) {
-            let trade = trades.find(it => it.tradeId === tradeId);
-            let minuteOhlcvsChart = trade.minuteOhlcvsChart;
-            const now = new Date();
-            minuteOhlcvsChart.options.scales.x.max = now;
-            minuteOhlcvsChart.data.datasets.length = 0;
-            // daily
-            const promises = trade.basket.basketAssets
-                .filter(basketAsset => basketAsset.enabled)
-                .map(async basketAsset => {
-                    let url = new URL(`${_apiUrl}/v1/ohlcvs/${basketAsset.assetId}/minute`, document.location.origin);
-                    return _fetch(url, null, true)
-                        .then(response => response.json())
-                        .then(ohlcvs => {
-                            let timeSeries = _createTimeSeries(ohlcvs);
-                            return {
-                                label: basketAsset.assetName,
-                                data: timeSeries,
-                                borderWidth: 1,
-                                pointStyle: false
-                            };
-                        });
-                });
-            Promise.all(promises).then(results => {
-                results.forEach(dataset => minuteOhlcvsChart.data.datasets.push(dataset));
-                minuteOhlcvsChart.update();
-            });
-        }
-
-        /**
-         * gets trade newses
-         * @param tradeId trade id
-         */
-        function getTradeNewses(tradeId) {
-            let trade = trades.find(it => it.tradeId === tradeId);
-            // news
-            let newsPromises = trade.basket.basketAssets.map(asset => {
-                let url = new URL(`${_apiUrl}/v1/newses/${asset.assetId}`, document.location.origin);
-                return _fetch(url, null, true)
-                    .then(response => response.json())
-                    .then(newses => {
-                        newses.forEach(it => {
-                            it.assetId = asset.assetId;
-                            it.assetName = asset.assetName;
-                        });
-                        return newses;
-                    });
-            });
-            Promise.all(newsPromises).then(results => {
-                let newses = [];
-                results.forEach(result => {
-                    newses.push.apply(newses, result);
-                });
-                newses.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
-                applyTradeNewses(tradeId, newses);
-            });
-        }
-
-        /**
-         * applies trade newses
-         * @param tradeId trade id
-         * @param newses array of news
-         */
-        function applyTradeNewses(tradeId, newses) {
-            let trade = trades.find(it => it.tradeId === tradeId);
-            if (trade) {
-                duice.ArrayProxy.assign(trade.newses, newses);
-            }
-        }
-
-        /**
-         * gets trade assets
-         * @param tradeId trade id
-         */
-        function getTradeAssets(tradeId) {
-            let url = new URL(`${_apiUrl}/v1/trades/${tradeId}/assets`, document.location.origin);
-            _fetch(url, null, true)
-                .then(response => response.json())
-                .then(tradeAssets => {
-                    tradeAssets.forEach(tradeAsset => {
-                        applyTradeAsset(tradeAsset);
-                    });
-                });
-        }
-
-        /**
-         * applies trade asset
-         * @param tradeAsset trade asset
-         */
-        function applyTradeAsset(tradeAsset) {
-            let trade = trades.find(it => it.tradeId === tradeAsset.tradeId);
-            if (trade) {
-                let basketAsset = trade.basket.basketAssets.find(it => it.assetId === tradeAsset.assetId);
-                if (basketAsset) {
-                    basketAsset.close = tradeAsset.close;
-                    basketAsset.netChange = tradeAsset.netChange;
-                    basketAsset.netChangePercentage = tradeAsset.netChangePercentage;
-                    basketAsset.intraDayNetChange = tradeAsset.intraDayNetChange;
-                    basketAsset.intraDayNetChangePercentage = tradeAsset.intraDayNetChangePercentage;
-                    basketAsset.message = tradeAsset.message;
-                }
-            }
-        }
-
-        /**
-         * gets trade balance
-         * @param tradeId trade id
-         */
-        function getTradeBalance(tradeId) {
-            let url = new URL(`${_apiUrl}/v1/trades/${tradeId}/balance`, document.location.origin);
-            _fetch(url, null, true)
-                .then(response => response.json())
-                .then(balance => {
-                    applyTradeBalance(tradeId, balance);
-                });
-        }
-
-        /**
-         * applies trade balance
-         * @param tradeId trade id
-         * @param balance balance
-         */
-        function applyTradeBalance(tradeId, balance) {
-            let trade = trades.find(it => it.tradeId === tradeId);
-            duice.ObjectProxy.assign(trade.balance, balance);
-            balance.balanceAssets.forEach(balanceAsset => {
-                let basketAsset = trade.basket.basketAssets.find(it => it.assetId === balanceAsset.assetId);
-                if (basketAsset) {
-                    basketAsset.quantity = balanceAsset.quantity;
-                    basketAsset.orderableQuantity = balanceAsset.orderableQuantity;
-                    basketAsset.purchasePrice = balanceAsset.purchasePrice;
-                    basketAsset.purchaseAmount = balanceAsset.purchaseAmount;
-                    basketAsset.valuationPrice = balanceAsset.valuationPrice;
-                    basketAsset.valuationAmount = balanceAsset.valuationAmount;
-                    basketAsset.profitAmount = balanceAsset.profitAmount;
-                    basketAsset.profitPercentage = balanceAsset.profitPercentage;
-                }
-            });
-        }
 
         /**
          * initializes all trade monitors
          */
-        function initializeTradeMonitors() {
-            trades.forEach(trade => {
-                // daily chart
-                initializeTradeDailyOhlcvs(trade.tradeId);
-                // minute chart
-                initializeTradeMinuteOhlcvs(trade.tradeId);
+        function initializeMonitors() {
+            monitorMap.forEach((monitor, tradeId) => {
+                  monitor.initialize();
             });
         }
 
         /**
          * gets all trade monitors
          */
-        function getTradeMonitors() {
-            trades.forEach(trade => {
-                // daily ohlcvs
-                getTradeDailyOhlcvs(trade.tradeId);
-                // minute ohlcvs
-                getTradeMinuteOhlcvs(trade.tradeId);
-                // new newses
-                getTradeNewses(trade.tradeId);
-                // status
-                getTradeAssets(trade.tradeId);
-                // new balance
-                getTradeBalance(trade.tradeId);
+        function refreshMonitors() {
+            monitorMap.forEach((monitor, tradeId) => {
+                monitor.refresh();
             });
         }
 
@@ -263,8 +241,8 @@
         document.addEventListener('DOMContentLoaded', () => {
             let tabItems = trades.map(trade => {
                 return duice.tabItem(
-                    document.getElementById(`tradeTabButton-${trade.tradeId}`),
-                    document.getElementById(`tradeTabContent-${trade.tradeId}`),
+                    document.getElementById(`monitorTabButton-${trade.tradeId}`),
+                    document.getElementById(`monitorTabContent-${trade.tradeId}`),
                     () => {}
                 );
             });
@@ -272,12 +250,12 @@
             tabFolder.setActive(0);
 
             // initialize
-            initializeTradeMonitors();
+            initializeMonitors();
 
             // refresh
-            getTradeMonitors();
+            refreshMonitors();
             setInterval(function() {
-                getTradeMonitors();
+                refreshMonitors();
             }, 1000*60);
         });
     </script>
@@ -307,7 +285,7 @@
     <!-- start: tab index                       -->
     <!-- ====================================== -->
     <div id="tabIndex" class="display--flex flex-wrap--nowrap overflow-x--scroll gap--1px margin-bottom--1px margin-top--1em">
-        <button th:each="trade : ${trades}" th:id="|tradeTabButton-${trade.tradeId}|" type="button" class="tab" style="flex-shrink:0;">
+        <button th:each="trade : ${trades}" th:id="|monitorTabButton-${trade.tradeId}|" type="button" class="tab" style="flex-shrink:0;">
             <img class="icon" th:src="@{/static/image/icon-trade.svg}" alt="simulate"/>
             <span data-th-text="${trade.tradeName}"></span>
         </button>
@@ -319,27 +297,7 @@
     <!-- ================================== -->
     <!-- start: trade                       -->
     <!-- ================================== -->
-    <div th:each="trade : ${trades}" th:id="|tradeTabContent-${trade.tradeId}|" class="grid-column--12 border--1 padding--1em">
-        <script th:inline="javascript">
-            _webSocketClient.subscribe({
-                destination: '/trades/' + [[${trade.tradeId}]] + '/logs',
-                listener: function(frame) {
-                    let tradeLog = document.getElementById('tradeLog-' + [[${trade.tradeId}]]);
-                    if (tradeLog.value.length > 1024 * 1024) {
-                        tradeLog.value = '';
-                    }
-                    tradeLog.value += frame.body + '\n';
-                    tradeLog.scrollTop = tradeLog.scrollHeight;
-                }
-            });
-            _webSocketClient.subscribe({
-                destination: '/trades/' + [[${trade.tradeId}]] + '/assets',
-                listener: function(frame) {
-                    let tradeAsset = JSON.parse(frame.body);
-                    applyTradeAsset(tradeAsset);
-                }
-            });
-        </script>
+    <div th:each="trade : ${trades}" th:id="|monitorTabContent-${trade.tradeId}|" class="grid-column--12 border--1 padding--1em">
         <h2>
             <img class="icon" th:src="@{/static/image/icon-trade.svg}" alt="trade"/>
             <span data-th-text="${trade.tradeName}"></span>
@@ -389,7 +347,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:data-duice-bind="|trades.find(it => it.tradeId === '${trade.tradeId}').newses|" data-duice-loop="news,status" class="font-size--smaller">
+                    <tr th:data-duice-bind="|monitorMap.get('${trade.tradeId}').newses|" data-duice-loop="news,status" class="font-size--smaller">
                         <td data-duice-bind="news" data-duice-property="dateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
                         <td data-duice-bind="news" data-duice-property="assetName"></td>
                         <td>
@@ -399,8 +357,8 @@
                         <td data-duice-bind="news" data-duice-property="sentiment" class="text-align--center"></td>
                         <td data-duice-bind="news" data-duice-property="confidence" class="text-align--center"></td>
                     </tr>
-                    <tr th:data-duice-bind="|trades.find(it => it.tradeId === '${trade.tradeId}').newses|"
-                        th:data-duice-if="|return trades.find(it => it.tradeId === '${trade.tradeId}').newses.length < 1|"
+                    <tr th:data-duice-bind="|monitorMap.get('${trade.tradeId}').newses|"
+                        th:data-duice-if="|return monitorMap.get('${trade.tradeId}').newses.length < 1|"
                         hidden>
                         <td colspan="100%" class="text-align--center">
                             <span data-th-text="#{web.global.itemNotFound(#{fintics.News})}"></span>
@@ -436,40 +394,40 @@
                     <span class="font-size--smaller">
                         <span class="font-weight--bold">
                             <span data-th-text="#{fintics.Balance.totalAmount}"></span>:
-                            <span th:data-duice-bind="|trades.find(it => it.tradeId === '${trade.tradeId}').balance|"
+                            <span th:data-duice-bind="|monitorMap.get('${trade.tradeId}').balance|"
                                   th:data-duice-property="totalAmount" data-duice-format="number">
                             </span>
                         </span>
                         |
                         <span data-th-text="#{fintics.Balance.profitAmount}"></span>:
-                        <span th:data-duice-bind="|trades.find(it => it.tradeId === '${trade.tradeId}').balance|"
+                        <span th:data-duice-bind="|monitorMap.get('${trade.tradeId}').balance|"
                               th:data-duice-property="profitAmount" data-duice-format="number">
                         </span>
                         |
                         <span data-th-text="#{fintics.Balance.realizedProfitAmount}"></span>:
-                        <span th:data-duice-bind="|trades.find(it => it.tradeId === '${trade.tradeId}').balance|"
+                        <span th:data-duice-bind="|monitorMap.get('${trade.tradeId}').balance|"
                               th:data-duice-property="realizedProfitAmount" data-duice-format="number">
                         </span>
                         |
                         <span data-th-text="#{fintics.Balance.purchaseAmount}"></span>:
-                        <span th:data-duice-bind="|trades.find(it => it.tradeId === '${trade.tradeId}').balance|"
+                        <span th:data-duice-bind="|monitorMap.get('${trade.tradeId}').balance|"
                               th:data-duice-property="purchaseAmount" data-duice-format="number">
                         </span>
                         |
                         <span data-th-text="#{fintics.Balance.valuationAmount}"></span>:
-                        <span th:data-duice-bind="|trades.find(it => it.tradeId === '${trade.tradeId}').balance|"
+                        <span th:data-duice-bind="|monitorMap.get('${trade.tradeId}').balance|"
                               th:data-duice-property="valuationAmount" data-duice-format="number">
                         </span>
                         |
                         <span data-th-text="#{fintics.Balance.cashAmount}"></span>:
-                        <span th:data-duice-bind="|trades.find(it => it.tradeId === '${trade.tradeId}').balance|"
+                        <span th:data-duice-bind="|monitorMap.get('${trade.tradeId}').balance|"
                               th:data-duice-property="cashAmount" data-duice-format="number">
                         </span>
                     </span>
                 </div>
             </div>
             <div class="overflow-x--scroll border-top--1" style="max-height:700px;">
-                <table class="width--100 font-size--smaller">
+                <table class="width--100 font-size--smaller border-top--0">
                     <colgroup>
                         <col style="width:4em;"/>
                         <col style="width:8em;"/>
@@ -517,7 +475,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:data-duice-bind="|trades.find(it => it.tradeId === '${trade.tradeId}').basket.basketAssets|" data-duice-loop="basketAsset,status">
+                    <tr th:data-duice-bind="|monitorMap.get('${trade.tradeId}').basket.basketAssets|" data-duice-loop="basketAsset,status">
                         <td class="text-align--center">
                             <span data-duice-bind="status" data-duice-property="count"></span>
                         </td>
@@ -589,8 +547,8 @@
                                 "></div>
                         </td>
                     </tr>
-                    <tr th:data-duice-bind="|trades.find(it => it.tradeId === '${trade.tradeId}').basket.basketAssets|"
-                        th:data-duice-if="|return trades.find(it => it.tradeId === '${trade.tradeId}').basket.basketAssets.length < 1|"
+                    <tr th:data-duice-bind="|monitorMap.get('${trade.tradeId}').basket.basketAssets|"
+                        th:data-duice-if="|return monitorMap.get('${trade.tradeId}').basket.basketAssets.length < 1|"
                         hidden>
                         <td colspan="100%" class="text-align--center">
                             <span data-th-text="#{web.global.itemNotFound(#{fintics.BasketAsset})}"></span>
