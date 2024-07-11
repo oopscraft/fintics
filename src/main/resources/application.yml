@@ -1,3 +1,10 @@
+# server
+server:
+  tomcat:
+    threads:
+      max: 200
+      min-spare: 100
+
 # spring
 spring:
   thymeleaf:
