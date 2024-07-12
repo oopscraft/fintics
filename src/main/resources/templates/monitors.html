@@ -51,9 +51,6 @@
                             _this.applyTradeAsset(tradeAsset);
                         }
                     });
-
-                    // refresh
-                    this.refresh();
                 },
                 /**
                  * refresh
@@ -239,24 +236,30 @@
          * on DOM content loaded
          */
         document.addEventListener('DOMContentLoaded', () => {
+            // initialize
+            initializeMonitors();
+
             let tabItems = trades.map(trade => {
                 return duice.tabItem(
                     document.getElementById(`monitorTabButton-${trade.tradeId}`),
                     document.getElementById(`monitorTabContent-${trade.tradeId}`),
-                    () => {}
+                    () => {
+                        let monitor = monitorMap.get(trade.tradeId);
+                        monitor.refresh();
+                    }
                 );
             });
             let tabFolder = duice.tabFolder(...tabItems);
+
+
+            // set tab active
             tabFolder.setActive(0);
 
-            // initialize
-            initializeMonitors();
-
             // refresh
-            refreshMonitors();
-            setInterval(function() {
-                refreshMonitors();
-            }, 1000*60);
+            //refreshMonitors();
+            //setInterval(function() {
+            //    refreshMonitors();
+            //}, 1000*60);
         });
     </script>
     <style th:inline="css">
