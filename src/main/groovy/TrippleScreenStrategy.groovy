@@ -132,8 +132,6 @@ class Analysis implements Analyzable {
     @Override
     Scorable getTrendScore() {
         def score = new Score()
-        // sma20
-        score.sma20Value = ohlcv.close > sma20.value ? 100 : 0
         // sma50
         score.sma50Value = ohlcv.close > sma50.value ? 100 : 0
         // macd
