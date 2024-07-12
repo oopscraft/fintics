@@ -39,8 +39,8 @@ public class TradeExecutor {
 
     private final AlarmService alarmService;
 
-    @Builder.Default
-    private Logger log = (Logger) LoggerFactory.getLogger(this.getClass());
+    @Setter
+    private Logger log;
 
     private final Map<String, StrategyResult> strategyResultMap = new HashMap<>();
 
@@ -49,13 +49,13 @@ public class TradeExecutor {
     @Setter
     private TradeAssetStore tradeAssetStore;
 
-    /**
-     * sets specific logger
-     * @param log logger
-     */
-    public void setLog(Logger log) {
-        this.log = log;
-    }
+//    /**
+//     * sets specific logger
+//     * @param log logger
+//     */
+//    public void setLog(Logger log) {
+//        this.log = log;
+//    }
 
     /**
      * executes trade
