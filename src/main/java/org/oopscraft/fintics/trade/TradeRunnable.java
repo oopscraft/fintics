@@ -104,8 +104,7 @@ public class TradeRunnable implements Runnable {
         }
 
         // status template
-//        String destination = String.format("/trades/%s/assets", tradeId);
-        String destination = "/trades/assets";
+        String destination = String.format("/trades/%s/assets", tradeId);
         TradeAssetStore statusHandler = tradeAssetStoreFactory.getObject(destination, true);
         tradeExecutor.setTradeAssetStore(statusHandler);
 
