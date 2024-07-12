@@ -346,7 +346,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:data-duice-bind="|monitorMap.get('${trade.tradeId}').newses|" data-duice-loop="news,status" class="font-size--smaller">
+                    <tr th:data-duice-bind="|monitorMap.get('${trade.tradeId}').newses|" data-duice-loop="news,status">
                         <td data-duice-bind="news" data-duice-property="dateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
                         <td data-duice-bind="news" data-duice-property="assetName"></td>
                         <td>
