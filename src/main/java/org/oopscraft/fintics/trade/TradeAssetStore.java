@@ -46,18 +46,18 @@ public class TradeAssetStore {
         }
         messagingTemplate.convertAndSend(destination, jsonString);
 
-//        // persist entity
-//        if (this.persist) {
-//            TradeAssetEntity statusEntity = TradeAssetEntity.builder()
-//                    .tradeId(tradeAsset.getTradeId())
-//                    .assetId(tradeAsset.getAssetId())
-//                    .previousClose(tradeAsset.getPreviousClose())
-//                    .open(tradeAsset.getOpen())
-//                    .close(tradeAsset.getClose())
-//                    .message(tradeAsset.getMessage())
-//                    .build();
-//            profileRepository.save(statusEntity);
-//        }
+        // persist entity
+        if (this.persist) {
+            TradeAssetEntity statusEntity = TradeAssetEntity.builder()
+                    .tradeId(tradeAsset.getTradeId())
+                    .assetId(tradeAsset.getAssetId())
+                    .previousClose(tradeAsset.getPreviousClose())
+                    .open(tradeAsset.getOpen())
+                    .close(tradeAsset.getClose())
+                    .message(tradeAsset.getMessage())
+                    .build();
+            profileRepository.save(statusEntity);
+        }
     }
 
 }

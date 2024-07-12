@@ -50,7 +50,8 @@ public class TradeThreadManager implements ApplicationListener<ContextStoppedEve
             // trade runnable
             TradeRunnable tradeRunnable = tradeRunnableFactory.getObject(trade);
             Context context = ((Logger)log).getLoggerContext();
-            String destination = String.format("/trades/%s/logs", trade.getTradeId());
+//            String destination = String.format("/trades/%s/logs", trade.getTradeId());
+            String destination = "/trades/logs";
             LogAppender logAppender = logAppenderFactory.getObject(context, destination);
             tradeRunnable.setLogAppender(logAppender);
 
