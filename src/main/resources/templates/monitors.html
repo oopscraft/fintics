@@ -56,11 +56,11 @@
                  * refresh
                  */
                 refresh: function() {
-                    //this.getDailyOhlcvsChart();
-                    //this.getMinuteOhlcvsChart();
-                    //this.getNewses();
-                    //this.getTradeAssets();
-                    //this.getBalance();
+                    this.getDailyOhlcvsChart();
+                    this.getMinuteOhlcvsChart();
+                    this.getNewses();
+                    this.getTradeAssets();
+                    this.getBalance();
                 },
                 /**
                  * gets daily ohlcvs chart
@@ -251,15 +251,14 @@
             });
             let tabFolder = duice.tabFolder(...tabItems);
 
-
             // set tab active
             tabFolder.setActive(0);
 
             // refresh
-            //refreshMonitors();
-            //setInterval(function() {
-            //    refreshMonitors();
-            //}, 1000*60);
+            refreshMonitors();
+            setInterval(function() {
+               refreshMonitors();
+            }, 1000*60);
         });
     </script>
     <style th:inline="css">
