@@ -1,3 +1,9 @@
+# logging
+logging:
+  level:
+    org.springframework.web.socket: DEBUG
+    org.springframework.messaging.simp.stomp: DEBUG
+
 # server
 server:
   tomcat:
