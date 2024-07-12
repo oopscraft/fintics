@@ -290,6 +290,8 @@ ohlcv: ${ohlcv}
 sma: ${sma}
 """
 tradeAsset.setMessage(message)
+def context = tradeAsset.getContext()
+context.put("prev_time", dateTime.toLocalTime());
 
 if (ohlcv.close > sma.value) {
     return StrategyResult.of(Action.BUY, 1.0, "buy")

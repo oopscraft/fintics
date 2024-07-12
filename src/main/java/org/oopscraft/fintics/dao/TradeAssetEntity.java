@@ -3,10 +3,12 @@ package org.oopscraft.fintics.dao;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.arch4j.core.data.BaseEntity;
+import org.oopscraft.arch4j.core.data.converter.MapConverter;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.Map;
 
 @Entity
 @Table(name = "fintics_trade_asset")
@@ -47,5 +49,10 @@ public class TradeAssetEntity extends BaseEntity {
     @Column(name = "message")
     @Lob
     private String message;
+
+    @Column(name = "context")
+    @Lob
+    @Convert(converter = MapConverter.class)
+    private Map<String, Object> context;
 
 }

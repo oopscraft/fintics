@@ -8,7 +8,6 @@ import org.oopscraft.arch4j.core.alarm.AlarmService;
 import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.model.*;
 import org.oopscraft.fintics.service.*;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -48,14 +47,6 @@ public class TradeExecutor {
 
     @Setter
     private TradeAssetStore tradeAssetStore;
-
-//    /**
-//     * sets specific logger
-//     * @param log logger
-//     */
-//    public void setLog(Logger log) {
-//        this.log = log;
-//    }
 
     /**
      * executes trade
@@ -124,21 +115,23 @@ public class TradeExecutor {
                         Pageable.unpaged());
 
                 // creates trade asset
-                TradeAsset tradeAsset = TradeAsset.builder()
-                        .tradeId(trade.getTradeId())
-                        .assetId(basketAsset.getAssetId())
-                        .assetName(basketAsset.getAssetName())
-                        .market(basketAsset.getMarket())
-                        .type(basketAsset.getType())
-                        .exchange(basketAsset.getExchange())
-                        .marketCap(basketAsset.getMarketCap())
-                        .previousClose(dailyOhlcvs.get(1).getClose())
-                        .open(dailyOhlcvs.get(0).getOpen())
-                        .close(minuteOhlcvs.get(0).getClose())
-                        .dailyOhlcvs(dailyOhlcvs)
-                        .minuteOhlcvs(minuteOhlcvs)
-                        .newses(newses)
-                        .build();
+                TradeAsset tradeAsset = tradeAssetStore.load(trade.getTradeId(), basketAsset.getAssetId())
+                        .orElse(TradeAsset.builder()
+                                .tradeId(trade.getTradeId())
+                                .assetId(basketAsset.getAssetId())
+                                .build());
+                tradeAsset.setAssetName(basketAsset.getAssetName());
+                tradeAsset.setAssetName(basketAsset.getAssetName());
+                tradeAsset.setMarket(basketAsset.getMarket());
+                tradeAsset.setType(basketAsset.getType());
+                tradeAsset.setExchange(basketAsset.getExchange());
+                tradeAsset.setMarketCap(basketAsset.getMarketCap());
+                tradeAsset.setPreviousClose(dailyOhlcvs.get(1).getClose());
+                tradeAsset.setOpen(dailyOhlcvs.get(0).getOpen());
+                tradeAsset.setClose(minuteOhlcvs.get(0).getClose());
+                tradeAsset.setDailyOhlcvs(dailyOhlcvs);
+                tradeAsset.setMinuteOhlcvs(minuteOhlcvs);
+                tradeAsset.setNewses(newses);
 
                 // logging
                 log.info("[{} - {}] dailyOhlcvs({}):{}", tradeAsset.getAssetId(), tradeAsset.getAssetName(), tradeAsset.getDailyOhlcvs().size(), tradeAsset.getDailyOhlcvs().isEmpty() ? null : tradeAsset.getDailyOhlcvs().get(0));

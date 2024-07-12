@@ -8,9 +8,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * profile
@@ -37,6 +35,9 @@ public class TradeAsset extends Asset {
     private List<News> newses;
 
     private String message;
+
+    @Builder.Default
+    private Map<String,Object> context = new HashMap<>();
 
     public BigDecimal getNetChange() {
         return (close != null ? close : BigDecimal.ZERO)
@@ -171,6 +172,7 @@ public class TradeAsset extends Asset {
                 .previousClose(assetEntity.getPreviousClose())
                 .open(assetEntity.getOpen())
                 .message(assetEntity.getMessage())
+                .context(assetEntity.getContext())
                 .build();
     }
 

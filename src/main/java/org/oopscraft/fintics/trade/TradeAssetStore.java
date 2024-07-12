@@ -9,6 +9,8 @@ import org.oopscraft.fintics.dao.TradeAssetRepository;
 import org.oopscraft.fintics.model.TradeAsset;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Builder
@@ -23,7 +25,28 @@ public class TradeAssetStore {
 
     private final boolean persist;
 
-    private final TradeAssetRepository profileRepository;
+    private final TradeAssetRepository tradeAssetRepository;
+
+    private final Map<String, TradeAsset> tradeAssetCacheMap = new HashMap<>();
+
+    /**
+     * loads trade assets
+     * @param tradeId trade id
+     * @param assetId asset id
+     */
+    public Optional<TradeAsset> load(String tradeId, String assetId) {
+        if (persist) {
+            TradeAssetEntity.Pk pk = TradeAssetEntity.Pk.builder()
+                    .tradeId(tradeId)
+                    .assetId(assetId)
+                    .build();
+            return tradeAssetRepository.findById(pk)
+                    .map(TradeAsset::from);
+        }
+        // from cache
+        String cacheKey = getCacheKey(tradeId, assetId);
+        return Optional.ofNullable(tradeAssetCacheMap.get(cacheKey));
+    }
 
     /**
      * saves trade asset
@@ -55,9 +78,17 @@ public class TradeAssetStore {
                     .open(tradeAsset.getOpen())
                     .close(tradeAsset.getClose())
                     .message(tradeAsset.getMessage())
+                    .context(tradeAsset.getContext())
                     .build();
-            profileRepository.save(statusEntity);
+            tradeAssetRepository.save(statusEntity);
         }
+        // save cache
+        String cacheKey = getCacheKey(tradeAsset.getTradeId(), tradeAsset.getAssetId());
+        tradeAssetCacheMap.put(cacheKey, tradeAsset);
+    }
+
+    String getCacheKey(String tradeId, String assetId) {
+        return String.format("%s-%s", tradeId, assetId);
     }
 
 }

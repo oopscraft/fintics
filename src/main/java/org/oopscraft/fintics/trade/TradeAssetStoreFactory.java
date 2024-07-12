@@ -28,7 +28,7 @@ public class TradeAssetStoreFactory {
                 .objectMapper(objectMapper)
                 .destination(destination)
                 .persist(persist)
-                .profileRepository(profileRepository)
+                .tradeAssetRepository(profileRepository)
                 .build();
     }
 
