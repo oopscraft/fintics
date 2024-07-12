@@ -39,7 +39,8 @@ public class TradeExecutor {
 
     private final AlarmService alarmService;
 
-    private Logger log;  //(Logger) LoggerFactory.getLogger(this.getClass());
+    @Builder.Default
+    private Logger log = (Logger) LoggerFactory.getLogger(this.getClass());
 
     private final Map<String, StrategyResult> strategyResultMap = new HashMap<>();
 
