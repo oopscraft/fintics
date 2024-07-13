@@ -485,9 +485,9 @@
                             <img class="icon icon--circle font-size--large" data-duice-bind="basketAsset" data-duice-property="icon" th:onerror="|this.onerror=null; this.src='@{/static/image/icon-asset.svg}';|" alt=""/>
                             &nbsp;
                             <div class="margin-y--1em">
-                             <span data-duice-bind="basketAsset"
-                                   data-duice-property="assetName"
-                                   data-duice-execute="
+                                <span data-duice-bind="basketAsset"
+                                    data-duice-property="assetName"
+                                    data-duice-execute="
                                     if (basketAsset.quantity > 0) {
                                         this.classList.add('font-weight--bold');
                                     }"></span>
