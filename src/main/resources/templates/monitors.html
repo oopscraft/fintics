@@ -481,20 +481,21 @@
                         <td>
                             <span data-duice-bind="basketAsset" data-duice-property="assetId"></span>
                         </td>
-                        <td>
+                        <td class="display--flex align-items--center">
                             <img class="icon icon--circle font-size--large" data-duice-bind="basketAsset" data-duice-property="icon" th:onerror="|this.onerror=null; this.src='@{/static/image/icon-asset.svg}';|" alt=""/>
                             &nbsp;
-                            <span data-duice-bind="basketAsset"
-                                  data-duice-property="assetName"
-                                  data-duice-execute="
+                            <div class="margin-y--1em">
+                             <span data-duice-bind="basketAsset"
+                                   data-duice-property="assetName"
+                                   data-duice-execute="
                                     if (basketAsset.quantity > 0) {
                                         this.classList.add('font-weight--bold');
                                     }"></span>
-                            <small>(<span data-duice-bind="basketAsset" data-duice-property="holdingWeight"></span>%)</small>
-                            <small style="opacity:0.5;">|</small>
-                            <span class="font-weight--bold"
-                                  data-duice-bind="basketAsset"
-                                  data-duice-execute="
+                                [<span data-duice-bind="basketAsset" data-duice-property="holdingWeight"></span>%]
+                                <br/>
+                                <span class="font-weight--bold"
+                                      data-duice-bind="basketAsset"
+                                      data-duice-execute="
                                     let close = basketAsset.close;
                                     let netChange = basketAsset.netChange || 0;
                                     let netChangePercentage = basketAsset.netChangePercentage || 0;
@@ -502,6 +503,7 @@
                                     if (netChange < 0) this.classList.add('color--blue');
                                     this.innerHTML = `${close?.toLocaleString()||''} (${netChange} <small>/</small> ${netChangePercentage}%)`;
                                     "></span>
+                            </div>
                         </td>
                         <td class="text-align--center">
                             <select data-duice-bind="basketAsset"
