@@ -1,6 +1,7 @@
 package org.oopscraft.fintics.api.v1.dto;
 
 import lombok.*;
+import org.oopscraft.fintics.model.Basket;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +15,16 @@ public class BasketRequest {
     private String basketId;
 
     private String basketName;
+
+    private String market;
+
+    private boolean changeEnabled;
+
+    private String changeSchedule;
+
+    private Basket.Language language;
+
+    private String script;
 
     @Builder.Default
     private List<BasketAssetRequest> basketAssets = new ArrayList<>();

@@ -16,6 +16,20 @@ public class Basket {
 
     private String basketName;
 
+    private String market;
+
+    private boolean changeEnabled;
+
+    private String changeSchedule;
+
+    private Language language;
+
+    private String script;
+
+    public static enum Language {
+        GROOVY, PYTHON
+    }
+
     @Builder.Default
     private List<BasketAsset> basketAssets = new ArrayList<>();
 
@@ -23,6 +37,11 @@ public class Basket {
         return Basket.builder()
                 .basketId(basketEntity.getBasketId())
                 .basketName(basketEntity.getBasketName())
+                .market(basketEntity.getMarket())
+                .changeEnabled(basketEntity.isChangeEnabled())
+                .changeSchedule(basketEntity.getChangeSchedule())
+                .language(basketEntity.getLanguage())
+                .script(basketEntity.getScript())
                 .basketAssets(basketEntity.getBasketAssets().stream()
                         .map(BasketAsset::from)
                         .toList())

@@ -16,6 +16,16 @@ public class BasketResponse {
 
     private String basketName;
 
+    private String market;
+
+    private boolean changeEnabled;
+
+    private String changeSchedule;
+
+    private Basket.Language language;
+
+    private String script;
+
     @Builder.Default
     private List<BasketAssetResponse> basketAssets = new ArrayList<>();
 
@@ -28,6 +38,11 @@ public class BasketResponse {
         return BasketResponse.builder()
                 .basketId(basket.getBasketId())
                 .basketName(basket.getBasketName())
+                .market(basket.getMarket())
+                .changeEnabled(basket.isChangeEnabled())
+                .changeSchedule(basket.getChangeSchedule())
+                .language(basket.getLanguage())
+                .script(basket.getScript())
                 .basketAssets(basket.getBasketAssets().stream()
                         .map(BasketAssetResponse::from)
                         .toList())

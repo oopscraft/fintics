@@ -79,9 +79,11 @@ dependencies {
     // https://mvnrepository.com/artifact/com.mitchtalmadge/ascii-data
     implementation 'com.mitchtalmadge:ascii-data:1.4.0'
 
-    // stanford nlp
-    implementation "edu.stanford.nlp:stanford-corenlp:4.5.7"
-    implementation "edu.stanford.nlp:stanford-corenlp:4.5.7:models"
+    // groovy
+    implementation 'org.codehaus.groovy:groovy-all:3.0.18'
+
+    // jython
+    implementation 'org.python:jython-standalone:2.7.2'
 
 }
 

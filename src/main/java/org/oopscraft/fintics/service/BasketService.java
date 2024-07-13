@@ -71,6 +71,11 @@ public class BasketService {
             basketEntity = basketRepository.findById(basket.getBasketId()).orElseThrow();
         }
         basketEntity.setBasketName(basket.getBasketName());
+        basketEntity.setMarket(basket.getMarket());
+        basketEntity.setChangeEnabled(basket.isChangeEnabled());
+        basketEntity.setChangeSchedule(basket.getChangeSchedule());
+        basketEntity.setLanguage(basket.getLanguage());
+        basketEntity.setScript(basket.getScript());
 
         // basket assets
         List<BasketAssetEntity> basketAssetEntities = basketEntity.getBasketAssets();

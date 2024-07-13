@@ -77,6 +77,11 @@ public class BasketsRestController {
         // basket
         Basket basket = Basket.builder()
                 .basketName(basketRequest.getBasketName())
+                .market(basketRequest.getMarket())
+                .changeEnabled(basketRequest.isChangeEnabled())
+                .changeSchedule(basketRequest.getChangeSchedule())
+                .language(basketRequest.getLanguage())
+                .script(basketRequest.getScript())
                 .build();
         // basket assets
         List<BasketAsset> basketAssets = basketRequest.getBasketAssets().stream()
@@ -110,6 +115,11 @@ public class BasketsRestController {
         // basket
         Basket basket = basketService.getBasket(basketId).orElseThrow();
         basket.setBasketName(basketRequest.getBasketName());
+        basket.setMarket(basketRequest.getMarket());
+        basket.setChangeEnabled(basketRequest.isChangeEnabled());
+        basket.setChangeSchedule(basketRequest.getChangeSchedule());
+        basket.setLanguage(basketRequest.getLanguage());
+        basket.setScript(basketRequest.getScript());
         // basket assets
         List<BasketAsset> basketAssets = basketRequest.getBasketAssets().stream()
                 .map(basketAssetRequest -> {

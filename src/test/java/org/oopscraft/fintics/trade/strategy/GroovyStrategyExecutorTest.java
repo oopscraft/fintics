@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.trade;
+package org.oopscraft.fintics.trade.strategy;
 
 import com.github.javaparser.utils.LineSeparator;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Slf4j
-class StrategyExecutorTest {
+class GroovyStrategyExecutorTest {
 
     Trade getTestTrade() {
         return Trade.builder()
@@ -94,13 +94,13 @@ class StrategyExecutorTest {
                 .build();
 
         // when
-        StrategyExecutor strategyExecutor = StrategyExecutor.builder()
+        StrategyRunner strategyExecutor = GroovyStrategyRunner.builder()
                 .tradeAsset(tradeAsset)
                 .strategy(strategy)
                 .dateTime(LocalDateTime.now())
                 .orderBook(orderBook)
                 .build();
-        StrategyResult strategyResult = strategyExecutor.execute();
+        StrategyResult strategyResult = strategyExecutor.run();
 
         // then
         log.info("== strategyResult:{}", strategyResult);

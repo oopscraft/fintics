@@ -1,0 +1,27 @@
+package org.oopscraft.fintics.trade.strategy;
+
+import lombok.Builder;
+import lombok.Getter;
+import org.oopscraft.fintics.model.*;
+
+import java.time.LocalDateTime;
+
+@Builder
+@Getter
+public class StrategyRunnerContext {
+
+    private final Strategy strategy;
+
+    private final String variables;
+
+    private final LocalDateTime dateTime;
+
+    private final TradeAsset tradeAsset;
+
+    private final OrderBook orderBook;
+
+    private final Balance balance;
+
+    private final BalanceAsset balanceAsset;
+
+}

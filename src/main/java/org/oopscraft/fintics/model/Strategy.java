@@ -24,7 +24,7 @@ public class Strategy {
     private String script;
 
     public static enum Language {
-        GROOVY
+        GROOVY, PYTHON
     }
 
     @Converter(autoApply = true)

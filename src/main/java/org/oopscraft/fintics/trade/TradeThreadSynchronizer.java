@@ -14,7 +14,7 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class TradeSynchronizer {
+public class TradeThreadSynchronizer {
 
     private final TradeRepository tradeRepository;
 

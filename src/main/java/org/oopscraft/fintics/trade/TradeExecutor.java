@@ -8,6 +8,9 @@ import org.oopscraft.arch4j.core.alarm.AlarmService;
 import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.model.*;
 import org.oopscraft.fintics.service.*;
+import org.oopscraft.fintics.trade.strategy.StrategyRunner;
+import org.oopscraft.fintics.trade.strategy.StrategyRunnerContext;
+import org.oopscraft.fintics.trade.strategy.StrategyRunnerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -37,6 +40,8 @@ public class TradeExecutor {
     private final OrderService orderService;
 
     private final AlarmService alarmService;
+
+    private final StrategyRunnerFactory strategyRunnerFactory;
 
     @Setter
     private Logger log;
@@ -144,7 +149,7 @@ public class TradeExecutor {
                 BalanceAsset balanceAsset = balance.getBalanceAsset(basketAsset.getAssetId()).orElse(null);
 
                 // executes trade asset decider
-                StrategyExecutor strategyExecutor = StrategyExecutor.builder()
+                StrategyRunnerContext strategyRunnerContext = StrategyRunnerContext.builder()
                         .strategy(strategy)
                         .variables(trade.getStrategyVariables())
                         .dateTime(dateTime)
@@ -153,9 +158,10 @@ public class TradeExecutor {
                         .balance(balance)
                         .balanceAsset(balanceAsset)
                         .build();
-                strategyExecutor.setLog(log);
+                StrategyRunner strategyRunner = strategyRunnerFactory.getObject(strategyRunnerContext);
+                strategyRunner.setLog(log);
                 Instant startTime = Instant.now();
-                StrategyResult strategyResult = strategyExecutor.execute();
+                StrategyResult strategyResult = strategyRunner.run();
                 log.info("[{} - {}] strategy execution elapsed:{}", basketAsset.getAssetId(), basketAsset.getAssetName(), Duration.between(startTime, Instant.now()));
                 log.info("[{} - {}] strategy result: {}", basketAsset.getAssetId(), basketAsset.getAssetName(), strategyResult);
 
@@ -179,18 +185,6 @@ public class TradeExecutor {
                 log.info("[{} - {}] strategyResultValueMatchCount: {}", basketAsset.getAssetId(), basketAsset.getAssetName(), strategyResultValueMatchCount);
                 if (strategyResultValueMatchCount < trade.getThreshold()) {
                     log.info("[{} - {}] threshold has not been exceeded yet - threshold is {}", basketAsset.getAssetId(), basketAsset.getAssetName(), trade.getThreshold());
-                    continue;
-                }
-
-                //===============================================
-                // 0. holding weight is zero
-                //===============================================
-                if (basketAsset.getHoldingWeight().compareTo(BigDecimal.ZERO) == 0) {
-                    if (balanceAsset != null) {
-                        BigDecimal price = calculateSellPrice(tradeAsset, orderBook, brokerClient);
-                        BigDecimal quantity = balanceAsset.getOrderableQuantity();
-                        sellTradeAsset(brokerClient, trade, tradeAsset, quantity, price, strategyResult, balanceAsset);
-                    }
                     continue;
                 }
 

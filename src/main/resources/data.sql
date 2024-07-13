@@ -225,6 +225,16 @@ values
     ('a920f8813c6f46fda2947cee1c8cfb1d','US.AAPL','Y','20'),
     ('a920f8813c6f46fda2947cee1c8cfb1d','US.MSFT','Y','20');
 
+-- fintics_basket - Upbit (24시간 테스트용)
+insert into `fintics_basket`
+(`basket_id`, `basket_name`) values
+    ('7818b580e3f340498b97f50e0e801ff8','Upbit (24시간 테스트용)');
+insert into `fintics_basket_asset`
+(`basket_id`,`asset_id`,`enabled`, `holding_weight`)
+values
+    ('7818b580e3f340498b97f50e0e801ff8','UPBIT.KRW-BTC','Y','40'),
+    ('7818b580e3f340498b97f50e0e801ff8','UPBIT.KRW-ETH','Y','40');
+
 -- fintics_strategy
 insert into `fintics_strategy`
     (`strategy_id`,`strategy_name`,`language`,`script`) values
@@ -244,9 +254,9 @@ insert into `fintics_trade`
 
 -- fintics_trade: 업비트 API(장시간 외 트레이드 테스트용)
 insert into `fintics_trade`
-    (`trade_id`,`trade_name`,`enabled`,`interval`,`threshold`,`start_at`,`end_at`,`invest_amount`,`broker_id`,`strategy_id`,`strategy_variables`,`alarm_id`,`order_kind`) values
+    (`trade_id`,`trade_name`,`enabled`,`interval`,`threshold`,`start_at`,`end_at`,`invest_amount`,`broker_id`,`basket_id`,`strategy_id`,`strategy_variables`,`alarm_id`,`order_kind`) values
     ('81c6a451d6da49449faa2b5b7e66041b','코인놀이방(24시간 테스트용)','N','30','3','00:00','23:59','100000',
-     'a135ee9a276f4edf81d6e1b6b9d31e39','7c94187b346f4727a0f2478fdc53064f', null, null, 'LIMIT');
+     'a135ee9a276f4edf81d6e1b6b9d31e39','7818b580e3f340498b97f50e0e801ff8','7c94187b346f4727a0f2478fdc53064f', null, null, 'LIMIT');
 
 -- fintics_order
 INSERT INTO fintics_order

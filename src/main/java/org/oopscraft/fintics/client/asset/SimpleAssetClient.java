@@ -3,6 +3,7 @@ package org.oopscraft.fintics.client.asset;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.fintics.client.asset.market.KrAssetClient;
+import org.oopscraft.fintics.client.asset.market.UpbitAssetClient;
 import org.oopscraft.fintics.client.asset.market.UsAssetClient;
 import org.oopscraft.fintics.model.Asset;
 import org.oopscraft.fintics.model.AssetMeta;
@@ -27,6 +28,7 @@ public class SimpleAssetClient extends AssetClient {
         super(assetClientProperties);
         assetClients.add(new UsAssetClient(assetClientProperties, objectMapper));
         assetClients.add(new KrAssetClient(assetClientProperties));
+        assetClients.add(new UpbitAssetClient(assetClientProperties));
     }
 
     @Override

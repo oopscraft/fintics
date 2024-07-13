@@ -178,7 +178,13 @@
                        class="width--100 font-weight--bold"/>
             </label>
             <label class="grid-column--6">
+                <span data-th-text="#{fintics.Basket.market}" class="font-weight--bold tag-required"></span>
+                <select data-duice-bind="basket" data-duice-property="market" class="width--100">
+                    <option value="" data-th-text="'- ' + #{fintics.Basket.market} + ' -'"></option>
+                    <option th:each="market : ${markets}" th:value="${market}" th:text="${market}"></option>
+                </select>
             </label>
+
             <div class="grid-column--12">
                 <div class="display--flex justify-content--space-between">
                     <div>
@@ -304,6 +310,35 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+            <label class="grid-column--6 s__grid-column--12">
+                <span data-th-text="#{fintics.Basket.changeEnabled}" class="font-weight--bold"></span>
+                <br/>
+                <input type="checkbox" data-duice-bind="basket" data-duice-property="changeEnabled"/>
+            </label>
+            <label class="grid-column--6 s__grid-column--12">
+                <span data-th-text="#{fintics.Basket.changeSchedule}" class="font-weight--bold"></span>
+                <input type="text" data-duice-bind="basket" data-duice-property="changeSchedule" class="width--100"/>
+            </label>
+            <label class="grid-column--12">
+                <span data-th-text="#{fintics.Basket.language}" class="font-weight--bold"></span>
+                <select data-duice-bind="basket" data-duice-property="language" class="width--100">
+                    <option data-th-text="'- ' + #{web.global.select} + ' -'"></option>
+                    <option th:each="language : ${languages}" th:value="${language}" th:text="${language}"></option>
+                </select>
+            </label>
+            <div class="grid-column--12">
+                <div class="display--flex justify-content--space-between margin--1px padding--1px">
+                    <div>
+                        <span data-th-text="#{fintics.Basket.script}" class="font-weight--bold width--100"></span>
+                    </div>
+                </div>
+                <duice-codemirror class="font-size--smaller" style="height:100vh;"
+                                  data-duice-bind="basket"
+                                  data-duice-property="script"
+                                  data-duice-mode="groovy"
+                                  data-duice-theme="dracula">
+                </duice-codemirror>
             </div>
             <div class="grid-column--12 justify-self--end">
                 <button type="button"

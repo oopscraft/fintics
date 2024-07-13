@@ -3,6 +3,8 @@ package org.oopscraft.fintics.dao;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.arch4j.core.data.BaseEntity;
+import org.oopscraft.arch4j.core.data.converter.BooleanConverter;
+import org.oopscraft.fintics.model.Basket;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -23,6 +25,24 @@ public class BasketEntity extends BaseEntity {
 
     @Column(name = "basket_name")
     private String basketName;
+
+    @Column(name = "market", length = 16)
+    private String market;
+
+    @Column(name = "change_enabled", length = 1)
+    @Convert(converter = BooleanConverter.class)
+    private boolean changeEnabled;
+
+    @Column(name = "change_schedule")
+    private String changeSchedule;
+
+    @Column(name = "language", length = 16)
+    @Enumerated(EnumType.STRING)
+    private Basket.Language language;
+
+    @Column(name = "script")
+    @Lob
+    private String script;
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "basket_id", updatable = false)
