@@ -29,8 +29,23 @@ import java.util.regex.Pattern;
 @Slf4j
 public class SimpleNewsClient extends NewsClient {
 
+    private final static Object LOCK_OBJECT = new Object();
+
     public SimpleNewsClient(NewsClientProperties newsClientProperties) {
         super(newsClientProperties);
+    }
+
+    /**
+     * force sleep
+     */
+    private static synchronized void sleep() {
+        synchronized (LOCK_OBJECT) {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                log.warn(e.getMessage());
+            }
+        }
     }
 
     @Override
@@ -71,6 +86,7 @@ public class SimpleNewsClient extends NewsClient {
             RequestEntity<Void> requestEntity = RequestEntity.get(url)
                     .headers(headers)
                     .build();
+            sleep();
             ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
             String responseBody = responseEntity.getBody();
             Document doc = Jsoup.parse(responseBody);

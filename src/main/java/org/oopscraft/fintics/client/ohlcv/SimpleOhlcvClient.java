@@ -51,7 +51,7 @@ public class SimpleOhlcvClient extends OhlcvClient {
     /**
      * force sleep
      */
-    private synchronized void sleep() {
+    private static synchronized void sleep() {
         synchronized (LOCK_OBJECT) {
             try {
                 Thread.sleep(500);
