@@ -24,6 +24,9 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * simple news client
+ */
 @Component
 @ConditionalOnProperty(prefix = "fintics", name = "news-client.class-name", havingValue="org.oopscraft.fintics.client.news.SimpleNewsClient")
 @Slf4j
@@ -31,6 +34,10 @@ public class SimpleNewsClient extends NewsClient {
 
     private final static Object LOCK_OBJECT = new Object();
 
+    /**
+     * constructor
+     * @param newsClientProperties news client properties
+     */
     public SimpleNewsClient(NewsClientProperties newsClientProperties) {
         super(newsClientProperties);
     }
@@ -48,6 +55,11 @@ public class SimpleNewsClient extends NewsClient {
         }
     }
 
+    /**
+     * gets newses
+     * @param asset asset
+     * @return list of news
+     */
     @Override
     public List<News> getNewses(Asset asset) {
         // keyword
@@ -60,6 +72,11 @@ public class SimpleNewsClient extends NewsClient {
         return getNewses(keyword, locale);
     }
 
+    /**
+     * parses locale form asset
+     * @param asset asset
+     * @return locale
+     */
     Locale parseLocale(Asset asset) {
         String market = Optional.ofNullable(asset.getMarket()).orElse("US");
         return switch (market) {
@@ -68,6 +85,12 @@ public class SimpleNewsClient extends NewsClient {
         };
     }
 
+    /**
+     * gets newses by keyword, locale
+     * @param keyword keyword
+     * @param locale locale
+     * @return list of news
+     */
     List<News> getNewses(String keyword, Locale locale) {
         try {
             RestTemplate restTemplate = RestTemplateBuilder.create()
@@ -122,6 +145,11 @@ public class SimpleNewsClient extends NewsClient {
         }
     }
 
+    /**
+     * extracts news url from google news url
+     * @param googleNewsUrl google news url
+     * @return news url
+     */
     String extractNewsUrl(String googleNewsUrl) {
         Pattern pattern = Pattern.compile("/articles/([A-Za-z0-9_-]+)");
         Matcher matcher = pattern.matcher(googleNewsUrl);

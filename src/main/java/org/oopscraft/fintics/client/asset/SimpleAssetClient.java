@@ -28,7 +28,7 @@ public class SimpleAssetClient extends AssetClient {
         super(assetClientProperties);
         assetClients.add(new UsAssetClient(assetClientProperties, objectMapper));
         assetClients.add(new KrAssetClient(assetClientProperties));
-        assetClients.add(new UpbitAssetClient(assetClientProperties));
+//        assetClients.add(new UpbitAssetClient(assetClientProperties));
     }
 
     @Override

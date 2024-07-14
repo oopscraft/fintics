@@ -9,6 +9,9 @@ import org.springframework.boot.context.properties.ConstructorBinding;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * ohlcv client properties
+ */
 @ConfigurationProperties(prefix = "fintics.asset-ohlcv-client")
 @ConstructorBinding
 @AllArgsConstructor

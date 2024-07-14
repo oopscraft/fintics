@@ -48,10 +48,11 @@ def getChartScore(item) {
         return 0.0
     }
     // get ohlcvs
-    def dateTimeFrom = LocalDateTime.now().minusYears(1)
+    def dateTimeFrom = LocalDateTime.now().minusMonths(3)
     def dateTimeTo = LocalDateTime.now()
     List<Ohlcv> ohlcvs = ohlcvClient.getOhlcvs(asset, Ohlcv.Type.DAILY, dateTimeFrom, dateTimeTo)
     def ohlcv = ohlcvs.first()
+    println("ohlcvs: ${ohlcvs}")
     // ema50
     List<Ema> ema50s = Tools.indicators(ohlcvs, EmaContext.of(50))
     def ema50 = ema50s.first()
@@ -123,7 +124,7 @@ println("fnguidContinuousBuyWith3Items: ${fnguidContinuousBuyWith3Items}")
 itemScores.addAll(fnguidContinuousBuyWith3Items.collect{ItemScore.of(it, 1.0)})
 
 // chart score
-itemScores = itemScores.findAll{getChartScore(it.item) > 50}
+itemScores = itemScores.findAll{getChartScore(it.item) > 80}
 
 // group by sum
 def aggregatedItemScore = itemScores
