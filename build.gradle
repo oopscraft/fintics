@@ -81,6 +81,7 @@ dependencies {
 
     // groovy
     implementation 'org.codehaus.groovy:groovy-all:3.0.18'
+    implementation 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
 
     // jython
     implementation 'org.python:jython-standalone:2.7.2'

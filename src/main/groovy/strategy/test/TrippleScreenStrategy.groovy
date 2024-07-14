@@ -4,8 +4,8 @@ import org.oopscraft.fintics.model.Ohlcv
 import org.oopscraft.fintics.model.Ohlcv
 import org.oopscraft.fintics.model.Ohlcv
 import org.oopscraft.fintics.model.Ohlcv
-import org.oopscraft.fintics.model.StrategyResult
-import org.oopscraft.fintics.model.StrategyResult.Action
+import org.oopscraft.fintics.trade.strategy.StrategyResult
+import org.oopscraft.fintics.trade.strategy.StrategyResult.Action
 import org.oopscraft.fintics.trade.Tools
 import org.oopscraft.fintics.indicator.*
 

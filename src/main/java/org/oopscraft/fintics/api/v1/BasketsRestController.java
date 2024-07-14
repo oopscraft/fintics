@@ -78,8 +78,8 @@ public class BasketsRestController {
         Basket basket = Basket.builder()
                 .basketName(basketRequest.getBasketName())
                 .market(basketRequest.getMarket())
-                .changeEnabled(basketRequest.isChangeEnabled())
-                .changeSchedule(basketRequest.getChangeSchedule())
+                .rebalanceEnabled(basketRequest.isRebalanceEnabled())
+                .rebalanceSchedule(basketRequest.getRebalanceSchedule())
                 .language(basketRequest.getLanguage())
                 .script(basketRequest.getScript())
                 .build();
@@ -116,8 +116,8 @@ public class BasketsRestController {
         Basket basket = basketService.getBasket(basketId).orElseThrow();
         basket.setBasketName(basketRequest.getBasketName());
         basket.setMarket(basketRequest.getMarket());
-        basket.setChangeEnabled(basketRequest.isChangeEnabled());
-        basket.setChangeSchedule(basketRequest.getChangeSchedule());
+        basket.setRebalanceEnabled(basketRequest.isRebalanceEnabled());
+        basket.setRebalanceSchedule(basketRequest.getRebalanceSchedule());
         basket.setLanguage(basketRequest.getLanguage());
         basket.setScript(basketRequest.getScript());
         // basket assets

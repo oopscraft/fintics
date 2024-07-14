@@ -18,9 +18,9 @@ public class BasketResponse {
 
     private String market;
 
-    private boolean changeEnabled;
+    private boolean rebalanceEnabled;
 
-    private String changeSchedule;
+    private String rebalanceSchedule;
 
     private Basket.Language language;
 
@@ -39,8 +39,8 @@ public class BasketResponse {
                 .basketId(basket.getBasketId())
                 .basketName(basket.getBasketName())
                 .market(basket.getMarket())
-                .changeEnabled(basket.isChangeEnabled())
-                .changeSchedule(basket.getChangeSchedule())
+                .rebalanceEnabled(basket.isRebalanceEnabled())
+                .rebalanceSchedule(basket.getRebalanceSchedule())
                 .language(basket.getLanguage())
                 .script(basket.getScript())
                 .basketAssets(basket.getBasketAssets().stream()

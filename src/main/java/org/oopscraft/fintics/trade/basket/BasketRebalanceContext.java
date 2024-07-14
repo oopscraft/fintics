@@ -6,7 +6,7 @@ import org.oopscraft.fintics.model.Basket;
 
 @Builder
 @Getter
-public class BasketChangerContext {
+public class BasketRebalanceContext {
 
     private final Basket basket;
 

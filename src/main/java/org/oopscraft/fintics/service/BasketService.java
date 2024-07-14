@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -72,8 +71,8 @@ public class BasketService {
         }
         basketEntity.setBasketName(basket.getBasketName());
         basketEntity.setMarket(basket.getMarket());
-        basketEntity.setChangeEnabled(basket.isChangeEnabled());
-        basketEntity.setChangeSchedule(basket.getChangeSchedule());
+        basketEntity.setRebalanceEnabled(basket.isRebalanceEnabled());
+        basketEntity.setRebalanceSchedule(basket.getRebalanceSchedule());
         basketEntity.setLanguage(basket.getLanguage());
         basketEntity.setScript(basket.getScript());
 

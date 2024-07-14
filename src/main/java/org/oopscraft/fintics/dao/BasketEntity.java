@@ -29,12 +29,12 @@ public class BasketEntity extends BaseEntity {
     @Column(name = "market", length = 16)
     private String market;
 
-    @Column(name = "change_enabled", length = 1)
+    @Column(name = "rebalance_enabled", length = 1)
     @Convert(converter = BooleanConverter.class)
-    private boolean changeEnabled;
+    private boolean rebalanceEnabled;
 
-    @Column(name = "change_schedule")
-    private String changeSchedule;
+    @Column(name = "rebalance_schedule")
+    private String rebalanceSchedule;
 
     @Column(name = "language", length = 16)
     @Enumerated(EnumType.STRING)

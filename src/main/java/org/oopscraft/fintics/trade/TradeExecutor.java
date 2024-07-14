@@ -8,6 +8,7 @@ import org.oopscraft.arch4j.core.alarm.AlarmService;
 import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.model.*;
 import org.oopscraft.fintics.service.*;
+import org.oopscraft.fintics.trade.strategy.StrategyResult;
 import org.oopscraft.fintics.trade.strategy.StrategyRunner;
 import org.oopscraft.fintics.trade.strategy.StrategyRunnerContext;
 import org.oopscraft.fintics.trade.strategy.StrategyRunnerFactory;

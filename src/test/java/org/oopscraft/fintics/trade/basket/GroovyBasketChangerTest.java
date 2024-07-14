@@ -1,0 +1,69 @@
+package org.oopscraft.fintics.trade.basket;
+
+import com.github.javaparser.utils.LineSeparator;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.oopscraft.arch4j.core.support.CoreTestSupport;
+import org.oopscraft.fintics.FinticsConfiguration;
+import org.oopscraft.fintics.client.ohlcv.OhlcvClient;
+import org.oopscraft.fintics.model.Basket;
+import org.oopscraft.fintics.service.AssetService;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+
+@SpringBootTest(classes = FinticsConfiguration.class)
+@RequiredArgsConstructor
+@Slf4j
+class GroovyBasketChangerTest extends CoreTestSupport {
+
+    private final AssetService assetService;
+
+    private final OhlcvClient ohlcvClient;
+
+    String loadGroovyFileAsString(String fileName) {
+        String filePath = null;
+        try {
+            filePath = new File(".").getCanonicalPath() + "/src/main/groovy/basket/" + fileName;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        StringBuilder stringBuilder = new StringBuilder();
+        try (InputStream inputStream = new FileInputStream(new File(filePath))) {
+            IOUtils.readLines(inputStream, StandardCharsets.UTF_8).forEach(line -> {
+                stringBuilder.append(line).append(LineSeparator.LF);
+            });
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return stringBuilder.toString();
+    }
+
+    @Disabled
+    @Test
+    void getChanges() {
+        // given
+        Basket basket = Basket.builder()
+                .market("KR")
+                .script(loadGroovyFileAsString("BasketRebalanceScript.groovy"))
+                .build();
+        // when
+        GroovyBasketRebalance groovyBasketChanger = GroovyBasketRebalance.builder()
+                .basket(basket)
+                .assetService(assetService)
+                .ohlcvClient(ohlcvClient)
+                .build();
+        List<BasketChange> basketChanges = groovyBasketChanger.getChanges();
+        // then
+        log.info("basketChanges: {}", basketChanges);
+    }
+
+}

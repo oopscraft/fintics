@@ -1,7 +1,7 @@
 package org.oopscraft.fintics.api.v1.dto;
 
 import lombok.*;
-import org.oopscraft.fintics.model.StrategyResult;
+import org.oopscraft.fintics.trade.strategy.StrategyResult;
 
 import java.math.BigDecimal;
 

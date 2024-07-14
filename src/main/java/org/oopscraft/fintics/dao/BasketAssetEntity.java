@@ -50,8 +50,8 @@ public class BasketAssetEntity extends BaseEntity {
     @Column(name = "holding_weight", scale = 2)
     private BigDecimal holdingWeight;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "asset_id", insertable = false, updatable = false, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "asset_id", insertable = false, updatable = false)
     private AssetEntity assetEntity;
 
 }

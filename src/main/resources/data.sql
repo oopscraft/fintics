@@ -203,8 +203,8 @@ insert into `fintics_broker`
 
 -- fintics_basket - 국내대형주
 insert into `fintics_basket`
-    (`basket_id`, `basket_name`) values
-    ('e5b2dda4ede54176b5e01eed7c4b9ed8','국내대형주');
+    (`basket_id`, `basket_name`, `market`) values
+    ('e5b2dda4ede54176b5e01eed7c4b9ed8','국내대형주', 'KR');
 insert into `fintics_basket_asset`
     (`basket_id`,`asset_id`,`enabled`, `holding_weight`)
 values
@@ -215,8 +215,8 @@ values
 
 -- fintics_basket - 미국대형주
 insert into `fintics_basket`
-    (`basket_id`, `basket_name`) values
-    ('a920f8813c6f46fda2947cee1c8cfb1d','미국대형주');
+    (`basket_id`, `basket_name`,`market`) values
+    ('a920f8813c6f46fda2947cee1c8cfb1d','미국대형주', 'US');
 insert into `fintics_basket_asset`
     (`basket_id`,`asset_id`,`enabled`, `holding_weight`)
 values
@@ -227,8 +227,8 @@ values
 
 -- fintics_basket - Upbit (24시간 테스트용)
 insert into `fintics_basket`
-(`basket_id`, `basket_name`) values
-    ('7818b580e3f340498b97f50e0e801ff8','Upbit (24시간 테스트용)');
+(`basket_id`, `basket_name`, `market`) values
+    ('7818b580e3f340498b97f50e0e801ff8','Upbit (24시간 테스트용)', 'UPBIT');
 insert into `fintics_basket_asset`
 (`basket_id`,`asset_id`,`enabled`, `holding_weight`)
 values
@@ -285,8 +285,8 @@ update fintics_strategy set script = '
 import org.oopscraft.fintics.model.Ohlcv
 import org.oopscraft.fintics.model.TradeAsset
 import org.oopscraft.fintics.model.Strategy
-import org.oopscraft.fintics.model.StrategyResult
-import org.oopscraft.fintics.model.StrategyResult.Action
+import org.oopscraft.fintics.trade.strategy.StrategyResult
+import org.oopscraft.fintics.trade.strategy.StrategyResult.Action
 import org.oopscraft.fintics.trade.Tools
 import org.oopscraft.fintics.indicator.*
 

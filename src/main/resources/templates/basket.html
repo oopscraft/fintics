@@ -89,6 +89,11 @@
                 duice.ObjectProxy.focus(basket, 'basketName');
                 return false;
             }
+            if(!basket.market) {
+                await _alert(/*[[#{web.global.itemEmpty(#{fintics.Basket.market})}]]*/'');
+                duice.ObjectProxy.focus(basket, 'market');
+                return false;
+            }
             _confirm(/*[[#{web.global.saveItemConfirm(#{fintics.Basket})}]]*/'')
                 .then(result => {
                     if (result) {
@@ -312,13 +317,13 @@
                 </div>
             </div>
             <label class="grid-column--6 s__grid-column--12">
-                <span data-th-text="#{fintics.Basket.changeEnabled}" class="font-weight--bold"></span>
+                <span data-th-text="#{fintics.Basket.rebalanceEnabled}" class="font-weight--bold"></span>
                 <br/>
-                <input type="checkbox" data-duice-bind="basket" data-duice-property="changeEnabled"/>
+                <input type="checkbox" data-duice-bind="basket" data-duice-property="rebalanceEnabled"/>
             </label>
             <label class="grid-column--6 s__grid-column--12">
-                <span data-th-text="#{fintics.Basket.changeSchedule}" class="font-weight--bold"></span>
-                <input type="text" data-duice-bind="basket" data-duice-property="changeSchedule" class="width--100"/>
+                <span data-th-text="#{fintics.Basket.rebalanceSchedule}" class="font-weight--bold"></span>
+                <input type="text" data-duice-bind="basket" data-duice-property="rebalanceSchedule" class="width--100"/>
             </label>
             <label class="grid-column--12">
                 <span data-th-text="#{fintics.Basket.language}" class="font-weight--bold"></span>

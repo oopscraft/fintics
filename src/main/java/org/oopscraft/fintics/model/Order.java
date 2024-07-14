@@ -7,11 +7,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.data.converter.AbstractEnumConverter;
 import org.oopscraft.arch4j.core.support.ObjectMapperHolder;
 import org.oopscraft.fintics.dao.OrderEntity;
+import org.oopscraft.fintics.trade.strategy.StrategyResult;
 
 import javax.persistence.Converter;
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Data

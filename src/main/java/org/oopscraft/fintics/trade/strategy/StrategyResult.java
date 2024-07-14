@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.model;
+package org.oopscraft.fintics.trade.strategy;
 
 import lombok.*;
 

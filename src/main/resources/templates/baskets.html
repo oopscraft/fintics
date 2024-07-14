@@ -16,6 +16,7 @@
             getBaskets();
         });
         const baskets = new duice.ArrayProxy([]);
+        duice.ArrayProxy.setReadonlyAll(baskets, true);
 
         function getBaskets(page) {
             if(page) {
@@ -95,6 +96,7 @@
                 <colgroup>
                     <col style="width:10em;"/>
                     <col/>
+                    <col/>
                     <col style="width:20em;"/>
                 </colgroup>
                 <thead>
@@ -102,6 +104,8 @@
                     <th data-th-text="#{web.global.no}" class="text-align--center"></th>
                     <th data-th-text="#{fintics.Basket.basketName}"></th>
                     <th data-th-text="#{fintics.Basket.basketAssets}"></th>
+                    <th data-th-text="#{fintics.Basket.rebalanceEnabled}"></th>
+                    <th data-th-text="#{fintics.Basket.rebalanceSchedule}"></th>
                 </tr>
                 </thead>
                 <tbody>
@@ -118,6 +122,12 @@
                     </td>
                     <td>
                         <span data-duice-bind="basket" data-duice-property="basketAssets.length" class="badge"></span>
+                    </td>
+                    <td>
+                        <input type="checkbox" data-duice-bind="basket" data-duice-property="rebalanceEnabled"/>
+                    </td>
+                    <td>
+                        <span data-duice-bind="basket" data-duice-property="rebalanceSchedule"></span>
                     </td>
                 </tr>
                 <tr data-duice-bind="baskets" data-duice-if="return baskets.length === 0;" hidden>

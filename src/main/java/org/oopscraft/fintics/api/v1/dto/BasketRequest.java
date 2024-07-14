@@ -18,9 +18,9 @@ public class BasketRequest {
 
     private String market;
 
-    private boolean changeEnabled;
+    private boolean rebalanceEnabled;
 
-    private String changeSchedule;
+    private String rebalanceSchedule;
 
     private Basket.Language language;
 
