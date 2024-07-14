@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.task;
+package org.oopscraft.fintics.scheduler;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

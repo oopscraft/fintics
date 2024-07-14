@@ -1,16 +1,11 @@
-package org.oopscraft.fintics.task;
+package org.oopscraft.fintics.scheduler;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.fintics.client.asset.AssetClient;
-import org.oopscraft.fintics.client.broker.BrokerClient;
-import org.oopscraft.fintics.client.broker.BrokerClientDefinitionRegistry;
-import org.oopscraft.fintics.client.broker.BrokerClientFactory;
 import org.oopscraft.fintics.dao.*;
 import org.oopscraft.fintics.model.Asset;
 import org.oopscraft.fintics.model.AssetMeta;
-import org.oopscraft.fintics.model.Broker;
-import org.oopscraft.fintics.model.Trade;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -23,7 +18,7 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class AssetCollector extends AbstractTask {
+public class AssetCollector extends AbstractScheduler {
 
     private final AssetRepository assetRepository;
 

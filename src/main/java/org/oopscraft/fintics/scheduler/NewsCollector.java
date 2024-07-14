@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.task;
+package org.oopscraft.fintics.scheduler;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class NewsCollector extends AbstractTask {
+public class NewsCollector extends AbstractScheduler {
 
     private final FinticsProperties finticsProperties;
 

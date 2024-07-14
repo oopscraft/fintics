@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.task;
+package org.oopscraft.fintics.scheduler;
 
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.alarm.AlarmService;
@@ -13,7 +13,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import java.util.List;
 
 @Slf4j
-public abstract class AbstractTask {
+public abstract class AbstractScheduler {
 
     @Autowired
     private FinticsProperties finticsProperties;
