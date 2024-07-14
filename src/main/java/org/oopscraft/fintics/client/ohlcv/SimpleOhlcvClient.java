@@ -34,6 +34,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class SimpleOhlcvClient extends OhlcvClient {
 
+    private final static Object LOCK_OBJECT = new Object();
+
     private final ObjectMapper objectMapper;
 
     /**
@@ -44,6 +46,19 @@ public class SimpleOhlcvClient extends OhlcvClient {
     public SimpleOhlcvClient(OhlcvClientProperties ohlcvClientProperties, ObjectMapper objectMapper) {
         super(ohlcvClientProperties);
         this.objectMapper = objectMapper;
+    }
+
+    /**
+     * force sleep
+     */
+    private synchronized void sleep() {
+        synchronized (LOCK_OBJECT) {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                log.warn(e.getMessage());
+            }
+        }
     }
 
     /**
@@ -70,6 +85,7 @@ public class SimpleOhlcvClient extends OhlcvClient {
         RequestEntity<Void> requestEntity = RequestEntity
                 .get(url)
                 .build();
+        sleep();
         ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
         String responseBody = responseEntity.getBody();
         JsonNode rootNode;
@@ -183,6 +199,7 @@ public class SimpleOhlcvClient extends OhlcvClient {
                         .get(url)
                         .headers(headers)
                         .build();
+                sleep();
                 responseEntity = restTemplate.exchange(requestEntity, String.class);
 
                 JsonNode rootNode;
@@ -215,29 +232,6 @@ public class SimpleOhlcvClient extends OhlcvClient {
 
         // return
         return ohlcvs;
-    }
-
-    /**
-     * detects data not found exception
-     * @param e http client error exception
-     * @return is data not found error
-     */
-    boolean isDataNotFoundError(HttpClientErrorException e) {
-        if (e.getStatusCode() == HttpStatus.BAD_REQUEST) {
-            String responseBody = e.getResponseBodyAsString();
-            try {
-                ObjectMapper objectMapper = new ObjectMapper();
-                JsonNode errorNode = objectMapper.readTree(responseBody).path("chart").path("error");
-                String code = errorNode.path("code").asText();
-                String description = errorNode.path("description").asText();
-                if ("Bad Request".equals(code) && description.contains("Data doesn't exist")) {
-                    return true;
-                }
-            } catch (JsonProcessingException jsonProcessingException) {
-                return false;
-            }
-        }
-        return false;
     }
 
     /**

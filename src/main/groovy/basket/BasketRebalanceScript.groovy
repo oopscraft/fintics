@@ -41,16 +41,26 @@ class ItemScore {
 
 def getChartScore(item) {
     def score = [:]
+    // get asset
     def assetId = "${basket.getMarket()}.${item.symbol}"
     Asset asset = assetService.getAsset(assetId).orElse(null);
     if (asset == null) {
         return 0.0
     }
-    List<Ohlcv> ohlcvs = ohlcvClient.getOhlcvs(asset, Ohlcv.Type.DAILY, null, null)
-    Ohlcv ohlcv = ohlcvs.first()
+    // get ohlcvs
+    def dateTimeFrom = LocalDateTime.now().minusYears(1)
+    def dateTimeTo = LocalDateTime.now()
+    List<Ohlcv> ohlcvs = ohlcvClient.getOhlcvs(asset, Ohlcv.Type.DAILY, dateTimeFrom, dateTimeTo)
+    def ohlcv = ohlcvs.first()
+    // ema50
     List<Ema> ema50s = Tools.indicators(ohlcvs, EmaContext.of(50))
-    Ema ema50 = ema50s.first()
+    def ema50 = ema50s.first()
     score.ema50PriceOverValue = ohlcv.close > ema50.value ? 100 : 0
+    // macd
+    List<Macd> macds = Tools.indicators(ohlcvs, MacdContext.DEFAULT)
+    def macd = macds.first()
+    score.macdValue = macd.value > 0 ? 100 : 0
+    // return
     return score.values().average()
 }
 
@@ -112,6 +122,9 @@ def fnguidContinuousBuyWith3Items = getFnguideItems("https://comp.fnguide.com/SV
 println("fnguidContinuousBuyWith3Items: ${fnguidContinuousBuyWith3Items}")
 itemScores.addAll(fnguidContinuousBuyWith3Items.collect{ItemScore.of(it, 1.0)})
 
+// chart score
+itemScores = itemScores.findAll{getChartScore(it.item) > 50}
+
 // group by sum
 def aggregatedItemScore = itemScores
         .groupBy {it.item}
@@ -126,17 +139,9 @@ def top10ItemScores = aggregatedItemScore
         .take(20)
 println("top10ItemScores: ${top10ItemScores}")
 
-
-// for test
-println("basket: ${basket}")
-println("ohlcvClient: ${ohlcvClient}")
-
-def chartScore = getChartScore(top10ItemScores.first().item)
-println("chartScore: ${chartScore}")
-
 // return
 List<BasketChange> basketChanges = top10ItemScores.collect{
-    BasketChange.of(it.item.symbol, 5)
+    BasketChange.of(it.item.symbol, 5.0)
 }
 println("basketChanges: ${basketChanges}")
 return basketChanges
