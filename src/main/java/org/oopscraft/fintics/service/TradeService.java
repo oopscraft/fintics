@@ -14,6 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -33,6 +35,8 @@ public class TradeService {
     private final BasketService basketService;
 
     private final BrokerService brokerService;
+
+    private final OrderService orderService;
 
     private final BrokerClientFactory brokerClientFactory;
 
@@ -171,27 +175,37 @@ public class TradeService {
         }
     }
 
-    public Page<Simulate> getSimulates(String tradeId, Simulate.Status status, Boolean favorite, Pageable pageable) {
-        // where
-        Specification<SimulateEntity> specification = Specification.where(null);
-        specification = specification
-                .and(SimulateSpecifications.equalTradeId(tradeId))
-                .and(Optional.ofNullable(status)
-                        .map(SimulateSpecifications::equalStatus)
-                        .orElse(null))
-                .and(Optional.ofNullable(favorite)
-                        .map(SimulateSpecifications::equalFavorite)
-                        .orElse(null));
-        // sort
-        Sort sort = Sort.by(SimulateEntity_.STARTED_AT).descending();
-        pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
-        // find
-        Page<SimulateEntity> simulateEntityPage = simulateRepository.findAll(specification, pageable);
-        List<Simulate> simulates = simulateEntityPage.getContent().stream()
-                .map(Simulate::from)
-                .toList();
-        long total = simulateEntityPage.getTotalElements();
-        return new PageImpl<>(simulates, pageable, total);
+    /**
+     * submit order
+     * @param order order
+     * @return submitted order
+     */
+    public Order submitOrder(Order order) {
+        try {
+            Trade trade = getTrade(order.getTradeId()).orElseThrow();
+            Broker broker = brokerService.getBroker(trade.getBrokerId()).orElseThrow();
+            BrokerClient brokerClient = brokerClientFactory.getObject(broker);
+            Basket basket = basketService.getBasket(trade.getBasketId()).orElseThrow();
+            BasketAsset basketAsset = basket.getBasketAsset(order.getAssetId()).orElseThrow();
+            // price
+            OrderBook orderBook = brokerClient.getOrderBook(basketAsset);
+            BigDecimal tickPrice = brokerClient.getTickPrice(basketAsset, orderBook.getPrice());
+            BigDecimal price = switch (order.getType()) {
+                case BUY -> orderBook.getBidPrice().add(tickPrice);
+                case SELL -> orderBook.getAskPrice().subtract(tickPrice);
+            };
+            order.setPrice(price);
+            // submit
+            brokerClient.submitOrder(basketAsset, order);
+            order.setResult(Order.Result.COMPLETED);
+        } catch (Throwable e) {
+            order.setResult(Order.Result.FAILED);
+            throw new RuntimeException(e);
+        } finally {
+            orderService.saveOrder(order);
+        }
+        // return
+        return order;
     }
 
 }

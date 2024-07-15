@@ -159,7 +159,7 @@ insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
 insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`sort`,`icon`) values
     ('orders','Y',null,'Orders','/orders',7,'/static/image/icon-order.svg');
 insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
-    ('orders','ko','거래이력');
+    ('orders','ko','거래');
 insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`sort`,`icon`) values
     ('simulates','Y',null,'Simulates','/simulates',8,'/static/image/icon-simulate.svg');
 insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values

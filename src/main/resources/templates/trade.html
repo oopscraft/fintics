@@ -214,6 +214,11 @@
                 });
         }
 
+        function sellBalanceAsset(assetId) {
+            let balanceAsset = balance.balanceAssets.find(it => it.assetId === assetId);
+            submitOrderDialog.open(trade, balanceAsset, 'SELL');
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             let tabFolder = duice.tabFolder(
                 duice.tabItem(
@@ -751,6 +756,7 @@
                                 <col/>
                                 <col/>
                                 <col/>
+                                <col/>
                             </colgroup>
                             <thead>
                             <tr>
@@ -762,15 +768,16 @@
                                 <th data-th-text="#{fintics.BalanceAsset.valuationAmount}" class="text-align--right"></th>
                                 <th data-th-text="#{fintics.BalanceAsset.profitAmount}" class="text-align--right"></th>
                                 <th data-th-text="#{fintics.BalanceAsset.profitPercentage}" class="text-align--right"></th>
-                                <th data-th-text="#{fintics.Asset.links}">-</th>
+                                <th data-th-text="#{fintics.Asset.links}"></th>
+                                <th>-</th>
                             </tr>
                             </thead>
                             <tbody class="font-size--smaller">
                             <tr data-duice-bind="balance.balanceAssets"
                                 data-duice-loop="balanceAsset,status"
                                 data-duice-execute="
-                                    let length = trade.tradeAssets.filter(tradeAsset => {
-                                        return tradeAsset.assetId === balanceAsset.assetId;
+                                    let length = basket.basketAssets.filter(basketAsset => {
+                                        return basketAsset.assetId === balanceAsset.assetId;
                                     }).length;
                                     if(length === 0) {
                                         this.style.opacity=0.5;
@@ -822,6 +829,17 @@
                                         <option value>- Link -</option>
                                     </select>
                                 </td>
+                                <td>
+                                    <button class="small"
+                                            type="button"
+                                            data-duice-bind="balanceAsset"
+                                            data-duice-execute="this.dataset.assetId=balanceAsset.assetId;"
+                                            onclick="sellBalanceAsset(this.dataset.assetId);"
+                                            th:classappend="!${#authorization.expression('hasAuthority(''TRADES_EDIT'')')}?'locked'">
+                                        <img class="icon" th:src="@{/static/image/icon-order-sell.svg}" alt="sell"/>
+                                        <span data-th-text="#{fintics.Order.Type.SELL}"></span>
+                                    </button>
+                                </td>
                             </tr>
                             <tr data-duice-bind="balance.balanceAssets" data-duice-execute="if(balance.balanceAssets.length === 0) this.hidden=false;" hidden>
                                 <td colspan="100%" class="text-align--center">No Data</td>
@@ -836,5 +854,110 @@
         <!-- end: balance                           -->
         <!-- ====================================== -->
     </div>
+
+    <th:block th:fragment="submitOrderDialog">
+        <!-- ================================== -->
+        <!-- submit order dialog                -->
+        <!-- ================================== -->
+        <dialog id="submitOrderDialog">
+            <style th:inline="css">
+                #submitOrderDialog {
+                    width: 600px;
+                    padding: 1.5rem;
+                }
+            </style>
+            <script th:inline="javascript">
+                const submitOrderDialog = {
+                    dialog: new duice.dialog.Dialog(document.getElementById('submitOrderDialog')),
+                    order: new duice.ObjectProxy({
+                        tradeId: null,
+                        tradeName: null,
+                        assetId: null,
+                        assetName: null,
+                        type: null,
+                        kind: 'MARKET',
+                        quantity: 1
+                    }),
+                    open: async function(trade, asset, type) {
+                        duice.ObjectProxy.reset(this.order);
+                        this.order.tradeId = trade.tradeId;
+                        this.order.tradeName = trade.tradeName;
+                        this.order.assetId = asset.assetId;
+                        this.order.assetName = asset.assetName;
+                        this.order.type = type;
+                        return this.dialog.open();
+                    },
+                    confirm: async function() {
+                        if(!this.order.quantity) {
+                            await _alert(/*[[#{web.global.itemEmpty(#{fintics.Order.quantity})}]]*/'');
+                            duice.ObjectProxy.focus(this.order, 'quantity');
+                            return false;
+                        }
+                        _confirm(/*[[#{web.global.requestItemConfirm(#{fintics.Order})}]]*/'')
+                            .then(result => {
+                                let url = new URL(`${_apiUrl}/v1/trades/${this.order.tradeId}/orders`, document.location.origin);
+                                if (result) {
+                                    _fetch(url, {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json'
+                                        },
+                                        body: JSON.stringify(this.order)
+                                    }).then(response => response.json())
+                                        .then(data => {
+                                            _alert(/*[[#{web.global.requestItemComplete(#{fintics.Order})}]]*/'')
+                                                .then(() => {});
+                                        });
+                                }
+                            });
+                        this.dialog.close();
+                    }
+                }
+            </script>
+            <div class="display--grid grid-gap--1em">
+                <h2>
+                    <img class="icon" th:src="@{/static/image/icon-order.svg}" alt="asset"/>
+                    <span data-th-text="#{fintics.Order}"></span>
+                </h2>
+                <form onsubmit="return false;" class="display--grid grid-template-columns--12 grid-gap--1em">
+                    <label class="grid-column--6">
+                        <span data-th-text="#{fintics.Trade}" class="font-weight--bold"></span>
+                        <input type="text" data-duice-bind="submitOrderDialog.order" data-duice-property="tradeName" class="width--100"/>
+                    </label>
+                    <label class="grid-column--6">
+                        <span data-th-text="#{fintics.Asset}" class="font-weight--bold"></span>
+                        <input type="text" data-duice-bind="submitOrderDialog.order" data-duice-property="assetName" class="width--100"/>
+                    </label>
+                    <label class="grid-column--6">
+                        <span data-th-text="#{fintics.Order.type}" class="font-weight--bold"></span>
+                        <select data-duice-bind="submitOrderDialog.order" data-duice-property="type" class="width--100">
+                            <option value="BUY" data-th-text="#{fintics.Order.Type.BUY}"></option>
+                            <option value="SELL" data-th-text="#{fintics.Order.Type.SELL}"></option>
+                        </select>
+                    </label>
+                    <label class="grid-column--6">
+                        <span data-th-text="#{fintics.Order.kind}" class="font-weight--bold"></span>
+                        <select data-duice-bind="submitOrderDialog.order" data-duice-property="kind" class="width--100">
+                            <option value="MARKET" data-th-text="#{fintics.Order.Kind.MARKET}"></option>
+                            <option value="LIMIT" data-th-text="#{fintics.Order.Kind.LIMIT}"></option>
+                        </select>
+                    </label>
+                    <label class="grid-column--6">
+                        <span data-th-text="#{fintics.Order.quantity}" class="font-weight--bold"></span>
+                        <input type="number" data-duice-bind="submitOrderDialog.order" data-duice-property="quantity" class="width--100"/>
+                    </label>
+                </form>
+                <div class="display--flex justify-content--flex-end">
+                    <button onclick="submitOrderDialog.confirm();">
+                        <img class="icon" th:src="@{/static/image/icon-confirm.svg}" alt="confirm"/>
+                        <span data-th-text="#{web.global.confirm}"></span>
+                    </button>
+                </div>
+            </div>
+        </dialog>
+        <!-- ================================== -->
+        <!-- submit order dialog                -->
+        <!-- ================================== -->
+    </th:block>
 
 </th:block>

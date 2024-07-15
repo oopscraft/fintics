@@ -200,6 +200,14 @@
                             basketAsset.profitPercentage = balanceAsset.profitPercentage;
                         }
                     });
+                },
+                buyTradeAsset: function(assetId) {
+                    let asset = this.basket.basketAssets.find(it => it.assetId === assetId);
+                    submitOrderDialog.open(this.trade, asset, 'BUY');
+                },
+                sellTradeAsset: function(assetId) {
+                    let asset = this.basket.basketAssets.find(it => it.assetId === assetId);
+                    submitOrderDialog.open(this.trade, asset, 'SELL');
                 }
             });
             // saves monitor to map
@@ -437,6 +445,7 @@
                         <col/>
                         <col/>
                         <col/>
+                        <col/>
                     </colgroup>
                     <thead>
                     <tr>
@@ -470,6 +479,9 @@
                         <th class="text-align--right padding-right--1em">
                             <div data-th-text="#{fintics.BalanceAsset.profitAmount}"></div>
                             <div data-th-text="#{fintics.BalanceAsset.profitPercentage}"></div>
+                        </th>
+                        <th class="text-align--center">
+                            <span data-th-text="#{fintics.Order}"></span>
                         </th>
                     </tr>
                     </thead>
@@ -547,6 +559,27 @@
                                 this.innerHTML = `${basketAsset.profitPercentage} %`;
                                 "></div>
                         </td>
+                        <td class="text-align--center">
+                            <button class="small"
+                                    type="button"
+                                    data-duice-bind="basketAsset"
+                                    data-duice-execute="this.dataset.assetId=basketAsset.assetId"
+                                    th:attr="onclick=|monitorMap.get('${trade.tradeId}').buyTradeAsset(this.dataset.assetId);|"
+                                    th:classappend="!${#authorization.expression('hasAuthority(''TRADES_EDIT'')')}?'locked'">
+                                <img class="icon" th:src="@{/static/image/icon-order-buy.svg}" alt="buy"/>
+                                <span data-th-text="#{fintics.Order.Type.BUY}"></span>
+                            </button>
+                            <br/>
+                            <button class="small"
+                                    type="button"
+                                    data-duice-bind="basketAsset"
+                                    data-duice-execute="this.dataset.assetId=basketAsset.assetId;"
+                                    th:attr="onclick=|monitorMap.get('${trade.tradeId}').sellTradeAsset(this.dataset.assetId);|"
+                                    th:classappend="!${#authorization.expression('hasAuthority(''TRADES_EDIT'')')}?'locked'">
+                                <img class="icon" th:src="@{/static/image/icon-order-sell.svg}" alt="sell"/>
+                                <span data-th-text="#{fintics.Order.Type.SELL}"></span>
+                            </button>
+                        </td>
                     </tr>
                     <tr th:data-duice-bind="|monitorMap.get('${trade.tradeId}').basket.basketAssets|"
                         th:data-duice-if="|return monitorMap.get('${trade.tradeId}').basket.basketAssets.length < 1|"
@@ -563,5 +596,7 @@
     <!-- ================================== -->
     <!-- end: trade                         -->
     <!-- ================================== -->
+
+    <th:block th:insert="trade.html :: submitOrderDialog"/>
 
 </th:block>

@@ -5,6 +5,8 @@ import org.oopscraft.fintics.dao.BasketEntity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Data
 @Builder
@@ -32,6 +34,17 @@ public class Basket {
 
     @Builder.Default
     private List<BasketAsset> basketAssets = new ArrayList<>();
+
+    /**
+     * gets specified basket asset
+     * @param assetId asset id
+     * @return basket asset
+     */
+    public Optional<BasketAsset> getBasketAsset(String assetId) {
+        return basketAssets.stream()
+                .filter(it -> Objects.equals(it.getAssetId(), assetId))
+                .findFirst();
+    }
 
     public static Basket from(BasketEntity basketEntity) {
         return Basket.builder()

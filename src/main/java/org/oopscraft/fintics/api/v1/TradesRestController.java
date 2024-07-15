@@ -20,6 +20,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -215,6 +216,34 @@ public class TradesRestController {
     }
 
     /**
+     * submit order
+     * @param tradeId trade id
+     * @param orderRequest order request
+     * @return saved order response
+     */
+    @PostMapping("{tradeId}/orders")
+    public ResponseEntity<OrderResponse> submitOrder(
+            @PathVariable("tradeId")
+            @Parameter(description = "trade id")
+                    String tradeId,
+            @RequestBody
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "order request")
+                    OrderRequest orderRequest
+    ) {
+        Order order = Order.builder()
+                .orderAt(Instant.now())
+                .type(orderRequest.getType())
+                .kind(orderRequest.getKind())
+                .tradeId(tradeId)
+                .assetId(orderRequest.getAssetId())
+                .quantity(orderRequest.getQuantity())
+                .build();
+        Order savedOrder = tradeService.submitOrder(order);
+        OrderResponse savedOrderResponse = OrderResponse.from(savedOrder);
+        return ResponseEntity.ok(savedOrderResponse);
+    }
+
+    /**
      * gets trade balance
      * @param tradeId trade id
      * @return balance
@@ -230,40 +259,6 @@ public class TradesRestController {
                 .map(BalanceResponse::from)
                 .orElseThrow();
         return ResponseEntity.ok(balanceResponse);
-    }
-
-    /**
-     * gets trade simulates
-     * @param tradeId trade id
-     * @param status status
-     * @param favorite favorite
-     * @param pageable pageable
-     * @return list of simulate
-     */
-    @GetMapping("{tradeId}/simulates")
-    @Operation(description = "gets trade simulates")
-    public ResponseEntity<List<SimulateResponse>> getTradeSimulates(
-            @PathVariable("tradeId")
-            @Parameter(description = "trade id")
-                    String tradeId,
-            @RequestParam(value = "status", required = false)
-            @Parameter(description = "status")
-                    Simulate.Status status,
-            @RequestParam(value = "favorite", required = false)
-            @Parameter(description = "favorite")
-                    Boolean favorite,
-            @PageableDefault
-            @Parameter(hidden = true)
-                    Pageable pageable
-    ){
-        Page<Simulate> simulatePage = tradeService.getSimulates(tradeId, status, favorite, pageable);
-        List<SimulateResponse> simulateResponses = simulatePage.getContent().stream()
-                .map(SimulateResponse::from)
-                .toList();
-        long total = simulatePage.getTotalElements();
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_RANGE, PageableUtils.toContentRange("simulates", pageable, total))
-                .body(simulateResponses);
     }
 
 }

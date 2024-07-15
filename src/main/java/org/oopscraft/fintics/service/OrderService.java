@@ -26,6 +26,12 @@ public class OrderService {
 
     private final ObjectMapper objectMapper;
 
+    /**
+     * gets order history
+     * @param orderSearch order search condition
+     * @param pageable pageable
+     * @return page of order
+     */
     public Page<Order> getOrders(OrderSearch orderSearch, Pageable pageable) {
         Page<OrderEntity> orderEntityPage = orderRepository.findAll(orderSearch, pageable);
         List<Order> orders = orderEntityPage.getContent().stream()
@@ -35,6 +41,11 @@ public class OrderService {
         return new PageImpl<>(orders, pageable, total);
     }
 
+    /**
+     * saves order history
+     * @param order order
+     * @return saved order
+     */
     public Order saveOrder(Order order) {
         OrderEntity orderEntity;
         if(order.getOrderId() != null) {
