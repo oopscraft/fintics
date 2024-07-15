@@ -251,7 +251,7 @@ public class UsAssetClient extends AssetClient {
                 Map<String, String> map = summaryDataMap.get(name);
                 String value = map.get("value");
                 if (name.equals("PERatio")) {
-                    per = new BigDecimal(value);
+                    per = convertStringToNumber(value);
                 }
                 if(name.equals("EarningsPerShare")) {
                     eps = convertCurrencyToNumber(value);
@@ -386,17 +386,38 @@ public class UsAssetClient extends AssetClient {
     }
 
     /**
+     * converts string to number
+     * @param value string
+     * @return number
+     */
+    BigDecimal convertStringToNumber(String value) {
+        if (value == null) {
+            return null;
+        }
+        value = value.replace(",", "");
+        try {
+            return new BigDecimal(value);
+        }catch(Throwable e){
+            return null;
+        }
+    }
+
+    /**
      * converts currency string to number
      * @param value currency string
      * @return currency number
      */
     BigDecimal convertCurrencyToNumber(String value) {
-        if(value != null) {
+        if (value == null) {
+            return null;
+        }
+        try {
             value = value.replace(CURRENCY_USD.getSymbol(), "");
             value = value.replace(",","");
             return new BigDecimal(value);
+        } catch (Throwable e) {
+            return null;
         }
-        return null;
     }
 
     /**
