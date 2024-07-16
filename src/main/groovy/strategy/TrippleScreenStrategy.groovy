@@ -55,8 +55,8 @@ interface Analyzable {
 class Analysis implements Analyzable {
     List<Ohlcv> ohlcvs
     Ohlcv ohlcv
-    List<Sma> sma20s
-    Sma sma20
+    List<Sma> sma5s
+    Sma sma5
     List<Sma> sma50s
     Sma sma50
     List<Ema> emas
@@ -83,8 +83,8 @@ class Analysis implements Analyzable {
     Analysis(TradeAsset profile, Ohlcv.Type type, int period) {
         this.ohlcvs = profile.getOhlcvs(type, period)
         this.ohlcv = this.ohlcvs.first()
-        this.sma20s = Tools.indicators(ohlcvs, SmaContext.of(20))
-        this.sma20 = sma20s.first()
+        this.sma5s = Tools.indicators(ohlcvs, SmaContext.of(5))
+        this.sma5 = sma5s.first()
         this.sma50s = Tools.indicators(ohlcvs, SmaContext.of(50))
         this.sma50 = sma50s.first()
         this.emas = Tools.indicators(ohlcvs, EmaContext.DEFAULT)
@@ -132,8 +132,8 @@ class Analysis implements Analyzable {
     @Override
     Scorable getTrendScore() {
         def score = new Score()
-        // sma50
-        score.sma50Value = ohlcv.close > sma50.value ? 100 : 0
+        // sma5Over50
+        score.sma5Over50 = sma5.value > sma50.value ? 100 : 0
         // macd
         score.macdValue = macd.value > 0 ? 100 : 0
         // return
@@ -202,14 +202,14 @@ class Analysis implements Analyzable {
     @Override
     Scorable getOversoldScore() {
         def score = new Score()
-        // rsi
+        // rsi: 30 이하인 경우 과매도 판정
         score.rsi = rsis.take(3).any{it.value <= 30} ? 100 : 0
-        // stochastic slow
+        // cci: -100 이하인 경우 과매도 판정
+        score.cci = ccis.take(3).any{it.value <= -100} ? 100 : 0
+        // stochastic slow: 20 이하인 경우 과매도 판정
         score.stochasticSlow = stochasticSlows.take(3).any{it.slowK <= 20} ? 100 : 0
-        // williams r
+        // williams r: -80 이하인 경우 과매도 판정
         score.williamsR = williamsRs.take(3).any{it.value <= -80} ? 100 : 0
-        // cci
-        score.cci = williamsRs.take(3).any{it.value <= -100} ? 100 : 0
         // return
         return score
     }
@@ -217,14 +217,14 @@ class Analysis implements Analyzable {
     @Override
     Scorable getOverboughtScore() {
         def score = new Score()
-        // rsi
+        // rsi: 70 이상인 경우 과매수 구간 판정
         score.rsi = rsis.take(3).any{it.value >= 70} ? 100 : 0
-        // stochastic slow
+        // cci: 100 이상인 경우 과매수 판정
+        score.cci = ccis.take(3).any{it.value >= 100} ? 100 : 0
+        // stochastic slow: 80 이상인 경우 과매수 판정
         score.stochasticSlow = stochasticSlows.take(3).any{it.slowK >= 80} ? 100 : 0
-        // williams r
+        // williams r: -20 이상인 경우 과매수 판정
         score.williamsR = williamsRs.take(3).any{it.value >= -20} ? 100 : 0
-        // cci
-        score.cci = ccis.take(3).collect{it.value >= 100} ? 100 : 0
         // return
         return score
     }
@@ -303,13 +303,14 @@ class AnalysisGroup extends LinkedHashMap<String, Analyzable> implements Analyza
 
 // config
 log.info("variables: {}", variables)
-def tideOhlcvType = variables['tideOhlcvType'] as Ohlcv.Type
-def tideOhlcvPeriod = variables['tideOhlcvPeriod'] as Integer
-def waveOhlcvType = variables['waveOhlcvType'] as Ohlcv.Type
-def waveOhlcvPeriod = variables['waveOhlcvPeriod'] as Integer
-def rippleOhlcvType = variables['rippleOhlcvType'] as Ohlcv.Type
-def rippleOhlcvPeriod = variables['rippleOhlcvPeriod'] as Integer
-def basePosition = variables['basePosition'] as BigDecimal
+def tideOhlcvType = Ohlcv.Type.valueOf(variables['tideOhlcvType'])
+def tideOhlcvPeriod = Integer.parseInt(variables['tideOhlcvPeriod'])
+def waveOhlcvType = Ohlcv.Type.valueOf(variables['waveOhlcvType'])
+def waveOhlcvPeriod = Integer.parseInt(variables['waveOhlcvPeriod'])
+def rippleOhlcvType = Ohlcv.Type.valueOf(variables['rippleOhlcvType'])
+def rippleOhlcvPeriod = Integer.parseInt(variables['rippleOhlcvPeriod'])
+def orderEnabled = Boolean.parseBoolean(variables['orderEnabled'])
+def basePosition = new BigDecimal(variables['basePosition'])
 
 // result
 StrategyResult strategyResult = null
@@ -325,13 +326,13 @@ log.info("wave.oversold: {}", waveAnalysis.getOversoldScore())
 log.info("wave.overbought: {}", waveAnalysis.getOverboughtScore())
 log.info("ripple.momentum: {}", rippleAnalysis.getMomentumScore())
 
-// position
+// position 산정
 def positionScore = tideAnalysis.getTrendScore().getAverage()
 def marginPosition = 1.0 - basePosition
 def positionPerScore = (marginPosition/100)
 def position = (basePosition + (positionPerScore * positionScore)) as BigDecimal
 
-// tide,wave,ripple average position
+// tide,wave,ripple 별 average position 산정
 def tideAveragePosition = tideAnalysis.applyAveragePosition(position)
 def waveAveragePosition = waveAnalysis.applyAveragePosition(position)
 def rippleAveragePosition = tideAnalysis.applyAveragePosition(position)
@@ -340,7 +341,7 @@ log.info("tideAveragePosition: {}", tideAveragePosition)
 log.info("waveAveragePosition: {}", waveAveragePosition)
 log.info("rippleAveragePosition: {}", rippleAveragePosition)
 
-// message
+// message 정의
 def message = """
 position:${position} (tide:${tideAveragePosition}|wave:${waveAveragePosition}|ripple:${rippleAveragePosition})
 tide.tre:${tideAnalysis.getTrendScore()}
@@ -359,7 +360,7 @@ if (waveAnalysis.getVolatilityScore() > 50) {
         // 단기 상승 모멘텀
         if (rippleAnalysis.getMomentumScore() > 80) {
             // 매수 포지션
-            strategyResult = StrategyResult.of(Action.BUY, waveAveragePosition, "wave oversold buy: " + message)
+            strategyResult = StrategyResult.of(Action.BUY, waveAveragePosition, "[WAVE OVERSOLD BUY] " + message)
         }
     }
     // 중기 과매수 상태
@@ -367,19 +368,19 @@ if (waveAnalysis.getVolatilityScore() > 50) {
         // 단기 하락 모멘텀
         if (rippleAnalysis.getMomentumScore() < 20) {
             // 매도 포지션
-            strategyResult = StrategyResult.of(Action.SELL, waveAveragePosition, "wave overbought sell: " + message)
+            strategyResult = StrategyResult.of(Action.SELL, waveAveragePosition, "[WAVE OVERBOUGHT SELL] " + message)
         }
     }
 }
 
-// tide volatility 생태인 경우
+// tide volatility 상태인 경우
 if (tideAnalysis.getVolatilityScore() > 50) {
     // 장기 과매도 상태
     if (tideAnalysis.getOversoldScore() > 50) {
         // 중기 상승 모멘텀
         if (waveAnalysis.getMomentumScore() > 80) {
             // 매수 포지션
-            strategyResult = StrategyResult.of(Action.BUY, tideAveragePosition, "tide oversold buy: " + message)
+            strategyResult = StrategyResult.of(Action.BUY, tideAveragePosition, "[TIDE OVERSOLD BUY] " + message)
         }
     }
     // 장기 과매수 상태
@@ -387,9 +388,18 @@ if (tideAnalysis.getVolatilityScore() > 50) {
         // 중기 하락 모멘텀
         if (waveAnalysis.getMomentumScore() < 20) {
             // 매도 포지션
-            strategyResult = StrategyResult.of(Action.SELL, tideAveragePosition, "tide overbought sold: " + message)
+            strategyResult = StrategyResult.of(Action.SELL, tideAveragePosition, "[TIDE OVERBOUGHT SOLD]: " + message)
         }
     }
+}
+
+// TODO trend score 가 1.0 미달인 경우 training stop 적용 검토 예정
+
+// orderEnabled 설정 이 true 가 아닐 경우는 실제 주문 제외
+log.info("orderEnabled: {}", orderEnabled)
+if (!orderEnabled) {
+    log.info("override strategyResult to be null")
+    strategyResult = null
 }
 
 // return
