@@ -503,7 +503,11 @@
                                     if (basketAsset.quantity > 0) {
                                         this.classList.add('font-weight--bold');
                                     }"></span>
-                                [<span data-duice-bind="basketAsset" data-duice-property="holdingWeight"></span>%]
+                                (<span data-duice-bind="basketAsset" data-duice-property="holdingWeight"></span>%)
+                                <img class="icon font-size--smaller"
+                                     th:src="@{/static/image/icon-pin.svg}"
+                                     data-duice-bind="basketAsset"
+                                     data-duice-if="return basketAsset.fixed"/>
                                 <br/>
                                 <span class="font-weight--bold"
                                       data-duice-bind="basketAsset"
