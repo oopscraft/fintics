@@ -572,17 +572,20 @@
                                     this.innerHTML = `${close?.toLocaleString()||''} (${netChange} <small>/</small> ${netChangePercentage}%)`;
                                     "></span>
                                 <span class="link" data-duice-bind="basketAsset" data-duice-if="return basketAsset.buyCount > 0;"
-                                    th:data-duice-execute="|
+                                      th:data-duice-execute="|
                                     this.dataset.tradeId = '${trade.tradeId}';
                                     this.dataset.assetId = basketAsset.assetId;
                                     |"
                                     onclick="_openLink(`${_rootUrl}/orders?tradeId=${this.dataset.tradeId}&assetId=${this.dataset.assetId}`, '_blank');">
-                                    <img class="icon" th:src="@{/static/image/icon-order-buy.svg}" alt=""/>
-                                    <span data-duice-bind="basketAsset" data-duice-property="buyCount"></span>
-                                </span>
-                                <span class="link" data-duice-bind="basketAsset" data-duice-if="return basketAsset.sellCount > 0;">
-                                    <img class="icon" th:src="@{/static/image/icon-order-sell.svg}" alt=""/>
-                                    <span data-duice-bind="basketAsset" data-duice-property="sellCount"></span>
+                                    <span class="link" data-duice-bind="basketAsset" data-duice-if="return basketAsset.buyCount > 0;">
+                                        <img class="icon" th:src="@{/static/image/icon-order-buy.svg}" alt=""/>
+                                        <span data-duice-bind="basketAsset" data-duice-property="buyCount"></span>
+                                    </span>
+                                    <small>|</small>
+                                    <span class="link" data-duice-bind="basketAsset" data-duice-if="return basketAsset.sellCount > 0;">
+                                        <img class="icon" th:src="@{/static/image/icon-order-sell.svg}" alt=""/>
+                                        <span data-duice-bind="basketAsset" data-duice-property="sellCount"></span>
+                                    </span>
                                 </span>
                             </div>
                         </td>
