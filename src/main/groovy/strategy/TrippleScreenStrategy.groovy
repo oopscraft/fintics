@@ -60,6 +60,8 @@ class Analysis implements Analyzable {
     Sma sma5
     List<Sma> sma50s
     Sma sma50
+    List<Sma> sma100s
+    Sma sma100
     List<Ema> emas
     Ema ema
     List<Macd> macds
@@ -90,6 +92,8 @@ class Analysis implements Analyzable {
         this.sma5 = sma5s.first()
         this.sma50s = Tools.indicators(ohlcvs, SmaContext.of(50))
         this.sma50 = sma50s.first()
+        this.sma100s = Tools.indicators(ohlcvs, SmaContext.of(100))
+        this.sma100 = sma100s.first()
         this.emas = Tools.indicators(ohlcvs, EmaContext.DEFAULT)
         this.ema = emas.first()
         this.macds = Tools.indicators(ohlcvs, MacdContext.DEFAULT)
@@ -139,6 +143,8 @@ class Analysis implements Analyzable {
         def score = new Score()
         // sma5Over50
         score.sma5Over50 = sma5.value > sma50.value ? 100 : 0
+        // sma5Over100
+        score.sma5Over100 = sma5.value > sma100.value ? 100 : 0
         // macd
         score.macdValue = macd.value > 0 ? 100 : 0
         // return
@@ -373,7 +379,7 @@ log.info("profitPercentage: {}", profitPercentage)
 def message = """
 position:${position} (tide:${tideAveragePosition}|wave:${waveAveragePosition}|ripple:${rippleAveragePosition})
 tide.mom:${tideAnalysis.getMomentumScore().getAverage()}|tre:${tideAnalysis.getTrendScore().getAverage()}
-+ sma5:${tideAnalysis.sma5.value}|sma50:${tideAnalysis.sma50.value}|macd:${tideAnalysis.macd.value}
++ sma5:${tideAnalysis.sma5.value}|sma50:${tideAnalysis.sma50.value}|sma100:${tideAnalysis.sma100.value}|macd:${tideAnalysis.macd.value}
 wave.mon:${waveAnalysis.getMomentumScore().getAverage()}|vol:${waveAnalysis.getVolatilityScore().getAverage()}|osd:${waveAnalysis.getOversoldScore().getAverage()}|obt:${waveAnalysis.getOverboughtScore().getAverage()}|tst:${waveAnalysis.getTrailingStopScore().getAverage()}
 + adx:${waveAnalysis.dmi.adx}|rsi:${waveAnalysis.rsi.value}|sto:${waveAnalysis.stochasticSlow.slowK}|cci:${waveAnalysis.cci.value}|wil:${waveAnalysis.williamsR.value}
 ripple.mom:${rippleAnalysis.getMomentumScore().getAverage()}
