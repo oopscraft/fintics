@@ -205,7 +205,7 @@
                 },
                 getOrders: function() {
                     let url = new URL(`${_apiUrl}/v1/orders`, document.location.origin);
-                    let orderAtFrom = dateFns.subHours(new Date(), 48).toISOString();
+                    let orderAtFrom = dateFns.subHours(new Date(), 12).toISOString();
                     let orderAtTo = new Date().toISOString();
                     url.searchParams.append('orderAtFrom', orderAtFrom);
                     url.searchParams.append('orderAtTo', orderAtTo);
