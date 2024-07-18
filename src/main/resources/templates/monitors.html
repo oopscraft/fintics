@@ -571,7 +571,7 @@
                                     if (netChange < 0) this.classList.add('color--blue');
                                     this.innerHTML = `${close?.toLocaleString()||''} (${netChange} <small>/</small> ${netChangePercentage}%)`;
                                     "></span>
-                                <span class="link" data-duice-bind="basketAsset" data-duice-if="return basketAsset.buyCount > 0;"
+                                <span class="link" data-duice-bind="basketAsset"
                                       th:data-duice-execute="|
                                     this.dataset.tradeId = '${trade.tradeId}';
                                     this.dataset.assetId = basketAsset.assetId;
