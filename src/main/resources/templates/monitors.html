@@ -23,6 +23,7 @@
                     basketAssets: []
                 })),
                 balance: {},
+                orders: [],
                 /**
                  * initialize
                  */
@@ -61,6 +62,7 @@
                     this.getNewses();
                     this.getTradeAssets();
                     this.getBalance();
+                    this.getOrders();
                 },
                 /**
                  * gets daily ohlcvs chart
@@ -201,13 +203,43 @@
                         }
                     });
                 },
+                getOrders: function() {
+                    let url = new URL(`${_apiUrl}/v1/orders`, document.location.origin);
+                    url.searchParams.append('tradeId', this.trade.tradeId);
+                    _fetch(url, null, true).then(response => response.json()).then(orders => {
+                        this.applyOrders(orders);
+                    });
+                },
+                applyOrders: function(orders) {
+                    duice.ArrayProxy.assign(this.orders, orders);
+                    const countMap = orders.reduce((acc, obj) => {
+                        const keyValue = obj['assetId'];
+                        if (!acc[keyValue]) {
+                            acc[keyValue] = 0;
+                        }
+                        acc[keyValue]++;
+                        return acc;
+                    }, {});
+                    Object.entries(countMap).forEach(([key, value]) => {
+                        let basketAsset = this.basket.basketAssets.find(it => it.assetId === key);
+                        if (basketAsset) {
+                            basketAsset.orderCount = value;
+                        }
+                    });
+                },
                 buyTradeAsset: function(assetId) {
                     let asset = this.basket.basketAssets.find(it => it.assetId === assetId);
-                    submitOrderDialog.open(this.trade, asset, 'BUY');
+                    submitOrderDialog.open(this.trade, asset, 'BUY')
+                    .then(() => {
+                        this.getBalance();
+                    });
                 },
                 sellTradeAsset: function(assetId) {
                     let asset = this.basket.basketAssets.find(it => it.assetId === assetId);
-                    submitOrderDialog.open(this.trade, asset, 'SELL');
+                    submitOrderDialog.open(this.trade, asset, 'SELL')
+                    .then(() => {
+                        this.getBalance();
+                    });
                 }
             });
             // saves monitor to map
@@ -508,6 +540,10 @@
                                      th:src="@{/static/image/icon-pin.svg}"
                                      data-duice-bind="basketAsset"
                                      data-duice-if="return basketAsset.fixed"/>
+                                <span class="badge"
+                                      data-duice-bind="basketAsset"
+                                      data-duice-property="orderCount"
+                                      data-duice-if="return basketAsset.orderCount > 0;"></span>
                                 <br/>
                                 <span class="font-weight--bold"
                                       data-duice-bind="basketAsset"

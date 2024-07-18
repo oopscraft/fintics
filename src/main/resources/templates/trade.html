@@ -906,11 +906,12 @@
                                     }).then(response => response.json())
                                         .then(data => {
                                             _alert(/*[[#{web.global.requestItemComplete(#{fintics.Order})}]]*/'')
-                                                .then(() => {});
+                                                .then(() => {
+                                                    this.dialog.close();
+                                                });
                                         });
                                 }
                             });
-                        this.dialog.close();
                     }
                 }
             </script>

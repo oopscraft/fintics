@@ -11,7 +11,7 @@ import java.time.ZoneId;
 import java.util.*;
 
 /**
- * profile
+ * trade asset
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -39,28 +39,44 @@ public class TradeAsset extends Asset {
     @Builder.Default
     private Map<String,Object> context = new HashMap<>();
 
+    /**
+     * gets net change
+     * @return net change
+     */
     public BigDecimal getNetChange() {
         return (close != null ? close : BigDecimal.ZERO)
                 .subtract(previousClose != null ? previousClose : BigDecimal.ZERO);
     }
 
+    /**
+     * gets net change percentage
+     * @return net change percentage
+     */
     public BigDecimal getNetChangePercentage() {
         if (previousClose == null || previousClose.compareTo(BigDecimal.ZERO) == 0) {
-            return BigDecimal.ZERO; // 이전 종가가 없거나 0이면 비율을 계산할 수 없음
+            return BigDecimal.ZERO; // if previous close not existed
         }
         return getNetChange()
                 .divide(previousClose, 4, RoundingMode.HALF_UP)
                 .multiply(BigDecimal.valueOf(100));
     }
 
+    /**
+     * gets intraday net change
+     * @return intraday net change
+     */
     public BigDecimal getIntraDayNetChange() {
         return (close != null ? close : BigDecimal.ZERO)
                 .subtract(open != null ? open : BigDecimal.ZERO);
     }
 
+    /**
+     * gets intraday net change percentage
+     * @return intraday net change percentage
+     */
     public BigDecimal getIntraDayNetChangePercentage() {
         if (open == null || open.compareTo(BigDecimal.ZERO) == 0) {
-            return BigDecimal.ZERO; // 시가가 없거나 0이면 비율을 계산할 수 없음
+            return BigDecimal.ZERO; // if open is not existed
         }
         return getIntraDayNetChange()
                 .divide(open, 4, RoundingMode.HALF_UP)
