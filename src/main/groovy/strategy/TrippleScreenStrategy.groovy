@@ -418,7 +418,7 @@ if (tideAnalysis.getTrendScore() < 20) {
     if (tideAnalysis.getMomentumScore() < 20 && waveAnalysis.getMomentumScore() < 20 && rippleAnalysis.getMomentumScore() < 20) {
         // 중기 trailing stop + 장기 average position 기준 으로 매도
         if (waveAnalysis.getTrailingStopScore() > 50) {
-            strategyResult = StrategyResult.of(Action.SELL, tideAveragePosition, "[TIDE LOWER TREND + WAVE TAILING STOP SELL] " + message)
+            //strategyResult = StrategyResult.of(Action.SELL, tideAveragePosition, "[TIDE LOWER TREND + WAVE TAILING STOP SELL] " + message)
         }
     }
 }
