@@ -238,7 +238,10 @@ class Analysis implements Analyzable {
     Scorable getTrailingStopScore() {
         def score = new Score()
         // atr
-        score.atrPriceUnderValue = ohlcv.low < (atr.value * 2.5) ? 100 : 0
+        def prevOhlcv = ohlcvs.get(1)
+        def prevAtr = atrs.get(1)
+        def stopPrice = prevOhlcv.high - (prevAtr.value * 2.0)
+        score.atrAtr = ohlcv.close < stopPrice ? 100 : 0
         // return
         return score
     }
@@ -369,11 +372,10 @@ log.info("profitPercentage: {}", profitPercentage)
 // message 정의
 def message = """
 position:${position} (tide:${tideAveragePosition}|wave:${waveAveragePosition}|ripple:${rippleAveragePosition})
-tide.tre:${tideAnalysis.getTrendScore()}|tst:${tideAnalysis.getTrailingStopScore()}
-tide.mom:${tideAnalysis.getMomentumScore().getAverage()}|vol:${tideAnalysis.getVolatilityScore().getAverage()}|osd:${tideAnalysis.getOversoldScore().getAverage()}|obt:${tideAnalysis.getOverboughtScore().getAverage()}
-+ rsi:${tideAnalysis.rsi.value}|sto:${tideAnalysis.stochasticSlow.slowK}|cci:${tideAnalysis.cci.value}|wil:${tideAnalysis.williamsR.value}
-wave.mom:${waveAnalysis.getMomentumScore().getAverage()}|vol:${waveAnalysis.getVolatilityScore().getAverage()}|osd:${waveAnalysis.getOversoldScore().getAverage()}|obt:${waveAnalysis.getOverboughtScore().getAverage()}
-+ rsi:${waveAnalysis.rsi.value}|sto:${waveAnalysis.stochasticSlow.slowK}|cci:${waveAnalysis.cci.value}|wil:${waveAnalysis.williamsR.value}
+tide.mom:${tideAnalysis.getMomentumScore().getAverage()}|tre:${tideAnalysis.getTrendScore().getAverage()}
++ sma5:${tideAnalysis.sma5.value}|sma50:${tideAnalysis.sma50.value}|macd:${tideAnalysis.macd.value}
+wave.mon:${waveAnalysis.getMomentumScore().getAverage()}|vol:${waveAnalysis.getVolatilityScore().getAverage()}|osd:${waveAnalysis.getOversoldScore().getAverage()}|obt:${waveAnalysis.getOverboughtScore().getAverage()}|tst:${waveAnalysis.getTrailingStopScore().getAverage()}
++ adx:${waveAnalysis.dmi.adx}|rsi:${waveAnalysis.rsi.value}|sto:${waveAnalysis.stochasticSlow.slowK}|cci:${waveAnalysis.cci.value}|wil:${waveAnalysis.williamsR.value}
 ripple.mom:${rippleAnalysis.getMomentumScore().getAverage()}
 """
 tradeAsset.setMessage(message)
@@ -404,38 +406,13 @@ if (waveAnalysis.getVolatilityScore() > 50) {
     }
 }
 
-// tide volatility 상태인 경우
-if (tideAnalysis.getVolatilityScore() > 50) {
-    // 장기 과매도 상태
-    if (tideAnalysis.getOversoldScore() > 50) {
-        // 중기 상승 모멘텀
-        if (waveAnalysis.getMomentumScore() > 80) {
-            // 매수 포지션
-            strategyResult = StrategyResult.of(Action.BUY, tideAveragePosition, "[TIDE OVERSOLD BUY] " + message)
-        }
-    }
-    // 장기 과매수 상태
-    if (tideAnalysis.getOverboughtScore() > 50) {
-        // 중기 하락 모멘텀
-        if (waveAnalysis.getMomentumScore() < 20) {
-            // 매도 포지션
-            strategyResult = StrategyResult.of(Action.SELL, tideAveragePosition, "[TIDE OVERBOUGHT SOLD] " + message)
-            // filter - sell profit percentage threshold
-            if (sellProfitPercentageThreshold > 0.0) {
-                if (profitPercentage < sellProfitPercentageThreshold) {
-                    strategyResult = null
-                }
-            }
-        }
-    }
-}
-
 // trend score 가 미달 하는 경우 trailing stop 체크
 if (tideAnalysis.getTrendScore() < 20) {
-    if (tideAnalysis.getTrailingStopScore() > 80) {
-        // 추가로 장기,중기,단기 모두 하락 모멘텀 시 반등 여지가 없다고 판단 하고 매도 포지션
-        if (tideAnalysis.getMomentumScore() < 20 && waveAnalysis.getMomentumScore() < 20 && rippleAnalysis.getMomentumScore() < 20) {
-            strategyResult = StrategyResult.of(Action.SELL, tideAveragePosition, "[TIDE TAILING STOP SELL] " + message)
+    // 추가로 장기,중기,단기 모두 하락 모멘텀 시 반등 여지가 없다고 판단 하고 매도 포지션
+    if (tideAnalysis.getMomentumScore() < 20 && waveAnalysis.getMomentumScore() < 20 && rippleAnalysis.getMomentumScore() < 20) {
+        // 중기 trailing stop + 장기 average position 기준 으로 매도
+        if (waveAnalysis.getTrailingStopScore() > 50) {
+            strategyResult = StrategyResult.of(Action.SELL, tideAveragePosition, "[TIDE LOWER TREND + WAVE TAILING STOP SELL] " + message)
         }
     }
 }
