@@ -6,8 +6,9 @@
 <th:block layout:fragment="_content">
     <script th:inline="javascript">
         const orderSearch = new duice.ObjectProxy({
+            orderAtFrom: null,
+            orderAtTo: null,
             tradeId: null,
-            assetId: null,
             type: null,
             result: null,
             key: 'assetName',
@@ -16,12 +17,20 @@
             _size: 20,
             _count: 0
         });
+        // url search params
+        let urlSearchParams = new URLSearchParams(window.location.search);
+        orderSearch.tradeId = urlSearchParams.get('tradeId') || null;
+        if (urlSearchParams.get('assetId')) {
+            orderSearch.key = 'assetId';
+            orderSearch.value = urlSearchParams.get('assetId');
+        }
+
         duice.ObjectProxy.onPropertyChanged(orderSearch, (event) => {
             getOrders();
         });
+        const trades = new duice.ArrayProxy(/*[[${trades}]]*/[]);
         const orders = new duice.ArrayProxy([]);
-        const trades = new duice.ArrayProxy([]);
-        const tradeAssets = new duice.ArrayProxy([]);
+
 
         function getOrders(page) {
             if(page) {
@@ -60,18 +69,8 @@
             getOrders();
         }
 
-        function getTrades() {
-            let url = new URL(`${_apiUrl}/v1/trades`, document.location.origin);
-            _fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    duice.ArrayProxy.assign(trades, data);
-                });
-        }
-
         document.addEventListener('DOMContentLoaded', () => {
             getOrders();
-            getTrades();
         });
 
     </script>
@@ -95,7 +94,13 @@
     <div class="border--1 padding--1em" style="min-height:400px;">
         <form onsubmit="return false;" class="display--grid grid-template-columns--12 grid-gap--1em margin-x--1em">
             <div class="grid-column--12 s__grid-column--12 display--grid grid-template-columns--12 grid-gap--1em">
-                <label class="grid-column--3 s__grid-column--12">
+                <label class="grid-column--1 s__grid-column--12">
+                    <input class="width--100" type="datetime-local" data-duice-bind="orderSearch" data-duice-property="orderAtFrom"/>
+                </label>
+                <label class="grid-column--1 s__grid-column--12">
+                    <input class="width--100" type="datetime-local" data-duice-bind="orderSearch" data-duice-property="orderAtTo"/>
+                </label>
+                <label class="grid-column--2 s__grid-column--12">
                     <select class="width--100"
                             data-duice-bind="orderSearch"
                             data-duice-property="tradeId"
@@ -128,7 +133,7 @@
                 <label class="grid-column--2 s-grid-column--8">
                     <input class="width--100" type="text" data-duice-bind="orderSearch" data-duice-property="value"/>
                 </label>
-                <div class="grid-column--4 s__grid-column--12 justify-self--end">
+                <div class="grid-column--3 s__grid-column--12 justify-self--end">
                     <button type="submit" onclick="getOrders();">
                         <img class="icon" th:src="@{/static/image/icon-search.svg}" alt="search"/>
                         <span data-th-text="#{web.global.search}"></span>

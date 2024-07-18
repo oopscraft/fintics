@@ -20,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -47,6 +48,10 @@ public class OrdersRestController {
     @GetMapping
     @Operation(description = "gets list of order")
     public ResponseEntity<List<OrderResponse>> getOrders(
+            @RequestParam(value = "orderAtFrom", required = false)
+                    Instant orderAtFrom,
+            @RequestParam(value = "orderAtTo", required = false)
+                    Instant orderAtTo,
             @RequestParam(value = "tradeId", required = false)
             @Parameter(description = "trade id")
                     String tradeId,
@@ -67,6 +72,8 @@ public class OrdersRestController {
                     Pageable pageable
     ) {
         OrderSearch orderSearch = OrderSearch.builder()
+                .orderAtFrom(orderAtFrom)
+                .orderAtTo(orderAtTo)
                 .tradeId(tradeId)
                 .assetId(assetId)
                 .assetName(assetName)

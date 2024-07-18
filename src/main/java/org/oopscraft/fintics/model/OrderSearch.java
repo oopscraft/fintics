@@ -3,9 +3,15 @@ package org.oopscraft.fintics.model;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.Instant;
+
 @Builder
 @Getter
 public class OrderSearch {
+
+    private Instant orderAtFrom;
+
+    private Instant orderAtTo;
 
     private String tradeId;
 

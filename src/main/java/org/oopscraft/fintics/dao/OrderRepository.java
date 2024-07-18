@@ -25,6 +25,12 @@ public interface OrderRepository extends JpaRepository<OrderEntity, String>, Jpa
         // where
         Specification<OrderEntity> specification = Specification.where(null);
         specification = specification
+                .and(Optional.ofNullable(orderSearch.getOrderAtFrom())
+                        .map(OrderSpecifications::greaterThanOrEqualToOrderAt)
+                        .orElse(null))
+                .and(Optional.ofNullable(orderSearch.getOrderAtTo())
+                        .map(OrderSpecifications::lessThanOrEqualToOrderAt)
+                        .orElse(null))
                 .and(Optional.ofNullable(orderSearch.getTradeId())
                         .map(OrderSpecifications::equalTradeId)
                         .orElse(null))

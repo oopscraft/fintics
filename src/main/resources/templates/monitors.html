@@ -205,6 +205,10 @@
                 },
                 getOrders: function() {
                     let url = new URL(`${_apiUrl}/v1/orders`, document.location.origin);
+                    let orderAtFrom = dateFns.subHours(new Date(), 48).toISOString();
+                    let orderAtTo = new Date().toISOString();
+                    url.searchParams.append('orderAtFrom', orderAtFrom);
+                    url.searchParams.append('orderAtTo', orderAtTo);
                     url.searchParams.append('tradeId', this.trade.tradeId);
                     _fetch(url, null, true).then(response => response.json()).then(orders => {
                         this.applyOrders(orders);
@@ -212,18 +216,34 @@
                 },
                 applyOrders: function(orders) {
                     duice.ArrayProxy.assign(this.orders, orders);
-                    const countMap = orders.reduce((acc, obj) => {
-                        const keyValue = obj['assetId'];
-                        if (!acc[keyValue]) {
-                            acc[keyValue] = 0;
-                        }
-                        acc[keyValue]++;
-                        return acc;
-                    }, {});
-                    Object.entries(countMap).forEach(([key, value]) => {
+                    const buyCountMap = orders.filter(it => it.type === 'BUY')
+                        .reduce((acc, obj) => {
+                            const keyValue = obj['assetId'];
+                            if (!acc[keyValue]) {
+                                acc[keyValue] = 0;
+                            }
+                            acc[keyValue]++;
+                            return acc;
+                        }, {});
+                    Object.entries(buyCountMap).forEach(([key, value]) => {
                         let basketAsset = this.basket.basketAssets.find(it => it.assetId === key);
                         if (basketAsset) {
-                            basketAsset.orderCount = value;
+                            basketAsset.buyCount = value;
+                        }
+                    });
+                    const sellCountMap = orders.filter(it => it.type === 'SELL')
+                        .reduce((acc, obj) => {
+                            const keyValue = obj['assetId'];
+                            if (!acc[keyValue]) {
+                                acc[keyValue] = 0;
+                            }
+                            acc[keyValue]++;
+                            return acc;
+                        }, {});
+                    Object.entries(sellCountMap).forEach(([key, value]) => {
+                        let basketAsset = this.basket.basketAssets.find(it => it.assetId === key);
+                        if (basketAsset) {
+                            basketAsset.sellCount = value;
                         }
                     });
                 },
@@ -540,10 +560,6 @@
                                      th:src="@{/static/image/icon-pin.svg}"
                                      data-duice-bind="basketAsset"
                                      data-duice-if="return basketAsset.fixed"/>
-                                <span class="badge"
-                                      data-duice-bind="basketAsset"
-                                      data-duice-property="orderCount"
-                                      data-duice-if="return basketAsset.orderCount > 0;"></span>
                                 <br/>
                                 <span class="font-weight--bold"
                                       data-duice-bind="basketAsset"
@@ -555,6 +571,19 @@
                                     if (netChange < 0) this.classList.add('color--blue');
                                     this.innerHTML = `${close?.toLocaleString()||''} (${netChange} <small>/</small> ${netChangePercentage}%)`;
                                     "></span>
+                                <span class="link" data-duice-bind="basketAsset" data-duice-if="return basketAsset.buyCount > 0;"
+                                    th:data-duice-execute="|
+                                    this.dataset.tradeId = '${trade.tradeId}';
+                                    this.dataset.assetId = basketAsset.assetId;
+                                    |"
+                                    onclick="_openLink(`${_rootUrl}/orders?tradeId=${this.dataset.tradeId}&assetId=${this.dataset.assetId}`, '_blank');">
+                                    <img class="icon" th:src="@{/static/image/icon-order-buy.svg}" alt=""/>
+                                    <span data-duice-bind="basketAsset" data-duice-property="buyCount"></span>
+                                </span>
+                                <span class="link" data-duice-bind="basketAsset" data-duice-if="return basketAsset.sellCount > 0;">
+                                    <img class="icon" th:src="@{/static/image/icon-order-sell.svg}" alt=""/>
+                                    <span data-duice-bind="basketAsset" data-duice-property="sellCount"></span>
+                                </span>
                             </div>
                         </td>
                         <td class="text-align--center">

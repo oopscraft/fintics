@@ -3,7 +3,19 @@ package org.oopscraft.fintics.dao;
 import org.oopscraft.fintics.model.Order;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.time.Instant;
+
 public class OrderSpecifications {
+
+    public static Specification<OrderEntity> greaterThanOrEqualToOrderAt(Instant orderAt) {
+        return (root, query, criteriaBuilder) ->
+                criteriaBuilder.greaterThanOrEqualTo(root.get(OrderEntity_.ORDER_AT), orderAt);
+    }
+
+    public static Specification<OrderEntity> lessThanOrEqualToOrderAt(Instant orderAt) {
+        return (root, query, criteriaBuilder) ->
+                criteriaBuilder.lessThanOrEqualTo(root.get(OrderEntity_.ORDER_AT), orderAt);
+    }
 
     public static Specification<OrderEntity> equalTradeId(String tradeId) {
         return (root, query, criteriaBuilder) ->
