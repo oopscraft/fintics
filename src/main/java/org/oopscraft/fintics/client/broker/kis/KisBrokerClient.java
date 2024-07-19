@@ -79,11 +79,8 @@ public class KisBrokerClient extends BrokerClient {
      */
     private synchronized void sleep() throws InterruptedException {
         synchronized (LOCK_OBJECT) {
-            if (production) {
-                Thread.sleep(300);
-            } else {
-                Thread.sleep(1000);
-            }
+            long sleepMillis = production ? 300 : 1000;
+            KisAccessThrottler.sleep(appKey, sleepMillis);
         }
     }
 

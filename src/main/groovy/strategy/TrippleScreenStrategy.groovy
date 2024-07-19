@@ -396,7 +396,7 @@ if (waveAnalysis.getVolatilityScore() > 50) {
     if (waveAnalysis.getOversoldScore() > 50) {
         // 단기 상승 모멘텀
         if (rippleAnalysis.getMomentumScore() > 80) {
-            // 매수 포지션
+            // 매수
             def buyPosition = waveAveragePosition
             strategyResult = StrategyResult.of(Action.BUY, buyPosition, "[WAVE OVERSOLD BUY] " + message)
         }
@@ -405,8 +405,12 @@ if (waveAnalysis.getVolatilityScore() > 50) {
     if (waveAnalysis.getOverboughtScore() > 50) {
         // 단기 하락 모멘텀
         if (rippleAnalysis.getMomentumScore() < 20) {
-            // 매도 포지션 - fixed 이면 평균 가격 포지션 까지 매도, 그외 모두 매도
-            def sellPosition = fixed ? waveAveragePosition : 0.0
+            def sellPosition = waveAveragePosition
+            // fixed 가 아닌 경우 모두 매도
+            if (!fixed) {
+                sellPosition = 0.0
+            }
+            // 매도
             strategyResult = StrategyResult.of(Action.SELL, sellPosition, "[WAVE OVERBOUGHT SELL] " + message)
             // filter - sell profit percentage threshold
             if (sellProfitPercentageThreshold > 0.0) {
