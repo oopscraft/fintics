@@ -127,7 +127,6 @@ public class TradeExecutor {
                                 .assetId(basketAsset.getAssetId())
                                 .build());
                 tradeAsset.setAssetName(basketAsset.getAssetName());
-                tradeAsset.setAssetName(basketAsset.getAssetName());
                 tradeAsset.setMarket(basketAsset.getMarket());
                 tradeAsset.setType(basketAsset.getType());
                 tradeAsset.setExchange(basketAsset.getExchange());
@@ -154,10 +153,10 @@ public class TradeExecutor {
                         .strategy(strategy)
                         .variables(trade.getStrategyVariables())
                         .dateTime(dateTime)
+                        .basketAsset(basketAsset)
                         .tradeAsset(tradeAsset)
-                        .orderBook(orderBook)
-                        .balance(balance)
                         .balanceAsset(balanceAsset)
+                        .orderBook(orderBook)
                         .build();
                 StrategyRunner strategyRunner = strategyRunnerFactory.getObject(strategyRunnerContext);
                 strategyRunner.setLog(log);

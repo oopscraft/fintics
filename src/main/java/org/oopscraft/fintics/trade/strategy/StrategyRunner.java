@@ -18,13 +18,13 @@ public abstract class StrategyRunner {
 
     protected final LocalDateTime dateTime;
 
+    protected final BasketAsset basketAsset;
+
     protected final TradeAsset tradeAsset;
 
-    protected final OrderBook orderBook;
-
-    protected final Balance balance;
-
     protected final BalanceAsset balanceAsset;
+
+    protected final OrderBook orderBook;
 
     protected Logger log = (Logger) LoggerFactory.getLogger(StrategyRunner.class);
 
@@ -33,27 +33,27 @@ public abstract class StrategyRunner {
      * @param strategy strategy
      * @param variables variable
      * @param dateTime date time
+     * @param basketAsset basket asset
      * @param tradeAsset trade asset
-     * @param orderBook order book
-     * @param balance balance
      * @param balanceAsset balance asset
+     * @param orderBook order book
      */
     public StrategyRunner(
             Strategy strategy,
             String variables,
             LocalDateTime dateTime,
+            BasketAsset basketAsset,
             TradeAsset tradeAsset,
-            OrderBook orderBook,
-            Balance balance,
-            BalanceAsset balanceAsset
+            BalanceAsset balanceAsset,
+            OrderBook orderBook
     ) {
         this.strategy  = strategy;
         this.variables = variables;
         this.dateTime = dateTime;
+        this.basketAsset = basketAsset;
         this.tradeAsset = tradeAsset;
-        this.orderBook = orderBook;
-        this.balance = balance;
         this.balanceAsset = balanceAsset;
+        this.orderBook = orderBook;
     }
 
     /**

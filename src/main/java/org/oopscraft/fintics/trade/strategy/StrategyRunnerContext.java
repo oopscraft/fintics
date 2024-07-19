@@ -16,12 +16,12 @@ public class StrategyRunnerContext {
 
     private final LocalDateTime dateTime;
 
+    private final BasketAsset basketAsset;
+
     private final TradeAsset tradeAsset;
 
-    private final OrderBook orderBook;
-
-    private final Balance balance;
-
     private final BalanceAsset balanceAsset;
+
+    private final OrderBook orderBook;
 
 }

@@ -14,14 +14,14 @@ public class PythonStrategyRunner extends StrategyRunner {
      * @param strategy     strategy
      * @param variables    variable
      * @param dateTime     date time
+     * @param basketAsset basket asset
      * @param tradeAsset   trade asset
-     * @param orderBook    order book
-     * @param balance      balance
      * @param balanceAsset balance asset
+     * @param orderBook    order book
      */
     @Builder
-    public PythonStrategyRunner(Strategy strategy, String variables, LocalDateTime dateTime, TradeAsset tradeAsset, OrderBook orderBook, Balance balance, BalanceAsset balanceAsset) {
-        super(strategy, variables, dateTime, tradeAsset, orderBook, balance, balanceAsset);
+    public PythonStrategyRunner(Strategy strategy, String variables, LocalDateTime dateTime, BasketAsset basketAsset, TradeAsset tradeAsset, BalanceAsset balanceAsset, OrderBook orderBook) {
+        super(strategy, variables, dateTime, basketAsset, tradeAsset, balanceAsset, orderBook);
     }
 
     /**

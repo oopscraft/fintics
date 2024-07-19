@@ -15,14 +15,14 @@ public class GroovyStrategyRunner extends StrategyRunner {
      * @param strategy     strategy
      * @param variables    variable
      * @param dateTime     date time
+     * @param basketAsset basket asset
      * @param tradeAsset   trade asset
-     * @param orderBook    order book
-     * @param balance      balance
      * @param balanceAsset balance asset
+     * @param orderBook    order book
      */
     @Builder
-    public GroovyStrategyRunner(Strategy strategy, String variables, LocalDateTime dateTime, TradeAsset tradeAsset, OrderBook orderBook, Balance balance, BalanceAsset balanceAsset) {
-        super(strategy, variables, dateTime, tradeAsset, orderBook, balance, balanceAsset);
+    public GroovyStrategyRunner(Strategy strategy, String variables, LocalDateTime dateTime, BasketAsset basketAsset, TradeAsset tradeAsset, BalanceAsset balanceAsset, OrderBook orderBook) {
+        super(strategy, variables, dateTime, basketAsset, tradeAsset, balanceAsset, orderBook);
     }
 
     /**
@@ -37,10 +37,10 @@ public class GroovyStrategyRunner extends StrategyRunner {
         binding.setVariable("variables", loadRuleConfigAsProperties(variables));
         binding.setVariable("log", log);
         binding.setVariable("dateTime", dateTime);
+        binding.setVariable("basketAsset", basketAsset);
         binding.setVariable("tradeAsset", tradeAsset);
-        binding.setVariable("orderBook", orderBook);
-        binding.setVariable("balance", balance);
         binding.setVariable("balanceAsset", balanceAsset);
+        binding.setVariable("orderBook", orderBook);
         GroovyShell groovyShell = new GroovyShell(groovyClassLoader, binding);
         Object result = groovyShell.evaluate(
                 "import " + StrategyResult.class.getName() + '\n' +

@@ -370,6 +370,10 @@ log.info("tideAveragePosition: {}", tideAveragePosition)
 log.info("waveAveragePosition: {}", waveAveragePosition)
 log.info("rippleAveragePosition: {}", rippleAveragePosition)
 
+// fixed
+def fixed = basketAsset.isFixed()
+log.info("fixed: {}", fixed)
+
 // profit percentage
 def profitPercentage = balanceAsset?.getProfitPercentage() ?: 0.0
 log.info("balanceAsset: {}", balanceAsset)
@@ -393,15 +397,17 @@ if (waveAnalysis.getVolatilityScore() > 50) {
         // 단기 상승 모멘텀
         if (rippleAnalysis.getMomentumScore() > 80) {
             // 매수 포지션
-            strategyResult = StrategyResult.of(Action.BUY, waveAveragePosition, "[WAVE OVERSOLD BUY] " + message)
+            def buyPosition = waveAveragePosition
+            strategyResult = StrategyResult.of(Action.BUY, buyPosition, "[WAVE OVERSOLD BUY] " + message)
         }
     }
     // 중기 과매수 상태
     if (waveAnalysis.getOverboughtScore() > 50) {
         // 단기 하락 모멘텀
         if (rippleAnalysis.getMomentumScore() < 20) {
-            // 매도 포지션
-            strategyResult = StrategyResult.of(Action.SELL, waveAveragePosition, "[WAVE OVERBOUGHT SELL] " + message)
+            // 매도 포지션 - fixed 이면 평균 가격 포지션 까지 매도, 그외 모두 매도
+            def sellPosition = fixed ? waveAveragePosition : 0.0
+            strategyResult = StrategyResult.of(Action.SELL, sellPosition, "[WAVE OVERBOUGHT SELL] " + message)
             // filter - sell profit percentage threshold
             if (sellProfitPercentageThreshold > 0.0) {
                 if (profitPercentage < sellProfitPercentageThreshold) {
@@ -412,6 +418,8 @@ if (waveAnalysis.getVolatilityScore() > 50) {
     }
 }
 
+
+// TODO 자산 배분 하고 종목은 매도 하지 않는게 맞는거 같은데 애초에 매도할 종목 이면 종목 선택의 문제가 아닐런지.
 // trend score 가 미달 하는 경우 trailing stop 체크
 if (tideAnalysis.getTrendScore() < 20) {
     // 추가로 장기,중기,단기 모두 하락 모멘텀 시 반등 여지가 없다고 판단 하고 매도 포지션

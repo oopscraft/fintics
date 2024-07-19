@@ -19,10 +19,10 @@ public class StrategyRunnerFactory {
                         .strategy(context.getStrategy())
                         .variables(context.getVariables())
                         .dateTime(context.getDateTime())
+                        .basketAsset(context.getBasketAsset())
                         .tradeAsset(context.getTradeAsset())
-                        .orderBook(context.getOrderBook())
-                        .balance(context.getBalance())
                         .balanceAsset(context.getBalanceAsset())
+                        .orderBook(context.getOrderBook())
                         .build();
             }
             case PYTHON -> {
@@ -30,10 +30,10 @@ public class StrategyRunnerFactory {
                         .strategy(context.getStrategy())
                         .variables(context.getVariables())
                         .dateTime(context.getDateTime())
+                        .basketAsset(context.getBasketAsset())
                         .tradeAsset(context.getTradeAsset())
-                        .orderBook(context.getOrderBook())
-                        .balance(context.getBalance())
                         .balanceAsset(context.getBalanceAsset())
+                        .orderBook(context.getOrderBook())
                         .build();
             }
             default -> throw new RuntimeException("invalid strategy.language");
