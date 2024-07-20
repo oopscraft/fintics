@@ -148,7 +148,7 @@
         <div class="overflow-x--scroll">
             <table class="width--100">
                 <colgroup>
-                    <col style="width:7em;"/>
+                    <col/>
                     <col style="width:10em;"/>
                     <col style="width:5em;"/>
                     <col/>
@@ -163,7 +163,7 @@
                 </colgroup>
                 <thead>
                 <tr>
-                    <th data-th-text="#{web.global.no}" class="text-align--center"></th>
+                    <th data-th-text="#{web.global.no}"></th>
                     <th data-th-text="#{fintics.Order.orderAt}"></th>
                     <th data-th-text="#{fintics.Order.type}"></th>
                     <th data-th-text="#{fintics.Trade.tradeName}"></th>
@@ -177,9 +177,9 @@
                     <th data-th-text="#{fintics.Order.errorMessage}"></th>
                 </tr>
                 </thead>
-                <tbody class="font-size--smaller">
+                <tbody>
                 <tr data-duice-bind="orders" data-duice-loop="order,status">
-                    <td class="text-align--center">
+                    <td>
                         <span data-duice-bind="status"
                               data-duice-execute="this.innerHTML=orderSearch._count - (orderSearch._size*orderSearch._page + status.count) + 1;">
                         </span>
@@ -209,7 +209,7 @@
                         <span data-duice-bind="order" data-duice-property="price" data-duice-format="number"></span>
                     </td>
                     <td class="display--flex padding--1px">
-                        <textarea data-duice-bind="order" data-duice-execute="this.value=JSON.stringify(order.strategyResult,null,2);" class="height-100 width--100"></textarea>
+                        <textarea data-duice-bind="order" data-duice-execute="this.value=JSON.stringify(order.strategyResult,null,2);" class="height-100 width--100 font-size--smaller"></textarea>
                     </td>
                     <td class="text-align--right">
                         <span data-duice-bind="order" data-duice-property="purchasePrice" data-duice-format="number"></span>
@@ -235,7 +235,7 @@
             </table>
         </div>
         <div class="display--grid grid-template-columns--12 margin-x--1em">
-            <div class="grid-column--4 font-size--smaller">
+            <div class="grid-column--4">
                 <span data-th-text="#{web.global.total}"></span>
                 <span data-duice-bind="orderSearch" data-duice-property="_count" data-duice-format="number(0)"></span>
                 <span data-th-text="#{web.global.rows}"></span>

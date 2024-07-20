@@ -233,7 +233,7 @@
                     <th data-th-text="#{fintics.Asset.links}"></th>
                 </tr>
                 </thead>
-                <tbody class="font-size--smaller">
+                <tbody>
                 <tr data-duice-bind="assets" data-duice-loop="asset,status">
                     <td data-duice-bind="asset" data-duice-execute="this.innerHTML=assetSearch._page * assetSearch._size + status.count;"></td>
                     <td data-duice-bind="asset" data-duice-property="assetId" class="font-weight--bold"></td>
@@ -258,9 +258,6 @@
                 </tbody>
             </table>
         </div>
-        <div>
-
-        </div>
     </div>
     <!-- ====================================== -->
     <!-- end: asset                             -->
@@ -275,7 +272,7 @@
             <span data-th-text="|#{fintics.Asset} #{fintics.Ohlcv}|"></span>
         </h2>
         <div class="overflow-y--scroll border-x--1" style="max-height:30vh;">
-            <table class="width--100 border--0 text-align--center font-size--smaller">
+            <table class="width--100 border--0 text-align--center">
                 <thead>
                 <tr>
                     <th data-th-text="#{web.global.no}"></th>
@@ -348,7 +345,7 @@
             <span data-th-text="|#{fintics.Asset} #{fintics.News}|"></span>
         </h2>
         <div class="overflow-y--scroll border-x--1" style="max-height:30vh;">
-            <table class="width--100 border--0 text-align--center font-size--smaller">
+            <table class="width--100 border--0 text-align--center">
                 <thead>
                 <tr>
                     <th data-th-text="#{web.global.no}"></th>
@@ -435,7 +432,7 @@
                     <th data-th-text="#{fintics.Ohlcv.interpolated}"></th>
                 </tr>
                 </thead>
-                <tbody class="font-size--smaller">
+                <tbody>
                 <tr data-duice-bind="ohlcvsDialog.ohlcvs" data-duice-loop="ohlcv,status"
                     data-duice-execute="
                     if (ohlcv.interpolated) this.classList.add('background-color--yellow');

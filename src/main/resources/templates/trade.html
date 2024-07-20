@@ -401,8 +401,8 @@
                         <thead>
                         <tr>
                             <th data-th-text="#{web.global.no}"></th>
-                            <th data-th-text="#{fintics.Asset.assetId}" class="text-align--left"></th>
-                            <th data-th-text="#{fintics.Asset.assetName}" class="text-align--left"></th>
+                            <th data-th-text="#{fintics.Asset.assetId}"></th>
+                            <th data-th-text="#{fintics.Asset.assetName}"></th>
                             <th data-th-text="#{fintics.Asset.exchange}"></th>
                             <th data-th-text="#{fintics.Asset.type}"></th>
                             <th data-th-text="#{fintics.Asset.marketCap}"></th>
@@ -442,7 +442,7 @@
                                     <span data-duice-bind="assetMeta" data-duice-property="value"></span>
                                 </span>
                             </td>
-                            <td class="text-align--center">
+                            <td>
                                 <select data-duice-bind="basketAsset"
                                         data-duice-option="basketAsset.links"
                                         data-duice-option-value-property="url"
@@ -495,7 +495,7 @@
                     <div>
                         <span data-th-text="#{fintics.Trade.strategyVariables}" class="font-weight--bold width--100"></span>
                     </div>
-                    <duice-codemirror class="font-size--smaller border--1"
+                    <duice-codemirror class="code border--1"
                                       data-duice-bind="trade"
                                       data-duice-property="strategyVariables">
                     </duice-codemirror>
@@ -506,7 +506,7 @@
                             <span data-th-text="#{fintics.Strategy.script}" class="font-weight--bold width--100"></span>
                         </div>
                     </div>
-                    <duice-codemirror class="font-size--smaller" style="height:100vh;"
+                    <duice-codemirror class="code" style="height:100vh;"
                                       data-duice-bind="strategy"
                                       data-duice-property="script"
                                       data-duice-mode="groovy"
@@ -745,7 +745,7 @@
                 <div class="grid-column--12">
                     <span data-th-text="#{fintics.BalanceAsset}" class="font-weight--bold width--100"></span>
                     <div class="overflow-x--scroll">
-                        <table class="width--100 text-align--center">
+                        <table class="width--100">
                             <colgroup>
                                 <col style="width:5em;"/>
                                 <col/>
@@ -772,7 +772,7 @@
                                 <th>-</th>
                             </tr>
                             </thead>
-                            <tbody class="font-size--smaller">
+                            <tbody>
                             <tr data-duice-bind="balance.balanceAssets"
                                 data-duice-loop="balanceAsset,status"
                                 data-duice-execute="

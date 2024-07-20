@@ -189,7 +189,7 @@
                         </colgroup>
                         <thead>
                         <tr>
-                            <th data-th-text="#{web.global.no}" class="text-align--center"></th>
+                            <th data-th-text="#{web.global.no}"></th>
                             <th data-th-text="#{fintics.Broker.brokerName}"></th>
                         </tr>
                         </thead>
@@ -198,7 +198,7 @@
                             data-duice-selected-item-class="selected" data-duice-execute="
                         this.dataset.brokerId=broker.brokerId;
                         " onclick="getBroker(this.dataset.brokerId);" class="link">
-                            <td class="text-align--center">
+                            <td>
                                 <span data-duice-bind="status" data-duice-property="count" class="text-align--center"></span>
                             </td>
                             <td>
@@ -213,14 +213,14 @@
                     </table>
                 </div>
                 <div class="display--grid grid-template-columns--3 grid-gap--1em padding-y--1em s__padding--0">
-                    <div class="grid-column--1 font-size--smaller">
+                    <div class="grid-column--1">
                         <span data-th-text="#{web.global.total}"></span>
                         <span data-duice-bind="brokerSearch" data-duice-property="_count"
                               data-duice-format="number(0)"></span>
                         <span data-th-text="#{web.global.rows}"></span>
                     </div>
                     <div class="grid-column--1 justify-self--center">
-                        <duice-pagination
+                        <duice-pagination class="code"
                                 data-duice-bind="brokerSearch"
                                 data-duice-size-property="_size"
                                 data-duice-page-property="_page"
@@ -269,7 +269,7 @@
                     </label>
                     <label class="grid-column--12">
                         <span data-th-text="#{fintics.Broker.brokerClientProperties}" class="font-weight--bold"></span>
-                        <duice-codemirror class="border--1"
+                        <duice-codemirror class="border--1 code"
                                 data-duice-bind="broker"
                                 data-duice-property="brokerClientProperties">
                         </duice-codemirror>

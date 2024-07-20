@@ -100,14 +100,14 @@
                 </colgroup>
                 <thead>
                 <tr>
-                    <th data-th-text="#{web.global.no}" class="text-align--center"></th>
+                    <th data-th-text="#{web.global.no}"></th>
                     <th data-th-text="#{fintics.Strategy.strategyName}"></th>
                     <th data-th-text="#{fintics.Strategy.language}"></th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr data-duice-bind="strategies" data-duice-loop="strategy,status">
-                    <td class="text-align--center">
+                    <td>
                         <span data-duice-bind="status"
                               data-duice-execute="this.innerHTML=strategySearch._count - (strategySearch._size*strategySearch._page + status.count) + 1;">
                         </span>
@@ -128,7 +128,7 @@
             </table>
         </div>
         <div class="display--grid grid-template-columns--12 margin-x--1em">
-            <div class="grid-column--4 font-size--smaller">
+            <div class="grid-column--4">
                 <span data-th-text="#{web.global.total}"></span>
                 <span data-duice-bind="strategySearch" data-duice-property="_count" data-duice-format="number(0)"></span>
                 <span data-th-text="#{web.global.rows}"></span>

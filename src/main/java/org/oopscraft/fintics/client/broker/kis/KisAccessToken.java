@@ -4,6 +4,9 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
+/**
+ * access token object
+ */
 @Builder
 @Getter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
@@ -24,6 +27,10 @@ public class KisAccessToken {
 
     private LocalDateTime expireDateTime;
 
+    /**
+     * checks access toke is expired
+     * @return whether token is expired or noot
+     */
     public boolean isExpired() {
         return LocalDateTime.now().isAfter(expireDateTime);
     }

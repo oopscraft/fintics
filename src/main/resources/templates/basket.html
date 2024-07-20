@@ -225,7 +225,7 @@
                         </colgroup>
                         <thead>
                         <tr>
-                            <th class="text-align--center">
+                            <th>
                                 <button type="button" class="small" onclick="addBasketAsset();">
                                     <img class="icon" th:src="@{/static/image/icon-add.svg}" alt="add"/>
                                 </button>
@@ -246,7 +246,7 @@
                         <tbody>
                         <tr data-duice-bind="basket.basketAssets" data-duice-loop="basketAsset,status" data-duice-editable="true"
                             data-duice-execute="if(basketAsset._new) this.classList.add('background-color--yellow');">
-                            <td class="text-align--center">
+                            <td>
                                 <button type="button" class="small"
                                         data-duice-bind="basketAsset"
                                         data-duice-execute="this.dataset.index=status.index;"
@@ -254,7 +254,7 @@
                                     <img class="icon" th:src="@{/static/image/icon-remove.svg}" alt="remove"/>
                                 </button>
                             </td>
-                            <td class="text-align--center">
+                            <td>
                                 <span data-duice-bind="status" data-duice-property="count"
                                       class="text-align--center"></span>
                             </td>
@@ -281,7 +281,7 @@
                                     <span data-duice-bind="assetMeta" data-duice-property="value"></span>
                                 </span>
                             </td>
-                            <td class="text-align--center">
+                            <td>
                                 <select data-duice-bind="basketAsset"
                                         data-duice-option="basketAsset.links"
                                         data-duice-option-value-property="url"
@@ -338,7 +338,7 @@
                         <span data-th-text="#{fintics.Basket.script}" class="font-weight--bold width--100"></span>
                     </div>
                 </div>
-                <duice-codemirror class="font-size--smaller" style="height:100vh;"
+                <duice-codemirror class="code" style="height:100vh;"
                                   data-duice-bind="basket"
                                   data-duice-property="script"
                                   data-duice-mode="groovy"

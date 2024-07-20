@@ -22,6 +22,13 @@ public class KisAccessTokenRegistry {
 
     private static final Object lockObject = new Object();
 
+    /**
+     * gets access token
+     * @param apiUrl api url
+     * @param appKey api key
+     * @param appSecret api secret
+     * @return access token
+     */
     public synchronized static KisAccessToken getAccessToken(String apiUrl, String appKey, String appSecret) throws InterruptedException {
         synchronized (lockObject) {
             KisAccessToken accessToken = accessTokens.stream()

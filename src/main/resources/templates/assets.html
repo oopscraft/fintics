@@ -250,27 +250,27 @@
                 </colgroup>
                 <thead>
                 <tr>
-                    <th class="text-align--center">-</th>
-                    <th data-th-text="#{fintics.Asset.assetId}" class="text-align--left"></th>
-                    <th data-th-text="#{fintics.Asset.assetName}" class="text-align--left"></th>
+                    <th data-th-text="#{web.global.no}"></th>
+                    <th data-th-text="#{fintics.Asset.assetId}"></th>
+                    <th data-th-text="#{fintics.Asset.assetName}"></th>
                     <th data-th-text="#{fintics.Asset.exchange}"></th>
                     <th data-th-text="#{fintics.Asset.type}"></th>
                     <th data-th-text="#{fintics.Asset.marketCap}"></th>
-                    <th data-th-text="#{fintics.AssetMeta}" class="text-align--left"></th>
+                    <th data-th-text="#{fintics.AssetMeta}"></th>
                     <th data-th-text="#{fintics.Asset.links}"></th>
                 </tr>
                 </thead>
                 <tbody class="font-size--smaller">
                 <tr data-duice-bind="assets" data-duice-loop="asset,status">
-                    <td class="text-align--center">
+                    <td>
                         <span data-duice-bind="status"
                               data-duice-execute="this.innerHTML=assetSearch._size*assetSearch._page + status.count;">
                         </span>
                     </td>
-                    <td class="text-align--left">
+                    <td>
                         <span data-duice-bind="asset" data-duice-property="assetId" class="text-align--left font-weight--bold"></span>
                     </td>
-                    <td class="text-align--left">
+                    <td>
                         <img class="icon icon--circle font-size--large" data-duice-bind="asset" data-duice-property="icon" th:onerror="|this.onerror=null; this.src='@{/static/image/icon-asset.svg}';|" alt=""/>
                         &nbsp;
                         <span data-duice-bind="asset" data-duice-property="assetName"></span>
@@ -284,13 +284,13 @@
                     <td>
                         <span data-duice-bind="asset" data-duice-property="marketCap" data-duice-format="number"></span>
                     </td>
-                    <td class="text-align--left">
+                    <td>
                         <span data-duice-bind="asset.assetMetas" data-duice-loop="assetMeta,status">
                             <span data-duice-bind="assetMeta" data-duice-property="name"></span>:
                             <span data-duice-bind="assetMeta" data-duice-property="value"></span>
                         </span>
                     </td>
-                    <td class="text-align--right font-size--smaller">
+                    <td class="text-align--right">
                         <select data-duice-bind="asset"
                                 data-duice-option="asset.links"
                                 data-duice-option-value-property="url"
@@ -307,7 +307,7 @@
             </table>
         </div>
         <div class="display--grid grid-template-columns--12 margin-x--1em">
-            <div class="grid-column--4 font-size--smaller">
+            <div class="grid-column--4">
                 <span data-th-text="#{web.global.total}"></span>
                 <span data-duice-bind="assetSearch" data-duice-property="_count" data-duice-format="number(0)"></span>
                 <span data-th-text="#{web.global.rows}"></span>
