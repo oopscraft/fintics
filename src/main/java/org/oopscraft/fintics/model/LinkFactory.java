@@ -2,6 +2,7 @@ package org.oopscraft.fintics.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public class LinkFactory {
@@ -24,6 +25,10 @@ public class LinkFactory {
             case "KR" -> {
                 links.add(Link.of("Naver", "https://finance.naver.com/item/main.naver?code=" + symbol));
                 links.add(Link.of("Alphasquare", "https://alphasquare.co.kr/home/market-summary?code=" + symbol));
+                // etf
+                if (Objects.equals(type,"ETF")) {
+                    links.add(Link.of("ETFCheck", "https://www.etfcheck.co.kr/mobile/etpitem/" + symbol));
+                }
             }
             case "UPBIT" -> {
                 links.add(Link.of("UPBIT", "https://upbit.com/exchange?code=CRIX.UPBIT." + symbol));
