@@ -9,6 +9,7 @@
         const basket = new duice.ObjectProxy({
             basketId: null,
             basketName: null,
+            market: null,
             basketAssets: []
         });
 
@@ -26,7 +27,7 @@
             basket.basketAssets.forEach(basketAsset => {
                 disabledAssetIds.push(basketAsset.assetId);
             });
-            let selectedAssets = await assetSelectDialog.open(disabledAssetIds);
+            let selectedAssets = await assetSelectDialog.open(basket.market, disabledAssetIds);
             selectedAssets.forEach(asset => {
                 basket.basketAssets.push({
                     _new: true,
@@ -226,7 +227,7 @@
                         <thead>
                         <tr>
                             <th>
-                                <button type="button" class="small" onclick="addBasketAsset();">
+                                <button type="button" onclick="addBasketAsset();">
                                     <img class="icon" th:src="@{/static/image/icon-add.svg}" alt="add"/>
                                 </button>
                             </th>
@@ -247,7 +248,7 @@
                         <tr data-duice-bind="basket.basketAssets" data-duice-loop="basketAsset,status" data-duice-editable="true"
                             data-duice-execute="if(basketAsset._new) this.classList.add('background-color--yellow');">
                             <td>
-                                <button type="button" class="small"
+                                <button type="button"
                                         data-duice-bind="basketAsset"
                                         data-duice-execute="this.dataset.index=status.index;"
                                         onclick="removeBasketAsset(this.dataset.index);">
@@ -373,13 +374,14 @@
     <dialog id="assetSelectDialog">
         <style th:inline="css">
             #assetSelectDialog {
-                width: 1000px;
+                width: 1024px;
                 padding: 1.5rem;
             }
         </style>
         <script th:inline="javascript">
             const assetSelectDialog = {
                 dialog: new duice.dialog.Dialog(document.getElementById('assetSelectDialog')),
+                market: null,
                 alreadySelectedAssetIds : null,
                 assetSearch: new duice.ObjectProxy({
                     key: 'assetName',
@@ -391,7 +393,8 @@
                 }),
                 assets: new duice.ArrayProxy([]),
                 selectedAssets: new duice.ArrayProxy([]),
-                open: async function(alreadySelectedIds) {
+                open: async function(market, alreadySelectedIds) {
+                    this.market = market
                     if(alreadySelectedIds) {
                         this.alreadySelectedAssetIds = alreadySelectedIds;
                     }else{
@@ -404,7 +407,10 @@
                 getAssets: function(page) {
                     this.assetSearch._page = page || 0;
                     let url = new URL(`${_apiUrl}/v1/assets`, document.location.origin);
-                    if(this.assetSearch.key && this.assetSearch.value) {
+                    if (this.market) {
+                        url.searchParams.append('market', this.market);
+                    }
+                    if (this.assetSearch.key && this.assetSearch.value) {
                         url.searchParams.append(this.assetSearch.key, this.assetSearch.value);
                     }
                     url.searchParams.append('_page', this.assetSearch._page);
@@ -486,21 +492,21 @@
                 </div>
             </form>
             <div class="overflow-x--scroll">
-                <table class="width--100 text-align--center font-size--smaller">
+                <table class="width--100">
                     <colgroup>
                         <col style="width:3em;"/>
-                        <col style="width:10em;"/>
-                        <col style="width:25%;"/>
-                        <col style="width:5em;"/>
+                        <col/>
+                        <col/>
+                        <col/>
                         <col/>
                         <col/>
                         <col/>
                     </colgroup>
                     <thead>
                     <tr>
-                        <th class="text-align--center">-</th>
-                        <th data-th-text="#{fintics.Asset.assetId}" class="text-align--left"></th>
-                        <th data-th-text="#{fintics.Asset.assetName}" class="text-align--left"></th>
+                        <th>-</th>
+                        <th data-th-text="#{fintics.Asset.assetId}"></th>
+                        <th data-th-text="#{fintics.Asset.assetName}"></th>
                         <th data-th-text="#{fintics.Asset.exchange}"></th>
                         <th data-th-text="#{fintics.Asset.type}"></th>
                         <th data-th-text="#{fintics.Asset.marketCap}"></th>
@@ -510,8 +516,8 @@
                     </thead>
                     <tbody>
                     <tr data-duice-bind="assetSelectDialog.assets" data-duice-loop="asset,status">
-                        <td class="text-align--center">
-                            <button type="button" class="small"
+                        <td>
+                            <button type="button"
                                     data-duice-bind="asset"
                                     data-duice-execute="
                         this.dataset.index = status.index;
@@ -563,7 +569,7 @@
                 </table>
             </div>
             <div class="display--grid grid-template-columns--3">
-                <div class="grid-column--1 display--flex font-size--smaller">
+                <div class="grid-column--1 display--flex">
                     <span data-th-text="#{web.global.total}"></span>
                     &nbsp;
                     <span data-duice-bind="assetSelectDialog.assetSearch" data-duice-property="_count" data-duice-format="number(0)"></span>
@@ -582,12 +588,10 @@
                 <div class="grid-column--1"></div>
             </div>
             <div class="overflow-x--scroll">
-                <table class="width--100 font-size--smaller">
+                <table class="width--100">
                     <colgroup>
                         <col style="width:3em;"/>
-                        <col style="width:10em;"/>
-                        <col style="width:25%;"/>
-                        <col style="width:5em;"/>
+                        <col/>
                         <col/>
                         <col/>
                         <col/>
@@ -596,22 +600,20 @@
                     </colgroup>
                     <thead>
                     <tr>
-                        <th class="text-align--center">-</th>
+                        <th>-</th>
                         <th data-th-text="#{fintics.Asset.assetId}"></th>
                         <th data-th-text="#{fintics.Asset.assetName}"></th>
                         <th data-th-text="#{fintics.Asset.exchange}"></th>
-                        <th class="text-align--center" data-th-text="#{fintics.Asset.type}"></th>
-                        <th class="text-align--center" data-th-text="#{fintics.Asset.marketCap}"></th>
-                        <th class="text-align--center" data-th-text="#{fintics.Asset.per}"></th>
-                        <th class="text-align--center" data-th-text="#{fintics.Asset.roe}"></th>
-                        <th class="text-align--center" data-th-text="#{fintics.Asset.roa}"></th>
+                        <th data-th-text="#{fintics.Asset.type}"></th>
+                        <th data-th-text="#{fintics.Asset.marketCap}"></th>
+                        <th data-th-text="#{fintics.AssetMeta}"></th>
                         <th></th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr data-duice-bind="assetSelectDialog.selectedAssets" data-duice-loop="asset,status">
-                        <td class="text-align--center">
-                            <button data-duice-bind="asset" class="small"
+                        <td>
+                            <button data-duice-bind="asset"
                                     data-duice-execute="this.dataset.index = status.index;"
                                     onclick="assetSelectDialog.deselectAsset(this.dataset.index);">
                                 <img class="icon" th:src="@{/static/image/icon-remove.svg}" alt="remove"/>
@@ -625,23 +627,20 @@
                             &nbsp;
                             <span data-duice-bind="asset" data-duice-property="assetName"></span>
                         </td>
-                        <td class="text-align--center">
+                        <td>
                             <span data-duice-bind="asset" data-duice-property="exchange" class="badge"></span>
                         </td>
-                        <td class="text-align--center">
+                        <td>
                             <span data-duice-bind="asset" data-duice-property="type" class="badge"></span>
                         </td>
-                        <td class="text-align--center">
+                        <td>
                             <span data-duice-bind="asset" data-duice-property="marketCap" data-duice-format="number"></span>
                         </td>
-                        <td class="text-align--center">
-                            <span data-duice-bind="asset" data-duice-property="per" data-duice-format="number"></span>
-                        </td>
-                        <td class="text-align--center">
-                            <span data-duice-bind="asset" data-duice-property="roe" data-duice-format="number"></span>
-                        </td>
-                        <td class="text-align--center">
-                            <span data-duice-bind="asset" data-duice-property="roa" data-duice-format="number"></span>
+                        <td>
+                            <span data-duice-bind="asset.assetMetas" data-duice-loop="assetMeta,status">
+                                <span data-duice-bind="assetMeta" data-duice-property="name"></span>:
+                                <span data-duice-bind="assetMeta" data-duice-property="value"></span>
+                            </span>
                         </td>
                         <td class="text-align--right font-size--smaller">
                             <select data-duice-bind="asset"

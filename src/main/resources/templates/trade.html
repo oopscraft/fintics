@@ -384,11 +384,11 @@
                 </label>
                 <div class="grid-column--12 overflow-x--scroll">
                     <span data-th-text="#{fintics.BasketAsset}" class="font-weight--bold width--100"></span>
-                    <table class="width--100 text-align--center font-size--smaller">
+                    <table class="width--100">
                         <colgroup>
                             <col style="width:4em;"/>
                             <col style="width:10em;"/>
-                            <col style="width:25em;"/>
+                            <col/>
                             <col/>
                             <col/>
                             <col/>
@@ -582,7 +582,7 @@
                     </div>
                 </div>
             </form>
-            <table class="width--100 text-align--center">
+            <table class="width--100">
                 <colgroup>
                     <col style="width:7em;"/>
                     <col style="width:10em;"/>
@@ -613,7 +613,7 @@
                     <th data-th-text="#{fintics.Order.errorMessage}"></th>
                 </tr>
                 </thead>
-                <tbody class="font-size--smaller">
+                <tbody>
                 <tr data-duice-bind="orders" data-duice-loop="order,status">
                     <td>
                         <span data-duice-bind="status"
@@ -671,7 +671,7 @@
                 </tbody>
             </table>
             <div class="display--grid grid-template-columns--12 padding--1em">
-                <div class="grid-column--4 font-size--smaller">
+                <div class="grid-column--4">
                     <span data-th-text="#{web.global.total}"></span>
                     <span data-duice-bind="orderSearch" data-duice-property="_count" data-duice-format="number(0)"></span>
                     <span data-th-text="#{web.global.rows}"></span>
@@ -761,15 +761,15 @@
                             <thead>
                             <tr>
                                 <th data-th-text="#{web.global.no}"></th>
-                                <th data-th-text="#{fintics.BalanceAsset.assetId}" class="text-align--left"></th>
-                                <th data-th-text="#{fintics.BalanceAsset.assetName}" class="text-align--left"></th>
+                                <th data-th-text="#{fintics.BalanceAsset.assetId}"></th>
+                                <th data-th-text="#{fintics.BalanceAsset.assetName}"></th>
                                 <th data-th-text="#{fintics.BalanceAsset.quantity}"></th>
                                 <th data-th-text="#{fintics.BalanceAsset.purchaseAmount}" class="text-align--right"></th>
                                 <th data-th-text="#{fintics.BalanceAsset.valuationAmount}" class="text-align--right"></th>
                                 <th data-th-text="#{fintics.BalanceAsset.profitAmount}" class="text-align--right"></th>
                                 <th data-th-text="#{fintics.BalanceAsset.profitPercentage}" class="text-align--right"></th>
-                                <th data-th-text="#{fintics.Asset.links}"></th>
-                                <th>-</th>
+                                <th data-th-text="#{fintics.Asset.links}" class="text-align--right"></th>
+                                <th class="text-align--right">-</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -782,13 +782,13 @@
                                     if(length === 0) {
                                         this.style.opacity=0.5;
                                     }">
-                                <td class="text-align--center">
+                                <td>
                                     <span data-duice-bind="status" data-duice-property="count"></span>
                                 </td>
-                                <td class="text-align--left">
+                                <td>
                                     <span data-duice-bind="balanceAsset" data-duice-property="assetId"></span>
                                 </td>
-                                <td class="text-align--left">
+                                <td>
                                     <img class="icon font-size--large" data-duice-bind="balanceAsset" data-duice-property="icon" th:onerror="|this.onerror=null; this.src='@{/static/image/icon-asset.svg}';|" alt=""/>
                                     &nbsp;
                                     <span data-duice-bind="balanceAsset" data-duice-property="assetName"></span>
@@ -820,7 +820,7 @@
                                     <span data-duice-bind="balanceAsset" data-duice-property="profitPercentage" data-duice-format="number"></span>
                                     %
                                 </td>
-                                <td>
+                                <td class="text-align--right">
                                     <select data-duice-bind="balanceAsset"
                                             data-duice-option="balanceAsset.links"
                                             data-duice-option-value-property="url"
@@ -829,9 +829,8 @@
                                         <option value>- Link -</option>
                                     </select>
                                 </td>
-                                <td>
-                                    <button class="small"
-                                            type="button"
+                                <td class="text-align--right">
+                                    <button type="button"
                                             data-duice-bind="balanceAsset"
                                             data-duice-execute="this.dataset.assetId=balanceAsset.assetId;"
                                             onclick="sellBalanceAsset(this.dataset.assetId);"

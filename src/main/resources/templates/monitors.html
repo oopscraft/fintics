@@ -391,8 +391,8 @@
                         <col style="width:10em;"/>
                         <col/>
                         <col/>
-                        <col style="width:10em;"/>
-                        <col style="width:10em;"/>
+                        <col/>
+                        <col/>
                     </colgroup>
                     <thead>
                     <tr>
@@ -488,8 +488,8 @@
                     <colgroup>
                         <col style="width:4em;"/>
                         <col style="width:8em;"/>
-                        <col style="width:40em;"/>
-                        <col style="width:10em;"/>
+                        <col/>
+                        <col/>
                         <col/>
                         <col/>
                         <col/>
@@ -499,7 +499,7 @@
                     </colgroup>
                     <thead>
                     <tr>
-                        <th class="text-align--center">
+                        <th>
                             <span data-th-text="#{web.global.no}"></span>
                         </th>
                         <th>
@@ -508,10 +508,10 @@
                         <th>
                             <span data-th-text="#{fintics.Asset.assetName}"></span>
                         </th>
-                        <th class="text-align--center">
+                        <th>
                             <span data-th-text="#{fintics.Asset.links}"></span>
                         </th>
-                        <th class="text-align--center">
+                        <th>
                             <span>Message</span>
                         </th>
                         <th class="text-align--right">
@@ -537,7 +537,7 @@
                     </thead>
                     <tbody>
                     <tr th:data-duice-bind="|monitorMap.get('${trade.tradeId}').basket.basketAssets|" data-duice-loop="basketAsset,status">
-                        <td class="text-align--center">
+                        <td>
                             <span data-duice-bind="status" data-duice-property="count"></span>
                         </td>
                         <td>
@@ -589,7 +589,7 @@
                                 </div>
                             </div>
                         </td>
-                        <td class="text-align--center">
+                        <td>
                             <select data-duice-bind="basketAsset"
                                     data-duice-option="basketAsset.links"
                                     data-duice-option-value-property="url"
@@ -602,7 +602,7 @@
                             <div class="display--flex">
                                 <textarea data-duice-bind="basketAsset"
                                           data-duice-property="message"
-                                          class="font-weight--bold width--100"
+                                          class="width--100 code"
                                           style="min-width:20em; height:6em; line-height:1.1em; padding:0.1em 0.3em;"></textarea>
                             </div>
                         </td>
@@ -632,25 +632,24 @@
                                 "></div>
                         </td>
                         <td class="text-align--center">
-                            <button class="small"
-                                    type="button"
-                                    data-duice-bind="basketAsset"
-                                    data-duice-execute="this.dataset.assetId=basketAsset.assetId"
-                                    th:attr="onclick=|monitorMap.get('${trade.tradeId}').buyTradeAsset(this.dataset.assetId);|"
-                                    th:classappend="!${#authorization.expression('hasAuthority(''TRADES_EDIT'')')}?'locked'">
-                                <img class="icon" th:src="@{/static/image/icon-order-buy.svg}" alt="buy"/>
-                                <span data-th-text="#{fintics.Order.Type.BUY}"></span>
-                            </button>
-                            <br/>
-                            <button class="small"
-                                    type="button"
-                                    data-duice-bind="basketAsset"
-                                    data-duice-execute="this.dataset.assetId=basketAsset.assetId;"
-                                    th:attr="onclick=|monitorMap.get('${trade.tradeId}').sellTradeAsset(this.dataset.assetId);|"
-                                    th:classappend="!${#authorization.expression('hasAuthority(''TRADES_EDIT'')')}?'locked'">
-                                <img class="icon" th:src="@{/static/image/icon-order-sell.svg}" alt="sell"/>
-                                <span data-th-text="#{fintics.Order.Type.SELL}"></span>
-                            </button>
+                            <div class="display--flex flex-direction--column gap--1px">
+                                <button type="button"
+                                        data-duice-bind="basketAsset"
+                                        data-duice-execute="this.dataset.assetId=basketAsset.assetId"
+                                        th:attr="onclick=|monitorMap.get('${trade.tradeId}').buyTradeAsset(this.dataset.assetId);|"
+                                        th:classappend="!${#authorization.expression('hasAuthority(''TRADES_EDIT'')')}?'locked'">
+                                    <img class="icon" th:src="@{/static/image/icon-order-buy.svg}" alt="buy"/>
+                                    <span data-th-text="#{fintics.Order.Type.BUY}"></span>
+                                </button>
+                                <button type="button"
+                                        data-duice-bind="basketAsset"
+                                        data-duice-execute="this.dataset.assetId=basketAsset.assetId;"
+                                        th:attr="onclick=|monitorMap.get('${trade.tradeId}').sellTradeAsset(this.dataset.assetId);|"
+                                        th:classappend="!${#authorization.expression('hasAuthority(''TRADES_EDIT'')')}?'locked'">
+                                    <img class="icon" th:src="@{/static/image/icon-order-sell.svg}" alt="sell"/>
+                                    <span data-th-text="#{fintics.Order.Type.SELL}"></span>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                     <tr th:data-duice-bind="|monitorMap.get('${trade.tradeId}').basket.basketAssets|"
