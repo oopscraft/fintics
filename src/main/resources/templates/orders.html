@@ -209,7 +209,9 @@
                         <span data-duice-bind="order" data-duice-property="price" data-duice-format="number"></span>
                     </td>
                     <td class="display--flex padding--1px">
-                        <textarea data-duice-bind="order" data-duice-execute="this.value=JSON.stringify(order.strategyResult,null,2);" class="height-100 width--100 font-size--smaller"></textarea>
+                        <textarea data-duice-bind="order"
+                                  data-duice-execute="this.value=JSON.stringify(order.strategyResult,null,2);"
+                                  class="height-100 width--100 font-size--smaller code"></textarea>
                     </td>
                     <td class="text-align--right">
                         <span data-duice-bind="order" data-duice-property="purchasePrice" data-duice-format="number"></span>
@@ -225,7 +227,9 @@
                         "></span>
                     </td>
                     <td class="display--flex padding--1px">
-                        <textarea data-duice-bind="order" data-duice-property="errorMessage" class="height--100 width--100" style="white-space:normal;"></textarea>
+                        <textarea data-duice-bind="order"
+                                  data-duice-property="errorMessage"
+                                  class="height--100 width--100 font-size--smaller code" style="white-space:normal;"></textarea>
                     </td>
                 </tr>
                 <tr data-duice-bind="orders" data-duice-if="return orders.length === 0;" hidden>

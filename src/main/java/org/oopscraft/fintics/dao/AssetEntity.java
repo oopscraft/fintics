@@ -46,7 +46,6 @@ public class AssetEntity extends BaseEntity {
     @JoinColumn(name = "asset_id", referencedColumnName = "asset_id", insertable = false, updatable = false)
     @OrderBy(AssetMetaEntity_.SORT)
     @Builder.Default
-    @Transient
     private List<AssetMetaEntity> assetMetaEntities = new ArrayList<>();
 
 }

@@ -49,9 +49,7 @@ public class AssetResponse {
                 .favorite(asset.isFavorite())
                 .icon(asset.getIcon())
                 .links(LinkResponse.from(asset.getLinks()))
-                .assetMetas(asset.getAssetMetas().stream()
-                        .map(AssetMetaResponse::from)
-                        .toList())
+                .assetMetas(AssetMetaResponse.from(asset.getAssetMetas()))
                 .build();
     }
 

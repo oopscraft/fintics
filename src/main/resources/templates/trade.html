@@ -408,9 +408,9 @@
                             <th data-th-text="#{fintics.Asset.marketCap}"></th>
                             <th data-th-text="#{fintics.AssetMeta}"></th>
                             <th data-th-text="#{fintics.Asset.links}"></th>
-                            <th data-th-text="#{fintics.BasketAsset.fixed}"></th>
-                            <th data-th-text="#{fintics.BasketAsset.enabled}"></th>
-                            <th data-th-text="#{fintics.BasketAsset.holdingWeight}"></th>
+                            <th data-th-text="#{fintics.BasketAsset.fixed}" class="text-align--center"></th>
+                            <th data-th-text="#{fintics.BasketAsset.enabled}" class="text-align--center"></th>
+                            <th data-th-text="#{fintics.BasketAsset.holdingWeight}" class="text-align--right"></th>
                         </tr>
                         </thead>
                         <tbody>
@@ -437,10 +437,16 @@
                                 <span data-duice-bind="basketAsset" data-duice-property="marketCap" data-duice-format="number"></span>
                             </td>
                             <td>
-                                <span data-duice-bind="basketAsset.assetMetas" data-duice-loop="assetMeta,status">
-                                    <span data-duice-bind="assetMeta" data-duice-property="name"></span>:
-                                    <span data-duice-bind="assetMeta" data-duice-property="value"></span>
-                                </span>
+                                <div class="overflow-y--scroll border--1 padding--1px" style="line-height:1em; height:5em;">
+                                    <table class="width--100 border--0 font-size--smaller code">
+                                        <tbody>
+                                        <tr data-duice-bind="basketAsset.assetMetas" data-duice-loop="assetMeta,status">
+                                            <td data-duice-bind="assetMeta" data-duice-property="name"></td>
+                                            <td data-duice-bind="assetMeta" data-duice-property="value" class="text-align--right"></td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </td>
                             <td>
                                 <select data-duice-bind="basketAsset"
@@ -451,19 +457,19 @@
                                     <option value>- Link -</option>
                                 </select>
                             </td>
-                            <td>
+                            <td class="text-align--center">
                                 <label>
                                     <input type="checkbox" data-duice-bind="basketAsset"
                                            data-duice-property="fixed"/>
                                 </label>
                             </td>
-                            <td>
+                            <td class="text-align--center">
                                 <label>
                                     <input type="checkbox" data-duice-bind="basketAsset"
                                            data-duice-property="enabled"/>
                                 </label>
                             </td>
-                            <td>
+                            <td class="text-align--right">
                                 <label>
                                     <input type="number" data-duice-bind="basketAsset" data-duice-property="holdingWeight" class="width--50"/>
                                     %
@@ -830,7 +836,7 @@
                                     </select>
                                 </td>
                                 <td class="text-align--right">
-                                    <button type="button"
+                                    <button class="small" type="button"
                                             data-duice-bind="balanceAsset"
                                             data-duice-execute="this.dataset.assetId=balanceAsset.assetId;"
                                             onclick="sellBalanceAsset(this.dataset.assetId);"

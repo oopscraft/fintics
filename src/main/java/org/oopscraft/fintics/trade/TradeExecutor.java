@@ -114,7 +114,7 @@ public class TradeExecutor {
                 minuteOhlcvs.addAll(previousMinuteOhlcvs);
 
                 // newses
-                List<News> newses = assetService.getNewses(
+                List<News> newses = newsService.getNewses(
                         basketAsset.getAssetId(),
                         dateTime.minusWeeks(1),
                         dateTime,
