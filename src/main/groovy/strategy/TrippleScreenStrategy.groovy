@@ -43,10 +43,9 @@ class ScoreGroup extends LinkedHashMap<String, Scorable> implements Scorable {
 interface Analyzable {
     BigDecimal getCurrentClose()
     BigDecimal getAverageClose()
-    BigDecimal applyAveragePosition(BigDecimal position)
+    BigDecimal getAveragePosition(BigDecimal position)
     Scorable getTrendScore()
     Scorable getMomentumScore()
-    Scorable getDirectionScore()
     Scorable getVolatilityScore()
     Scorable getOversoldScore()
     Scorable getOverboughtScore()
@@ -56,8 +55,8 @@ interface Analyzable {
 class Analysis implements Analyzable {
     List<Ohlcv> ohlcvs
     Ohlcv ohlcv
-    List<Sma> sma5s
-    Sma sma5
+    List<Sma> sma20s
+    Sma sma20
     List<Sma> sma50s
     Sma sma50
     List<Sma> sma100s
@@ -88,8 +87,8 @@ class Analysis implements Analyzable {
     Analysis(TradeAsset profile, Ohlcv.Type type, int period) {
         this.ohlcvs = profile.getOhlcvs(type, period)
         this.ohlcv = this.ohlcvs.first()
-        this.sma5s = Tools.indicators(ohlcvs, SmaContext.of(5))
-        this.sma5 = sma5s.first()
+        this.sma20s = Tools.indicators(ohlcvs, SmaContext.of(20))
+        this.sma20 = sma20s.first()
         this.sma50s = Tools.indicators(ohlcvs, SmaContext.of(50))
         this.sma50 = sma50s.first()
         this.sma100s = Tools.indicators(ohlcvs, SmaContext.of(100))
@@ -129,7 +128,7 @@ class Analysis implements Analyzable {
     }
 
     @Override
-    BigDecimal applyAveragePosition(BigDecimal position) {
+    BigDecimal getAveragePosition(BigDecimal position) {
         def averagePrice = this.getAverageClose()
         def currentPrice = this.getCurrentClose()
         def averageWeight = averagePrice/currentPrice as BigDecimal
@@ -141,10 +140,10 @@ class Analysis implements Analyzable {
     @Override
     Scorable getTrendScore() {
         def score = new Score()
-        // sma5Over50
-        score.sma5Over50 = sma5.value > sma50.value ? 100 : 0
-        // sma5Over100
-        score.sma5Over100 = sma5.value > sma100.value ? 100 : 0
+        // guidance > quarter
+        score.sma20Over50 = sma20.value > sma50.value ? 100 : 0
+        // quarter > half
+        score.sma50Over100 = sma50.value > sma100.value ? 100 : 0
         // macd
         score.macdValue = macd.value > 0 ? 100 : 0
         // return
@@ -175,28 +174,6 @@ class Analysis implements Analyzable {
         score.stochasticSlowK = stochasticSlow.slowK > 50 ? 100 : 0
         // williams r
         score.williamsRValue = williamsR.value > -50 ? 100 : 0
-        // return
-        return score
-    }
-
-    @Override
-    Scorable getDirectionScore() {
-        def score = new Score()
-        // macd
-        score.macdValueOversignal = macd.value > macd.signal ? 100 : 0
-        score.macdOscillator = macd.oscillator > 0 ? 100 : 0
-        // rsi
-        score.rsiValueOverSignal = rsi.value > rsi.signal ? 100 : 0
-        // cci
-        score.cciValueOverSignal = cci.value > cci.signal ? 100 : 0
-        // obv
-        score.obvValueOverSignal = obv.value > obv.signal ? 100 : 0
-        // chaikin oscillator
-        score.chaikinOscillatorValueOverSignal = chaikinOscillator.value > chaikinOscillator.signal ? 100 : 0
-        // stochastic slow
-        score.stochasticSlowKOverD = stochasticSlow.slowK > stochasticSlow.slowD ? 100 : 0
-        // williams r
-        score.williamsRValueOverSignal = williamsR.value > williamsR.signal ? 100 : 0
         // return
         return score
     }
@@ -275,7 +252,7 @@ class AnalysisGroup extends LinkedHashMap<String, Analyzable> implements Analyza
     }
 
     @Override
-    BigDecimal applyAveragePosition(BigDecimal position) {
+    BigDecimal getAveragePosition(BigDecimal position) {
         return this.values().collect{it.getAverageClose()}.average() as Number
     }
 
@@ -290,13 +267,6 @@ class AnalysisGroup extends LinkedHashMap<String, Analyzable> implements Analyza
     Scorable getMomentumScore() {
         def scoreGroup = new ScoreGroup()
         this.each{it -> scoreGroup.put(it.key, it.value.getMomentumScore())}
-        return scoreGroup
-    }
-
-    @Override
-    Scorable getDirectionScore() {
-        def scoreGroup = new ScoreGroup()
-        this.each{it -> scoreGroup.put(it.key, it.value.getDirectionScore())}
         return scoreGroup
     }
 
@@ -341,6 +311,13 @@ def orderEnabled = Boolean.parseBoolean(variables['orderEnabled'])
 def basePosition = new BigDecimal(variables['basePosition'])
 def sellProfitPercentageThreshold = new BigDecimal(variables['sellProfitPercentageThreshold'])
 
+// fixed
+def fixed = basketAsset.isFixed()
+log.info("fixed: {}", fixed)
+
+// profit percentage
+def profitPercentage = balanceAsset?.getProfitPercentage() ?: 0.0
+
 // result
 StrategyResult strategyResult = null
 
@@ -348,48 +325,31 @@ StrategyResult strategyResult = null
 def tideAnalysis = new Analysis(tradeAsset, tideOhlcvType, tideOhlcvPeriod)
 def waveAnalysis = new Analysis(tradeAsset, waveOhlcvType, waveOhlcvPeriod)
 def rippleAnalysis = new Analysis(tradeAsset, rippleOhlcvType, rippleOhlcvPeriod)
-log.info("tide.momentum: {}", tideAnalysis.getMomentumScore())
-log.info("wave.momentum: {}", waveAnalysis.getMomentumScore())
-log.info("wave.volatility: {}", waveAnalysis.getVolatilityScore())
-log.info("wave.oversold: {}", waveAnalysis.getOversoldScore())
-log.info("wave.overbought: {}", waveAnalysis.getOverboughtScore())
-log.info("ripple.momentum: {}", rippleAnalysis.getMomentumScore())
 
-// position 산정
+// position
 def positionScore = tideAnalysis.getTrendScore().getAverage()
 def marginPosition = 1.0 - basePosition
 def positionPerScore = (marginPosition/100)
 def position = (basePosition + (positionPerScore * positionScore)) as BigDecimal
 
-// tide,wave,ripple 별 average position 산정
-def tideAveragePosition = tideAnalysis.applyAveragePosition(position)
-def waveAveragePosition = waveAnalysis.applyAveragePosition(position)
-def rippleAveragePosition = tideAnalysis.applyAveragePosition(position)
-log.info("position: {}", position)
-log.info("tideAveragePosition: {}", tideAveragePosition)
-log.info("waveAveragePosition: {}", waveAveragePosition)
-log.info("rippleAveragePosition: {}", rippleAveragePosition)
-
-// fixed
-def fixed = basketAsset.isFixed()
-log.info("fixed: {}", fixed)
-
-// profit percentage
-def profitPercentage = balanceAsset?.getProfitPercentage() ?: 0.0
-log.info("balanceAsset: {}", balanceAsset)
-log.info("profitPercentage: {}", profitPercentage)
-
-// message 정의
+// message
 def message = """
-position:${position} (tide:${tideAveragePosition}|wave:${waveAveragePosition}|ripple:${rippleAveragePosition})
-tide.mom:${tideAnalysis.getMomentumScore().getAverage()}|tre:${tideAnalysis.getTrendScore().getAverage()}
-+ sma5:${tideAnalysis.sma5.value}|sma50:${tideAnalysis.sma50.value}|sma100:${tideAnalysis.sma100.value}|macd:${tideAnalysis.macd.value}
-wave.mon:${waveAnalysis.getMomentumScore().getAverage()}|vol:${waveAnalysis.getVolatilityScore().getAverage()}|osd:${waveAnalysis.getOversoldScore().getAverage()}|obt:${waveAnalysis.getOverboughtScore().getAverage()}|tst:${waveAnalysis.getTrailingStopScore().getAverage()}
-+ adx:${waveAnalysis.dmi.adx}|rsi:${waveAnalysis.rsi.value}|sto:${waveAnalysis.stochasticSlow.slowK}|cci:${waveAnalysis.cci.value}|wil:${waveAnalysis.williamsR.value}
-ripple.mom:${rippleAnalysis.getMomentumScore().getAverage()}
+position:${position} (waveAveragePosition:${waveAnalysis.getAveragePosition(position)})
+tide.trend:${tideAnalysis.getTrendScore().toString()}
+- sma20:${tideAnalysis.sma20.value.toPlainString()}|sma50:${tideAnalysis.sma50.value.toPlainString()}|sma100:${tideAnalysis.sma100.value.toPlainString()}|macd:${tideAnalysis.macd.value.toPlainString()}
+wave.volatility:${waveAnalysis.getVolatilityScore().toString()}
+- adx:${waveAnalysis.dmi.adx}
+wave.oversold:${waveAnalysis.getOversoldScore().toString()}
+wave.overbought:${waveAnalysis.getOverboughtScore().toString()}
+- rsi:${waveAnalysis.rsi.value}|sto:${waveAnalysis.stochasticSlow.slowK}|cci:${waveAnalysis.cci.value}|wil:${waveAnalysis.williamsR.value}
+ripple.mom:${rippleAnalysis.getMomentumScore().toString()}
 """
+log.info("message: {}", message)
 tradeAsset.setMessage(message)
 
+//===============================
+// trade
+//===============================
 // wave volatility 상태인 경우
 if (waveAnalysis.getVolatilityScore() > 50) {
     // 중기 과매도 상태
@@ -397,7 +357,7 @@ if (waveAnalysis.getVolatilityScore() > 50) {
         // 단기 상승 모멘텀
         if (rippleAnalysis.getMomentumScore() > 80) {
             // 매수
-            def buyPosition = waveAveragePosition
+            def buyPosition = waveAnalysis.getAveragePosition(position)
             strategyResult = StrategyResult.of(Action.BUY, buyPosition, "[WAVE OVERSOLD BUY] " + message)
         }
     }
@@ -405,36 +365,30 @@ if (waveAnalysis.getVolatilityScore() > 50) {
     if (waveAnalysis.getOverboughtScore() > 50) {
         // 단기 하락 모멘텀
         if (rippleAnalysis.getMomentumScore() < 20) {
-            def sellPosition = waveAveragePosition
-            // fixed 가 아닌 경우 모두 매도
-            if (!fixed) {
-                sellPosition = 0.0
-            }
             // 매도
+            def sellPosition = waveAnalysis.getAveragePosition(position)
             strategyResult = StrategyResult.of(Action.SELL, sellPosition, "[WAVE OVERBOUGHT SELL] " + message)
-            // filter - sell profit percentage threshold
-            if (sellProfitPercentageThreshold > 0.0) {
-                if (profitPercentage < sellProfitPercentageThreshold) {
-                    strategyResult = null
-                }
-            }
         }
     }
 }
 
-
-// TODO 자산 배분 하고 종목은 매도 하지 않는게 맞는거 같은데 애초에 매도할 종목 이면 종목 선택의 문제가 아닐런지.
-// trend score 가 미달 하는 경우 trailing stop 체크
-if (tideAnalysis.getTrendScore() < 20) {
-    // 추가로 장기,중기,단기 모두 하락 모멘텀 시 반등 여지가 없다고 판단 하고 매도 포지션
-    if (tideAnalysis.getMomentumScore() < 20 && waveAnalysis.getMomentumScore() < 20 && rippleAnalysis.getMomentumScore() < 20) {
-        // 중기 trailing stop + 장기 average position 기준 으로 매도
-        if (waveAnalysis.getTrailingStopScore() > 50) {
-            //strategyResult = StrategyResult.of(Action.SELL, tideAveragePosition, "[TIDE LOWER TREND + WAVE TAILING STOP SELL] " + message)
-        }
+//===============================
+// check sell option
+//===============================
+if (strategyResult != null && strategyResult.action == Action.SELL) {
+    // fixed 종목이 아닌 경우 전량 매도
+    if (!fixed) {
+        strategyResult.setPosition(0.0)
+    }
+    // 목표 수익률 이하 매도 제한이 설정된 경우 매도 제외
+    if (profitPercentage < sellProfitPercentageThreshold) {
+        strategyResult = null
     }
 }
 
+//================================
+// order enabled
+//================================
 // orderEnabled 설정 이 true 가 아닐 경우는 실제 주문 제외
 log.info("orderEnabled: {}", orderEnabled)
 if (!orderEnabled) {
@@ -442,5 +396,7 @@ if (!orderEnabled) {
     strategyResult = null
 }
 
+//================================
 // return
+//================================
 return strategyResult

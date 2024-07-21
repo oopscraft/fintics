@@ -24,7 +24,7 @@ public class OrderSpecifications {
 
     public static Specification<OrderEntity> likeAssetId(String assetId) {
         return ((root, query, criteriaBuilder) ->
-                criteriaBuilder.equal(root.get(OrderEntity_.ASSET_ID), '%' + assetId + '%'));
+                criteriaBuilder.like(root.get(OrderEntity_.ASSET_ID), '%' + assetId + '%'));
     }
 
     public static Specification<OrderEntity> likeAssetName(String assetName) {
