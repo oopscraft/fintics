@@ -14,16 +14,16 @@ public class LinkFactory {
         List<Link> links = new ArrayList<>();
         switch(Optional.ofNullable(market).orElse("")) {
             case "US" -> {
-                links.add(Link.of("Yahoo", "https://finance.yahoo.com/quote/" + symbol));
-                links.add(Link.of("Finviz", "https://finviz.com/quote.ashx?t=" + symbol));
                 // nasdaq
                 switch (Optional.ofNullable(type).orElse("")) {
-                    case "STOCK" -> links.add(Link.of("Nasdaq", "https://www.nasdaq.com/market-activity/stocks/" + symbol));
-                    case "ETF" -> links.add(Link.of("Nasdaq", "https://www.nasdaq.com/market-activity/etf/" + symbol));
+                    case "STOCK" -> links.add(Link.of("Nasdaq", String.format("https://www.nasdaq.com/market-activity/stocks/%s/advanced-charting?timeframe=3m", symbol)));
+                    case "ETF" -> links.add(Link.of("Nasdaq", String.format("https://www.nasdaq.com/market-activity/etf/%s/advanced-charting?timeframe=3m", symbol)));
                 }
+                links.add(Link.of("Yahoo", "https://finance.yahoo.com/chart/" + symbol));
+                links.add(Link.of("Finviz", "https://finviz.com/quote.ashx?t=" + symbol));
             }
             case "KR" -> {
-                links.add(Link.of("Naver", "https://finance.naver.com/item/main.naver?code=" + symbol));
+                links.add(Link.of("Naver", "https://finance.naver.com/item/fchart.naver?code=" + symbol));
                 links.add(Link.of("Alphasquare", "https://alphasquare.co.kr/home/market-summary?code=" + symbol));
                 // etf
                 if (Objects.equals(type,"ETF")) {

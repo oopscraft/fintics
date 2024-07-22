@@ -337,6 +337,7 @@ def message = """
 position:${position} (waveAveragePosition:${waveAnalysis.getAveragePosition(position)})
 tide.trend:${tideAnalysis.getTrendScore().toString()}
 - sma20:${tideAnalysis.sma20.value.toPlainString()}|sma50:${tideAnalysis.sma50.value.toPlainString()}|sma100:${tideAnalysis.sma100.value.toPlainString()}|macd:${tideAnalysis.macd.value.toPlainString()}
+tide.momentum:${tideAnalysis.getMomentumScore().toString()}
 wave.volatility:${waveAnalysis.getVolatilityScore().toString()}
 - adx:${waveAnalysis.dmi.adx}
 wave.oversold:${waveAnalysis.getOversoldScore().toString()}
