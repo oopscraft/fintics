@@ -382,9 +382,11 @@ public class TradeExecutor {
             if (waitingOrder != null) {
                 // if limit type order, amend order
                 if (waitingOrder.getKind() == Order.Kind.LIMIT) {
-                    waitingOrder.setPrice(price);
-                    log.info("[{}] amend buy order:{}", tradeAsset.getAssetName(), waitingOrder);
-                    brokerClient.amendOrder(tradeAsset, waitingOrder);
+                    if (!waitingOrder.getPrice().equals(price)) {
+                        waitingOrder.setPrice(price);
+                        log.info("[{}] amend buy order:{}", tradeAsset.getAssetName(), waitingOrder);
+                        brokerClient.amendOrder(tradeAsset, waitingOrder);
+                    }
                 }
                 return;
             }
@@ -449,9 +451,11 @@ public class TradeExecutor {
             if (waitingOrder != null) {
                 // if limit type order, amend order
                 if (waitingOrder.getKind() == Order.Kind.LIMIT) {
-                    waitingOrder.setPrice(price);
-                    log.info("[{}] amend sell order:{}", tradeAsset.getAssetName(), waitingOrder);
-                    brokerClient.amendOrder(tradeAsset, waitingOrder);
+                    if (!waitingOrder.getPrice().equals(price)) {
+                        waitingOrder.setPrice(price);
+                        log.info("[{}] amend sell order:{}", tradeAsset.getAssetName(), waitingOrder);
+                        brokerClient.amendOrder(tradeAsset, waitingOrder);
+                    }
                 }
                 return;
             }

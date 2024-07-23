@@ -133,7 +133,7 @@ class Analysis implements Analyzable {
         def currentPrice = this.getCurrentClose()
         def averageWeight = averagePrice/currentPrice as BigDecimal
         def averagePosition = ((position * averageWeight) as BigDecimal)
-                .setScale(position.scale(), RoundingMode.HALF_UP)
+                .setScale(4, RoundingMode.HALF_UP)
         return averagePosition
     }
 
@@ -311,13 +311,6 @@ def orderEnabled = Boolean.parseBoolean(variables['orderEnabled'])
 def basePosition = new BigDecimal(variables['basePosition'])
 def sellProfitPercentageThreshold = new BigDecimal(variables['sellProfitPercentageThreshold'])
 
-// fixed
-def fixed = basketAsset.isFixed()
-log.info("fixed: {}", fixed)
-
-// profit percentage
-def profitPercentage = balanceAsset?.getProfitPercentage() ?: 0.0
-
 // result
 StrategyResult strategyResult = null
 
@@ -326,11 +319,23 @@ def tideAnalysis = new Analysis(tradeAsset, tideOhlcvType, tideOhlcvPeriod)
 def waveAnalysis = new Analysis(tradeAsset, waveOhlcvType, waveOhlcvPeriod)
 def rippleAnalysis = new Analysis(tradeAsset, rippleOhlcvType, rippleOhlcvPeriod)
 
+// profit percentage
+def profitPercentage = balanceAsset?.getProfitPercentage() ?: 0.0
+
+// fixed
+def fixed = basketAsset.isFixed()
+log.info("fixed: {}", fixed)
+
 // position
 def positionScore = tideAnalysis.getTrendScore().getAverage()
 def marginPosition = 1.0 - basePosition
 def positionPerScore = (marginPosition/100)
 def position = (basePosition + (positionPerScore * positionScore)) as BigDecimal
+
+// if fixed asset, position to 1.0
+if (fixed) {
+    position = 1.0
+}
 
 // message
 def message = """
@@ -360,6 +365,10 @@ if (waveAnalysis.getVolatilityScore() > 50) {
             // 매수
             def buyPosition = waveAnalysis.getAveragePosition(position)
             strategyResult = StrategyResult.of(Action.BUY, buyPosition, "[WAVE OVERSOLD BUY] " + message)
+            // filter - 장기 하락 추세가 강하고 아직 과매도 구간이 아닌 경우 매수 보류
+            if (tideAnalysis.getMomentumScore() < 20 && tideAnalysis.getOversoldScore() < 50) {
+                strategyResult = null
+            }
         }
     }
     // 중기 과매수 상태
@@ -369,6 +378,10 @@ if (waveAnalysis.getVolatilityScore() > 50) {
             // 매도
             def sellPosition = waveAnalysis.getAveragePosition(position)
             strategyResult = StrategyResult.of(Action.SELL, sellPosition, "[WAVE OVERBOUGHT SELL] " + message)
+            // filter - 장기 상승 추세가 강하고 아직 과매도 구간이 아닌 경우 매도 보류
+            if (tideAnalysis.getMomentumScore() > 80 && tideAnalysis.getOverboughtScore() < 50) {
+                strategyResult = null
+            }
         }
     }
 }
