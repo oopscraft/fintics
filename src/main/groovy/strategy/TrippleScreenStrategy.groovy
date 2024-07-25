@@ -133,7 +133,7 @@ class Analysis implements Analyzable {
         def currentPrice = this.getCurrentClose()
         def averageWeight = averagePrice/currentPrice as BigDecimal
         def averagePosition = ((position * averageWeight) as BigDecimal)
-                .setScale(4, RoundingMode.HALF_UP)
+                .setScale(2, RoundingMode.HALF_UP)
         return averagePosition
     }
 
@@ -142,10 +142,10 @@ class Analysis implements Analyzable {
         def score = new Score()
         // guidance > quarter
         score.sma20Over50 = sma20.value > sma50.value ? 100 : 0
+        // guidance > half
+        score.sma20Over100 = sma20.value > sma100.value ? 100 : 0
         // quarter > half
         score.sma50Over100 = sma50.value > sma100.value ? 100 : 0
-        // macd
-        score.macdValue = macd.value > 0 ? 100 : 0
         // return
         return score
     }
@@ -331,11 +331,6 @@ def positionScore = tideAnalysis.getTrendScore().getAverage()
 def marginPosition = 1.0 - basePosition
 def positionPerScore = (marginPosition/100)
 def position = (basePosition + (positionPerScore * positionScore)) as BigDecimal
-
-// if fixed asset, position to 1.0
-if (fixed) {
-    position = 1.0
-}
 
 // message
 def message = """

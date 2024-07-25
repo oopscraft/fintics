@@ -16,22 +16,22 @@ public class LinkFactory {
             case "US" -> {
                 // nasdaq
                 switch (Optional.ofNullable(type).orElse("")) {
-                    case "STOCK" -> links.add(Link.of("Nasdaq", String.format("https://www.nasdaq.com/market-activity/stocks/%s/advanced-charting?timeframe=3m", symbol)));
-                    case "ETF" -> links.add(Link.of("Nasdaq", String.format("https://www.nasdaq.com/market-activity/etf/%s/advanced-charting?timeframe=3m", symbol)));
+                    case "STOCK" -> links.add(Link.of("Nasdaq", String.format("https://www.nasdaq.com/market-activity/stocks/%s", symbol)));
+                    case "ETF" -> links.add(Link.of("Nasdaq", String.format("https://www.nasdaq.com/market-activity/etf/%s", symbol)));
                 }
-                links.add(Link.of("Yahoo", "https://finance.yahoo.com/chart/" + symbol));
-                links.add(Link.of("Finviz", "https://finviz.com/quote.ashx?t=" + symbol));
+                links.add(Link.of("Yahoo", String.format("https://finance.yahoo.com/quote/%s", symbol)));
+                links.add(Link.of("Finviz", String.format("https://finviz.com/quote.ashx?t=%s", symbol)));
             }
             case "KR" -> {
-                links.add(Link.of("Naver", "https://finance.naver.com/item/fchart.naver?code=" + symbol));
-                links.add(Link.of("Alphasquare", "https://alphasquare.co.kr/home/market-summary?code=" + symbol));
+                links.add(Link.of("Naver", String.format("https://finance.naver.com/item/main.naver?code=%s", symbol)));
+                links.add(Link.of("Alphasquare", String.format("https://alphasquare.co.kr/home/market-summary?code=%s", symbol)));
                 // etf
                 if (Objects.equals(type,"ETF")) {
-                    links.add(Link.of("ETFCheck", "https://www.etfcheck.co.kr/mobile/etpitem/" + symbol));
+                    links.add(Link.of("ETFCheck", String.format("https://www.etfcheck.co.kr/mobile/etpitem/%s", symbol)));
                 }
             }
             case "UPBIT" -> {
-                links.add(Link.of("UPBIT", "https://upbit.com/exchange?code=CRIX.UPBIT." + symbol));
+                links.add(Link.of("UPBIT", String.format("https://upbit.com/exchange?code=CRIX.UPBIT.%s", symbol)));
             }
         }
         return links;
