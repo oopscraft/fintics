@@ -10,8 +10,6 @@ insert into `core_authority` (`authority_id`,`system_required`,`authority_name`)
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_OHLCVS','Y','Ohlcvs API Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_NEWSES','Y','News API Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_ORDERS','Y','Orders API Authority');
-insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_SIMULATES','Y','Simulates API Authority');
-insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_SIMULATES_EDIT','Y','Simulates Edit API Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_TRADES','Y','Trades API Access Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_TRADES_EDIT','Y','Trades Edit API Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_BASKETS','Y','Baskets API Authority');
@@ -34,8 +32,6 @@ insert into `core_authority` (`authority_id`,`system_required`,`authority_name`)
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('BROKERS','Y','Brokers Access Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('BROKERS_EDIT','Y','Brokers Edit Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('ORDERS','Y','Orders Access Authority');
-insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('SIMULATES','Y','Simulates Access Authority');
-insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('SIMULATES_EDIT','Y','Simulates Edit Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('DATA','Y','Data Access Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('DATA_EDIT','Y','Data Edit Authority');
 
@@ -66,10 +62,6 @@ insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`au
     ('BROKERS_EDIT','Y','Brokers Edit Role','N','N');
 insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
     ('ORDERS','Y','Orders Access Role','N','Y');
-insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
-    ('SIMULATES','Y','Simulates Access Role','N','Y');
-insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
-    ('SIMULATES_EDIT','Y','Simulates Edit Role','N','N');
 insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
     ('DATA','Y','Data Access Role','N','Y');
 insert into `core_role` (`role_id`,`system_required`,`role_name`,`anonymous`,`authenticated`) values
@@ -113,12 +105,6 @@ insert into `core_role_authority` (`role_id`,`authority_id`) values
     ('BROKERS_EDIT','BROKERS_EDIT'),
     ('BROKERS_EDIT','API_BROKERS_EDIT');
 insert into `core_role_authority` (`role_id`,`authority_id`) values
-    ('SIMULATES','SIMULATES'),
-    ('SIMULATES','API_SIMULATES');
-insert into `core_role_authority` (`role_id`,`authority_id`) values
-    ('SIMULATES_EDIT','SIMULATES_EDIT'),
-    ('SIMULATES_EDIT','API_SIMULATES_EDIT');
-insert into `core_role_authority` (`role_id`,`authority_id`) values
     ('ORDERS','ORDERS'),
     ('ORDERS','API_ORDERS');
 insert into `core_role_authority` (`role_id`,`authority_id`) values
@@ -160,10 +146,6 @@ insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name
     ('orders','Y',null,'Orders','/orders',7,'/static/image/icon-order.svg');
 insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
     ('orders','ko','거래');
-insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`sort`,`icon`) values
-    ('simulates','Y',null,'Simulates','/simulates',8,'/static/image/icon-simulate.svg');
-insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values
-    ('simulates','ko','시뮬레이션');
 insert into `core_menu` (`menu_id`,`system_required`,`parent_menu_id`,`menu_name`,`link`,`sort`,`icon`) values
     ('data','Y',null,'Data','/data',9,'/static/image/icon-data.svg');
 insert into `core_menu_i18n` (`menu_id`,`language`,`menu_name`) values

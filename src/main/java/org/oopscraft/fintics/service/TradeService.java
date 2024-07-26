@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -44,8 +43,6 @@ public class TradeService {
 
     @PersistenceContext
     private final EntityManager entityManager;
-
-    private final SimulateRepository simulateRepository;
 
     public List<Trade> getTrades() {
         return tradeRepository.findAll(Sort.by(TradeEntity_.TRADE_NAME)).stream()

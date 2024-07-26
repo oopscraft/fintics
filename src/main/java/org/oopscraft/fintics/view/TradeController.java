@@ -50,7 +50,6 @@ public class TradeController {
         modelAndView.addObject("baskets", baskets);
         List<Strategy> strategies = strategyService.getStrategies(StrategySearch.builder().build(), Pageable.unpaged()).getContent();
         modelAndView.addObject("strategies", strategies);
-        modelAndView.addObject("simulateStatus", Simulate.Status.values());
         modelAndView.addObject("orderKinds", Order.Kind.values());
         return modelAndView;
     }
