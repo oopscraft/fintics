@@ -566,8 +566,8 @@
                                         let close = basketAsset.close;
                                         let netChange = basketAsset.netChange || 0;
                                         let netChangePercentage = basketAsset.netChangePercentage || 0;
-                                        if (netChange > 0) this.classList.add('color--red');
-                                        if (netChange < 0) this.classList.add('color--blue');
+                                        if (netChange > 0) this.classList.add('color--green');
+                                        if (netChange < 0) this.classList.add('color--red');
                                         this.innerHTML = `${close?.toLocaleString()||''} (${netChange} <small>/</small> ${netChangePercentage}%)`;
                                         "></span>
                                     &nbsp;
@@ -621,13 +621,13 @@
                         <td class="text-align--right padding-right--1em font-weight--bold">
                             <div data-duice-bind="basketAsset" data-duice-property="profitAmount" data-duice-format="number"
                                  data-duice-execute="
-                                if(basketAsset.profitAmount > 0) this.classList.add('color--red');
-                                if(basketAsset.profitAmount < 0) this.classList.add('color--blue');
+                                if(basketAsset.profitAmount > 0) this.classList.add('color--green');
+                                if(basketAsset.profitAmount < 0) this.classList.add('color--red');
                                 "></div>
                             <div data-duice-bind="basketAsset" data-duice-execute="
                                 if (basketAsset.profitPercentage == null) return;
-                                if (basketAsset.profitPercentage > 0) this.classList.add('color--red');
-                                if (basketAsset.profitPercentage < 0) this.classList.add('color--blue');
+                                if (basketAsset.profitPercentage > 0) this.classList.add('color--green');
+                                if (basketAsset.profitPercentage < 0) this.classList.add('color--red');
                                 this.innerHTML = `${basketAsset.profitPercentage} %`;
                                 "></div>
                         </td>

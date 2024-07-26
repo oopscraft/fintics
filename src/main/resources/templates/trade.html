@@ -731,8 +731,8 @@
                            data-duice-property="profitAmount"
                            data-duice-format="number"
                            data-duice-execute="
-                           if(balance.profitAmount > 0) this.classList.add('color--red');
-                           if(balance.profitAmount < 0) this.classList.add('color--blue');
+                           if(balance.profitAmount > 0) this.classList.add('color--green');
+                           if(balance.profitAmount < 0) this.classList.add('color--red');
                            "
                            class="width--100"/>
                 </label>
@@ -743,8 +743,8 @@
                            data-duice-property="realizedProfitAmount"
                            data-duice-format="number"
                            data-duice-execute="
-                           if(balance.realizedProfitAmount > 0) this.classList.add('color--red');
-                           if(balance.realizedProfitAmount < 0) this.classList.add('color--blue');
+                           if(balance.realizedProfitAmount > 0) this.classList.add('color--green');
+                           if(balance.realizedProfitAmount < 0) this.classList.add('color--red');
                            "
                            class="width--100"/>
                 </label>
@@ -814,14 +814,14 @@
                                           data-duice-property="profitAmount"
                                           data-duice-format="number"
                                           data-duice-execute="
-                                          if(balanceAsset.profitAmount > 0) this.classList.add('color--red');
-                                          if(balanceAsset.profitAmount < 0) this.classList.add('color--blue');
+                                          if(balanceAsset.profitAmount > 0) this.classList.add('color--green');
+                                          if(balanceAsset.profitAmount < 0) this.classList.add('color--red');
                                           ">
                                     </span>
                                 </td>
                                 <td data-duice-bind="balanceAsset" data-duice-execute="
-                                if(balanceAsset.profitPercentage > 0) this.classList.add('color--red');
-                                if(balanceAsset.profitPercentage < 0) this.classList.add('color--blue');
+                                if(balanceAsset.profitPercentage > 0) this.classList.add('color--green');
+                                if(balanceAsset.profitPercentage < 0) this.classList.add('color--red');
                                 " class="text-align--right">
                                     <span data-duice-bind="balanceAsset" data-duice-property="profitPercentage" data-duice-format="number"></span>
                                     %

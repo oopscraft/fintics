@@ -360,9 +360,11 @@ if (waveAnalysis.getVolatilityScore() > 50) {
             // 매수
             def buyPosition = waveAnalysis.getAveragePosition(position)
             strategyResult = StrategyResult.of(Action.BUY, buyPosition, "[WAVE OVERSOLD BUY] " + message)
-            // filter - 장기 하락 추세가 강하고 아직 과매도 구간이 아닌 경우 매수 보류
-            if (tideAnalysis.getMomentumScore() < 20 && tideAnalysis.getOversoldScore() < 50) {
-                strategyResult = null
+            // filter - 장기 하락 추세가 강한 경우 아직 과매도 구간이 아닌 경우 매수 대기
+            if (tideAnalysis.getMomentumScore() < 20) {
+                if (tideAnalysis.getOversoldScore() < 50) {
+                    strategyResult = null
+                }
             }
         }
     }
@@ -373,9 +375,11 @@ if (waveAnalysis.getVolatilityScore() > 50) {
             // 매도
             def sellPosition = waveAnalysis.getAveragePosition(position)
             strategyResult = StrategyResult.of(Action.SELL, sellPosition, "[WAVE OVERBOUGHT SELL] " + message)
-            // filter - 장기 상승 추세가 강하고 아직 과매도 구간이 아닌 경우 매도 보류
-            if (tideAnalysis.getMomentumScore() > 80 && tideAnalysis.getOverboughtScore() < 50) {
-                strategyResult = null
+            // filter - 장기 상승 추세가 강한 경우 아직 과매수 구간이 아니면 매도 대기
+            if (tideAnalysis.getMomentumScore() > 80) {
+                if (tideAnalysis.getOverboughtScore() < 50) {
+                    strategyResult = null
+                }
             }
         }
     }
