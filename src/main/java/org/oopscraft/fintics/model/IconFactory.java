@@ -37,6 +37,7 @@ public class IconFactory {
                 String etfBrand = assetName.split("\\s+")[0].toLowerCase();
                 return switch (etfBrand) {
                     case "spdr" -> "https://www.ssga.com/favicon.ico";
+                    case "global" -> "https://www.globalxetfs.com/favicon.ico";
                     default -> String.format("https://s3-symbol-logo.tradingview.com/%s.svg", etfBrand);
                 };
             }
