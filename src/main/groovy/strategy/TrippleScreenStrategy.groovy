@@ -322,21 +322,22 @@ def rippleAnalysis = new Analysis(tradeAsset, rippleOhlcvType, rippleOhlcvPeriod
 // profit percentage
 def profitPercentage = balanceAsset?.getProfitPercentage() ?: 0.0
 
-// fixed
-def fixed = basketAsset.isFixed()
-log.info("fixed: {}", fixed)
-
 // position
 def positionScore = tideAnalysis.getTrendScore().getAverage()
 def marginPosition = 1.0 - basePosition
 def positionPerScore = (marginPosition/100)
 def position = (basePosition + (positionPerScore * positionScore)) as BigDecimal
+position = position * (tideAnalysis.getMomentumScore().getAverage()/100)
+
+// fixed 인 종목은 position 1.0
+if (basketAsset.isFixed()) {
+    position = 1.0
+}
 
 // message
 def message = """
 position:${position} (waveAveragePosition:${waveAnalysis.getAveragePosition(position)})
 tide.trend:${tideAnalysis.getTrendScore().toString()}
-- sma20:${tideAnalysis.sma20.value.toPlainString()}|sma50:${tideAnalysis.sma50.value.toPlainString()}|sma100:${tideAnalysis.sma100.value.toPlainString()}|macd:${tideAnalysis.macd.value.toPlainString()}
 tide.momentum:${tideAnalysis.getMomentumScore().toString()}
 wave.volatility:${waveAnalysis.getVolatilityScore().toString()}
 - adx:${waveAnalysis.dmi.adx}
@@ -360,12 +361,6 @@ if (waveAnalysis.getVolatilityScore() > 50) {
             // 매수
             def buyPosition = waveAnalysis.getAveragePosition(position)
             strategyResult = StrategyResult.of(Action.BUY, buyPosition, "[WAVE OVERSOLD BUY] " + message)
-            // filter - 장기 하락 추세가 강한 경우 아직 과매도 구간이 아닌 경우 매수 대기
-            if (tideAnalysis.getMomentumScore() < 20) {
-                if (tideAnalysis.getOversoldScore() < 50) {
-                    strategyResult = null
-                }
-            }
         }
     }
     // 중기 과매수 상태
@@ -375,12 +370,6 @@ if (waveAnalysis.getVolatilityScore() > 50) {
             // 매도
             def sellPosition = waveAnalysis.getAveragePosition(position)
             strategyResult = StrategyResult.of(Action.SELL, sellPosition, "[WAVE OVERBOUGHT SELL] " + message)
-            // filter - 장기 상승 추세가 강한 경우 아직 과매수 구간이 아니면 매도 대기
-            if (tideAnalysis.getMomentumScore() > 80) {
-                if (tideAnalysis.getOverboughtScore() < 50) {
-                    strategyResult = null
-                }
-            }
         }
     }
 }
@@ -389,10 +378,6 @@ if (waveAnalysis.getVolatilityScore() > 50) {
 // check sell option
 //===============================
 if (strategyResult != null && strategyResult.action == Action.SELL) {
-    // fixed 종목이 아닌 경우 전량 매도
-    if (!fixed) {
-        strategyResult.setPosition(0.0)
-    }
     // 목표 수익률 이하 매도 제한이 설정된 경우 매도 제외
     if (profitPercentage < sellProfitPercentageThreshold) {
         strategyResult = null
