@@ -136,12 +136,12 @@ println("aggregatedItemScore: ${aggregatedItemScore}")
 // top10 item
 def top10ItemScores = aggregatedItemScore
         .sort { -it.score }
-        .take(20)
+        .take(30)
 println("top10ItemScores: ${top10ItemScores}")
 
 // return
 List<BasketChange> basketChanges = top10ItemScores.collect{
-    BasketChange.of(it.item.symbol, 5.0)
+    BasketChange.of(it.item.symbol, 2.0)
 }
 println("basketChanges: ${basketChanges}")
 return basketChanges
