@@ -17,6 +17,7 @@
             roeTo: null,
             roaFrom: null,
             roaTo: null,
+            assetMetas: new duice.ArrayProxy([]),
             _page: 0,
             _size: 20,
             _count: 0
@@ -173,56 +174,59 @@
                 <span data-th-text="#{fintics.Asset.favorite}"></span>
             </label>
             <div class="grid-column--2"></div>
-            <div class="grid-column--3">
-                <div class="display--grid grid-template-columns--12">
-                    <label class="grid-column--2">
-                        <input type="checkbox" onclick="togglePerCheckbox(this);"/>
-                        <span data-th-text="#{fintics.AssetMeta.name.PER}"></span>
-                    </label>
-                    <label class="grid-column--5">
-                        <input type="range" data-duice-bind="assetSearch" data-duice-property="perFrom" min="0" max="100" step="10" class="width--75 vertical-align--middle"/>
-                        <span data-duice-bind="assetSearch" data-duice-property="perFrom" class="width--25"></span>
-                        <span>~</span>
-                    </label>
-                    <label class="grid-column--5">
-                        <input type="range" data-duice-bind="assetSearch" data-duice-property="perTo" min="0" max="100" step="10" class="width--75 vertical-align--middle"/>
-                        <span data-duice-bind="assetSearch" data-duice-property="perTo" class="width--25"></span>
-                    </label>
-                </div>
-            </div>
-            <div class="grid-column--3">
-                <div class="display--grid grid-template-columns--12">
-                    <label class="grid-column--2">
-                        <input type="checkbox" onclick="toggleRoeCheckbox(this);"/>
-                        <span data-th-text="#{fintics.AssetMeta.name.ROE}"></span>
-                    </label>
-                    <label class="grid-column--5">
-                        <input type="range" data-duice-bind="assetSearch" data-duice-property="roeFrom" min="0" max="100" step="10" class="width--75 vertical-align--middle"/>
-                        <span data-duice-bind="assetSearch" data-duice-property="roeFrom" class="width--25"></span>
-                        <span>~</span>
-                    </label>
-                    <label class="grid-column--5">
-                        <input type="range" data-duice-bind="assetSearch" data-duice-property="roeTo" min="0" max="100" step="10" class="width--75 vertical-align--middle"/>
-                        <span data-duice-bind="assetSearch" data-duice-property="roeTo" class="width--25"></span>
-                    </label>
-                </div>
-            </div>
-            <div class="grid-column--3">
-                <div class="display--grid grid-template-columns--12">
-                    <label class="grid-column--2">
-                        <input type="checkbox" onclick="toggleRoaCheckbox(this);"/>
-                        <span data-th-text="#{fintics.AssetMeta.name.ROA}"></span>
-                    </label>
-                    <label class="grid-column--5">
-                        <input type="range" data-duice-bind="assetSearch" data-duice-property="roaFrom" min="0" max="100" step="10" class="width--75 vertical-align--middle"/>
-                        <span data-duice-bind="assetSearch" data-duice-property="roaFrom" class="width--25"></span>
-                        <span>~</span>
-                    </label>
-                    <label class="grid-column--5">
-                        <input type="range" data-duice-bind="assetSearch" data-duice-property="roaTo" min="0" max="100" step="10" class="width--75 vertical-align--middle"/>
-                        <span data-duice-bind="assetSearch" data-duice-property="roaTo" class="width--25"></span>
-                    </label>
-                </div>
+<!--            <div class="grid-column&#45;&#45;3">-->
+<!--                <div class="display&#45;&#45;grid grid-template-columns&#45;&#45;12">-->
+<!--                    <label class="grid-column&#45;&#45;2">-->
+<!--                        <input type="checkbox" onclick="togglePerCheckbox(this);"/>-->
+<!--                        <span data-th-text="#{fintics.AssetMeta.name.PER}"></span>-->
+<!--                    </label>-->
+<!--                    <label class="grid-column&#45;&#45;5">-->
+<!--                        <input type="range" data-duice-bind="assetSearch" data-duice-property="perFrom" min="0" max="100" step="10" class="width&#45;&#45;75 vertical-align&#45;&#45;middle"/>-->
+<!--                        <span data-duice-bind="assetSearch" data-duice-property="perFrom" class="width&#45;&#45;25"></span>-->
+<!--                        <span>~</span>-->
+<!--                    </label>-->
+<!--                    <label class="grid-column&#45;&#45;5">-->
+<!--                        <input type="range" data-duice-bind="assetSearch" data-duice-property="perTo" min="0" max="100" step="10" class="width&#45;&#45;75 vertical-align&#45;&#45;middle"/>-->
+<!--                        <span data-duice-bind="assetSearch" data-duice-property="perTo" class="width&#45;&#45;25"></span>-->
+<!--                    </label>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            <div class="grid-column&#45;&#45;3">-->
+<!--                <div class="display&#45;&#45;grid grid-template-columns&#45;&#45;12">-->
+<!--                    <label class="grid-column&#45;&#45;2">-->
+<!--                        <input type="checkbox" onclick="toggleRoeCheckbox(this);"/>-->
+<!--                        <span data-th-text="#{fintics.AssetMeta.name.ROE}"></span>-->
+<!--                    </label>-->
+<!--                    <label class="grid-column&#45;&#45;5">-->
+<!--                        <input type="range" data-duice-bind="assetSearch" data-duice-property="roeFrom" min="0" max="100" step="10" class="width&#45;&#45;75 vertical-align&#45;&#45;middle"/>-->
+<!--                        <span data-duice-bind="assetSearch" data-duice-property="roeFrom" class="width&#45;&#45;25"></span>-->
+<!--                        <span>~</span>-->
+<!--                    </label>-->
+<!--                    <label class="grid-column&#45;&#45;5">-->
+<!--                        <input type="range" data-duice-bind="assetSearch" data-duice-property="roeTo" min="0" max="100" step="10" class="width&#45;&#45;75 vertical-align&#45;&#45;middle"/>-->
+<!--                        <span data-duice-bind="assetSearch" data-duice-property="roeTo" class="width&#45;&#45;25"></span>-->
+<!--                    </label>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            <div class="grid-column&#45;&#45;3">-->
+<!--                <div class="display&#45;&#45;grid grid-template-columns&#45;&#45;12">-->
+<!--                    <label class="grid-column&#45;&#45;2">-->
+<!--                        <input type="checkbox" onclick="toggleRoaCheckbox(this);"/>-->
+<!--                        <span data-th-text="#{fintics.AssetMeta.name.ROA}"></span>-->
+<!--                    </label>-->
+<!--                    <label class="grid-column&#45;&#45;5">-->
+<!--                        <input type="range" data-duice-bind="assetSearch" data-duice-property="roaFrom" min="0" max="100" step="10" class="width&#45;&#45;75 vertical-align&#45;&#45;middle"/>-->
+<!--                        <span data-duice-bind="assetSearch" data-duice-property="roaFrom" class="width&#45;&#45;25"></span>-->
+<!--                        <span>~</span>-->
+<!--                    </label>-->
+<!--                    <label class="grid-column&#45;&#45;5">-->
+<!--                        <input type="range" data-duice-bind="assetSearch" data-duice-property="roaTo" min="0" max="100" step="10" class="width&#45;&#45;75 vertical-align&#45;&#45;middle"/>-->
+<!--                        <span data-duice-bind="assetSearch" data-duice-property="roaTo" class="width&#45;&#45;25"></span>-->
+<!--                    </label>-->
+<!--                </div>-->
+<!--            </div>-->
+            <div class="grid-column--9">
+
             </div>
             <div class="grid-column--3 justify-self--end">
                 <button type="submit" onclick="getAssets();">
@@ -285,10 +289,16 @@
                         <span data-duice-bind="asset" data-duice-property="marketCap" data-duice-format="number"></span>
                     </td>
                     <td>
-                        <span data-duice-bind="asset.assetMetas" data-duice-loop="assetMeta,status">
-                            <span data-duice-bind="assetMeta" data-duice-property="name"></span>:
-                            <span data-duice-bind="assetMeta" data-duice-property="value"></span>
-                        </span>
+                        <div class="overflow-y--scroll border--1 padding--1px" style="line-height:1em; height:5em;">
+                            <table class="width--100 border--0 font-size--smaller code">
+                                <tbody>
+                                <tr data-duice-bind="asset.assetMetas" data-duice-loop="assetMeta,status">
+                                    <td data-duice-bind="assetMeta" data-duice-property="name"></td>
+                                    <td data-duice-bind="assetMeta" data-duice-property="value" class="text-align--right"></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </td>
                     <td class="text-align--right">
                         <select data-duice-bind="asset"

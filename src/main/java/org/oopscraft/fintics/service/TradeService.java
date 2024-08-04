@@ -35,6 +35,8 @@ public class TradeService {
 
     private final BrokerService brokerService;
 
+    private final AssetService assetService;
+
     private final OrderService orderService;
 
     private final BrokerClientFactory brokerClientFactory;
@@ -182,18 +184,17 @@ public class TradeService {
             Trade trade = getTrade(order.getTradeId()).orElseThrow();
             Broker broker = brokerService.getBroker(trade.getBrokerId()).orElseThrow();
             BrokerClient brokerClient = brokerClientFactory.getObject(broker);
-            Basket basket = basketService.getBasket(trade.getBasketId()).orElseThrow();
-            BasketAsset basketAsset = basket.getBasketAsset(order.getAssetId()).orElseThrow();
+            Asset asset = assetService.getAsset(order.getAssetId()).orElseThrow();
             // price
-            OrderBook orderBook = brokerClient.getOrderBook(basketAsset);
-            BigDecimal tickPrice = brokerClient.getTickPrice(basketAsset, orderBook.getPrice());
+            OrderBook orderBook = brokerClient.getOrderBook(asset);
+            BigDecimal tickPrice = brokerClient.getTickPrice(asset, orderBook.getPrice());
             BigDecimal price = switch (order.getType()) {
                 case BUY -> orderBook.getBidPrice().add(tickPrice);
                 case SELL -> orderBook.getAskPrice().subtract(tickPrice);
             };
             order.setPrice(price);
             // submit
-            brokerClient.submitOrder(basketAsset, order);
+            brokerClient.submitOrder(asset, order);
             order.setResult(Order.Result.COMPLETED);
         } catch (Throwable e) {
             order.setResult(Order.Result.FAILED);
