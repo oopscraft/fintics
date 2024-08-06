@@ -8,6 +8,10 @@ import org.oopscraft.fintics.dao.TradeAssetEntity;
 import org.oopscraft.fintics.dao.TradeAssetRepository;
 import org.oopscraft.fintics.model.TradeAsset;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,6 +30,8 @@ public class TradeAssetStore {
     private final boolean persist;
 
     private final TradeAssetRepository tradeAssetRepository;
+
+    private final PlatformTransactionManager transactionManager;
 
     private final Map<String, TradeAsset> tradeAssetCacheMap = new HashMap<>();
 
@@ -71,16 +77,20 @@ public class TradeAssetStore {
 
         // persist entity
         if (this.persist) {
-            TradeAssetEntity statusEntity = TradeAssetEntity.builder()
-                    .tradeId(tradeAsset.getTradeId())
-                    .assetId(tradeAsset.getAssetId())
-                    .previousClose(tradeAsset.getPreviousClose())
-                    .open(tradeAsset.getOpen())
-                    .close(tradeAsset.getClose())
-                    .message(tradeAsset.getMessage())
-                    .context(tradeAsset.getContext())
-                    .build();
-            tradeAssetRepository.save(statusEntity);
+            DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+            TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager, transactionDefinition);
+            transactionTemplate.executeWithoutResult(transactionStatus -> {
+                TradeAssetEntity statusEntity = TradeAssetEntity.builder()
+                        .tradeId(tradeAsset.getTradeId())
+                        .assetId(tradeAsset.getAssetId())
+                        .previousClose(tradeAsset.getPreviousClose())
+                        .open(tradeAsset.getOpen())
+                        .close(tradeAsset.getClose())
+                        .message(tradeAsset.getMessage())
+                        .context(tradeAsset.getContext())
+                        .build();
+                tradeAssetRepository.save(statusEntity);
+            });
         }
         // save cache
         String cacheKey = getCacheKey(tradeAsset.getTradeId(), tradeAsset.getAssetId());

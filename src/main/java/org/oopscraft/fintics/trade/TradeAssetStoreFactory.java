@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.oopscraft.fintics.dao.TradeAssetRepository;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
 
 @Component
 @RequiredArgsConstructor
@@ -15,6 +16,8 @@ public class TradeAssetStoreFactory {
     private final ObjectMapper objectMapper;
 
     private final TradeAssetRepository profileRepository;
+
+    private final PlatformTransactionManager transactionManager;
 
     /**
      * gets trade asset score
@@ -29,6 +32,7 @@ public class TradeAssetStoreFactory {
                 .destination(destination)
                 .persist(persist)
                 .tradeAssetRepository(profileRepository)
+                .transactionManager(transactionManager)
                 .build();
     }
 
