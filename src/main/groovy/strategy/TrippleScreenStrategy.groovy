@@ -327,7 +327,6 @@ def positionScore = tideAnalysis.getTrendScore().getAverage()
 def marginPosition = 1.0 - basePosition
 def positionPerScore = (marginPosition/100)
 def position = (basePosition + (positionPerScore * positionScore)) as BigDecimal
-position = (position * (tideAnalysis.getMomentumScore().getAverage()/100)) as BigDecimal
 
 // fixed 인 종목은 position 1.0
 if (basketAsset.isFixed()) {
@@ -352,35 +351,58 @@ tradeAsset.setMessage(message)
 //===============================
 // trade
 //===============================
-// wave volatility 상태인 경우
+// wave volatility
 if (waveAnalysis.getVolatilityScore() > 50) {
-    // 중기 과매도 상태
+    // wave oversold
     if (waveAnalysis.getOversoldScore() > 50) {
-        // 단기 상승 모멘텀
+        // ripple bullish momentum
         if (rippleAnalysis.getMomentumScore() > 80) {
-            // 매수
+            // buy
             def buyPosition = waveAnalysis.getAveragePosition(position)
             strategyResult = StrategyResult.of(Action.BUY, buyPosition, "[WAVE OVERSOLD BUY] " + message)
-            // filter - 장기 과매수 상태 에서 중기 하락 중인 경우 매수 대기
+            // filter - tide overbought
             if (tideAnalysis.getOverboughtScore() > 50) {
-                if (waveAnalysis.getMomentumScore() < 20) {
-                    strategyResult = null
-                }
+                strategyResult = null
             }
         }
     }
-    // 중기 과매수 상태
+    // wave overbought
     if (waveAnalysis.getOverboughtScore() > 50) {
-        // 단기 하락 모멘텀
+        // ripple bearish momentum
         if (rippleAnalysis.getMomentumScore() < 20) {
-            // 매도
+            // sell
             def sellPosition = waveAnalysis.getAveragePosition(position)
             strategyResult = StrategyResult.of(Action.SELL, sellPosition, "[WAVE OVERBOUGHT SELL] " + message)
-            // filter - 장기 과매도 상태 에서 중기 상승 중인 경우 매도 대기
+            // filter - tide oversold
             if (tideAnalysis.getOversoldScore() > 50) {
-                if (waveAnalysis.getMomentumScore() > 80) {
-                    strategyResult = null
-                }
+                strategyResult = null
+            }
+        }
+    }
+}
+// tide volatility
+if (tideAnalysis.getVolatilityScore() > 50) {
+    // tide oversold
+    if (tideAnalysis.getOversoldScore() > 50) {
+        // wave bullish momentum
+        if (waveAnalysis.getMomentumScore() > 80) {
+            def buyPosition = tideAnalysis.getAveragePosition(position)
+            strategyResult = StrategyResult.of(Action.SELL, buyPosition, "[TIDE OVERSOLD BUY] " + message)
+            // filter - wave overbought
+            if (waveAnalysis.getOverboughtScore() > 50) {
+                strategyResult = null
+            }
+        }
+    }
+    // tide overbought
+    if (tideAnalysis.getOverboughtScore() > 50) {
+        // wave bearish momentum
+        if (waveAnalysis.getMomentumScore() < 20) {
+            def sellPosition = tideAnalysis.getAveragePosition(position)
+            strategyResult = StrategyResult.of(Action.BUY, sellPosition, "[TIDE OVERBOUGHT SELL] " + message)
+            // filter - wave oversold
+            if (waveAnalysis.getOversoldScore()) {
+                strategyResult = null
             }
         }
     }
@@ -390,6 +412,10 @@ if (waveAnalysis.getVolatilityScore() > 50) {
 // check sell option
 //===============================
 if (strategyResult != null && strategyResult.action == Action.SELL) {
+    // fixed 가 아닌 종목은 매도 시 전량 매도
+    if (!basketAsset.isFixed()) {
+        strategyResult.setPosition(0.0)
+    }
     // 목표 수익률 이하 매도 제한이 설정된 경우 매도 제외
     if (profitPercentage < sellProfitPercentageThreshold) {
         strategyResult = null
