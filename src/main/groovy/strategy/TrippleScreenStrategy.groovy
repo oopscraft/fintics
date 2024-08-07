@@ -1,3 +1,4 @@
+import java.lang.Math
 import org.jetbrains.annotations.NotNull
 import org.oopscraft.fintics.indicator.*
 import org.oopscraft.fintics.model.Ohlcv
@@ -307,9 +308,8 @@ def waveOhlcvType = Ohlcv.Type.valueOf(variables['waveOhlcvType'])
 def waveOhlcvPeriod = Integer.parseInt(variables['waveOhlcvPeriod'])
 def rippleOhlcvType = Ohlcv.Type.valueOf(variables['rippleOhlcvType'])
 def rippleOhlcvPeriod = Integer.parseInt(variables['rippleOhlcvPeriod'])
-def orderEnabled = Boolean.parseBoolean(variables['orderEnabled'])
-def basePosition = new BigDecimal(variables['basePosition'])
 def sellProfitPercentageThreshold = new BigDecimal(variables['sellProfitPercentageThreshold'])
+def orderEnabled = Boolean.parseBoolean(variables['orderEnabled'])
 
 // result
 StrategyResult strategyResult = null
@@ -319,31 +319,35 @@ def tideAnalysis = new Analysis(tradeAsset, tideOhlcvType, tideOhlcvPeriod)
 def waveAnalysis = new Analysis(tradeAsset, waveOhlcvType, waveOhlcvPeriod)
 def rippleAnalysis = new Analysis(tradeAsset, rippleOhlcvType, rippleOhlcvPeriod)
 
+// position (checks fixed asset)
+def buyPosition = tideAnalysis.getTrendScore().getAverage()/100 as BigDecimal
+def sellPosition = buyPosition * ((tideAnalysis.getMomentumScore().getAverage()-50).max(0)/50)
+if (basketAsset.isFixed()) {
+    buyPosition = 1.0
+    sellPosition = 1.0
+}
+
 // profit percentage
 def profitPercentage = balanceAsset?.getProfitPercentage() ?: 0.0
 
-// position
-def positionScore = tideAnalysis.getTrendScore().getAverage()
-def marginPosition = 1.0 - basePosition
-def positionPerScore = (marginPosition/100)
-def position = (basePosition + (positionPerScore * positionScore)) as BigDecimal
-
-// fixed 인 종목은 position 1.0
-if (basketAsset.isFixed()) {
-    position = 1.0
-}
-
 // message
 def message = """
-position:${position.toPlainString()} (waveAveragePosition:${waveAnalysis.getAveragePosition(position)})
+buyPosition:${buyPosition.toPlainString()}
+sellPosition:${sellPosition.toPlainString()}
 tide.trend:${tideAnalysis.getTrendScore().toString()}
 tide.momentum:${tideAnalysis.getMomentumScore().toString()}
+tide.volatility:${tideAnalysis.getVolatilityScore().toString()}
+- adx:${tideAnalysis.dmi.adx}
+tide.oversold:${tideAnalysis.getOversoldScore().toString()}
+tide.overbought:${tideAnalysis.getOverboughtScore().toString()}
+- rsi:${tideAnalysis.rsi.value}|sto:${tideAnalysis.stochasticSlow.slowK}|cci:${tideAnalysis.cci.value}|wil:${tideAnalysis.williamsR.value}
+wave.momentum:${waveAnalysis.getMomentumScore().toString()}
 wave.volatility:${waveAnalysis.getVolatilityScore().toString()}
 - adx:${waveAnalysis.dmi.adx}
 wave.oversold:${waveAnalysis.getOversoldScore().toString()}
 wave.overbought:${waveAnalysis.getOverboughtScore().toString()}
 - rsi:${waveAnalysis.rsi.value}|sto:${waveAnalysis.stochasticSlow.slowK}|cci:${waveAnalysis.cci.value}|wil:${waveAnalysis.williamsR.value}
-ripple.mom:${rippleAnalysis.getMomentumScore().toString()}
+ripple.momentum:${rippleAnalysis.getMomentumScore().toString()}
 """
 log.info("message: {}", message)
 tradeAsset.setMessage(message)
@@ -358,8 +362,8 @@ if (waveAnalysis.getVolatilityScore() > 50) {
         // ripple bullish momentum
         if (rippleAnalysis.getMomentumScore() > 80) {
             // buy
-            def buyPosition = waveAnalysis.getAveragePosition(position)
-            strategyResult = StrategyResult.of(Action.BUY, buyPosition, "[WAVE OVERSOLD BUY] " + message)
+            def buyAveragePosition = waveAnalysis.getAveragePosition(buyPosition)
+            strategyResult = StrategyResult.of(Action.BUY, buyAveragePosition, "[WAVE OVERSOLD BUY] " + message)
             // filter - tide overbought
             if (tideAnalysis.getOverboughtScore() > 50) {
                 strategyResult = null
@@ -371,8 +375,8 @@ if (waveAnalysis.getVolatilityScore() > 50) {
         // ripple bearish momentum
         if (rippleAnalysis.getMomentumScore() < 20) {
             // sell
-            def sellPosition = waveAnalysis.getAveragePosition(position)
-            strategyResult = StrategyResult.of(Action.SELL, sellPosition, "[WAVE OVERBOUGHT SELL] " + message)
+            def sellAveragePosition = waveAnalysis.getAveragePosition(sellPosition)
+            strategyResult = StrategyResult.of(Action.SELL, sellAveragePosition, "[WAVE OVERBOUGHT SELL] " + message)
             // filter - tide oversold
             if (tideAnalysis.getOversoldScore() > 50) {
                 strategyResult = null
@@ -386,8 +390,8 @@ if (tideAnalysis.getVolatilityScore() > 50) {
     if (tideAnalysis.getOversoldScore() > 50) {
         // wave bullish momentum
         if (waveAnalysis.getMomentumScore() > 80) {
-            def buyPosition = tideAnalysis.getAveragePosition(position)
-            strategyResult = StrategyResult.of(Action.SELL, buyPosition, "[TIDE OVERSOLD BUY] " + message)
+            def buyAveragePosition = tideAnalysis.getAveragePosition(buyPosition)
+            strategyResult = StrategyResult.of(Action.SELL, buyAveragePosition, "[TIDE OVERSOLD BUY] " + message)
             // filter - wave overbought
             if (waveAnalysis.getOverboughtScore() > 50) {
                 strategyResult = null
@@ -398,8 +402,8 @@ if (tideAnalysis.getVolatilityScore() > 50) {
     if (tideAnalysis.getOverboughtScore() > 50) {
         // wave bearish momentum
         if (waveAnalysis.getMomentumScore() < 20) {
-            def sellPosition = tideAnalysis.getAveragePosition(position)
-            strategyResult = StrategyResult.of(Action.BUY, sellPosition, "[TIDE OVERBOUGHT SELL] " + message)
+            def sellAveragePosition = tideAnalysis.getAveragePosition(sellPosition)
+            strategyResult = StrategyResult.of(Action.BUY, sellAveragePosition, "[TIDE OVERBOUGHT SELL] " + message)
             // filter - wave oversold
             if (waveAnalysis.getOversoldScore()) {
                 strategyResult = null
@@ -412,12 +416,9 @@ if (tideAnalysis.getVolatilityScore() > 50) {
 // check sell option
 //===============================
 if (strategyResult != null && strategyResult.action == Action.SELL) {
-    // fixed 가 아닌 종목은 매도 시 전량 매도
-    if (!basketAsset.isFixed()) {
-        strategyResult.setPosition(0.0)
-    }
     // 목표 수익률 이하 매도 제한이 설정된 경우 매도 제외
     if (profitPercentage < sellProfitPercentageThreshold) {
+        log.info("profitPercentage under {}", profitPercentage.toPlainString())
         strategyResult = null
     }
 }
