@@ -51,5 +51,4 @@ web:
 # fintics
 fintics:
   system-alarm-id: fintics
-  ai-api-url: http://fintics-ai:8080
   data-retention-months: 36

@@ -8,7 +8,6 @@ delete from `core_alarm`;
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_ASSETS','Y','Assets Access API Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_ASSETS_EDIT','Y','Assets Edit API Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_OHLCVS','Y','Ohlcvs API Authority');
-insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_NEWSES','Y','News API Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_ORDERS','Y','Orders API Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_TRADES','Y','Trades API Access Authority');
 insert into `core_authority` (`authority_id`,`system_required`,`authority_name`) values ('API_TRADES_EDIT','Y','Trades Edit API Authority');
@@ -72,7 +71,6 @@ insert into `core_role_authority` (`role_id`,`authority_id`) values
     ('MONITORS','MONITORS'),
     ('MONITORS','API_ASSETS'),
     ('MONITORS','API_OHLCVS'),
-    ('MONITORS','API_NEWSES'),
     ('MONITORS','API_TRADES');
 insert into `core_role_authority` (`role_id`,`authority_id`) values
     ('TRADES','TRADES'),
@@ -111,8 +109,7 @@ insert into `core_role_authority` (`role_id`,`authority_id`) values
     ('DATA','DATA'),
     ('DATA','API_DATA'),
     ('DATA','API_ASSETS'),
-    ('DATA','API_OHLCVS'),
-    ('DATA','API_NEWSES');
+    ('DATA','API_OHLCVS');
 insert into `core_role_authority` (`role_id`,`authority_id`) values
     ('DATA_EDIT','DATA_EDIT'),
     ('DATA_EDIT','API_DATA_EDIT');

@@ -18,7 +18,6 @@
                 trade: trade,
                 dailyOhlcvsChart: null,
                 minuteOhlcvsChart: null,
-                newses: [],
                 basket: JSON.parse(JSON.stringify(baskets.find(it => it.basketId === trade.basketId) || {
                     basketAssets: []
                 })),
@@ -59,7 +58,6 @@
                 refresh: function() {
                     this.getDailyOhlcvsChart();
                     this.getMinuteOhlcvsChart();
-                    this.getNewses();
                     this.getTradeAssets();
                     this.getBalance();
                     this.getOrders();
@@ -118,31 +116,6 @@
                         results.forEach(dataset => this.minuteOhlcvsChart.data.datasets.push(dataset));
                         this.minuteOhlcvsChart.update();
                     });
-                },
-                /**
-                 * gets newses
-                 */
-                getNewses: function() {
-                    let promises = this.basket.basketAssets.map(basketAsset => {
-                        let url = new URL(`${_apiUrl}/v1/newses/${basketAsset.assetId}`, document.location.origin);
-                        return _fetch(url, null, true)
-                            .then(response => response.json())
-                            .then(newses => {
-                                newses.forEach(it => {
-                                    it.assetId = basketAsset.assetId;
-                                    it.assetName = basketAsset.assetName;
-                                });
-                                return newses;
-                            });
-                    });
-                    Promise.all(promises).then(results => {
-                        let newses = [];
-                        results.forEach(result => {
-                            newses.push.apply(newses, result);
-                        });
-                        newses.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
-                        duice.ArrayProxy.assign(this.newses, newses);
-                    })
                 },
                 /**
                  * gets trade assets
@@ -378,51 +351,6 @@
                     <span>Minute</span>
                 </div>
                 <canvas th:id="'tradeMinuteOhlcvsChart-' + ${trade.tradeId}"></canvas>
-            </div>
-        </div>
-        <div class="grid-column--12 padding--1em s__padding--0">
-            <div class="font-weight--bold">
-                <img class="icon" src="/static/image/icon-news.svg" alt="ohlcv">
-                <span data-th-text="#{fintics.News}"></span>
-            </div>
-            <div class="overflow-y--scroll overflow-x--scroll border-top--1" style="max-height:150px;">
-                <table class="width--100 border-top--0">
-                    <colgroup>
-                        <col style="width:10em;"/>
-                        <col/>
-                        <col/>
-                        <col/>
-                        <col/>
-                    </colgroup>
-                    <thead>
-                    <tr>
-                        <th data-th-text="#{fintics.News.dateTime}"></th>
-                        <th data-th-text="#{fintics.Asset}"></th>
-                        <th data-th-text="#{fintics.News.title}"></th>
-                        <th data-th-text="#{fintics.News.sentiment}" class="text-align--center"></th>
-                        <th data-th-text="#{fintics.News.confidence}" class="text-align--center"></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:data-duice-bind="|monitorMap.get('${trade.tradeId}').newses|" data-duice-loop="news,status">
-                        <td data-duice-bind="news" data-duice-property="dateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
-                        <td data-duice-bind="news" data-duice-property="assetName"></td>
-                        <td>
-                            <a href="#" onclick="_openLink(this.dataset.newsUrl,'_blank');" data-duice-bind="news" data-duice-property="title" data-duice-execute="this.dataset.newsUrl=news.newsUrl;">
-                            </a>
-                        </td>
-                        <td data-duice-bind="news" data-duice-property="sentiment" class="text-align--center"></td>
-                        <td data-duice-bind="news" data-duice-property="confidence" class="text-align--center"></td>
-                    </tr>
-                    <tr th:data-duice-bind="|monitorMap.get('${trade.tradeId}').newses|"
-                        th:data-duice-if="|return monitorMap.get('${trade.tradeId}').newses.length < 1|"
-                        hidden>
-                        <td colspan="100%" class="text-align--center">
-                            <span data-th-text="#{web.global.itemNotFound(#{fintics.News})}"></span>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
             </div>
         </div>
         <div class="grid-column--12 padding--1em s__padding--0">

@@ -30,7 +30,6 @@ web:
 # fintics
 fintics:
   system-alarm-id: fintics
-  ai-api-url: ~
   data-retention-months: 3
   asset-client:
     class-name: org.oopscraft.fintics.client.asset.SimpleAssetClient
@@ -38,9 +37,5 @@ fintics:
       name: value
   ohlcv-client:
     class-name: org.oopscraft.fintics.client.ohlcv.SimpleOhlcvClient
-    properties:
-      name: value
-  news-client:
-    class-name: org.oopscraft.fintics.client.news.SimpleNewsClient
     properties:
       name: value

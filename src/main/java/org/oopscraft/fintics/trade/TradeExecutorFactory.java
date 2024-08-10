@@ -19,8 +19,6 @@ public class TradeExecutorFactory {
 
     private final OhlcvService ohlcvService;
 
-    private final NewsService newsService;
-
     private final OrderService orderService;
 
     private final AlarmService alarmService;
@@ -37,7 +35,6 @@ public class TradeExecutorFactory {
                 .assetService(assetService)
                 .basketService(basketService)
                 .ohlcvService(ohlcvService)
-                .newsService(newsService)
                 .orderService(orderService)
                 .alarmService(alarmService)
                 .strategyRunnerFactory(strategyRunnerFactory)

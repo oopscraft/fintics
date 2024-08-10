@@ -32,8 +32,6 @@ public class TradeAsset extends Asset {
 
     private List<Ohlcv> minuteOhlcvs;
 
-    private List<News> newses;
-
     private String message;
 
     @Builder.Default

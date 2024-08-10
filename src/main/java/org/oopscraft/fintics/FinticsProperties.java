@@ -17,8 +17,6 @@ public final class FinticsProperties {
 
     private final String systemAlarmId;
 
-    private final String aiApiUrl;
-
     private final Integer dataRetentionMonths;
 
 }

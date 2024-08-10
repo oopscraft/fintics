@@ -36,8 +36,6 @@ public class TradeExecutor {
 
     private final OhlcvService ohlcvService;
 
-    private final NewsService newsService;
-
     private final OrderService orderService;
 
     private final AlarmService alarmService;
@@ -113,13 +111,6 @@ public class TradeExecutor {
                 List<Ohlcv> previousMinuteOhlcvs = getPreviousMinuteOhlcvs(basketAsset.getAssetId(), minuteOhlcvs, dateTime);
                 minuteOhlcvs.addAll(previousMinuteOhlcvs);
 
-                // newses
-                List<News> newses = newsService.getNewses(
-                        basketAsset.getAssetId(),
-                        dateTime.minusWeeks(1),
-                        dateTime,
-                        Pageable.unpaged());
-
                 // creates trade asset
                 TradeAsset tradeAsset = tradeAssetStore.load(trade.getTradeId(), basketAsset.getAssetId())
                         .orElse(TradeAsset.builder()
@@ -136,7 +127,6 @@ public class TradeExecutor {
                 tradeAsset.setClose(minuteOhlcvs.get(0).getClose());
                 tradeAsset.setDailyOhlcvs(dailyOhlcvs);
                 tradeAsset.setMinuteOhlcvs(minuteOhlcvs);
-                tradeAsset.setNewses(newses);
 
                 // logging
                 log.info("[{} - {}] dailyOhlcvs({}):{}", tradeAsset.getAssetId(), tradeAsset.getAssetName(), tradeAsset.getDailyOhlcvs().size(), tradeAsset.getDailyOhlcvs().isEmpty() ? null : tradeAsset.getDailyOhlcvs().get(0));

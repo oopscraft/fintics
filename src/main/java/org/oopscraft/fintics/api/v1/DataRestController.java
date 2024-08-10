@@ -106,35 +106,4 @@ public class DataRestController {
         return ResponseEntity.ok(assetOhlcvSummaryResponse);
     }
 
-    /**
-     * gets news summaries
-     * @return list of news summary
-     */
-    @GetMapping("news-summaries")
-    @Operation(description = "gets news summaries")
-    public ResponseEntity<List<NewsSummaryResponse>> getNewsSummaries() {
-        List<NewsSummaryResponse> assetNewsSummaryResponses = dataService.getNewsSummaries().stream()
-                .map(NewsSummaryResponse::from)
-                .toList();
-        return ResponseEntity.ok(assetNewsSummaryResponses);
-    }
-
-    /**
-     * gets news summary
-     * @param assetId asset id
-     * @return news summary
-     */
-    @GetMapping("news-summaries/{assetId}")
-    @Operation(description = "gets news summary")
-    public ResponseEntity<NewsSummaryResponse> getNewSummary(
-            @PathVariable("assetId")
-            @Parameter(description = "asset id")
-                    String assetId
-    ) {
-        NewsSummaryResponse newsSummaryResponse = dataService.getNewsSummary(assetId)
-                .map(NewsSummaryResponse::from)
-                .orElseThrow();
-        return ResponseEntity.ok(newsSummaryResponse);
-    }
-
 }

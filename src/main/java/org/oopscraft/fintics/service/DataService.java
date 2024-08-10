@@ -66,33 +66,4 @@ public class DataService {
         return Optional.of(assetOhlcvSummary);
     }
 
-    /**
-     * returns news summaries
-     * @return new summary
-     */
-    public List<NewsSummary> getNewsSummaries() {
-        return dataMapper.selectNewsSummaries(null).stream()
-                .peek(it -> it.setAssetName(assetService.getAsset(it.getAssetId())
-                        .map(Asset::getAssetName)
-                        .orElse(null)))
-                .toList();
-    }
-
-    /**
-     * return news summary
-     * @param assetId asset id
-     * @return news summary
-     */
-    public Optional<NewsSummary> getNewsSummary(String assetId) {
-        NewsSummary newsSummary = dataMapper.selectNewsSummaries(assetId).stream()
-                .findFirst()
-                .orElseThrow();
-        newsSummary.setAssetName(assetService.getAsset(newsSummary.getAssetId())
-                .map(Asset::getAssetName)
-                .orElse(null));
-        List<NewsSummary.NewsStatistic> newsStatistics = dataMapper.selectNewsStatistics(assetId);
-        newsSummary.setNewsStatisticList(newsStatistics);
-        return Optional.of(newsSummary);
-    }
-
 }
