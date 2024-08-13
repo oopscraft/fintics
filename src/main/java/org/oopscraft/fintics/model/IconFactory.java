@@ -38,6 +38,7 @@ public class IconFactory {
                 return switch (etfBrand) {
                     case "spdr" -> "https://www.ssga.com/favicon.ico";
                     case "global" -> "https://www.globalxetfs.com/favicon.ico";
+                    case "goldman" -> "https://cdn.gs.com/images/goldman-sachs/v1/gs-favicon.svg";
                     default -> String.format("https://s3-symbol-logo.tradingview.com/%s.svg", etfBrand);
                 };
             }
@@ -77,8 +78,8 @@ public class IconFactory {
             URL url = new URL(icon);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("HEAD");
-            connection.setConnectTimeout(1000);
-            connection.setReadTimeout(1000);
+            connection.setConnectTimeout(3000);
+            connection.setReadTimeout(3000);
             if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                 return true;
             }
