@@ -21,6 +21,12 @@ public class LinkFactory {
                 }
                 links.add(Link.of("Yahoo", String.format("https://finance.yahoo.com/quote/%s", symbol)));
                 links.add(Link.of("Finviz", String.format("https://finviz.com/quote.ashx?t=%s", symbol)));
+                // naver
+                if (Objects.equals(type, "ETF")) {
+                    links.add(Link.of("Naver", String.format("https://m.stock.naver.com/worldstock/etf/%s/total", symbol)));
+                } else {
+                    links.add(Link.of("Naver", String.format("https://m.stock.naver.com/worldstock/stock/%s.O/total", symbol)));
+                }
             }
             case "KR" -> {
                 links.add(Link.of("Naver", String.format("https://finance.naver.com/item/main.naver?code=%s", symbol)));
