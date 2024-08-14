@@ -33,8 +33,8 @@ public class LinkFactory {
         links.add(Link.of("Seekingalpha", String.format("https://seekingalpha.com/symbol/%s", symbol)));
         // morningstar
         switch (exchange) {
-            case "XNAS" -> links.add(Link.of("Morningstar", String.format("https://www.morningstar.com/%ss/xnas/%s/quote", type.toLowerCase(), symbol.toLowerCase())));
-            default -> links.add(Link.of("Morningstar", String.format("https://www.morningstar.com/%ss/arcx/%s/quote", type.toLowerCase(), symbol.toLowerCase())));
+            case "XASE" -> links.add(Link.of("Morningstar", String.format("https://www.morningstar.com/%ss/arcx/%s/quote", type.toLowerCase(), symbol.toLowerCase())));
+            default -> links.add(Link.of("Morningstar", String.format("https://www.morningstar.com/%ss/%s/%s/quote", type.toLowerCase(), exchange.toLowerCase(), symbol.toLowerCase())));
         }
         // etf.com
         if (Objects.equals(type, "ETF")) {
