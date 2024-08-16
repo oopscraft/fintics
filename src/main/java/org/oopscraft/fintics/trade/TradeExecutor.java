@@ -295,7 +295,7 @@ public class TradeExecutor {
      * @return previous minute ohlcvs
      */
     private List<Ohlcv> getPreviousMinuteOhlcvs(String assetId, List<Ohlcv> ohlcvs, LocalDateTime dateTime) {
-        LocalDateTime dateTimeFrom = dateTime.minusWeeks(1);
+        LocalDateTime dateTimeFrom = dateTime.minusMonths(1);
         LocalDateTime dateTimeTo = ohlcvs.isEmpty()
                 ? dateTime
                 : ohlcvs.get(ohlcvs.size()-1).getDateTime().minusMinutes(1);

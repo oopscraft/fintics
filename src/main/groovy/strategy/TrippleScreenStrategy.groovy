@@ -141,12 +141,12 @@ class Analysis implements Analyzable {
     @Override
     Scorable getTrendScore() {
         def score = new Score()
-        // guidance > quarter
-        score.sma20Over50 = sma20.value > sma50.value ? 100 : 0
-        // guidance > half
-        score.sma20Over100 = sma20.value > sma100.value ? 100 : 0
-        // quarter > half
-        score.sma50Over100 = sma50.value > sma100.value ? 100 : 0
+        // price > guidance
+        score.priceOverSma20 = ohlcv.close > sma20.value ? 100 : 0
+        // price > quanter
+        score.priceOverSma50 = ohlcv.close > sma50.value ? 100 : 0
+        // price > half
+        score.priceOverSma100 = ohlcv.close > sma100.value ? 100 : 0
         // return
         return score
     }
@@ -320,8 +320,9 @@ def waveAnalysis = new Analysis(tradeAsset, waveOhlcvType, waveOhlcvPeriod)
 def rippleAnalysis = new Analysis(tradeAsset, rippleOhlcvType, rippleOhlcvPeriod)
 
 // position (checks fixed asset)
-def buyPosition = tideAnalysis.getTrendScore().getAverage()/100 as BigDecimal
-def sellPosition = buyPosition * ((tideAnalysis.getMomentumScore().getAverage()-50).max(0)/50)
+def basePosition = tideAnalysis.getTrendScore().getAverage()/100 as BigDecimal
+def buyPosition = basePosition * ((tideAnalysis.getMomentumScore().getAverage()-50).max(0)/50)
+def sellPosition = basePosition * ((tideAnalysis.getMomentumScore().getAverage()-50).max(0)/50)
 if (basketAsset.isFixed()) {
     buyPosition = 1.0
     sellPosition = 1.0
@@ -336,8 +337,6 @@ buyPosition:${buyPosition.toPlainString()}
 sellPosition:${sellPosition.toPlainString()}
 tide.trend:${tideAnalysis.getTrendScore().toString()}
 tide.momentum:${tideAnalysis.getMomentumScore().toString()}
-tide.volatility:${tideAnalysis.getVolatilityScore().toString()}
-- adx:${tideAnalysis.dmi.adx}
 tide.oversold:${tideAnalysis.getOversoldScore().toString()}
 tide.overbought:${tideAnalysis.getOverboughtScore().toString()}
 - rsi:${tideAnalysis.rsi.value}|sto:${tideAnalysis.stochasticSlow.slowK}|cci:${tideAnalysis.cci.value}|wil:${tideAnalysis.williamsR.value}
@@ -379,33 +378,6 @@ if (waveAnalysis.getVolatilityScore() > 50) {
             strategyResult = StrategyResult.of(Action.SELL, sellAveragePosition, "[WAVE OVERBOUGHT SELL] " + message)
             // filter - tide oversold
             if (tideAnalysis.getOversoldScore() > 50) {
-                strategyResult = null
-            }
-        }
-    }
-}
-// tide volatility
-if (tideAnalysis.getVolatilityScore() > 50) {
-    // tide oversold
-    if (tideAnalysis.getOversoldScore() > 50) {
-        // wave bullish momentum
-        if (waveAnalysis.getMomentumScore() > 80) {
-            def buyAveragePosition = tideAnalysis.getAveragePosition(buyPosition)
-            strategyResult = StrategyResult.of(Action.SELL, buyAveragePosition, "[TIDE OVERSOLD BUY] " + message)
-            // filter - wave overbought
-            if (waveAnalysis.getOverboughtScore() > 50) {
-                strategyResult = null
-            }
-        }
-    }
-    // tide overbought
-    if (tideAnalysis.getOverboughtScore() > 50) {
-        // wave bearish momentum
-        if (waveAnalysis.getMomentumScore() < 20) {
-            def sellAveragePosition = tideAnalysis.getAveragePosition(sellPosition)
-            strategyResult = StrategyResult.of(Action.BUY, sellAveragePosition, "[TIDE OVERBOUGHT SELL] " + message)
-            // filter - wave oversold
-            if (waveAnalysis.getOversoldScore()) {
                 strategyResult = null
             }
         }
