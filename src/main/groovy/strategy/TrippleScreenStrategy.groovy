@@ -320,9 +320,8 @@ def waveAnalysis = new Analysis(tradeAsset, waveOhlcvType, waveOhlcvPeriod)
 def rippleAnalysis = new Analysis(tradeAsset, rippleOhlcvType, rippleOhlcvPeriod)
 
 // position (checks fixed asset)
-def basePosition = tideAnalysis.getTrendScore().getAverage()/100 as BigDecimal
-def buyPosition = basePosition * ((tideAnalysis.getMomentumScore().getAverage()-50).max(0)/50)
-def sellPosition = basePosition * ((tideAnalysis.getMomentumScore().getAverage()-50).max(0)/50)
+def buyPosition = tideAnalysis.getTrendScore().getAverage()/100 as BigDecimal
+def sellPosition = buyPosition * ((tideAnalysis.getMomentumScore().getAverage()-50).max(0)/50) as BigDecimal
 if (basketAsset.isFixed()) {
     buyPosition = 1.0
     sellPosition = 1.0
@@ -335,12 +334,10 @@ def profitPercentage = balanceAsset?.getProfitPercentage() ?: 0.0
 def message = """
 buyPosition:${buyPosition.toPlainString()}
 sellPosition:${sellPosition.toPlainString()}
-tide.trend:${tideAnalysis.getTrendScore().toString()}
 tide.momentum:${tideAnalysis.getMomentumScore().toString()}
 tide.oversold:${tideAnalysis.getOversoldScore().toString()}
 tide.overbought:${tideAnalysis.getOverboughtScore().toString()}
 - rsi:${tideAnalysis.rsi.value}|sto:${tideAnalysis.stochasticSlow.slowK}|cci:${tideAnalysis.cci.value}|wil:${tideAnalysis.williamsR.value}
-wave.momentum:${waveAnalysis.getMomentumScore().toString()}
 wave.volatility:${waveAnalysis.getVolatilityScore().toString()}
 - adx:${waveAnalysis.dmi.adx}
 wave.oversold:${waveAnalysis.getOversoldScore().toString()}
