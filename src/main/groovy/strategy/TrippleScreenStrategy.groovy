@@ -334,6 +334,7 @@ def profitPercentage = balanceAsset?.getProfitPercentage() ?: 0.0
 def message = """
 buyPosition:${buyPosition.toPlainString()}
 sellPosition:${sellPosition.toPlainString()}
+tide.trend:${tideAnalysis.getTrendScore().toString()}
 tide.momentum:${tideAnalysis.getMomentumScore().toString()}
 tide.oversold:${tideAnalysis.getOversoldScore().toString()}
 tide.overbought:${tideAnalysis.getOverboughtScore().toString()}
