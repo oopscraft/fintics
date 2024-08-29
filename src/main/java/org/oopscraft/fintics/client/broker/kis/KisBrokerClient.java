@@ -311,6 +311,7 @@ public class KisBrokerClient extends BrokerClient {
         List<Map<String, String>> output2 = objectMapper.convertValue(rootNode.path("output2"), new TypeReference<>(){});
 
         return output2.stream()
+                .filter(row -> !row.isEmpty())  // 신규 종목의 경우 값 없이 {}로 반환 되는 경우가 있음
                 .map(row -> {
                     LocalDateTime datetime = LocalDate.parse(row.get("stck_bsop_date"), DateTimeFormatter.ofPattern("yyyyMMdd"))
                             .atTime(LocalTime.MIN)
