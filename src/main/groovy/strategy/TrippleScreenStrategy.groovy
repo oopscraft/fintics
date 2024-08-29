@@ -362,7 +362,7 @@ if (waveAnalysis.getVolatilityScore() > 50) {
             def buyAveragePosition = waveAnalysis.getAveragePosition(buyPosition)
             strategyResult = StrategyResult.of(Action.BUY, buyAveragePosition, "[WAVE OVERSOLD BUY] " + message)
             // filter - tide overbought
-            if (tideAnalysis.getOverboughtScore() > 0) {
+            if (tideAnalysis.getOverboughtScore() > 50) {
                 strategyResult = null
             }
         }
@@ -375,7 +375,7 @@ if (waveAnalysis.getVolatilityScore() > 50) {
             def sellAveragePosition = waveAnalysis.getAveragePosition(sellPosition)
             strategyResult = StrategyResult.of(Action.SELL, sellAveragePosition, "[WAVE OVERBOUGHT SELL] " + message)
             // filter - tide oversold
-            if (tideAnalysis.getOversoldScore() > 0) {
+            if (tideAnalysis.getOversoldScore() > 50) {
                 strategyResult = null
             }
         }
