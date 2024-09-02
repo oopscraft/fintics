@@ -278,7 +278,7 @@ def waveAnalysis = new Analysis(tradeAsset, waveOhlcvType, waveOhlcvPeriod)
 def rippleAnalysis = new Analysis(tradeAsset, rippleOhlcvType, rippleOhlcvPeriod)
 
 // position (checks fixed asset)
-def position = 1.0 * ((tideAnalysis.getMomentumScore().getAverage()-50).max(0)/50) as BigDecimal
+def position = 1.0 * (tideAnalysis.getMomentumScore().getAverage()/100) as BigDecimal
 if (basketAsset.isFixed()) {
     position = 1.0
 }
