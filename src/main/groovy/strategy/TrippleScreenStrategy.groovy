@@ -45,7 +45,6 @@ interface Analyzable {
     BigDecimal getCurrentClose()
     BigDecimal getAverageClose()
     BigDecimal getAveragePosition(BigDecimal position)
-    Scorable getTrendScore()
     Scorable getMomentumScore()
     Scorable getVolatilityScore()
     Scorable getOversoldScore()
@@ -56,12 +55,8 @@ interface Analyzable {
 class Analysis implements Analyzable {
     List<Ohlcv> ohlcvs
     Ohlcv ohlcv
-    List<Sma> sma20s
-    Sma sma20
-    List<Sma> sma50s
-    Sma sma50
-    List<Sma> sma100s
-    Sma sma100
+    List<Sma> smas
+    Sma sma
     List<Ema> emas
     Ema ema
     List<Macd> macds
@@ -70,6 +65,8 @@ class Analysis implements Analyzable {
     BollingerBand bollingerBand
     List<Dmi> dmis
     Dmi dmi
+    List<ChaikinOscillator> chaikinOscillators
+    ChaikinOscillator chaikinOscillator
     List<Atr> atrs
     Atr atr
     List<Rsi> rsis
@@ -80,20 +77,12 @@ class Analysis implements Analyzable {
     StochasticSlow stochasticSlow
     List<WilliamsR> williamsRs
     WilliamsR williamsR
-    List<Obv> obvs
-    Obv obv
-    List<ChaikinOscillator> chaikinOscillators
-    ChaikinOscillator chaikinOscillator
 
     Analysis(TradeAsset profile, Ohlcv.Type type, int period) {
         this.ohlcvs = profile.getOhlcvs(type, period)
         this.ohlcv = this.ohlcvs.first()
-        this.sma20s = Tools.indicators(ohlcvs, SmaContext.of(20))
-        this.sma20 = sma20s.first()
-        this.sma50s = Tools.indicators(ohlcvs, SmaContext.of(50))
-        this.sma50 = sma50s.first()
-        this.sma100s = Tools.indicators(ohlcvs, SmaContext.of(100))
-        this.sma100 = sma100s.first()
+        this.smas = Tools.indicators(ohlcvs, SmaContext.DEFAULT)
+        this.sma = smas.first()
         this.emas = Tools.indicators(ohlcvs, EmaContext.DEFAULT)
         this.ema = emas.first()
         this.macds = Tools.indicators(ohlcvs, MacdContext.DEFAULT)
@@ -102,6 +91,8 @@ class Analysis implements Analyzable {
         this.bollingerBand = bollingerBands.first()
         this.dmis = Tools.indicators(ohlcvs, DmiContext.DEFAULT)
         this.dmi = this.dmis.first()
+        this.chaikinOscillators = Tools.indicators(ohlcvs, ChaikinOscillatorContext.DEFAULT)
+        this.chaikinOscillator = chaikinOscillators.first()
         this.atrs = Tools.indicators(ohlcvs, AtrContext.DEFAULT)
         this.atr = atrs.first()
         this.rsis = Tools.indicators(ohlcvs, RsiContext.DEFAULT)
@@ -112,10 +103,6 @@ class Analysis implements Analyzable {
         this.stochasticSlow = stochasticSlows.first()
         this.williamsRs = Tools.indicators(ohlcvs, WilliamsRContext.DEFAULT)
         this.williamsR = williamsRs.first()
-        this.obvs = Tools.indicators(ohlcvs, ObvContext.DEFAULT)
-        this.obv = obvs.first()
-        this.chaikinOscillators = Tools.indicators(ohlcvs, ChaikinOscillatorContext.DEFAULT)
-        this.chaikinOscillator = chaikinOscillators.first()
     }
 
     @Override
@@ -139,42 +126,20 @@ class Analysis implements Analyzable {
     }
 
     @Override
-    Scorable getTrendScore() {
-        def score = new Score()
-        // price > guidance
-        score.priceOverSma20 = ohlcv.close > sma20.value ? 100 : 0
-        // price > quanter
-        score.priceOverSma50 = ohlcv.close > sma50.value ? 100 : 0
-        // price > half
-        score.priceOverSma100 = ohlcv.close > sma100.value ? 100 : 0
-        // return
-        return score
-    }
-
-    @Override
     Scorable getMomentumScore() {
         def score = new Score()
+        // sma
+        score.smaPriceOverValue = ohlcv.close > sma.value ? 100 : 0
         // ema
         score.emaPriceOverValue = ohlcv.close > ema.value ? 100 : 0
         // macd
         score.macdValue = macd.value > 0 ? 100 : 0
         // bollinger band
         score.bollingerBandPriceOverMiddle = ohlcv.close > bollingerBand.middle ? 100 : 0
-        // rsi
-        score.rsiValue = rsi.value > 50 ? 100 : 0
-        // cci
-        score.cciValue = cci.value > 0 ? 100 : 0
         // dmi
         score.dmiPdiOverMdi = dmi.pdi > dmi.mdi ? 100 : 0
         // chaikin oscillator
         score.chaikinOscillatorValue = chaikinOscillator.value > 0 ? 100 : 0
-        // obv
-        def obvValuePctChange = Tools.pctChange(obvs.take(20).collect{it.value})
-        score.obvValuePctChange = obvValuePctChange > 0.0 ? 100 : 0
-        // stochastic slow
-        score.stochasticSlowK = stochasticSlow.slowK > 50 ? 100 : 0
-        // williams r
-        score.williamsRValue = williamsR.value > -50 ? 100 : 0
         // return
         return score
     }
@@ -258,13 +223,6 @@ class AnalysisGroup extends LinkedHashMap<String, Analyzable> implements Analyza
     }
 
     @Override
-    Scorable getTrendScore() {
-        def scoreGroup = new ScoreGroup()
-        this.each{it -> scoreGroup.put(it.key, it.value.getTrendScore())}
-        return scoreGroup
-    }
-
-    @Override
     Scorable getMomentumScore() {
         def scoreGroup = new ScoreGroup()
         this.each{it -> scoreGroup.put(it.key, it.value.getMomentumScore())}
@@ -320,11 +278,9 @@ def waveAnalysis = new Analysis(tradeAsset, waveOhlcvType, waveOhlcvPeriod)
 def rippleAnalysis = new Analysis(tradeAsset, rippleOhlcvType, rippleOhlcvPeriod)
 
 // position (checks fixed asset)
-def buyPosition = tideAnalysis.getTrendScore().getAverage()/100 as BigDecimal
-def sellPosition = buyPosition * ((tideAnalysis.getMomentumScore().getAverage()-50).max(0)/50) as BigDecimal
+def position = 1.0 * ((tideAnalysis.getMomentumScore().getAverage()-50).max(0)/50) as BigDecimal
 if (basketAsset.isFixed()) {
-    buyPosition = 1.0
-    sellPosition = 1.0
+    position = 1.0
 }
 
 // profit percentage
@@ -332,9 +288,7 @@ def profitPercentage = balanceAsset?.getProfitPercentage() ?: 0.0
 
 // message
 def message = """
-buyPosition:${buyPosition.toPlainString()}
-sellPosition:${sellPosition.toPlainString()}
-tide.trend:${tideAnalysis.getTrendScore().toString()}
+position:${position.toPlainString()}
 tide.momentum:${tideAnalysis.getMomentumScore().toString()}
 tide.oversold:${tideAnalysis.getOversoldScore().toString()}
 tide.overbought:${tideAnalysis.getOverboughtScore().toString()}
@@ -359,7 +313,7 @@ if (waveAnalysis.getVolatilityScore() > 50) {
         // ripple bullish momentum
         if (rippleAnalysis.getMomentumScore() > 80) {
             // buy
-            def buyAveragePosition = waveAnalysis.getAveragePosition(buyPosition)
+            def buyAveragePosition = waveAnalysis.getAveragePosition(position)
             strategyResult = StrategyResult.of(Action.BUY, buyAveragePosition, "[WAVE OVERSOLD BUY] " + message)
             // filter - tide overbought
             if (tideAnalysis.getOverboughtScore() > 50) {
@@ -372,7 +326,7 @@ if (waveAnalysis.getVolatilityScore() > 50) {
         // ripple bearish momentum
         if (rippleAnalysis.getMomentumScore() < 20) {
             // sell
-            def sellAveragePosition = waveAnalysis.getAveragePosition(sellPosition)
+            def sellAveragePosition = waveAnalysis.getAveragePosition(position)
             strategyResult = StrategyResult.of(Action.SELL, sellAveragePosition, "[WAVE OVERBOUGHT SELL] " + message)
             // filter - tide oversold
             if (tideAnalysis.getOversoldScore() > 50) {

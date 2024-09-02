@@ -7,7 +7,7 @@ import lombok.experimental.SuperBuilder;
 @Getter
 public class SmaContext extends IndicatorContext {
 
-    public static final SmaContext DEFAULT = SmaContext.of(10);
+    public static final SmaContext DEFAULT = SmaContext.of(20);
 
     private final int period;
 
