@@ -311,7 +311,7 @@ if (waveAnalysis.getVolatilityScore() > 50) {
     // wave oversold
     if (waveAnalysis.getOversoldScore() > 50) {
         // ripple bullish momentum
-        if (rippleAnalysis.getMomentumScore() > 80) {
+        if (rippleAnalysis.getMomentumScore() > 50) {
             // buy
             def buyAveragePosition = waveAnalysis.getAveragePosition(position)
             strategyResult = StrategyResult.of(Action.BUY, buyAveragePosition, "[WAVE OVERSOLD BUY] " + message)
@@ -324,7 +324,7 @@ if (waveAnalysis.getVolatilityScore() > 50) {
     // wave overbought
     if (waveAnalysis.getOverboughtScore() > 50) {
         // ripple bearish momentum
-        if (rippleAnalysis.getMomentumScore() < 20) {
+        if (rippleAnalysis.getMomentumScore() < 50) {
             // sell
             def sellAveragePosition = waveAnalysis.getAveragePosition(position)
             strategyResult = StrategyResult.of(Action.SELL, sellAveragePosition, "[WAVE OVERBOUGHT SELL] " + message)
