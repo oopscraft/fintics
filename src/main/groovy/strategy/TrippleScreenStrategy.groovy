@@ -91,8 +91,6 @@ class Analysis implements Analyzable {
         this.bollingerBand = bollingerBands.first()
         this.dmis = Tools.indicators(ohlcvs, DmiContext.DEFAULT)
         this.dmi = this.dmis.first()
-        this.chaikinOscillators = Tools.indicators(ohlcvs, ChaikinOscillatorContext.DEFAULT)
-        this.chaikinOscillator = chaikinOscillators.first()
         this.atrs = Tools.indicators(ohlcvs, AtrContext.DEFAULT)
         this.atr = atrs.first()
         this.rsis = Tools.indicators(ohlcvs, RsiContext.DEFAULT)
@@ -103,6 +101,8 @@ class Analysis implements Analyzable {
         this.stochasticSlow = stochasticSlows.first()
         this.williamsRs = Tools.indicators(ohlcvs, WilliamsRContext.DEFAULT)
         this.williamsR = williamsRs.first()
+        this.chaikinOscillators = Tools.indicators(ohlcvs, ChaikinOscillatorContext.DEFAULT)
+        this.chaikinOscillator = chaikinOscillators.first()
     }
 
     @Override
@@ -136,10 +136,18 @@ class Analysis implements Analyzable {
         score.macdValue = macd.value > 0 ? 100 : 0
         // bollinger band
         score.bollingerBandPriceOverMiddle = ohlcv.close > bollingerBand.middle ? 100 : 0
+        // rsi
+        score.rsiValue = rsi.value > 50 ? 100 : 0
+        // cci
+        score.cciValue = cci.value > 0 ? 100 : 0
         // dmi
         score.dmiPdiOverMdi = dmi.pdi > dmi.mdi ? 100 : 0
         // chaikin oscillator
         score.chaikinOscillatorValue = chaikinOscillator.value > 0 ? 100 : 0
+        // stochastic slow
+        score.stochasticSlowK = stochasticSlow.slowK > 50 ? 100 : 0
+        // williams r
+        score.williamsRValue = williamsR.value > -50 ? 100 : 0
         // return
         return score
     }
