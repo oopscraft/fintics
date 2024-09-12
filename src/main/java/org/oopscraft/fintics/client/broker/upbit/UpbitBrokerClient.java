@@ -7,8 +7,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.oopscraft.arch4j.core.data.IdGenerator;
-import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
+import org.oopscraft.arch4j.core.common.data.IdGenerator;
+import org.oopscraft.arch4j.core.common.support.RestTemplateBuilder;
 import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.client.broker.BrokerClientDefinition;
 import org.oopscraft.fintics.model.*;
@@ -225,7 +225,7 @@ public class UpbitBrokerClient extends BrokerClient {
                 purchaseAmount = purchaseAmount.add(assetPurchaseAmount);
                 BalanceAsset balanceAsset = BalanceAsset.builder()
                         .assetId(toAssetId(symbol))
-                        .assetName(symbol)
+                        .name(symbol)
                         .quantity(balance)
                         .orderableQuantity(balance)
                         .purchaseAmount(purchaseAmount)

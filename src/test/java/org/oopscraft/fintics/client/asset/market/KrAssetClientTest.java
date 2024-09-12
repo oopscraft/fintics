@@ -1,10 +1,9 @@
 package org.oopscraft.fintics.client.asset.market;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
-import org.oopscraft.arch4j.core.support.CoreTestSupport;
+import org.oopscraft.arch4j.core.common.test.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
 import org.oopscraft.fintics.client.asset.AssetClientProperties;
 import org.oopscraft.fintics.model.Asset;
@@ -41,7 +40,7 @@ class KrAssetClientTest extends CoreTestSupport {
         // given
         Asset asset = Asset.builder()
                 .assetId("KR.005930")
-                .assetName("Samsung Electronics")
+                .name("Samsung Electronics")
                 .market("KR")
                 .type("STOCK")
                 .build();

@@ -12,7 +12,7 @@ public class AssetSearchRequest {
 
     private String assetId;
 
-    private String assetName;
+    private String name;
 
     private String market;
 

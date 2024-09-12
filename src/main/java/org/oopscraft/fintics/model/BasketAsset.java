@@ -2,13 +2,9 @@ package org.oopscraft.fintics.model;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.oopscraft.arch4j.core.data.converter.BooleanConverter;
 import org.oopscraft.fintics.dao.AssetEntity;
 import org.oopscraft.fintics.dao.BasketAssetEntity;
 
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import java.io.Serializable;
 import java.math.BigDecimal;
 
 @Data
@@ -48,7 +44,7 @@ public class BasketAsset extends Asset {
         // asset entity
         AssetEntity assetEntity = basketAssetEntity.getAssetEntity();
         if(assetEntity != null) {
-            basketAsset.setAssetName(assetEntity.getAssetName());
+            basketAsset.setName(assetEntity.getName());
             basketAsset.setMarket(assetEntity.getMarket());
             basketAsset.setExchange(assetEntity.getExchange());
             basketAsset.setType(assetEntity.getType());

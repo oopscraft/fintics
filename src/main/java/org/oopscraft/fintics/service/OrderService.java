@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.oopscraft.arch4j.core.data.IdGenerator;
+import org.oopscraft.arch4j.core.common.data.IdGenerator;
 import org.oopscraft.fintics.dao.OrderEntity;
 import org.oopscraft.fintics.dao.OrderRepository;
 import org.oopscraft.fintics.model.Order;

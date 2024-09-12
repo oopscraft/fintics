@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.oopscraft.arch4j.web.support.PageableUtils;
+import org.oopscraft.arch4j.web.common.data.PageableUtils;
 import org.oopscraft.fintics.api.v1.dto.*;
 import org.oopscraft.fintics.service.DataService;
 import org.springframework.data.domain.Pageable;
@@ -35,7 +35,7 @@ public class DataRestController {
     /**
      * gets assets
      * @param assetId asset id
-     * @param assetName asset name
+     * @param name asset name
      * @param market market
      * @param pageable pageable
      * @return list of assets
@@ -46,16 +46,16 @@ public class DataRestController {
             @RequestParam(value = "assetId", required = false)
             @Parameter(description = "asset id")
                     String assetId,
-            @RequestParam(value = "assetName", required = false)
+            @RequestParam(value = "name", required = false)
             @Parameter(description = "asset name")
-                    String assetName,
+                    String name,
             @RequestParam(value = "market", required = false)
             @Parameter(description = "market")
                     String market,
             @Parameter(hidden = true)
             Pageable pageable
     ) {
-        List<AssetResponse> assetResponses = dataService.getAssets(assetId, assetName, market, pageable).stream()
+        List<AssetResponse> assetResponses = dataService.getAssets(assetId, name, market, pageable).stream()
                 .map(AssetResponse::from)
                 .toList();
         return ResponseEntity.ok()

@@ -1,8 +1,8 @@
 package org.oopscraft.fintics.service;
 
 import lombok.RequiredArgsConstructor;
-import org.oopscraft.arch4j.core.data.IdGenerator;
-import org.oopscraft.arch4j.core.data.pbe.PbePropertiesUtil;
+import org.oopscraft.arch4j.core.common.data.IdGenerator;
+import org.oopscraft.arch4j.core.common.pbe.PbePropertiesUtil;
 import org.oopscraft.fintics.dao.StrategyEntity;
 import org.oopscraft.fintics.dao.StrategyRepository;
 import org.oopscraft.fintics.model.Strategy;
@@ -46,7 +46,7 @@ public class StrategyService {
         } else {
             strategyEntity = strategyRepository.findById(strategy.getStrategyId()).orElseThrow();
         }
-        strategyEntity.setStrategyName(strategy.getStrategyName());
+        strategyEntity.setName(strategy.getName());
         strategyEntity.setLanguage(strategy.getLanguage());
         if (strategy.getVariables() != null) {
             strategyEntity.setVariables(PbePropertiesUtil.encode(strategy.getVariables()));

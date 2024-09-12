@@ -29,7 +29,7 @@ public class BasketAssetResponse extends AssetResponse {
         return BasketAssetResponse.builder()
                 .basketId(basketAsset.getBasketId())
                 .assetId(basketAsset.getAssetId())
-                .assetName(basketAsset.getAssetName())
+                .name(basketAsset.getName())
                 .market(basketAsset.getMarket())
                 .type(basketAsset.getType())
                 .exchange(basketAsset.getExchange())

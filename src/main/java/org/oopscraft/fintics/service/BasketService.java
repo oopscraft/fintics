@@ -1,7 +1,7 @@
 package org.oopscraft.fintics.service;
 
 import lombok.RequiredArgsConstructor;
-import org.oopscraft.arch4j.core.data.IdGenerator;
+import org.oopscraft.arch4j.core.common.data.IdGenerator;
 import org.oopscraft.fintics.dao.BasketAssetEntity;
 import org.oopscraft.fintics.dao.BasketEntity;
 import org.oopscraft.fintics.dao.BasketRepository;
@@ -69,7 +69,7 @@ public class BasketService {
         } else {
             basketEntity = basketRepository.findById(basket.getBasketId()).orElseThrow();
         }
-        basketEntity.setBasketName(basket.getBasketName());
+        basketEntity.setName(basket.getName());
         basketEntity.setMarket(basket.getMarket());
         basketEntity.setRebalanceEnabled(basket.isRebalanceEnabled());
         basketEntity.setRebalanceSchedule(basket.getRebalanceSchedule());

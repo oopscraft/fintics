@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.trade.strategy;
+package org.oopscraft.fintics.strategy;
 
 import org.oopscraft.fintics.model.Strategy;
 import org.springframework.stereotype.Component;

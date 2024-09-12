@@ -6,7 +6,7 @@ public class BrokerSpecifications {
 
     public static Specification<BrokerEntity> containsBrokerName(String brokerName) {
         return (root, query, criteriaBuilder) ->
-                criteriaBuilder.like(root.get(BrokerEntity_.BROKER_NAME), '%' + brokerName + '%');
+                criteriaBuilder.like(root.get(BrokerEntity_.NAME), '%' + brokerName + '%');
     }
 
 }

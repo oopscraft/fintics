@@ -23,15 +23,15 @@ public class DataService {
     /**
      * returns assets
      * @param assetId asset id
-     * @param assetName asset name
+     * @param name asset name
      * @param market market
      * @param pageable pageable
      * @return list of assets
      */
-    public List<Asset> getAssets(String assetId, String assetName, String market, Pageable pageable) {
+    public List<Asset> getAssets(String assetId, String name, String market, Pageable pageable) {
         return dataMapper.selectAssets(
                 Optional.ofNullable(assetId).map(value -> '%' + value +'%').orElse(null),
-                Optional.ofNullable(assetName).map(value -> '%' + value + '%').orElse(null),
+                Optional.ofNullable(name).map(value -> '%' + value + '%').orElse(null),
                 market,
                 new RowBounds((int)pageable.getOffset(), pageable.getPageSize())
         );
@@ -43,8 +43,8 @@ public class DataService {
      */
     public List<OhlcvSummary> getOhlcvSummaries() {
         return dataMapper.selectOhlcvSummaries(null).stream()
-                .peek(it -> it.setAssetName(assetService.getAsset(it.getAssetId())
-                        .map(Asset::getAssetName)
+                .peek(it -> it.setName(assetService.getAsset(it.getAssetId())
+                        .map(Asset::getName)
                         .orElse(null)))
                 .toList();
     }
@@ -58,8 +58,8 @@ public class DataService {
         OhlcvSummary assetOhlcvSummary = dataMapper.selectOhlcvSummaries(assetId).stream()
                 .findFirst()
                 .orElseThrow();
-        assetOhlcvSummary.setAssetName(assetService.getAsset(assetOhlcvSummary.getAssetId())
-                .map(Asset::getAssetName)
+        assetOhlcvSummary.setName(assetService.getAsset(assetOhlcvSummary.getAssetId())
+                .map(Asset::getName)
                 .orElse(null));
         List<OhlcvSummary.OhlcvStatistic> ohlcvStatistics = dataMapper.selectOhlcvStatistics(assetId);
         assetOhlcvSummary.setOhlcvStatistics(ohlcvStatistics);

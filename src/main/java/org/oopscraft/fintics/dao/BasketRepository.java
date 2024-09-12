@@ -23,11 +23,11 @@ public interface BasketRepository extends JpaRepository<BasketEntity, String>, J
         // where
         Specification<BasketEntity> specification = Specification.where(null);
         specification = specification
-                .and(Optional.ofNullable(basketSearch.getBasketName())
+                .and(Optional.ofNullable(basketSearch.getName())
                         .map(BasketSpecifications::containsBasketName)
                         .orElse(null));
         // sort
-        Sort sort = Sort.by(BasketEntity_.BASKET_NAME).ascending();
+        Sort sort = Sort.by(BasketEntity_.NAME).ascending();
 
         // find
         if (pageable.isPaged()) {

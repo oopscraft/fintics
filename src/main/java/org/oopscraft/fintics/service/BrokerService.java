@@ -1,17 +1,15 @@
 package org.oopscraft.fintics.service;
 
 import lombok.RequiredArgsConstructor;
-import org.oopscraft.arch4j.core.data.IdGenerator;
-import org.oopscraft.arch4j.core.data.pbe.PbePropertiesUtil;
+import org.oopscraft.arch4j.core.common.data.IdGenerator;
+import org.oopscraft.arch4j.core.common.pbe.PbePropertiesUtil;
 import org.oopscraft.fintics.dao.BrokerEntity;
 import org.oopscraft.fintics.dao.BrokerRepository;
-import org.oopscraft.fintics.dao.BrokerSpecifications;
 import org.oopscraft.fintics.model.Broker;
 import org.oopscraft.fintics.model.BrokerSearch;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,7 +47,7 @@ public class BrokerService {
             brokerEntity = brokerRepository.findById(broker.getBrokerId())
                     .orElseThrow();
         }
-        brokerEntity.setBrokerName(broker.getBrokerName());
+        brokerEntity.setName(broker.getName());
         brokerEntity.setBrokerClientId(broker.getBrokerClientId());
         if (broker.getBrokerClientProperties() != null) {
             brokerEntity.setBrokerClientProperties(PbePropertiesUtil.encode(broker.getBrokerClientProperties()));

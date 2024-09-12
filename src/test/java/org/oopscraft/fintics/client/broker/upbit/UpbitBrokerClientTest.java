@@ -33,7 +33,7 @@ class UpbitBrokerClientTest {
     Asset getTestAsset() {
         return Asset.builder()
                 .assetId("UPBIT.KRW-BTC")
-                .assetName("Bitcoin")
+                .name("Bitcoin")
                 .build();
     }
 

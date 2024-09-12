@@ -26,7 +26,7 @@
         // trade
         const trade = new duice.ObjectProxy({
             tradeId: null,
-            tradeName: null,
+            name: null,
             interval: null,
             threshold: null,
             brokerId: null,
@@ -109,9 +109,9 @@
         }
 
         async function saveTrade() {
-            if(!trade.tradeName) {
-                await _alert(/*[[#{web.global.itemEmpty(#{fintics.Trade.tradeName})}]]*/'');
-                duice.ObjectProxy.focus(trade, 'tradeName');
+            if(!trade.name) {
+                await _alert(/*[[#{web.global.itemEmpty(#{fintics.Trade.name})}]]*/'');
+                duice.ObjectProxy.focus(trade, 'name');
                 return false;
             }
             if(!trade.interval) {
@@ -258,7 +258,7 @@
         <img class="icon" th:src="@{/static/image/icon-trade.svg}" alt="variable"/>
         <span data-th-text="#{fintics.Trade}"></span>
         <small>|</small>
-        <span data-duice-bind="trade" data-duice-property="tradeName"></span>
+        <span data-duice-bind="trade" data-duice-property="name"></span>
     </h1>
     <!-- ====================================== -->
     <!-- end: title                             -->
@@ -296,8 +296,8 @@
             </h2>
             <form class="display--grid grid-template-columns--12 grid-gap--1em grid-column-gap--2em padding-y--1em s__padding-y--0">
                 <label class="grid-column--6">
-                    <span data-th-text="#{fintics.Trade.tradeName}" class="font-weight--bold tag-required"></span>
-                    <input type="text" data-duice-bind="trade" data-duice-property="tradeName"
+                    <span data-th-text="#{fintics.Trade.name}" class="font-weight--bold tag-required"></span>
+                    <input type="text" data-duice-bind="trade" data-duice-property="name"
                            class="width--100 font-weight--bold"/>
                 </label>
                 <label class="grid-column--6">
@@ -402,7 +402,7 @@
                         <tr>
                             <th data-th-text="#{web.global.no}"></th>
                             <th data-th-text="#{fintics.Asset.assetId}"></th>
-                            <th data-th-text="#{fintics.Asset.assetName}"></th>
+                            <th data-th-text="#{fintics.Asset.name}"></th>
                             <th data-th-text="#{fintics.Asset.exchange}"></th>
                             <th data-th-text="#{fintics.Asset.type}"></th>
                             <th data-th-text="#{fintics.Asset.marketCap}"></th>
@@ -425,7 +425,7 @@
                             <td class="text-align--left">
                                 <img class="icon icon--circle font-size--large" data-duice-bind="basketAsset" data-duice-property="icon" th:onerror="|this.onerror=null; this.src='@{/static/image/icon-asset.svg}';|" alt=""/>
                                 &nbsp;
-                                <span data-duice-bind="basketAsset" data-duice-property="assetName"></span>
+                                <span data-duice-bind="basketAsset" data-duice-property="name"></span>
                             </td>
                             <td>
                                 <span data-duice-bind="basketAsset" data-duice-property="exchange" class="badge"></span>
@@ -558,7 +558,7 @@
                                 data-duice-property="assetId"
                                 data-duice-option="trade.tradeAssets"
                                 data-duice-option-value-property="assetId"
-                                data-duice-option-text-property="assetName">
+                                data-duice-option-text-property="name">
                             <option data-th-text="'- ' + #{fintics.Asset} + ' -'"></option>
                         </select>
                     </label>
@@ -768,7 +768,7 @@
                             <tr>
                                 <th data-th-text="#{web.global.no}"></th>
                                 <th data-th-text="#{fintics.BalanceAsset.assetId}"></th>
-                                <th data-th-text="#{fintics.BalanceAsset.assetName}"></th>
+                                <th data-th-text="#{fintics.BalanceAsset.name}"></th>
                                 <th data-th-text="#{fintics.BalanceAsset.quantity}"></th>
                                 <th data-th-text="#{fintics.BalanceAsset.purchaseAmount}" class="text-align--right"></th>
                                 <th data-th-text="#{fintics.BalanceAsset.valuationAmount}" class="text-align--right"></th>
@@ -797,7 +797,7 @@
                                 <td>
                                     <img class="icon font-size--large" data-duice-bind="balanceAsset" data-duice-property="icon" th:onerror="|this.onerror=null; this.src='@{/static/image/icon-asset.svg}';|" alt=""/>
                                     &nbsp;
-                                    <span data-duice-bind="balanceAsset" data-duice-property="assetName"></span>
+                                    <span data-duice-bind="balanceAsset" data-duice-property="name"></span>
                                 </td>
                                 <td>
                                     <span data-duice-bind="balanceAsset" data-duice-property="quantity" data-duice-format="number"></span>
@@ -888,7 +888,7 @@
                         this.order.tradeId = trade.tradeId;
                         this.order.tradeName = trade.tradeName;
                         this.order.assetId = asset.assetId;
-                        this.order.assetName = asset.assetName;
+                        this.order.assetName = asset.name;
                         this.order.type = type;
                         return this.dialog.open();
                     },

@@ -2,7 +2,7 @@ package org.oopscraft.fintics.dao;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.oopscraft.arch4j.core.data.BaseEntity;
+import org.oopscraft.arch4j.core.common.data.BaseEntity;
 import org.oopscraft.fintics.model.Strategy;
 
 import javax.persistence.*;
@@ -20,8 +20,8 @@ public class StrategyEntity extends BaseEntity {
     @Column(name = "strategy_id", length = 32)
     private String strategyId;
 
-    @Column(name = "strategy_name")
-    private String strategyName;
+    @Column(name = "name")
+    private String name;
 
     @Column(name = "language", length = 16)
     private Strategy.Language language;

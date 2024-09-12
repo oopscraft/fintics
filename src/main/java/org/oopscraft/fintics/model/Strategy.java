@@ -2,7 +2,7 @@ package org.oopscraft.fintics.model;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.oopscraft.arch4j.core.data.converter.AbstractEnumConverter;
+import org.oopscraft.arch4j.core.common.data.converter.AbstractEnumConverter;
 import org.oopscraft.fintics.dao.StrategyEntity;
 
 import javax.persistence.Converter;
@@ -15,7 +15,7 @@ public class Strategy {
 
     private String strategyId;
 
-    private String strategyName;
+    private String name;
 
     private Strategy.Language language;
 
@@ -33,7 +33,7 @@ public class Strategy {
     public static Strategy from(StrategyEntity strategyEntity) {
         return Strategy.builder()
                 .strategyId(strategyEntity.getStrategyId())
-                .strategyName(strategyEntity.getStrategyName())
+                .name(strategyEntity.getName())
                 .language(strategyEntity.getLanguage())
                 .variables(strategyEntity.getVariables())
                 .script(strategyEntity.getScript())

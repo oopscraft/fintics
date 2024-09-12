@@ -10,7 +10,7 @@ public class StrategyResponse {
 
     private String strategyId;
 
-    private String strategyName;
+    private String name;
 
     private Strategy.Language language;
 
@@ -21,7 +21,7 @@ public class StrategyResponse {
     public static StrategyResponse from(Strategy strategy) {
         return StrategyResponse.builder()
                 .strategyId(strategy.getStrategyId())
-                .strategyName(strategy.getStrategyName())
+                .name(strategy.getName())
                 .language(strategy.getLanguage())
                 .variables(strategy.getVariables())
                 .script(strategy.getScript())

@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.trade.basket;
+package org.oopscraft.fintics.basket;
 
 import com.github.javaparser.utils.LineSeparator;
 import lombok.RequiredArgsConstructor;
@@ -6,8 +6,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.oopscraft.arch4j.core.support.CoreTestSupport;
+import org.oopscraft.arch4j.core.common.test.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
+import org.oopscraft.fintics.basket.BasketChange;
+import org.oopscraft.fintics.basket.GroovyBasketRebalance;
 import org.oopscraft.fintics.client.ohlcv.OhlcvClient;
 import org.oopscraft.fintics.model.Basket;
 import org.oopscraft.fintics.service.AssetService;

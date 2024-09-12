@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
+import org.oopscraft.arch4j.core.common.support.RestTemplateBuilder;
 import org.oopscraft.fintics.client.asset.AssetClient;
 import org.oopscraft.fintics.client.asset.AssetClientProperties;
 import org.oopscraft.fintics.model.Asset;
@@ -16,11 +16,8 @@ import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -102,7 +99,7 @@ public class UsAssetClient extends AssetClient {
                     }
                     return Asset.builder()
                             .assetId(toAssetId(MARKET_US, row.get("symbol")))
-                            .assetName(row.get("name"))
+                            .name(row.get("name"))
                             .market(MARKET_US)
                             .exchange(exchangeMic)
                             .type("STOCK")
@@ -146,7 +143,7 @@ public class UsAssetClient extends AssetClient {
         List<Asset> assets = rows.stream()
                 .map(row -> Asset.builder()
                         .assetId(toAssetId(MARKET_US, row.get("symbol")))
-                        .assetName(row.get("companyName"))
+                        .name(row.get("companyName"))
                         .market(MARKET_US)
                         .type("ETF")
                         .build())

@@ -8,7 +8,7 @@
         const strategyId = /*[[${strategyId}]]*/'';
         const strategy = new duice.ObjectProxy({
             strategyId: null,
-            strategyName: null
+            name: null
         });
 
         function getStrategy(strategyId) {
@@ -21,9 +21,9 @@
         }
 
         async function saveStrategy() {
-            if(!strategy.strategyName) {
-                await _alert(/*[[#{web.global.itemEmpty(#{fintics.Strategy.strategyName})}]]*/'');
-                duice.ObjectProxy.focus(strategy, 'strategyName');
+            if(!strategy.name) {
+                await _alert(/*[[#{web.global.itemEmpty(#{fintics.Strategy.name})}]]*/'');
+                duice.ObjectProxy.focus(strategy, 'name');
                 return false;
             }
             if(!strategy.language) {
@@ -103,7 +103,7 @@
         <img class="icon" th:src="@{/static/image/icon-strategy.svg}" alt="variable"/>
         <span data-th-text="#{fintics.Strategy}"></span>
         <small>|</small>
-        <span data-duice-bind="strategy" data-duice-property="strategyName"></span>
+        <span data-duice-bind="strategy" data-duice-property="name"></span>
     </h1>
     <!-- ====================================== -->
     <!-- end: title                             -->
@@ -115,8 +115,8 @@
     <div class="border--1 padding--1em">
         <form class="display--grid grid-template-columns--12 grid-gap--1em grid-column-gap--2em padding-y--1em s__padding-y--0">
             <label class="grid-column--6">
-                <span data-th-text="#{fintics.Strategy.strategyName}" class="font-weight--bold tag-required"></span>
-                <input type="text" data-duice-bind="strategy" data-duice-property="strategyName"
+                <span data-th-text="#{fintics.Strategy.name}" class="font-weight--bold tag-required"></span>
+                <input type="text" data-duice-bind="strategy" data-duice-property="name"
                        class="width--100 font-weight--bold"/>
             </label>
             <label class="grid-column--6">

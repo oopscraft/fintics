@@ -163,7 +163,7 @@
                 <form onsubmit="return false;" class="display--grid grid-template-columns--12 grid-gap--1em padding-y--1em s__padding-y--0">
                     <label class="grid-column--4">
                         <select class="width--100" data-duice-bind="brokerSearch" data-duice-property="key">
-                            <option value="brokerName" th:text="#{fintics.Broker.brokerName}"></option>
+                            <option value="brokerName" th:text="#{fintics.Broker.name}"></option>
                         </select>
                     </label>
                     <label class="grid-column--8">
@@ -190,7 +190,7 @@
                         <thead>
                         <tr>
                             <th data-th-text="#{web.global.no}"></th>
-                            <th data-th-text="#{fintics.Broker.brokerName}"></th>
+                            <th data-th-text="#{fintics.Broker.name}"></th>
                         </tr>
                         </thead>
                         <tbody>
@@ -252,7 +252,7 @@
                 </h2>
                 <form onsubmit="return false;" class="display--grid grid-template-columns--12 grid-gap--1em padding-y--1em s__padding-y--0">
                     <label class="grid-column--12">
-                        <span data-th-text="#{fintics.Broker.brokerName}"
+                        <span data-th-text="#{fintics.Broker.name}"
                               class="font-weight--bold tag-required"></span>
                         <input type="text" data-duice-bind="broker" data-duice-property="brokerName"
                                class="width--100"/>

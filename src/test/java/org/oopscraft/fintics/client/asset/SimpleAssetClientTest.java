@@ -4,10 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
-import org.oopscraft.arch4j.core.support.CoreTestSupport;
+import org.oopscraft.arch4j.core.common.test.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
-import org.oopscraft.fintics.client.ohlcv.OhlcvClientProperties;
-import org.oopscraft.fintics.client.ohlcv.SimpleOhlcvClient;
 import org.oopscraft.fintics.model.Asset;
 import org.oopscraft.fintics.model.AssetMeta;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -44,7 +42,7 @@ class SimpleAssetClientTest extends CoreTestSupport {
         // given
         Asset asset = Asset.builder()
                 .assetId("US.MSFT")
-                .assetName("Microsoft Corporation Common Stock")
+                .name("Microsoft Corporation Common Stock")
                 .market("US")
                 .type("STOCK")
                 .build();
@@ -59,7 +57,7 @@ class SimpleAssetClientTest extends CoreTestSupport {
         // given
         Asset asset = Asset.builder()
                 .assetId("KR.005930")
-                .assetName("Samsung Electronics")
+                .name("Samsung Electronics")
                 .market("KR")
                 .type("STOCK")
                 .build();

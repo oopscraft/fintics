@@ -3,7 +3,7 @@ package org.oopscraft.fintics.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
-import org.oopscraft.arch4j.core.support.CoreTestSupport;
+import org.oopscraft.arch4j.core.common.test.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
 import org.oopscraft.fintics.dao.AssetEntity;
 import org.oopscraft.fintics.model.Asset;
@@ -36,7 +36,7 @@ class AssetServiceTest extends CoreTestSupport {
         String assetName = "test name";
         entityManager.persist(AssetEntity.builder()
                 .assetId(assetId)
-                .assetName(assetName)
+                .name(assetName)
                 .build());
         entityManager.flush();
         // when
@@ -47,7 +47,7 @@ class AssetServiceTest extends CoreTestSupport {
         // then
         assertTrue(assetPage.getContent().stream().anyMatch(it -> Objects.equals(it.getAssetId(), assetId)));
         assertEquals(assetId, assetPage.getContent().get(0).getAssetId());
-        assertEquals(assetName, assetPage.getContent().get(0).getAssetName());
+        assertEquals(assetName, assetPage.getContent().get(0).getName());
     }
 
     @Test
@@ -57,7 +57,7 @@ class AssetServiceTest extends CoreTestSupport {
         String assetName = "test name";
         entityManager.persist(AssetEntity.builder()
                 .assetId(assetId)
-                .assetName(assetName)
+                .name(assetName)
                 .build());
         entityManager.flush();
         // when

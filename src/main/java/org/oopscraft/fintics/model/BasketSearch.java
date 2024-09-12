@@ -11,6 +11,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class BasketSearch {
 
-   private String basketName;
+   private String name;
 
 }

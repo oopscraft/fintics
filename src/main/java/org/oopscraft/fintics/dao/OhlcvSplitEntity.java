@@ -1,7 +1,7 @@
 package org.oopscraft.fintics.dao;
 
 import lombok.*;
-import org.oopscraft.arch4j.core.data.converter.ZoneIdConverter;
+import org.oopscraft.arch4j.core.common.data.converter.ZoneIdConverter;
 
 import javax.persistence.*;
 import java.io.Serializable;

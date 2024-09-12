@@ -1,7 +1,7 @@
-package org.oopscraft.fintics.trade.strategy;
+package org.oopscraft.fintics.strategy;
 
 import ch.qos.logback.classic.Logger;
-import org.oopscraft.arch4j.core.data.pbe.PbePropertiesUtil;
+import org.oopscraft.arch4j.core.common.pbe.PbePropertiesUtil;
 import org.oopscraft.fintics.model.*;
 import org.slf4j.LoggerFactory;
 

@@ -6,9 +6,6 @@ import org.oopscraft.fintics.dao.TradeEntity;
 import java.math.BigDecimal;
 import java.time.LocalTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Data
 @Builder
@@ -19,7 +16,7 @@ public class Trade {
 
     private String tradeId;
 
-    private String tradeName;
+    private String name;
 
     private boolean enabled;
 
@@ -59,7 +56,7 @@ public class Trade {
     public static Trade from(TradeEntity tradeEntity) {
         return Trade.builder()
                 .tradeId(tradeEntity.getTradeId())
-                .tradeName(tradeEntity.getTradeName())
+                .name(tradeEntity.getName())
                 .enabled(tradeEntity.isEnabled())
                 .interval(tradeEntity.getInterval())
                 .threshold(tradeEntity.getThreshold())

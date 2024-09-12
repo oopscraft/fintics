@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.trade.strategy;
+package org.oopscraft.fintics.strategy;
 
 import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;

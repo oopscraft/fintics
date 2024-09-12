@@ -1,6 +1,6 @@
 package org.oopscraft.fintics;
 
-import org.oopscraft.arch4j.core.support.SpringApplicationInstaller;
+import org.oopscraft.arch4j.core.common.support.SpringApplicationInstaller;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;

@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.trade.basket;
+package org.oopscraft.fintics.basket;
 
 import lombok.*;
 

@@ -11,7 +11,7 @@ import java.util.List;
 @Mapper
 public interface DataMapper {
 
-    List<Asset> selectAssets(@Param("assetId") String assetId, @Param("assetName") String assetName, @Param("market") String market, RowBounds rowBounds);
+    List<Asset> selectAssets(@Param("assetId") String assetId, @Param("name") String name, @Param("market") String market, RowBounds rowBounds);
 
     List<OhlcvSummary> selectOhlcvSummaries(@Param("assetId") String assetId);
 

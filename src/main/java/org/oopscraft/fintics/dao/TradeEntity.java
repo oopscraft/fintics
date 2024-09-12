@@ -2,17 +2,13 @@ package org.oopscraft.fintics.dao;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.oopscraft.arch4j.core.data.BaseEntity;
-import org.oopscraft.arch4j.core.data.converter.BooleanConverter;
-import org.oopscraft.arch4j.core.data.converter.ZoneIdConverter;
+import org.oopscraft.arch4j.core.common.data.BaseEntity;
+import org.oopscraft.arch4j.core.common.data.converter.BooleanConverter;
 import org.oopscraft.fintics.model.Order;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "fintics_trade")
@@ -27,8 +23,8 @@ public class TradeEntity extends BaseEntity {
     @Column(name = "trade_id", length = 32)
     private String tradeId;
 
-    @Column(name = "trade_name")
-    private String tradeName;
+    @Column(name = "name")
+    private String name;
 
     @Column(name = "enabled", length = 1)
     @Convert(converter = BooleanConverter.class)

@@ -34,7 +34,7 @@ public class BalanceAssetResponse extends AssetResponse {
     public static BalanceAssetResponse from(BalanceAsset balanceAsset) {
         return BalanceAssetResponse.builder()
                 .assetId(balanceAsset.getAssetId())
-                .assetName(balanceAsset.getAssetName())
+                .name(balanceAsset.getName())
                 .accountNo(balanceAsset.getAccountNo())
                 .quantity(balanceAsset.getQuantity())
                 .orderableQuantity(balanceAsset.getOrderableQuantity())

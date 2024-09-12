@@ -6,7 +6,7 @@ public class BasketSpecifications {
 
     public static Specification<BasketEntity> containsBasketName(String basketName) {
         return (root, query, criteriaBuilder) ->
-                criteriaBuilder.like(root.get(BasketEntity_.BASKET_NAME), '%' + basketName + '%');
+                criteriaBuilder.like(root.get(BasketEntity_.NAME), '%' + basketName + '%');
     }
 
 }

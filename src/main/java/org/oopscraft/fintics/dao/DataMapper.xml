@@ -9,7 +9,7 @@
 
     <select id="selectAssets" resultType="org.oopscraft.fintics.model.Asset" useCache="false">
         SELECT      fa.asset_id as "assetId",
-                    fa.asset_name as "assetName",
+                    fa.name as "name",
                     fa.market as "market",
                     fa.exchange as "exchange",
                     fa.type as "type",
@@ -19,8 +19,8 @@
         <if test="assetId != null">
         AND         asset_id like #{assetId}
         </if>
-        <if test="assetName != null">
-        AND         asset_name like #{assetName}
+        <if test="name != null">
+        AND         name like #{name}
         </if>
         <if test="market != null">
         AND         market = #{market}

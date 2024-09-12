@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.oopscraft.arch4j.web.support.PageableUtils;
+import org.oopscraft.arch4j.web.common.data.PageableUtils;
 import org.oopscraft.fintics.api.v1.dto.StrategyRequest;
 import org.oopscraft.fintics.api.v1.dto.StrategyResponse;
 import org.oopscraft.fintics.model.Strategy;
@@ -32,22 +32,22 @@ public class StrategiesRestController {
 
     /**
      * gets strategies
-     * @param strategyName strategy name
+     * @param name strategy name
      * @param pageable pageable
      * @return list of strategy
      */
     @GetMapping
     @Operation(description = "gets strategies")
     public ResponseEntity<List<StrategyResponse>> getStrategies(
-            @RequestParam(value = "strategyName", required = false)
-            @Parameter(description = "strategy name")
-                    String strategyName,
+            @RequestParam(value = "name", required = false)
+            @Parameter(description = "name")
+                    String name,
             @PageableDefault
             @Parameter(hidden = true)
                     Pageable pageable
     ) {
         StrategySearch strategySearch = StrategySearch.builder()
-                .strategyName(strategyName)
+                .name(name)
                 .build();
         Page<Strategy> strategyPage = strategyService.getStrategies(strategySearch, pageable);
         List<StrategyResponse> strategyResponses = strategyPage.getContent().stream()
@@ -92,7 +92,7 @@ public class StrategiesRestController {
                     StrategyRequest strategyRequest
     ) {
         Strategy strategy = Strategy.builder()
-                .strategyName(strategyRequest.getStrategyName())
+                .name(strategyRequest.getName())
                 .language(strategyRequest.getLanguage())
                 .variables(strategyRequest.getVariables())
                 .script(strategyRequest.getScript())
@@ -120,7 +120,7 @@ public class StrategiesRestController {
                     StrategyRequest strategyRequest
     ) {
         Strategy strategy = strategyService.getStrategy(strategyId).orElseThrow();
-        strategy.setStrategyName(strategyRequest.getStrategyName());
+        strategy.setName(strategyRequest.getName());
         strategy.setLanguage(strategyRequest.getLanguage());
         strategy.setVariables(strategyRequest.getVariables());
         strategy.setScript(strategyRequest.getScript());

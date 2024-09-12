@@ -18,8 +18,8 @@ public class TradeAssetRequest {
     @Schema(description = "asset id", example = "US.AAPL")
     private String assetId;
 
-    @Schema(description = "asset name", example = "test asset name")
-    private String assetName;
+    @Schema(description = "name", example = "test asset")
+    private String name;
 
     @Schema(description = "enabled", example = "true")
     private boolean enabled;

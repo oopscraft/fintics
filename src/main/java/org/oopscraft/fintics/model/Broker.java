@@ -11,7 +11,7 @@ public class Broker {
 
     private String brokerId;
 
-    private String brokerName;
+    private String name;
 
     private String brokerClientId;
 
@@ -25,7 +25,7 @@ public class Broker {
     public static Broker from(BrokerEntity brokerEntity) {
         return Broker.builder()
                 .brokerId(brokerEntity.getBrokerId())
-                .brokerName(brokerEntity.getBrokerName())
+                .name(brokerEntity.getName())
                 .brokerClientId(brokerEntity.getBrokerClientId())
                 .brokerClientProperties(brokerEntity.getBrokerClientProperties())
                 .build();

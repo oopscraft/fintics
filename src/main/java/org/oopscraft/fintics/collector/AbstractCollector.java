@@ -1,7 +1,7 @@
-package org.oopscraft.fintics.scheduler;
+package org.oopscraft.fintics.collector;
 
 import lombok.extern.slf4j.Slf4j;
-import org.oopscraft.arch4j.core.alarm.AlarmService;
+import org.oopscraft.arch4j.core.alarm.service.AlarmService;
 import org.oopscraft.fintics.FinticsProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,7 +13,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import java.util.List;
 
 @Slf4j
-public abstract class AbstractScheduler {
+public abstract class AbstractCollector {
 
     @Autowired
     private FinticsProperties finticsProperties;

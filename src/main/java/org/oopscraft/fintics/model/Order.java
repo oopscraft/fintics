@@ -4,10 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
-import org.oopscraft.arch4j.core.data.converter.AbstractEnumConverter;
-import org.oopscraft.arch4j.core.support.ObjectMapperHolder;
+import org.oopscraft.arch4j.core.common.data.converter.AbstractEnumConverter;
+import org.oopscraft.arch4j.core.common.support.ObjectMapperHolder;
 import org.oopscraft.fintics.dao.OrderEntity;
-import org.oopscraft.fintics.trade.strategy.StrategyResult;
+import org.oopscraft.fintics.strategy.StrategyResult;
 
 import javax.persistence.Converter;
 import java.math.BigDecimal;

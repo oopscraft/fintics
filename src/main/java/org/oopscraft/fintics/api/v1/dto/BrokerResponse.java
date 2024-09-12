@@ -11,7 +11,7 @@ public class BrokerResponse {
 
     private String brokerId;
 
-    private String brokerName;
+    private String name;
 
     private String brokerClientId;
 
@@ -20,7 +20,7 @@ public class BrokerResponse {
     public static BrokerResponse from(Broker broker) {
         return BrokerResponse.builder()
                 .brokerId(broker.getBrokerId())
-                .brokerName(broker.getBrokerName())
+                .name(broker.getName())
                 .brokerClientId(broker.getBrokerClientId())
                 .brokerClientProperties(broker.getBrokerClientProperties())
                 .build();

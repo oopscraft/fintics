@@ -2,7 +2,7 @@ import groovy.json.JsonSlurper
 import org.oopscraft.fintics.client.ohlcv.OhlcvClient
 import org.oopscraft.fintics.indicator.EmaContext
 import org.oopscraft.fintics.trade.Tools
-import org.oopscraft.fintics.trade.basket.BasketChange
+import org.oopscraft.fintics.basket.BasketChange
 import org.oopscraft.fintics.model.*
 import org.oopscraft.fintics.indicator.*
 

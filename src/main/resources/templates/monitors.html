@@ -77,7 +77,7 @@
                                 .then(ohlcvs => {
                                     let timeSeries = _createTimeSeries(ohlcvs);
                                     return {
-                                        label: basketAsset.assetName,
+                                        label: basketAsset.name,
                                         data: timeSeries,
                                         borderWidth: 1,
                                         pointStyle: false
@@ -105,7 +105,7 @@
                                 .then(ohlcvs => {
                                     let timeSeries = _createTimeSeries(ohlcvs);
                                     return {
-                                        label: basketAsset.assetName,
+                                        label: basketAsset.name,
                                         data: timeSeries,
                                         borderWidth: 1,
                                         pointStyle: false
@@ -258,6 +258,14 @@
         }
 
         /**
+         * refresh specified monitor
+         * @param tradeId
+         */
+        function refreshMonitor(tradeId) {
+            monitorMap.get(tradeId).refresh();
+        }
+
+        /**
          * opens trade view
          * @param tradeId trade id
          */
@@ -276,19 +284,15 @@
                 return duice.tabItem(
                     document.getElementById(`monitorTabButton-${trade.tradeId}`),
                     document.getElementById(`monitorTabContent-${trade.tradeId}`),
-                    () => {}
+                    () => {
+                        refreshMonitor(trade.tradeId);
+                    }
                 );
             });
             let tabFolder = duice.tabFolder(...tabItems);
 
             // set tab active
             tabFolder.setActive(0);
-
-            // refresh
-            refreshMonitors();
-            setInterval(function() {
-               refreshMonitors();
-            }, 1000*60);
         });
     </script>
     <style th:inline="css">
@@ -317,7 +321,7 @@
     <div id="tabIndex" class="display--flex flex-wrap--nowrap overflow-x--scroll gap--1px margin-bottom--1px margin-top--1em">
         <button th:each="trade : ${trades}" th:id="|monitorTabButton-${trade.tradeId}|" type="button" class="tab" style="flex-shrink:0;">
             <img class="icon" th:src="@{/static/image/icon-trade.svg}" alt="simulate"/>
-            <span data-th-text="${trade.tradeName}"></span>
+            <span data-th-text="${trade.name}"></span>
         </button>
     </div>
     <!-- ====================================== -->
@@ -330,7 +334,7 @@
     <div th:each="trade : ${trades}" th:id="|monitorTabContent-${trade.tradeId}|" class="grid-column--12 border--1 padding--1em">
         <h2>
             <img class="icon" th:src="@{/static/image/icon-trade.svg}" alt="trade"/>
-            <span data-th-text="${trade.tradeName}"></span>
+            <span data-th-text="${trade.name}"></span>
             <a href="#" th:data-trade-id="${trade.tradeId}" onclick="openTrade(this.dataset.tradeId);">
                 <small>
                     <img class="icon link" th:src="@{/static/image/icon-open.svg}" alt="trade"/>
@@ -434,7 +438,7 @@
                             <span data-th-text="#{fintics.Asset.assetId}"></span>
                         </th>
                         <th>
-                            <span data-th-text="#{fintics.Asset.assetName}"></span>
+                            <span data-th-text="#{fintics.Asset.name}"></span>
                         </th>
                         <th>
                             <span data-th-text="#{fintics.Asset.links}"></span>
@@ -477,7 +481,7 @@
                                 &nbsp;
                                 <div class="margin-y--1em">
                                     <span data-duice-bind="basketAsset"
-                                        data-duice-property="assetName"
+                                        data-duice-property="name"
                                         data-duice-execute="
                                         if (basketAsset.quantity > 0) {
                                             this.classList.add('font-weight--bold');

@@ -3,8 +3,8 @@ package org.oopscraft.fintics.service;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.oopscraft.arch4j.core.data.IdGenerator;
-import org.oopscraft.arch4j.core.support.CoreTestSupport;
+import org.oopscraft.arch4j.core.common.data.IdGenerator;
+import org.oopscraft.arch4j.core.common.test.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
 import org.oopscraft.fintics.dao.TradeEntity;
 import org.oopscraft.fintics.model.Trade;
@@ -27,7 +27,7 @@ public class TradeServiceTest extends CoreTestSupport {
         // given
         TradeEntity tradeEntity = TradeEntity.builder()
                 .tradeId(IdGenerator.uuid())
-                .tradeName("test")
+                .name("test")
                 .enabled(true)
                 .build();
         entityManager.persist(tradeEntity);
@@ -45,7 +45,7 @@ public class TradeServiceTest extends CoreTestSupport {
         // given
         TradeEntity tradeEntity = TradeEntity.builder()
                 .tradeId(IdGenerator.uuid())
-                .tradeName("test")
+                .name("test")
                 .enabled(true)
                 .build();
         entityManager.persist(tradeEntity);

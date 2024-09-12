@@ -2,8 +2,8 @@ package org.oopscraft.fintics.dao;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.oopscraft.arch4j.core.data.BaseEntity;
-import org.oopscraft.arch4j.core.data.converter.BooleanConverter;
+import org.oopscraft.arch4j.core.common.data.BaseEntity;
+import org.oopscraft.arch4j.core.common.data.converter.BooleanConverter;
 import org.oopscraft.fintics.model.Basket;
 
 import javax.persistence.*;
@@ -23,8 +23,8 @@ public class BasketEntity extends BaseEntity {
     @Column(name = "basket_id")
     private String basketId;
 
-    @Column(name = "basket_name")
-    private String basketName;
+    @Column(name = "name")
+    private String name;
 
     @Column(name = "market", length = 16)
     private String market;

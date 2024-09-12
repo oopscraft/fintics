@@ -7,6 +7,6 @@ import lombok.Getter;
 @Getter
 public class BrokerSearch {
 
-    private String brokerName;
+    private String name;
 
 }

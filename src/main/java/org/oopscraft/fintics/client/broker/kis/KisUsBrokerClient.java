@@ -5,7 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
+import org.oopscraft.arch4j.core.common.support.RestTemplateBuilder;
 import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.client.broker.BrokerClientDefinition;
 import org.oopscraft.fintics.model.*;
@@ -462,7 +462,7 @@ public class KisUsBrokerClient extends BrokerClient {
                 .map(row -> BalanceAsset.builder()
                         .accountNo(accountNo)
                         .assetId(toAssetId(row.get("ovrs_pdno")))
-                        .assetName(row.get("ovrs_item_name"))
+                        .name(row.get("ovrs_item_name"))
                         .market(getDefinition().getMarket())
                         .quantity(new BigDecimal(row.get("ovrs_cblc_qty")))
                         .orderableQuantity(new BigDecimal(row.get("ord_psbl_qty")))

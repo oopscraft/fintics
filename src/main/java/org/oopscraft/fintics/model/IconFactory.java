@@ -19,7 +19,7 @@ public class IconFactory {
 
     static String getUsIcon(Asset asset) {
         String symbol = asset.getSymbol();
-        String assetName = asset.getAssetName();
+        String assetName = asset.getName();
         String type = asset.getType();
         switch (Optional.ofNullable(type).orElse("")) {
             case "STOCK" -> {
@@ -48,7 +48,7 @@ public class IconFactory {
 
     static String getKrIcon(Asset asset) {
         String symbol = asset.getSymbol();
-        String assetName = asset.getAssetName();
+        String assetName = asset.getName();
         String type = asset.getType();
         switch (Optional.ofNullable(type).orElse("")) {
             case "STOCK" -> {

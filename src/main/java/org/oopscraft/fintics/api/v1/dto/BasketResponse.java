@@ -14,7 +14,7 @@ public class BasketResponse {
 
     private String basketId;
 
-    private String basketName;
+    private String name;
 
     private String market;
 
@@ -37,7 +37,7 @@ public class BasketResponse {
     public static BasketResponse from(Basket basket) {
         return BasketResponse.builder()
                 .basketId(basket.getBasketId())
-                .basketName(basket.getBasketName())
+                .name(basket.getName())
                 .market(basket.getMarket())
                 .rebalanceEnabled(basket.isRebalanceEnabled())
                 .rebalanceSchedule(basket.getRebalanceSchedule())

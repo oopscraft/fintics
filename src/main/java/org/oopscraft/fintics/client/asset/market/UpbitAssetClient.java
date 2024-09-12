@@ -1,6 +1,6 @@
 package org.oopscraft.fintics.client.asset.market;
 
-import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
+import org.oopscraft.arch4j.core.common.support.RestTemplateBuilder;
 import org.oopscraft.fintics.client.asset.AssetClient;
 import org.oopscraft.fintics.client.asset.AssetClientProperties;
 import org.oopscraft.fintics.model.Asset;
@@ -35,7 +35,7 @@ public class UpbitAssetClient extends AssetClient {
                 .map(map -> {
                     return Asset.builder()
                             .assetId(toAssetId("UPBIT", map.get("market")))
-                            .assetName(map.get("english_name"))
+                            .name(map.get("english_name"))
                             .market("UPBIT")
                             .exchange("UPBIT")
                             .type("CRYPTO")

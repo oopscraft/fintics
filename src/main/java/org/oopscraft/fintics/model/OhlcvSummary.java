@@ -17,7 +17,7 @@ public class OhlcvSummary implements Serializable {
 
     private String assetId;
 
-    private String assetName;
+    private String name;
 
     private Long dailyCount;
 

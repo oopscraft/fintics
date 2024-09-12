@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.oopscraft.arch4j.web.support.PageableUtils;
+import org.oopscraft.arch4j.web.common.data.PageableUtils;
 import org.oopscraft.fintics.api.v1.dto.OrderResponse;
 import org.oopscraft.fintics.model.Order;
 import org.oopscraft.fintics.model.OrderSearch;
@@ -87,7 +87,7 @@ public class OrdersRestController {
         // set trade name
         orderResponses.forEach(orderResponse ->
                 orderResponse.setTradeName(tradeService.getTrade(orderResponse.getTradeId())
-                        .map(Trade::getTradeName)
+                        .map(Trade::getName)
                         .orElse("")));
         // response
         return ResponseEntity.ok()

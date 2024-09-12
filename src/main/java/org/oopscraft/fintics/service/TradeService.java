@@ -2,7 +2,7 @@ package org.oopscraft.fintics.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.oopscraft.arch4j.core.data.IdGenerator;
+import org.oopscraft.arch4j.core.common.data.IdGenerator;
 import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.client.broker.BrokerClientFactory;
 import org.oopscraft.fintics.dao.*;
@@ -47,7 +47,7 @@ public class TradeService {
     private final EntityManager entityManager;
 
     public List<Trade> getTrades() {
-        return tradeRepository.findAll(Sort.by(TradeEntity_.TRADE_NAME)).stream()
+        return tradeRepository.findAll(Sort.by(TradeEntity_.NAME)).stream()
                 .map(Trade::from)
                 .collect(Collectors.toList());
     }
@@ -67,7 +67,7 @@ public class TradeService {
                     .tradeId(IdGenerator.uuid())
                     .build();
         }
-        tradeEntity.setTradeName(trade.getTradeName());
+        tradeEntity.setName(trade.getName());
         tradeEntity.setEnabled(trade.isEnabled());
         tradeEntity.setInterval(trade.getInterval());
         tradeEntity.setThreshold(trade.getThreshold());
@@ -110,7 +110,7 @@ public class TradeService {
                     TradeAsset tradeAsset = TradeAsset.builder()
                             .tradeId(tradeId)
                             .assetId(basketAsset.getAssetId())
-                            .assetName(basketAsset.getAssetName())
+                            .name(basketAsset.getName())
                             .build();
                     TradeAssetEntity tradeAssetEntity = tradeAssetEntities.stream()
                             .filter(it -> Objects.equals(it.getAssetId(), basketAsset.getAssetId()))

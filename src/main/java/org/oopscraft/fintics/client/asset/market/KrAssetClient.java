@@ -1,6 +1,6 @@
 package org.oopscraft.fintics.client.asset.market;
 
-import org.oopscraft.arch4j.core.support.RestTemplateBuilder;
+import org.oopscraft.arch4j.core.common.support.RestTemplateBuilder;
 import org.oopscraft.fintics.client.asset.AssetClient;
 import org.oopscraft.fintics.client.asset.AssetClientProperties;
 import org.oopscraft.fintics.model.Asset;
@@ -134,7 +134,7 @@ public class KrAssetClient extends AssetClient {
         return rows.stream()
                 .map(row -> Asset.builder()
                         .assetId(toAssetId(MARKET_KR, row.get("SHOTN_ISIN")))
-                        .assetName(row.get("KOR_SECN_NM"))
+                        .name(row.get("KOR_SECN_NM"))
                         .market(MARKET_KR)
                         .exchange(exchange)
                         .type("STOCK")
@@ -210,7 +210,7 @@ public class KrAssetClient extends AssetClient {
                     // return
                     return Asset.builder()
                             .assetId(toAssetId(MARKET_KR, row.get("SHOTN_ISIN")))
-                            .assetName(row.get("KOR_SECN_NM"))
+                            .name(row.get("KOR_SECN_NM"))
                             .market(MARKET_KR)
                             .exchange(exchange)
                             .type("ETF")

@@ -2,9 +2,9 @@ package org.oopscraft.fintics.dao;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.oopscraft.arch4j.core.data.BaseEntity;
-import org.oopscraft.arch4j.core.data.converter.BooleanConverter;
-import org.oopscraft.arch4j.core.data.converter.ZoneIdConverter;
+import org.oopscraft.arch4j.core.common.data.BaseEntity;
+import org.oopscraft.arch4j.core.common.data.converter.BooleanConverter;
+import org.oopscraft.arch4j.core.common.data.converter.ZoneIdConverter;
 import org.oopscraft.fintics.model.Ohlcv;
 
 import javax.persistence.*;

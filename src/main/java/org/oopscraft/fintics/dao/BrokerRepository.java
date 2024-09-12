@@ -1,6 +1,5 @@
 package org.oopscraft.fintics.dao;
 
-import org.oopscraft.fintics.model.Broker;
 import org.oopscraft.fintics.model.BrokerSearch;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
@@ -23,11 +22,11 @@ public interface BrokerRepository extends JpaRepository<BrokerEntity, String>, J
     default Page<BrokerEntity> findAll(BrokerSearch brokerSearch, Pageable pageable) {
         // where
         Specification<BrokerEntity> specification = Specification.where(null);
-        specification = specification.and(Optional.ofNullable(brokerSearch.getBrokerName())
+        specification = specification.and(Optional.ofNullable(brokerSearch.getName())
                 .map(BrokerSpecifications::containsBrokerName)
                 .orElse(null));
         // sort
-        Sort sort = pageable.getSort().and(Sort.by(Sort.Direction.ASC, BrokerEntity_.BROKER_NAME));
+        Sort sort = pageable.getSort().and(Sort.by(Sort.Direction.ASC, BrokerEntity_.NAME));
 
         // find
         if (pageable.isPaged()) {

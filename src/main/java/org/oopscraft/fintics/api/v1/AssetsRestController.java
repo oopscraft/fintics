@@ -5,8 +5,8 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.oopscraft.arch4j.web.support.PageableAsQueryParam;
-import org.oopscraft.arch4j.web.support.PageableUtils;
+import org.oopscraft.arch4j.web.common.data.PageableAsQueryParam;
+import org.oopscraft.arch4j.web.common.data.PageableUtils;
 import org.oopscraft.fintics.api.v1.dto.AssetResponse;
 import org.oopscraft.fintics.model.Asset;
 import org.oopscraft.fintics.model.AssetSearch;
@@ -34,7 +34,7 @@ public class AssetsRestController {
     /**
      * gets list of assets
      * @param assetId asset id
-     * @param assetName asset name
+     * @param name asset name
      * @param market market
      * @param favorite favorite
      * @param perFrom PER from
@@ -53,9 +53,9 @@ public class AssetsRestController {
             @RequestParam(value = "assetId", required = false)
             @Parameter(name ="asset id", description = "asset id", example="US.AAPL")
                     String assetId,
-            @RequestParam(value = "assetName", required = false)
-            @Parameter(name = "asset name", description = "asset name")
-                    String assetName,
+            @RequestParam(value = "name", required = false)
+            @Parameter(name = "name", description = "asset name")
+                    String name,
             @RequestParam(value = "market", required = false)
             @Parameter(name= "market", description = "US|KR|...")
                     String market,
@@ -88,7 +88,7 @@ public class AssetsRestController {
     ) {
         AssetSearch assetSearch = AssetSearch.builder()
                 .assetId(assetId)
-                .assetName(assetName)
+                .name(name)
                 .market(market)
                 .type(type)
                 .favorite(favorite)

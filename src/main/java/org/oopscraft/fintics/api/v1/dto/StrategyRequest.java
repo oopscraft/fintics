@@ -14,8 +14,8 @@ public class StrategyRequest {
     @Schema(description = "strategy id")
     private String strategyId;
 
-    @Schema(description = "strategy name")
-    private String strategyName;
+    @Schema(description = "name")
+    private String name;
 
     @Schema(description = "language")
     private Strategy.Language language;

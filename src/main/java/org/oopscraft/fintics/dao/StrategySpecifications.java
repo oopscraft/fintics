@@ -6,7 +6,7 @@ public class StrategySpecifications {
 
     public static Specification<StrategyEntity> containsRuleName(String strategyName) {
         return (root, query, criteriaBuilder) ->
-                criteriaBuilder.like(root.get(StrategyEntity_.STRATEGY_NAME), '%' + strategyName + '%');
+                criteriaBuilder.like(root.get(StrategyEntity_.NAME), '%' + strategyName + '%');
     }
 
 }

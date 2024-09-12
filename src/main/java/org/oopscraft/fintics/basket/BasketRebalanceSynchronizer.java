@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.trade;
+package org.oopscraft.fintics.basket;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,7 +44,7 @@ public class BasketRebalanceSynchronizer {
                     basketChangerScheduler.stopScheduledTask(basket);
                 }
             } catch (Throwable e) {
-                String errorMessage = String.format("basket schedule error[%s] - %s", basket.getBasketName(), e.getMessage());
+                String errorMessage = String.format("basket schedule error[%s] - %s", basket.getName(), e.getMessage());
                 log.warn(errorMessage);
             }
         }

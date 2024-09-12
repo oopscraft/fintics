@@ -9,7 +9,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Data
 @SuperBuilder
@@ -19,7 +18,7 @@ public class Asset implements Serializable {
 
     private String assetId;
 
-    private String assetName;
+    private String name;
 
     private String market;
 
@@ -65,7 +64,7 @@ public class Asset implements Serializable {
     public static Asset from(AssetEntity assetEntity) {
         Asset asset = Asset.builder()
                 .assetId(assetEntity.getAssetId())
-                .assetName(assetEntity.getAssetName())
+                .name(assetEntity.getName())
                 .market(assetEntity.getMarket())
                 .exchange(assetEntity.getExchange())
                 .type(assetEntity.getType())

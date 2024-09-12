@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.oopscraft.arch4j.web.support.PageableUtils;
+import org.oopscraft.arch4j.web.common.data.PageableUtils;
 import org.oopscraft.fintics.api.v1.dto.BasketRequest;
 import org.oopscraft.fintics.api.v1.dto.BasketResponse;
 import org.oopscraft.fintics.model.*;
@@ -33,15 +33,15 @@ public class BasketsRestController {
     @GetMapping
     @Operation(summary = "get list of basket")
     public ResponseEntity<List<BasketResponse>> getBrokers(
-            @RequestParam(value = "basketName", required = false)
+            @RequestParam(value = "name", required = false)
             @Parameter(description = "basket name")
-                    String basketName,
+                    String name,
             @PageableDefault
             @Parameter(hidden = true)
                     Pageable pageable
     ) {
         BasketSearch basketSearch = BasketSearch.builder()
-                .basketName(basketName)
+                .name(name)
                 .build();
         Page<Basket> basketPage = basketService.getBaskets(basketSearch, pageable);
         List<BasketResponse> basketResponses = basketPage.getContent().stream()
@@ -76,7 +76,7 @@ public class BasketsRestController {
     ) {
         // basket
         Basket basket = Basket.builder()
-                .basketName(basketRequest.getBasketName())
+                .name(basketRequest.getName())
                 .market(basketRequest.getMarket())
                 .rebalanceEnabled(basketRequest.isRebalanceEnabled())
                 .rebalanceSchedule(basketRequest.getRebalanceSchedule())
@@ -114,7 +114,7 @@ public class BasketsRestController {
     ) {
         // basket
         Basket basket = basketService.getBasket(basketId).orElseThrow();
-        basket.setBasketName(basketRequest.getBasketName());
+        basket.setName(basketRequest.getName());
         basket.setMarket(basketRequest.getMarket());
         basket.setRebalanceEnabled(basketRequest.isRebalanceEnabled());
         basket.setRebalanceSchedule(basketRequest.getRebalanceSchedule());

@@ -13,8 +13,8 @@ public class BrokerRequest {
     @Schema(description = "broker id", example = "test")
     private String brokerId;
 
-    @Schema(description = "broker name", example = "test broker")
-    private String brokerName;
+    @Schema(description = "name", example = "test broker")
+    private String name;
 
     @Schema(description = "broker client id", example = "test")
     private String brokerClientId;

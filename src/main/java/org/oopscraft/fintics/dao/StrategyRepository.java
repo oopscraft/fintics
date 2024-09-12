@@ -16,7 +16,7 @@ public interface StrategyRepository extends JpaRepository<StrategyEntity, String
     default Page<StrategyEntity> findAll(StrategySearch strategySearch, Pageable pageable) {
         Specification<StrategyEntity> specification = Specification.where(null);
         specification = specification
-                .and(Optional.ofNullable(strategySearch.getStrategyName())
+                .and(Optional.ofNullable(strategySearch.getName())
                         .map(StrategySpecifications::containsRuleName)
                         .orElse(null));
         return findAll(specification, pageable);

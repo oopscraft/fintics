@@ -16,7 +16,7 @@ public class OhlcvSummaryResponse {
 
     private String assetId;
 
-    private String assetName;
+    private String name;
 
     private Long dailyCount;
 
@@ -34,10 +34,15 @@ public class OhlcvSummaryResponse {
     @Setter
     private List<OhlcvStatisticResponse> ohlcvStatistics = new ArrayList<>();
 
+    /**
+     * factory method
+     * @param ohlcvSummary ohlcv summary
+     * @return ohlcv summary response
+     */
     public static OhlcvSummaryResponse from(OhlcvSummary ohlcvSummary) {
         return OhlcvSummaryResponse.builder()
                 .assetId(ohlcvSummary.getAssetId())
-                .assetName(ohlcvSummary.getAssetName())
+                .name(ohlcvSummary.getName())
                 .dailyCount(ohlcvSummary.getDailyCount())
                 .dailyMinDateTime(ohlcvSummary.getDailyMinDateTime())
                 .dailyMaxDateTime(ohlcvSummary.getDailyMaxDateTime())
@@ -50,6 +55,9 @@ public class OhlcvSummaryResponse {
                 .build();
     }
 
+    /**
+     * ohlcv statistic response
+     */
     @Data
     @Builder
     @NoArgsConstructor

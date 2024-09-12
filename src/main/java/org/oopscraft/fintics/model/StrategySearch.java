@@ -7,6 +7,6 @@ import lombok.Getter;
 @Getter
 public class StrategySearch {
 
-    private String strategyName;
+    private String name;
 
 }

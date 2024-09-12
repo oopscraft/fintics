@@ -5,8 +5,8 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.oopscraft.arch4j.web.support.PageableAsQueryParam;
-import org.oopscraft.arch4j.web.support.PageableUtils;
+import org.oopscraft.arch4j.web.common.data.PageableAsQueryParam;
+import org.oopscraft.arch4j.web.common.data.PageableUtils;
 import org.oopscraft.fintics.api.v1.dto.*;
 import org.oopscraft.fintics.model.*;
 import org.oopscraft.fintics.service.TradeService;
@@ -81,7 +81,7 @@ public class TradesRestController {
     ) {
         Trade trade = Trade.builder()
                 .tradeId(tradeRequest.getTradeId())
-                .tradeName(tradeRequest.getTradeName())
+                .name(tradeRequest.getName())
                 .enabled(tradeRequest.isEnabled())
                 .interval(tradeRequest.getInterval())
                 .threshold(tradeRequest.getThreshold())
@@ -121,7 +121,7 @@ public class TradesRestController {
                     TradeRequest tradeRequest
     ) {
         Trade trade = tradeService.getTrade(tradeId).orElseThrow();
-        trade.setTradeName(tradeRequest.getTradeName());
+        trade.setName(tradeRequest.getName());
         trade.setEnabled(tradeRequest.isEnabled());
         trade.setInterval(tradeRequest.getInterval());
         trade.setThreshold(tradeRequest.getThreshold());

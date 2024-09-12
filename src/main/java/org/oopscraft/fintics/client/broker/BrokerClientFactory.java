@@ -2,7 +2,7 @@ package org.oopscraft.fintics.client.broker;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.oopscraft.arch4j.core.data.pbe.PbePropertiesUtil;
+import org.oopscraft.arch4j.core.common.pbe.PbePropertiesUtil;
 import org.oopscraft.fintics.model.Broker;
 import org.springframework.stereotype.Component;
 

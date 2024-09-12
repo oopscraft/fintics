@@ -1,10 +1,13 @@
-package org.oopscraft.fintics.trade.strategy;
+package org.oopscraft.fintics.strategy;
 
 import com.github.javaparser.utils.LineSeparator;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
 import org.oopscraft.fintics.model.*;
+import org.oopscraft.fintics.strategy.GroovyStrategyRunner;
+import org.oopscraft.fintics.strategy.StrategyResult;
+import org.oopscraft.fintics.strategy.StrategyRunner;
 
 import java.io.File;
 import java.io.FileInputStream;

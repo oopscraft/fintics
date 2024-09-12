@@ -6,7 +6,7 @@
 <th:block layout:fragment="_content">
     <script th:inline="javascript">
         const strategySearch = new duice.ObjectProxy({
-            key: 'strategyName',
+            key: 'name',
             value: null,
             _page: 0,
             _size: 20,
@@ -73,7 +73,7 @@
         <form onsubmit="return false;" class="display--grid grid-template-columns--12 grid-gap--1em margin-x--1em">
             <label class="grid-column--2 s__grid-column--12">
                 <select class="width--100" data-duice-bind="strategySearch" data-duice-property="key">
-                    <option value="strategyName" data-th-text="#{fintics.Strategy.strategyName}"></option>
+                    <option value="name" data-th-text="#{fintics.Strategy.name}"></option>
                 </select>
             </label>
             <label class="grid-column--2 s__grid-column--12">
@@ -101,7 +101,7 @@
                 <thead>
                 <tr>
                     <th data-th-text="#{web.global.no}"></th>
-                    <th data-th-text="#{fintics.Strategy.strategyName}"></th>
+                    <th data-th-text="#{fintics.Strategy.name}"></th>
                     <th data-th-text="#{fintics.Strategy.language}"></th>
                 </tr>
                 </thead>
@@ -114,7 +114,7 @@
                     </td>
                     <td>
                         <a href="" data-duice-bind="strategy" data-duice-execute="this.href=`${_rootUrl}/strategy?strategyId=${strategy.strategyId}`;">
-                            <span data-duice-bind="strategy" data-duice-property="strategyName"></span>
+                            <span data-duice-bind="strategy" data-duice-property="name"></span>
                         </a>
                     </td>
                     <td>

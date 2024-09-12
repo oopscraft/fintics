@@ -1,4 +1,4 @@
-package org.oopscraft.fintics.scheduler;
+package org.oopscraft.fintics.collector;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class AssetCollector extends AbstractScheduler {
+public class AssetCollector extends AbstractCollector {
 
     private final AssetRepository assetRepository;
 
@@ -58,7 +58,7 @@ public class AssetCollector extends AbstractScheduler {
         List<AssetEntity> assetEntities = assets.stream()
                 .map(asset -> AssetEntity.builder()
                         .assetId(asset.getAssetId())
-                        .assetName(asset.getAssetName())
+                        .name(asset.getName())
                         .market(asset.getMarket())
                         .exchange(asset.getExchange())
                         .type(asset.getType())

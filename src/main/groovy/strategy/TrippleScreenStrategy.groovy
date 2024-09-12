@@ -3,8 +3,8 @@ import org.jetbrains.annotations.NotNull
 import org.oopscraft.fintics.indicator.*
 import org.oopscraft.fintics.model.Ohlcv
 import org.oopscraft.fintics.model.TradeAsset
-import org.oopscraft.fintics.trade.strategy.StrategyResult
-import org.oopscraft.fintics.trade.strategy.StrategyResult.Action
+import org.oopscraft.fintics.strategy.StrategyResult
+import org.oopscraft.fintics.strategy.StrategyResult.Action
 import org.oopscraft.fintics.trade.Tools
 
 import java.math.RoundingMode
@@ -266,36 +266,71 @@ class AnalysisGroup extends LinkedHashMap<String, Analyzable> implements Analyza
     }
 }
 
+//===============================
 // config
+//===============================
+StrategyResult strategyResult = null
 log.info("variables: {}", variables)
+def orderEnabled = Boolean.parseBoolean(variables['orderEnabled'])
 def tideOhlcvType = Ohlcv.Type.valueOf(variables['tideOhlcvType'])
 def tideOhlcvPeriod = Integer.parseInt(variables['tideOhlcvPeriod'])
 def waveOhlcvType = Ohlcv.Type.valueOf(variables['waveOhlcvType'])
 def waveOhlcvPeriod = Integer.parseInt(variables['waveOhlcvPeriod'])
 def rippleOhlcvType = Ohlcv.Type.valueOf(variables['rippleOhlcvType'])
 def rippleOhlcvPeriod = Integer.parseInt(variables['rippleOhlcvPeriod'])
+def basePosition = new BigDecimal(variables['basePosition'])
 def sellProfitPercentageThreshold = new BigDecimal(variables['sellProfitPercentageThreshold'])
-def orderEnabled = Boolean.parseBoolean(variables['orderEnabled'])
+def splitIndex = Integer.parseInt(variables['splitIndex'] ?: '0')
 
-// result
-StrategyResult strategyResult = null
-
+//===============================
 // analysis
+//===============================
 def tideAnalysis = new Analysis(tradeAsset, tideOhlcvType, tideOhlcvPeriod)
 def waveAnalysis = new Analysis(tradeAsset, waveOhlcvType, waveOhlcvPeriod)
 def rippleAnalysis = new Analysis(tradeAsset, rippleOhlcvType, rippleOhlcvPeriod)
 
-// position (checks fixed asset)
-def position = 1.0 * (tideAnalysis.getMomentumScore().getAverage()/100) as BigDecimal
-if (basketAsset.isFixed()) {
-    position = 1.0
+//===============================
+// split ranges
+//===============================
+def splitPeriod = 100
+def splitSize = 5
+def splitOhlcvs = tradeAsset.getOhlcvs(Ohlcv.Type.DAILY, 1).take(splitPeriod)
+def splitMaxPrice = splitOhlcvs.collect{it.high}.max()
+def splitMinPrice = splitOhlcvs.collect{it.low}.min()
+def splitInterval = ((splitMaxPrice - splitMinPrice)/splitSize as BigDecimal).setScale(4, RoundingMode.HALF_UP)
+def splitLimitPrices = (0..splitSize-1).collect {
+    splitMaxPrice - (it * splitInterval) as BigDecimal
+}
+def splitLimitPrice = splitLimitPrices[splitIndex]
+def splitBuyLimited = false
+// splitIndex 가 0 이상 설정된 경우
+if (splitIndex > 0) {
+    // 현제 가격이 split limit 이상인 경우 분할 매수 제한
+    if (rippleAnalysis.getCurrentClose() > splitLimitPrice) {
+        splitBuyLimited = true
+    }
 }
 
+//===============================
+// position
+//===============================
+def positionScore = (tideAnalysis.getMomentumScore().getAverage() - 50).max(0)*2
+def positionPerScore = (1.0 -basePosition)/100
+def position = basePosition + (positionPerScore * positionScore) as BigDecimal
+
+//===============================
 // profit percentage
+//===============================
 def profitPercentage = balanceAsset?.getProfitPercentage() ?: 0.0
 
+//===============================
 // message
+//===============================
 def message = """
+splitLimits:${splitLimitPrices}
+splitIndex:${splitIndex}
+splitLimit:${splitLimitPrice}
+splitBuyLimited:${splitBuyLimited}
 position:${position.toPlainString()}
 tide.momentum:${tideAnalysis.getMomentumScore().toString()}
 tide.oversold:${tideAnalysis.getOversoldScore().toString()}
@@ -341,6 +376,16 @@ if (waveAnalysis.getVolatilityScore() > 50) {
                 strategyResult = null
             }
         }
+    }
+}
+
+//===============================
+// check sell option
+//===============================
+if (strategyResult != null && strategyResult.action == Action.BUY) {
+    // 현재 split limit 가 활성화 된 경우 매수 제외
+    if (splitBuyLimited) {
+        strategyResult = null
     }
 }
 

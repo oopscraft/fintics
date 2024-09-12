@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.oopscraft.arch4j.web.support.PageableUtils;
+import org.oopscraft.arch4j.web.common.data.PageableUtils;
 import org.oopscraft.fintics.api.v1.dto.BrokerRequest;
 import org.oopscraft.fintics.api.v1.dto.BrokerResponse;
 import org.oopscraft.fintics.model.Broker;
@@ -32,22 +32,22 @@ public class BrokersRestController {
 
     /**
      * gets list of brokers
-     * @param brokerName broker name
+     * @param name broker name
      * @param pageable pageable
      * @return list of brokers
      */
     @GetMapping
     @Operation(summary = "get list of brokers")
     public ResponseEntity<List<BrokerResponse>> getBrokers(
-            @RequestParam(value = "brokerName", required = false)
+            @RequestParam(value = "name", required = false)
             @Parameter(description = "broker name")
-                    String brokerName,
+                    String name,
             @PageableDefault
             @Parameter(hidden = true)
                     Pageable pageable
     ) {
         BrokerSearch brokerSearch = BrokerSearch.builder()
-                .brokerName(brokerName)
+                .name(name)
                 .build();
         Page<Broker> brokerPage = brokerService.getBrokers(brokerSearch, pageable);
         List<BrokerResponse> brokerResponses = brokerPage.getContent().stream()
@@ -91,7 +91,7 @@ public class BrokersRestController {
                     BrokerRequest brokerRequest
     ) {
         Broker broker = Broker.builder()
-                .brokerName(brokerRequest.getBrokerName())
+                .name(brokerRequest.getName())
                 .brokerClientId(brokerRequest.getBrokerClientId())
                 .brokerClientProperties(brokerRequest.getBrokerClientProperties())
                 .build();
@@ -118,7 +118,7 @@ public class BrokersRestController {
                     BrokerRequest brokerRequest
     ) {
         Broker broker = brokerService.getBroker(brokerId).orElseThrow();
-        broker.setBrokerName(brokerRequest.getBrokerName());
+        broker.setName(brokerRequest.getName());
         broker.setBrokerClientId(brokerRequest.getBrokerClientId());
         broker.setBrokerClientProperties(brokerRequest.getBrokerClientProperties());
         Broker savedBroker = brokerService.saveBroker(broker);

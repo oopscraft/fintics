@@ -3,12 +3,10 @@ package org.oopscraft.fintics.api.v1.dto;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.fintics.model.Asset;
-import org.oopscraft.fintics.model.AssetMeta;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Data
 @SuperBuilder
@@ -18,7 +16,7 @@ public class AssetResponse {
 
     private String assetId;
 
-    private String assetName;
+    private String name;
 
     private String market;
 
@@ -41,7 +39,7 @@ public class AssetResponse {
     public static AssetResponse from(Asset asset) {
         return AssetResponse.builder()
                 .assetId(asset.getAssetId())
-                .assetName(asset.getAssetName())
+                .name(asset.getName())
                 .market(asset.getMarket())
                 .exchange(asset.getExchange())
                 .type(asset.getType())

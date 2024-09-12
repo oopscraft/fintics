@@ -2,7 +2,7 @@ package org.oopscraft.fintics.dao;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.oopscraft.arch4j.core.data.BaseEntity;
+import org.oopscraft.arch4j.core.common.data.BaseEntity;
 
 import javax.persistence.*;
 
@@ -19,8 +19,8 @@ public class BrokerEntity extends BaseEntity {
     @Column(name = "broker_id", length = 32)
     private String brokerId;
 
-    @Column(name = "broker_name")
-    private String brokerName;
+    @Column(name = "name")
+    private String name;
 
     @Column(name = "broker_client_id", length = 32)
     private String brokerClientId;

@@ -4,16 +4,15 @@ import ch.qos.logback.classic.Logger;
 import lombok.Builder;
 import lombok.Setter;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.oopscraft.arch4j.core.alarm.AlarmService;
+import org.oopscraft.arch4j.core.alarm.service.AlarmService;
 import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.model.*;
 import org.oopscraft.fintics.service.*;
-import org.oopscraft.fintics.trade.strategy.StrategyResult;
-import org.oopscraft.fintics.trade.strategy.StrategyRunner;
-import org.oopscraft.fintics.trade.strategy.StrategyRunnerContext;
-import org.oopscraft.fintics.trade.strategy.StrategyRunnerFactory;
+import org.oopscraft.fintics.strategy.StrategyResult;
+import org.oopscraft.fintics.strategy.StrategyRunner;
+import org.oopscraft.fintics.strategy.StrategyRunnerContext;
+import org.oopscraft.fintics.strategy.StrategyRunnerFactory;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
@@ -61,28 +60,28 @@ public class TradeExecutor {
      */
     public void execute(Trade trade, Strategy strategy, LocalDateTime dateTime, BrokerClient brokerClient) throws InterruptedException {
         log.info("=".repeat(80));
-        log.info("[{}] execute trade", trade.getTradeName());
+        log.info("[{}] execute trade", trade.getName());
 
         // time zone
         ZoneId timeZone = brokerClient.getDefinition().getTimezone();
-        log.info("[{}] market timeZone: {}", trade.getTradeName(), timeZone);
-        log.info("[{}] market dateTime: {}", trade.getTradeName(), dateTime);
+        log.info("[{}] market timeZone: {}", trade.getName(), timeZone);
+        log.info("[{}] market dateTime: {}", trade.getName(), dateTime);
 
         // checks start,end time
         if (!isOperatingTime(trade, dateTime)) {
-            log.info("[{}] not operating time - {} ~ {}", trade.getTradeName(), trade.getStartTime(), trade.getEndTime());
+            log.info("[{}] not operating time - {} ~ {}", trade.getName(), trade.getStartTime(), trade.getEndTime());
             return;
         }
 
         // check market opened
         if(!brokerClient.isOpened(dateTime)) {
-            log.info("[{}] market not opened.", trade.getTradeName());
+            log.info("[{}] market not opened.", trade.getName());
             return;
         }
 
         // basket
         Basket basket = basketService.getBasket(trade.getBasketId()).orElseThrow();
-        log.info("[{}] basket: {}", trade.getTradeName(), basket.getBasketName());
+        log.info("[{}] basket: {}", trade.getName(), basket.getName());
 
         // balance
         Balance balance = brokerClient.getBalance();
@@ -99,7 +98,7 @@ public class TradeExecutor {
 
                 // logging
                 log.info("-".repeat(80));
-                log.info("[{} - {}] check asset", basketAsset.getAssetId(), basketAsset.getAssetName());
+                log.info("[{} - {}] check asset", basketAsset.getAssetId(), basketAsset.getName());
 
                 // daily ohlcvs
                 List<Ohlcv> dailyOhlcvs = brokerClient.getDailyOhlcvs(basketAsset);
@@ -117,7 +116,7 @@ public class TradeExecutor {
                                 .tradeId(trade.getTradeId())
                                 .assetId(basketAsset.getAssetId())
                                 .build());
-                tradeAsset.setAssetName(basketAsset.getAssetName());
+                tradeAsset.setName(basketAsset.getName());
                 tradeAsset.setMarket(basketAsset.getMarket());
                 tradeAsset.setType(basketAsset.getType());
                 tradeAsset.setExchange(basketAsset.getExchange());
@@ -129,8 +128,8 @@ public class TradeExecutor {
                 tradeAsset.setMinuteOhlcvs(minuteOhlcvs);
 
                 // logging
-                log.info("[{} - {}] dailyOhlcvs({}):{}", tradeAsset.getAssetId(), tradeAsset.getAssetName(), tradeAsset.getDailyOhlcvs().size(), tradeAsset.getDailyOhlcvs().isEmpty() ? null : tradeAsset.getDailyOhlcvs().get(0));
-                log.info("[{} - {}] minuteOhlcvs({}):{}", tradeAsset.getAssetId(), tradeAsset.getAssetName(), tradeAsset.getMinuteOhlcvs().size(), tradeAsset.getMinuteOhlcvs().isEmpty() ? null : tradeAsset.getMinuteOhlcvs().get(0));
+                log.info("[{} - {}] dailyOhlcvs({}):{}", tradeAsset.getAssetId(), tradeAsset.getName(), tradeAsset.getDailyOhlcvs().size(), tradeAsset.getDailyOhlcvs().isEmpty() ? null : tradeAsset.getDailyOhlcvs().get(0));
+                log.info("[{} - {}] minuteOhlcvs({}):{}", tradeAsset.getAssetId(), tradeAsset.getName(), tradeAsset.getMinuteOhlcvs().size(), tradeAsset.getMinuteOhlcvs().isEmpty() ? null : tradeAsset.getMinuteOhlcvs().get(0));
 
                 // order book
                 OrderBook orderBook = brokerClient.getOrderBook(basketAsset);
@@ -152,8 +151,8 @@ public class TradeExecutor {
                 strategyRunner.setLog(log);
                 Instant startTime = Instant.now();
                 StrategyResult strategyResult = strategyRunner.run();
-                log.info("[{} - {}] strategy execution elapsed:{}", basketAsset.getAssetId(), basketAsset.getAssetName(), Duration.between(startTime, Instant.now()));
-                log.info("[{} - {}] strategy result: {}", basketAsset.getAssetId(), basketAsset.getAssetName(), strategyResult);
+                log.info("[{} - {}] strategy execution elapsed:{}", basketAsset.getAssetId(), basketAsset.getName(), Duration.between(startTime, Instant.now()));
+                log.info("[{} - {}] strategy result: {}", basketAsset.getAssetId(), basketAsset.getName(), strategyResult);
 
                 // save trade asset to store
                 if (tradeAssetStore != null) {
@@ -172,9 +171,9 @@ public class TradeExecutor {
                 strategyResultValueMatchCountMap.put(basketAsset.getAssetId(), strategyResultValueMatchCount);
 
                 // checks threshold exceeded
-                log.info("[{} - {}] strategyResultValueMatchCount: {}", basketAsset.getAssetId(), basketAsset.getAssetName(), strategyResultValueMatchCount);
+                log.info("[{} - {}] strategyResultValueMatchCount: {}", basketAsset.getAssetId(), basketAsset.getName(), strategyResultValueMatchCount);
                 if (strategyResultValueMatchCount < trade.getThreshold()) {
-                    log.info("[{} - {}] threshold has not been exceeded yet - threshold is {}", basketAsset.getAssetId(), basketAsset.getAssetName(), trade.getThreshold());
+                    log.info("[{} - {}] threshold has not been exceeded yet - threshold is {}", basketAsset.getAssetId(), basketAsset.getName(), trade.getThreshold());
                     continue;
                 }
 
@@ -355,12 +354,12 @@ public class TradeExecutor {
                 .kind(trade.getOrderKind())
                 .tradeId(trade.getTradeId())
                 .assetId(tradeAsset.getAssetId())
-                .assetName(tradeAsset.getAssetName())
+                .assetName(tradeAsset.getName())
                 .quantity(quantity)
                 .price(price)
                 .strategyResult(strategyResult)
                 .build();
-        log.info("[{}] buyTradeAsset: {}", tradeAsset.getAssetName(), order);
+        log.info("[{}] buyTradeAsset: {}", tradeAsset.getName(), order);
         try {
             // check waiting order exists
             Order waitingOrder = brokerClient.getWaitingOrders().stream()
@@ -374,7 +373,7 @@ public class TradeExecutor {
                 if (waitingOrder.getKind() == Order.Kind.LIMIT) {
                     if (!waitingOrder.getPrice().equals(price)) {
                         waitingOrder.setPrice(price);
-                        log.info("[{}] amend buy order:{}", tradeAsset.getAssetName(), waitingOrder);
+                        log.info("[{}] amend buy order:{}", tradeAsset.getName(), waitingOrder);
                         brokerClient.amendOrder(tradeAsset, waitingOrder);
                     }
                 }
@@ -414,12 +413,12 @@ public class TradeExecutor {
                 .kind(trade.getOrderKind())
                 .tradeId(trade.getTradeId())
                 .assetId(tradeAsset.getAssetId())
-                .assetName(tradeAsset.getAssetName())
+                .assetName(tradeAsset.getName())
                 .quantity(quantity)
                 .price(price)
                 .strategyResult(strategyResult)
                 .build();
-        log.info("[{}] sellTradeAsset: {}", tradeAsset.getAssetName(), order);
+        log.info("[{}] sellTradeAsset: {}", tradeAsset.getName(), order);
 
         // purchase price, realized amount
         if (balanceAsset.getPurchasePrice() != null) {
@@ -443,7 +442,7 @@ public class TradeExecutor {
                 if (waitingOrder.getKind() == Order.Kind.LIMIT) {
                     if (!waitingOrder.getPrice().equals(price)) {
                         waitingOrder.setPrice(price);
-                        log.info("[{}] amend sell order:{}", tradeAsset.getAssetName(), waitingOrder);
+                        log.info("[{}] amend sell order:{}", tradeAsset.getName(), waitingOrder);
                         brokerClient.amendOrder(tradeAsset, waitingOrder);
                     }
                 }
@@ -486,7 +485,7 @@ public class TradeExecutor {
     private void sendErrorAlarmIfEnabled(Trade trade, Asset asset, Throwable t) {
         if(trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
             if (trade.isAlarmOnError()) {
-                String subject = String.format("[%s - %s] Error", trade.getTradeName(), asset != null ? asset.getAssetName() : "");
+                String subject = String.format("[%s - %s] Error", trade.getName(), asset != null ? asset.getName() : "");
                 String content = ExceptionUtils.getRootCause(t).getMessage();
                 alarmService.sendAlarm(trade.getAlarmId(), subject, content);
             }
@@ -503,7 +502,7 @@ public class TradeExecutor {
             if (trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
                 // subject
                 StringBuilder subject = new StringBuilder();
-                subject.append(String.format("[%s - %s] %s", trade.getTradeName(), order.getAssetName(), order.getType()));
+                subject.append(String.format("[%s - %s] %s", trade.getName(), order.getAssetName(), order.getType()));
                 // content
                 StringBuilder content = new StringBuilder();
                 content.append(String.format("- kind: %s", order.getKind())).append('\n');

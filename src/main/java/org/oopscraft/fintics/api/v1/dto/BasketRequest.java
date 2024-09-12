@@ -14,7 +14,7 @@ public class BasketRequest {
 
     private String basketId;
 
-    private String basketName;
+    private String name;
 
     private String market;
 

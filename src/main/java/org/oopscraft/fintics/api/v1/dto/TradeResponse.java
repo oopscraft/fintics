@@ -6,9 +6,6 @@ import org.oopscraft.fintics.model.Trade;
 
 import java.math.BigDecimal;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Data
 @Builder
@@ -18,7 +15,7 @@ public class TradeResponse {
 
     private String tradeId;
 
-    private String tradeName;
+    private String name;
 
     private boolean enabled;
 
@@ -51,7 +48,7 @@ public class TradeResponse {
     public static TradeResponse from(Trade trade) {
         return TradeResponse.builder()
                 .tradeId(trade.getTradeId())
-                .tradeName(trade.getTradeName())
+                .name(trade.getName())
                 .enabled(trade.isEnabled())
                 .interval(trade.getInterval())
                 .threshold(trade.getThreshold())

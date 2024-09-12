@@ -6,8 +6,6 @@ import org.oopscraft.fintics.model.Order;
 
 import java.math.BigDecimal;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Data
 @Builder
@@ -19,8 +17,8 @@ public class TradeRequest {
     @Schema(description = "trade id", example = "test_trade")
     private String tradeId;
 
-    @Schema(description = "trade name", example = "trade name")
-    private String tradeName;
+    @Schema(description = "name", example = "test trade")
+    private String name;
 
     @Schema(description = "enabled", example = "false")
     private boolean enabled;

@@ -1,9 +1,9 @@
 package org.oopscraft.fintics.view;
 
 import lombok.RequiredArgsConstructor;
-import org.oopscraft.arch4j.core.alarm.Alarm;
-import org.oopscraft.arch4j.core.alarm.AlarmSearch;
-import org.oopscraft.arch4j.core.alarm.AlarmService;
+import org.oopscraft.arch4j.core.alarm.model.Alarm;
+import org.oopscraft.arch4j.core.alarm.model.AlarmSearch;
+import org.oopscraft.arch4j.core.alarm.service.AlarmService;
 import org.oopscraft.fintics.client.broker.BrokerClientDefinition;
 import org.oopscraft.fintics.client.broker.BrokerClientDefinitionRegistry;
 import org.oopscraft.fintics.model.*;

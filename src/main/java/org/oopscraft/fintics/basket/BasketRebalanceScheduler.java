@@ -1,22 +1,21 @@
-package org.oopscraft.fintics.trade;
+package org.oopscraft.fintics.basket;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.oopscraft.arch4j.core.alarm.AlarmService;
+import org.oopscraft.arch4j.core.alarm.service.AlarmService;
 import org.oopscraft.fintics.FinticsProperties;
 import org.oopscraft.fintics.dao.BasketAssetEntity;
 import org.oopscraft.fintics.dao.BasketAssetRepository;
 import org.oopscraft.fintics.model.*;
 import org.oopscraft.fintics.service.BasketService;
 import org.oopscraft.fintics.service.TradeService;
-import org.oopscraft.fintics.trade.basket.BasketChange;
-import org.oopscraft.fintics.trade.basket.BasketRebalance;
-import org.oopscraft.fintics.trade.basket.BasketRebalanceContext;
-import org.oopscraft.fintics.trade.basket.BasketRebalanceFactory;
+import org.oopscraft.fintics.basket.BasketChange;
+import org.oopscraft.fintics.basket.BasketRebalance;
+import org.oopscraft.fintics.basket.BasketRebalanceContext;
+import org.oopscraft.fintics.basket.BasketRebalanceFactory;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -153,7 +152,7 @@ public class BasketRebalanceScheduler {
                     }
                 }
             }
-            sendSystemAlarm(String.format("Basket rebalance completed - %s", basket.getBasketName()));
+            sendSystemAlarm(String.format("Basket rebalance completed - %s", basket.getName()));
         } catch (Throwable e) {
             log.warn(e.getMessage(), e);
             sendSystemAlarm(e.getMessage());

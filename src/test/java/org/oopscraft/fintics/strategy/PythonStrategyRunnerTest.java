@@ -1,8 +1,9 @@
-package org.oopscraft.fintics.trade.strategy;
+package org.oopscraft.fintics.strategy;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.oopscraft.fintics.model.Strategy;
+import org.oopscraft.fintics.strategy.PythonStrategyRunner;
 
 @Slf4j
 class PythonStrategyRunnerTest {
