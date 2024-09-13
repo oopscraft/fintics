@@ -11,6 +11,10 @@
             name: null
         });
 
+        /**
+         * gets strategy
+         * @param strategyId
+         */
         function getStrategy(strategyId) {
             let url = new URL(`${_apiUrl}/v1/strategies/${strategyId}`, document.location.origin);
             _fetch(url)
@@ -20,6 +24,10 @@
                 });
         }
 
+        /**
+         * saves strategy
+         * @returns {Promise<boolean>}
+         */
         async function saveStrategy() {
             if(!strategy.name) {
                 await _alert(/*[[#{web.global.itemEmpty(#{fintics.Strategy.name})}]]*/'');
@@ -65,6 +73,10 @@
                 });
         }
 
+        /**
+         * deletes strategy
+         * @returns {Promise<void>}
+         */
         async function deleteStrategy() {
             if (await _confirm(/*[[#{web.global.deleteItemConfirm(#{fintics.Strategy})}]]*/'')) {
                 let url = new URL(`${_apiUrl}/v1/strategies/${strategy.strategyId}`, document.location.origin);
@@ -112,43 +124,45 @@
     <!-- ====================================== -->
     <!-- start: strategy                        -->
     <!-- ====================================== -->
-    <div class="border--1 padding--1em">
-        <form class="display--grid grid-template-columns--12 grid-gap--1em grid-column-gap--2em padding-y--1em s__padding-y--0">
-            <label class="grid-column--6">
-                <span data-th-text="#{fintics.Strategy.name}" class="font-weight--bold tag-required"></span>
-                <input type="text" data-duice-bind="strategy" data-duice-property="name"
-                       class="width--100 font-weight--bold"/>
-            </label>
-            <label class="grid-column--6">
-                <span data-th-text="#{fintics.Strategy.language}" class="font-weight--bold tag-required"></span>
-                <select data-duice-bind="strategy" data-duice-property="language" class="width--100">
-                    <option data-th-text="'- ' + #{web.global.select} + ' -'"></option>
-                    <option th:each="language : ${languages}" th:value="${language}" th:text="${language}"></option>
-                </select>
-            </label>
-            <div class="grid-column--12">
-                <div>
-                    <span data-th-text="#{fintics.Strategy.variables}" class="font-weight--bold width--100"></span>
-                </div>
-                <duice-codemirror class="border--1 code"
-                                  data-duice-bind="strategy"
-                                  data-duice-property="variables">
-                </duice-codemirror>
-            </div>
-            <div class="grid-column--12">
-                <div class="display--flex justify-content--space-between margin--1px padding--1px">
+    <div class="display--flex flex-direction--column border--1 padding--1em">
+        <div class="display--flex flex-direction--column gap--1em padding--1em">
+            <form class="display--grid grid-template-columns--12 grid-gap--1em grid-column-gap--2em">
+                <label class="grid-column--6">
+                    <span data-th-text="#{fintics.Strategy.name}" class="font-weight--bold tag-required"></span>
+                    <input type="text" data-duice-bind="strategy" data-duice-property="name"
+                           class="width--100 font-weight--bold"/>
+                </label>
+                <label class="grid-column--6">
+                    <span data-th-text="#{fintics.Strategy.language}" class="font-weight--bold tag-required"></span>
+                    <select data-duice-bind="strategy" data-duice-property="language" class="width--100">
+                        <option data-th-text="'- ' + #{web.global.select} + ' -'"></option>
+                        <option th:each="language : ${languages}" th:value="${language}" th:text="${language}"></option>
+                    </select>
+                </label>
+                <div class="grid-column--12">
                     <div>
-                        <span data-th-text="#{fintics.Strategy.script}" class="font-weight--bold width--100"></span>
+                        <span data-th-text="#{fintics.Strategy.variables}" class="font-weight--bold width--100"></span>
                     </div>
+                    <duice-codemirror class="border--1 code"
+                                      data-duice-bind="strategy"
+                                      data-duice-property="variables">
+                    </duice-codemirror>
                 </div>
-                <duice-codemirror class="code" style="height:100vh;"
-                                  data-duice-bind="strategy"
-                                  data-duice-property="script"
-                                  data-duice-mode="groovy"
-                                  data-duice-theme="dracula">
-                </duice-codemirror>
-            </div>
-            <div class="grid-column--12 justify-self--end">
+                <div class="grid-column--12">
+                    <div class="display--flex justify-content--space-between margin--1px padding--1px">
+                        <div>
+                            <span data-th-text="#{fintics.Strategy.script}" class="font-weight--bold width--100"></span>
+                        </div>
+                    </div>
+                    <duice-codemirror class="code" style="height:100vh;"
+                                      data-duice-bind="strategy"
+                                      data-duice-property="script"
+                                      data-duice-mode="groovy"
+                                      data-duice-theme="dracula">
+                    </duice-codemirror>
+                </div>
+            </form>
+            <div class="text-align--right">
                 <button type="button"
                         data-duice-bind="strategy"
                         th:classappend="!${#authorization.expression('hasAuthority(''STRATEGIES_EDIT'')')}?'locked'"
@@ -164,7 +178,7 @@
                     <span data-th-text="#{web.global.save}"></span>
                 </button>
             </div>
-        </form>
+        </div>
     </div>
     <!-- ====================================== -->
     <!-- end: strategy                          -->

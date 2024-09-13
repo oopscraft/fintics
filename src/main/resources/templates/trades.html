@@ -61,11 +61,12 @@
                 "
              onclick="getTrade(this.dataset.tradeId);">
             <div>
+                <img class="icon" th:src="@{/static/image/icon-trade.svg}" alt="trade"/>
                 <span class="link font-weight--bold"
                       data-duice-bind="trade"
                       data-duice-property="name"></span>
             </div>
-            <div class="font-size--smaller" style="line-height:1.5em;">
+            <div style="line-height:1.5em;">
                 <div>
                     <span data-th-text="#{fintics.Trade.startAt}"></span> - <span data-th-text="#{fintics.Trade.endAt}"></span>:
                     <span data-duice-bind="trade" data-duice-property="startAt"></span> - <span data-duice-bind="trade" data-duice-property="endAt"></span>
@@ -78,7 +79,7 @@
                     <span data-th-text="#{fintics.Broker}"></span>:
                     <span data-duice-bind="trade"
                           data-duice-execute="
-                          let brokerName = brokers.find(it => it.brokerId === trade.brokerId)?.brokerName;
+                          let brokerName = brokers.find(it => it.brokerId === trade.brokerId)?.name;
                           this.innerHTML = brokerName;
                           "></span>
                 </div>
@@ -86,7 +87,7 @@
                     <span data-th-text="#{fintics.Basket}"></span>:
                     <span data-duice-bind="trade"
                           data-duice-execute="
-                          let basketName = baskets.find(it => it.basketId === trade.basketId)?.basketName;
+                          let basketName = baskets.find(it => it.basketId === trade.basketId)?.name;
                           this.innerHTML = basketName;
                           "></span>
                 </div>
@@ -94,7 +95,7 @@
                     <span data-th-text="#{fintics.Strategy}"></span>:
                     <span data-duice-bind="trade"
                           data-duice-execute="
-                          let strategyName = strategies.find(it => it.strategyId === trade.strategyId)?.strategyName;
+                          let strategyName = strategies.find(it => it.strategyId === trade.strategyId)?.name;
                           this.innerHTML = strategyName;
                           "></span>
                 </div>

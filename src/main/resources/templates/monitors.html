@@ -331,56 +331,60 @@
     <!-- ================================== -->
     <!-- start: trade                       -->
     <!-- ================================== -->
-    <div th:each="trade : ${trades}" th:id="|monitorTabContent-${trade.tradeId}|" class="grid-column--12 border--1 padding--1em">
-        <h2>
-            <img class="icon" th:src="@{/static/image/icon-trade.svg}" alt="trade"/>
-            <span data-th-text="${trade.name}"></span>
-            <a href="#" th:data-trade-id="${trade.tradeId}" onclick="openTrade(this.dataset.tradeId);">
-                <small>
-                    <img class="icon link" th:src="@{/static/image/icon-open.svg}" alt="trade"/>
-                </small>
-            </a>
-        </h2>
-        <div class="display--grid grid-template-columns--12 padding--1em s__padding--0">
-            <div class="grid-column--6 s__grid-column--12" style="height:150px;">
-                <div class="font-weight--bold">
-                    <img class="icon" src="/static/image/icon-ohlcv.svg" alt="ohlcv">
-                    <span>Daily</span>
-                </div>
-                <canvas th:id="'tradeDailyOhlcvsChart-' + ${trade.tradeId}"></canvas>
-            </div>
-            <div class="grid-column--6 s__grid-column--12" style="height:150px;">
-                <div class="font-weight--bold">
-                    <img class="icon" src="/static/image/icon-ohlcv.svg" alt="ohlcv">
-                    <span>Minute</span>
-                </div>
-                <canvas th:id="'tradeMinuteOhlcvsChart-' + ${trade.tradeId}"></canvas>
-            </div>
+    <div th:each="trade : ${trades}" th:id="|monitorTabContent-${trade.tradeId}|"
+         class="display--flex flex-direction--column border--1 padding--1em">
+        <div>
+            <h2>
+                <img class="icon" th:src="@{/static/image/icon-trade.svg}" alt="trade"/>
+                <span data-th-text="${trade.name}"></span>
+                <a href="#" th:data-trade-id="${trade.tradeId}" onclick="openTrade(this.dataset.tradeId);">
+                    <small>
+                        <img class="icon link" th:src="@{/static/image/icon-open.svg}" alt="trade"/>
+                    </small>
+                </a>
+            </h2>
         </div>
-        <div class="grid-column--12 padding--1em s__padding--0">
-            <div>
-                <img class="icon" data-th-src="@{/static/image/icon-log.svg}" alt="log"/>
-                <span class="font-weight--bold" data-th-text="#{web.global.log}"></span>
+        <div class="display--flex flex-direction--column gap--1em padding--1em">
+            <div class="display--grid grid-template-columns--12">
+                <div class="grid-column--6 s__grid-column--12" style="height:150px;">
+                    <div class="font-weight--bold">
+                        <img class="icon" src="/static/image/icon-ohlcv.svg" alt="ohlcv">
+                        <span>Daily</span>
+                    </div>
+                    <canvas th:id="'tradeDailyOhlcvsChart-' + ${trade.tradeId}"></canvas>
+                </div>
+                <div class="grid-column--6 s__grid-column--12" style="height:150px;">
+                    <div class="font-weight--bold">
+                        <img class="icon" src="/static/image/icon-ohlcv.svg" alt="ohlcv">
+                        <span>Minute</span>
+                    </div>
+                    <canvas th:id="'tradeMinuteOhlcvsChart-' + ${trade.tradeId}"></canvas>
+                </div>
             </div>
-            <div style="height:200px;">
-                <textarea th:id="'tradeLog-' + ${trade.tradeId}" class="tradeLog width--100 height--100 code"></textarea>
-            </div>
-        </div>
-        <div class="grid-column--12 padding--1em s__padding--0">
-            <div class="display--flex justify-content--space-between flex-wrap--wrap">
+            <div class="grid-column--12">
                 <div>
-                    <img class="icon" data-th-src="@{/static/image/icon-basket.svg}" alt="basket"/>
-                    <span class="font-weight--bold" data-th-text="#{fintics.BasketAsset}"></span>
-                    <span class="font-weight--bold">
+                    <img class="icon" data-th-src="@{/static/image/icon-log.svg}" alt="log"/>
+                    <span class="font-weight--bold" data-th-text="#{web.global.log}"></span>
+                </div>
+                <div style="height:200px;">
+                    <textarea th:id="'tradeLog-' + ${trade.tradeId}" class="tradeLog width--100 height--100 code"></textarea>
+                </div>
+            </div>
+            <div class="grid-column--12">
+                <div class="display--flex justify-content--space-between flex-wrap--wrap">
+                    <div>
+                        <img class="icon" data-th-src="@{/static/image/icon-basket.svg}" alt="basket"/>
+                        <span class="font-weight--bold" data-th-text="#{fintics.BasketAsset}"></span>
+                        <span class="font-weight--bold">
                         (
                         <span data-th-text="#{fintics.Trade.investAmount}"></span>:
                         <span data-th-text="${#numbers.formatDecimal(trade.investAmount,3,'COMMA',2,'POINT')}"></span>
                         )
                     </span>
-                </div>
-                <div>
-                    <img class="icon" data-th-src="@{/static/image/icon-balance.svg}" alt="balance"/>
-                    <span>
+                    </div>
+                    <div>
+                        <img class="icon" data-th-src="@{/static/image/icon-balance.svg}" alt="balance"/>
+                        <span>
                         <span class="font-weight--bold">
                             <span data-th-text="#{fintics.Balance.totalAmount}"></span>:
                             <span th:data-duice-bind="|monitorMap.get('${trade.tradeId}').balance|"
@@ -413,10 +417,9 @@
                               th:data-duice-property="cashAmount" data-duice-format="number">
                         </span>
                     </span>
+                    </div>
                 </div>
-            </div>
-            <div class="overflow-x--scroll border-top--1">
-                <table class="width--100 border-top--0">
+                <table class="width--100">
                     <colgroup>
                         <col style="width:4em;"/>
                         <col style="width:8em;"/>
@@ -481,8 +484,8 @@
                                 &nbsp;
                                 <div class="margin-y--1em">
                                     <span data-duice-bind="basketAsset"
-                                        data-duice-property="name"
-                                        data-duice-execute="
+                                          data-duice-property="name"
+                                          data-duice-execute="
                                         if (basketAsset.quantity > 0) {
                                             this.classList.add('font-weight--bold');
                                         }"></span>
@@ -508,7 +511,7 @@
                                         this.dataset.tradeId = '${trade.tradeId}';
                                         this.dataset.assetId = basketAsset.assetId;
                                         |"
-                                        onclick="_openLink(`${_rootUrl}/orders?tradeId=${this.dataset.tradeId}&assetId=${this.dataset.assetId}`, '_blank');">
+                                          onclick="_openLink(`${_rootUrl}/orders?tradeId=${this.dataset.tradeId}&assetId=${this.dataset.assetId}`, '_blank');">
                                         <span data-duice-bind="basketAsset" data-duice-if="return basketAsset.buyCount > 0;">
                                             <img class="icon" th:src="@{/static/image/icon-order-buy.svg}" alt=""/>
                                             <span data-duice-bind="basketAsset" data-duice-property="buyCount"></span>
