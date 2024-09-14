@@ -32,6 +32,8 @@ public class Trade {
 
     private BigDecimal investAmount;
 
+    private Order.Kind orderKind;
+
     private String brokerId;
 
     private String basketId;
@@ -39,8 +41,6 @@ public class Trade {
     private String strategyId;
 
     private String strategyVariables;
-
-    private Order.Kind orderKind;
 
     private String alarmId;
 
@@ -63,11 +63,11 @@ public class Trade {
                 .startTime(tradeEntity.getStartAt())
                 .endTime(tradeEntity.getEndAt())
                 .investAmount(tradeEntity.getInvestAmount())
+                .orderKind(tradeEntity.getOrderKind())
                 .brokerId(tradeEntity.getBrokerId())
                 .basketId(tradeEntity.getBasketId())
                 .strategyId(tradeEntity.getStrategyId())
                 .strategyVariables(tradeEntity.getStrategyVariables())
-                .orderKind(tradeEntity.getOrderKind())
                 .alarmId(tradeEntity.getAlarmId())
                 .alarmOnError(tradeEntity.isAlarmOnError())
                 .alarmOnOrder(tradeEntity.isAlarmOnOrder())

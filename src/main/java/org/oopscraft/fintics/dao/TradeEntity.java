@@ -45,6 +45,9 @@ public class TradeEntity extends BaseEntity {
     @Column(name = "invest_amount")
     private BigDecimal investAmount;
 
+    @Column(name = "order_kind", length = 16)
+    private Order.Kind orderKind;
+
     @Column(name = "broker_id", length = 32)
     private String brokerId;
 
@@ -57,9 +60,6 @@ public class TradeEntity extends BaseEntity {
     @Column(name = "strategy_variables")
     @Lob
     private String strategyVariables;
-
-    @Column(name = "order_kind", length = 16)
-    private Order.Kind orderKind;
 
     @Column(name = "alarm_id", length = 32)
     private String alarmId;

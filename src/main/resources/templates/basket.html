@@ -177,7 +177,7 @@
     <!-- start: basket                          -->
     <!-- ====================================== -->
     <div class="display--flex flex-direction--column border--1 padding--1em">
-        <div class="display--flex flex-direction--column padding--1em">
+        <div class="display--flex flex-direction--column gap--1em padding--1em">
             <form class="display--grid grid-template-columns--12 grid-gap--1em">
                 <label class="grid-column--6">
                     <span data-th-text="#{fintics.Basket.name}" class="font-weight--bold tag-required"></span>
@@ -353,7 +353,7 @@
                     </duice-codemirror>
                 </div>
             </form>
-            <div class="text-align--center">
+            <div class="text-align--right">
                 <button type="button"
                         data-duice-bind="basket"
                         th:classappend="!${#authorization.expression('hasAuthority(''BASKETS_EDIT'')')}?'locked'"
