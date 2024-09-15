@@ -141,7 +141,7 @@ println("top10ItemScores: ${top10ItemScores}")
 
 // return
 List<BasketChange> basketChanges = top10ItemScores.collect{
-    BasketChange.of(it.item.symbol, 2.0)
+    BasketChange.of(it.item.symbol, "", 2.0)
 }
 println("basketChanges: ${basketChanges}")
 return basketChanges

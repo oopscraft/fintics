@@ -51,11 +51,49 @@ class GroovyBasketChangerTest extends CoreTestSupport {
 
     @Disabled
     @Test
-    void getChanges() {
+    void getChangesBasketRebalance() {
         // given
         Basket basket = Basket.builder()
                 .market("KR")
                 .script(loadGroovyFileAsString("BasketRebalanceScript.groovy"))
+                .build();
+        // when
+        GroovyBasketRebalance groovyBasketChanger = GroovyBasketRebalance.builder()
+                .basket(basket)
+                .assetService(assetService)
+                .ohlcvClient(ohlcvClient)
+                .build();
+        List<BasketChange> basketChanges = groovyBasketChanger.getChanges();
+        // then
+        log.info("basketChanges: {}", basketChanges);
+    }
+
+    @Disabled
+    @Test
+    void getChangesTrackingEtfKrRebalance() {
+        // given
+        Basket basket = Basket.builder()
+                .market("KR")
+                .script(loadGroovyFileAsString("TrackingEtfKrRebalance.groovy"))
+                .build();
+        // when
+        GroovyBasketRebalance groovyBasketChanger = GroovyBasketRebalance.builder()
+                .basket(basket)
+                .assetService(assetService)
+                .ohlcvClient(ohlcvClient)
+                .build();
+        List<BasketChange> basketChanges = groovyBasketChanger.getChanges();
+        // then
+        log.info("basketChanges: {}", basketChanges);
+    }
+
+    @Disabled
+    @Test
+    void getChangesTrackingEtfUsRebalance() {
+        // given
+        Basket basket = Basket.builder()
+                .market("US")
+                .script(loadGroovyFileAsString("TrackingEtfUsRebalance.groovy"))
                 .build();
         // when
         GroovyBasketRebalance groovyBasketChanger = GroovyBasketRebalance.builder()

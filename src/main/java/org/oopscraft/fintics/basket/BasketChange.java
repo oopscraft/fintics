@@ -14,11 +14,14 @@ public class BasketChange {
 
     private String symbol;
 
+    private String name;
+
     private BigDecimal holdingWeight;
 
-    public static BasketChange of(String symbol, BigDecimal holdingWeight) {
+    public static BasketChange of(String symbol, String name, BigDecimal holdingWeight) {
         return BasketChange.builder()
                 .symbol(symbol)
+                .name(name)
                 .holdingWeight(holdingWeight)
                 .build();
     }
