@@ -419,85 +419,86 @@
                     </span>
                     </div>
                 </div>
-                <table class="width--100">
-                    <colgroup>
-                        <col style="width:4em;"/>
-                        <col style="width:8em;"/>
-                        <col/>
-                        <col/>
-                        <col/>
-                        <col/>
-                        <col/>
-                        <col/>
-                        <col/>
-                        <col/>
-                    </colgroup>
-                    <thead>
-                    <tr>
-                        <th>
-                            <span data-th-text="#{web.global.no}"></span>
-                        </th>
-                        <th>
-                            <span data-th-text="#{fintics.Asset.assetId}"></span>
-                        </th>
-                        <th>
-                            <span data-th-text="#{fintics.Asset.name}"></span>
-                        </th>
-                        <th>
-                            <span data-th-text="#{fintics.Asset.links}"></span>
-                        </th>
-                        <th>
-                            <span>Message</span>
-                        </th>
-                        <th class="text-align--right">
-                            <div data-th-text="#{fintics.BalanceAsset.quantity}"></div>
-                            <div data-th-text="#{fintics.BalanceAsset.orderableQuantity}"></div>
-                        </th>
-                        <th class="text-align--right">
-                            <div data-th-text="#{fintics.BalanceAsset.purchasePrice}"></div>
-                            <div data-th-text="#{fintics.BalanceAsset.valuationPrice}"></div>
-                        </th>
-                        <th class="text-align--right">
-                            <div data-th-text="#{fintics.BalanceAsset.purchaseAmount}"></div>
-                            <div data-th-text="#{fintics.BalanceAsset.valuationAmount}"></div>
-                        </th>
-                        <th class="text-align--right padding-right--1em">
-                            <div data-th-text="#{fintics.BalanceAsset.profitAmount}"></div>
-                            <div data-th-text="#{fintics.BalanceAsset.profitPercentage}"></div>
-                        </th>
-                        <th class="text-align--center">
-                            <span data-th-text="#{fintics.Order}"></span>
-                        </th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:data-duice-bind="|monitorMap.get('${trade.tradeId}').basket.basketAssets|" data-duice-loop="basketAsset,status">
-                        <td>
-                            <span data-duice-bind="status" data-duice-property="count"></span>
-                        </td>
-                        <td>
-                            <span data-duice-bind="basketAsset" data-duice-property="assetId"></span>
-                        </td>
-                        <td>
-                            <div class="display--flex align-items--center">
-                                <img class="icon icon--circle font-size--large" data-duice-bind="basketAsset" data-duice-property="icon" th:onerror="|this.onerror=null; this.src='@{/static/image/icon-asset.svg}';|" alt=""/>
-                                &nbsp;
-                                <div class="margin-y--1em">
+                <div class="overflow-x--scroll">
+                    <table class="width--100">
+                        <colgroup>
+                            <col style="width:4em;"/>
+                            <col style="width:8em;"/>
+                            <col/>
+                            <col/>
+                            <col/>
+                            <col/>
+                            <col/>
+                            <col/>
+                            <col/>
+                            <col/>
+                        </colgroup>
+                        <thead>
+                        <tr>
+                            <th>
+                                <span data-th-text="#{web.global.no}"></span>
+                            </th>
+                            <th>
+                                <span data-th-text="#{fintics.Asset.assetId}"></span>
+                            </th>
+                            <th>
+                                <span data-th-text="#{fintics.Asset.name}"></span>
+                            </th>
+                            <th>
+                                <span data-th-text="#{fintics.Asset.links}"></span>
+                            </th>
+                            <th>
+                                <span>Message</span>
+                            </th>
+                            <th class="text-align--right">
+                                <div data-th-text="#{fintics.BalanceAsset.quantity}"></div>
+                                <div data-th-text="#{fintics.BalanceAsset.orderableQuantity}"></div>
+                            </th>
+                            <th class="text-align--right">
+                                <div data-th-text="#{fintics.BalanceAsset.purchasePrice}"></div>
+                                <div data-th-text="#{fintics.BalanceAsset.valuationPrice}"></div>
+                            </th>
+                            <th class="text-align--right">
+                                <div data-th-text="#{fintics.BalanceAsset.purchaseAmount}"></div>
+                                <div data-th-text="#{fintics.BalanceAsset.valuationAmount}"></div>
+                            </th>
+                            <th class="text-align--right padding-right--1em">
+                                <div data-th-text="#{fintics.BalanceAsset.profitAmount}"></div>
+                                <div data-th-text="#{fintics.BalanceAsset.profitPercentage}"></div>
+                            </th>
+                            <th class="text-align--center">
+                                <span data-th-text="#{fintics.Order}"></span>
+                            </th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:data-duice-bind="|monitorMap.get('${trade.tradeId}').basket.basketAssets|" data-duice-loop="basketAsset,status">
+                            <td>
+                                <span data-duice-bind="status" data-duice-property="count"></span>
+                            </td>
+                            <td>
+                                <span data-duice-bind="basketAsset" data-duice-property="assetId"></span>
+                            </td>
+                            <td>
+                                <div class="display--flex align-items--center">
+                                    <img class="icon icon--circle font-size--large" data-duice-bind="basketAsset" data-duice-property="icon" th:onerror="|this.onerror=null; this.src='@{/static/image/icon-asset.svg}';|" alt=""/>
+                                    &nbsp;
+                                    <div class="margin-y--1em">
                                     <span data-duice-bind="basketAsset"
                                           data-duice-property="name"
                                           data-duice-execute="
                                         if (basketAsset.quantity > 0) {
                                             this.classList.add('font-weight--bold');
                                         }"></span>
-                                    (<span data-duice-bind="basketAsset" data-duice-property="holdingWeight"></span>%)
-                                    <img class="icon font-size--smaller"
-                                         th:src="@{/static/image/icon-pin.svg}"
-                                         data-duice-bind="basketAsset"
-                                         data-duice-if="return basketAsset.fixed"/>
-                                    <br/>
-                                    <span class="font-weight--bold"
-                                          data-duice-bind="basketAsset"
-                                          data-duice-execute="
+                                        (<span data-duice-bind="basketAsset" data-duice-property="holdingWeight"></span>%)
+                                        <img class="icon font-size--smaller"
+                                             th:src="@{/static/image/icon-pin.svg}"
+                                             data-duice-bind="basketAsset"
+                                             data-duice-if="return basketAsset.fixed"/>
+                                        <br/>
+                                        <span class="font-weight--bold"
+                                              data-duice-bind="basketAsset"
+                                              data-duice-execute="
                                         let close = basketAsset.close;
                                         let netChange = basketAsset.netChange || 0;
                                         let netChangePercentage = basketAsset.netChangePercentage || 0;
@@ -505,13 +506,13 @@
                                         if (netChange < 0) this.classList.add('color--red');
                                         this.innerHTML = `${close?.toLocaleString()||''} (${netChange} <small>/</small> ${netChangePercentage}%)`;
                                         "></span>
-                                    &nbsp;
-                                    <span class="link" data-duice-bind="basketAsset"
-                                          th:data-duice-execute="|
+                                        &nbsp;
+                                        <span class="link" data-duice-bind="basketAsset"
+                                              th:data-duice-execute="|
                                         this.dataset.tradeId = '${trade.tradeId}';
                                         this.dataset.assetId = basketAsset.assetId;
                                         |"
-                                          onclick="_openLink(`${_rootUrl}/orders?tradeId=${this.dataset.tradeId}&assetId=${this.dataset.assetId}`, '_blank');">
+                                              onclick="_openLink(`${_rootUrl}/orders?tradeId=${this.dataset.tradeId}&assetId=${this.dataset.assetId}`, '_blank');">
                                         <span data-duice-bind="basketAsset" data-duice-if="return basketAsset.buyCount > 0;">
                                             <img class="icon" th:src="@{/static/image/icon-order-buy.svg}" alt=""/>
                                             <span data-duice-bind="basketAsset" data-duice-property="buyCount"></span>
@@ -521,81 +522,82 @@
                                             <span data-duice-bind="basketAsset" data-duice-property="sellCount"></span>
                                         </span>
                                     </span>
+                                    </div>
                                 </div>
-                            </div>
-                        </td>
-                        <td>
-                            <select data-duice-bind="basketAsset"
-                                    data-duice-option="basketAsset.links"
-                                    data-duice-option-value-property="url"
-                                    data-duice-option-text-property="name"
-                                    onchange="_openLink(this.value, '_blank'); this.value = '';">
-                                <option value>- Link -</option>
-                            </select>
-                        </td>
-                        <td>
-                            <div class="display--flex">
+                            </td>
+                            <td>
+                                <select data-duice-bind="basketAsset"
+                                        data-duice-option="basketAsset.links"
+                                        data-duice-option-value-property="url"
+                                        data-duice-option-text-property="name"
+                                        onchange="_openLink(this.value, '_blank'); this.value = '';">
+                                    <option value>- Link -</option>
+                                </select>
+                            </td>
+                            <td>
+                                <div class="display--flex">
                                 <textarea data-duice-bind="basketAsset"
                                           data-duice-property="message"
                                           class="width--100 code"
                                           style="min-width:20em; height:6em; line-height:1.1em; padding:0.1em 0.3em;"></textarea>
-                            </div>
-                        </td>
-                        <td class="text-align--right">
-                            <div data-duice-bind="basketAsset" data-duice-property="quantity" data-duice-format="number"></div>
-                            <div data-duice-bind="basketAsset" data-duice-property="orderableQuantity" data-duice-format="number"></div>
-                        </td>
-                        <td class="text-align--right">
-                            <div data-duice-bind="basketAsset" data-duice-property="purchasePrice" data-duice-format="number"></div>
-                            <div data-duice-bind="basketAsset" data-duice-property="valuationPrice" data-duice-format="number"></div>
-                        </td>
-                        <td class="text-align--right">
-                            <div data-duice-bind="basketAsset" data-duice-property="purchaseAmount" data-duice-format="number"></div>
-                            <div data-duice-bind="basketAsset" data-duice-property="valuationAmount" data-duice-format="number"></div>
-                        </td>
-                        <td class="text-align--right padding-right--1em font-weight--bold">
-                            <div data-duice-bind="basketAsset" data-duice-property="profitAmount" data-duice-format="number"
-                                 data-duice-execute="
+                                </div>
+                            </td>
+                            <td class="text-align--right">
+                                <div data-duice-bind="basketAsset" data-duice-property="quantity" data-duice-format="number"></div>
+                                <div data-duice-bind="basketAsset" data-duice-property="orderableQuantity" data-duice-format="number"></div>
+                            </td>
+                            <td class="text-align--right">
+                                <div data-duice-bind="basketAsset" data-duice-property="purchasePrice" data-duice-format="number"></div>
+                                <div data-duice-bind="basketAsset" data-duice-property="valuationPrice" data-duice-format="number"></div>
+                            </td>
+                            <td class="text-align--right">
+                                <div data-duice-bind="basketAsset" data-duice-property="purchaseAmount" data-duice-format="number"></div>
+                                <div data-duice-bind="basketAsset" data-duice-property="valuationAmount" data-duice-format="number"></div>
+                            </td>
+                            <td class="text-align--right padding-right--1em font-weight--bold">
+                                <div data-duice-bind="basketAsset" data-duice-property="profitAmount" data-duice-format="number"
+                                     data-duice-execute="
                                 if(basketAsset.profitAmount > 0) this.classList.add('color--green');
                                 if(basketAsset.profitAmount < 0) this.classList.add('color--red');
                                 "></div>
-                            <div data-duice-bind="basketAsset" data-duice-execute="
+                                <div data-duice-bind="basketAsset" data-duice-execute="
                                 if (basketAsset.profitPercentage == null) return;
                                 if (basketAsset.profitPercentage > 0) this.classList.add('color--green');
                                 if (basketAsset.profitPercentage < 0) this.classList.add('color--red');
                                 this.innerHTML = `${basketAsset.profitPercentage} %`;
                                 "></div>
-                        </td>
-                        <td class="text-align--center">
-                            <div class="display--flex flex-direction--column gap--1px">
-                                <button class="small" type="button"
-                                        data-duice-bind="basketAsset"
-                                        data-duice-execute="this.dataset.assetId=basketAsset.assetId"
-                                        th:attr="onclick=|monitorMap.get('${trade.tradeId}').buyTradeAsset(this.dataset.assetId);|"
-                                        th:classappend="!${#authorization.expression('hasAuthority(''TRADES_EDIT'')')}?'locked'">
-                                    <img class="icon" th:src="@{/static/image/icon-order-buy.svg}" alt="buy"/>
-                                    <span data-th-text="#{fintics.Order.Type.BUY}"></span>
-                                </button>
-                                <button class="small" type="button"
-                                        data-duice-bind="basketAsset"
-                                        data-duice-execute="this.dataset.assetId=basketAsset.assetId;"
-                                        th:attr="onclick=|monitorMap.get('${trade.tradeId}').sellTradeAsset(this.dataset.assetId);|"
-                                        th:classappend="!${#authorization.expression('hasAuthority(''TRADES_EDIT'')')}?'locked'">
-                                    <img class="icon" th:src="@{/static/image/icon-order-sell.svg}" alt="sell"/>
-                                    <span data-th-text="#{fintics.Order.Type.SELL}"></span>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr th:data-duice-bind="|monitorMap.get('${trade.tradeId}').basket.basketAssets|"
-                        th:data-duice-if="|return monitorMap.get('${trade.tradeId}').basket.basketAssets.length < 1|"
-                        hidden>
-                        <td colspan="100%" class="text-align--center">
-                            <span data-th-text="#{web.global.itemNotFound(#{fintics.BasketAsset})}"></span>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
+                            </td>
+                            <td class="text-align--center">
+                                <div class="display--flex flex-direction--column gap--1px">
+                                    <button class="small" type="button"
+                                            data-duice-bind="basketAsset"
+                                            data-duice-execute="this.dataset.assetId=basketAsset.assetId"
+                                            th:attr="onclick=|monitorMap.get('${trade.tradeId}').buyTradeAsset(this.dataset.assetId);|"
+                                            th:classappend="!${#authorization.expression('hasAuthority(''TRADES_EDIT'')')}?'locked'">
+                                        <img class="icon" th:src="@{/static/image/icon-order-buy.svg}" alt="buy"/>
+                                        <span data-th-text="#{fintics.Order.Type.BUY}"></span>
+                                    </button>
+                                    <button class="small" type="button"
+                                            data-duice-bind="basketAsset"
+                                            data-duice-execute="this.dataset.assetId=basketAsset.assetId;"
+                                            th:attr="onclick=|monitorMap.get('${trade.tradeId}').sellTradeAsset(this.dataset.assetId);|"
+                                            th:classappend="!${#authorization.expression('hasAuthority(''TRADES_EDIT'')')}?'locked'">
+                                        <img class="icon" th:src="@{/static/image/icon-order-sell.svg}" alt="sell"/>
+                                        <span data-th-text="#{fintics.Order.Type.SELL}"></span>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:data-duice-bind="|monitorMap.get('${trade.tradeId}').basket.basketAssets|"
+                            th:data-duice-if="|return monitorMap.get('${trade.tradeId}').basket.basketAssets.length < 1|"
+                            hidden>
+                            <td colspan="100%" class="text-align--center">
+                                <span data-th-text="#{web.global.itemNotFound(#{fintics.BasketAsset})}"></span>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
