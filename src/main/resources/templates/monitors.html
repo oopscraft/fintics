@@ -494,7 +494,11 @@
                                         <img class="icon font-size--smaller"
                                              th:src="@{/static/image/icon-pin.svg}"
                                              data-duice-bind="basketAsset"
-                                             data-duice-if="return basketAsset.fixed"/>
+                                             data-duice-if="return basketAsset.fixed" alt="fixed"/>
+                                        <img class="icon font-size--smaller"
+                                             th:src="@{/static/image/icon-disabled.svg}"
+                                            data-duice-bind="basketAsset"
+                                            data-duice-if="return !basketAsset.enabled" alt="disabled"/>
                                         <br/>
                                         <span class="font-weight--bold"
                                               data-duice-bind="basketAsset"
