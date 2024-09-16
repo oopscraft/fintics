@@ -933,7 +933,7 @@
                     open: async function(trade, asset, type) {
                         duice.ObjectProxy.reset(this.order);
                         this.order.tradeId = trade.tradeId;
-                        this.order.tradeName = trade.tradeName;
+                        this.order.tradeName = trade.name;
                         this.order.assetId = asset.assetId;
                         this.order.assetName = asset.name;
                         this.order.type = type;
@@ -978,11 +978,11 @@
                     <form onsubmit="return false;" class="display--grid grid-template-columns--12 grid-gap--1em">
                         <label class="grid-column--6">
                             <span data-th-text="#{fintics.Trade}" class="font-weight--bold"></span>
-                            <input type="text" data-duice-bind="submitOrderDialog.order" data-duice-property="name" class="width--100"/>
+                            <input type="text" data-duice-bind="submitOrderDialog.order" data-duice-property="tradeName" class="width--100"/>
                         </label>
                         <label class="grid-column--6">
                             <span data-th-text="#{fintics.Asset}" class="font-weight--bold"></span>
-                            <input type="text" data-duice-bind="submitOrderDialog.order" data-duice-property="name" class="width--100"/>
+                            <input type="text" data-duice-bind="submitOrderDialog.order" data-duice-property="assetName" class="width--100"/>
                         </label>
                         <label class="grid-column--6">
                             <span data-th-text="#{fintics.Order.type}" class="font-weight--bold"></span>

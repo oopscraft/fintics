@@ -1,28 +1,19 @@
+import groovy.transform.ToString
+import groovy.transform.builder.Builder
 import org.jsoup.Jsoup
-import org.jsoup.nodes.*
-import org.jsoup.select.*
-import groovy.json.JsonSlurper
-import org.oopscraft.fintics.basket.BasketChange
-import org.oopscraft.fintics.model.*
+import org.oopscraft.fintics.basket.BasketRebalanceResult
+import org.oopscraft.fintics.model.Asset
 
 /**
- * holding
+ * etf holding
  */
-class Holding {
+@Builder
+@ToString
+class EtfHolding {
     String symbol
     String name
-    String weight
-    @Override
-    String toString() {
-        return "Holding{symbol=${this.symbol},name=${this.name},weight=${this.weight}"
-    }
-    static Holding of(symbol, name, weight) {
-        Holding holding = new Holding()
-        holding.symbol = symbol
-        holding.name = name
-        holding.weight = weight
-        return holding
-    }
+    BigDecimal weight
+    BigDecimal marketCap
 }
 
 /**
@@ -30,14 +21,18 @@ class Holding {
  * @param etfSymbol etf symbol
  * @return list of holding
  */
-static List<Holding> getHoldings(etfSymbol) {
+static List<EtfHolding> getEtfHoldings(etfSymbol) {
     def document = Jsoup.connect("https://finance.yahoo.com/quote/${etfSymbol}/holdings/").get()
     def topHoldings= document.select('section[data-testid=top-holdings] .content')
     return topHoldings.collect {
         def symbol = it.select('span.symbol').text()
         def name = it.select('span.name').text()
         def weight = it.select('span.data').text().replace('%','') as BigDecimal
-        return Holding.of(symbol, name, weight)
+        return EtfHolding.builder()
+            .symbol(symbol)
+            .name(name)
+            .weight(weight)
+            .build()
     }
 }
 
@@ -63,31 +58,33 @@ def etfSymbols = [
 //=========================================
 // collect etf holdings
 //=========================================
-List<Holding> allHoldings = []
+List<EtfHolding> allEtfHoldings = []
 etfSymbols.each{
-    def holdings = getHoldings(it)
-    allHoldings.addAll(holdings)
+    def holdings = getEtfHoldings(it)
+    allEtfHoldings.addAll(holdings)
 }
-println "allHoldings:${allHoldings}"
+println "allEtfHoldings:${allEtfHoldings}"
 
 //=========================================
-// distinct sum
+// distinct sum of weight
 //=========================================
-def distinctHoldings = allHoldings.groupBy{
+def distinctEtfHoldings = allEtfHoldings.groupBy{
     it.symbol
 }.collect { symbol, holdingsList ->
     def name = holdingsList.first().name
-    def totalWeight = holdingsList.sum { it.weight.toBigDecimal() }  // weight 값을 합산
-    return Holding.of(symbol, name, totalWeight)
-}.sort{
-    - it.weight.toBigDecimal()
+    def totalWeight = holdingsList.sum { it.weight.toBigDecimal() } as BigDecimal
+    return EtfHolding.builder()
+        .symbol(symbol)
+        .name(name)
+        .weight(totalWeight)
+        .build()
 }
-println "distinctHoldings:${distinctHoldings}"
+println "distinctEtfHoldings:${distinctEtfHoldings}"
 
 //=========================================
 // filter
 //=========================================
-List<Holding> finalHoldings = distinctHoldings.findAll {
+List<EtfHolding> finalEtfHoldings = distinctEtfHoldings.findAll {
     Asset asset = assetService.getAsset("US.${it.symbol}").orElse(null)
     if (asset == null) {
         return null
@@ -96,16 +93,25 @@ List<Holding> finalHoldings = distinctHoldings.findAll {
     if (asset.getType() != "STOCK") {
         return null
     }
+    // set marketCap
+    it.marketCap = asset.getMarketCap()
+    // return
     return it
 }
+println "finalEtfHoldings:${finalEtfHoldings}"
+
+//=========================================
+// sort by market cap
+//=========================================
+finalEtfHoldings = finalEtfHoldings
+        .sort{-(it.marketCap?:0)}
+        .take(40)
 
 //=========================================
 // return
 //=========================================
-List<BasketChange> basketChanges = finalHoldings.collect{
-    BasketChange.of(it.symbol, it.name, 2.0)
+List<BasketRebalanceResult> basketRebalanceResults = finalEtfHoldings.collect{
+    BasketRebalanceResult.of(it.symbol, it.name, 2.0)
 }
-println("basketChanges: ${basketChanges}")
-return basketChanges
-
-
+println("basketRebalanceResults: ${basketRebalanceResults}")
+return basketRebalanceResults

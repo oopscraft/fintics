@@ -10,15 +10,16 @@ import org.oopscraft.fintics.service.AssetService;
 
 import java.util.List;
 
-public class GroovyBasketRebalance extends BasketRebalance {
+public class GroovyBasketScriptRunner extends BasketScriptRunner {
 
     @Builder
-    public GroovyBasketRebalance(Basket basket, AssetService assetService, OhlcvClient ohlcvClient) {
+    public GroovyBasketScriptRunner(Basket basket, AssetService assetService, OhlcvClient ohlcvClient) {
         super(basket, assetService, ohlcvClient);
     }
 
     @Override
-    public List<BasketChange> getChanges() {
+    @SuppressWarnings("unchecked")
+    public List<BasketRebalanceResult> run() {
         ClassLoader classLoader = this.getClass().getClassLoader();
         GroovyClassLoader groovyClassLoader = new GroovyClassLoader(classLoader);
         Binding binding = new Binding();
@@ -27,11 +28,11 @@ public class GroovyBasketRebalance extends BasketRebalance {
         binding.setVariable("ohlcvClient", ohlcvClient);
         GroovyShell groovyShell = new GroovyShell(groovyClassLoader, binding);
         Object result = groovyShell.evaluate(
-                "import " + BasketChange.class.getName() + '\n' +
+                "import " + BasketRebalanceResult.class.getName() + '\n' +
                         basket.getScript()
         );
         if (result != null) {
-            return (List<BasketChange>) result;
+            return (List<BasketRebalanceResult>) result;
         }
         return null;
     }

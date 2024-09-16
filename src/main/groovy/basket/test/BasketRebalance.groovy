@@ -2,7 +2,7 @@ import groovy.json.JsonSlurper
 import org.oopscraft.fintics.client.ohlcv.OhlcvClient
 import org.oopscraft.fintics.indicator.EmaContext
 import org.oopscraft.fintics.trade.Tools
-import org.oopscraft.fintics.basket.BasketChange
+import org.oopscraft.fintics.basket.BasketRebalanceResult
 import org.oopscraft.fintics.model.*
 import org.oopscraft.fintics.indicator.*
 
@@ -140,8 +140,8 @@ def top10ItemScores = aggregatedItemScore
 println("top10ItemScores: ${top10ItemScores}")
 
 // return
-List<BasketChange> basketChanges = top10ItemScores.collect{
-    BasketChange.of(it.item.symbol, "", 2.0)
+List<BasketRebalanceResult> basketChanges = top10ItemScores.collect{
+    BasketRebalanceResult.of(it.item.symbol, "", 2.0)
 }
 println("basketChanges: ${basketChanges}")
 return basketChanges

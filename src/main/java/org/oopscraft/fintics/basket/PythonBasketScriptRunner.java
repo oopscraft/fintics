@@ -7,15 +7,15 @@ import org.oopscraft.fintics.service.AssetService;
 
 import java.util.List;
 
-public class PythonBasketRebalance extends BasketRebalance {
+public class PythonBasketScriptRunner extends BasketScriptRunner {
 
     @Builder
-    public PythonBasketRebalance(Basket basket, AssetService assetService, OhlcvClient ohlcvClient) {
+    public PythonBasketScriptRunner(Basket basket, AssetService assetService, OhlcvClient ohlcvClient) {
         super(basket, assetService, ohlcvClient);
     }
 
     @Override
-    public List<BasketChange> getChanges() {
+    public List<BasketRebalanceResult> run() {
         return null;
     }
 

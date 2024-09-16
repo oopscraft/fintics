@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @ToString
-public class BasketChange {
+public class BasketRebalanceResult {
 
     private String symbol;
 
@@ -18,8 +18,8 @@ public class BasketChange {
 
     private BigDecimal holdingWeight;
 
-    public static BasketChange of(String symbol, String name, BigDecimal holdingWeight) {
-        return BasketChange.builder()
+    public static BasketRebalanceResult of(String symbol, String name, BigDecimal holdingWeight) {
+        return BasketRebalanceResult.builder()
                 .symbol(symbol)
                 .name(name)
                 .holdingWeight(holdingWeight)

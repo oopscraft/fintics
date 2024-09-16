@@ -8,8 +8,6 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.oopscraft.arch4j.core.common.test.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
-import org.oopscraft.fintics.basket.BasketChange;
-import org.oopscraft.fintics.basket.GroovyBasketRebalance;
 import org.oopscraft.fintics.client.ohlcv.OhlcvClient;
 import org.oopscraft.fintics.model.Basket;
 import org.oopscraft.fintics.service.AssetService;
@@ -25,7 +23,7 @@ import java.util.List;
 @SpringBootTest(classes = FinticsConfiguration.class)
 @RequiredArgsConstructor
 @Slf4j
-class GroovyBasketChangerTest extends CoreTestSupport {
+class GroovyBasketScriptRunnerTest extends CoreTestSupport {
 
     private final AssetService assetService;
 
@@ -51,59 +49,40 @@ class GroovyBasketChangerTest extends CoreTestSupport {
 
     @Disabled
     @Test
-    void getChangesBasketRebalance() {
-        // given
-        Basket basket = Basket.builder()
-                .market("KR")
-                .script(loadGroovyFileAsString("BasketRebalanceScript.groovy"))
-                .build();
-        // when
-        GroovyBasketRebalance groovyBasketChanger = GroovyBasketRebalance.builder()
-                .basket(basket)
-                .assetService(assetService)
-                .ohlcvClient(ohlcvClient)
-                .build();
-        List<BasketChange> basketChanges = groovyBasketChanger.getChanges();
-        // then
-        log.info("basketChanges: {}", basketChanges);
-    }
-
-    @Disabled
-    @Test
-    void getChangesTrackingEtfKrRebalance() {
+    void runTrackingEtfKrRebalance() {
         // given
         Basket basket = Basket.builder()
                 .market("KR")
                 .script(loadGroovyFileAsString("TrackingEtfKrRebalance.groovy"))
                 .build();
         // when
-        GroovyBasketRebalance groovyBasketChanger = GroovyBasketRebalance.builder()
+        GroovyBasketScriptRunner groovyBasketScriptRunner = GroovyBasketScriptRunner.builder()
                 .basket(basket)
                 .assetService(assetService)
                 .ohlcvClient(ohlcvClient)
                 .build();
-        List<BasketChange> basketChanges = groovyBasketChanger.getChanges();
+        List<BasketRebalanceResult> basketRebalanceResults = groovyBasketScriptRunner.run();
         // then
-        log.info("basketChanges: {}", basketChanges);
+        log.info("basketRebalanceResults: {}", basketRebalanceResults);
     }
 
     @Disabled
     @Test
-    void getChangesTrackingEtfUsRebalance() {
+    void runTrackingEtfUsRebalance() {
         // given
         Basket basket = Basket.builder()
                 .market("US")
                 .script(loadGroovyFileAsString("TrackingEtfUsRebalance.groovy"))
                 .build();
         // when
-        GroovyBasketRebalance groovyBasketChanger = GroovyBasketRebalance.builder()
+        GroovyBasketScriptRunner groovyBasketScriptRunner = GroovyBasketScriptRunner.builder()
                 .basket(basket)
                 .assetService(assetService)
                 .ohlcvClient(ohlcvClient)
                 .build();
-        List<BasketChange> basketChanges = groovyBasketChanger.getChanges();
+        List<BasketRebalanceResult> basketRebalanceResults = groovyBasketScriptRunner.run();
         // then
-        log.info("basketChanges: {}", basketChanges);
+        log.info("basketRebalanceResults: {}", basketRebalanceResults);
     }
 
 }

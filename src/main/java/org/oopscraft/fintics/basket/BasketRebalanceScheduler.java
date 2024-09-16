@@ -4,20 +4,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.alarm.service.AlarmService;
 import org.oopscraft.fintics.FinticsProperties;
-import org.oopscraft.fintics.dao.BasketAssetEntity;
 import org.oopscraft.fintics.dao.BasketAssetRepository;
-import org.oopscraft.fintics.model.*;
+import org.oopscraft.fintics.model.Basket;
+import org.oopscraft.fintics.model.BasketSearch;
 import org.oopscraft.fintics.service.BasketService;
 import org.oopscraft.fintics.service.TradeService;
-import org.oopscraft.fintics.basket.BasketChange;
-import org.oopscraft.fintics.basket.BasketRebalance;
-import org.oopscraft.fintics.basket.BasketRebalanceContext;
-import org.oopscraft.fintics.basket.BasketRebalanceFactory;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,22 +32,59 @@ public class BasketRebalanceScheduler {
 
     private final TaskScheduler taskScheduler;
 
-    private final BasketRebalanceFactory basketRebalanceFactory;
-
     private final BasketService basketService;
 
-    private final BasketAssetRepository basketAssetRepository;
-
-    private final TradeService tradeService;
+    private final BasketRebalanceTaskFactory basketRebalanceTaskFactory;
 
     private final FinticsProperties finticsProperties;
 
     private final AlarmService alarmService;
 
+    /**
+     * synchronizes scheduler with database
+     */
+    @Scheduled(initialDelay = 10_000, fixedDelay = 10_000)
+    public void synchronize() {
+        List<Basket> baskets = basketService.getBaskets(BasketSearch.builder().build(), Pageable.unpaged()).getContent();
+        for (Basket basket : baskets) {
+            try {
+                if (basket.isRebalanceEnabled() && basket.getRebalanceSchedule() != null) {
+                    Basket previousBasket = getScheduledBasket(basket.getBasketId());
+                    // new
+                    if (previousBasket == null) {
+                        startScheduledTask(basket);
+                        continue;
+                    }
+                    // changed
+                    if (!Objects.equals(basket.getRebalanceSchedule(), previousBasket.getRebalanceSchedule())
+                            || !Objects.equals(basket.getLanguage(), previousBasket.getLanguage())
+                            || !Objects.equals(basket.getScript(), previousBasket.getScript())
+                    ) {
+                        startScheduledTask(basket);
+                    }
+                } else {
+                    stopScheduledTask(basket);
+                }
+            } catch (Throwable e) {
+                String errorMessage = String.format("basket schedule error[%s] - %s", basket.getName(), e.getMessage());
+                log.warn(errorMessage);
+            }
+        }
+    }
+
+    /**
+     * gets scheduled basket
+     * @param basketId basket id
+     * @return basket
+     */
     public Basket getScheduledBasket(String basketId) {
         return scheduledBaskets.get(basketId);
     }
 
+    /**
+     * starts scheduled task
+     * @param basket basket
+     */
     public void startScheduledTask(Basket basket) {
         // removes task if already exist
         if (scheduledTasks.containsKey(basket.getBasketId())) {
@@ -65,6 +99,10 @@ public class BasketRebalanceScheduler {
         scheduledTasks.put(basket.getBasketId(), scheduledFuture);
     }
 
+    /**
+     * stops scheduled task
+     * @param basket basket
+     */
     public void stopScheduledTask(Basket basket) {
         scheduledBaskets.remove(basket.getBasketId());
         ScheduledFuture<?> scheduledFuture = scheduledTasks.get(basket.getBasketId());
@@ -74,105 +112,20 @@ public class BasketRebalanceScheduler {
         }
     }
 
+    /**
+     * executes task
+     * @param basketId basket id
+     */
     private synchronized void executeTask(String basketId) {
         try {
             Basket basket = basketService.getBasket(basketId).orElseThrow();
-            BasketRebalanceContext context = BasketRebalanceContext.builder()
-                    .basket(basket)
-                    .build();
-            BasketRebalance basketRebalance = basketRebalanceFactory.getObject(context);
-            List<BasketChange> basketChanges = basketRebalance.getChanges();
-            log.info("basketChanges: {}", basketChanges);
-
-            // clears holdWeights
-            for (BasketAsset basketAsset : basket.getBasketAssets()) {
-                if (!basketAsset.isFixed()) {
-                    BasketAssetEntity.Pk pk = BasketAssetEntity.Pk.builder()
-                            .basketId(basketAsset.getBasketId())
-                            .assetId(basketAsset.getAssetId())
-                            .build();
-                    BasketAssetEntity basketAssetEntity = basketAssetRepository.findById(pk).orElseThrow();
-                    basketAssetEntity.setHoldingWeight(BigDecimal.ZERO);
-                    basketAssetRepository.saveAndFlush(basketAssetEntity);
-                }
-            }
-
-            // adds basket assets
-            int sort = basket.getBasketAssets().stream()
-                    .mapToInt(BasketAsset::getSort)
-                    .max()
-                    .orElse(0) + 1;
-            for (BasketChange basketChange : basketChanges) {
-                String market = basket.getMarket();
-                String symbol = basketChange.getSymbol();
-                String assetId = String.format("%s.%s", market, symbol);
-                BasketAssetEntity.Pk pk = BasketAssetEntity.Pk.builder()
-                        .basketId(basketId)
-                        .assetId(assetId)
-                        .build();
-                BasketAssetEntity basketAssetEntity = basketAssetRepository.findById(pk).orElse(null);
-                if (basketAssetEntity == null) {
-                    basketAssetEntity = BasketAssetEntity.builder()
-                            .basketId(basketId)
-                            .assetId(assetId)
-                            .sort(sort++)
-                            .enabled(true)
-                            .build();
-                }
-                basketAssetEntity.setHoldingWeight(basketChange.getHoldingWeight());
-                basketAssetRepository.saveAndFlush(basketAssetEntity);
-            }
-
-            // clear holdWeight zero + not holding
-            basket = basketService.getBasket(basketId).orElseThrow();
-            List<Trade> trades = tradeService.getTrades().stream()
-                    .filter(trade -> Objects.equals(trade.getBasketId(), basketId))
-                    .toList();
-            // finds all relative balances
-            List<Balance> balances = trades.stream()
-                    .map(trade -> {
-                        try {
-                            return tradeService.getBalance(trade.getTradeId()).orElseThrow();
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-                    })
-                    .toList();
-            // finds basket asset is in balances
-            for (BasketAsset basketAsset : basket.getBasketAssets()) {
-                if (basketAsset.getHoldingWeight().compareTo(BigDecimal.ZERO) == 0) {
-                    boolean ownedAsset = isOwnedAsset(basketAsset.getAssetId(), balances);
-                    if (!ownedAsset) {
-                        BasketAssetEntity.Pk pk = BasketAssetEntity.Pk.builder()
-                                .basketId(basketId)
-                                .assetId(basketAsset.getAssetId())
-                                .build();
-                        basketAssetRepository.deleteById(pk);
-                        basketAssetRepository.flush();
-                    }
-                }
-            }
+            BasketRebalanceTask basketRebalanceTask = basketRebalanceTaskFactory.getObject(basket);
+            basketRebalanceTask.execute();
             sendSystemAlarm(String.format("Basket rebalance completed - %s", basket.getName()));
         } catch (Throwable e) {
             log.warn(e.getMessage(), e);
             sendSystemAlarm(e.getMessage());
         }
-    }
-
-    /**
-     * checks owned asset
-     * @param assetId asset id
-     * @param balances balances
-     * @return whether owned or not
-     */
-    boolean isOwnedAsset(String assetId, List<Balance> balances) {
-        for (Balance balance : balances) {
-            BalanceAsset balanceAsset = balance.getBalanceAsset(assetId).orElse(null);
-            if (balanceAsset != null) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**

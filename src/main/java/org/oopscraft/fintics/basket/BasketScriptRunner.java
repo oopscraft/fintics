@@ -7,7 +7,7 @@ import org.oopscraft.fintics.service.AssetService;
 
 import java.util.List;
 
-public abstract class BasketRebalance {
+public abstract class BasketScriptRunner {
 
     @Getter
     protected final Basket basket;
@@ -18,16 +18,16 @@ public abstract class BasketRebalance {
     @Getter
     protected final OhlcvClient ohlcvClient;
 
-    protected BasketRebalance(Basket basket, AssetService assetService, OhlcvClient ohlcvClient) {
+    protected BasketScriptRunner(Basket basket, AssetService assetService, OhlcvClient ohlcvClient) {
         this.basket = basket;
         this.assetService = assetService;
         this.ohlcvClient = ohlcvClient;
     }
 
     /**
-     * get basket change results
-     * @return change results
+     * get basket rebalance results
+     * @return rebalance results
      */
-    public abstract List<BasketChange> getChanges();
+    public abstract List<BasketRebalanceResult> run();
 
 }

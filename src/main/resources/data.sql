@@ -202,8 +202,8 @@ update fintics_strategy set script = '
 import org.oopscraft.fintics.model.Ohlcv
 import org.oopscraft.fintics.model.TradeAsset
 import org.oopscraft.fintics.model.Strategy
-import org.oopscraft.fintics.trade.strategy.StrategyResult
-import org.oopscraft.fintics.trade.strategy.StrategyResult.Action
+import org.oopscraft.fintics.strategy.StrategyResult
+import org.oopscraft.fintics.strategy.StrategyResult.Action
 import org.oopscraft.fintics.trade.Tools
 import org.oopscraft.fintics.indicator.*
 

@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class BasketRebalanceFactory {
+public class BasketScriptRunnerFactory {
 
     private final AssetService assetService;
 
@@ -16,21 +16,20 @@ public class BasketRebalanceFactory {
 
     /**
      * gets object
-     * @param context strategy runner context
+     * @param basket basket
      * @return strategy runner
      */
-    public BasketRebalance getObject(BasketRebalanceContext context) {
-        Basket basket = context.getBasket();
+    public BasketScriptRunner getObject(Basket basket) {
         switch (basket.getLanguage()) {
             case GROOVY -> {
-                return GroovyBasketRebalance.builder()
+                return GroovyBasketScriptRunner.builder()
                         .basket(basket)
                         .assetService(assetService)
                         .ohlcvClient(ohlcvClient)
                         .build();
             }
             case PYTHON -> {
-                return PythonBasketRebalance.builder()
+                return PythonBasketScriptRunner.builder()
                         .basket(basket)
                         .assetService(assetService)
                         .ohlcvClient(ohlcvClient)
