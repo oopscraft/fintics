@@ -91,6 +91,7 @@ public class TradeService {
 
     @Transactional
     public void deleteTrade(String tradeId) {
+        tradeAssetRepository.deleteByTradeId(tradeId);
         tradeRepository.deleteById(tradeId);
         tradeRepository.flush();
     }
