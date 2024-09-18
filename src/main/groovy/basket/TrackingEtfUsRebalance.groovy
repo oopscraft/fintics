@@ -121,14 +121,13 @@ println "finalEtfHoldings:${finalEtfHoldings}"
 //=========================================
 // sort by score
 //=========================================
-def targetAssetCount = 40
+def targetAssetCount = 50
 def targetHoldingWeightPerAsset = 2.0
 def fixedAssetCount = basket.getBasketAssets().findAll{it.fixed && it.enabled}.size()
-def remainedAssetCount = targetAssetCount - fixedAssetCount as Integer
+def remainedAssetCount = (targetAssetCount - fixedAssetCount) as Integer
 finalEtfHoldings = finalEtfHoldings
         .sort{ -(it.score?:0)}
         .take(remainedAssetCount)
-        .sort{-(it.marketCap?:0)}
 
 //=========================================
 // return

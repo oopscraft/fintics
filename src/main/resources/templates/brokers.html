@@ -308,14 +308,14 @@
                         </div>
                         <div class="justify-self--end">
                             <button type="button" onclick="deleteBroker();"
-                                    th:classappend="!${#authorization.expression('hasAuthority(''ADMIN_VARIABLE_EDIT'')')}?'locked'"
+                                    th:classappend="!${#authorization.expression('hasAuthority(''BROKERS_EDIT'')')}?'locked'"
                                     data-duice-bind="broker"
                                     data-duice-execute="(broker.brokerId && !broker._new) ? this.disabled=false : this.disabled=true;">
                                 <img class="icon" th:src="@{/static/image/icon-delete.svg}" alt="delete"/>
                                 <span data-th-text="#{web.global.delete}"></span>
                             </button>
                             <button type="button" onclick="saveBroker();"
-                                    th:classappend="!${#authorization.expression('hasAuthority(''ADMIN_VARIABLE_EDIT'')')}?'locked'"
+                                    th:classappend="!${#authorization.expression('hasAuthority(''BROKERS_EDIT'')')}?'locked'"
                                     data-duice-bind="broker"
                                     data-duice-execute="(broker.brokerId || broker._new) ? this.disabled=false : this.disabled=true;">
                                 <img class="icon" th:src="@{/static/image/icon-save.svg}" alt="save"/>
