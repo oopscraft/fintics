@@ -63,12 +63,10 @@ def etfSymbols = [
 //=======================================
 List<EtfHolding> allEtfHoldings = []
 etfSymbols.each{
-    def cuAssets = getEtfHoldings(it)
-    allEtfHoldings.addAll(cuAssets)
+    def etfHoldings = getEtfHoldings(it)
+    allEtfHoldings.addAll(etfHoldings)
 }
 println "allEtfHoldings:${allEtfHoldings}"
-
-
 
 //========================================
 // distinct sum of weight
@@ -104,15 +102,18 @@ List<EtfHolding> finalEtfHoldings = distinctEtfHoldings.findAll {
     it.marketCap = asset.getMarketCap()
 
     //  ROE
-    def roes = asset.getAssetMetas('ROE').collect{new BigDecimal(it.value)}
+    def roes = asset.getAssetMetas('ROE').collect{new BigDecimal(it.value?:'0.0')}
     def roe = roes.find{true}?:0.0
+    if (roe < 5.0) {    // ROE 5 이하는 수익성 없는 회사로 제외
+        return false
+    }
 
     // PER
-    def pers = asset.getAssetMetas('PER').collect{new BigDecimal(it.value)}
+    def pers = asset.getAssetMetas('PER').collect{new BigDecimal(it.value?:'100.0')}
     def per = pers.find{true}?:100.0
 
     // defines score
-    it.score = (roe/per) as BigDecimal
+    it.score = roe/per as BigDecimal
 
     // return
     return it
