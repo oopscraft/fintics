@@ -321,6 +321,12 @@ public class UsAssetClient extends AssetClient {
                             .build(),
                     AssetMeta.builder()
                             .assetId(assetId)
+                            .name("EPS")
+                            .value(Objects.toString(eps, null))
+                            .dateTime(dateTime)
+                            .build(),
+                    AssetMeta.builder()
+                            .assetId(assetId)
                             .name("ROE")
                             .value(Objects.toString(roe, null))
                             .dateTime(dateTime)

@@ -40,6 +40,8 @@ static List<EtfHolding> getEtfHoldings(etfSymbol) {
 // ETF list
 def etfSymbols = [
         // index ETF
+        '069500',   // KODEX 200
+        '229200',   // KODEX 코스닥150
         '385720',   // TIMEFOLIO 코스피액티브
         // strategy ETF
         '441800',   // TIMEFOLIO Korea플러스배당액티브

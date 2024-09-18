@@ -227,6 +227,7 @@ public class KrAssetClient extends AssetClient {
      */
     List<AssetMeta> getStockAssetMetas(Asset asset) {
         BigDecimal per = null;
+        BigDecimal eps = null;
         BigDecimal roe = null;
         BigDecimal roa = null;
         BigDecimal dividendYield = null;
@@ -277,6 +278,9 @@ public class KrAssetClient extends AssetClient {
                 String value = row.get("CO_VALUE");
                 if (name.startsWith("PER")) {
                     per = toNumber(value, null);
+                }
+                if (name.startsWith("EPS")) {
+                    eps = toNumber(value, null);
                 }
                 if (name.startsWith("ROE")) {
                     roe = toNumber(value, null);
@@ -334,6 +338,12 @@ public class KrAssetClient extends AssetClient {
                         .assetId(assetId)
                         .name("PER")
                         .value(Objects.toString(per, null))
+                        .dateTime(dateTime)
+                        .build(),
+                AssetMeta.builder()
+                        .assetId(assetId)
+                        .name("EPS")
+                        .value(Objects.toString(eps, null))
                         .dateTime(dateTime)
                         .build(),
                 AssetMeta.builder()

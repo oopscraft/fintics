@@ -40,9 +40,10 @@ static List<EtfHolding> getEtfHoldings(etfSymbol) {
 // ETF list
 def etfSymbols = [
         // index ETF
-        'VTI',      // Vanguard Total Stock Market Index Fund ETF Shares
         'SPY',      // SPDR S&P 500 ETF Trust
         'QQQ',      // Invesco QQQ Trust
+        'DIA',      // SPDR Dow Jones Industrial Average ETF Trust
+        'VTI',      // Vanguard Total Stock Market Index Fund ETF Shares
         // strategy ETF
         'JEPI',     // JPMorgan Equity Premium Income ETF
         'JEPQ',     // JPMorgan Nasdaq Equity Premium Income ETF
@@ -52,7 +53,11 @@ def etfSymbols = [
         'SCHD',     // Schwab U.S. Dividend Equity ETF
         // sector ETF
         'XLK',      // The Technology Select Sector SPDR Fund
+        'VGT',      // Vanguard Information Technology Index Fund ETF Shares
+        'SMH',      // VanEck Semiconductor ETF
+        'SOXX',     // iShares Semiconductor ETF
         'XLV',      // The Health Care Select Sector SPDR Fund
+        'XBI',      // SPDR S&P Biotech ETF
         // TODO 수익률 상위 ETF 추가
 ]
 
