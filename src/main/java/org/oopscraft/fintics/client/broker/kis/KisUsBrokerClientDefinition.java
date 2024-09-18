@@ -44,8 +44,8 @@ public class KisUsBrokerClientDefinition implements BrokerClientDefinition {
     @Override
     public String getPropertiesTemplate() {
         StringJoiner template = new StringJoiner("\n");
-        template.add("production=false");
-        template.add("apiUrl=https://openapivts.koreainvestment.com:29443");
+        template.add("production=true");
+        template.add("apiUrl=https://openapi.koreainvestment.com:9443");
         template.add("appKey=[Application Key]");
         template.add("appSecret=[Application Secret]");
         template.add("accountNo=[Account Number]");
