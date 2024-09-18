@@ -91,14 +91,20 @@ println "distinctEtfHoldings:${distinctEtfHoldings}"
 List<EtfHolding> finalEtfHoldings = distinctEtfHoldings.findAll {
     Asset asset = assetService.getAsset("KR.${it.symbol}").orElse(null)
     if (asset == null) {
-        return null
+        return false
     }
     // STOCK 이 아니면 제외
     if (asset.getType() != "STOCK") {
-        return null
+        return false
     }
     // set marketCap
     it.marketCap = asset.getMarketCap()
+    // checks ROE
+    def roeMeta = asset.getAssetMetas().find { it.name == 'ROE' }
+    def roe = (roeMeta != null && roeMeta.value != null) ? new BigDecimal(roeMeta.value) : BigDecimal.ZERO
+    if (roe < 20) {
+        return false
+    }
     // return
     return it
 }

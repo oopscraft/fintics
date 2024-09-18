@@ -6,9 +6,7 @@ import org.oopscraft.fintics.dao.AssetEntity;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Data
 @SuperBuilder
@@ -61,6 +59,23 @@ public class Asset implements Serializable {
         return LinkFactory.getLinks(this);
     }
 
+    /**
+     * returns asset metas by name
+     * @param name name
+     * @return asset metas
+     */
+    public List<AssetMeta> getAssetMetas(String name) {
+        return assetMetas.stream()
+                .filter(it -> Objects.equals(it.getName(), name))
+                .sorted(Comparator.comparing(AssetMeta::getDateTime).reversed())
+                .toList();
+    }
+
+    /**
+     * asset factory method
+     * @param assetEntity asset entity
+     * @return asset
+     */
     public static Asset from(AssetEntity assetEntity) {
         Asset asset = Asset.builder()
                 .assetId(assetEntity.getAssetId())
