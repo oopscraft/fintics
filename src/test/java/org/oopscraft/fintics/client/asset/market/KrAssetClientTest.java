@@ -49,4 +49,20 @@ class KrAssetClientTest extends CoreTestSupport {
         // then
         log.info("assetMetas: {}", assetMetas);
     }
+
+    @Test
+    void getAssetMetasIfValueIsNull() {
+        // given
+        Asset asset = Asset.builder()
+                .assetId("KR.000860")
+                .name("test")
+                .market("KR")
+                .type("STOCK")
+                .build();
+        // when
+        List<AssetMeta> assetMetas = getKrAssetClient().getAssetMetas(asset);
+        // then
+        log.info("assetMetas: {}", assetMetas);
+    }
+
 }

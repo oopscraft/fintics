@@ -14,6 +14,7 @@ class EtfHolding {
     String name
     BigDecimal weight
     BigDecimal marketCap
+    BigDecimal score
 }
 
 /**
@@ -93,35 +94,48 @@ List<EtfHolding> finalEtfHoldings = distinctEtfHoldings.findAll {
     if (asset == null) {
         return false
     }
+
     // STOCK 이 아니면 제외
     if (asset.getType() != "STOCK") {
         return false
     }
+
     // set marketCap
     it.marketCap = asset.getMarketCap()
-    // checks ROE
-    def roeMeta = asset.getAssetMetas().find { it.name == 'ROE' }
-    def roe = (roeMeta != null && roeMeta.value != null) ? new BigDecimal(roeMeta.value) : BigDecimal.ZERO
-    if (roe < 20) {
-        return false
-    }
+
+    //  ROE
+    def roes = asset.getAssetMetas('ROE').collect{new BigDecimal(it.value)}
+    def roe = roes.find{true}?:0.0
+
+    // PER
+    def pers = asset.getAssetMetas('PER').collect{new BigDecimal(it.value)}
+    def per = pers.find{true}?:100.0
+
+    // defines score
+    it.score = (roe/per) as BigDecimal
+
     // return
     return it
 }
 println "finalEtfHoldings:${finalEtfHoldings}"
 
 //=========================================
-// sort by market cap
+// sort by score
 //=========================================
+def targetAssetCount = 40
+def targetHoldingWeightPerAsset = 2.0
+def fixedAssetCount = basket.getBasketAssets().findAll{it.fixed && it.enabled}.size()
+def remainedAssetCount = targetAssetCount - fixedAssetCount as Integer
 finalEtfHoldings = finalEtfHoldings
+        .sort{ -(it.score?:0)}
+        .take(remainedAssetCount)
         .sort{-(it.marketCap?:0)}
-        .take(40)
 
 //=========================================
 // return
 //=========================================
 List<BasketRebalanceResult> basketRebalanceResults = finalEtfHoldings.collect{
-    BasketRebalanceResult.of(it.symbol, it.name, 2.0)
+    BasketRebalanceResult.of(it.symbol, it.name, targetHoldingWeightPerAsset)
 }
 println("basketRebalanceResults: ${basketRebalanceResults}")
 return basketRebalanceResults
