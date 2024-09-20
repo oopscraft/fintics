@@ -33,6 +33,8 @@ public class KisBrokerClient extends BrokerClient {
 
     private final static Object LOCK_OBJECT = new Object();
 
+    private final static String[] HTTPS_PROTOCOLS = new String[]{"TLSv1.2"};
+
     private final boolean production;
 
     private final String apiUrl;
@@ -44,6 +46,8 @@ public class KisBrokerClient extends BrokerClient {
     private final String accountNo;
 
     private final ObjectMapper objectMapper;
+
+    private final RestTemplate restTemplate;
 
     /**
      * constructor
@@ -58,6 +62,12 @@ public class KisBrokerClient extends BrokerClient {
         this.appSecret = properties.getProperty("appSecret");
         this.accountNo = properties.getProperty("accountNo");
         this.objectMapper = new ObjectMapper();
+
+        // creates rest template
+        this.restTemplate = RestTemplateBuilder.create()
+                .insecure(true)
+                .httpsProtocols(HTTPS_PROTOCOLS)
+                .build();
     }
 
     /**
@@ -106,10 +116,6 @@ public class KisBrokerClient extends BrokerClient {
         if(!production) {
             return false;
         }
-
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .build();
         String url = apiUrl + "/uapi/domestic-stock/v1/quotations/chk-holiday";
         HttpHeaders headers = createHeaders();
         headers.add("tr_id", "CTCA0903R");
@@ -170,9 +176,6 @@ public class KisBrokerClient extends BrokerClient {
     @Override
     public List<Ohlcv> getMinuteOhlcvs(Asset asset) throws InterruptedException {
         List<Ohlcv> minuteOhlcvs = new ArrayList<>();
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .build();
         String fidEtcClsCode = "";
         String fidCondMrktDivCode = "J";
         String fidInputIscd = asset.getSymbol();
@@ -263,14 +266,10 @@ public class KisBrokerClient extends BrokerClient {
      * return daily ohlcvs
      * @param asset asset
      * @return daily ohlcvs
-     * @see [국내주식기간별시세(일/주/월/년)[v1_국내주식-016]](https://apiportal.koreainvestment.com/apiservice/apiservice-domestic-stock-quotations2#L_a08c3421-e50f-4f24-b1fe-64c12f723c77)
+     * @see [국내주식기간별시세(일,주,월,년)[v1_국내주식-016]](https://apiportal.koreainvestment.com/apiservice/apiservice-domestic-stock-quotations2#L_a08c3421-e50f-4f24-b1fe-64c12f723c77)
      */
     @Override
     public List<Ohlcv> getDailyOhlcvs(Asset asset) throws InterruptedException {
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .build();
-
         String url = apiUrl + "/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice";
         HttpHeaders headers = createHeaders();
         headers.add("tr_id", "FHKST03010100");
@@ -345,9 +344,6 @@ public class KisBrokerClient extends BrokerClient {
      */
     @Override
     public OrderBook getOrderBook(Asset asset) throws InterruptedException {
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .build();
         String url = apiUrl + "/uapi/domestic-stock/v1/quotations/inquire-asking-price-exp-ccn";
         HttpHeaders headers = createHeaders();
         headers.add("tr_id", "FHKST01010200");
@@ -439,9 +435,6 @@ public class KisBrokerClient extends BrokerClient {
      */
     @Override
     public Balance getBalance() throws InterruptedException {
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .build();
         String url = apiUrl + "/uapi/domestic-stock/v1/trading/inquire-balance";
         HttpHeaders headers = createHeaders();
         String trId = production ? "TTTC8434R" : "VTTC8434R";
@@ -541,9 +534,6 @@ public class KisBrokerClient extends BrokerClient {
      * @see [주식잔고조회_실현손익[v1_국내주식-041]](https://apiportal.koreainvestment.com/apiservice/apiservice-domestic-stock-order#L_ff79302e-6014-495e-a188-6dca69fc952e)
      */
     private BigDecimal getBalanceRealizedProfitAmount() throws InterruptedException {
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .build();
         String url = apiUrl + "/uapi/domestic-stock/v1/trading/inquire-balance-rlz-pl";
         HttpHeaders headers = createHeaders();
         String trId = "TTTC8494R";
@@ -604,10 +594,7 @@ public class KisBrokerClient extends BrokerClient {
         BigDecimal price = order.getPrice().setScale(0, RoundingMode.FLOOR);
         order.setPrice(price);
 
-        // rest template
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .build();
+        // api url
         String url = apiUrl + "/uapi/domestic-stock/v1/trading/order-cash";
         HttpHeaders headers = createHeaders();
 
@@ -680,11 +667,6 @@ public class KisBrokerClient extends BrokerClient {
         if(!production) {
             return new ArrayList<>();
         }
-
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .build();
-
         String url = apiUrl + "/uapi/domestic-stock/v1/trading/inquire-psbl-rvsecncl";
         HttpHeaders headers = createHeaders();
         headers.add("tr_id", "TTTC8036R");
@@ -762,9 +744,6 @@ public class KisBrokerClient extends BrokerClient {
      */
     @Override
     public Order amendOrder(Asset asset, Order order) throws InterruptedException {
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .build();
         String url = apiUrl + "/uapi/domestic-stock/v1/trading/order-rvsecncl";
         HttpHeaders headers = createHeaders();
 

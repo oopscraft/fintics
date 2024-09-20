@@ -44,11 +44,18 @@ public class UpbitBrokerClient extends BrokerClient {
 
     private final ObjectMapper objectMapper;
 
+    private final RestTemplate restTemplate;
+
     public UpbitBrokerClient(BrokerClientDefinition definition, Properties properties) {
         super(definition, properties);
         this.accessKey = properties.getProperty("accessKey");
         this.secretKey = properties.getProperty("secretKey");
         this.objectMapper = new ObjectMapper();
+
+        // creates rest template
+        this.restTemplate = RestTemplateBuilder.create()
+                .insecure(true)
+                .build();
     }
 
     @Override
@@ -93,9 +100,6 @@ public class UpbitBrokerClient extends BrokerClient {
 
     @Override
     public OrderBook getOrderBook(Asset asset) throws InterruptedException {
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .build();
         String url = API_URL + "/v1/orderbook";
         String queryString = "markets=" + asset.getSymbol();
         RequestEntity<Void> requestEntity = RequestEntity
@@ -135,9 +139,6 @@ public class UpbitBrokerClient extends BrokerClient {
     }
 
     private List<Ohlcv> getOhlcvs(Asset asset, Ohlcv.Type ohlcvType) throws InterruptedException {
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .build();
         String url = API_URL + "/v1/candles/";
         switch(ohlcvType) {
             case MINUTE -> url += "minutes/1";
@@ -182,10 +183,6 @@ public class UpbitBrokerClient extends BrokerClient {
 
     @Override
     public Balance getBalance() throws InterruptedException {
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .build();
-
         RequestEntity<Void> requestEntity = RequestEntity
                 .get(API_URL + "/v1/accounts")
                 .headers(createHeaders(null))
@@ -252,10 +249,6 @@ public class UpbitBrokerClient extends BrokerClient {
 
     @Override
     public Order submitOrder(Asset asset, Order order) throws InterruptedException {
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .build();
-
         // define parameters
         String market = order.getSymbol();
         String side;
@@ -349,10 +342,6 @@ public class UpbitBrokerClient extends BrokerClient {
 
     @Override
     public List<Order> getWaitingOrders() throws InterruptedException {
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .build();
-
         String url = API_URL + "/v1/orders/";
         String queryString = "state=wait&page=1&limit=100";
         RequestEntity<Void> requestEntity = RequestEntity
@@ -403,9 +392,6 @@ public class UpbitBrokerClient extends BrokerClient {
     @Override
     public Order amendOrder(Asset asset, Order order) throws InterruptedException {
         // cancel
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .build();
         String url = API_URL + "/v1/order";
         String queryString = "uuid=" + order.getBrokerOrderId();
         RequestEntity<Void> requestEntity = RequestEntity

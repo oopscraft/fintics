@@ -28,6 +28,8 @@ public class AlpacaBrokerClient extends BrokerClient {
 
     private final ObjectMapper objectMapper;
 
+    private final RestTemplate restTemplate;
+
     /**
      * constructor
      * @param definition definition
@@ -39,6 +41,11 @@ public class AlpacaBrokerClient extends BrokerClient {
         this.apiKey = properties.getProperty("apiKey");
         this.apiSecret = properties.getProperty("apiSecret");
         this.objectMapper = new ObjectMapper();
+
+        // creates rest template
+        this.restTemplate = RestTemplateBuilder.create()
+                .insecure(true)
+                .build();
     }
 
     HttpHeaders createHttpHeaders() {
@@ -68,9 +75,6 @@ public class AlpacaBrokerClient extends BrokerClient {
      * @see https://docs.alpaca.markets/reference/stockbars-1
      */
     List<Map<String,String>> getOhlcvs(String symbol, String timeframe, LocalDateTime start) {
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .build();
         RequestEntity<Void> requestEntity = RequestEntity
                 .get("https://data.sandbox.alpaca.markets/v2/stocks/bars/latest?feed=sip")
                 .headers(createHttpHeaders())
@@ -87,9 +91,6 @@ public class AlpacaBrokerClient extends BrokerClient {
 
     @Override
     public List<Ohlcv> getMinuteOhlcvs(Asset asset) throws InterruptedException {
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .build();
         RequestEntity<Void> requestEntity = RequestEntity
                 .get("https://data.sandbox.alpaca.markets/v2/stocks/bars/latest?feed=sip")
                 .headers(createHttpHeaders())
