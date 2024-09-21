@@ -41,19 +41,25 @@
                 });
         }
 
+        /**
+         * resets trades
+         */
         function resetTrades() {
             duice.ObjectProxy.reset(tradeSearch);
             getTrades();
         }
 
+        /**
+         * creates trade
+         */
         function createTrade() {
             document.location.href = `${_rootUrl}/trade`;
         }
 
+        // document event
         document.addEventListener('DOMContentLoaded', () => {
             getTrades();
         });
-
     </script>
     <style th:inline="css">
     </style>
