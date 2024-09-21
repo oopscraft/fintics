@@ -20,7 +20,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 @RestController
 @RequestMapping("/api/v1/data")
-@PreAuthorize("hasAuthority('API_DATA')")
+@PreAuthorize("hasAuthority('api.data')")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "data", description = "Data")

@@ -5,7 +5,7 @@
       layout:decorate="_web.html">
 <th:block layout:fragment="_content">
     <script th:inline="javascript">
-        // asset
+        // defines
         const assetSearch = new duice.ObjectProxy({
             key: 'name',
             value: null,
@@ -14,17 +14,16 @@
             _size: 100,
             _count: 0
         });
-        duice.ObjectProxy.onPropertyChanged(assetSearch, () => {
-            getAssets();
-        });
         const assets = new duice.ArrayProxy([]);
-
-        // ohlcv summary
         const ohlcvSummaries = new duice.ArrayProxy([]);
         const ohlcvSummary = new duice.ObjectProxy({
             ohlcvStatistics: []
         });
 
+        /**
+         * gets assets
+         * @param page page number
+         */
         function getAssets(page) {
             assetSearch._page = page || 0;
             let url = new URL(`${_apiUrl}/v1/data/assets`, document.location.origin);
@@ -44,11 +43,17 @@
             });
         }
 
+        /**
+         * resets assets
+         */
         function resetAssets() {
             duice.ObjectProxy.reset(assetSearch);
             getAssets();
         }
 
+        /**
+         * gets ohlcv summaries
+         */
         function getOhlcvSummaries() {
             let url = new URL(`${_apiUrl}/v1/data/ohlcv-summaries`, document.location.origin);
             _fetch(url)
@@ -58,6 +63,10 @@
                 });
         }
 
+        /**
+         * gets ohlcv summary
+         * @param id asset id
+         */
         function getOhlcvSummary(id) {
             duice.ObjectProxy.clear(ohlcvSummary);
             let url = new URL(`${_apiUrl}/v1/data/ohlcv-summaries/${id}`, document.location.origin);
@@ -68,10 +77,16 @@
             });
         }
 
+        /**
+         * gets ohlcvs
+         * @param assetId asset id
+         * @param date date
+         */
         function getOhlcvs(assetId, date) {
             ohlcvsDialog.open(assetId, date);
         }
 
+        // document event
         document.addEventListener('DOMContentLoaded', () => {
             let tabFolder = duice.tabFolder(
                 duice.tabItem(
@@ -131,7 +146,7 @@
                 <span data-th-text="#{fintics.Asset}"></span>
             </h2>
         </div>
-        <div class="display--flex flex-direction--column gap--1em padding--1em">
+        <div class="display--flex flex-direction--column gap--1em padding--1em s__padding-y--0">
             <form onsubmit="return false;" class="display--grid grid-template-columns--12 grid-gap--1em">
                 <label class="grid-column--1 s__grid-column--4">
                     <select class="width--100" data-duice-bind="assetSearch" data-duice-property="key">
@@ -231,7 +246,7 @@
                 <span data-th-text="|#{fintics.Asset} #{fintics.Ohlcv}|"></span>
             </h2>
         </div>
-        <div class="display--flex flex-direction--column gap--1em padding--1em">
+        <div class="display--flex flex-direction--column gap--1em padding--1em s__padding-y--0">
             <div class="overflow-y--scroll border-x--1">
                 <table class="width--100 border--0 text-align--center">
                     <thead>

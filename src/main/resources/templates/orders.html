@@ -5,6 +5,7 @@
       layout:decorate="_web.html">
 <th:block layout:fragment="_content">
     <script th:inline="javascript">
+        // defines
         const orderSearch = new duice.ObjectProxy({
             orderAtFrom: null,
             orderAtTo: null,
@@ -17,6 +18,9 @@
             _size: 20,
             _count: 0
         });
+        const trades = new duice.ArrayProxy(/*[[${trades}]]*/[]);
+        const orders = new duice.ArrayProxy([]);
+
         // url search params
         let urlSearchParams = new URLSearchParams(window.location.search);
         orderSearch.tradeId = urlSearchParams.get('tradeId') || null;
@@ -25,13 +29,10 @@
             orderSearch.value = urlSearchParams.get('assetId');
         }
 
-        duice.ObjectProxy.onPropertyChanged(orderSearch, (event) => {
-            getOrders();
-        });
-        const trades = new duice.ArrayProxy(/*[[${trades}]]*/[]);
-        const orders = new duice.ArrayProxy([]);
-
-
+        /**
+         * gets orders
+         * @param page page number
+         */
         function getOrders(page) {
             if(page) {
                 orderSearch._page = page;
@@ -64,6 +65,9 @@
                 });
         }
 
+        /**
+         * resets orders
+         */
         function resetOrders() {
             duice.ObjectProxy.reset(orderSearch);
             getOrders();
@@ -72,7 +76,6 @@
         document.addEventListener('DOMContentLoaded', () => {
             getOrders();
         });
-
     </script>
     <style th:inline="css">
     </style>
@@ -92,7 +95,7 @@
     <!-- start: order                       -->
     <!-- ================================== -->
     <div class="display--flex flex-direction--column border--1 padding--1em">
-        <div class="display--flex flex-direction--column gap--1em padding--1em">
+        <div class="display--flex flex-direction--column gap--1em padding--1em s__padding-y--0">
             <form onsubmit="return false;" class="display--grid grid-template-columns--12 grid-gap--1em">
                 <div class="grid-column--12 s__grid-column--12 display--grid grid-template-columns--12 grid-gap--1em">
                     <label class="grid-column--1 s__grid-column--12">

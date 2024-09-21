@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/trades")
-@PreAuthorize("hasAuthority('API_TRADES')")
+@PreAuthorize("hasAuthority('api.trades')")
 @RequiredArgsConstructor
 @Tag(name = "trade", description = "trade operations")
 @Slf4j
@@ -40,11 +40,25 @@ public class TradesRestController {
      */
     @GetMapping
     @Operation(description = "gets trades")
-    public ResponseEntity<List<TradeResponse>> getTrades() {
-        List<TradeResponse> tradeResponses = tradeService.getTrades().stream()
+    public ResponseEntity<List<TradeResponse>> getTrades(
+            @RequestParam(value = "name", required = false)
+            @Parameter(description = "trade name")
+                String name,
+            @PageableDefault
+            @Parameter(hidden = true)
+                Pageable pageable
+    ) {
+        TradeSearch tradeSearch = TradeSearch.builder()
+                .name(name)
+                .build();
+        Page<Trade> tradePage = tradeService.getTrades(tradeSearch, pageable);
+        List<TradeResponse> tradeResponses = tradePage.getContent().stream()
                 .map(TradeResponse::from)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(tradeResponses);
+                .toList();
+        long total = tradePage.getTotalElements();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_RANGE, PageableUtils.toContentRange("asset", pageable, total))
+                .body(tradeResponses);
     }
 
     /**
@@ -71,7 +85,7 @@ public class TradesRestController {
      * @return created trade info
      */
     @PostMapping
-    @PreAuthorize("hasAuthority('API_TRADES_EDIT')")
+    @PreAuthorize("hasAuthority('api.trades.edit')")
     @Transactional
     @Operation(description = "creates trade")
     public ResponseEntity<TradeResponse> createTrade(
@@ -109,7 +123,7 @@ public class TradesRestController {
      * @return modified trade info
      */
     @PutMapping("{tradeId}")
-    @PreAuthorize("hasAuthority('API_TRADES_EDIT')")
+    @PreAuthorize("hasAuthority('api.trades.edit')")
     @Transactional
     @Operation(description = "modifies trade")
     public ResponseEntity<TradeResponse> modifyTrade(
@@ -147,7 +161,7 @@ public class TradesRestController {
      * @return void
      */
     @DeleteMapping("{tradeId}")
-    @PreAuthorize("hasAuthority('API_TRADES_EDIT')")
+    @PreAuthorize("hasAuthority('api.trades.edit')")
     @Transactional
     @Operation(description = "deletes trade")
     public ResponseEntity<Void> deleteTrade(

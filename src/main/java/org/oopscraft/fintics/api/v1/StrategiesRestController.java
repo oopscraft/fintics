@@ -23,7 +23,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/strategies")
-@PreAuthorize("hasAuthority('API_STRATEGIES')")
+@PreAuthorize("hasAuthority('api.strategies')")
 @Tag(name = "strategies", description = "Strategies")
 @RequiredArgsConstructor
 public class StrategiesRestController {
@@ -83,7 +83,7 @@ public class StrategiesRestController {
      * @return created strategy
      */
     @PostMapping
-    @PreAuthorize("hasAuthority('API_STRATEGIES_EDIT')")
+    @PreAuthorize("hasAuthority('api.strategies.edit')")
     @Transactional
     @Operation(description = "gets specified strategy")
     public ResponseEntity<StrategyResponse> createStrategy(
@@ -108,7 +108,7 @@ public class StrategiesRestController {
      * @return changed strategy info
      */
     @PutMapping("{strategyId}")
-    @PreAuthorize("hasAuthority('API_STRATEGIES_EDIT')")
+    @PreAuthorize("hasAuthority('api.strategies.edit')")
     @Transactional
     @Operation(description = "modifies strategy")
     public ResponseEntity<StrategyResponse> modifyStrategy(
@@ -133,7 +133,7 @@ public class StrategiesRestController {
      * @param strategyId strategy id
      */
     @DeleteMapping("{strategyId}")
-    @PreAuthorize("hasAuthority('API_STRATEGIES_EDIT')")
+    @PreAuthorize("hasAuthority('api.strategies.edit')")
     @Transactional
     @Operation(description = "deletes strategy")
     public void deleteStrategy(

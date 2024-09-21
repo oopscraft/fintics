@@ -10,7 +10,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 @Controller
 @RequestMapping("baskets")
-@PreAuthorize("hasAuthority('BASKETS')")
+@PreAuthorize("hasAuthority('baskets')")
 @RequiredArgsConstructor
 public class BasketsController {
 

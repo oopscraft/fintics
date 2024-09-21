@@ -15,10 +15,14 @@ public interface StrategyRepository extends JpaRepository<StrategyEntity, String
 
     default Page<StrategyEntity> findAll(StrategySearch strategySearch, Pageable pageable) {
         Specification<StrategyEntity> specification = Specification.where(null);
-        specification = specification
-                .and(Optional.ofNullable(strategySearch.getName())
-                        .map(StrategySpecifications::containsRuleName)
-                        .orElse(null));
+
+        // name
+        if (strategySearch.getName() != null) {
+            specification = specification.and((root, query, criteriaBuilder) ->
+                    criteriaBuilder.like(root.get(StrategyEntity_.NAME), '%' + strategySearch.getName() + '%'));
+        }
+
+        // find all
         return findAll(specification, pageable);
     }
 

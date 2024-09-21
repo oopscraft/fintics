@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.oopscraft.fintics.model.Basket;
 import org.oopscraft.fintics.model.BasketSearch;
 import org.oopscraft.fintics.model.Trade;
+import org.oopscraft.fintics.model.TradeSearch;
 import org.oopscraft.fintics.service.BasketService;
 import org.oopscraft.fintics.service.TradeService;
 import org.springframework.data.domain.Pageable;
@@ -18,7 +19,7 @@ import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("monitors")
-@PreAuthorize("hasAuthority('MONITORS')")
+@PreAuthorize("hasAuthority('monitors')")
 @RequiredArgsConstructor
 public class MonitorsController {
 
@@ -31,9 +32,11 @@ public class MonitorsController {
         ModelAndView modelAndView = new ModelAndView("monitors.html");
 
         // trades
-        List<Trade> trades = tradeService.getTrades().stream()
-                        .filter(Trade::isEnabled)
-                        .collect(Collectors.toList());
+        List<Trade> trades = tradeService.getTrades(TradeSearch.builder().build(), Pageable.unpaged())
+                .getContent()
+                .stream()
+                .filter(Trade::isEnabled)
+                .collect(Collectors.toList());
         modelAndView.addObject("trades", trades);
 
         // baskets

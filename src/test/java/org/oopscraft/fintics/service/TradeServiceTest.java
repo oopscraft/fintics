@@ -8,7 +8,9 @@ import org.oopscraft.arch4j.core.common.test.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
 import org.oopscraft.fintics.dao.TradeEntity;
 import org.oopscraft.fintics.model.Trade;
+import org.oopscraft.fintics.model.TradeSearch;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -33,7 +35,10 @@ public class TradeServiceTest extends CoreTestSupport {
         entityManager.persist(tradeEntity);
 
         // when
-        List<Trade> trades = tradeService.getTrades();
+        TradeSearch tradeSearch = TradeSearch.builder()
+                .build();
+        Pageable pageable = Pageable.unpaged();
+        List<Trade> trades = tradeService.getTrades(tradeSearch, pageable).getContent();
 
         // then
         assertTrue(trades.size() > 0);

@@ -22,10 +22,14 @@ public interface BasketRepository extends JpaRepository<BasketEntity, String>, J
     default Page<BasketEntity> findAll(BasketSearch basketSearch, Pageable pageable) {
         // where
         Specification<BasketEntity> specification = Specification.where(null);
-        specification = specification
-                .and(Optional.ofNullable(basketSearch.getName())
-                        .map(BasketSpecifications::containsBasketName)
-                        .orElse(null));
+
+        // like name
+        if (basketSearch.getName() != null) {
+            specification = specification.and((root, query, criteriaBuilder) ->
+                    criteriaBuilder.like(root.get(BasketEntity_.NAME), '%' + basketSearch.getName() + '%')
+            );
+        }
+
         // sort
         Sort sort = Sort.by(BasketEntity_.NAME).ascending();
 

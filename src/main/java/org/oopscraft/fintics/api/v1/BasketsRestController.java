@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/baskets")
-@PreAuthorize("hasAuthority('API_BASKETS')")
+@PreAuthorize("hasAuthority('api.baskets')")
 @Tag(name = "baskets", description = "Baskets")
 @RequiredArgsConstructor
 public class BasketsRestController {
@@ -67,7 +67,7 @@ public class BasketsRestController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAuthority('API_BASKETS_EDIT')")
+    @PreAuthorize("hasAuthority('api.baskets.edit')")
     @Operation(summary = "creates new basket")
     public ResponseEntity<BasketResponse> createBasket(
             @RequestBody
@@ -102,7 +102,7 @@ public class BasketsRestController {
     }
 
     @PutMapping("{basketId}")
-    @PreAuthorize("hasAuthority('API_BASKETS_EDIT')")
+    @PreAuthorize("hasAuthority('api.baskets.edit')")
     @Operation(summary = "modifies specified broker info")
     public ResponseEntity<BasketResponse> modifyBasket(
             @PathVariable("basketId")
@@ -138,7 +138,7 @@ public class BasketsRestController {
     }
 
     @DeleteMapping("{basketId}")
-    @PreAuthorize("hasAuthority('API_BASKETS_EDIT')")
+    @PreAuthorize("hasAuthority('api.baskets.edit')")
     @Operation(summary = "deletes specified basket")
     public ResponseEntity<Void> deleteBasket(
             @PathVariable("basketId")

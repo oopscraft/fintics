@@ -46,17 +46,36 @@ public class TradeService {
     @PersistenceContext
     private final EntityManager entityManager;
 
-    public List<Trade> getTrades() {
-        return tradeRepository.findAll(Sort.by(TradeEntity_.NAME)).stream()
+    /**
+     * gets trades
+     * @param tradeSearch trade search
+     * @param pageable pageable
+     * @return page of trades
+     */
+    public Page<Trade> getTrades(TradeSearch tradeSearch, Pageable pageable) {
+        Page<TradeEntity> tradeEntitiesPage = tradeRepository.findAll(tradeSearch, pageable);
+        List<Trade> strategies = tradeEntitiesPage.getContent().stream()
                 .map(Trade::from)
-                .collect(Collectors.toList());
+                .toList();
+        long total = tradeEntitiesPage.getTotalElements();
+        return new PageImpl<>(strategies, pageable, total);
     }
 
+    /**
+     * gets trade
+     * @param tradeId trade id
+     * @return trade
+     */
     public Optional<Trade> getTrade(String tradeId) {
         return tradeRepository.findById(tradeId)
                 .map(Trade::from);
     }
 
+    /**
+     * saves trade
+     * @param trade trade
+     * @return saved trade
+     */
     @Transactional
     public Trade saveTrade(Trade trade) {
         final TradeEntity tradeEntity;
@@ -89,6 +108,10 @@ public class TradeService {
         return Trade.from(savedTradeEntity);
     }
 
+    /**
+     * deletes trade
+     * @param tradeId trade id
+     */
     @Transactional
     public void deleteTrade(String tradeId) {
         tradeAssetRepository.deleteByTradeId(tradeId);
@@ -129,26 +152,19 @@ public class TradeService {
     }
 
     public Page<Order> getOrders(String tradeId, String assetId, Order.Type type, Order.Result result, Pageable pageable) {
-        // where
-        Specification<OrderEntity> specification = Specification.where(null);
-        specification = specification
-                .and(OrderSpecifications.equalTradeId(tradeId))
-                .and(Optional.ofNullable(assetId)
-                        .map(OrderSpecifications::likeAssetId)
-                        .orElse(null))
-                .and(Optional.ofNullable(type)
-                        .map(OrderSpecifications::equalType)
-                        .orElse(null))
-                .and(Optional.ofNullable(result)
-                        .map(OrderSpecifications::equalResult)
-                        .orElse(null));
-
+        // order search
+        OrderSearch orderSearch = OrderSearch.builder()
+                .tradeId(tradeId)
+                .assetId(assetId)
+                .type(type)
+                .result(result)
+                .build();
         // sort
         Sort sort = Sort.by(OrderEntity_.ORDER_AT).descending();
         pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
 
         // find
-        Page<OrderEntity> orderEntityPage = orderRepository.findAll(specification, pageable);
+        Page<OrderEntity> orderEntityPage = orderRepository.findAll(orderSearch, pageable);
         List<Order> orders = orderEntityPage.getContent().stream()
                 .map(Order::from)
                 .toList();

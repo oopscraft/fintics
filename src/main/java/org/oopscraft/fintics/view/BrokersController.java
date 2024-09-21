@@ -13,7 +13,7 @@ import java.util.List;
 
 @Controller
 @RequestMapping("brokers")
-@PreAuthorize("hasAuthority('BROKERS')")
+@PreAuthorize("hasAuthority('brokers')")
 @RequiredArgsConstructor
 public class BrokersController {
 

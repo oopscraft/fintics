@@ -16,7 +16,7 @@ import java.util.List;
 
 @Controller
 @RequestMapping("trades")
-@PreAuthorize("hasAuthority('TRADES')")
+@PreAuthorize("hasAuthority('trades')")
 @RequiredArgsConstructor
 public class TradesController {
 

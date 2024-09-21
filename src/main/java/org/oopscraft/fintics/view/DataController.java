@@ -14,7 +14,7 @@ import java.util.List;
 
 @Controller
 @RequestMapping("data")
-@PreAuthorize("hasAuthority('DATA')")
+@PreAuthorize("hasAuthority('data')")
 @RequiredArgsConstructor
 public class DataController {
 

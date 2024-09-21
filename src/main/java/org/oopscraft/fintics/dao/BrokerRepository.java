@@ -22,9 +22,14 @@ public interface BrokerRepository extends JpaRepository<BrokerEntity, String>, J
     default Page<BrokerEntity> findAll(BrokerSearch brokerSearch, Pageable pageable) {
         // where
         Specification<BrokerEntity> specification = Specification.where(null);
-        specification = specification.and(Optional.ofNullable(brokerSearch.getName())
-                .map(BrokerSpecifications::containsBrokerName)
-                .orElse(null));
+
+        // like name
+        if (brokerSearch.getName() != null) {
+            specification = specification.and((root, query, criteriaBuilder) ->
+                criteriaBuilder.like(root.get(BrokerEntity_.NAME), '%' + brokerSearch.getName() + '%')
+            );
+        }
+
         // sort
         Sort sort = pageable.getSort().and(Sort.by(Sort.Direction.ASC, BrokerEntity_.NAME));
 

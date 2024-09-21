@@ -125,7 +125,7 @@
     <!-- start: strategy                        -->
     <!-- ====================================== -->
     <div class="display--flex flex-direction--column border--1 padding--1em">
-        <div class="display--flex flex-direction--column gap--1em padding--1em">
+        <div class="display--flex flex-direction--column gap--1em padding--1em s__padding-y--0">
             <form class="display--grid grid-template-columns--12 grid-gap--1em grid-column-gap--2em">
                 <label class="grid-column--6">
                     <span data-th-text="#{fintics.Strategy.name}" class="font-weight--bold tag-required"></span>
@@ -165,14 +165,14 @@
             <div class="text-align--right">
                 <button type="button"
                         data-duice-bind="strategy"
-                        th:classappend="!${#authorization.expression('hasAuthority(''STRATEGIES_EDIT'')')}?'locked'"
+                        th:classappend="!${#authorization.expression('hasAuthority(''strategy.edit'')')}?'locked'"
                         onclick="deleteStrategy();">
                     <img class="icon" th:src="@{/static/image/icon-delete.svg}" alt="save"/>
                     <span data-th-text="#{web.global.delete}"></span>
                 </button>
                 <button type="button"
                         data-duice-bind="strategy"
-                        th:classappend="!${#authorization.expression('hasAuthority(''STRATEGIES_EDIT'')')}?'locked'"
+                        th:classappend="!${#authorization.expression('hasAuthority(''strategy.edit'')')}?'locked'"
                         onclick="saveStrategy();">
                     <img class="icon" th:src="@{/static/image/icon-save.svg}" alt="save"/>
                     <span data-th-text="#{web.global.save}"></span>

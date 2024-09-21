@@ -22,7 +22,7 @@ import java.util.List;
 
 @Controller
 @RequestMapping("trade")
-@PreAuthorize("hasAuthority('TRADES')")
+@PreAuthorize("hasAuthority('trade')")
 @RequiredArgsConstructor
 public class TradeController {
 

@@ -16,7 +16,7 @@ import java.util.List;
 
 @Controller
 @RequestMapping("basket")
-@PreAuthorize("hasAuthority('BASKETS')")
+@PreAuthorize("hasAuthority('basket')")
 @RequiredArgsConstructor
 public class BasketController {
 

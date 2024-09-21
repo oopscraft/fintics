@@ -331,7 +331,7 @@
                     <span data-th-text="#{fintics.Trade}"></span>
                 </h2>
             </div>
-            <div class="display--flex flex-direction--column gap--1em padding--1em">
+            <div class="display--flex flex-direction--column gap--1em padding--1em s__padding-y--0">
                 <form class="display--grid grid-template-columns--12 grid-gap--1em grid-column-gap--2em">
                     <label class="grid-column--6">
                         <span data-th-text="#{fintics.Trade.name}" class="font-weight--bold tag-required"></span>
@@ -562,14 +562,14 @@
                     <button type="button"
                             data-duice-bind="trade"
                             data-duice-execute="this.disabled=(trade._new);"
-                            th:classappend="!${#authorization.expression('hasAuthority(''TRADES_EDIT'')')}?'locked'"
+                            th:classappend="!${#authorization.expression('hasAuthority(''trade.edit'')')}?'locked'"
                             onclick="deleteTrade();">
                         <img class="icon" th:src="@{/static/image/icon-delete.svg}" alt="save"/>
                         <span data-th-text="#{web.global.delete}"></span>
                     </button>
                     <button type="button"
                             data-duice-bind="trade"
-                            th:classappend="!${#authorization.expression('hasAuthority(''TRADES_EDIT'')')}?'locked'"
+                            th:classappend="!${#authorization.expression('hasAuthority(''trade.edit'')')}?'locked'"
                             onclick="saveTrade();">
                         <img class="icon" th:src="@{/static/image/icon-save.svg}" alt="save"/>
                         <span data-th-text="#{web.global.save}"></span>
@@ -591,7 +591,7 @@
                     <span data-th-text="#{fintics.Order}"></span>
                 </h2>
             </div>
-            <div class="display--flex flex-direction--column gap--1em padding--1em">
+            <div class="display--flex flex-direction--column gap--1em padding--1em s__padding-y--0">
                 <form onsubmit="return false;" class="display--grid grid-template-columns--12 grid-gap--1em ">
                     <div class="grid-column--12 s__grid-column--12 display--grid grid-template-columns--12 grid-gap--1em">
                         <label class="grid-column--2 s__grid-column--12">
@@ -752,8 +752,7 @@
                     <span data-th-text="#{fintics.Balance}"></span>
                 </h2>
             </div>
-            <div class="display--flex flex-direction--column gap--1em padding--1em">
-
+            <div class="display--flex flex-direction--column gap--1em padding--1em s__padding-y--0">
                 <div class="display--grid grid-template-columns--12 grid-gap--1em">
                     <label class="grid-column--6 s__grid-column--12">
                         <span data-th-text="#{fintics.Balance.totalAmount}" class="font-weight--bold"></span>

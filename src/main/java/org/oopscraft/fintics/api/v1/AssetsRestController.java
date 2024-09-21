@@ -23,7 +23,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/assets")
-@PreAuthorize("hasAuthority('API_ASSETS')")
+@PreAuthorize("hasAuthority('api.assets')")
 @Tag(name = "assets", description = "Assets")
 @RequiredArgsConstructor
 @Slf4j

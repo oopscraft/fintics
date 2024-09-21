@@ -21,7 +21,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/ohlcvs")
-@PreAuthorize("hasAuthority('API_OHLCVS')")
+@PreAuthorize("hasAuthority('api.ohlcvs')")
 @Tag(name = "ohlcvs", description = "ohlcvs operation")
 @RequiredArgsConstructor
 public class OhlcvsRestController {

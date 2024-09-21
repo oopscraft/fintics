@@ -12,7 +12,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 @Controller
 @RequestMapping("strategy")
-@PreAuthorize("hasAuthority('STRATEGIES')")
+@PreAuthorize("hasAuthority('strategy')")
 @RequiredArgsConstructor
 public class StrategyController {
 

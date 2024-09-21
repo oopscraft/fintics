@@ -7,6 +7,7 @@ import org.oopscraft.fintics.dao.BasketAssetRepository;
 import org.oopscraft.fintics.dao.BasketRepository;
 import org.oopscraft.fintics.model.*;
 import org.oopscraft.fintics.service.TradeService;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -71,7 +72,7 @@ public class BasketRebalanceTask {
         }
 
         // clear holdWeight zero + not holding
-        List<Trade> trades = tradeService.getTrades().stream()
+        List<Trade> trades = tradeService.getTrades(TradeSearch.builder().build(), Pageable.unpaged()).stream()
                 .filter(trade -> Objects.equals(trade.getBasketId(), basket.getBasketId()))
                 .toList();
         // finds all relative balances

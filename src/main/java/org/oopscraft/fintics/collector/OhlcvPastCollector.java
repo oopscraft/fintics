@@ -8,6 +8,7 @@ import org.oopscraft.fintics.dao.*;
 import org.oopscraft.fintics.model.*;
 import org.oopscraft.fintics.service.BasketService;
 import org.oopscraft.fintics.service.TradeService;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -50,7 +51,7 @@ public class OhlcvPastCollector extends AbstractCollector {
             LocalDateTime expiredDateTime = LocalDateTime.now()
                     .minusMonths(finticsProperties.getDataRetentionMonths());
             // loop trades
-            List<Trade> trades = tradeService.getTrades();
+            List<Trade> trades = tradeService.getTrades(TradeSearch.builder().build(), Pageable.unpaged()).getContent();
             for (Trade trade : trades) {
                 // check basket id
                 if (trade.getBasketId() == null) {

@@ -23,7 +23,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/brokers")
-@PreAuthorize("hasAuthority('API_BROKERS')")
+@PreAuthorize("hasAuthority('api.brokers')")
 @Tag(name = "brokers", description = "Brokers")
 @RequiredArgsConstructor
 public class BrokersRestController {
@@ -83,7 +83,7 @@ public class BrokersRestController {
      * @return creates broker info
      */
     @PostMapping
-    @PreAuthorize("hasAuthority('API_BROKERS_EDIT')")
+    @PreAuthorize("hasAuthority('api.brokers.edit')")
     @Operation(summary = "creates new broker")
     public ResponseEntity<BrokerResponse> createBroker(
             @RequestBody
@@ -107,7 +107,7 @@ public class BrokersRestController {
      * @return modified broker info
      */
     @PutMapping("{brokerId}")
-    @PreAuthorize("hasAuthority('API_BROKERS_EDIT')")
+    @PreAuthorize("hasAuthority('api.brokers.edit')")
     @Operation(summary = "modifies specified broker info")
     public ResponseEntity<BrokerResponse> modifyBroker(
             @PathVariable("brokerId")
@@ -131,7 +131,7 @@ public class BrokersRestController {
      * @return void
      */
     @DeleteMapping("{brokerId}")
-    @PreAuthorize("hasAuthority('API_BROKERS_EDIT')")
+    @PreAuthorize("hasAuthority('api.brokers.edit')")
     @Operation(summary = "deletes specified broker")
     public ResponseEntity<Void> deleteBroker(
             @PathVariable("brokerId")
