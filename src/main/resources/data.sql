@@ -21,9 +21,6 @@ values
     ('api.brokers.edit','Y','Brokers Edit API Authority'),
     ('api.data','Y','Data Access API Authority'),
     ('monitors','Y','Monitor Access Authority'),
-    ('trades','Y','Trades Access Authority'),
-    ('trade','Y','Trade Access Authority'),
-    ('trade.edit','Y','Trade Edit Authority'),
     ('assets','Y','Assets Access Authority'),
     ('baskets','Y','Baskets Access Authority'),
     ('basket','Y','Basket Access Authority'),
@@ -33,6 +30,9 @@ values
     ('strategy.edit','Y','Strategy Edit Authority'),
     ('brokers','Y','Brokers Access Authority'),
     ('broker.edit','Y','Brokers Edit Authority'),
+    ('trades','Y','Trades Access Authority'),
+    ('trade','Y','Trade Access Authority'),
+    ('trade.edit','Y','Trade Edit Authority'),
     ('orders','Y','Orders Access Authority'),
     ('data','Y','Data Access Authority');
 
@@ -43,20 +43,20 @@ values
     ('USER','api.assets'),
     ('USER','api.ohlcvs'),
     ('USER','api.orders'),
-    ('USER','api.trades'),
     ('USER','api.baskets'),
     ('USER','api.strategies'),
     ('USER','api.brokers'),
+    ('USER','api.trades'),
     ('USER','api.data'),
     ('USER','monitors'),
-    ('USER','trades'),
-    ('USER','trade'),
     ('USER','assets'),
     ('USER','baskets'),
     ('USER','basket'),
     ('USER','strategies'),
     ('USER','strategy'),
     ('USER','brokers'),
+    ('USER','trades'),
+    ('USER','trade'),
     ('USER','orders'),
     ('USER','data');
 
@@ -65,13 +65,13 @@ insert into `core_menu`
     (`menu_id`,`system_required`,`parent_menu_id`,`name`,`link`,`target`,`sort`,`icon`)
 values
     ('monitors','Y',null,'Monitors','/monitors',null,1,'/static/image/icon-monitor.svg'),
-    ('trades','Y',null,'Trades','/trades',null,2,'/static/image/icon-trade.svg'),
-    ('baskets','Y',null,'Basket','/baskets',null,3,'/static/image/icon-basket.svg'),
-    ('strategies','Y',null,'Strategies','/strategies',null,4,'/static/image/icon-strategy.svg'),
-    ('brokers','Y',null,'Brokers','/brokers',null,5,'/static/image/icon-broker.svg'),
+    ('baskets','Y',null,'Basket','/baskets',null,2,'/static/image/icon-basket.svg'),
+    ('strategies','Y',null,'Strategies','/strategies',null,3,'/static/image/icon-strategy.svg'),
+    ('brokers','Y',null,'Brokers','/brokers',null,4,'/static/image/icon-broker.svg'),
+    ('trades','Y',null,'Trades','/trades',null,5,'/static/image/icon-trade.svg'),
     ('assets','Y',null,'Assets','/assets',null,6,'/static/image/icon-asset.svg'),
     ('orders','Y',null,'Orders','/orders',null,7,'/static/image/icon-order.svg'),
-    ('data','Y',null,'Data','/data',null,9,'/static/image/icon-data.svg'),
+    ('data','Y',null,'Data','/data',null,8,'/static/image/icon-data.svg'),
     ('admin','N',null,'Admin','/admin','_blank',99,'/static/image/icon-admin.svg');
 
 -- core_menu_i18n
@@ -79,10 +79,10 @@ insert into `core_menu_i18n`
     (`menu_id`,`language`,`name`)
 values
     ('monitors','ko','모니터'),
-    ('trades','ko','트레이드'),
     ('baskets','ko','바스켓'),
     ('strategies','ko','매매전략'),
     ('brokers','ko','브로커'),
+    ('trades','ko','트레이드'),
     ('assets','ko','종목'),
     ('orders','ko','거래'),
     ('data','ko','데이터'),
@@ -94,14 +94,14 @@ insert into `core_menu_role`
 values
     ('monitors','USER','VIEW'),
     ('monitors','USER','LINK'),
-    ('trades','USER','VIEW'),
-    ('trades','USER','LINK'),
     ('baskets','USER','VIEW'),
     ('baskets','USER','LINK'),
     ('strategies','USER','VIEW'),
     ('strategies','USER','LINK'),
     ('brokers','USER','VIEW'),
     ('brokers','USER','LINK'),
+    ('trades','USER','VIEW'),
+    ('trades','USER','LINK'),
     ('assets','USER','VIEW'),
     ('assets','USER','LINK'),
     ('orders','USER','VIEW'),

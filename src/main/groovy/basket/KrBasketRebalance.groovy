@@ -16,27 +16,6 @@ class Item {
 }
 
 /**
- * gets fnguide items
- * @param url
- * @return
- * @see https://comp.fnguide.com/SVO/WooriRenewal/new_overview.asp
- */
-static List<Item> getFnguideItems(String url) {
-    def response = new URL(url).getText()
-    if (response.charAt(0) == '\uFEFF') {
-        response = response.substring(1)
-    }
-    def responseJson = new JsonSlurper().parseText(response)
-    def compArray = responseJson.comp as List<Map>
-    return compArray.collect {
-        Item.builder()
-                .symbol(it.GICODE.replace('A', '') as String)
-                .name(it.ITEMABBRNM as String)
-                .build()
-    }
-}
-
-/**
  * gets etf items
  * @param etfSymbol
  * @return
@@ -61,29 +40,6 @@ static List<Item> getEtfItems(etfSymbol) {
 List<Item> candidateItems = []
 
 //=======================================
-// FnGuide items
-//=======================================
-// FNGUID 성장성 - 고 ROE
-def fnguidHighRoeItems = getFnguideItems("https://comp.fnguide.com/SVO2/json/data/NH/HIGH_ROE.json")
-println("fnguidHighRoeItems: ${fnguidHighRoeItems}")
-candidateItems.addAll(fnguidHighRoeItems)
-
-// FNGUID 성장성 - 성장률
-def fnguidGrowthSalesItems = getFnguideItems("https://comp.fnguide.com/SVO2/json/data/NH/GROWHT_SALES.json")
-println("fnguidGrowthSalesItems: ${fnguidGrowthSalesItems}")
-candidateItems.addAll(fnguidGrowthSalesItems)
-
-// FNGUID 수급 - 외국인/기관 동반 순매수
-def fnguidTrendWithBuyItems = getFnguideItems("https://comp.fnguide.com/SVO2/json/data/NH/SUPPLY_TREND_WITH_BUY.json")
-println("fnguidTrendWithBuyItems: ${fnguidTrendWithBuyItems}")
-candidateItems.addAll(fnguidTrendWithBuyItems)
-
-// FNGUID 수급 - 연속순매수 (외국인/기관 동반)
-def fnguidContinuousBuyWith3Items = getFnguideItems("https://comp.fnguide.com/SVO2/json/data/NH/CONTINUOUS_BUY_WITH_3.json")
-println("fnguidContinuousBuyWith3Items: ${fnguidContinuousBuyWith3Items}")
-candidateItems.addAll(fnguidContinuousBuyWith3Items)
-
-//=======================================
 // collect etf items
 //=======================================
 // ETF list
@@ -91,22 +47,14 @@ def etfSymbols = [
         // index ETF
         '069500',   // KODEX 200
         '229200',   // KODEX 코스닥150
-        '385720',   // TIMEFOLIO 코스피액티브
         // strategy ETF
+        '385720',   // TIMEFOLIO 코스피액티브
         '441800',   // TIMEFOLIO Korea플러스배당액티브
-        '280920',   // PLUS 주도업종
-        '373490',   // KODEX K-이노베이션액티브
-        '410870',   // TIMEFOLIO K컬처액티브
         '161510',   // PLUS 고배당주
-        // sector ETF
-        '396500',   // TIGER Fn반도체TOP10
-        '463050',   // TIMEFOLIO K바이오액티브
-        '462900',   // KoAct 바이오헬스케어액티브
-        '385510',   // KODEX K-신재생에너지액티브
-        '228790',   // TIGER 화장품
-        '449450',   // PLUS K방산
-        '434730',   // HANARO 원자력iSelect
-        // TODO 수익률 상위 ETF 추가
+        '104530',   // KOSEF 고배당
+        '211560',   // TIGER 배당성장
+        '280920',   // PLUS 주도업종
+        '147970',   // TIGER 모멘텀
 ]
 etfSymbols.each{
     def etfItems = getEtfItems(it)

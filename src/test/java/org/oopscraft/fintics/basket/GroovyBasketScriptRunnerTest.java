@@ -68,11 +68,11 @@ class GroovyBasketScriptRunnerTest extends CoreTestSupport {
 
     @Disabled
     @Test
-    void runTrackingEtfUsRebalance() {
+    void runUsBasketRebalance() {
         // given
         Basket basket = Basket.builder()
                 .market("US")
-                .script(loadGroovyFileAsString("TrackingEtfUsRebalance.groovy"))
+                .script(loadGroovyFileAsString("UsBasketRebalance.groovy"))
                 .build();
         // when
         GroovyBasketScriptRunner groovyBasketScriptRunner = GroovyBasketScriptRunner.builder()

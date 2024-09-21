@@ -1,3 +1,4 @@
+import groovy.json.JsonSlurper
 import groovy.transform.ToString
 import groovy.transform.builder.Builder
 import org.jsoup.Jsoup
@@ -21,15 +22,16 @@ class Item {
  * @return
  */
 static List<Item> getEtfItems(etfSymbol) {
-    def document = Jsoup.connect("https://finance.yahoo.com/quote/${etfSymbol}/holdings/").get()
-    def topHoldings= document.select('section[data-testid=top-holdings] .content')
-    return topHoldings.collect {
-        def symbol = it.select('span.symbol').text()
-        def name = it.select('span.name').text()
-        return Item.builder()
-            .symbol(symbol)
-            .name(name)
-            .build()
+    def url= new URL("https://finviz.com/api/etf_holdings/${etfSymbol}/top_ten")
+    def responseJson= url.text
+    def jsonSlurper = new JsonSlurper()
+    def responseMap = jsonSlurper.parseText(responseJson)
+    def pdfAssets = responseMap.get('rowData')
+    return pdfAssets.collect{
+        Item.builder()
+                .symbol(it.ticker as String)
+                .name(it.name as String)
+                .build()
     }
 }
 
@@ -55,14 +57,13 @@ def etfSymbols = [
         'DIVO',     // Amplify CWP Enhanced Dividend Income ETF
         'MOAT',     // VanEck Morningstar Wide Moat ETF
         'SCHD',     // Schwab U.S. Dividend Equity ETF
-        // sector ETF
-        'XLK',      // The Technology Select Sector SPDR Fund
-        'VGT',      // Vanguard Information Technology Index Fund ETF Shares
-        'SMH',      // VanEck Semiconductor ETF
-        'SOXX',     // iShares Semiconductor ETF
-        'XLV',      // The Health Care Select Sector SPDR Fund
-        'XBI',      // SPDR S&P Biotech ETF
-        // TODO 수익률 상위 ETF 추가
+        'QUAL',     // iShares MSCI USA Quality Factor ETF
+        'SPHQ',     // Invesco S&P 500 Quality ETF
+        'VIG',      // Vanguard Dividend Appreciation Index Fund ETF Shares
+        'VTV',      // Vanguard Value Index Fund ETF Shares
+        'MTUM',     // iShares MSCI USA Momentum Factor ETF
+        'VUG',      // Vanguard Growth ETF
+        'IWF',      // iShares Russell 1000 Growth ETF
 ]
 etfSymbols.each{
     def etfItems = getEtfItems(it)
