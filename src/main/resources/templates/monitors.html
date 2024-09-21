@@ -444,6 +444,12 @@
                             <th>
                                 <span data-th-text="#{fintics.Asset.name}"></span>
                             </th>
+                            <th>
+                                <span data-th-text="#{fintics.Asset.links}"></span>
+                            </th>
+                            <th>
+                                <span>Message</span>
+                            </th>
                             <th class="text-align--right">
                                 <div data-th-text="#{fintics.BalanceAsset.quantity}"></div>
                                 <div data-th-text="#{fintics.BalanceAsset.orderableQuantity}"></div>
@@ -459,12 +465,6 @@
                             <th class="text-align--right padding-right--1em">
                                 <div data-th-text="#{fintics.BalanceAsset.profitAmount}"></div>
                                 <div data-th-text="#{fintics.BalanceAsset.profitPercentage}"></div>
-                            </th>
-                            <th>
-                                <span>Message</span>
-                            </th>
-                            <th>
-                                <span data-th-text="#{fintics.Asset.links}"></span>
                             </th>
                             <th class="text-align--center">
                                 <span data-th-text="#{fintics.Order}"></span>
@@ -529,6 +529,23 @@
                                     </div>
                                 </div>
                             </td>
+                            <td>
+                                <select data-duice-bind="basketAsset"
+                                        data-duice-option="basketAsset.links"
+                                        data-duice-option-value-property="url"
+                                        data-duice-option-text-property="name"
+                                        onchange="_openLink(this.value, '_blank'); this.value = '';">
+                                    <option value>- Link -</option>
+                                </select>
+                            </td>
+                            <td>
+                                <div class="display--flex">
+                                <textarea data-duice-bind="basketAsset"
+                                          data-duice-property="message"
+                                          class="width--100 code"
+                                          style="min-width:20em; height:6em; line-height:1.1em; padding:0.1em 0.3em;"></textarea>
+                                </div>
+                            </td>
                             <td class="text-align--right">
                                 <div data-duice-bind="basketAsset" data-duice-property="quantity" data-duice-format="number"></div>
                                 <div data-duice-bind="basketAsset" data-duice-property="orderableQuantity" data-duice-format="number"></div>
@@ -553,23 +570,6 @@
                                 if (basketAsset.profitPercentage < 0) this.classList.add('color--red');
                                 this.innerHTML = `${basketAsset.profitPercentage} %`;
                                 "></div>
-                            </td>
-                            <td>
-                                <div class="display--flex">
-                                <textarea data-duice-bind="basketAsset"
-                                          data-duice-property="message"
-                                          class="width--100 code"
-                                          style="min-width:20em; height:6em; line-height:1.1em; padding:0.1em 0.3em;"></textarea>
-                                </div>
-                            </td>
-                            <td>
-                                <select data-duice-bind="basketAsset"
-                                        data-duice-option="basketAsset.links"
-                                        data-duice-option-value-property="url"
-                                        data-duice-option-text-property="name"
-                                        onchange="_openLink(this.value, '_blank'); this.value = '';">
-                                    <option value>- Link -</option>
-                                </select>
                             </td>
                             <td class="text-align--center">
                                 <div class="display--flex flex-direction--column gap--1px">
