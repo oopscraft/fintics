@@ -114,7 +114,7 @@
                     </colgroup>
                     <thead>
                     <tr>
-                        <th data-th-text="#{web.global.no}"></th>
+                        <th data-th-text="#{web.global.no}" class="text-align--center"></th>
                         <th data-th-text="#{fintics.Trade.name}"></th>
                         <th data-th-text="#{fintics.Broker.name}"></th>
                         <th data-th-text="#{fintics.Basket.name}"></th>
@@ -125,7 +125,7 @@
                     </thead>
                     <tbody>
                     <tr data-duice-bind="trades" data-duice-loop="trade,status">
-                        <td>
+                        <td class="text-align--center">
                         <span data-duice-bind="status"
                               data-duice-execute="this.innerHTML=tradeSearch._count - (tradeSearch._size*tradeSearch._page + status.count) + 1;">
                         </span>

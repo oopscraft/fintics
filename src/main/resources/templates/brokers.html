@@ -210,7 +210,7 @@
                             </colgroup>
                             <thead>
                             <tr>
-                                <th data-th-text="#{web.global.no}"></th>
+                                <th data-th-text="#{web.global.no}" class="text-align--center"></th>
                                 <th data-th-text="#{fintics.Broker.name}"></th>
                             </tr>
                             </thead>
@@ -219,11 +219,11 @@
                                 data-duice-selected-item-class="selected" data-duice-execute="
                         this.dataset.brokerId=broker.brokerId;
                         " onclick="getBroker(this.dataset.brokerId);" class="link">
-                                <td>
-                                    <span data-duice-bind="status" data-duice-property="count" class="text-align--center"></span>
+                                <td class="text-align--center">
+                                    <span data-duice-bind="status" data-duice-property="count"></span>
                                 </td>
                                 <td>
-                                    <span data-duice-bind="broker" data-duice-property="name"></span>
+                                    <span data-duice-bind="broker" data-duice-property="name" class="font-weight--bold"></span>
                                 </td>
                             </tr>
                             <tr data-duice-bind="brokers"

@@ -111,7 +111,7 @@
                     </colgroup>
                     <thead>
                     <tr>
-                        <th data-th-text="#{web.global.no}"></th>
+                        <th data-th-text="#{web.global.no}" class="text-align--center"></th>
                         <th data-th-text="#{fintics.Basket.name}"></th>
                         <th data-th-text="#{fintics.Basket.basketAssets}"></th>
                         <th data-th-text="#{fintics.Basket.rebalanceEnabled}"></th>
@@ -120,7 +120,7 @@
                     </thead>
                     <tbody>
                     <tr data-duice-bind="baskets" data-duice-loop="basket,status">
-                        <td>
+                        <td class="text-align--center">
                         <span data-duice-bind="status"
                               data-duice-execute="this.innerHTML=basketSearch._count - (basketSearch._size*basketSearch._page + status.count) + 1;">
                         </span>
