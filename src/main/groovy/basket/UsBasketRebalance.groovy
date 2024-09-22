@@ -13,7 +13,7 @@ import org.oopscraft.fintics.model.Asset
 class Item {
     String symbol
     String name
-    BigDecimal marketCap
+    BigDecimal score
 }
 
 /**
@@ -99,9 +99,6 @@ List<Item> finalItems = candidateItems.findAll {
         return false
     }
 
-    // market cap
-    it.marketCap = asset.getMarketCap()
-
     //  ROE
     def roes = asset.getAssetMetas('ROE').collect{new BigDecimal(it.value?:'0.0')}
     def roe = roes.find{true}?:0.0
@@ -120,6 +117,13 @@ List<Item> finalItems = candidateItems.findAll {
     def pers = asset.getAssetMetas('PER').collect{new BigDecimal(it.value?:'100.0')}
     def per = pers.find{true}?:100.0
 
+    // dividendYield
+    def dividendYields = asset.getAssetMetas("Dividend Yield").collect{ new BigDecimal(it.value?:'0.0')}
+    def dividendYield = dividendYields.find{true}?:0.0
+
+    // score
+    it.score = roe + dividendYield
+
     // return
     return it
 }
@@ -133,7 +137,7 @@ def targetHoldingWeightPerAsset = 2.0
 def fixedAssetCount = basket.getBasketAssets().findAll{it.fixed && it.enabled}.size()
 def remainedAssetCount = (targetAssetCount - fixedAssetCount) as Integer
 finalItems = finalItems
-        .sort{ -(it.marketCap?:0)}
+        .sort{ -(it.score?:0)}
         .take(remainedAssetCount)
 
 //=========================================

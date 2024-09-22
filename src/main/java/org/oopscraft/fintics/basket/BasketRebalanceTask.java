@@ -63,6 +63,7 @@ public class BasketRebalanceTask {
             if (basketAsset == null) {
                 basketAsset = BasketAsset.builder()
                         .assetId(assetId)
+                        .enabled(true)
                         .holdingWeight(holdingWeight)
                         .build();
                 basket.getBasketAssets().add(basketAsset);
