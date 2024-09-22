@@ -12,9 +12,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class BasketRebalanceTaskFactory {
 
-    private final BasketRepository basketRepository;
-
-    private final BasketAssetRepository basketAssetRepository;
+    private final BasketService basketService;
 
     private final TradeService tradeService;
 
@@ -23,8 +21,7 @@ public class BasketRebalanceTaskFactory {
     public BasketRebalanceTask getObject(Basket basket) {
         return BasketRebalanceTask.builder()
                 .basket(basket)
-                .basketRepository(basketRepository)
-                .basketAssetRepository(basketAssetRepository)
+                .basketService(basketService)
                 .tradeService(tradeService)
                 .basketScriptRunnerFactory(basketScriptRunnerFactory)
                 .build();

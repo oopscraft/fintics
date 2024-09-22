@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Data
 @Builder
@@ -57,7 +58,7 @@ public class Basket {
                 .script(basketEntity.getScript())
                 .basketAssets(basketEntity.getBasketAssets().stream()
                         .map(BasketAsset::from)
-                        .toList())
+                        .collect(Collectors.toList()))
                 .build();
     }
 

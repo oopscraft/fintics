@@ -2,10 +2,8 @@ package org.oopscraft.fintics.basket;
 
 import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
-import org.oopscraft.fintics.dao.BasketAssetEntity;
-import org.oopscraft.fintics.dao.BasketAssetRepository;
-import org.oopscraft.fintics.dao.BasketRepository;
 import org.oopscraft.fintics.model.*;
+import org.oopscraft.fintics.service.BasketService;
 import org.oopscraft.fintics.service.TradeService;
 import org.springframework.data.domain.Pageable;
 
@@ -19,9 +17,7 @@ public class BasketRebalanceTask {
 
     private final Basket basket;
 
-    private final BasketRepository basketRepository;
-
-    private final BasketAssetRepository basketAssetRepository;
+    private final BasketService basketService;
 
     private final TradeService tradeService;
 
@@ -32,73 +28,83 @@ public class BasketRebalanceTask {
         List<BasketRebalanceResult> basketChanges = basketRebalance.run();
         log.info("basketChanges: {}", basketChanges);
 
-        // clears holdWeights
-        for (BasketAsset basketAsset : basket.getBasketAssets()) {
-            if (!basketAsset.isFixed()) {
-                BasketAssetEntity.Pk pk = BasketAssetEntity.Pk.builder()
-                        .basketId(basketAsset.getBasketId())
-                        .assetId(basketAsset.getAssetId())
-                        .build();
-                BasketAssetEntity basketAssetEntity = basketAssetRepository.findById(pk).orElseThrow();
-                basketAssetEntity.setHoldingWeight(BigDecimal.ZERO);
-                basketAssetRepository.saveAndFlush(basketAssetEntity);
-            }
-        }
-
-        // adds basket assets
-        int sort = basket.getBasketAssets().stream()
-                .mapToInt(BasketAsset::getSort)
-                .max()
-                .orElse(0) + 1;
-        for (BasketRebalanceResult basketChange : basketChanges) {
-            String market = basket.getMarket();
-            String symbol = basketChange.getSymbol();
-            String assetId = String.format("%s.%s", market, symbol);
-            BasketAssetEntity.Pk pk = BasketAssetEntity.Pk.builder()
-                    .basketId(basket.getBasketId())
-                    .assetId(assetId)
-                    .build();
-            BasketAssetEntity basketAssetEntity = basketAssetRepository.findById(pk).orElse(null);
-            if (basketAssetEntity == null) {
-                basketAssetEntity = BasketAssetEntity.builder()
-                        .basketId(basket.getBasketId())
-                        .assetId(assetId)
-                        .sort(sort++)
-                        .enabled(true)
-                        .build();
-            }
-            basketAssetEntity.setHoldingWeight(basketChange.getHoldingWeight());
-            basketAssetRepository.saveAndFlush(basketAssetEntity);
-        }
-
-        // clear holdWeight zero + not holding
+        //================================================
+        // 0. 베스켓 사용 중인 트레이드 + 잔고 조회
+        //================================================
         List<Trade> trades = tradeService.getTrades(TradeSearch.builder().build(), Pageable.unpaged()).stream()
                 .filter(trade -> Objects.equals(trade.getBasketId(), basket.getBasketId()))
                 .toList();
-        // finds all relative balances
         List<Balance> balances = trades.stream()
                 .map(trade -> {
                     try {
                         return tradeService.getBalance(trade.getTradeId()).orElseThrow();
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
+                    } catch (Throwable e) {
+                        log.warn(e.getMessage());
+                        return null;
                     }
                 })
+                .filter(Objects::nonNull)
                 .toList();
-        // finds basket asset is in balances
-        for (BasketAsset basketAsset : basket.getBasketAssets()) {
-            if (basketAsset.getHoldingWeight().compareTo(BigDecimal.ZERO) == 0) {
-                boolean ownedAsset = isOwnedAsset(basketAsset.getAssetId(), balances);
-                if (!ownedAsset) {
-                    BasketAssetEntity.Pk pk = BasketAssetEntity.Pk.builder()
-                            .basketId(basket.getBasketId())
-                            .assetId(basketAsset.getAssetId())
-                            .build();
-                    basketAssetRepository.deleteById(pk);
-                    basketAssetRepository.flush();
+
+        //===========================================
+        // 신규 리밸런싱 종목 추가
+        //===========================================
+        for (BasketRebalanceResult basketChange : basketChanges) {
+            String market = basket.getMarket();
+            String symbol = basketChange.getSymbol();
+            BigDecimal holdingWeight = basketChange.getHoldingWeight();
+            String assetId = String.format("%s.%s", market, symbol);
+            // 동일 종목 베스켓 에서 조회
+            BasketAsset basketAsset = basket.getBasketAssets().stream()
+                    .filter(it -> Objects.equals(it.getAssetId(), assetId))
+                    .findFirst()
+                    .orElse(null);
+            // 신규 종목인 경우 추가
+            if (basketAsset == null) {
+                basketAsset = BasketAsset.builder()
+                        .assetId(assetId)
+                        .holdingWeight(holdingWeight)
+                        .build();
+                basket.getBasketAssets().add(basketAsset);
+            } else {
+                // 이미 존재 하는 종목인 경우 고정 종목이 아니 라면 보유 비중 수정
+                if (!basketAsset.isFixed()) {
+                    basketAsset.setHoldingWeight(holdingWeight);
                 }
             }
         }
+
+        //===========================================
+        // 기존 종목 삭제
+        //===========================================
+        for (int i = basket.getBasketAssets().size()-1; i >= 0; i --) {
+            BasketAsset basketAsset = basket.getBasketAssets().get(i);
+            // 고정 종목은 리벨런싱 제외
+            if (basketAsset.isFixed()) {
+                continue;
+            }
+            // 교체 종목 인지 여부 확인
+            boolean existInBasketChanges = basketChanges.stream().anyMatch(it ->
+                    Objects.equals(it.getSymbol(), basketAsset.getSymbol()));
+            // 교체 종목이 아닌 경우 (삭제 대상)
+            if (!existInBasketChanges) {
+                // 현재 매수 상태 인지 여부 확인
+                boolean ownedAsset = isOwnedAsset(basketAsset.getAssetId(), balances);
+                // 매수 상태인 경우 보유 비중만 0으로 설정 (매도 후 추가 매수는 되지 않고 다음 차 리밸런싱 시 삭제됨)
+                if (ownedAsset) {
+                    basketAsset.setHoldingWeight(BigDecimal.ZERO);
+                }
+                // 매수 하지 않은 종목인 경우 바로 삭제
+                else {
+                    basket.getBasketAssets().remove(i);
+                }
+            }
+        }
+
+        //=============================================
+        // 최종 변경 사항 저장 처리
+        //=============================================
+        basketService.saveBasket(basket);
     }
 
     /**
