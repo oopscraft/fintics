@@ -47,7 +47,7 @@ public class BasketRebalanceTask {
                 .toList();
 
         //===========================================
-        // 신규 리밸런싱 종목 추가
+        // 1. 신규 리밸런싱 종목 추가
         //===========================================
         for (BasketRebalanceResult basketChange : basketChanges) {
             String market = basket.getMarket();
@@ -76,7 +76,7 @@ public class BasketRebalanceTask {
         }
 
         //===========================================
-        // 기존 종목 삭제
+        // 2. 기존 종목 삭제
         //===========================================
         for (int i = basket.getBasketAssets().size()-1; i >= 0; i --) {
             BasketAsset basketAsset = basket.getBasketAssets().get(i);
@@ -103,7 +103,7 @@ public class BasketRebalanceTask {
         }
 
         //=============================================
-        // 최종 변경 사항 저장 처리
+        // 3. 최종 변경 사항 저장 처리
         //=============================================
         basketService.saveBasket(basket);
     }
