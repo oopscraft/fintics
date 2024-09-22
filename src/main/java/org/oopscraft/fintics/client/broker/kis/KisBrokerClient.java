@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.net.ssl.SSLContext;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.*;
@@ -32,8 +33,6 @@ import java.util.stream.Collectors;
 public class KisBrokerClient extends BrokerClient {
 
     private final static Object LOCK_OBJECT = new Object();
-
-    private final static String[] HTTPS_PROTOCOLS = new String[]{"TLSv1.2"};
 
     private final boolean production;
 
@@ -64,9 +63,12 @@ public class KisBrokerClient extends BrokerClient {
         this.objectMapper = new ObjectMapper();
 
         // creates rest template
+        String[] httpsProtocols = Optional.ofNullable(properties.getProperty("httpsProtocols"))
+                .map(value -> value.split("\\s*,\\s*"))
+                .orElse(null);
         this.restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
-                .httpsProtocols(HTTPS_PROTOCOLS)
+                .httpsProtocols(httpsProtocols)
                 .build();
     }
 

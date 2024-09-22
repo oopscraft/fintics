@@ -33,8 +33,6 @@ public class KisUsBrokerClient extends BrokerClient {
 
     private final static Object LOCK_OBJECT = new Object();
 
-    private final static String[] HTTPS_PROTOCOLS = new String[]{"TLSv1.2"};
-
     private final boolean production;
 
     private final String apiUrl;
@@ -64,9 +62,12 @@ public class KisUsBrokerClient extends BrokerClient {
         this.objectMapper = new ObjectMapper();
 
         // creates rest template
+        String[] httpsProtocols = Optional.ofNullable(properties.getProperty("httpsProtocols"))
+                .map(value -> value.split("\\s*,\\s*"))
+                .orElse(null);
         this.restTemplate = RestTemplateBuilder.create()
                 .insecure(true)
-                .httpsProtocols(HTTPS_PROTOCOLS)
+                .httpsProtocols(httpsProtocols)
                 .build();
     }
 

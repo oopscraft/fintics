@@ -62,8 +62,16 @@ def etfSymbols = [
         'VIG',      // Vanguard Dividend Appreciation Index Fund ETF Shares
         'VTV',      // Vanguard Value Index Fund ETF Shares
         'MTUM',     // iShares MSCI USA Momentum Factor ETF
+        'XLK',      // The Technology Select Sector SPDR Fund
         'VUG',      // Vanguard Growth ETF
         'IWF',      // iShares Russell 1000 Growth ETF
+        // sector ETF
+        'SOXX',     // iShares Semiconductor ETF
+        'XLV',      // SPDR Select Sector Fund - Health Care
+        'XBI',      // SPDR Series Trust SPDR S&P Biotech ETF
+        'XLF',      // SPDR Select Sector Fund - Financial
+        'XLU',      // SPDR Select Sector Fund - Utilities
+        'XLY',      // SPDR Select Sector Fund - Consumer Discretionary
 ]
 etfSymbols.each{
     def etfItems = getEtfItems(it)
