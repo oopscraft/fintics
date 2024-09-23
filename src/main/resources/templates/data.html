@@ -12,7 +12,7 @@
             market: null,
             _page: 0,
             _size: 100,
-            _count: 0
+            _count: -1
         });
         const assets = new duice.ArrayProxy([]);
         const ohlcvSummaries = new duice.ArrayProxy([]);
@@ -275,9 +275,6 @@
                         <td data-duice-bind="ohlcvSummary" data-duice-property="minuteCount" data-duice-format="number"></td>
                         <td data-duice-bind="ohlcvSummary" data-duice-property="minuteMinDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
                         <td data-duice-bind="ohlcvSummary" data-duice-property="minuteMaxDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
-                    </tr>
-                    <tr data-duice-bind="ohlcvSummaries" data-duice-if="return ohlcvSummaries.length === 0;">
-                        <td colspan="100%" class="text-align--center">No Data</td>
                     </tr>
                     </tbody>
                 </table>

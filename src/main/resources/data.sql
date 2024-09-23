@@ -29,7 +29,7 @@ values
     ('strategy','Y','Strategy Access Authority'),
     ('strategy.edit','Y','Strategy Edit Authority'),
     ('brokers','Y','Brokers Access Authority'),
-    ('broker.edit','Y','Brokers Edit Authority'),
+    ('brokers.edit','Y','Brokers Edit Authority'),
     ('trades','Y','Trades Access Authority'),
     ('trade','Y','Trade Access Authority'),
     ('trade.edit','Y','Trade Edit Authority'),

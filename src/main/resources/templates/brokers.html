@@ -12,7 +12,7 @@
             value: null,
             _page: 0,
             _size: 20,
-            _count: 0
+            _count: -1
         });
         const brokers = new duice.ArrayProxy([]);
         const broker = new duice.ObjectProxy({
@@ -27,6 +27,12 @@
                     ?.propertiesTemplate;
             }
         });
+
+        // checks authority
+        let hasBrokersEditAuthority = /*[[${#authorization.expression('hasAuthority(''brokers.edit'')')}]]*/false;
+        if (!hasBrokersEditAuthority) {
+            duice.ObjectProxy.setReadonlyAll(broker, true);
+        }
 
         /**
          * gets brokers
@@ -227,8 +233,10 @@
                                 </td>
                             </tr>
                             <tr data-duice-bind="brokers"
-                                data-duice-if="return brokers.length === 0" hidden>
-                                <td colspan="100%" class="text-align--center">No Data</td>
+                                data-duice-if="return brokerSearch._count === 0" hidden>
+                                <td colspan="100%" class="text-align--center">
+                                    <span data-th-text="#{web.global.itemNotFound(#{fintics.Broker})}"></span>
+                                </td>
                             </tr>
                             </tbody>
                         </table>
@@ -274,7 +282,7 @@
                         <span data-th-text="#{fintics.Broker}+' '+#{web.global.detail}"></span>
                     </h2>
                 </div>
-                <div class="display--flex flex-direction--column padding--1em s__padding-y--0">
+                <div class="display--flex flex-direction--column gap--1em padding--1em s__padding-y--0">
                     <form onsubmit="return false;" class="display--grid grid-template-columns--12 grid-gap--1em">
                         <label class="grid-column--12">
                         <span data-th-text="#{fintics.Broker.name}"
@@ -305,14 +313,14 @@
                         </div>
                         <div class="justify-self--end">
                             <button type="button" onclick="deleteBroker();"
-                                    th:classappend="!${#authorization.expression('hasAuthority(''api_brokers.edit'')')}?'locked'"
+                                    th:classappend="!${#authorization.expression('hasAuthority(''brokers.edit'')')}?'locked'"
                                     data-duice-bind="broker"
                                     data-duice-execute="(broker.brokerId && !broker._new) ? this.disabled=false : this.disabled=true;">
                                 <img class="icon" th:src="@{/static/image/icon-delete.svg}" alt="delete"/>
                                 <span data-th-text="#{web.global.delete}"></span>
                             </button>
                             <button type="button" onclick="saveBroker();"
-                                    th:classappend="!${#authorization.expression('hasAuthority(''api_brokers.edit'')')}?'locked'"
+                                    th:classappend="!${#authorization.expression('hasAuthority(''brokers.edit'')')}?'locked'"
                                     data-duice-bind="broker"
                                     data-duice-execute="(broker.brokerId || broker._new) ? this.disabled=false : this.disabled=true;">
                                 <img class="icon" th:src="@{/static/image/icon-save.svg}" alt="save"/>

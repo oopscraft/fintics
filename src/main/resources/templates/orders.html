@@ -16,7 +16,7 @@
             value: null,
             _page: 0,
             _size: 20,
-            _count: 0
+            _count: -1
         });
         const trades = new duice.ArrayProxy(/*[[${trades}]]*/[]);
         const orders = new duice.ArrayProxy([]);
@@ -236,8 +236,10 @@
                                   class="height--100 width--100 font-size--smaller code" style="white-space:normal;"></textarea>
                         </td>
                     </tr>
-                    <tr data-duice-bind="orders" data-duice-if="return orders.length === 0;" hidden>
-                        <td colspan="100%" class="text-align--center">No Data</td>
+                    <tr data-duice-bind="orders" data-duice-if="return orderSearch._count === 0;" hidden>
+                        <td colspan="100%" class="text-align--center">
+                            <span data-th-text="#{web.global.itemNotFound(#{fintics.Order})}"></span>
+                        </td>
                     </tr>
                     </tbody>
                 </table>

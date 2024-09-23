@@ -73,6 +73,12 @@
         });
         duice.ObjectProxy.setReadonlyAll(balance, true);
 
+        // checks authority
+        let hasTradeEditAuthority = /*[[${#authorization.expression('hasAuthority(''trade.edit'')')}]]*/false;
+        if (!hasTradeEditAuthority) {
+            duice.ObjectProxy.setReadonlyAll(trade, true);
+        }
+
         /**
          * get trades
          * @returns {Promise<void>}

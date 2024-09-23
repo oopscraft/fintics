@@ -11,6 +11,12 @@
             name: null
         });
 
+        // checks authority
+        let hasStrategyEditAuthority = /*[[${#authorization.expression('hasAuthority(''strategy.edit'')')}]]*/false;
+        if (!hasStrategyEditAuthority) {
+            duice.ObjectProxy.setReadonlyAll(strategy, true);
+        }
+
         /**
          * gets strategy
          * @param strategyId

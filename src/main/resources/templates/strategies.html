@@ -11,7 +11,7 @@
             value: null,
             _page: 0,
             _size: 20,
-            _count: 0
+            _count: -1
         });
         const strategies = new duice.ArrayProxy([]);
 
@@ -129,8 +129,10 @@
                             <span data-duice-bind="strategy" data-duice-property="language" class="badge"></span>
                         </td>
                     </tr>
-                    <tr data-duice-bind="strategies" data-duice-if="return strategies.length === 0;" hidden>
-                        <td colspan="100%" class="text-align--center">No Data</td>
+                    <tr data-duice-bind="strategies" data-duice-if="return strategySearch._count === 0;" hidden>
+                        <td colspan="100%" class="text-align--center">
+                            <span data-th-text="#{web.global.itemNotFound(#{fintics.Strategy})}"></span>
+                        </td>
                     </tr>
                     </tbody>
                 </table>

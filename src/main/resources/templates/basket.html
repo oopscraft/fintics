@@ -14,6 +14,12 @@
             basketAssets: []
         });
 
+        // checks authority
+        let hasBasketEditAuthority = /*[[${#authorization.expression('hasAuthority(''basket.edit'')')}]]*/false;
+        if (!hasBasketEditAuthority) {
+            duice.ObjectProxy.setReadonlyAll(basket, true);
+        }
+
         /**
          * gets basket
          * @param basketId

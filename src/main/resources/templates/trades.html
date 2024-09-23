@@ -10,9 +10,10 @@
             value: null,
             _page: 0,
             _size: 20,
-            _count: 0
+            _count: -1
         });
         const trades = new duice.ArrayProxy([]);
+        duice.ArrayProxy.setReadonlyAll(trades, true);
         const brokers = new duice.ArrayProxy(/*[[${brokers}]]*/[]);
         const baskets = new duice.ArrayProxy(/*[[${baskets}]]*/[]);
         const strategies = new duice.ArrayProxy(/*[[${strategies}]]*/[]);
@@ -161,12 +162,14 @@
                         </td>
                         <td class="text-align--center">
                             <label>
-                                <input type="checkbox" data-duice-bind="trade" data-duice-property="enabled" readonly="readonly"/>
+                                <input type="checkbox" data-duice-bind="trade" data-duice-property="enabled"/>
                             </label>
                         </td>
                     </tr>
-                    <tr data-duice-bind="trades" data-duice-if="return trades.length === 0;" hidden>
-                        <td colspan="100%" class="text-align--center">No Data</td>
+                    <tr data-duice-bind="trades" data-duice-if="return tradeSearch._count === 0;" hidden>
+                        <td colspan="100%" class="text-align--center">
+                            <span data-th-text="#{web.global.itemNotFound(#{fintics.Trade})}"></span>
+                        </td>
                     </tr>
                     </tbody>
                 </table>

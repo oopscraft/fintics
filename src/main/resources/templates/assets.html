@@ -21,7 +21,7 @@
             assetMetas: new duice.ArrayProxy([]),
             _page: 0,
             _size: 20,
-            _count: 0
+            _count: -1
         });
         const assets = new duice.ArrayProxy([]);
         duice.ObjectProxy.setDisable(assetSearch, 'perFrom', true);
@@ -260,8 +260,10 @@
                             </select>
                         </td>
                     </tr>
-                    <tr data-duice-bind="assets" data-duice-if="return assets.length === 0;" hidden>
-                        <td colspan="100%" class="text-align--center">No Data</td>
+                    <tr data-duice-bind="assets" data-duice-if="return assetSearch._count === 0;" hidden>
+                        <td colspan="100%" class="text-align--center">
+                            <span data-th-text="#{web.global.itemNotFound(#{fintics.Asset})}"></span>
+                        </td>
                     </tr>
                     </tbody>
                 </table>
