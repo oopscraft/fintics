@@ -124,7 +124,9 @@ public class TradeExecutor {
 
                 // check enabled
                 if (!basketAsset.isEnabled()) {
-                    tradeAssetStore.save(tradeAsset);
+                    if (tradeAssetStore != null) {
+                        tradeAssetStore.save(tradeAsset);
+                    }
                     continue;
                 }
 
@@ -156,7 +158,9 @@ public class TradeExecutor {
                 log.info("[{} - {}] strategy result: {}", basketAsset.getAssetId(), basketAsset.getName(), strategyResult);
 
                 // save trade asset to store
-                tradeAssetStore.save(tradeAsset);
+                if (tradeAssetStore != null) {
+                    tradeAssetStore.save(tradeAsset);
+                }
 
                 // check strategy result and count
                 StrategyResult previousStrategyResult = strategyResultMap.get(basketAsset.getAssetId());
