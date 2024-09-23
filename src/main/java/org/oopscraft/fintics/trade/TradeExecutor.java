@@ -91,11 +91,6 @@ public class TradeExecutor {
             try {
                 Thread.sleep(100);
 
-                // check enabled
-                if (!basketAsset.isEnabled()) {
-                    continue;
-                }
-
                 // logging
                 log.info("-".repeat(80));
                 log.info("[{} - {}] check asset", basketAsset.getAssetId(), basketAsset.getName());
@@ -127,6 +122,12 @@ public class TradeExecutor {
                 tradeAsset.setDailyOhlcvs(dailyOhlcvs);
                 tradeAsset.setMinuteOhlcvs(minuteOhlcvs);
 
+                // check enabled
+                if (!basketAsset.isEnabled()) {
+                    tradeAssetStore.save(tradeAsset);
+                    continue;
+                }
+
                 // logging
                 log.info("[{} - {}] dailyOhlcvs({}):{}", tradeAsset.getAssetId(), tradeAsset.getName(), tradeAsset.getDailyOhlcvs().size(), tradeAsset.getDailyOhlcvs().isEmpty() ? null : tradeAsset.getDailyOhlcvs().get(0));
                 log.info("[{} - {}] minuteOhlcvs({}):{}", tradeAsset.getAssetId(), tradeAsset.getName(), tradeAsset.getMinuteOhlcvs().size(), tradeAsset.getMinuteOhlcvs().isEmpty() ? null : tradeAsset.getMinuteOhlcvs().get(0));
@@ -155,9 +156,7 @@ public class TradeExecutor {
                 log.info("[{} - {}] strategy result: {}", basketAsset.getAssetId(), basketAsset.getName(), strategyResult);
 
                 // save trade asset to store
-                if (tradeAssetStore != null) {
-                    tradeAssetStore.save(tradeAsset);
-                }
+                tradeAssetStore.save(tradeAsset);
 
                 // check strategy result and count
                 StrategyResult previousStrategyResult = strategyResultMap.get(basketAsset.getAssetId());
