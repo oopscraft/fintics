@@ -8,7 +8,6 @@ import org.oopscraft.fintics.client.broker.BrokerClientFactory;
 import org.oopscraft.fintics.dao.*;
 import org.oopscraft.fintics.model.*;
 import org.springframework.data.domain.*;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -93,11 +92,13 @@ public class TradeService {
         tradeEntity.setStartAt(trade.getStartTime());
         tradeEntity.setEndAt(trade.getEndTime());
         tradeEntity.setInvestAmount(trade.getInvestAmount());
+        tradeEntity.setOrderKind(trade.getOrderKind());
+        tradeEntity.setCashAssetId(trade.getCashAssetId());
+        tradeEntity.setCashBufferWeight(trade.getCashBufferWeight());
         tradeEntity.setBrokerId(trade.getBrokerId());
         tradeEntity.setBasketId(trade.getBasketId());
         tradeEntity.setStrategyId(trade.getStrategyId());
         tradeEntity.setStrategyVariables(trade.getStrategyVariables());
-        tradeEntity.setOrderKind(trade.getOrderKind());
         tradeEntity.setAlarmId(trade.getAlarmId());
         tradeEntity.setAlarmOnError(trade.isAlarmOnError());
         tradeEntity.setAlarmOnOrder(trade.isAlarmOnOrder());

@@ -34,6 +34,10 @@ public class Trade {
 
     private Order.Kind orderKind;
 
+    private String cashAssetId;
+
+    private BigDecimal cashBufferWeight;
+
     private String brokerId;
 
     private String basketId;
@@ -64,6 +68,8 @@ public class Trade {
                 .endTime(tradeEntity.getEndAt())
                 .investAmount(tradeEntity.getInvestAmount())
                 .orderKind(tradeEntity.getOrderKind())
+                .cashAssetId(tradeEntity.getCashAssetId())
+                .cashBufferWeight(tradeEntity.getCashBufferWeight())
                 .brokerId(tradeEntity.getBrokerId())
                 .basketId(tradeEntity.getBasketId())
                 .strategyId(tradeEntity.getStrategyId())

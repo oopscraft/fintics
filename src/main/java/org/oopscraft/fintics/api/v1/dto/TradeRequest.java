@@ -38,6 +38,15 @@ public class TradeRequest {
     @Schema(description = "invest amount")
     private BigDecimal investAmount;
 
+    @Schema(description = "order kind")
+    private Order.Kind orderKind;
+
+    @Schema(description = "cash asset id")
+    private String cashAssetId;
+
+    @Schema(description = "cash buffer weight")
+    private BigDecimal cashBufferWeight;
+
     @Schema(description = "broker id")
     private String brokerId;
 
@@ -49,9 +58,6 @@ public class TradeRequest {
 
     @Schema(description = "strategy variables")
     private String strategyVariables;
-
-    @Schema(description = "order kind")
-    private Order.Kind orderKind;
 
     @Schema(description = "alarm id")
     private String alarmId;

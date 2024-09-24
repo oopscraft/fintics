@@ -398,6 +398,25 @@
                             <option th:each="orderKind : ${orderKinds}" th:value="${orderKind}" th:text="#{'fintics.Order.Kind.'+${orderKind}}"></option>
                         </select>
                     </label>
+                    <label class="grid-column--6">
+                        <span data-th-text="#{fintics.Trade.cashAssetId}" class="font-weight--bold"></span>
+                        <div class="width--100">
+                            <span data-duice-bind="trade" data-duice-property="cashAssetName"></span>
+                            <button type="button" class="small">
+                                <img class="icon" th:src="@{/static/image/icon-search.svg}" alt="asset"/>
+                            </button>
+                            <button type="button" class="small">
+                                <img class="icon" th:src="@{/static/image/icon-clear.svg}" alt="clear"/>
+                            </button>
+                        </div>
+                    </label>
+                    <label class="grid-column--6">
+                        <span data-th-text="#{fintics.Trade.cashBufferWeight}" class="font-weight--bold"></span>
+                        <div class="width--100">
+                            <input type="number" data-duice-bind="trade" data-duice-property="cashBufferWeight" data-duice-format="number" class="width--50"/>
+                            %
+                        </div>
+                    </label>
                     <label class="grid-column--12">
                     <span class="width--100">
                         <img class="icon" th:src="@{/static/image/icon-broker.svg}" alt="basket"/>
