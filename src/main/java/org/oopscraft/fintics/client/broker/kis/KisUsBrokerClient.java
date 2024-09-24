@@ -43,10 +43,6 @@ public class KisUsBrokerClient extends BrokerClient {
 
     private final String accountNo;
 
-    private final boolean httpsInsecure;
-
-    private final String[] httpsProtocols;
-
     private final ObjectMapper objectMapper;
 
     /**
@@ -62,12 +58,6 @@ public class KisUsBrokerClient extends BrokerClient {
         this.appSecret = properties.getProperty("appSecret");
         this.accountNo = properties.getProperty("accountNo");
         this.objectMapper = new ObjectMapper();
-
-        // optional
-        this.httpsInsecure = Boolean.parseBoolean(properties.getProperty("httpsInsecure", "false"));
-        this.httpsProtocols = Optional.ofNullable(properties.getProperty("httpsProtocols"))
-                .map(value -> value.split("\\s*,\\s*"))
-                .orElse(null);
     }
 
     /**
@@ -76,8 +66,8 @@ public class KisUsBrokerClient extends BrokerClient {
      */
     RestTemplate createRestTemplate() {
         return RestTemplateBuilder.create()
-                .insecure(httpsInsecure)
-                .httpsProtocols(httpsProtocols)
+                .insecure(true)
+                .httpsProtocols(new String[]{"TLSv1.2"})
                 .build();
     }
 
