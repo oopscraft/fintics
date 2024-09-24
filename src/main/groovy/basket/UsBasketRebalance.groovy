@@ -69,6 +69,8 @@ def etfSymbols = [
         'SOXX',     // iShares Semiconductor ETF
         'XLV',      // SPDR Select Sector Fund - Health Care
         'XBI',      // SPDR Series Trust SPDR S&P Biotech ETF
+        'XAR',      // SPDR S&P Aerospace & Defense ETF
+        'ITA',      // iShares U.S. Aerospace & Defense ETF
         'XLF',      // SPDR Select Sector Fund - Financial
         'XLU',      // SPDR Select Sector Fund - Utilities
         'XLY',      // SPDR Select Sector Fund - Consumer Discretionary
