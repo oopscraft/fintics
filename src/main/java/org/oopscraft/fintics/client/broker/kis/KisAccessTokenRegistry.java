@@ -28,8 +28,8 @@ public class KisAccessTokenRegistry {
      */
     static RestTemplate createRestTemplate() {
         return RestTemplateBuilder.create()
-//                .insecure(true)
-//                .httpsProtocols(new String[]{"TLSv1.2"})
+                .insecure(true)
+                .httpsProtocols(new String[]{"TLSv1.2"})
                 .build();
     }
 
