@@ -20,7 +20,16 @@ public class KisAccessTokenRegistry {
 
     private static final Set<KisAccessToken> accessTokens = Collections.synchronizedSet(new HashSet<>());
 
-    private static final Object lockObject = new Object();
+    private final static Object LOCK_OBJECT = new Object();
+
+    /**
+     * creates rest template
+     * @return rest template
+     */
+    static RestTemplate createRestTemplate() {
+        return RestTemplateBuilder.create()
+                .build();
+    }
 
     /**
      * gets access token
@@ -30,7 +39,7 @@ public class KisAccessTokenRegistry {
      * @return access token
      */
     public synchronized static KisAccessToken getAccessToken(String apiUrl, String appKey, String appSecret) throws InterruptedException {
-        synchronized (lockObject) {
+        synchronized (LOCK_OBJECT) {
             KisAccessToken accessToken = accessTokens.stream()
                     .filter(element ->
                             Objects.equals(element.getApiUrl(), apiUrl)
@@ -77,9 +86,7 @@ public class KisAccessTokenRegistry {
      */
     private synchronized static KisAccessToken refreshAccessToken(String apiUrl, String appKey, String appSecret) throws InterruptedException {
         log.info("Refresh Access Token - {}", apiUrl);
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .build();
+        RestTemplate restTemplate = createRestTemplate();
         ValueMap payloadMap = new ValueMap(){{
             put("grant_type","client_credentials");
             put("appkey", appKey);

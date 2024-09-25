@@ -45,8 +45,6 @@ public class KisUsBrokerClient extends BrokerClient {
 
     private final ObjectMapper objectMapper;
 
-    private final RestTemplate restTemplate;
-
     /**
      * constructor
      * @param definition client definition
@@ -60,14 +58,14 @@ public class KisUsBrokerClient extends BrokerClient {
         this.appSecret = properties.getProperty("appSecret");
         this.accountNo = properties.getProperty("accountNo");
         this.objectMapper = new ObjectMapper();
+    }
 
-        // creates rest template
-        String[] httpsProtocols = Optional.ofNullable(properties.getProperty("httpsProtocols"))
-                .map(value -> value.split("\\s*,\\s*"))
-                .orElse(null);
-        this.restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .httpsProtocols(httpsProtocols)
+    /**
+     * creates rest template
+     * @return rest template
+     */
+    RestTemplate createRestTemplate() {
+        return RestTemplateBuilder.create()
                 .build();
     }
 
@@ -161,6 +159,7 @@ public class KisUsBrokerClient extends BrokerClient {
      */
     @Override
     public List<Ohlcv> getMinuteOhlcvs(Asset asset) throws InterruptedException {
+        RestTemplate restTemplate = createRestTemplate();
         String url = apiUrl + "/uapi/overseas-price/v1/quotations/inquire-time-itemchartprice";
         HttpHeaders headers = createHeaders();
         headers.add("tr_id", "HHDFS76950200");
@@ -233,6 +232,7 @@ public class KisUsBrokerClient extends BrokerClient {
      */
     @Override
     public List<Ohlcv> getDailyOhlcvs(Asset asset) throws InterruptedException {
+        RestTemplate restTemplate = createRestTemplate();
         String url = apiUrl + "/uapi/overseas-price/v1/quotations/dailyprice";
         HttpHeaders headers = createHeaders();
         headers.add("tr_id", "HHDFS76240000");
@@ -300,6 +300,7 @@ public class KisUsBrokerClient extends BrokerClient {
      */
     @Override
     public OrderBook getOrderBook(Asset asset) throws InterruptedException {
+        RestTemplate restTemplate = createRestTemplate();
         String url = apiUrl + "/uapi/overseas-price/v1/quotations/price-detail";
         HttpHeaders headers = createHeaders();
         headers.add("tr_id", "HHDFS76200200");
@@ -348,6 +349,7 @@ public class KisUsBrokerClient extends BrokerClient {
      */
     @Override
     public BigDecimal getTickPrice(Asset asset, BigDecimal price) throws InterruptedException {
+        RestTemplate restTemplate = createRestTemplate();
         String url = apiUrl + "/uapi/overseas-price/v1/quotations/price-detail";
         HttpHeaders headers = createHeaders();
         headers.add("tr_id", "HHDFS76200200");
@@ -401,6 +403,7 @@ public class KisUsBrokerClient extends BrokerClient {
      */
     @Override
     public Balance getBalance() throws InterruptedException {
+        RestTemplate restTemplate = createRestTemplate();
         String url = apiUrl + "/uapi/overseas-stock/v1/trading/inquire-balance";
         HttpHeaders headers = createHeaders();
         String trId = production ? "TTTS3012R" : "VTTS3012R";
@@ -483,6 +486,7 @@ public class KisUsBrokerClient extends BrokerClient {
      * @see [해외주식 매수가능금액조회[v1_해외주식-014]](https://apiportal.koreainvestment.com/apiservice/apiservice-oversea-stock-order#L_2a155fee-882f-4d80-8183-559f2f6983e9)
      */
     private BigDecimal getBalanceCashAmount() throws InterruptedException {
+        RestTemplate restTemplate = createRestTemplate();
         String url = apiUrl + "/uapi/overseas-stock/v1/trading/inquire-psamount";
         HttpHeaders headers = createHeaders();
         String trId = production ? "TTTS3007R" : "VTTS3007R";
@@ -537,6 +541,7 @@ public class KisUsBrokerClient extends BrokerClient {
         order.setPrice(price);
 
         // rest template
+        RestTemplate restTemplate = createRestTemplate();
         String url = apiUrl + "/uapi/overseas-stock/v1/trading/order";
         HttpHeaders headers = createHeaders();
 
@@ -601,6 +606,7 @@ public class KisUsBrokerClient extends BrokerClient {
      */
     @Override
     public List<Order> getWaitingOrders() throws InterruptedException {
+        RestTemplate restTemplate = createRestTemplate();
         HttpHeaders headers = createHeaders();
         headers.add("tr_id", production ? "TTTS3018R" : "VTTS3018R");
         String url = apiUrl + "/uapi/overseas-stock/v1/trading/inquire-nccs";
@@ -672,6 +678,7 @@ public class KisUsBrokerClient extends BrokerClient {
      */
     @Override
     public Order amendOrder(Asset asset, Order order) throws InterruptedException {
+        RestTemplate restTemplate = createRestTemplate();
         String url = apiUrl + "/uapi/overseas-stock/v1/trading/order-rvsecncl";
         String trId = (production ? "TTTT1004U" : "VTTT1004U");
         BigDecimal quantity = order.getQuantity();
