@@ -29,6 +29,12 @@ public class TradeResponse {
 
     private BigDecimal investAmount;
 
+    private Order.Kind orderKind;
+
+    private String cashAssetId;
+
+    private BigDecimal cashBufferWeight;
+
     private String brokerId;
 
     private String basketId;
@@ -36,8 +42,6 @@ public class TradeResponse {
     private String strategyId;
 
     private String strategyVariables;
-
-    private Order.Kind orderKind;
 
     private String alarmId;
 
@@ -55,11 +59,13 @@ public class TradeResponse {
                 .startAt(trade.getStartTime())
                 .endAt(trade.getEndTime())
                 .investAmount(trade.getInvestAmount())
+                .orderKind(trade.getOrderKind())
+                .cashAssetId(trade.getCashAssetId())
+                .cashBufferWeight(trade.getCashBufferWeight())
                 .brokerId(trade.getBrokerId())
                 .basketId(trade.getBasketId())
                 .strategyId(trade.getStrategyId())
                 .strategyVariables(trade.getStrategyVariables())
-                .orderKind(trade.getOrderKind())
                 .alarmId(trade.getAlarmId())
                 .alarmOnError(trade.isAlarmOnError())
                 .alarmOnOrder(trade.isAlarmOnOrder())

@@ -102,11 +102,13 @@ public class TradesRestController {
                 .startTime(tradeRequest.getStartAt())
                 .endTime(tradeRequest.getEndAt())
                 .investAmount(tradeRequest.getInvestAmount())
+                .orderKind(tradeRequest.getOrderKind())
+                .cashAssetId(tradeRequest.getCashAssetId())
+                .cashBufferWeight(tradeRequest.getCashBufferWeight())
                 .brokerId(tradeRequest.getBrokerId())
                 .basketId(tradeRequest.getBasketId())
                 .strategyId(tradeRequest.getStrategyId())
                 .strategyVariables(tradeRequest.getStrategyVariables())
-                .orderKind(tradeRequest.getOrderKind())
                 .alarmId(tradeRequest.getAlarmId())
                 .alarmOnError(tradeRequest.isAlarmOnError())
                 .alarmOnOrder(tradeRequest.isAlarmOnOrder())
@@ -142,11 +144,13 @@ public class TradesRestController {
         trade.setStartTime(tradeRequest.getStartAt());
         trade.setEndTime(tradeRequest.getEndAt());
         trade.setInvestAmount(tradeRequest.getInvestAmount());
+        trade.setOrderKind(tradeRequest.getOrderKind());
+        trade.setCashAssetId(tradeRequest.getCashAssetId());
+        trade.setCashBufferWeight(tradeRequest.getCashBufferWeight());
         trade.setBrokerId(tradeRequest.getBrokerId());
         trade.setBasketId(tradeRequest.getBasketId());
         trade.setStrategyId(tradeRequest.getStrategyId());
         trade.setStrategyVariables(tradeRequest.getStrategyVariables());
-        trade.setOrderKind(tradeRequest.getOrderKind());
         trade.setAlarmId(tradeRequest.getAlarmId());
         trade.setAlarmOnError(tradeRequest.isAlarmOnError());
         trade.setAlarmOnOrder(tradeRequest.isAlarmOnOrder());

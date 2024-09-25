@@ -48,6 +48,12 @@ public class TradeEntity extends BaseEntity {
     @Column(name = "order_kind", length = 16)
     private Order.Kind orderKind;
 
+    @Column(name = "cash_asset_id", length = 32)
+    private String cashAssetId;
+
+    @Column(name = "cash_buffer_weight", length = 2)
+    private BigDecimal cashBufferWeight;
+
     @Column(name = "broker_id", length = 32)
     private String brokerId;
 
