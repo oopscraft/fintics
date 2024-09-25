@@ -383,6 +383,12 @@ public class TradeExecutor {
                 return;
             }
 
+            // withdraws buy amount in cash
+            if (trade.getCashAssetId() != null) {
+                BigDecimal buyAmount = quantity.multiply(price);
+                withdrawBuyAmountFromCash(brokerClient, trade, buyAmount);
+            }
+
             // submit buy order
             brokerClient.submitOrder(tradeAsset, order);
             order.setResult(Order.Result.COMPLETED);
@@ -456,6 +462,12 @@ public class TradeExecutor {
             brokerClient.submitOrder(tradeAsset, order);
             order.setResult(Order.Result.COMPLETED);
 
+            // deposit sell amount in cash
+            if (trade.getCashAssetId() != null) {
+                BigDecimal sellAmount = quantity.multiply(price);
+                depositSellAmountToCash(brokerClient, trade, sellAmount);
+            }
+
             // alarm
             sendOrderAlarmIfEnabled(trade, order);
 
@@ -515,6 +527,71 @@ public class TradeExecutor {
                 alarmService.sendAlarm(trade.getAlarmId(), subject.toString(), content.toString());
             }
         }
+    }
+
+    void withdrawBuyAmountFromCash(BrokerClient brokerClient, Trade trade, BigDecimal buyAmount) throws InterruptedException {
+        // 매수 금액 이상 현금이 남아 있는 경우 제외
+        Balance balance = brokerClient.getBalance();
+        if (balance.getCashAmount().compareTo(buyAmount) > 0) {
+            return;
+        }
+
+        // 부족한 금액
+        BigDecimal insufficientAmount = buyAmount.subtract(balance.getCashAmount());
+
+        // 부족한 금액 만큼 cash asset 매도
+        Asset cashAsset = assetService.getAsset(trade.getCashAssetId())
+                .orElseThrow();
+        OrderBook cashAssetOrderBook = brokerClient.getOrderBook(cashAsset);
+        BigDecimal cashAssetAskPrice = cashAssetOrderBook.getAskPrice();
+        BigDecimal cashAssetSellQuantity = insufficientAmount.divide(cashAssetAskPrice, RoundingMode.CEILING)
+                .setScale(0, RoundingMode.DOWN);
+        Order order = Order.builder()
+                .orderAt(Instant.now())
+                .type(Order.Type.SELL)
+                .kind(Order.Kind.MARKET)
+                .assetId(cashAsset.getAssetId())
+                .quantity(cashAssetSellQuantity)
+                .price(cashAssetAskPrice)
+                .build();
+        brokerClient.submitOrder(cashAsset, order);
+
+        // 일정 시간 매수 완료 시 까지 대기
+        Thread.sleep(3_000);
+    }
+
+    void depositSellAmountToCash(BrokerClient brokerClient, Trade trade, BigDecimal sellAmount) throws InterruptedException {
+        // 설정 된 현금 대기 비중 계산
+        BigDecimal cashBufferWeight = trade.getCashBufferWeight();
+        BigDecimal cashBufferPercentage = cashBufferWeight.divide(BigDecimal.valueOf(100), MathContext.DECIMAL32);
+        BigDecimal cashBufferAmount = trade.getInvestAmount().multiply(cashBufferPercentage);
+
+        // 현재 잔고 + 매도 금엑 합산이 설정된 현금 대기 금액 이하인 경우 제외
+        Balance balance = brokerClient.getBalance();
+        BigDecimal expectedCashAmount = balance.getCashAmount().add(sellAmount);
+        if (expectedCashAmount.compareTo(cashBufferAmount) < 0) {
+            return;
+        }
+
+        // 현금 대기 금액 초과 된 금액
+        BigDecimal overflowAmount = expectedCashAmount.subtract(cashBufferAmount);
+
+        // 설정된 현금 대기 금액을 초과 하는 금액은 현금성 자산(cash asset) 매수
+        Asset cashAsset = assetService.getAsset(trade.getCashAssetId())
+                .orElseThrow();
+        OrderBook cashAssetOrderBook = brokerClient.getOrderBook(cashAsset);
+        BigDecimal cashAssetBuyPrice = cashAssetOrderBook.getAskPrice();
+        BigDecimal cashAssetBuyQuantity = overflowAmount.divide(cashAssetBuyPrice, RoundingMode.DOWN)
+                .setScale(0, RoundingMode.DOWN);
+        Order order = Order.builder()
+                .orderAt(Instant.now())
+                .type(Order.Type.BUY)
+                .kind(Order.Kind.MARKET)
+                .assetId(cashAsset.getAssetId())
+                .quantity(cashAssetBuyQuantity)
+                .price(cashAssetBuyPrice)
+                .build();
+        brokerClient.submitOrder(cashAsset, order);
     }
 
 }
