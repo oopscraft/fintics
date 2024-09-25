@@ -51,6 +51,12 @@ public class TradeController {
         List<Strategy> strategies = strategyService.getStrategies(StrategySearch.builder().build(), Pageable.unpaged()).getContent();
         modelAndView.addObject("strategies", strategies);
         modelAndView.addObject("orderKinds", Order.Kind.values());
+        // markets
+        List<String> markets = brokerClientDefinitionRegistry.getBrokerClientDefinitions().stream()
+                .map(BrokerClientDefinition::getMarket)
+                .distinct()
+                .toList();
+        modelAndView.addObject("markets", markets);
         return modelAndView;
     }
 
