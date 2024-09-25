@@ -66,8 +66,6 @@ public class KisUsBrokerClient extends BrokerClient {
      */
     RestTemplate createRestTemplate() {
         return RestTemplateBuilder.create()
-                .insecure(true)
-                .httpsProtocols(new String[]{"TLSv1.2"})
                 .build();
     }
 
