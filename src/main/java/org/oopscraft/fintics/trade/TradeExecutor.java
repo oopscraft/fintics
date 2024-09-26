@@ -124,6 +124,7 @@ public class TradeExecutor {
 
                 // check enabled
                 if (!basketAsset.isEnabled()) {
+                    tradeAsset.setMessage(null);
                     if (tradeAssetStore != null) {
                         tradeAssetStore.save(tradeAsset);
                     }
