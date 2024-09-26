@@ -130,7 +130,7 @@ println "finalItems: ${finalItems}"
 //=========================================
 def targetAssetCount = 50
 def targetHoldingWeightPerAsset = 2.0
-def fixedAssetCount = basket.getBasketAssets().findAll{it.fixed && it.enabled}.size()
+def fixedAssetCount = basket.getBasketAssets().findAll{it.fixed && it.enabled && it.holdingWeight > 0}.size()
 def remainedAssetCount = (targetAssetCount - fixedAssetCount) as Integer
 finalItems = finalItems
         .sort{ -(it.score?:0)}
