@@ -24,6 +24,7 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -403,6 +404,11 @@ public class UpbitBrokerClient extends BrokerClient {
 
         // submit order
         return submitOrder(asset, order);
+    }
+
+    @Override
+    public List<RealizedProfit> getRealizedProfits(LocalDate dateFrom, LocalDate dateTo) {
+        throw new UnsupportedOperationException();
     }
 
     @Override

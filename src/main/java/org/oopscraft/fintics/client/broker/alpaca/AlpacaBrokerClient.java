@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -137,6 +138,11 @@ public class AlpacaBrokerClient extends BrokerClient {
 
     @Override
     public Order amendOrder(Asset asset, Order order) throws InterruptedException {
+        return null;
+    }
+
+    @Override
+    public List<RealizedProfit> getRealizedProfits(LocalDate dateFrom, LocalDate dateTo) {
         return null;
     }
 

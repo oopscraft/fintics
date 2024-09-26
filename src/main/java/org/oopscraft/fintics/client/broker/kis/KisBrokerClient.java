@@ -805,4 +805,10 @@ public class KisBrokerClient extends BrokerClient {
         return order;
     }
 
+    @Override
+    public List<RealizedProfit> getRealizedProfits(LocalDate dateFrom, LocalDate dateTo) {
+        // TODO
+        return new ArrayList<>();
+    }
+
 }
