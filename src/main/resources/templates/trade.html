@@ -1146,7 +1146,7 @@
                                                 data-duice-bind="balanceAsset"
                                                 data-duice-execute="this.dataset.assetId=balanceAsset.assetId;"
                                                 onclick="sellBalanceAsset(this.dataset.assetId);"
-                                                th:classappend="!${#authorization.expression('hasAuthority(''TRADES_EDIT'')')}?'locked'">
+                                                th:classappend="!${#authorization.expression('hasAuthority(''trade.edit'')')}?'locked'">
                                             <img class="icon" th:src="@{/static/image/icon-order-sell.svg}" alt="sell"/>
                                             <span data-th-text="#{fintics.Order.Type.SELL}"></span>
                                         </button>
