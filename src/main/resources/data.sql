@@ -19,6 +19,7 @@ values
     ('api.strategies.edit','Y','Strategies Edit API Authority'),
     ('api.brokers','Y','Brokers API Access Authority'),
     ('api.brokers.edit','Y','Brokers Edit API Authority'),
+    ('api.realized-profits','Y','Realized Profits Access Authority'),
     ('api.data','Y','Data Access API Authority'),
     ('monitors','Y','Monitor Access Authority'),
     ('assets','Y','Assets Access Authority'),
@@ -34,6 +35,7 @@ values
     ('trade','Y','Trade Access Authority'),
     ('trade.edit','Y','Trade Edit Authority'),
     ('orders','Y','Orders Access Authority'),
+    ('realized-profits','Y','Realized Profits Access Authority'),
     ('data','Y','Data Access Authority');
 
 -- core_role_authority
@@ -47,6 +49,7 @@ values
     ('USER','api.strategies'),
     ('USER','api.brokers'),
     ('USER','api.trades'),
+    ('USER','api.realized-profits'),
     ('USER','api.data'),
     ('USER','monitors'),
     ('USER','assets'),
@@ -58,6 +61,7 @@ values
     ('USER','trades'),
     ('USER','trade'),
     ('USER','orders'),
+    ('USER','realized-profits'),
     ('USER','data');
 
 -- core_menu
@@ -71,7 +75,8 @@ values
     ('trades','Y',null,'Trades','/trades',null,5,'/static/image/icon-trade.svg'),
     ('assets','Y',null,'Assets','/assets',null,6,'/static/image/icon-asset.svg'),
     ('orders','Y',null,'Orders','/orders',null,7,'/static/image/icon-order.svg'),
-    ('data','Y',null,'Data','/data',null,8,'/static/image/icon-data.svg'),
+    ('realized-profits','Y',null,'Realized Profit','/realized-profits',null,8,'/static/image/icon-realized-profit.svg'),
+    ('data','Y',null,'Data','/data',null,9,'/static/image/icon-data.svg'),
     ('admin','N',null,'Admin','/admin','_blank',99,'/static/image/icon-admin.svg');
 
 -- core_menu_i18n
@@ -85,6 +90,7 @@ values
     ('trades','ko','트레이드'),
     ('assets','ko','종목'),
     ('orders','ko','거래'),
+    ('realized-profits','ko','실현손익'),
     ('data','ko','데이터'),
     ('admin','ko','관리자');
 
@@ -106,6 +112,8 @@ values
     ('assets','USER','LINK'),
     ('orders','USER','VIEW'),
     ('orders','USER','LINK'),
+    ('realized-profits','USER','VIEW'),
+    ('realized-profits','USER','LINK'),
     ('data','USER','VIEW'),
     ('data','USER','LINK'),
     ('admin','USER','VIEW');

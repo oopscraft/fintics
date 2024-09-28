@@ -805,10 +805,104 @@ public class KisBrokerClient extends BrokerClient {
         return order;
     }
 
+    /**
+     * gets realized profits
+     * @param dateFrom date from
+     * @param dateTo  date to
+     * @return realized profits
+     * @see [기간별매매손익현황조회[v1_국내주식-060]](https://apiportal.koreainvestment.com/apiservice/apiservice-domestic-stock-order#L_4755efc7-31c4-411c-af45-3e6948611f0a)
+     */
     @Override
-    public List<RealizedProfit> getRealizedProfits(LocalDate dateFrom, LocalDate dateTo) {
-        // TODO
-        return new ArrayList<>();
+    public List<RealizedProfit> getRealizedProfits(LocalDate dateFrom, LocalDate dateTo) throws InterruptedException {
+        // 모의 투자는 미지원
+        if (!this.production) {
+            throw new UnsupportedOperationException();
+        }
+
+        // defines
+        List<RealizedProfit> realizedProfits = new ArrayList<>();
+        RestTemplate restTemplate = createRestTemplate();
+        HttpHeaders headers = createHeaders();
+        headers.add("tr_id", "TTTC8715R");
+
+        // pagination key
+        String ctxAreaFk100 = "";
+        String ctxAreaNk100 = "";
+
+        // loop
+        for (int i = 0; i < 100; i ++) {
+            String url = apiUrl + "/uapi/domestic-stock/v1/trading/inquire-period-trade-profit";
+            String inqrStrtDt = dateFrom.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+            String inqrEndDt = dateTo.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+            url = UriComponentsBuilder.fromUriString(url)
+                    .queryParam("CANO", accountNo.split("-")[0])
+                    .queryParam("ACNT_PRDT_CD", accountNo.split("-")[1])
+                    .queryParam("SORT_DVSN", "00")
+                    .queryParam("PDNO", "")
+                    .queryParam("INQR_STRT_DT", inqrStrtDt)
+                    .queryParam("INQR_END_DT", inqrEndDt)
+                    .queryParam("CBLC_DVSN", "00")
+                    .queryParam("CTX_AREA_FK100", ctxAreaFk100)
+                    .queryParam("CTX_AREA_NK100", ctxAreaNk100)
+                    .build()
+                    .toUriString();
+            RequestEntity<Void> requestEntity = RequestEntity
+                    .get(url)
+                    .headers(headers)
+                    .build();
+
+            sleep();
+            ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+
+            JsonNode rootNode;
+            try {
+                rootNode = objectMapper.readTree(responseEntity.getBody());
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+            String rtCd = objectMapper.convertValue(rootNode.path("rt_cd"), String.class);
+            String msg1 = objectMapper.convertValue(rootNode.path("msg1"), String.class);
+            if (!"0".equals(rtCd)) {
+                throw new RuntimeException(msg1);
+            }
+
+            // updates pagination key
+            ctxAreaFk100 = objectMapper.convertValue(rootNode.path("ctx_area_fk100"), String.class);
+            ctxAreaNk100 = objectMapper.convertValue(rootNode.path("ctx_area_nk100"), String.class);
+
+            // temp list
+            List<Map<String, String>> output1 = objectMapper.convertValue(rootNode.path("output1"), new TypeReference<>() {});
+            List<RealizedProfit> tempRealizedProfits = output1.stream()
+                    .map(row -> {
+                        return RealizedProfit.builder()
+                                .date(LocalDate.parse(row.get("trad_dt"), DateTimeFormatter.BASIC_ISO_DATE))
+                                .symbol(row.get("pdno"))
+                                .name(row.get("prdt_name"))
+                                .quantity(new BigDecimal(row.get("sll_qty")))
+                                .purchasePrice(new BigDecimal(row.get("pchs_unpr")))
+                                .purchaseAmount(new BigDecimal(row.get("buy_amt")))
+                                .disposePrice(new BigDecimal(row.get("sll_pric")))
+                                .disposeAmount(new BigDecimal(row.get("sll_amt")))
+                                .feeAmount(new BigDecimal(row.get("fee")).add(new BigDecimal(row.get("tl_tax"))))
+                                .profitAmount(new BigDecimal(row.get("rlzt_pfls")))
+                                .profitPercentage(new BigDecimal(row.get("pfls_rt")))
+                                .build();
+                    })
+                    .collect(Collectors.toList());
+
+            // adds final list
+            realizedProfits.addAll(tempRealizedProfits);
+
+            // detects pagination
+            if (tempRealizedProfits.isEmpty()) {
+                break;
+            }
+            headers.set("tr_cont", "N");
+            ctxAreaFk100 = ctxAreaNk100;
+        }
+
+        // return
+        return realizedProfits;
     }
 
 }
