@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.oopscraft.fintics.model.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Properties;
@@ -100,6 +101,14 @@ public abstract class BrokerClient {
      * @return amended order
      */
     public abstract Order amendOrder(Asset asset, Order order) throws InterruptedException;
+
+    /**
+     * returns realized profit
+     * @param dateFrom date from
+     * @param dateTo  date to
+     * @return list of realized profit
+     */
+    public abstract List<RealizedProfit> getRealizedProfits(LocalDate dateFrom, LocalDate dateTo) throws InterruptedException;
 
     /**
      * convert to asset id

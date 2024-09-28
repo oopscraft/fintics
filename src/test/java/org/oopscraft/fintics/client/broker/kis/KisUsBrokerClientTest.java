@@ -11,6 +11,7 @@ import org.oopscraft.fintics.model.*;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Properties;
@@ -171,6 +172,18 @@ class KisUsBrokerClientTest extends CoreTestSupport {
 
         // when
         getKisUsClient().submitOrder(asset, order);
+    }
+
+    @Disabled
+    @Test
+    void getRealizedProfits() throws InterruptedException {
+        // given
+        LocalDate dateFrom = LocalDate.now().minusDays(30);
+        LocalDate dateTo = LocalDate.now();
+        // when
+        List<RealizedProfit> realizedProfits = getKisUsClient().getRealizedProfits(dateFrom, dateTo);
+        // then
+        log.info("realizedProfits:{}",  realizedProfits);
     }
 
 }
