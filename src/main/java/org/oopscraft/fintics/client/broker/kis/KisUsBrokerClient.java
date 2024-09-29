@@ -728,19 +728,18 @@ public class KisUsBrokerClient extends BrokerClient {
     /**
      * gets realized profit
      * 미국 실현 손익 조회
-     * @return realized profit
+     * @return realized profits
      * @see [해외주식 기간손익[v1_해외주식-032]](https://apiportal.koreainvestment.com/apiservice/apiservice-oversea-stock-order#L_147d1d34-3001-4958-b970-106935a19fe7)
      */
     @Override
-    public RealizedProfit getRealizedProfit(LocalDate dateFrom, LocalDate dateTo) throws InterruptedException {
+    public List<RealizedProfit> getRealizedProfits(LocalDate dateFrom, LocalDate dateTo) throws InterruptedException {
         // 모의 투자는 미지원
         if (!this.production) {
             throw new UnsupportedOperationException();
         }
 
         // defines
-        RealizedProfit realizedProfit = new RealizedProfit();
-        List<RealizedProfitAsset> realizedProfitAssets = new ArrayList<>();
+        List<RealizedProfit> realizedProfits = new ArrayList<>();
         RestTemplate restTemplate = createRestTemplate();
         HttpHeaders headers = createHeaders();
         headers.add("tr_id", "TTTS3039R");
@@ -794,12 +793,12 @@ public class KisUsBrokerClient extends BrokerClient {
 
             // temp list
             List<Map<String, String>> output1 = objectMapper.convertValue(rootNode.path("output1"), new TypeReference<>() {});
-            List<RealizedProfitAsset> tempRealizedProfits = output1.stream()
+            List<RealizedProfit> tempRealizedProfits = output1.stream()
                     .map(row -> {
-                        return RealizedProfitAsset.builder()
-                                .assetId(toAssetId(row.get("ovrs_pdno")))
-                                .name(row.get("ovrs_item_name"))
+                        return RealizedProfit.builder()
                                 .date(LocalDate.parse(row.get("trad_day"), DateTimeFormatter.BASIC_ISO_DATE))
+                                .symbol(row.get("ovrs_pdno"))
+                                .name(row.get("ovrs_item_name"))
                                 .quantity(new BigDecimal(row.get("slcl_qty")))
                                 .purchasePrice(new BigDecimal(row.get("pchs_avg_pric")))
                                 .purchaseAmount(new BigDecimal(row.get("frcr_pchs_amt1")))
@@ -813,16 +812,7 @@ public class KisUsBrokerClient extends BrokerClient {
                     .collect(Collectors.toList());
 
             // adds final list
-            realizedProfitAssets.addAll(tempRealizedProfits);
-
-            // first row
-            if (i == 0) {
-                Map<String, String> output2 = objectMapper.convertValue(rootNode.path("output2"), new TypeReference<>() {});
-                BigDecimal totalProfitAmount = new BigDecimal(output2.get("ovrs_rlzt_pfls_tot_amt"));
-                BigDecimal totalFeeAmount = new BigDecimal(output2.get("smtl_fee1"));
-                realizedProfit.setTotalProfitAmount(totalProfitAmount);
-                realizedProfit.setTotalFeeAmount(totalFeeAmount);
-            }
+            realizedProfits.addAll(tempRealizedProfits);
 
             // detects pagination
             if (tempRealizedProfits.isEmpty()) {
@@ -831,10 +821,102 @@ public class KisUsBrokerClient extends BrokerClient {
             headers.set("tr_cont", "N");
             ctxAreaFk200 = ctxAreaNk200;
         }
-        realizedProfit.setRealizedProfitAssets(realizedProfitAssets);
 
         // return
-        return realizedProfit;
+        return realizedProfits;
     }
 
+    /**
+     * gets dividend histories
+     * @param dateFrom date from
+     * @param dateTo date to
+     * @return dividend histories
+     */
+    @Override
+    public List<DividendHistory> getDividendHistories(LocalDate dateFrom, LocalDate dateTo) throws InterruptedException {
+        // 모의 투자는 미지원
+        if (!this.production) {
+            throw new UnsupportedOperationException();
+        }
+
+        /* 현재 한투 문의 중
+        // defines
+        List<DividendHistory> dividendHistories = new ArrayList<>();
+        RestTemplate restTemplate = createRestTemplate();
+        HttpHeaders headers = createHeaders();
+        headers.add("tr_id", "CTRGT011R");
+
+        // pagination key
+        String ctxAreaFk50 = "";
+        String ctxAreaNk50 = "";
+
+        // loop
+        for (int i = 0; i < 100; i ++) {
+            String url = apiUrl + "/uapi/overseas-price/v1/quotations/period-rights";
+            String inqrStrtDt = dateFrom.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+            String inqrEndDt = dateTo.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+            url = UriComponentsBuilder.fromUriString(url)
+                    .queryParam("RGHT_TYPE_CD", "03")
+                    .queryParam("INQR_DVSN_CD", "02")
+                    .queryParam("INQR_STRT_DT", inqrStrtDt)
+                    .queryParam("INQR_END_DT", inqrEndDt)
+                    .queryParam("PDNO", "")
+                    .queryParam("PRDT_TYPE_CD", "")
+                    .queryParam("CTX_AREA_NK50", ctxAreaNk50)
+                    .queryParam("CTX_AREA_FK50", ctxAreaFk50)
+                    .build()
+                    .toUriString();
+            RequestEntity<Void> requestEntity = RequestEntity
+                    .get(url)
+                    .headers(headers)
+                    .build();
+
+            sleep();
+            ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+
+            JsonNode rootNode;
+            try {
+                rootNode = objectMapper.readTree(responseEntity.getBody());
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+            String rtCd = objectMapper.convertValue(rootNode.path("rt_cd"), String.class);
+            String msg1 = objectMapper.convertValue(rootNode.path("msg1"), String.class);
+            if (!"0".equals(rtCd)) {
+                throw new RuntimeException(msg1);
+            }
+
+            // updates pagination key
+            ctxAreaFk50 = objectMapper.convertValue(rootNode.path("ctx_area_fk50"), String.class);
+            ctxAreaNk50 = objectMapper.convertValue(rootNode.path("ctx_area_nk50"), String.class);
+
+            // temp list
+            List<Map<String, String>> output1 = objectMapper.convertValue(rootNode.path("output1"), new TypeReference<>() {});
+            List<DividendHistory> tempDividendHistories = output1.stream()
+                    .map(row -> {
+                        return DividendHistory.builder()
+                                .date(LocalDate.parse(row.get("bass_dt"), DateTimeFormatter.BASIC_ISO_DATE))
+                                .symbol(row.get("pdno"))
+                                .name(row.get("prdt_name"))
+                                .dividendAmount(new BigDecimal(row.get("stkp_dvdn_frcr_amt2")))
+                                .build();
+                    })
+                    .collect(Collectors.toList());
+
+            // adds final list
+            dividendHistories.addAll(tempDividendHistories);
+
+            // detects pagination
+            if (tempDividendHistories.isEmpty()) {
+                break;
+            }
+            headers.set("tr_cont", "N");
+            ctxAreaFk50 = ctxAreaNk50;
+        }
+
+        // return
+        return dividendHistories;
+         */
+        return new ArrayList<>();
+    }
 }

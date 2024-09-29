@@ -142,7 +142,12 @@ public class AlpacaBrokerClient extends BrokerClient {
     }
 
     @Override
-    public RealizedProfit getRealizedProfit(LocalDate dateFrom, LocalDate dateTo) {
+    public List<RealizedProfit> getRealizedProfits(LocalDate dateFrom, LocalDate dateTo) throws InterruptedException {
+        return null;
+    }
+
+    @Override
+    public List<DividendHistory> getDividendHistories(LocalDate dateFrom, LocalDate dateTo) throws InterruptedException {
         return null;
     }
 

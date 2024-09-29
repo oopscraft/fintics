@@ -407,13 +407,18 @@ public class UpbitBrokerClient extends BrokerClient {
     }
 
     @Override
-    public RealizedProfit getRealizedProfit(LocalDate dateFrom, LocalDate dateTo) {
+    public boolean isOverMinimumOrderAmount(BigDecimal quantity, BigDecimal price) {
+        return quantity.multiply(price).compareTo(BigDecimal.valueOf(5_000)) >= 0;
+    }
+
+    @Override
+    public List<RealizedProfit> getRealizedProfits(LocalDate dateFrom, LocalDate dateTo) throws InterruptedException {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public boolean isOverMinimumOrderAmount(BigDecimal quantity, BigDecimal price) {
-        return quantity.multiply(price).compareTo(BigDecimal.valueOf(5_000)) >= 0;
+    public List<DividendHistory> getDividendHistories(LocalDate dateFrom, LocalDate dateTo) throws InterruptedException {
+        throw new UnsupportedOperationException();
     }
 
 }

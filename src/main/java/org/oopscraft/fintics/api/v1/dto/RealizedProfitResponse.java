@@ -1,36 +1,52 @@
 package org.oopscraft.fintics.api.v1.dto;
 
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
+import org.oopscraft.fintics.model.Profit;
 import org.oopscraft.fintics.model.RealizedProfit;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @Builder
 public class RealizedProfitResponse {
 
-    private BigDecimal totalProfitAmount;
+    private LocalDate date;
 
-    private BigDecimal totalFeeAmount;
+    private String symbol;
 
-    private List<RealizedProfitAssetResponse> realizedProfitAssets = new ArrayList<>();
+    private String name;
 
-    /**
-     * factory method
-     * @param realizedProfit realized profit
-     * @return realized profit response
-     */
+    private BigDecimal quantity;
+
+    private BigDecimal purchasePrice;
+
+    private BigDecimal purchaseAmount;
+
+    private BigDecimal disposePrice;
+
+    private BigDecimal disposeAmount;
+
+    private BigDecimal feeAmount;
+
+    private BigDecimal profitAmount;
+
+    private BigDecimal profitPercentage;
+
     public static RealizedProfitResponse from(RealizedProfit realizedProfit) {
         return RealizedProfitResponse.builder()
-                .totalProfitAmount(realizedProfit.getTotalProfitAmount())
-                .totalFeeAmount(realizedProfit.getTotalFeeAmount())
-                .realizedProfitAssets(realizedProfit.getRealizedProfitAssets().stream()
-                        .map(RealizedProfitAssetResponse::from)
-                        .toList())
+                .date(realizedProfit.getDate())
+                .symbol(realizedProfit.getSymbol())
+                .name(realizedProfit.getName())
+                .quantity(realizedProfit.getQuantity())
+                .purchasePrice(realizedProfit.getPurchasePrice())
+                .purchaseAmount(realizedProfit.getPurchaseAmount())
+                .disposePrice(realizedProfit.getDisposePrice())
+                .disposeAmount(realizedProfit.getDisposeAmount())
+                .feeAmount(realizedProfit.getFeeAmount())
+                .profitAmount(realizedProfit.getProfitAmount())
+                .profitPercentage(realizedProfit.getProfitPercentage())
                 .build();
     }
 

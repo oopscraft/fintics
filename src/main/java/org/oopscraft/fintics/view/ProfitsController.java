@@ -13,16 +13,16 @@ import org.springframework.web.servlet.ModelAndView;
 import java.util.List;
 
 @Controller
-@RequestMapping("realized-profits")
-@PreAuthorize("hasAuthority('realized-profits')")
+@RequestMapping("profits")
+@PreAuthorize("hasAuthority('profits')")
 @RequiredArgsConstructor
-public class RealizedProfitsController {
+public class ProfitsController {
 
     private final BrokerService brokerService;
 
     @GetMapping
-    public ModelAndView getStatistics() {
-        ModelAndView modelAndView = new ModelAndView("realized-profits.html");
+    public ModelAndView getProfits() {
+        ModelAndView modelAndView = new ModelAndView("profits.html");
         // brokers
         List<Broker> brokers = brokerService.getBrokers(BrokerSearch.builder().build(), Pageable.unpaged()).getContent();
         modelAndView.addObject("brokers", brokers);

@@ -103,12 +103,20 @@ public abstract class BrokerClient {
     public abstract Order amendOrder(Asset asset, Order order) throws InterruptedException;
 
     /**
-     * returns realized profit
+     * returns realized profits
      * @param dateFrom date from
      * @param dateTo  date to
-     * @return realized profit
+     * @return realized profits
      */
-    public abstract RealizedProfit getRealizedProfit(LocalDate dateFrom, LocalDate dateTo) throws InterruptedException;
+    public abstract List<RealizedProfit> getRealizedProfits(LocalDate dateFrom, LocalDate dateTo) throws InterruptedException;
+
+    /**
+     * returns dividend histories
+     * @param dateFrom date from
+     * @param dateTo date to
+     * @return dividend histories
+     */
+    public abstract List<DividendHistory> getDividendHistories(LocalDate dateFrom, LocalDate dateTo) throws InterruptedException;
 
     /**
      * convert to asset id

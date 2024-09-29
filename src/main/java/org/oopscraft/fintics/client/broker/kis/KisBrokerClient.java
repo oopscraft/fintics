@@ -806,22 +806,21 @@ public class KisBrokerClient extends BrokerClient {
     }
 
     /**
-     * gets realized profit
+     * gets realized profits
      * @param dateFrom date from
      * @param dateTo  date to
      * @return realized profits
      * @see [기간별매매손익현황조회[v1_국내주식-060]](https://apiportal.koreainvestment.com/apiservice/apiservice-domestic-stock-order#L_4755efc7-31c4-411c-af45-3e6948611f0a)
      */
     @Override
-    public RealizedProfit getRealizedProfit(LocalDate dateFrom, LocalDate dateTo) throws InterruptedException {
+    public List<RealizedProfit> getRealizedProfits(LocalDate dateFrom, LocalDate dateTo) throws InterruptedException {
         // 모의 투자는 미지원
         if (!this.production) {
             throw new UnsupportedOperationException();
         }
 
         // defines
-        RealizedProfit realizedProfit = new RealizedProfit();
-        List<RealizedProfitAsset> realizedProfitAssets = new ArrayList<>();
+        List<RealizedProfit> realizedProfits = new ArrayList<>();
         RestTemplate restTemplate = createRestTemplate();
         HttpHeaders headers = createHeaders();
         headers.add("tr_id", "TTTC8715R");
@@ -873,13 +872,13 @@ public class KisBrokerClient extends BrokerClient {
 
             // temp list
             List<Map<String, String>> output1 = objectMapper.convertValue(rootNode.path("output1"), new TypeReference<>() {});
-            List<RealizedProfitAsset> tempRealizedProfitAssets = output1.stream()
+            List<RealizedProfit> tempRealizedProfits = output1.stream()
                     .filter(row -> new BigDecimal(row.get("sll_qty")).compareTo(BigDecimal.ZERO) > 0)
                     .map(row -> {
-                        return RealizedProfitAsset.builder()
-                                .assetId(toAssetId(row.get("pdno")))
-                                .name(row.get("prdt_name"))
+                        return RealizedProfit.builder()
                                 .date(LocalDate.parse(row.get("trad_dt"), DateTimeFormatter.BASIC_ISO_DATE))
+                                .symbol(row.get("pdno"))
+                                .name(row.get("prdt_name"))
                                 .quantity(new BigDecimal(row.get("sll_qty")))
                                 .purchasePrice(new BigDecimal(row.get("pchs_unpr")))
                                 .purchaseAmount(new BigDecimal(row.get("buy_amt")))
@@ -893,29 +892,24 @@ public class KisBrokerClient extends BrokerClient {
                     .collect(Collectors.toList());
 
             // adds final list
-            realizedProfitAssets.addAll(tempRealizedProfitAssets);
-
-            // first row
-            if (i == 0) {
-                Map<String, String> output2 = objectMapper.convertValue(rootNode.path("output2"), new TypeReference<>() {});
-                BigDecimal totalProfitAmount = new BigDecimal(output2.get("tot_rlzt_pfls"));
-                BigDecimal totalFeeAmount = new BigDecimal(output2.get("tot_fee"))
-                        .add(new BigDecimal(output2.get("tot_tltx")));
-                realizedProfit.setTotalProfitAmount(totalProfitAmount);
-                realizedProfit.setTotalFeeAmount(totalFeeAmount);
-            }
+            realizedProfits.addAll(tempRealizedProfits);
 
             // detects pagination
-            if (tempRealizedProfitAssets.isEmpty()) {
+            if (tempRealizedProfits.isEmpty()) {
                 break;
             }
             headers.set("tr_cont", "N");
             ctxAreaFk100 = ctxAreaNk100;
         }
-        realizedProfit.setRealizedProfitAssets(realizedProfitAssets);
 
         // return
-        return realizedProfit;
+        return realizedProfits;
+    }
+
+    @Override
+    public List<DividendHistory> getDividendHistories(LocalDate dateFrom, LocalDate dateTo) throws InterruptedException {
+        // 현재 한투 문의 중
+        return new ArrayList<>();
     }
 
 }

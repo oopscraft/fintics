@@ -1,22 +1,35 @@
 package org.oopscraft.fintics.model;
 
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
-@Data
+@Getter
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class RealizedProfit {
 
-    private BigDecimal totalProfitAmount;
+    private LocalDate date;
 
-    private BigDecimal totalFeeAmount;
+    private String symbol;
 
-    private List<RealizedProfitAsset> realizedProfitAssets = new ArrayList<>();
+    private String name;
+
+    private BigDecimal quantity;
+
+    private BigDecimal purchasePrice;
+
+    private BigDecimal purchaseAmount;
+
+    private BigDecimal disposePrice;
+
+    private BigDecimal disposeAmount;
+
+    private BigDecimal feeAmount;
+
+    private BigDecimal profitAmount;
+
+    private BigDecimal profitPercentage;
 
 }
