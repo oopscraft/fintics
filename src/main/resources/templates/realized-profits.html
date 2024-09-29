@@ -6,33 +6,40 @@
 <th:block layout:fragment="_content">
     <script th:inline="javascript">
         // defines
+        const brokers = new duice.ArrayProxy(/*[[${brokers}]]*/[]);
         const realizedProfitSearch = new duice.ObjectProxy({
             brokerId: null,
             dateFrom: null,
             dateTo: null
         });
-        const brokers = new duice.ArrayProxy(/*[[${brokers}]]*/[]);
-        const realizedProfits = new duice.ArrayProxy([]);
+        const realizedProfitMap = new Map();
+        brokers.forEach(broker => {
+            const realizedProfit = new duice.ObjectProxy({
+                totalProfitAmount: null,
+                totalFeeAmount: null,
+                realizedProfitAssets: [],
+            });
+            realizedProfitMap.set(broker.brokerId, realizedProfit);
+        });
 
-        /**
-         * gets realized profits
-         */
+        function getRealizedProfit(brokerId) {
+            let url = new URL(`${_apiUrl}/v1/realized-profits/${brokerId}`, document.location.origin);
+            _fetch(url, {}, true)
+            .then(response => response.json())
+            .then(data => {
+                duice.ObjectProxy.assign(realizedProfitMap.get(brokerId), data);
+            });
+        }
+
         function getRealizedProfits() {
-            let url = new URL(`${_apiUrl}/v1/realized-profits/${realizedProfitSearch.brokerId}`, document.location.origin);
-            if (realizedProfitSearch.dateFrom && realizedProfitSearch.dateTo) {
-                // TODO
-            }
-            _fetch(url)
-                .then(response => {
-                    return response.json();
-                })
-                .then(data => {
-                    duice.ArrayProxy.assign(realizedProfits, data);
-                });
+            brokers.forEach(broker => {
+                getRealizedProfit(broker.brokerId);
+            });
         }
 
         // event listener
         document.addEventListener('DOMContentLoaded', () => {
+            getRealizedProfits();
         });
     </script>
     <style th:inline="css">
@@ -43,126 +50,235 @@
     <!-- ====================================== -->
     <h1 id="title">
         <img class="icon" th:src="@{/static/image/icon-realized-profit.svg}" alt="realized-profit"/>
-        <span data-th-text="#{fintics.RealizedProfit}"></span>
+        <span data-th-text="#{fintics.RealizedProfitAsset}"></span>
     </h1>
     <!-- ====================================== -->
     <!-- end: title                             -->
     <!-- ====================================== -->
 
-    <!-- ================================== -->
-    <!-- start: order                       -->
-    <!-- ================================== -->
-    <div class="display--flex flex-direction--column border--1 padding--1em">
-        <div class="display--flex flex-direction--column gap--1em padding--1em s__padding-y--0">
-            <form onsubmit="return false;" class="display--grid grid-template-columns--12 grid-gap--1em">
-                <div class="grid-column--12 s__grid-column--12 display--grid grid-template-columns--12 grid-gap--1em">
-                    <label class="grid-column--8 s__grid-column--12">
-                        <select data-duice-bind="realizedProfitSearch"
-                                data-duice-property="brokerId"
-                                data-duice-option="brokers"
-                                data-duice-option-value-property="brokerId"
-                                data-duice-option-text-property="name">
-                            <option value="" data-th-text="'- ' + #{fintics.Broker} + ' -'"></option>
-                        </select>
-                    </label>
-                    <div class="grid-column--4 s__grid-column--12 justify-self--end">
-                        <button type="submit" onclick="getRealizedProfits();">
-                            <img class="icon" th:src="@{/static/image/icon-search.svg}" alt="search"/>
-                            <span data-th-text="#{web.global.search}"></span>
-                        </button>
-                    </div>
-                </div>
-            </form>
-            <div class="overflow-x--scroll">
-                <table class="width--100">
-                    <colgroup>
-                        <col/>
-                        <col/>
-                        <col/>
-                        <col/>
-                        <col/>
-                        <col/>
-                        <col/>
-                        <col/>
-                        <col/>
-                        <col/>
-                        <col/>
-                    </colgroup>
-                    <thead>
-                    <tr>
-                        <th data-th-text="#{fintics.RealizedProfit.date}"></th>
-                        <th data-th-text="#{fintics.RealizedProfit.symbol}"></th>
-                        <th data-th-text="#{fintics.RealizedProfit.name}"></th>
-                        <th data-th-text="#{fintics.RealizedProfit.quantity}" class="text-align--right"></th>
-                        <th data-th-text="#{fintics.RealizedProfit.purchasePrice}" class="text-align--right"></th>
-                        <th data-th-text="#{fintics.RealizedProfit.purchaseAmount}" class="text-align--right"></th>
-                        <th data-th-text="#{fintics.RealizedProfit.disposePrice}" class="text-align--right"></th>
-                        <th data-th-text="#{fintics.RealizedProfit.disposeAmount}" class="text-align--right"></th>
-                        <th data-th-text="#{fintics.RealizedProfit.feeAmount}" class="text-align--right"></th>
-                        <th data-th-text="#{fintics.RealizedProfit.profitAmount}" class="text-align--right"></th>
-                        <th data-th-text="#{fintics.RealizedProfit.profitPercentage}" class="text-align--right"></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr data-duice-bind="realizedProfits" data-duice-loop="realizedProfit,status">
-                        <td>
-                        <span data-duice-bind="realizedProfit"
+    <!-- ====================================== -->
+    <!-- start: realized-profit                 -->
+    <!-- ====================================== -->
+    <div class="display--grid grid-template-columns--12 grid-gap--1em">
+        <div th:each="broker : ${brokers}"
+             class="grid-column--6 s__grid-column--12 padding--1em border--1">
+            <div>
+                <h2>
+                    <img class="icon" th:src="@{/static/image/icon-broker.svg}" alt="broker"/>
+                    <span data-th-text="${broker.name}"></span>
+                </h2>
+            </div>
+            <div class="font-weight--bold">
+                <span data-th-text="#{fintics.RealizedProfit.totalProfitAmount}"></span>
+                :
+                <span th:data-duice-bind="|realizedProfitMap.get('${broker.brokerId}')|"
+                      data-duice-property="totalProfitAmount"
+                        data-duice-format="number">
+                </span>
+                <small>|</small>
+                <span data-th-text="#{fintics.RealizedProfit.totalFeeAmount}"></span>
+                :
+                <span th:data-duice-bind="|realizedProfitMap.get('${broker.brokerId}')|"
+                      data-duice-property="totalFeeAmount"
+                      data-duice-format="number">
+                </span>
+            </div>
+            <div>
+                <div class="overflow-x-scroll overflow-y--scroll" style="height:200px;">
+                    <table class="white-space--nowrap" style="width:1000px;">
+                        <colgroup>
+                            <col/>
+                            <col/>
+                            <col/>
+                            <col/>
+                            <col/>
+                            <col/>
+                            <col/>
+                            <col/>
+                            <col/>
+                            <col/>
+                            <col/>
+                        </colgroup>
+                        <thead>
+                        <tr>
+                            <th data-th-text="#{fintics.RealizedProfitAsset.date}"></th>
+                            <th data-th-text="#{fintics.Asset.assetId}"></th>
+                            <th data-th-text="#{fintics.Asset.name}"></th>
+                            <th data-th-text="#{fintics.RealizedProfitAsset.quantity}" class="text-align--right"></th>
+                            <th data-th-text="#{fintics.RealizedProfitAsset.purchasePrice}" class="text-align--right"></th>
+                            <th data-th-text="#{fintics.RealizedProfitAsset.purchaseAmount}" class="text-align--right"></th>
+                            <th data-th-text="#{fintics.RealizedProfitAsset.disposePrice}" class="text-align--right"></th>
+                            <th data-th-text="#{fintics.RealizedProfitAsset.disposeAmount}" class="text-align--right"></th>
+                            <th data-th-text="#{fintics.RealizedProfitAsset.feeAmount}" class="text-align--right"></th>
+                            <th data-th-text="#{fintics.RealizedProfitAsset.profitAmount}" class="text-align--right"></th>
+                            <th data-th-text="#{fintics.RealizedProfitAsset.profitPercentage}" class="text-align--right"></th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        <tr th:data-duice-bind="|realizedProfitMap.get('${broker.brokerId}').realizedProfitAssets|" data-duice-loop="realizedProfitAsset,status">
+                            <td>
+                        <span data-duice-bind="realizedProfitAsset"
                               data-duice-property="date"
                               data-duice-format="date('yyyy-MM-dd')"></span>
-                        </td>
-                        <td>
-                            <span data-duice-bind="realizedProfit" data-duice-property="symbol"></span>
-                        </td>
-                        <td>
-                            <span data-duice-bind="realizedProfit" data-duice-property="name"></span>
-                        </td>
-                        <td class="text-align--right">
-                            <span data-duice-bind="realizedProfit" data-duice-property="quantity" data-duice-format="number"></span>
-                        </td>
-                        <td class="text-align--right">
-                            <span data-duice-bind="realizedProfit" data-duice-property="purchasePrice" data-duice-format="number"></span>
-                        </td>
-                        <td class="text-align--right">
-                            <span data-duice-bind="realizedProfit" data-duice-property="purchaseAmount" data-duice-format="number"></span>
-                        </td>
-                        <td class="text-align--right">
-                            <span data-duice-bind="realizedProfit" data-duice-property="disposePrice" data-duice-format="number"></span>
-                        </td>
-                        <td class="text-align--right">
-                            <span data-duice-bind="realizedProfit" data-duice-property="disposeAmount" data-duice-format="number"></span>
-                        </td>
-                        <td class="text-align--right">
-                            <span data-duice-bind="realizedProfit" data-duice-property="feeAmount" data-duice-format="number"></span>
-                        </td>
-                        <td class="text-align--right">
-                            <span data-duice-bind="realizedProfit" data-duice-property="profitAmount" data-duice-format="number"></span>
-                        </td>
-                        <td class="text-align--right">
-                            <span data-duice-bind="realizedProfit" data-duice-property="profitPercentage" data-duice-format="number"></span>
-                            %
-                        </td>
-                    </tr>
-                    </tbody>
-                    <tfoot>
-                    <tr>
-                        <td colspan="100%" class="text-align--right">
-                            <span data-duice-bind="realizedProfits"
-                            data-duice-execute="
-                            const totalProfitAmount = realizedProfits.reduce((sum, realizedProfit) => sum + realizedProfit.profitAmount, 0);
-                            const formattedTotalProfitAmount = totalProfitAmount.toLocaleString();
-                            this.innerHTML = formattedTotalProfitAmount;
-                            "
-                            class="font-weight--bold">
-                            </span>
-                        </td>
-                    </tr>
-                    </tfoot>
-                </table>
+                            </td>
+                            <td>
+                                <span data-duice-bind="realizedProfitAsset" data-duice-property="symbol"></span>
+                            </td>
+                            <td>
+                                <span data-duice-bind="realizedProfitAsset" data-duice-property="name"></span>
+                            </td>
+                            <td class="text-align--right">
+                                <span data-duice-bind="realizedProfitAsset" data-duice-property="quantity" data-duice-format="number"></span>
+                            </td>
+                            <td class="text-align--right">
+                                <span data-duice-bind="realizedProfitAsset" data-duice-property="purchasePrice" data-duice-format="number"></span>
+                            </td>
+                            <td class="text-align--right">
+                                <span data-duice-bind="realizedProfitAsset" data-duice-property="purchaseAmount" data-duice-format="number"></span>
+                            </td>
+                            <td class="text-align--right">
+                                <span data-duice-bind="realizedProfitAsset" data-duice-property="disposePrice" data-duice-format="number"></span>
+                            </td>
+                            <td class="text-align--right">
+                                <span data-duice-bind="realizedProfitAsset" data-duice-property="disposeAmount" data-duice-format="number"></span>
+                            </td>
+                            <td class="text-align--right">
+                                <span data-duice-bind="realizedProfitAsset" data-duice-property="feeAmount" data-duice-format="number"></span>
+                            </td>
+                            <td class="text-align--right">
+                                <span data-duice-bind="realizedProfitAsset" data-duice-property="profitAmount" data-duice-format="number"></span>
+                            </td>
+                            <td class="text-align--right">
+                                <span data-duice-bind="realizedProfitAsset" data-duice-property="profitPercentage" data-duice-format="number"></span>
+                                %
+                            </td>
+                        </tr>
+                        </tbody>
+
+                    </table>
+                </div>
             </div>
         </div>
     </div>
-    <!-- ================================== -->
-    <!-- end: order                       -->
-    <!-- ================================== -->
+    <!-- ====================================== -->
+    <!-- end: realized-profit                   -->
+    <!-- ====================================== -->
+
+<!--    &lt;!&ndash; ================================== &ndash;&gt;-->
+<!--    &lt;!&ndash; start: order                       &ndash;&gt;-->
+<!--    &lt;!&ndash; ================================== &ndash;&gt;-->
+<!--    <div class="display&#45;&#45;flex flex-direction&#45;&#45;column border&#45;&#45;1 padding&#45;&#45;1em">-->
+<!--        <div class="display&#45;&#45;flex flex-direction&#45;&#45;column gap&#45;&#45;1em padding&#45;&#45;1em s__padding-y&#45;&#45;0">-->
+<!--            <form onsubmit="return false;" class="display&#45;&#45;grid grid-template-columns&#45;&#45;12 grid-gap&#45;&#45;1em">-->
+<!--                <div class="grid-column&#45;&#45;12 s__grid-column&#45;&#45;12 display&#45;&#45;grid grid-template-columns&#45;&#45;12 grid-gap&#45;&#45;1em">-->
+<!--                    <label class="grid-column&#45;&#45;8 s__grid-column&#45;&#45;12">-->
+<!--                        <select data-duice-bind="realizedProfitSearch"-->
+<!--                                data-duice-property="brokerId"-->
+<!--                                data-duice-option="brokers"-->
+<!--                                data-duice-option-value-property="brokerId"-->
+<!--                                data-duice-option-text-property="name">-->
+<!--                            <option value="" data-th-text="'- ' + #{fintics.Broker} + ' -'"></option>-->
+<!--                        </select>-->
+<!--                    </label>-->
+<!--                    <div class="grid-column&#45;&#45;4 s__grid-column&#45;&#45;12 justify-self&#45;&#45;end">-->
+<!--                        <button type="submit" onclick="getRealizedProfits();">-->
+<!--                            <img class="icon" th:src="@{/static/image/icon-search.svg}" alt="search"/>-->
+<!--                            <span data-th-text="#{web.global.search}"></span>-->
+<!--                        </button>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </form>-->
+<!--            <div class="overflow-x&#45;&#45;scroll">-->
+<!--                <table class="width&#45;&#45;100">-->
+<!--                    <colgroup>-->
+<!--                        <col/>-->
+<!--                        <col/>-->
+<!--                        <col/>-->
+<!--                        <col/>-->
+<!--                        <col/>-->
+<!--                        <col/>-->
+<!--                        <col/>-->
+<!--                        <col/>-->
+<!--                        <col/>-->
+<!--                        <col/>-->
+<!--                        <col/>-->
+<!--                    </colgroup>-->
+<!--                    <thead>-->
+<!--                    <tr>-->
+<!--                        <th data-th-text="#{fintics.RealizedProfit.date}"></th>-->
+<!--                        <th data-th-text="#{fintics.RealizedProfit.symbol}"></th>-->
+<!--                        <th data-th-text="#{fintics.RealizedProfit.name}"></th>-->
+<!--                        <th data-th-text="#{fintics.RealizedProfit.quantity}" class="text-align&#45;&#45;right"></th>-->
+<!--                        <th data-th-text="#{fintics.RealizedProfit.purchasePrice}" class="text-align&#45;&#45;right"></th>-->
+<!--                        <th data-th-text="#{fintics.RealizedProfit.purchaseAmount}" class="text-align&#45;&#45;right"></th>-->
+<!--                        <th data-th-text="#{fintics.RealizedProfit.disposePrice}" class="text-align&#45;&#45;right"></th>-->
+<!--                        <th data-th-text="#{fintics.RealizedProfit.disposeAmount}" class="text-align&#45;&#45;right"></th>-->
+<!--                        <th data-th-text="#{fintics.RealizedProfit.feeAmount}" class="text-align&#45;&#45;right"></th>-->
+<!--                        <th data-th-text="#{fintics.RealizedProfit.profitAmount}" class="text-align&#45;&#45;right"></th>-->
+<!--                        <th data-th-text="#{fintics.RealizedProfit.profitPercentage}" class="text-align&#45;&#45;right"></th>-->
+<!--                    </tr>-->
+<!--                    </thead>-->
+<!--                    <tbody>-->
+<!--                    <tr data-duice-bind="realizedProfits" data-duice-loop="realizedProfit,status">-->
+<!--                        <td>-->
+<!--                        <span data-duice-bind="realizedProfit"-->
+<!--                              data-duice-property="date"-->
+<!--                              data-duice-format="date('yyyy-MM-dd')"></span>-->
+<!--                        </td>-->
+<!--                        <td>-->
+<!--                            <span data-duice-bind="realizedProfit" data-duice-property="symbol"></span>-->
+<!--                        </td>-->
+<!--                        <td>-->
+<!--                            <span data-duice-bind="realizedProfit" data-duice-property="name"></span>-->
+<!--                        </td>-->
+<!--                        <td class="text-align&#45;&#45;right">-->
+<!--                            <span data-duice-bind="realizedProfit" data-duice-property="quantity" data-duice-format="number"></span>-->
+<!--                        </td>-->
+<!--                        <td class="text-align&#45;&#45;right">-->
+<!--                            <span data-duice-bind="realizedProfit" data-duice-property="purchasePrice" data-duice-format="number"></span>-->
+<!--                        </td>-->
+<!--                        <td class="text-align&#45;&#45;right">-->
+<!--                            <span data-duice-bind="realizedProfit" data-duice-property="purchaseAmount" data-duice-format="number"></span>-->
+<!--                        </td>-->
+<!--                        <td class="text-align&#45;&#45;right">-->
+<!--                            <span data-duice-bind="realizedProfit" data-duice-property="disposePrice" data-duice-format="number"></span>-->
+<!--                        </td>-->
+<!--                        <td class="text-align&#45;&#45;right">-->
+<!--                            <span data-duice-bind="realizedProfit" data-duice-property="disposeAmount" data-duice-format="number"></span>-->
+<!--                        </td>-->
+<!--                        <td class="text-align&#45;&#45;right">-->
+<!--                            <span data-duice-bind="realizedProfit" data-duice-property="feeAmount" data-duice-format="number"></span>-->
+<!--                        </td>-->
+<!--                        <td class="text-align&#45;&#45;right">-->
+<!--                            <span data-duice-bind="realizedProfit" data-duice-property="profitAmount" data-duice-format="number"></span>-->
+<!--                        </td>-->
+<!--                        <td class="text-align&#45;&#45;right">-->
+<!--                            <span data-duice-bind="realizedProfit" data-duice-property="profitPercentage" data-duice-format="number"></span>-->
+<!--                            %-->
+<!--                        </td>-->
+<!--                    </tr>-->
+<!--                    </tbody>-->
+<!--                    <tfoot>-->
+<!--                    <tr>-->
+<!--                        <td colspan="100%" class="text-align&#45;&#45;right">-->
+<!--                            <span data-duice-bind="realizedProfits"-->
+<!--                            data-duice-execute="-->
+<!--                            const totalProfitAmount = realizedProfits.reduce((sum, realizedProfit) => sum + realizedProfit.profitAmount, 0);-->
+<!--                            const formattedTotalProfitAmount = totalProfitAmount.toLocaleString();-->
+<!--                            this.innerHTML = formattedTotalProfitAmount;-->
+<!--                            "-->
+<!--                            class="font-weight&#45;&#45;bold">-->
+<!--                            </span>-->
+<!--                        </td>-->
+<!--                    </tr>-->
+<!--                    </tfoot>-->
+<!--                </table>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--    &lt;!&ndash; ================================== &ndash;&gt;-->
+<!--    &lt;!&ndash; end: order                       &ndash;&gt;-->
+<!--    &lt;!&ndash; ================================== &ndash;&gt;-->
 
 </th:block>

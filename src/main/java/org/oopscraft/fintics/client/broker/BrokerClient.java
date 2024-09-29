@@ -106,9 +106,9 @@ public abstract class BrokerClient {
      * returns realized profit
      * @param dateFrom date from
      * @param dateTo  date to
-     * @return list of realized profit
+     * @return realized profit
      */
-    public abstract List<RealizedProfit> getRealizedProfits(LocalDate dateFrom, LocalDate dateTo) throws InterruptedException;
+    public abstract RealizedProfit getRealizedProfit(LocalDate dateFrom, LocalDate dateTo) throws InterruptedException;
 
     /**
      * convert to asset id

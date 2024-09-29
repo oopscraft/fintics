@@ -407,7 +407,7 @@ public class UpbitBrokerClient extends BrokerClient {
     }
 
     @Override
-    public List<RealizedProfit> getRealizedProfits(LocalDate dateFrom, LocalDate dateTo) {
+    public RealizedProfit getRealizedProfit(LocalDate dateFrom, LocalDate dateTo) {
         throw new UnsupportedOperationException();
     }
 

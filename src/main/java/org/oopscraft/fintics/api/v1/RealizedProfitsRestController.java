@@ -25,20 +25,18 @@ public class RealizedProfitsRestController {
      * @param brokerId broker id
      * @param dateFrom date from
      * @param dateTo date to
-     * @return realized profits
+     * @return realized profit
      */
     @GetMapping("{brokerId}")
     @Operation(description = "gets realized profits")
-    public ResponseEntity<List<RealizedProfitResponse>> getRealizedProfits(
+    public ResponseEntity<RealizedProfitResponse> getRealizedProfits(
             @PathVariable("brokerId") String brokerId,
             @RequestParam(value = "dateFrom", required = false) LocalDate dateFrom,
             @RequestParam(value = "dateTo", required = false) LocalDate dateTo
     ) {
-        List<RealizedProfit> realizedProfits = realizedProfitService.getRealizedProfits(brokerId, dateFrom, dateTo);
-        List<RealizedProfitResponse> realizedProfitResponses = realizedProfits.stream()
-                .map(RealizedProfitResponse::from)
-                .toList();
-        return ResponseEntity.ok(realizedProfitResponses);
+        RealizedProfit realizedProfit = realizedProfitService.getRealizedProfit(brokerId, dateFrom, dateTo);
+        RealizedProfitResponse realizedProfitResponse = RealizedProfitResponse.from(realizedProfit);
+        return ResponseEntity.ok(realizedProfitResponse);
     }
 
 }

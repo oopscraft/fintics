@@ -142,7 +142,7 @@ public class AlpacaBrokerClient extends BrokerClient {
     }
 
     @Override
-    public List<RealizedProfit> getRealizedProfits(LocalDate dateFrom, LocalDate dateTo) {
+    public RealizedProfit getRealizedProfit(LocalDate dateFrom, LocalDate dateTo) {
         return null;
     }
 

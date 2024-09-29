@@ -6,47 +6,31 @@ import org.oopscraft.fintics.model.RealizedProfit;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Builder
 public class RealizedProfitResponse {
 
-    private LocalDate date;
+    private BigDecimal totalProfitAmount;
 
-    private String symbol;
+    private BigDecimal totalFeeAmount;
 
-    private String name;
+    private List<RealizedProfitAssetResponse> realizedProfitAssets = new ArrayList<>();
 
-    private BigDecimal quantity;
-
-    private BigDecimal purchasePrice;
-
-    private BigDecimal purchaseAmount;
-
-    private BigDecimal disposePrice;
-
-    private BigDecimal disposeAmount;
-
-    private BigDecimal feeAmount;
-
-    private BigDecimal profitAmount;
-
-    private BigDecimal profitPercentage;
-
+    /**
+     * factory method
+     * @param realizedProfit realized profit
+     * @return realized profit response
+     */
     public static RealizedProfitResponse from(RealizedProfit realizedProfit) {
         return RealizedProfitResponse.builder()
-                .date(realizedProfit.getDate())
-                .symbol(realizedProfit.getSymbol())
-                .name(realizedProfit.getName())
-                .quantity(realizedProfit.getQuantity())
-                .purchasePrice(realizedProfit.getPurchasePrice())
-                .purchaseAmount(realizedProfit.getPurchaseAmount())
-                .disposePrice(realizedProfit.getDisposePrice())
-                .disposeAmount(realizedProfit.getDisposeAmount())
-                .feeAmount(realizedProfit.getFeeAmount())
-                .profitAmount(realizedProfit.getProfitAmount())
-                .profitPercentage(realizedProfit.getProfitPercentage())
+                .totalProfitAmount(realizedProfit.getTotalProfitAmount())
+                .totalFeeAmount(realizedProfit.getTotalFeeAmount())
+                .realizedProfitAssets(realizedProfit.getRealizedProfitAssets().stream()
+                        .map(RealizedProfitAssetResponse::from)
+                        .toList())
                 .build();
     }
 

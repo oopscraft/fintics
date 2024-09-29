@@ -176,14 +176,14 @@ class KisUsBrokerClientTest extends CoreTestSupport {
 
     @Disabled
     @Test
-    void getRealizedProfits() throws InterruptedException {
+    void getRealizedProfit() throws InterruptedException {
         // given
         LocalDate dateFrom = LocalDate.now().minusDays(30);
         LocalDate dateTo = LocalDate.now();
         // when
-        List<RealizedProfit> realizedProfits = getKisUsClient().getRealizedProfits(dateFrom, dateTo);
+        RealizedProfit realizedProfit = getKisUsClient().getRealizedProfit(dateFrom, dateTo);
         // then
-        log.info("realizedProfits:{}",  realizedProfits);
+        log.info("realizedProfit:{}",  realizedProfit);
     }
 
 }

@@ -26,13 +26,13 @@ public class RealizedProfitService {
      * @param dateTo date to
      * @return list of realized profit
      */
-    public List<RealizedProfit> getRealizedProfits(String brokerId, LocalDate dateFrom, LocalDate dateTo) {
+    public RealizedProfit getRealizedProfit(String brokerId, LocalDate dateFrom, LocalDate dateTo) {
         dateFrom = Optional.ofNullable(dateFrom).orElse(LocalDate.now().minusMonths(1));
         dateTo = Optional.ofNullable(dateTo).orElse(LocalDate.now());
         Broker broker = brokerService.getBroker(brokerId).orElseThrow();
         BrokerClient brokerClient = brokerClientFactory.getObject(broker);
         try {
-            return brokerClient.getRealizedProfits(dateFrom, dateTo);
+            return brokerClient.getRealizedProfit(dateFrom, dateTo);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

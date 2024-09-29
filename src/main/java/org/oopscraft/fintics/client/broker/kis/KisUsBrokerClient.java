@@ -726,20 +726,21 @@ public class KisUsBrokerClient extends BrokerClient {
     }
 
     /**
-     * gets realized profits
+     * gets realized profit
      * 미국 실현 손익 조회
-     * @return realized profits
+     * @return realized profit
      * @see [해외주식 기간손익[v1_해외주식-032]](https://apiportal.koreainvestment.com/apiservice/apiservice-oversea-stock-order#L_147d1d34-3001-4958-b970-106935a19fe7)
      */
     @Override
-    public List<RealizedProfit> getRealizedProfits(LocalDate dateFrom, LocalDate dateTo) throws InterruptedException {
+    public RealizedProfit getRealizedProfit(LocalDate dateFrom, LocalDate dateTo) throws InterruptedException {
         // 모의 투자는 미지원
         if (!this.production) {
             throw new UnsupportedOperationException();
         }
 
         // defines
-        List<RealizedProfit> realizedProfits = new ArrayList<>();
+        RealizedProfit realizedProfit = new RealizedProfit();
+        List<RealizedProfitAsset> realizedProfitAssets = new ArrayList<>();
         RestTemplate restTemplate = createRestTemplate();
         HttpHeaders headers = createHeaders();
         headers.add("tr_id", "TTTS3039R");
@@ -793,12 +794,12 @@ public class KisUsBrokerClient extends BrokerClient {
 
             // temp list
             List<Map<String, String>> output1 = objectMapper.convertValue(rootNode.path("output1"), new TypeReference<>() {});
-            List<RealizedProfit> tempRealizedProfits = output1.stream()
+            List<RealizedProfitAsset> tempRealizedProfits = output1.stream()
                     .map(row -> {
-                        return RealizedProfit.builder()
-                                .date(LocalDate.parse(row.get("trad_day"), DateTimeFormatter.BASIC_ISO_DATE))
-                                .symbol(row.get("ovrs_pdno"))
+                        return RealizedProfitAsset.builder()
+                                .assetId(toAssetId(row.get("ovrs_pdno")))
                                 .name(row.get("ovrs_item_name"))
+                                .date(LocalDate.parse(row.get("trad_day"), DateTimeFormatter.BASIC_ISO_DATE))
                                 .quantity(new BigDecimal(row.get("slcl_qty")))
                                 .purchasePrice(new BigDecimal(row.get("pchs_avg_pric")))
                                 .purchaseAmount(new BigDecimal(row.get("frcr_pchs_amt1")))
@@ -812,7 +813,16 @@ public class KisUsBrokerClient extends BrokerClient {
                     .collect(Collectors.toList());
 
             // adds final list
-            realizedProfits.addAll(tempRealizedProfits);
+            realizedProfitAssets.addAll(tempRealizedProfits);
+
+            // first row
+            if (i == 0) {
+                Map<String, String> output2 = objectMapper.convertValue(rootNode.path("output2"), new TypeReference<>() {});
+                BigDecimal totalProfitAmount = new BigDecimal(output2.get("ovrs_rlzt_pfls_tot_amt"));
+                BigDecimal totalFeeAmount = new BigDecimal(output2.get("smtl_fee1"));
+                realizedProfit.setTotalProfitAmount(totalProfitAmount);
+                realizedProfit.setTotalFeeAmount(totalFeeAmount);
+            }
 
             // detects pagination
             if (tempRealizedProfits.isEmpty()) {
@@ -821,9 +831,10 @@ public class KisUsBrokerClient extends BrokerClient {
             headers.set("tr_cont", "N");
             ctxAreaFk200 = ctxAreaNk200;
         }
+        realizedProfit.setRealizedProfitAssets(realizedProfitAssets);
 
         // return
-        return realizedProfits;
+        return realizedProfit;
     }
 
 }
