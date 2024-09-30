@@ -61,7 +61,7 @@ class GroovyBasketScriptRunnerTest extends CoreTestSupport {
                 .assetService(assetService)
                 .ohlcvClient(ohlcvClient)
                 .build();
-        List<BasketRebalanceResult> basketRebalanceResults = groovyBasketScriptRunner.run();
+        List<BasketRebalanceAsset> basketRebalanceResults = groovyBasketScriptRunner.run();
         // then
         log.info("basketRebalanceResults: {}", basketRebalanceResults);
     }
@@ -80,7 +80,7 @@ class GroovyBasketScriptRunnerTest extends CoreTestSupport {
                 .assetService(assetService)
                 .ohlcvClient(ohlcvClient)
                 .build();
-        List<BasketRebalanceResult> basketRebalanceResults = groovyBasketScriptRunner.run();
+        List<BasketRebalanceAsset> basketRebalanceResults = groovyBasketScriptRunner.run();
         // then
         log.info("basketRebalanceResults: {}", basketRebalanceResults);
     }

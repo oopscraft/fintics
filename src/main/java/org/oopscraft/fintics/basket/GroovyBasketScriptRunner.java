@@ -19,7 +19,7 @@ public class GroovyBasketScriptRunner extends BasketScriptRunner {
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<BasketRebalanceResult> run() {
+    public List<BasketRebalanceAsset> run() {
         ClassLoader classLoader = this.getClass().getClassLoader();
         GroovyClassLoader groovyClassLoader = new GroovyClassLoader(classLoader);
         Binding binding = new Binding();
@@ -28,11 +28,11 @@ public class GroovyBasketScriptRunner extends BasketScriptRunner {
         binding.setVariable("ohlcvClient", ohlcvClient);
         GroovyShell groovyShell = new GroovyShell(groovyClassLoader, binding);
         Object result = groovyShell.evaluate(
-                "import " + BasketRebalanceResult.class.getName() + '\n' +
+                "import " + BasketRebalanceAsset.class.getName() + '\n' +
                         basket.getScript()
         );
         if (result != null) {
-            return (List<BasketRebalanceResult>) result;
+            return (List<BasketRebalanceAsset>) result;
         }
         return null;
     }

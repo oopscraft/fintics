@@ -1,14 +1,13 @@
 package org.oopscraft.fintics.basket;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.alarm.service.AlarmService;
 import org.oopscraft.fintics.FinticsProperties;
-import org.oopscraft.fintics.dao.BasketAssetRepository;
 import org.oopscraft.fintics.model.Basket;
 import org.oopscraft.fintics.model.BasketSearch;
 import org.oopscraft.fintics.service.BasketService;
-import org.oopscraft.fintics.service.TradeService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -39,6 +38,8 @@ public class BasketRebalanceScheduler {
     private final FinticsProperties finticsProperties;
 
     private final AlarmService alarmService;
+
+    private final ObjectMapper objectMapper;
 
     /**
      * synchronizes scheduler with database
@@ -117,14 +118,18 @@ public class BasketRebalanceScheduler {
      * @param basketId basket id
      */
     private synchronized void executeTask(String basketId) {
+        StringBuilder stringBuilder = new StringBuilder();
         try {
             Basket basket = basketService.getBasket(basketId).orElseThrow();
+            stringBuilder.append(String.format("Basket rebalance completed - %s", basket.getName())).append('\n');
             BasketRebalanceTask basketRebalanceTask = basketRebalanceTaskFactory.getObject(basket);
-            basketRebalanceTask.execute();
-            sendSystemAlarm(String.format("Basket rebalance completed - %s", basket.getName()));
+            BasketRebalanceResult basketRebalanceResult = basketRebalanceTask.execute();
+            stringBuilder.append(objectMapper.writeValueAsString(basketRebalanceResult));
         } catch (Throwable e) {
             log.warn(e.getMessage(), e);
-            sendSystemAlarm(e.getMessage());
+            stringBuilder.append(e.getMessage());
+        } finally {
+            sendSystemAlarm(stringBuilder.toString());
         }
     }
 

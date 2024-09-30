@@ -8,6 +8,7 @@ import org.oopscraft.fintics.service.TradeService;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -23,10 +24,15 @@ public class BasketRebalanceTask {
 
     private final BasketScriptRunnerFactory basketScriptRunnerFactory;
 
-    public void execute() {
-        BasketScriptRunner basketRebalance = basketScriptRunnerFactory.getObject(basket);
-        List<BasketRebalanceResult> basketChanges = basketRebalance.run();
-        log.info("basketChanges: {}", basketChanges);
+    public BasketRebalanceResult execute() {
+        // defines
+        List<BasketAsset> addedBasketAssets = new ArrayList<>();
+        List<BasketAsset> removedBasketAssets = new ArrayList<>();
+
+        // executes basket script runner
+        BasketScriptRunner basketRebalanceRunner = basketScriptRunnerFactory.getObject(basket);
+        List<BasketRebalanceAsset> basketRebalanceAssets = basketRebalanceRunner.run();
+        log.info("basketRebalanceAssets: {}", basketRebalanceAssets);
 
         //================================================
         // 0. 베스켓 사용 중인 트레이드 + 잔고 조회
@@ -49,10 +55,10 @@ public class BasketRebalanceTask {
         //===========================================
         // 1. 신규 리밸런싱 종목 추가
         //===========================================
-        for (BasketRebalanceResult basketChange : basketChanges) {
+        for (BasketRebalanceAsset basketRebalanceAsset : basketRebalanceAssets) {
             String market = basket.getMarket();
-            String symbol = basketChange.getSymbol();
-            BigDecimal holdingWeight = basketChange.getHoldingWeight();
+            String symbol = basketRebalanceAsset.getSymbol();
+            BigDecimal holdingWeight = basketRebalanceAsset.getHoldingWeight();
             String assetId = String.format("%s.%s", market, symbol);
             // 동일 종목 베스켓 에서 조회
             BasketAsset basketAsset = basket.getBasketAssets().stream()
@@ -67,6 +73,7 @@ public class BasketRebalanceTask {
                         .holdingWeight(holdingWeight)
                         .build();
                 basket.getBasketAssets().add(basketAsset);
+                addedBasketAssets.add(basketAsset);
             } else {
                 // 이미 존재 하는 종목인 경우 고정 종목이 아니 라면 보유 비중 수정
                 if (!basketAsset.isFixed()) {
@@ -85,7 +92,7 @@ public class BasketRebalanceTask {
                 continue;
             }
             // 교체 종목 인지 여부 확인
-            boolean existInBasketChanges = basketChanges.stream().anyMatch(it ->
+            boolean existInBasketChanges = basketRebalanceAssets.stream().anyMatch(it ->
                     Objects.equals(it.getSymbol(), basketAsset.getSymbol()));
             // 교체 종목이 아닌 경우 (삭제 대상)
             if (!existInBasketChanges) {
@@ -98,6 +105,7 @@ public class BasketRebalanceTask {
                 // 매수 하지 않은 종목인 경우 바로 삭제
                 else {
                     basket.getBasketAssets().remove(i);
+                    removedBasketAssets.add(basketAsset);
                 }
             }
         }
@@ -106,6 +114,13 @@ public class BasketRebalanceTask {
         // 3. 최종 변경 사항 저장 처리
         //=============================================
         basketService.saveBasket(basket);
+
+        // returns
+        return BasketRebalanceResult.builder()
+                .basketRebalanceAssets(basketRebalanceAssets)
+                .addedBasketAssets(addedBasketAssets)
+                .removedBasketAssets(removedBasketAssets)
+                .build();
     }
 
     /**

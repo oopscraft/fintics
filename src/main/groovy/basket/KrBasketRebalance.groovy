@@ -1,7 +1,7 @@
 import groovy.json.JsonSlurper
 import groovy.transform.ToString
 import groovy.transform.builder.Builder
-import org.oopscraft.fintics.basket.BasketRebalanceResult
+import org.oopscraft.fintics.basket.BasketRebalanceAsset
 import org.oopscraft.fintics.model.Asset
 
 /**
@@ -12,6 +12,7 @@ import org.oopscraft.fintics.model.Asset
 class Item {
     String symbol
     String name
+    String etfSymbol
     BigDecimal score
 }
 
@@ -25,12 +26,17 @@ static List<Item> getEtfItems(etfSymbol) {
     def responseJson= url.text
     def jsonSlurper = new JsonSlurper()
     def responseMap = jsonSlurper.parseText(responseJson)
-    def pdfAssets = responseMap.get('etfTop10MajorConstituentAssets')
-    return pdfAssets.collect{
+    def top10Holdings = responseMap.get('etfTop10MajorConstituentAssets')
+    // 결과 값이 이상할 경우(10개 이하인 경우) 에러 처리
+    if (top10Holdings == null || top10Holdings.size() < 10) {
+        throw new NoSuchElementException("Top 10 holdings data is incomplete or missing - ${etfSymbol}")
+    }
+    return top10Holdings.collect{
         Item.builder()
-            .symbol(it.itemCode as String)
-            .name(it.itemName as String)
-            .build()
+                .symbol(it.itemCode as String)
+                .name(it.itemName as String)
+                .etfSymbol(etfSymbol)
+                .build()
     }
 }
 
@@ -128,19 +134,19 @@ println "finalItems: ${finalItems}"
 //=========================================
 // sort by score
 //=========================================
-def targetAssetCount = 50
-def targetHoldingWeightPerAsset = 2.0
-def fixedAssetCount = basket.getBasketAssets().findAll{it.fixed && it.enabled && it.holdingWeight > 0}.size()
-def remainedAssetCount = (targetAssetCount - fixedAssetCount) as Integer
+def maxAssetCount = 50
+def holdingWeightPerAsset = 2.0
+def fixedAssetCount = basket.getBasketAssets().findAll{it.enabled && it.fixed}.size()
+def targetAssetCount = (maxAssetCount - fixedAssetCount) as Integer
 finalItems = finalItems
         .sort{ -(it.score?:0)}
-        .take(remainedAssetCount)
+        .take(targetAssetCount)
 
 //=========================================
 // return
 //=========================================
-List<BasketRebalanceResult> basketRebalanceResults = finalItems.collect{
-    BasketRebalanceResult.of(it.symbol, it.name, targetHoldingWeightPerAsset)
+List<BasketRebalanceAsset> basketRebalanceResults = finalItems.collect{
+    BasketRebalanceAsset.of(it.symbol, it.name, holdingWeightPerAsset)
 }
 println("basketRebalanceResults: ${basketRebalanceResults}")
 return basketRebalanceResults

@@ -28,6 +28,6 @@ public abstract class BasketScriptRunner {
      * get basket rebalance results
      * @return rebalance results
      */
-    public abstract List<BasketRebalanceResult> run();
+    public abstract List<BasketRebalanceAsset> run();
 
 }

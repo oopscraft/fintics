@@ -1,29 +1,24 @@
 package org.oopscraft.fintics.basket;
 
-import lombok.*;
+import lombok.Builder;
+import lombok.Getter;
+import org.apache.commons.collections.ArrayStack;
+import org.oopscraft.fintics.model.BasketAsset;
 
-import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
+@Getter
 @Builder
-@Data
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@NoArgsConstructor
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
-@ToString
 public class BasketRebalanceResult {
 
-    private String symbol;
+    private Instant rebalanceDate;
 
-    private String name;
+    private List<BasketRebalanceAsset> basketRebalanceAssets = new ArrayList<>();
 
-    private BigDecimal holdingWeight;
+    private List<BasketAsset> addedBasketAssets = new ArrayList<>();
 
-    public static BasketRebalanceResult of(String symbol, String name, BigDecimal holdingWeight) {
-        return BasketRebalanceResult.builder()
-                .symbol(symbol)
-                .name(name)
-                .holdingWeight(holdingWeight)
-                .build();
-    }
+    private List<BasketAsset> removedBasketAssets = new ArrayList<>();
 
 }

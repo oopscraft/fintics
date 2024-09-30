@@ -15,7 +15,7 @@ public class PythonBasketScriptRunner extends BasketScriptRunner {
     }
 
     @Override
-    public List<BasketRebalanceResult> run() {
+    public List<BasketRebalanceAsset> run() {
         return null;
     }
 

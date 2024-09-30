@@ -2,7 +2,7 @@ import groovy.json.JsonSlurper
 import groovy.transform.ToString
 import groovy.transform.builder.Builder
 import org.jsoup.Jsoup
-import org.oopscraft.fintics.basket.BasketRebalanceResult
+import org.oopscraft.fintics.basket.BasketRebalanceAsset
 import org.oopscraft.fintics.model.Asset
 
 /**
@@ -13,6 +13,7 @@ import org.oopscraft.fintics.model.Asset
 class Item {
     String symbol
     String name
+    String etfSymbol
     BigDecimal score
 }
 
@@ -26,11 +27,16 @@ static List<Item> getEtfItems(etfSymbol) {
     def responseJson= url.text
     def jsonSlurper = new JsonSlurper()
     def responseMap = jsonSlurper.parseText(responseJson)
-    def pdfAssets = responseMap.get('rowData')
-    return pdfAssets.collect{
+    def top10Holdings = responseMap.get('rowData')
+    // 결과 값이 이상할 경우(10개 이하인 경우) 에러 처리
+    if (top10Holdings == null || top10Holdings.size() < 10) {
+        throw new NoSuchElementException("Top 10 holdings data is incomplete or missing - ${etfSymbol}")
+    }
+    return top10Holdings.collect{
         Item.builder()
                 .symbol(it.ticker as String)
                 .name(it.name as String)
+                .etfSymbol(etfSymbol)
                 .build()
     }
 }
@@ -62,18 +68,22 @@ def etfSymbols = [
         'VIG',      // Vanguard Dividend Appreciation Index Fund ETF Shares
         'VTV',      // Vanguard Value Index Fund ETF Shares
         'MTUM',     // iShares MSCI USA Momentum Factor ETF
-        'XLK',      // The Technology Select Sector SPDR Fund
         'VUG',      // Vanguard Growth ETF
         'IWF',      // iShares Russell 1000 Growth ETF
         // sector ETF
+        'XLK',      // The Technology Select Sector SPDR Fund
+        'VGT',      // Vanguard Information Technology Index Fund ETF Shares
+        'IYW',      // iShares U.S. Technology ETF
         'SOXX',     // iShares Semiconductor ETF
         'XLV',      // SPDR Select Sector Fund - Health Care
         'XBI',      // SPDR Series Trust SPDR S&P Biotech ETF
+        'XLI',      // The Industrial Select Sector SPDR Fund
         'XAR',      // SPDR S&P Aerospace & Defense ETF
         'ITA',      // iShares U.S. Aerospace & Defense ETF
         'XLF',      // SPDR Select Sector Fund - Financial
         'XLU',      // SPDR Select Sector Fund - Utilities
         'XLY',      // SPDR Select Sector Fund - Consumer Discretionary
+        'XLB',      // The Materials Select Sector SPDR Fund
 ]
 etfSymbols.each{
     def etfItems = getEtfItems(it)
@@ -134,19 +144,19 @@ println "finalItems: ${finalItems}"
 //=========================================
 // sort by score
 //=========================================
-def targetAssetCount = 50
-def targetHoldingWeightPerAsset = 2.0
-def fixedAssetCount = basket.getBasketAssets().findAll{it.fixed && it.enabled && it.holdingWeight > 0}.size()
-def remainedAssetCount = (targetAssetCount - fixedAssetCount) as Integer
+def maxAssetCount = 50
+def holdingWeightPerAsset = 2.0
+def fixedAssetCount = basket.getBasketAssets().findAll{it.enabled && it.fixed}.size()
+def targetAssetCount = (maxAssetCount - fixedAssetCount) as Integer
 finalItems = finalItems
         .sort{ -(it.score?:0)}
-        .take(remainedAssetCount)
+        .take(targetAssetCount)
 
 //=========================================
 // return
 //=========================================
-List<BasketRebalanceResult> basketRebalanceResults = finalItems.collect{
-    BasketRebalanceResult.of(it.symbol, it.name, targetHoldingWeightPerAsset)
+List<BasketRebalanceAsset> basketRebalanceResults = finalItems.collect{
+    BasketRebalanceAsset.of(it.symbol, it.name, holdingWeightPerAsset)
 }
 println("basketRebalanceResults: ${basketRebalanceResults}")
 return basketRebalanceResults
