@@ -39,8 +39,6 @@ public class BasketRebalanceScheduler {
 
     private final AlarmService alarmService;
 
-    private final ObjectMapper objectMapper;
-
     /**
      * synchronizes scheduler with database
      */
@@ -124,7 +122,7 @@ public class BasketRebalanceScheduler {
             stringBuilder.append(String.format("Basket rebalance completed - %s", basket.getName())).append('\n');
             BasketRebalanceTask basketRebalanceTask = basketRebalanceTaskFactory.getObject(basket);
             BasketRebalanceResult basketRebalanceResult = basketRebalanceTask.execute();
-            stringBuilder.append(objectMapper.writeValueAsString(basketRebalanceResult));
+            stringBuilder.append(basketRebalanceResult.toFormattedString());
         } catch (Throwable e) {
             log.warn(e.getMessage(), e);
             stringBuilder.append(e.getMessage());

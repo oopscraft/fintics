@@ -146,7 +146,7 @@ finalItems = finalItems
 // return
 //=========================================
 List<BasketRebalanceAsset> basketRebalanceResults = finalItems.collect{
-    BasketRebalanceAsset.of(it.symbol, it.name, holdingWeightPerAsset)
+    BasketRebalanceAsset.of(it.symbol, it.name, holdingWeightPerAsset, null)
 }
 println("basketRebalanceResults: ${basketRebalanceResults}")
 return basketRebalanceResults

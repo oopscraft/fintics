@@ -113,7 +113,7 @@ List<Item> finalItems = candidateItems.findAll {
 
     //  ROE
     def roes = asset.getAssetMetas('ROE').collect{new BigDecimal(it.value?:'0.0')}
-    def roe = roes.find{true}?:0.0
+    def roe = roes.find{true}?:0.0 as BigDecimal
     if (roe < 5.0) {    // ROE 5 이하는 수익성 없는 회사로 제외
         return false
     }
@@ -156,7 +156,7 @@ finalItems = finalItems
 // return
 //=========================================
 List<BasketRebalanceAsset> basketRebalanceResults = finalItems.collect{
-    BasketRebalanceAsset.of(it.symbol, it.name, holdingWeightPerAsset)
+    BasketRebalanceAsset.of(it.symbol, it.name, holdingWeightPerAsset, null)
 }
 println("basketRebalanceResults: ${basketRebalanceResults}")
 return basketRebalanceResults
