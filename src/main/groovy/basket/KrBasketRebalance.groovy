@@ -84,13 +84,32 @@ etfSymbols.each{
 //========================================
 // distinct items
 //========================================
-candidateItems = candidateItems.unique{it.symbol}
+candidateItems = candidateItems
+        .groupBy { it.symbol }
+        .collect { symbol, items ->
+            def item = items[0]
+            def etfSymbol = items*.etfSymbol.join(',')
+            return Item.builder()
+                .symbol(item.symbol)
+                .name(item.name)
+                .etfSymbol(etfSymbol)
+                .build();
+        }
 println "candidateItems: ${candidateItems}"
 
 //=========================================
 // filter
 //=========================================
 List<Item> finalItems = candidateItems.findAll {
+    // checks already fixed
+    boolean alreadyFixed = basket.getBasketAssets().findAll{balanceAsset ->
+        balanceAsset.getSymbol() == it.symbol && balanceAsset.isFixed()
+    }
+    if (alreadyFixed) {
+        return false
+    }
+
+    // check asset
     Asset asset = assetService.getAsset("KR.${it.symbol}").orElse(null)
     if (asset == null) {
         return false
@@ -146,7 +165,7 @@ finalItems = finalItems
 // return
 //=========================================
 List<BasketRebalanceAsset> basketRebalanceResults = finalItems.collect{
-    BasketRebalanceAsset.of(it.symbol, it.name, holdingWeightPerAsset, null)
+    BasketRebalanceAsset.of(it.symbol, it.name, holdingWeightPerAsset, it.etfSymbol)
 }
 println("basketRebalanceResults: ${basketRebalanceResults}")
 return basketRebalanceResults
