@@ -886,7 +886,7 @@ public class KisBrokerClient extends BrokerClient {
                                 .disposeAmount(new BigDecimal(row.get("sll_amt")))
                                 .feeAmount(new BigDecimal(row.get("fee")).add(new BigDecimal(row.get("tl_tax"))))
                                 .profitAmount(new BigDecimal(row.get("rlzt_pfls")))
-                                .profitPercentage(new BigDecimal(row.get("pfls_rt")))
+                                .profitPercentage(new BigDecimal(row.get("pfls_rt")).setScale(2, RoundingMode.HALF_UP))
                                 .build();
                     })
                     .collect(Collectors.toList());

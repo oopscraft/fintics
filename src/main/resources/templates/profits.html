@@ -79,7 +79,7 @@
                               data-duice-format="number"
                               class="font-weight--bold"></span>
                     </div>
-                    <div class="overflow-x-scroll overflow-y--scroll border-top--1" style="height:200px;">
+                    <div class="overflow-x-scroll overflow-y--scroll border-top--1" style="max-height:200px;">
                         <table class="white-space--nowrap border-top--0" style="width:1000px;">
                             <colgroup>
                                 <col style="width:7em;"/>
@@ -166,7 +166,7 @@
                               data-duice-format="number"
                               class="font-weight--bold"></span>
                     </div>
-                    <div class="overflow-x-scroll overflow-y--scroll" style="height:200px;">
+                    <div class="overflow-x-scroll overflow-y--scroll" style="max-height:200px;">
                         <table class="white-space--nowrap" style="width:1000px;">
                             <colgroup>
                                 <col style="width:7em;"/>
@@ -197,6 +197,12 @@
                                 </td>
                                 <td class="text-align--right">
                                     <span data-duice-bind="dividendHistory" data-duice-property="dividendAmount" data-duice-format="number"></span>
+                                </td>
+                            </tr>
+                            <tr th:data-duice-bind="|profitMap.get('${broker.brokerId}').dividendHistories|"
+                                th:data-duice-if="|return profitMap.get('${broker.brokerId}').dividendHistories.length === 0|" hidden>
+                                <td colspan="100%" class="text-align--center">
+                                    <span data-th-text="#{web.global.itemNotFound(#{fintics.DividendHistory})}"></span>
                                 </td>
                             </tr>
                             </tbody>
