@@ -75,18 +75,12 @@ public class KisUsBrokerClient extends BrokerClient {
 
         // rest template
         CloseableHttpClient httpClient = HttpClients.custom()
-                .setRetryHandler(new HttpRequestRetryHandler() {
-                    @Override
-                    public boolean retryRequest(IOException exception, int executionCount, HttpContext context) {
-                        if (executionCount >= 3) {
-                            return false;
-                        }
-                        if (exception instanceof SSLHandshakeException) {
-                            return true;
-                        }
-                        return false;
-                    }
-                })
+//                .setRetryHandler((exception, executionCount, context) -> {
+//                    if (exception instanceof SSLHandshakeException && executionCount <= 3) {
+//                        return true;
+//                    }
+//                    return false;
+//                })
                 .build();
         HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
         this.restTemplate = new RestTemplate(requestFactory);
