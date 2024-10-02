@@ -97,6 +97,10 @@ public class TradeAsset extends Asset {
         return Collections.unmodifiableList(ohlcvs);
     }
 
+    public List<Ohlcv> getOhlcvs(String type, int period) {
+        return getOhlcvs(Ohlcv.Type.valueOf(type), period);
+    }
+
     /**
      * resample ohlcvs by period
      * @param ohlcvs ohlcvs

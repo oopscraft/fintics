@@ -88,7 +88,7 @@ public class KisBrokerClient extends BrokerClient {
      */
     private synchronized void sleep() throws InterruptedException {
         synchronized (LOCK_OBJECT) {
-            long sleepMillis = production ? 300 : 1000;
+            long sleepMillis = production ? 200 : 1_000;
             KisAccessThrottler.sleep(appKey, sleepMillis);
         }
     }
@@ -175,7 +175,6 @@ public class KisBrokerClient extends BrokerClient {
      */
     @Override
     public List<Ohlcv> getMinuteOhlcvs(Asset asset) throws InterruptedException {
-        List<Ohlcv> minuteOhlcvs = new ArrayList<>();
         RestTemplate restTemplate = createRestTemplate();
         String fidEtcClsCode = "";
         String fidCondMrktDivCode = "J";
@@ -184,83 +183,64 @@ public class KisBrokerClient extends BrokerClient {
         LocalTime closeTime = LocalTime.of(15,30);
         LocalTime fidInputHour1Time = (time.isAfter(closeTime) ? closeTime : time);
 
-        // loop by page
-        for(int i = 0; i < 20; i ++) {
-            String url = apiUrl + "/uapi/domestic-stock/v1/quotations/inquire-time-itemchartprice";
-            HttpHeaders headers = createHeaders();
-            headers.add("tr_id", "FHKST03010200");
-            headers.add("custtype", "P");
-            String fidInputHour1 = fidInputHour1Time.format(DateTimeFormatter.ofPattern("HHmmss"));
-            url = UriComponentsBuilder.fromUriString(url)
-                    .queryParam("FID_ETC_CLS_CODE", fidEtcClsCode)
-                    .queryParam("FID_COND_MRKT_DIV_CODE", fidCondMrktDivCode)
-                    .queryParam("FID_INPUT_ISCD", fidInputIscd)
-                    .queryParam("FID_INPUT_HOUR_1", fidInputHour1)
-                    .queryParam("FID_PW_DATA_INCU_YN","N")
-                    .build()
-                    .toUriString();
-            RequestEntity<Void> requestEntity = RequestEntity
-                    .get(url)
-                    .headers(headers)
-                    .build();
-            sleep();
-            ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
-            JsonNode rootNode;
-            try {
-                rootNode = objectMapper.readTree(responseEntity.getBody());
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-
-            String rtCd = objectMapper.convertValue(rootNode.path("rt_cd"), String.class);
-            String msg1 = objectMapper.convertValue(rootNode.path("msg1"), String.class);
-            if(!"0".equals(rtCd)) {
-                throw new RuntimeException(msg1);
-            }
-
-            List<Map<String, String>> output2 = objectMapper.convertValue(rootNode.path("output2"), new TypeReference<>(){});
-
-            List<Ohlcv> minuteOhlcvsPage = output2.stream()
-                    .map(row -> {
-                        LocalDateTime datetime = LocalDateTime.parse(
-                                row.get("stck_bsop_date") + row.get("stck_cntg_hour"),
-                                        DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
-                                .truncatedTo(ChronoUnit.MINUTES);
-                        ZoneId timezone = getDefinition().getTimezone();
-                        BigDecimal open = new BigDecimal(row.get("stck_oprc"));
-                        BigDecimal high = new BigDecimal(row.get("stck_hgpr"));
-                        BigDecimal low = new BigDecimal(row.get("stck_lwpr"));
-                        BigDecimal close = new BigDecimal(row.get("stck_prpr"));
-                        BigDecimal volume = new BigDecimal(row.get("cntg_vol"));
-                        return Ohlcv.builder()
-                                .assetId(asset.getAssetId())
-                                .type(Ohlcv.Type.MINUTE)
-                                .dateTime(datetime)
-                                .timeZone(timezone)
-                                .open(open)
-                                .high(high)
-                                .low(low)
-                                .close(close)
-                                .volume(volume)
-                                .build();
-                    })
-                    .collect(Collectors.toList());
-            minuteOhlcvs.addAll(minuteOhlcvsPage);
-
-            // check empty
-            if(minuteOhlcvsPage.size() < 1) {
-                break;
-            }
-
-            // next page
-            fidInputHour1Time = minuteOhlcvsPage.get(minuteOhlcvsPage.size()-1)
-                    .getDateTime()
-                    .toLocalTime()
-                    .minusMinutes(1);
+        String url = apiUrl + "/uapi/domestic-stock/v1/quotations/inquire-time-itemchartprice";
+        HttpHeaders headers = createHeaders();
+        headers.add("tr_id", "FHKST03010200");
+        headers.add("custtype", "P");
+        String fidInputHour1 = fidInputHour1Time.format(DateTimeFormatter.ofPattern("HHmmss"));
+        url = UriComponentsBuilder.fromUriString(url)
+                .queryParam("FID_ETC_CLS_CODE", fidEtcClsCode)
+                .queryParam("FID_COND_MRKT_DIV_CODE", fidCondMrktDivCode)
+                .queryParam("FID_INPUT_ISCD", fidInputIscd)
+                .queryParam("FID_INPUT_HOUR_1", fidInputHour1)
+                .queryParam("FID_PW_DATA_INCU_YN","N")
+                .build()
+                .toUriString();
+        RequestEntity<Void> requestEntity = RequestEntity
+                .get(url)
+                .headers(headers)
+                .build();
+        sleep();
+        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+        JsonNode rootNode;
+        try {
+            rootNode = objectMapper.readTree(responseEntity.getBody());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
 
-        // return
-        return minuteOhlcvs;
+        String rtCd = objectMapper.convertValue(rootNode.path("rt_cd"), String.class);
+        String msg1 = objectMapper.convertValue(rootNode.path("msg1"), String.class);
+        if(!"0".equals(rtCd)) {
+            throw new RuntimeException(msg1);
+        }
+
+        List<Map<String, String>> output2 = objectMapper.convertValue(rootNode.path("output2"), new TypeReference<>(){});
+        return output2.stream()
+                .map(row -> {
+                    LocalDateTime datetime = LocalDateTime.parse(
+                            row.get("stck_bsop_date") + row.get("stck_cntg_hour"),
+                                    DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
+                            .truncatedTo(ChronoUnit.MINUTES);
+                    ZoneId timezone = getDefinition().getTimezone();
+                    BigDecimal open = new BigDecimal(row.get("stck_oprc"));
+                    BigDecimal high = new BigDecimal(row.get("stck_hgpr"));
+                    BigDecimal low = new BigDecimal(row.get("stck_lwpr"));
+                    BigDecimal close = new BigDecimal(row.get("stck_prpr"));
+                    BigDecimal volume = new BigDecimal(row.get("cntg_vol"));
+                    return Ohlcv.builder()
+                            .assetId(asset.getAssetId())
+                            .type(Ohlcv.Type.MINUTE)
+                            .dateTime(datetime)
+                            .timeZone(timezone)
+                            .open(open)
+                            .high(high)
+                            .low(low)
+                            .close(close)
+                            .volume(volume)
+                            .build();
+                })
+                .collect(Collectors.toList());
     }
 
     /**

@@ -2,10 +2,8 @@ package org.oopscraft.fintics.basket;
 
 import lombok.Builder;
 import lombok.Getter;
-import org.apache.commons.collections.ArrayStack;
 import org.oopscraft.fintics.model.BasketAsset;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,10 +11,13 @@ import java.util.List;
 @Builder
 public class BasketRebalanceResult {
 
+    @Builder.Default
     private List<BasketRebalanceAsset> basketRebalanceAssets = new ArrayList<>();
 
+    @Builder.Default
     private List<BasketAsset> addedBasketAssets = new ArrayList<>();
 
+    @Builder.Default
     private List<BasketAsset> removedBasketAssets = new ArrayList<>();
 
     public String toFormattedString() {

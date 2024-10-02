@@ -18,8 +18,10 @@ public class ProfitResponse {
 
     private BigDecimal dividendAmount;
 
+    @Builder.Default
     private List<RealizedProfitResponse> realizedProfits = new ArrayList<>();
 
+    @Builder.Default
     private List<DividendHistoryResponse> dividendHistories = new ArrayList<>();
 
     /**

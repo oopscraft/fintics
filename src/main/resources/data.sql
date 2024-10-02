@@ -199,13 +199,13 @@ values
 
 
 
--- for test
+-- for test (paper trade)
 update fintics_broker set broker_client_properties='
 production=false
 apiUrl=https://openapivts.koreainvestment.com:29443
-appKey=PS2ttZ9KmXgyrRWUFmWHTon8qVVJFOD60nUI
-appSecret=ul1fmcIF/FfKoo7CSsNf2TLx0wuIyKqrhHR5L4BBwTRHMKfuRfcwszIIL7qwSzs0cVU/wfvNgAWa/UamyRvDIFwqb3+XmAHP4aUrXlyAjY51F//qMLCCGIJGVzwl/j5AmftPeSF7COOZv0Y1H+htoaR4a9YEGEKD07xmDHCV2h3gLXEDLxo=
-accountNo=50112058-01
+appKey=PSDPVFEuoxLEd7BUvKtEMRBsDNsuWAJV51i8
+appSecret=s347ElrcHIU9ZbR76YcwC8Jpjw2Xze9mHTsPQlj5ckAQqNvRbBT37WlUKjllCGwp/+v0eaDLQKw+r2jW1qlmJEmdx4YdL4we9bYIEjaO5+MT0CQrj6MUW36lswGN6ocll1wz2dbDnIzkC+qT7WyPoRkczsfRoGQtVaWFGs/xHDglKFDu8sc=
+accountNo=50115174-01
 '
 where broker_id in ('ca5f55cd88694715bcb4c478710d9a68','961eb9c68c9547ce9ae61bbe3be7f037');
 

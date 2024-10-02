@@ -1,7 +1,7 @@
 plugins {
     id 'java'
     id 'java-library'
-    id 'io.freefair.lombok' version '8.0.0-rc2'
+    id 'io.freefair.lombok' version '8.10'
     id 'org.springframework.boot' version '2.7.9'
     id 'idea'
     id 'maven-publish'
@@ -83,8 +83,9 @@ dependencies {
     implementation 'org.codehaus.groovy:groovy-all:3.0.18'
     implementation 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
 
-    // jython
-    implementation 'org.python:jython-standalone:2.7.2'
+    // graalpy
+    implementation "org.graalvm.polyglot:polyglot:24.1.0"
+    implementation "org.graalvm.polyglot:python:24.1.0"
 
 }
 
