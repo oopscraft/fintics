@@ -1,6 +1,5 @@
 package org.oopscraft.fintics.client.asset.market;
 
-import org.oopscraft.arch4j.core.common.support.RestTemplateBuilder;
 import org.oopscraft.fintics.client.asset.AssetClient;
 import org.oopscraft.fintics.client.asset.AssetClientProperties;
 import org.oopscraft.fintics.model.Asset;
@@ -17,15 +16,15 @@ import java.util.stream.Collectors;
 
 public class UpbitAssetClient extends AssetClient {
 
+    private final RestTemplate restTemplate;
+
     public UpbitAssetClient(AssetClientProperties assetClientProperties) {
         super(assetClientProperties);
+        this.restTemplate = new RestTemplate();
     }
 
     @Override
     public List<Asset> getAssets() {
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .build();
         RequestEntity<Void> requestEntity = RequestEntity
                 .get("https://api.upbit.com/v1/market/all")
                 .build();

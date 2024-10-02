@@ -1,6 +1,5 @@
 package org.oopscraft.fintics.client.asset.market;
 
-import org.oopscraft.arch4j.core.common.support.RestTemplateBuilder;
 import org.oopscraft.fintics.client.asset.AssetClient;
 import org.oopscraft.fintics.client.asset.AssetClientProperties;
 import org.oopscraft.fintics.model.Asset;
@@ -40,8 +39,11 @@ public class KrAssetClient extends AssetClient {
 
     private static final String MARKET_KR = "KR";
 
+    private final RestTemplate restTemplate;
+
     public KrAssetClient(AssetClientProperties assetClientProperties) {
         super(assetClientProperties);
+        this.restTemplate = new RestTemplate();
     }
 
     /**
@@ -77,13 +79,7 @@ public class KrAssetClient extends AssetClient {
      * @return assets
      */
     List<Asset> getStockAssetsByExchangeType(String exchangeType) {
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .readTimeout(30_000)
-                .build();
-
         String url = "https://seibro.or.kr/websquare/engine/proworks/callServletService.jsp";
-
         String w2xPath = "/IPORTAL/user/stock/BIP_CNTS02004V.xml";
         HttpHeaders headers = createSeibroHeaders(w2xPath);
         headers.setContentType(MediaType.APPLICATION_XML);
@@ -148,13 +144,7 @@ public class KrAssetClient extends AssetClient {
      * @return ETF assets
      */
     List<Asset> getEtfAssets() {
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .readTimeout(30_000)
-                .build();
-
         String url = "https://seibro.or.kr/websquare/engine/proworks/callServletService.jsp";
-
         String w2xPath = "/IPORTAL/user/etf/BIP_CNTS06025V.xml";
         HttpHeaders headers = createSeibroHeaders(w2xPath);
         headers.setContentType(MediaType.APPLICATION_XML);
@@ -238,10 +228,6 @@ public class KrAssetClient extends AssetClient {
         }
 
         // request template
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .readTimeout(30_000)
-                .build();
         String url = "https://seibro.or.kr/websquare/engine/proworks/callServletService.jsp";
 
         // sec info
@@ -373,10 +359,6 @@ public class KrAssetClient extends AssetClient {
      * @return sec info
      */
     Map<String, String> getSecInfo(String symbol) {
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .readTimeout(30_000)
-                .build();
         String url = "https://seibro.or.kr/websquare/engine/proworks/callServletService.jsp";
         String w2xPath = "/IPORTAL/user/stock/BIP_CNTS02006V.xml";
         HttpHeaders headers = createSeibroHeaders(w2xPath);

@@ -27,9 +27,9 @@ public class AlpacaBrokerClient extends BrokerClient {
 
     private final String apiSecret;
 
-    private final ObjectMapper objectMapper;
-
     private final RestTemplate restTemplate;
+
+    private final ObjectMapper objectMapper;
 
     /**
      * constructor
@@ -41,12 +41,10 @@ public class AlpacaBrokerClient extends BrokerClient {
         this.live = Boolean.parseBoolean(properties.getProperty("live"));
         this.apiKey = properties.getProperty("apiKey");
         this.apiSecret = properties.getProperty("apiSecret");
-        this.objectMapper = new ObjectMapper();
 
-        // creates rest template
-        this.restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .build();
+        // resources
+        this.restTemplate = new RestTemplate();
+        this.objectMapper = new ObjectMapper();
     }
 
     HttpHeaders createHttpHeaders() {

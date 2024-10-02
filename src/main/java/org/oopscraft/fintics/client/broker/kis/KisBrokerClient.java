@@ -5,7 +5,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.oopscraft.arch4j.core.common.support.RestTemplateBuilder;
 import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.client.broker.BrokerClientDefinition;
 import org.oopscraft.fintics.model.*;
@@ -43,6 +42,8 @@ public class KisBrokerClient extends BrokerClient {
 
     private final String accountNo;
 
+    private final RestTemplate restTemplate;
+
     private final ObjectMapper objectMapper;
 
     /**
@@ -57,17 +58,10 @@ public class KisBrokerClient extends BrokerClient {
         this.appKey = properties.getProperty("appKey");
         this.appSecret = properties.getProperty("appSecret");
         this.accountNo = properties.getProperty("accountNo");
-        this.objectMapper = new ObjectMapper();
-    }
 
-    /**
-     * creates rest template
-     * @return rest template
-     */
-    RestTemplate createRestTemplate() {
-//        return RestTemplateBuilder.create()
-//                .build();
-        return new RestTemplate();
+        // resources
+        this.restTemplate = new RestTemplate();
+        this.objectMapper = new ObjectMapper();
     }
 
     /**
@@ -133,7 +127,6 @@ public class KisBrokerClient extends BrokerClient {
                 .headers(headers)
                 .build();
         sleep();
-        RestTemplate restTemplate = createRestTemplate();
         ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
         JsonNode rootNode;
         try {
@@ -176,7 +169,6 @@ public class KisBrokerClient extends BrokerClient {
      */
     @Override
     public List<Ohlcv> getMinuteOhlcvs(Asset asset) throws InterruptedException {
-        RestTemplate restTemplate = createRestTemplate();
         String fidEtcClsCode = "";
         String fidCondMrktDivCode = "J";
         String fidInputIscd = asset.getSymbol();
@@ -252,7 +244,6 @@ public class KisBrokerClient extends BrokerClient {
      */
     @Override
     public List<Ohlcv> getDailyOhlcvs(Asset asset) throws InterruptedException {
-        RestTemplate restTemplate = createRestTemplate();
         String url = apiUrl + "/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice";
         HttpHeaders headers = createHeaders();
         headers.add("tr_id", "FHKST03010100");
@@ -327,7 +318,6 @@ public class KisBrokerClient extends BrokerClient {
      */
     @Override
     public OrderBook getOrderBook(Asset asset) throws InterruptedException {
-        RestTemplate restTemplate = createRestTemplate();
         String url = apiUrl + "/uapi/domestic-stock/v1/quotations/inquire-asking-price-exp-ccn";
         HttpHeaders headers = createHeaders();
         headers.add("tr_id", "FHKST01010200");
@@ -419,7 +409,6 @@ public class KisBrokerClient extends BrokerClient {
      */
     @Override
     public Balance getBalance() throws InterruptedException {
-        RestTemplate restTemplate = createRestTemplate();
         String url = apiUrl + "/uapi/domestic-stock/v1/trading/inquire-balance";
         HttpHeaders headers = createHeaders();
         String trId = production ? "TTTC8434R" : "VTTC8434R";
@@ -519,7 +508,6 @@ public class KisBrokerClient extends BrokerClient {
      * @see [주식잔고조회_실현손익[v1_국내주식-041]](https://apiportal.koreainvestment.com/apiservice/apiservice-domestic-stock-order#L_ff79302e-6014-495e-a188-6dca69fc952e)
      */
     private BigDecimal getBalanceRealizedProfitAmount() throws InterruptedException {
-        RestTemplate restTemplate = createRestTemplate();
         String url = apiUrl + "/uapi/domestic-stock/v1/trading/inquire-balance-rlz-pl";
         HttpHeaders headers = createHeaders();
         String trId = "TTTC8494R";
@@ -581,7 +569,6 @@ public class KisBrokerClient extends BrokerClient {
         order.setPrice(price);
 
         // api url
-        RestTemplate restTemplate = createRestTemplate();
         String url = apiUrl + "/uapi/domestic-stock/v1/trading/order-cash";
         HttpHeaders headers = createHeaders();
 
@@ -654,7 +641,6 @@ public class KisBrokerClient extends BrokerClient {
         if(!production) {
             return new ArrayList<>();
         }
-        RestTemplate restTemplate = createRestTemplate();
         String url = apiUrl + "/uapi/domestic-stock/v1/trading/inquire-psbl-rvsecncl";
         HttpHeaders headers = createHeaders();
         headers.add("tr_id", "TTTC8036R");
@@ -732,7 +718,6 @@ public class KisBrokerClient extends BrokerClient {
      */
     @Override
     public Order amendOrder(Asset asset, Order order) throws InterruptedException {
-        RestTemplate restTemplate = createRestTemplate();
         String url = apiUrl + "/uapi/domestic-stock/v1/trading/order-rvsecncl";
         HttpHeaders headers = createHeaders();
 
@@ -802,7 +787,6 @@ public class KisBrokerClient extends BrokerClient {
 
         // defines
         List<RealizedProfit> realizedProfits = new ArrayList<>();
-        RestTemplate restTemplate = createRestTemplate();
         HttpHeaders headers = createHeaders();
         headers.add("tr_id", "TTTC8715R");
 

@@ -5,7 +5,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.oopscraft.arch4j.core.common.support.RestTemplateBuilder;
 import org.oopscraft.fintics.model.Asset;
 import org.oopscraft.fintics.model.Ohlcv;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -35,6 +34,8 @@ public class SimpleOhlcvClient extends OhlcvClient {
 
     private final ObjectMapper objectMapper;
 
+    private final RestTemplate restTemplate;
+
     /**
      * constructor
      * @param ohlcvClientProperties client properties
@@ -43,6 +44,7 @@ public class SimpleOhlcvClient extends OhlcvClient {
     public SimpleOhlcvClient(OhlcvClientProperties ohlcvClientProperties, ObjectMapper objectMapper) {
         super(ohlcvClientProperties);
         this.objectMapper = objectMapper;
+        this.restTemplate = new RestTemplate();
     }
 
     /**
@@ -75,9 +77,6 @@ public class SimpleOhlcvClient extends OhlcvClient {
      * @return whether yahoo symbol is valid
      */
     boolean isSupported(String yahooSymbol) {
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .build();
         String url = String.format("https://query1.finance.yahoo.com/v1/finance/quoteType/?symbol=%s", yahooSymbol);
         RequestEntity<Void> requestEntity = RequestEntity
                 .get(url)
@@ -140,9 +139,6 @@ public class SimpleOhlcvClient extends OhlcvClient {
      */
     @Override
     public List<Ohlcv> getOhlcvs(Asset asset, Ohlcv.Type type, LocalDateTime dateTimeFrom, LocalDateTime dateTimeTo) {
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .build();
         HttpHeaders headers = createYahooHeader();
 
         // yahoo symbol

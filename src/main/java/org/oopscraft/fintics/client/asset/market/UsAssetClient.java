@@ -29,11 +29,14 @@ public class UsAssetClient extends AssetClient {
 
     private static final Currency CURRENCY_USD = Currency.getInstance("USD");
 
+    private final RestTemplate restTemplate;
+
     private final ObjectMapper objectMapper;
 
     public UsAssetClient(AssetClientProperties assetClientProperties, ObjectMapper objectMapper) {
         super(assetClientProperties);
         this.objectMapper = objectMapper;
+        this.restTemplate = new RestTemplate();
     }
 
     @Override

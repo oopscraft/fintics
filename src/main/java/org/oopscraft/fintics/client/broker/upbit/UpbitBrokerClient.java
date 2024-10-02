@@ -43,20 +43,18 @@ public class UpbitBrokerClient extends BrokerClient {
 
     private final String secretKey;
 
-    private final ObjectMapper objectMapper;
-
     private final RestTemplate restTemplate;
+
+    private final ObjectMapper objectMapper;
 
     public UpbitBrokerClient(BrokerClientDefinition definition, Properties properties) {
         super(definition, properties);
         this.accessKey = properties.getProperty("accessKey");
         this.secretKey = properties.getProperty("secretKey");
-        this.objectMapper = new ObjectMapper();
 
-        // creates rest template
-        this.restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .build();
+        // resources
+        this.restTemplate = new RestTemplate();
+        this.objectMapper = new ObjectMapper();
     }
 
     @Override
