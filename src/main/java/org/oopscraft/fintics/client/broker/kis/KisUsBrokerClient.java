@@ -69,7 +69,6 @@ public class KisUsBrokerClient extends BrokerClient {
         this.accountNo = properties.getProperty("accountNo");
 
         // rest template
-        // rest template
         OkHttpClient httpClient = new OkHttpClient.Builder()
                 .connectionPool(new ConnectionPool(10, 5, TimeUnit.MINUTES))
                 .build();
