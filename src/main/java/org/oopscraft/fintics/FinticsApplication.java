@@ -28,9 +28,6 @@ public class FinticsApplication {
             System.exit(0);
         }
 
-        // force to TLSv1.2
-        System.setProperty("https.protocols", "TLSv1.2");
-
         // runs
         new SpringApplicationBuilder(FinticsApplication.class)
                 .web(WebApplicationType.SERVLET)
