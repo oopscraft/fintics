@@ -7,8 +7,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.protocol.HttpContext;
 import org.oopscraft.arch4j.core.common.support.RestTemplateBuilder;
 import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.client.broker.BrokerClientDefinition;
@@ -24,6 +27,8 @@ import org.springframework.http.client.OkHttp3ClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.net.ssl.SSLHandshakeException;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.*;
@@ -69,10 +74,21 @@ public class KisUsBrokerClient extends BrokerClient {
         this.accountNo = properties.getProperty("accountNo");
 
         // rest template
-        OkHttpClient httpClient = new OkHttpClient.Builder()
-                .connectionPool(new ConnectionPool(10, 5, TimeUnit.MINUTES))
+        CloseableHttpClient httpClient = HttpClients.custom()
+                .setRetryHandler(new HttpRequestRetryHandler() {
+                    @Override
+                    public boolean retryRequest(IOException exception, int executionCount, HttpContext context) {
+                        if (executionCount >= 3) {
+                            return false;
+                        }
+                        if (exception instanceof SSLHandshakeException) {
+                            return true;
+                        }
+                        return false;
+                    }
+                })
                 .build();
-        ClientHttpRequestFactory requestFactory = new OkHttp3ClientHttpRequestFactory(httpClient);
+        HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
         this.restTemplate = new RestTemplate(requestFactory);
 
         // object mapper
