@@ -64,8 +64,7 @@ public class KisUsBrokerClient extends BrokerClient {
         this.accountNo = properties.getProperty("accountNo");
 
         // rest template
-        CloseableHttpClient httpClient = HttpClients.custom()
-                .build();
+        CloseableHttpClient httpClient = HttpClients.custom().build();
         HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
         this.restTemplate = new RestTemplate(requestFactory);
 
