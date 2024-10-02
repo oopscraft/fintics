@@ -559,7 +559,7 @@ public class TradeExecutor {
         brokerClient.submitOrder(cashAsset, order);
 
         // 일정 시간 매수 완료 시 까지 대기
-        Thread.sleep(3_000);
+        Thread.sleep(5_000);
     }
 
     void depositSellAmountToCash(BrokerClient brokerClient, Trade trade, BigDecimal sellAmount) throws InterruptedException {
