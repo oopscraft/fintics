@@ -65,8 +65,9 @@ public class KisBrokerClient extends BrokerClient {
      * @return rest template
      */
     RestTemplate createRestTemplate() {
-        return RestTemplateBuilder.create()
-                .build();
+//        return RestTemplateBuilder.create()
+//                .build();
+        return new RestTemplate();
     }
 
     /**
