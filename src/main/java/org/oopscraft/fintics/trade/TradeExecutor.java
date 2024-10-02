@@ -502,7 +502,8 @@ public class TradeExecutor {
         if(trade.getAlarmId() != null && !trade.getAlarmId().isBlank()) {
             if (trade.isAlarmOnError()) {
                 String subject = String.format("[%s - %s] Error", trade.getName(), asset != null ? asset.getName() : "");
-                String content = ExceptionUtils.getRootCause(t).getMessage();
+                Throwable rootCause = ExceptionUtils.getRootCause(t);
+                String content = rootCause.getClass().getName() + "\n" + rootCause.getMessage();
                 alarmService.sendAlarm(trade.getAlarmId(), subject, content);
             }
         }
