@@ -43,6 +43,7 @@ public class OhlcvCollector extends AbstractCollector {
     public void collect() {
         try {
             log.info("OhlcvCollector - Start collect ohlcv.");
+            // ohlcv is based on trade client
             List<Trade> trades = tradeService.getTrades(TradeSearch.builder().build(), Pageable.unpaged()).getContent();
             for (Trade trade : trades) {
                 if (trade.getBasketId() == null) {

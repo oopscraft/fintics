@@ -50,17 +50,9 @@ public class OhlcvPastCollector extends AbstractCollector {
             // expired date time
             LocalDateTime expiredDateTime = LocalDateTime.now()
                     .minusMonths(finticsProperties.getDataRetentionMonths());
-            // loop trades
-            List<Trade> trades = tradeService.getTrades(TradeSearch.builder().build(), Pageable.unpaged()).getContent();
-            for (Trade trade : trades) {
-                // check basket id
-                if (trade.getBasketId() == null) {
-                    continue;
-                }
-                Basket basket = basketService.getBasket(trade.getBasketId()).orElse(null);
-                if (basket == null) {
-                    continue;
-                }
+            // past ohlcv is based on basket (using ohlcv client)
+            List<Basket> baskets = basketService.getBaskets(BasketSearch.builder().build(), Pageable.unpaged()).getContent();
+            for (Basket basket : baskets) {
                 List<BasketAsset> basketAssets = basket.getBasketAssets();
                 for (BasketAsset basketAsset : basketAssets) {
                     try {
@@ -70,9 +62,8 @@ public class OhlcvPastCollector extends AbstractCollector {
                         }
                     } catch (Throwable e) {
                         log.warn(e.getMessage());
-                        sendSystemAlarm(this.getClass(), String.format("[%s] %s - %s", trade.getName(), basketAsset.getName(), e.getMessage()));
+                        sendSystemAlarm(this.getClass(), String.format("[%s] %s - %s", basket.getName(), basketAsset.getName(), e.getMessage()));
                     }
-
                 }
             }
             log.info("OhlcvPastCollector - End collect past ohlcv");
