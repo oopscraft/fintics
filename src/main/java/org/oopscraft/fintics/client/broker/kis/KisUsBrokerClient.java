@@ -10,6 +10,7 @@ import okhttp3.OkHttpClient;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.protocol.HttpContext;
 import org.oopscraft.arch4j.core.common.support.RestTemplateBuilder;
@@ -37,6 +38,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * 한국투자증권 해외 주식 broker client
@@ -75,12 +77,7 @@ public class KisUsBrokerClient extends BrokerClient {
 
         // rest template
         CloseableHttpClient httpClient = HttpClients.custom()
-//                .setRetryHandler((exception, executionCount, context) -> {
-//                    if (exception instanceof SSLHandshakeException && executionCount <= 3) {
-//                        return true;
-//                    }
-//                    return false;
-//                })
+                .setRetryHandler(new DefaultHttpRequestRetryHandler(3, false))
                 .build();
         HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
         this.restTemplate = new RestTemplate(requestFactory);
