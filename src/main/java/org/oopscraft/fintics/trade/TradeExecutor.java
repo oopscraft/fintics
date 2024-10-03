@@ -546,20 +546,25 @@ public class TradeExecutor {
                 .orElseThrow();
         OrderBook cashAssetOrderBook = brokerClient.getOrderBook(cashAsset);
         BigDecimal cashAssetAskPrice = cashAssetOrderBook.getAskPrice();
-        BigDecimal cashAssetSellQuantity = insufficientAmount.divide(cashAssetAskPrice, RoundingMode.CEILING)
-                .setScale(0, RoundingMode.DOWN);
-        Order order = Order.builder()
-                .orderAt(Instant.now())
-                .type(Order.Type.SELL)
-                .kind(Order.Kind.MARKET)
-                .assetId(cashAsset.getAssetId())
-                .quantity(cashAssetSellQuantity)
-                .price(cashAssetAskPrice)
-                .build();
-        brokerClient.submitOrder(cashAsset, order);
+        BigDecimal cashAssetSellQuantity = insufficientAmount.divide(cashAssetAskPrice, MathContext.DECIMAL32)
+                .setScale(0, RoundingMode.CEILING);
 
-        // 일정 시간 매수 완료 시 까지 대기
-        Thread.sleep(5_000);
+        // 현재 보유 수량 체크 후 필요한 수량 이상인 경우 매도
+        BalanceAsset cashBalanceAsset = balance.getBalanceAsset(cashAsset.getAssetId()).orElse(null);
+        if (cashBalanceAsset != null && cashBalanceAsset.getOrderableQuantity().compareTo(cashAssetSellQuantity) > 0) {
+            Order order = Order.builder()
+                    .orderAt(Instant.now())
+                    .type(Order.Type.SELL)
+                    .kind(Order.Kind.MARKET)
+                    .assetId(cashAsset.getAssetId())
+                    .quantity(cashAssetSellQuantity)
+                    .price(cashAssetAskPrice)
+                    .build();
+            brokerClient.submitOrder(cashAsset, order);
+
+            // 일정 시간 매수 완료 시 까지 대기
+            Thread.sleep(5_000);
+        }
     }
 
     void depositSellAmountToCash(BrokerClient brokerClient, Trade trade, BigDecimal sellAmount) throws InterruptedException {
@@ -583,17 +588,21 @@ public class TradeExecutor {
                 .orElseThrow();
         OrderBook cashAssetOrderBook = brokerClient.getOrderBook(cashAsset);
         BigDecimal cashAssetBuyPrice = cashAssetOrderBook.getAskPrice();
-        BigDecimal cashAssetBuyQuantity = overflowAmount.divide(cashAssetBuyPrice, RoundingMode.DOWN)
+        BigDecimal cashAssetBuyQuantity = overflowAmount.divide(cashAssetBuyPrice, MathContext.DECIMAL32)
                 .setScale(0, RoundingMode.DOWN);
-        Order order = Order.builder()
-                .orderAt(Instant.now())
-                .type(Order.Type.BUY)
-                .kind(Order.Kind.MARKET)
-                .assetId(cashAsset.getAssetId())
-                .quantity(cashAssetBuyQuantity)
-                .price(cashAssetBuyPrice)
-                .build();
-        brokerClient.submitOrder(cashAsset, order);
+
+        // 현금성 종목 매수 수량이 있을 경우 매수
+        if (cashAssetBuyQuantity.compareTo(BigDecimal.ZERO) > 0) {
+            Order order = Order.builder()
+                    .orderAt(Instant.now())
+                    .type(Order.Type.BUY)
+                    .kind(Order.Kind.MARKET)
+                    .assetId(cashAsset.getAssetId())
+                    .quantity(cashAssetBuyQuantity)
+                    .price(cashAssetBuyPrice)
+                    .build();
+            brokerClient.submitOrder(cashAsset, order);
+        }
     }
 
 }
