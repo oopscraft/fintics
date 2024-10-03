@@ -24,8 +24,12 @@
             profitMap.set(broker.brokerId, profit);
         });
 
-        function getProfit(brokerId) {
+        function getProfit(brokerId, dateFrom, dateTo) {
             let url = new URL(`${_apiUrl}/v1/profits/${brokerId}`, document.location.origin);
+            if (dateFrom && dateTo) {
+                url.searchParams.append('dateFrom', dateFrom.toISOString().split('T')[0]);
+                url.searchParams.append('dateTo', dateTo.toISOString().split('T')[0]);
+            }
             _fetch(url, {}, true)
             .then(response => response.json())
             .then(data => {
@@ -33,18 +37,61 @@
             });
         }
 
-        function getProfits() {
+        function getProfits(dateFrom, dateTo) {
             brokers.forEach(broker => {
-                getProfit(broker.brokerId);
+                getProfit(broker.brokerId, dateFrom, dateTo);
+            });
+        }
+
+        function getProfitsWeekly() {
+            getProfits(dateFns.subWeeks(new Date(), 1), new Date());
+            toggleButton('weekly');
+        }
+
+        function getProfitsMonthly() {
+            getProfits(dateFns.subMonths(new Date(), 1), new Date());
+            toggleButton('monthly');
+        }
+
+        function getProfitsQuarterly() {
+            getProfits(dateFns.subMonths(new Date(), 3), new Date());
+            toggleButton('quarterly');
+        }
+
+        function getProfitsSemiannually() {
+            getProfits(dateFns.subMonths(new Date(), 6), new Date());
+            toggleButton('semiannually');
+        }
+
+        function getProfitsYearly() {
+            getProfits(dateFns.subYears(new Date(), 1), new Date());
+            toggleButton('yearly');
+        }
+
+        function toggleButton(selectedButtonId) {
+            let buttonIds = ['weekly','monthly','quarterly', 'semiannually','yearly'];
+            buttonIds.forEach(buttonId => {
+                let buttonElement = document.getElementById(buttonId);
+                if (buttonId === selectedButtonId) {
+                    buttonElement.classList.add('selected-button');
+                } else {
+                    buttonElement.classList.remove('selected-button');
+                }
             });
         }
 
         // event listener
         document.addEventListener('DOMContentLoaded', () => {
-            getProfits();
+            getProfitsWeekly();
         });
     </script>
     <style th:inline="css">
+        .period-button {
+            font-size: smaller;
+        }
+        .selected-button {
+            font-weight: bold;
+        }
     </style>
 
     <!-- ====================================== -->
@@ -56,6 +103,20 @@
     </h1>
     <!-- ====================================== -->
     <!-- end: title                             -->
+    <!-- ====================================== -->
+
+    <!-- ====================================== -->
+    <!-- start: search condition                -->
+    <!-- ====================================== -->
+    <div class="margin-x--1em" style="margin-bottom:0.5em;">
+        <button id="weekly" class="period-button" type="button" onclick="getProfitsWeekly();">Weekly</button>
+        <button id="monthly" class="period-button" type="button" onclick="getProfitsMonthly();">Monthly</button>
+        <button id="quarterly" class="period-button" type="button" onclick="getProfitsQuarterly();">Quarterly</button>
+        <button id="semiannually" class="period-button" type="button" onclick="getProfitsSemiannually();">Semiannually</button>
+        <button id="yearly" class="period-button" type="button" onclick="getProfitsYearly();">Yearly</button>
+    </div>
+    <!-- ====================================== -->
+    <!-- end: search condition                  -->
     <!-- ====================================== -->
 
     <!-- ====================================== -->
