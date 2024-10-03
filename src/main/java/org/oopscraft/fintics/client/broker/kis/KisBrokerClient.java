@@ -9,6 +9,7 @@ import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.StandardHttpRequestRetryHandler;
 import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.client.broker.BrokerClientDefinition;
 import org.oopscraft.fintics.model.*;
@@ -68,10 +69,10 @@ public class KisBrokerClient extends BrokerClient {
         this.accountNo = properties.getProperty("accountNo");
 
         // rest template
-        OkHttpClient httpClient = new OkHttpClient.Builder()
-                .connectionPool(new ConnectionPool(10, 5, TimeUnit.MINUTES))
+        CloseableHttpClient httpClient = HttpClients.custom()
+                .setRetryHandler(new StandardHttpRequestRetryHandler())
                 .build();
-        ClientHttpRequestFactory requestFactory = new OkHttp3ClientHttpRequestFactory(httpClient);
+        HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
         this.restTemplate = new RestTemplate(requestFactory);
 
         // object mapper

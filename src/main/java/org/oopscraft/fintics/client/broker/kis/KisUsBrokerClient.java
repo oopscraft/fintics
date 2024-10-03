@@ -12,6 +12,7 @@ import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.StandardHttpRequestRetryHandler;
 import org.apache.http.protocol.HttpContext;
 import org.oopscraft.arch4j.core.common.support.RestTemplateBuilder;
 import org.oopscraft.fintics.client.broker.BrokerClient;
@@ -77,7 +78,7 @@ public class KisUsBrokerClient extends BrokerClient {
 
         // rest template
         CloseableHttpClient httpClient = HttpClients.custom()
-                .setRetryHandler(new DefaultHttpRequestRetryHandler(3, false))
+                .setRetryHandler(new StandardHttpRequestRetryHandler())
                 .build();
         HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
         this.restTemplate = new RestTemplate(requestFactory);
