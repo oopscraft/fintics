@@ -5,16 +5,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.ConnectionPool;
-import okhttp3.OkHttpClient;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.client.StandardHttpRequestRetryHandler;
-import org.apache.http.protocol.HttpContext;
-import org.oopscraft.arch4j.core.common.support.RestTemplateBuilder;
 import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.client.broker.BrokerClientDefinition;
 import org.oopscraft.fintics.model.*;
@@ -23,23 +16,17 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.http.client.OkHttp3ClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.net.ssl.SSLHandshakeException;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * 한국투자증권 해외 주식 broker client
@@ -833,97 +820,4 @@ public class KisUsBrokerClient extends BrokerClient {
         return realizedProfits;
     }
 
-    /**
-     * gets dividend histories
-     * @param dateFrom date from
-     * @param dateTo date to
-     * @return dividend histories
-     */
-    @Override
-    public List<DividendHistory> getDividendHistories(LocalDate dateFrom, LocalDate dateTo) throws InterruptedException {
-        // 모의 투자는 미지원
-        if (!this.production) {
-            throw new UnsupportedOperationException();
-        }
-
-        /* 현재 한투 문의 중
-        // defines
-        List<DividendHistory> dividendHistories = new ArrayList<>();
-        RestTemplate restTemplate = createRestTemplate();
-        HttpHeaders headers = createHeaders();
-        headers.add("tr_id", "CTRGT011R");
-
-        // pagination key
-        String ctxAreaFk50 = "";
-        String ctxAreaNk50 = "";
-
-        // loop
-        for (int i = 0; i < 100; i ++) {
-            String url = apiUrl + "/uapi/overseas-price/v1/quotations/period-rights";
-            String inqrStrtDt = dateFrom.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-            String inqrEndDt = dateTo.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-            url = UriComponentsBuilder.fromUriString(url)
-                    .queryParam("RGHT_TYPE_CD", "03")
-                    .queryParam("INQR_DVSN_CD", "02")
-                    .queryParam("INQR_STRT_DT", inqrStrtDt)
-                    .queryParam("INQR_END_DT", inqrEndDt)
-                    .queryParam("PDNO", "")
-                    .queryParam("PRDT_TYPE_CD", "")
-                    .queryParam("CTX_AREA_NK50", ctxAreaNk50)
-                    .queryParam("CTX_AREA_FK50", ctxAreaFk50)
-                    .build()
-                    .toUriString();
-            RequestEntity<Void> requestEntity = RequestEntity
-                    .get(url)
-                    .headers(headers)
-                    .build();
-
-            sleep();
-            ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
-
-            JsonNode rootNode;
-            try {
-                rootNode = objectMapper.readTree(responseEntity.getBody());
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-            String rtCd = objectMapper.convertValue(rootNode.path("rt_cd"), String.class);
-            String msg1 = objectMapper.convertValue(rootNode.path("msg1"), String.class);
-            if (!"0".equals(rtCd)) {
-                throw new RuntimeException(msg1);
-            }
-
-            // updates pagination key
-            ctxAreaFk50 = objectMapper.convertValue(rootNode.path("ctx_area_fk50"), String.class);
-            ctxAreaNk50 = objectMapper.convertValue(rootNode.path("ctx_area_nk50"), String.class);
-
-            // temp list
-            List<Map<String, String>> output1 = objectMapper.convertValue(rootNode.path("output1"), new TypeReference<>() {});
-            List<DividendHistory> tempDividendHistories = output1.stream()
-                    .map(row -> {
-                        return DividendHistory.builder()
-                                .date(LocalDate.parse(row.get("bass_dt"), DateTimeFormatter.BASIC_ISO_DATE))
-                                .symbol(row.get("pdno"))
-                                .name(row.get("prdt_name"))
-                                .dividendAmount(new BigDecimal(row.get("stkp_dvdn_frcr_amt2")))
-                                .build();
-                    })
-                    .collect(Collectors.toList());
-
-            // adds final list
-            dividendHistories.addAll(tempDividendHistories);
-
-            // detects pagination
-            if (tempDividendHistories.isEmpty()) {
-                break;
-            }
-            headers.set("tr_cont", "N");
-            ctxAreaFk50 = ctxAreaNk50;
-        }
-
-        // return
-        return dividendHistories;
-         */
-        return new ArrayList<>();
-    }
 }

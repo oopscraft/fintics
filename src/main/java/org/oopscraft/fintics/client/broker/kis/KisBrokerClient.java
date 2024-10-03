@@ -5,8 +5,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.ConnectionPool;
-import okhttp3.OkHttpClient;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.client.StandardHttpRequestRetryHandler;
@@ -18,9 +16,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.http.client.OkHttp3ClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -30,7 +26,6 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -255,7 +250,7 @@ public class KisBrokerClient extends BrokerClient {
      * return daily ohlcvs
      * @param asset asset
      * @return daily ohlcvs
-     * @see [국내주식기간별시세(일,주,월,년)[v1_국내주식-016]](https://apiportal.koreainvestment.com/apiservice/apiservice-domestic-stock-quotations2#L_a08c3421-e50f-4f24-b1fe-64c12f723c77)
+     * @see [국내주식기간별시세 - 일,주,월,년[v1_국내주식-016]](https://apiportal.koreainvestment.com/apiservice/apiservice-domestic-stock-quotations2#L_a08c3421-e50f-4f24-b1fe-64c12f723c77)
      */
     @Override
     public List<Ohlcv> getDailyOhlcvs(Asset asset) throws InterruptedException {
@@ -571,7 +566,7 @@ public class KisBrokerClient extends BrokerClient {
      * @param asset asset
      * @param order order
      * @return submitted order
-     * @see [주식주문(현금)[v1_국내주식-001]](https://apiportal.koreainvestment.com/apiservice/apiservice-domestic-stock-order#L_aade4c72-5fb7-418a-9ff2-254b4d5f0ceb)
+     * @see [주식주문 - 현금[v1_국내주식-001]](https://apiportal.koreainvestment.com/apiservice/apiservice-domestic-stock-order#L_aade4c72-5fb7-418a-9ff2-254b4d5f0ceb)
      */
     @Override
     public Order submitOrder(Asset asset, Order order) throws InterruptedException {
@@ -729,7 +724,7 @@ public class KisBrokerClient extends BrokerClient {
      * @param asset asset
      * @param order order
      * @return amended order
-     * @see [주식주문(정정취소)[v1_국내주식-003]](https://apiportal.koreainvestment.com/apiservice/apiservice-domestic-stock-order#L_4bfdfb2b-34a7-43f6-935a-e637724f960a)
+     * @see [주식주문 - 정정취소[v1_국내주식-003]](https://apiportal.koreainvestment.com/apiservice/apiservice-domestic-stock-order#L_4bfdfb2b-34a7-43f6-935a-e637724f960a)
      */
     @Override
     public Order amendOrder(Asset asset, Order order) throws InterruptedException {
@@ -884,12 +879,6 @@ public class KisBrokerClient extends BrokerClient {
 
         // return
         return realizedProfits;
-    }
-
-    @Override
-    public List<DividendHistory> getDividendHistories(LocalDate dateFrom, LocalDate dateTo) throws InterruptedException {
-        // 현재 한투 문의 중
-        return new ArrayList<>();
     }
 
 }

@@ -12,17 +12,10 @@ import java.util.List;
 @Builder
 public class ProfitResponse {
 
-    private BigDecimal totalProfitAmount;
-
     private BigDecimal realizedProfitAmount;
-
-    private BigDecimal dividendAmount;
 
     @Builder.Default
     private List<RealizedProfitResponse> realizedProfits = new ArrayList<>();
-
-    @Builder.Default
-    private List<DividendHistoryResponse> dividendHistories = new ArrayList<>();
 
     /**
      * factory method
@@ -31,14 +24,9 @@ public class ProfitResponse {
      */
     public static ProfitResponse from(Profit profit) {
         return ProfitResponse.builder()
-                .totalProfitAmount(profit.getTotalProfitAmount())
                 .realizedProfitAmount(profit.getRealizedProfitAmount())
-                .dividendAmount(profit.getDividendAmount())
                 .realizedProfits(profit.getRealizedProfits().stream()
                         .map(RealizedProfitResponse::from)
-                        .toList())
-                .dividendHistories(profit.getDividendHistories().stream()
-                        .map(DividendHistoryResponse::from)
                         .toList())
                 .build();
     }

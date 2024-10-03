@@ -3,7 +3,6 @@ package org.oopscraft.fintics.client.broker.alpaca;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.oopscraft.arch4j.core.common.support.RestTemplateBuilder;
 import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.client.broker.BrokerClientDefinition;
 import org.oopscraft.fintics.model.*;
@@ -71,7 +70,7 @@ public class AlpacaBrokerClient extends BrokerClient {
      * @param timeframe time frame
      * @param start start date time
      * @return ohlcvs
-     * @see https://docs.alpaca.markets/reference/stockbars-1
+     * @see [https://docs.alpaca.markets/reference/stockbars-1]
      */
     List<Map<String,String>> getOhlcvs(String symbol, String timeframe, LocalDateTime start) {
         RequestEntity<Void> requestEntity = RequestEntity
@@ -141,11 +140,6 @@ public class AlpacaBrokerClient extends BrokerClient {
 
     @Override
     public List<RealizedProfit> getRealizedProfits(LocalDate dateFrom, LocalDate dateTo) throws InterruptedException {
-        return null;
-    }
-
-    @Override
-    public List<DividendHistory> getDividendHistories(LocalDate dateFrom, LocalDate dateTo) throws InterruptedException {
         return null;
     }
 

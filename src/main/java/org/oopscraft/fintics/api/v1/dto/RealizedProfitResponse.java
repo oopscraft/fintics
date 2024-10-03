@@ -1,8 +1,7 @@
 package org.oopscraft.fintics.api.v1.dto;
 
-import lombok.*;
-import lombok.experimental.SuperBuilder;
-import org.oopscraft.fintics.model.Profit;
+import lombok.Builder;
+import lombok.Getter;
 import org.oopscraft.fintics.model.RealizedProfit;
 
 import java.math.BigDecimal;

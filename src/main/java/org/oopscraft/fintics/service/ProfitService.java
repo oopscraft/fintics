@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.client.broker.BrokerClientFactory;
 import org.oopscraft.fintics.model.Broker;
-import org.oopscraft.fintics.model.DividendHistory;
 import org.oopscraft.fintics.model.Profit;
 import org.oopscraft.fintics.model.RealizedProfit;
 import org.springframework.stereotype.Service;
@@ -35,10 +34,8 @@ public class ProfitService {
         Broker broker = brokerService.getBroker(brokerId).orElseThrow();
         BrokerClient brokerClient = brokerClientFactory.getObject(broker);
         List<RealizedProfit> realizedProfits;
-        List<DividendHistory> dividendHistories;
         try {
             realizedProfits = brokerClient.getRealizedProfits(dateFrom, dateTo);
-            dividendHistories = brokerClient.getDividendHistories(dateFrom, dateTo);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -47,19 +44,11 @@ public class ProfitService {
         BigDecimal realizedProfitAmount = realizedProfits.stream()
                 .map(RealizedProfit::getProfitAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        BigDecimal dividendAmount = dividendHistories.stream()
-                .map(DividendHistory::getDividendAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        BigDecimal totalProfitAmount = realizedProfitAmount
-                .add(dividendAmount);
 
         // returns
         return Profit.builder()
-                .totalProfitAmount(totalProfitAmount)
                 .realizedProfitAmount(realizedProfitAmount)
-                .dividendAmount(dividendAmount)
                 .realizedProfits(realizedProfits)
-                .dividendHistories(dividendHistories)
                 .build();
     }
 
