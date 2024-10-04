@@ -489,7 +489,11 @@
                                           data-duice-execute="
                                         if (basketAsset.quantity > 0) {
                                             this.classList.add('font-weight--bold');
-                                        }"></span>
+                                        }
+                                        if (basketAsset.holdingWeight === 0) {
+                                            this.style.textDecoration='line-through';
+                                        }
+                                        "></span>
                                         (<span data-duice-bind="basketAsset" data-duice-property="holdingWeight"></span>%)
                                         <img class="icon font-size--smaller"
                                              th:src="@{/static/image/icon-pin.svg}"
