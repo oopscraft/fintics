@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.client.StandardHttpRequestRetryHandler;
+import org.oopscraft.arch4j.core.common.support.RestTemplateBuilder;
 import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.client.broker.BrokerClientDefinition;
 import org.oopscraft.fintics.model.*;
@@ -64,11 +65,9 @@ public class KisBrokerClient extends BrokerClient {
         this.accountNo = properties.getProperty("accountNo");
 
         // rest template
-        CloseableHttpClient httpClient = HttpClients.custom()
-                .setRetryHandler(new StandardHttpRequestRetryHandler())
+        this.restTemplate = RestTemplateBuilder.create()
+                .retryCount(3)
                 .build();
-        HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
-        this.restTemplate = new RestTemplate(requestFactory);
 
         // object mapper
         this.objectMapper = new ObjectMapper();

@@ -490,7 +490,7 @@
                                         if (basketAsset.quantity > 0) {
                                             this.classList.add('font-weight--bold');
                                         }
-                                        if (basketAsset.holdingWeight === 0) {
+                                        if (basketAsset.holdingWeight === 0 && basketAsset.enabled) {
                                             this.style.textDecoration='line-through';
                                         }
                                         "></span>

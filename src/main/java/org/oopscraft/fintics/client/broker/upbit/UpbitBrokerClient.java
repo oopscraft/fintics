@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.common.data.IdGenerator;
+import org.oopscraft.arch4j.core.common.support.RestTemplateBuilder;
 import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.client.broker.BrokerClientDefinition;
 import org.oopscraft.fintics.model.*;
@@ -51,8 +52,12 @@ public class UpbitBrokerClient extends BrokerClient {
         this.accessKey = properties.getProperty("accessKey");
         this.secretKey = properties.getProperty("secretKey");
 
-        // resources
-        this.restTemplate = new RestTemplate();
+        // rest template
+        this.restTemplate = RestTemplateBuilder.create()
+                .retryCount(3)
+                .build();
+
+        // object mapper
         this.objectMapper = new ObjectMapper();
     }
 

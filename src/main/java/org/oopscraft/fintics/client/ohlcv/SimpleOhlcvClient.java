@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.oopscraft.arch4j.core.common.support.RestTemplateBuilder;
 import org.oopscraft.fintics.model.Asset;
 import org.oopscraft.fintics.model.Ohlcv;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -43,8 +44,14 @@ public class SimpleOhlcvClient extends OhlcvClient {
      */
     public SimpleOhlcvClient(OhlcvClientProperties ohlcvClientProperties, ObjectMapper objectMapper) {
         super(ohlcvClientProperties);
+
+        // rest template
+        this.restTemplate = RestTemplateBuilder.create()
+                .retryCount(3)
+                .build();
+
+        // object mapper
         this.objectMapper = objectMapper;
-        this.restTemplate = new RestTemplate();
     }
 
     /**

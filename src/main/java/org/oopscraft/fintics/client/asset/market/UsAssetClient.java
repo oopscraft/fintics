@@ -35,8 +35,14 @@ public class UsAssetClient extends AssetClient {
 
     public UsAssetClient(AssetClientProperties assetClientProperties, ObjectMapper objectMapper) {
         super(assetClientProperties);
+
+        // rest template
+        this.restTemplate = RestTemplateBuilder.create()
+                .retryCount(3)
+                .build();
+
+        // object mapper
         this.objectMapper = objectMapper;
-        this.restTemplate = new RestTemplate();
     }
 
     @Override
@@ -65,10 +71,6 @@ public class UsAssetClient extends AssetClient {
      * @return list of stock asset
      */
     List<Asset> getStockAssets(String exchange) {
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .readTimeout(30_000)
-                .build();
         String url = String.format("https://api.nasdaq.com/api/screener/stocks?tableonly=true&download=true&exchange=%s", exchange);
         RequestEntity<Void> requestEntity = RequestEntity.get(url)
                 .headers(createNasdaqHeaders())
@@ -117,10 +119,6 @@ public class UsAssetClient extends AssetClient {
      * @return list of etf asset
      */
     protected List<Asset> getEtfAssets() {
-        RestTemplate restTemplate = RestTemplateBuilder.create()
-                .insecure(true)
-                .readTimeout(30_000)
-                .build();
         String url = "https://api.nasdaq.com/api/screener/etf?download=true";
         RequestEntity<Void> requestEntity = RequestEntity.get(url)
                 .headers(createNasdaqHeaders())
@@ -170,10 +168,6 @@ public class UsAssetClient extends AssetClient {
         Map<String, String> exchangeMicMap = new LinkedHashMap<>();
         final int BATCH_SIZE = 100;
         try {
-            RestTemplate restTemplate = RestTemplateBuilder.create()
-                    .insecure(true)
-                    .readTimeout(10_000)
-                    .build();
             HttpHeaders headers = createYahooHeader();
             for (int i = 0; i < symbols.size(); i += BATCH_SIZE) {
                 List<String> batchSymbols = symbols.subList(i, Math.min(i + BATCH_SIZE, symbols.size()));
@@ -222,13 +216,8 @@ public class UsAssetClient extends AssetClient {
             BigDecimal roa = null;
             BigDecimal dividendYield = null;
 
-            RestTemplate restTemplate = RestTemplateBuilder.create()
-                    .insecure(true)
-                    .readTimeout(30_000)
-                    .build();
-            HttpHeaders headers = createNasdaqHeaders();
-
             // calls summary api
+            HttpHeaders headers = createNasdaqHeaders();
             String summaryUrl = String.format(
                     "https://api.nasdaq.com/api/quote/%s/summary?assetclass=stocks",
                     asset.getSymbol()

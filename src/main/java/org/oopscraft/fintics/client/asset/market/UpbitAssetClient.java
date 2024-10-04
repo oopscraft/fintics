@@ -1,5 +1,6 @@
 package org.oopscraft.fintics.client.asset.market;
 
+import org.oopscraft.arch4j.core.common.support.RestTemplateBuilder;
 import org.oopscraft.fintics.client.asset.AssetClient;
 import org.oopscraft.fintics.client.asset.AssetClientProperties;
 import org.oopscraft.fintics.model.Asset;
@@ -20,7 +21,11 @@ public class UpbitAssetClient extends AssetClient {
 
     public UpbitAssetClient(AssetClientProperties assetClientProperties) {
         super(assetClientProperties);
-        this.restTemplate = new RestTemplate();
+
+        // rest template
+        this.restTemplate = RestTemplateBuilder.create()
+                .retryCount(3)
+                .build();
     }
 
     @Override

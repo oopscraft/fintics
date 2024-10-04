@@ -3,6 +3,7 @@ package org.oopscraft.fintics.client.broker.alpaca;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.oopscraft.arch4j.core.common.support.RestTemplateBuilder;
 import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.client.broker.BrokerClientDefinition;
 import org.oopscraft.fintics.model.*;
@@ -41,8 +42,12 @@ public class AlpacaBrokerClient extends BrokerClient {
         this.apiKey = properties.getProperty("apiKey");
         this.apiSecret = properties.getProperty("apiSecret");
 
-        // resources
-        this.restTemplate = new RestTemplate();
+        // rest template
+        this.restTemplate = RestTemplateBuilder.create()
+                .retryCount(3)
+                .build();
+
+        // object mapper
         this.objectMapper = new ObjectMapper();
     }
 

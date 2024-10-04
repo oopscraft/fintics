@@ -28,6 +28,7 @@ public class KisAccessTokenRegistry {
      */
     static RestTemplate createRestTemplate() {
         return RestTemplateBuilder.create()
+                .retryCount(3)
                 .build();
     }
 
