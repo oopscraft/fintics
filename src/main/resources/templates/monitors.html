@@ -491,7 +491,8 @@
                                             this.classList.add('font-weight--bold');
                                         }
                                         if (basketAsset.holdingWeight === 0 && basketAsset.enabled) {
-                                            this.style.textDecoration='line-through';
+                                            this.style.fontStyle = 'italic';
+                                            this.style.textDecoration = 'line-through';
                                         }
                                         "></span>
                                         (<span data-duice-bind="basketAsset" data-duice-property="holdingWeight"></span>%)
