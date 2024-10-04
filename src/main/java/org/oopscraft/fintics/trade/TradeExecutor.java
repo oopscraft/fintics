@@ -386,8 +386,12 @@ public class TradeExecutor {
 
             // withdraws buy amount in cash
             if (trade.getCashAssetId() != null) {
-                BigDecimal buyAmount = quantity.multiply(price);
-                withdrawBuyAmountFromCash(brokerClient, trade, buyAmount);
+                try {
+                    BigDecimal buyAmount = quantity.multiply(price);
+                    withdrawBuyAmountFromCash(brokerClient, trade, buyAmount);
+                } catch (Exception ignore) {
+                    log.warn(ignore.getMessage());
+                }
             }
 
             // submit buy order
@@ -465,8 +469,12 @@ public class TradeExecutor {
 
             // deposit sell amount in cash
             if (trade.getCashAssetId() != null) {
-                BigDecimal sellAmount = quantity.multiply(price);
-                depositSellAmountToCash(brokerClient, trade, sellAmount);
+                try {
+                    BigDecimal sellAmount = quantity.multiply(price);
+                    depositSellAmountToCash(brokerClient, trade, sellAmount);
+                } catch (Exception ignore) {
+                    log.warn(ignore.getMessage());
+                }
             }
 
             // alarm
