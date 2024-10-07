@@ -398,76 +398,105 @@ public class KisUsBrokerClient extends BrokerClient {
      */
     @Override
     public Balance getBalance() throws InterruptedException {
-        String url = apiUrl + "/uapi/overseas-stock/v1/trading/inquire-balance";
-        HttpHeaders headers = createHeaders();
-        String trId = production ? "TTTS3012R" : "VTTS3012R";
-        headers.add("tr_id", trId);
-        url = UriComponentsBuilder.fromUriString(url)
-                .queryParam("CANO", accountNo.split("-")[0])
-                .queryParam("ACNT_PRDT_CD", accountNo.split("-")[1])
-                .queryParam("OVRS_EXCG_CD", "NASD")
-                .queryParam("TR_CRCY_CD", "USD")
-                .queryParam("CTX_AREA_FK200", "")
-                .queryParam("CTX_AREA_NK200", "")
-                .build()
-                .toUriString();
-        RequestEntity<Void> requestEntity = RequestEntity
-                .get(url)
-                .headers(headers)
-                .build();
-        sleep();
-        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
-        JsonNode rootNode;
-        try {
-            rootNode = objectMapper.readTree(responseEntity.getBody());
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+        Balance balance = new Balance();
+        List<BalanceAsset> balanceAssets = new ArrayList<>();
+
+        // pagination key
+        String trCont = "";
+        String ctxAreaFk200 = "";
+        String ctxAreaNk200 = "";
+
+        // loop
+        for (int i = 0; i < 10; i ++) {
+            String url = apiUrl + "/uapi/overseas-stock/v1/trading/inquire-balance";
+            HttpHeaders headers = createHeaders();
+            String trId = production ? "TTTS3012R" : "VTTS3012R";
+            headers.add("tr_id", trId);
+            headers.add("tr_cont", trCont);
+            url = UriComponentsBuilder.fromUriString(url)
+                    .queryParam("CANO", accountNo.split("-")[0])
+                    .queryParam("ACNT_PRDT_CD", accountNo.split("-")[1])
+                    .queryParam("OVRS_EXCG_CD", "NASD")
+                    .queryParam("TR_CRCY_CD", "USD")
+                    .queryParam("CTX_AREA_FK200", ctxAreaFk200)
+                    .queryParam("CTX_AREA_NK200", ctxAreaNk200)
+                    .build()
+                    .toUriString();
+            RequestEntity<Void> requestEntity = RequestEntity
+                    .get(url)
+                    .headers(headers)
+                    .build();
+            sleep();
+            ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+            JsonNode rootNode;
+            try {
+                rootNode = objectMapper.readTree(responseEntity.getBody());
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+
+            String rtCd = objectMapper.convertValue(rootNode.path("rt_cd"), String.class);
+            String msg1 = objectMapper.convertValue(rootNode.path("msg1"), String.class);
+            if (!"0".equals(rtCd)) {
+                throw new RuntimeException(msg1);
+            }
+
+            JsonNode output1Node = rootNode.path("output1");
+            List<Map<String, String>> output1 = objectMapper.convertValue(output1Node, new TypeReference<>() {
+            });
+            JsonNode output2Node = rootNode.path("output2");
+            Map<String, String> output2 = objectMapper.convertValue(output2Node, new TypeReference<>() {
+            });
+
+            // balance
+            if (i == 0) {
+                balance = Balance.builder()
+                        .accountNo(accountNo)
+                        .purchaseAmount(new BigDecimal(output2.get("frcr_pchs_amt1")).setScale(2, RoundingMode.HALF_UP))
+                        .valuationAmount(new BigDecimal(output2.get("tot_evlu_pfls_amt")).setScale(2, RoundingMode.HALF_UP))
+                        .realizedProfitAmount(new BigDecimal(output2.get("ovrs_rlzt_pfls_amt")).setScale(2, RoundingMode.HALF_UP))
+                        .profitAmount(new BigDecimal(output2.get("ovrs_tot_pfls")).setScale(2, RoundingMode.HALF_UP))
+                        .build();
+            }
+
+            // balance asset
+            List<BalanceAsset> pageBalanceAssets = output1.stream()
+                    .map(row -> BalanceAsset.builder()
+                            .accountNo(accountNo)
+                            .assetId(toAssetId(row.get("ovrs_pdno")))
+                            .name(row.get("ovrs_item_name"))
+                            .market(getDefinition().getMarket())
+                            .quantity(new BigDecimal(row.get("ovrs_cblc_qty")))
+                            .orderableQuantity(new BigDecimal(row.get("ord_psbl_qty")))
+                            .purchasePrice(new BigDecimal(row.get("pchs_avg_pric")).setScale(2, RoundingMode.HALF_UP))
+                            .purchaseAmount(new BigDecimal(row.get("frcr_pchs_amt1")).setScale(2, RoundingMode.HALF_UP))
+                            .valuationPrice(new BigDecimal(row.get("now_pric2")))
+                            .valuationAmount(new BigDecimal(row.get("ovrs_stck_evlu_amt")).setScale(2, RoundingMode.HALF_UP))
+                            .profitAmount(new BigDecimal(row.get("frcr_evlu_pfls_amt")).setScale(2, RoundingMode.HALF_UP))
+                            .build())
+                    .filter(balanceAsset -> balanceAsset.getQuantity().intValue() > 0)
+                    .collect(Collectors.toList());
+            balanceAssets.addAll(pageBalanceAssets);
+
+            // detects next page
+            trCont = responseEntity.getHeaders().getFirst("tr_cont");
+            ctxAreaFk200 = objectMapper.convertValue(rootNode.path("ctx_area_fk200"), String.class);
+            ctxAreaNk200 = objectMapper.convertValue(rootNode.path("ctx_area_nk200"), String.class);
+            if ((Objects.equals(trCont,"D") || Objects.equals(trCont, "E"))
+                    || pageBalanceAssets.isEmpty()) {
+                break;
+            }
+            trCont = "N";
         }
 
-        String rtCd = objectMapper.convertValue(rootNode.path("rt_cd"), String.class);
-        String msg1 = objectMapper.convertValue(rootNode.path("msg1"), String.class);
-        if(!"0".equals(rtCd)) {
-            throw new RuntimeException(msg1);
-        }
-
-        JsonNode output1Node = rootNode.path("output1");
-        List<Map<String, String>> output1 = objectMapper.convertValue(output1Node, new TypeReference<>(){});
-        JsonNode output2Node = rootNode.path("output2");
-        Map<String, String> output2 = objectMapper.convertValue(output2Node, new TypeReference<>(){});
-
-        // balance
-        Balance balance = Balance.builder()
-                .accountNo(accountNo)
-                .purchaseAmount(new BigDecimal(output2.get("frcr_pchs_amt1")).setScale(2, RoundingMode.HALF_UP))
-                .valuationAmount(new BigDecimal(output2.get("tot_evlu_pfls_amt")).setScale(2, RoundingMode.HALF_UP))
-                .realizedProfitAmount(new BigDecimal(output2.get("ovrs_rlzt_pfls_amt")).setScale(2, RoundingMode.HALF_UP))
-                .profitAmount(new BigDecimal(output2.get("ovrs_tot_pfls")).setScale(2, RoundingMode.HALF_UP))
-                .build();
+        // set balance assets
+        balance.setBalanceAssets(balanceAssets);
 
         // cash amount, total amount
         BigDecimal cashAmount = getBalanceCashAmount();
         BigDecimal totalAmount = balance.getValuationAmount().add(cashAmount);
         balance.setTotalAmount(totalAmount.setScale(2, RoundingMode.HALF_UP));
         balance.setCashAmount(cashAmount.setScale(2, RoundingMode.HALF_UP));
-
-        // balance asset
-        List<BalanceAsset> balanceAssets = output1.stream()
-                .map(row -> BalanceAsset.builder()
-                        .accountNo(accountNo)
-                        .assetId(toAssetId(row.get("ovrs_pdno")))
-                        .name(row.get("ovrs_item_name"))
-                        .market(getDefinition().getMarket())
-                        .quantity(new BigDecimal(row.get("ovrs_cblc_qty")))
-                        .orderableQuantity(new BigDecimal(row.get("ord_psbl_qty")))
-                        .purchasePrice(new BigDecimal(row.get("pchs_avg_pric")).setScale(2, RoundingMode.HALF_UP))
-                        .purchaseAmount(new BigDecimal(row.get("frcr_pchs_amt1")).setScale(2, RoundingMode.HALF_UP))
-                        .valuationPrice(new BigDecimal(row.get("now_pric2")))
-                        .valuationAmount(new BigDecimal(row.get("ovrs_stck_evlu_amt")).setScale(2, RoundingMode.HALF_UP))
-                        .profitAmount(new BigDecimal(row.get("frcr_evlu_pfls_amt")).setScale(2, RoundingMode.HALF_UP))
-                        .build())
-                .filter(balanceAsset -> balanceAsset.getQuantity().intValue() > 0)
-                .collect(Collectors.toList());
-        balance.setBalanceAssets(balanceAssets);
 
         // return
         return balance;
