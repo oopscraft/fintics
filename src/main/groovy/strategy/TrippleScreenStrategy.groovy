@@ -45,6 +45,7 @@ interface Analyzable {
     BigDecimal getCurrentClose()
     BigDecimal getAverageClose()
     BigDecimal getAveragePosition(BigDecimal position)
+    Scorable getChannelPhase(int period)
     Scorable getMomentumScore()
     Scorable getVolatilityScore()
     Scorable getOversoldScore()
@@ -123,6 +124,19 @@ class Analysis implements Analyzable {
         def averagePosition = ((position * averageWeight) as BigDecimal)
                 .setScale(2, RoundingMode.HALF_UP)
         return averagePosition
+    }
+
+    @Override
+    Scorable getChannelPhase(int period) {
+        def score = new Score()
+        // cci
+        List<Cci> ccis = Tools.indicators(ohlcvs, CciContext.of(period, period))
+        score.cciValue = ccis.first().value
+        // bollinger band
+        List<BollingerBand> bollingerBands = Tools.indicators(ohlcvs, BollingerBandContext.of(period, 2))
+        score.bollingerBandPercentB = bollingerBands.first().percentB
+        // return
+        return score
     }
 
     @Override

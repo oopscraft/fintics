@@ -20,6 +20,7 @@ public class IndicatorCalculatorFactory {
         put(CciContext.class, CciCalculator.class);
         put(StochasticSlowContext.class, StochasticSlowCalculator.class);
         put(WilliamsRContext.class, WilliamsRCalculator.class);
+        put(PriceChannelContext.class, PriceChannelCalculator.class);
         put(KeltnerChannelContext.class, KeltnerChannelCalculator.class);
     }};
 
