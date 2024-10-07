@@ -880,4 +880,9 @@ public class KisBrokerClient extends BrokerClient {
         return realizedProfits;
     }
 
+    @Override
+    public List<DividendHistory> getDividendHistories(LocalDate dateFrom, LocalDate dateTo) throws InterruptedException {
+        return new ArrayList<>();
+    }
+
 }

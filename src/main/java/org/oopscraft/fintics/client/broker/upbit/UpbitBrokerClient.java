@@ -415,7 +415,12 @@ public class UpbitBrokerClient extends BrokerClient {
 
     @Override
     public List<RealizedProfit> getRealizedProfits(LocalDate dateFrom, LocalDate dateTo) throws InterruptedException {
-        throw new UnsupportedOperationException();
+        return new ArrayList<>();
+    }
+
+    @Override
+    public List<DividendHistory> getDividendHistories(LocalDate dateFrom, LocalDate dateTo) throws InterruptedException {
+        return new ArrayList<>();
     }
 
 }

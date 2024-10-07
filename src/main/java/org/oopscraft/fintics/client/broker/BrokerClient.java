@@ -111,6 +111,14 @@ public abstract class BrokerClient {
     public abstract List<RealizedProfit> getRealizedProfits(LocalDate dateFrom, LocalDate dateTo) throws InterruptedException;
 
     /**
+     * returns dividend histories
+     * @param dateFrom date from
+     * @param dateTo date to
+     * @return dividend histories
+     */
+    public abstract List<DividendHistory> getDividendHistories(LocalDate dateFrom, LocalDate dateTo) throws InterruptedException;
+
+    /**
      * convert to asset id
      * @param symbol symbol
      * @return asset id
