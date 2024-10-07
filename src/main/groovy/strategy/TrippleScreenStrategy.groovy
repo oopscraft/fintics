@@ -45,7 +45,7 @@ interface Analyzable {
     BigDecimal getCurrentClose()
     BigDecimal getAverageClose()
     BigDecimal getAveragePosition(BigDecimal position)
-    Scorable getChannelPhase(int period)
+    Scorable getChannelPhaseScore(int period)
     Scorable getMomentumScore()
     Scorable getVolatilityScore()
     Scorable getOversoldScore()
@@ -127,7 +127,7 @@ class Analysis implements Analyzable {
     }
 
     @Override
-    Scorable getChannelPhase(int period) {
+    Scorable getChannelPhaseScore(int period) {
         def score = new Score()
         // cci
         List<Cci> ccis = Tools.indicators(ohlcvs, CciContext.of(period, period))
@@ -242,6 +242,13 @@ class AnalysisGroup extends LinkedHashMap<String, Analyzable> implements Analyza
     @Override
     BigDecimal getAveragePosition(BigDecimal position) {
         return this.values().collect{it.getAverageClose()}.average() as Number
+    }
+
+    @Override
+    Scorable getChannelPhaseScore(int period) {
+        def scoreGroup = new ScoreGroup()
+        this.each{it -> scoreGroup.put(it.key, it.value.getChannelPhaseScore())}
+        return scoreGroup
     }
 
     @Override
