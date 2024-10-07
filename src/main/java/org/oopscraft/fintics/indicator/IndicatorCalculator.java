@@ -17,8 +17,20 @@ public abstract class IndicatorCalculator<C extends IndicatorContext, R extends 
         this.context = context;
     }
 
+    /**
+     * calculate abstract method
+     * @param series series
+     * @return list of indicator
+     */
     public abstract List<R> calculate(List<Ohlcv> series);
 
+    /**
+     * calculates exponential moving average
+     * @param series series
+     * @param period period
+     * @param mathContext math context
+     * @return list of exponential moving average
+     */
     public static List<BigDecimal> emas(List<BigDecimal> series, int period, MathContext mathContext) {
         List<BigDecimal> emas = new ArrayList<>();
         BigDecimal multiplier = BigDecimal.valueOf(2.0)
@@ -35,6 +47,13 @@ public abstract class IndicatorCalculator<C extends IndicatorContext, R extends 
         return emas;
     }
 
+    /**
+     * calculates simple moving average
+     * @param series series
+     * @param period period
+     * @param mathContext math context
+     * @return list of simple moving average
+     */
     public static List<BigDecimal> smas(List<BigDecimal> series, int period, MathContext mathContext) {
         List<BigDecimal> smas = new ArrayList<>();
         for(int i = 0; i < series.size(); i ++) {
@@ -54,6 +73,13 @@ public abstract class IndicatorCalculator<C extends IndicatorContext, R extends 
         return smas;
     }
 
+    /**
+     * calculates standard deviation
+     * @param series series
+     * @param period period
+     * @param mathContext math context
+     * @return list of standard deviation
+     */
     public static List<BigDecimal> sds(List<BigDecimal> series, int period, MathContext mathContext) {
         List<BigDecimal> stds = new ArrayList<>();
         for (int i = 0; i < series.size(); i ++) {
@@ -75,6 +101,13 @@ public abstract class IndicatorCalculator<C extends IndicatorContext, R extends 
         return stds;
     }
 
+    /**
+     * calculates absolute deviation
+     * @param series series
+     * @param period period
+     * @param mathContext math context
+     * @return list of absolute deviation
+     */
     public static List<BigDecimal> ads(List<BigDecimal> series, int period, MathContext mathContext) {
         List<BigDecimal> ads = new ArrayList<>();
         for (int i = 0; i < series.size(); i ++) {
