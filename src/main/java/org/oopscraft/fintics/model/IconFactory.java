@@ -1,19 +1,28 @@
 package org.oopscraft.fintics.model;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class IconFactory {
 
-    private static final Map<String, String> iconRegistry = new LinkedHashMap<>();
+    private static final Cache<String, String> iconCache = Caffeine.newBuilder()
+            .expireAfterWrite(10, TimeUnit.MINUTES)
+            .build();
 
     public static String getIcon(Asset asset) {
-        if (iconRegistry.containsKey(asset.getAssetId())) {
-            return iconRegistry.get(asset.getAssetId());
+        // checks cache
+        String icon = iconCache.getIfPresent(asset.getAssetId());
+        if (icon != null) {
+            return icon;
         }
-        String icon = switch (Optional.ofNullable(asset.getMarket()).orElse("")) {
+        // get icon
+        icon = switch (Optional.ofNullable(asset.getMarket()).orElse("")) {
             case "US" -> getUsIcon(asset);
             case "KR" -> getKrIcon(asset);
             default -> null;
@@ -21,7 +30,7 @@ public class IconFactory {
         if (!isIconAvailable(icon)) {
             icon = "/static/image/icon-asset.svg";
         }
-        iconRegistry.put(asset.getAssetId(), icon);
+        iconCache.put(asset.getAssetId(), icon);
         return icon;
     }
 
