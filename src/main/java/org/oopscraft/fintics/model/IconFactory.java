@@ -3,18 +3,26 @@ package org.oopscraft.fintics.model;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class IconFactory {
 
+    private static final Map<String, String> iconRegistry = new LinkedHashMap<>();
+
     public static String getIcon(Asset asset) {
-        return switch (Optional.ofNullable(asset.getMarket()).orElse("")) {
+        if (iconRegistry.containsKey(asset.getAssetId())) {
+            return iconRegistry.get(asset.getAssetId());
+        }
+        String icon = switch (Optional.ofNullable(asset.getMarket()).orElse("")) {
             case "US" -> getUsIcon(asset);
             case "KR" -> getKrIcon(asset);
             default -> null;
         };
+        if (!isIconAvailable(icon)) {
+            icon = "/static/image/icon-asset.svg";
+        }
+        iconRegistry.put(asset.getAssetId(), icon);
+        return icon;
     }
 
     static String getUsIcon(Asset asset) {
