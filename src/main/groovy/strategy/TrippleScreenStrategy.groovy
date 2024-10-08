@@ -1,4 +1,3 @@
-import java.lang.Math
 import org.jetbrains.annotations.NotNull
 import org.oopscraft.fintics.indicator.*
 import org.oopscraft.fintics.model.Ohlcv
@@ -8,32 +7,19 @@ import org.oopscraft.fintics.strategy.StrategyResult.Action
 import org.oopscraft.fintics.trade.Tools
 
 import java.math.RoundingMode
-
-interface Scorable extends Comparable<Scorable> {
-    Number getAverage()
-    @Override
-    default int compareTo(@NotNull Scorable o) {
-        return Double.compare(this.getAverage().doubleValue(), o.getAverage().doubleValue())
-    }
-    default int compareTo(@NotNull Number o) {
-        return Double.compare(this.getAverage().doubleValue(), o.doubleValue())
-    }
-}
-
-class Score extends LinkedHashMap<String, BigDecimal> implements Scorable {
+/**
+ * score
+ */
+class Score extends LinkedHashMap<String, BigDecimal> implements Comparable<Score> {
     Number getAverage() {
         return this.values().empty ? 0 : this.values().average() as Number
     }
     @Override
-    String toString() {
-        return this.getAverage() + ' ' + super.toString()
+    int compareTo(@NotNull Score o) {
+        return Double.compare(this.getAverage().doubleValue(), o.getAverage().doubleValue())
     }
-}
-
-class ScoreGroup extends LinkedHashMap<String, Scorable> implements Scorable {
-    @Override
-    Number getAverage() {
-        return this.values().collect{it.getAverage()}.average() as Number
+    int compareTo(@NotNull Number o) {
+        return Double.compare(this.getAverage().doubleValue(), o.doubleValue())
     }
     @Override
     String toString() {
@@ -41,19 +27,19 @@ class ScoreGroup extends LinkedHashMap<String, Scorable> implements Scorable {
     }
 }
 
-interface Analyzable {
-    BigDecimal getCurrentClose()
-    BigDecimal getAverageClose()
-    BigDecimal getAveragePosition(BigDecimal position)
-    Scorable getChannelPhaseScore(int period)
-    Scorable getMomentumScore()
-    Scorable getVolatilityScore()
-    Scorable getOversoldScore()
-    Scorable getOverboughtScore()
-    Scorable getTrailingStopScore()
+/**
+ * channel
+ */
+class Channel {
+    LinkedHashMap<String, Object> source = new LinkedHashMap<>()
+    BigDecimal upper
+    BigDecimal lower
 }
 
-class Analysis implements Analyzable {
+/**
+ * analyzer
+ */
+class Analyzer {
     List<Ohlcv> ohlcvs
     Ohlcv ohlcv
     List<Sma> smas
@@ -79,8 +65,14 @@ class Analysis implements Analyzable {
     List<WilliamsR> williamsRs
     WilliamsR williamsR
 
-    Analysis(TradeAsset profile, Ohlcv.Type type, int period) {
-        this.ohlcvs = profile.getOhlcvs(type, period)
+    /**
+     * constructor
+     * @param tradeAsset trade asset
+     * @param ohlcvType ohlcv type
+     * @param ohlcvPeriod ohlcv period
+     */
+    Analyzer(TradeAsset tradeAsset, Ohlcv.Type ohlcvType, int ohlcvPeriod) {
+        this.ohlcvs = tradeAsset.getOhlcvs(ohlcvType, ohlcvPeriod)
         this.ohlcv = this.ohlcvs.first()
         this.smas = Tools.indicators(ohlcvs, SmaContext.DEFAULT)
         this.sma = smas.first()
@@ -106,18 +98,28 @@ class Analysis implements Analyzable {
         this.chaikinOscillator = chaikinOscillators.first()
     }
 
-    @Override
+    /**
+     * gets current close price
+     * @return current close price
+     */
     BigDecimal getCurrentClose() {
         return ohlcv.close
     }
 
-    @Override
+    /**
+     * gets average close price
+     * @return average close price
+     */
     BigDecimal getAverageClose() {
         return Tools.mean(ohlcvs.take(20).collect{it.close})
     }
 
-    @Override
-    BigDecimal getAveragePosition(BigDecimal position) {
+    /**
+     * adjust average position
+     * @param position
+     * @return average position
+     */
+    BigDecimal adjustAveragePosition(BigDecimal position) {
         def averagePrice = this.getAverageClose()
         def currentPrice = this.getCurrentClose()
         def averageWeight = averagePrice/currentPrice as BigDecimal
@@ -126,21 +128,47 @@ class Analysis implements Analyzable {
         return averagePosition
     }
 
-    @Override
-    Scorable getChannelPhaseScore(int period) {
-        def score = new Score()
-        // cci
-        List<Cci> ccis = Tools.indicators(ohlcvs, CciContext.of(period, period))
-        score.cciValue = ccis.first().value
+    /**
+     * gets channel
+     * @param period period
+     * @return channel
+     */
+    Channel getChannel(int period) {
+        def channel = new Channel()
+        def uppers = []
+        def lowers = []
+
+        // price channel
+        List<PriceChannel> priceChannels = Tools.indicators(ohlcvs, PriceChannelContext.of(period))
+        def priceChannel = priceChannels.first()
+        channel.source.priceChannel = priceChannel
+        uppers.add(priceChannel.upper)
+        lowers.add(priceChannel.lower)
+
         // bollinger band
         List<BollingerBand> bollingerBands = Tools.indicators(ohlcvs, BollingerBandContext.of(period, 2))
-        score.bollingerBandPercentB = bollingerBands.first().percentB
+        def bollingerBand = bollingerBands.first()
+        channel.source.bollingerBand = bollingerBand
+        uppers.add(bollingerBand.upper)
+        uppers.add(bollingerBand.lower)
+
+        // upper, lower
+        def upperAverage = uppers.average() as BigDecimal
+        def lowerAverage = lowers.average() as BigDecimal
+
+        // set channel value
+        channel.upper = uppers.average() as BigDecimal
+        channel.lower = lowers.average() as BigDecimal
+
         // return
-        return score
+        return channel
     }
 
-    @Override
-    Scorable getMomentumScore() {
+    /**
+     * gets momentum score
+     * @return momentum score
+     */
+    Score getMomentumScore() {
         def score = new Score()
         // sma
         score.smaPriceOverValue = ohlcv.close > sma.value ? 100 : 0
@@ -166,8 +194,11 @@ class Analysis implements Analyzable {
         return score
     }
 
-    @Override
-    Scorable getVolatilityScore() {
+    /**
+     * gets volatility score
+     * @return volatility score
+     */
+    Score getVolatilityScore() {
         def score = new Score()
         // dmi
         score.dmiAdx = dmi.adx >= 25 ? 100 : 0
@@ -175,8 +206,11 @@ class Analysis implements Analyzable {
         return score
     }
 
-    @Override
-    Scorable getOversoldScore() {
+    /**
+     * gets oversold score
+     * @return oversold score
+     */
+    Score getOversoldScore() {
         def score = new Score()
         // rsi: 30 이하인 경우 과매도 판정
         score.rsi = rsis.take(3).any{it.value <= 30} ? 100 : 0
@@ -190,8 +224,11 @@ class Analysis implements Analyzable {
         return score
     }
 
-    @Override
-    Scorable getOverboughtScore() {
+    /**
+     * gets overbought score
+     * @return overbought score
+     */
+    Score getOverboughtScore() {
         def score = new Score()
         // rsi: 70 이상인 경우 과매수 구간 판정
         score.rsi = rsis.take(3).any{it.value >= 70} ? 100 : 0
@@ -205,8 +242,11 @@ class Analysis implements Analyzable {
         return score
     }
 
-    @Override
-    Scorable getTrailingStopScore() {
+    /**
+     * gets trailing stop score
+     * @return trailing stop score
+     */
+    Score getTrailingStopScore() {
         def score = new Score()
         // atr
         def prevOhlcv = ohlcvs.get(1)
@@ -225,65 +265,6 @@ class Analysis implements Analyzable {
                 oversoldScore: "${this.getOversoldScore()}",
                 overboughtScore: "${this.getOverboughtScore()}"
         ].toString()
-    }
-}
-
-class AnalysisGroup extends LinkedHashMap<String, Analyzable> implements Analyzable {
-
-    BigDecimal getCurrentClose() {
-        return this.values().collect{it.getCurrentClose()}.average() as Number
-    }
-
-    @Override
-    BigDecimal getAverageClose() {
-        return this.values().collect{it.getAverageClose()}.average() as Number
-    }
-
-    @Override
-    BigDecimal getAveragePosition(BigDecimal position) {
-        return this.values().collect{it.getAverageClose()}.average() as Number
-    }
-
-    @Override
-    Scorable getChannelPhaseScore(int period) {
-        def scoreGroup = new ScoreGroup()
-        this.each{it -> scoreGroup.put(it.key, it.value.getChannelPhaseScore())}
-        return scoreGroup
-    }
-
-    @Override
-    Scorable getMomentumScore() {
-        def scoreGroup = new ScoreGroup()
-        this.each{it -> scoreGroup.put(it.key, it.value.getMomentumScore())}
-        return scoreGroup
-    }
-
-    @Override
-    Scorable getVolatilityScore() {
-        def scoreGroup = new ScoreGroup()
-        this.each{it -> scoreGroup.put(it.key, it.value.getVolatilityScore())}
-        return scoreGroup
-    }
-
-    @Override
-    Scorable getOversoldScore() {
-        def scoreGroup = new ScoreGroup()
-        this.each{it -> scoreGroup.put(it.key, it.value.getOversoldScore())}
-        return scoreGroup
-    }
-
-    @Override
-    Scorable getOverboughtScore() {
-        def scoreGroup = new ScoreGroup()
-        this.each{it -> scoreGroup.put(it.key, it.value.getOverboughtScore())}
-        return scoreGroup
-    }
-
-    @Override
-    Scorable getTrailingStopScore() {
-        def scoreGroup = new ScoreGroup()
-        this.each{it -> scoreGroup.put(it.key, it.value.getTrailingStopScore())}
-        return scoreGroup
     }
 }
 
@@ -306,18 +287,19 @@ def splitIndex = Integer.parseInt(variables['splitIndex'] ?: '0')
 //===============================
 // analysis
 //===============================
-def tideAnalysis = new Analysis(tradeAsset, tideOhlcvType, tideOhlcvPeriod)
-def waveAnalysis = new Analysis(tradeAsset, waveOhlcvType, waveOhlcvPeriod)
-def rippleAnalysis = new Analysis(tradeAsset, rippleOhlcvType, rippleOhlcvPeriod)
+def tideAnalyzer = new Analyzer(tradeAsset, tideOhlcvType, tideOhlcvPeriod)
+def waveAnalyzer = new Analyzer(tradeAsset, waveOhlcvType, waveOhlcvPeriod)
+def rippleAnalyzer = new Analyzer(tradeAsset, rippleOhlcvType, rippleOhlcvPeriod)
 
 //===============================
 // split ranges
 //===============================
 def splitPeriod = 100
 def splitSize = 5
-def splitOhlcvs = tradeAsset.getOhlcvs(Ohlcv.Type.DAILY, 1).take(splitPeriod)
-def splitMaxPrice = splitOhlcvs.collect{it.high}.max()
-def splitMinPrice = splitOhlcvs.collect{it.low}.min()
+def dailyAnalyzer = new Analyzer(tradeAsset, Ohlcv.Type.DAILY, 1)
+def channel =  dailyAnalyzer.getChannel(splitPeriod)
+def splitMaxPrice = channel.upper
+def splitMinPrice = channel.lower
 def splitInterval = ((splitMaxPrice - splitMinPrice)/splitSize as BigDecimal).setScale(4, RoundingMode.HALF_UP)
 def splitLimitPrices = (0..splitSize-1).collect {
     splitMaxPrice - (it * splitInterval) as BigDecimal
@@ -327,7 +309,7 @@ def splitBuyLimited = false
 // splitIndex 가 0 이상 설정된 경우
 if (splitIndex > 0) {
     // 현제 가격이 split limit 이상인 경우 분할 매수 제한
-    if (rippleAnalysis.getCurrentClose() > splitLimitPrice) {
+    if (rippleAnalyzer.getCurrentClose() > splitLimitPrice) {
         splitBuyLimited = true
     }
 }
@@ -335,7 +317,7 @@ if (splitIndex > 0) {
 //===============================
 // position
 //===============================
-def positionScore = (tideAnalysis.getMomentumScore().getAverage() - 50).max(0)*2
+def positionScore = (tideAnalyzer.getMomentumScore().getAverage() - 50).max(0)*2
 def positionPerScore = (1.0 -basePosition)/100
 def position = basePosition + (positionPerScore * positionScore) as BigDecimal
 
@@ -353,16 +335,16 @@ splitIndex:${splitIndex}
 splitLimit:${splitLimitPrice}
 splitBuyLimited:${splitBuyLimited}
 position:${position.toPlainString()}
-tide.momentum:${tideAnalysis.getMomentumScore().toString()}
-tide.oversold:${tideAnalysis.getOversoldScore().toString()}
-tide.overbought:${tideAnalysis.getOverboughtScore().toString()}
-- rsi:${tideAnalysis.rsi.value}|sto:${tideAnalysis.stochasticSlow.slowK}|cci:${tideAnalysis.cci.value}|wil:${tideAnalysis.williamsR.value}
-wave.volatility:${waveAnalysis.getVolatilityScore().toString()}
-- adx:${waveAnalysis.dmi.adx}
-wave.oversold:${waveAnalysis.getOversoldScore().toString()}
-wave.overbought:${waveAnalysis.getOverboughtScore().toString()}
-- rsi:${waveAnalysis.rsi.value}|sto:${waveAnalysis.stochasticSlow.slowK}|cci:${waveAnalysis.cci.value}|wil:${waveAnalysis.williamsR.value}
-ripple.momentum:${rippleAnalysis.getMomentumScore().toString()}
+tide.momentum:${tideAnalyzer.getMomentumScore().toString()}
+tide.oversold:${tideAnalyzer.getOversoldScore().toString()}
+tide.overbought:${tideAnalyzer.getOverboughtScore().toString()}
+- rsi:${tideAnalyzer.rsi.value}|sto:${tideAnalyzer.stochasticSlow.slowK}|cci:${tideAnalyzer.cci.value}|wil:${tideAnalyzer.williamsR.value}
+wave.volatility:${waveAnalyzer.getVolatilityScore().toString()}
+- adx:${waveAnalyzer.dmi.adx}
+wave.oversold:${waveAnalyzer.getOversoldScore().toString()}
+wave.overbought:${waveAnalyzer.getOverboughtScore().toString()}
+- rsi:${waveAnalyzer.rsi.value}|sto:${waveAnalyzer.stochasticSlow.slowK}|cci:${waveAnalyzer.cci.value}|wil:${waveAnalyzer.williamsR.value}
+ripple.momentum:${rippleAnalyzer.getMomentumScore().toString()}
 """
 log.info("message: {}", message)
 tradeAsset.setMessage(message)
@@ -371,22 +353,22 @@ tradeAsset.setMessage(message)
 // trade
 //===============================
 // wave volatility
-if (waveAnalysis.getVolatilityScore() > 50) {
+if (waveAnalyzer.getVolatilityScore() > 50) {
     // wave oversold
-    if (waveAnalysis.getOversoldScore() > 50) {
+    if (waveAnalyzer.getOversoldScore() > 50) {
         // ripple bullish momentum
-        if (rippleAnalysis.getMomentumScore() > 50) {
+        if (rippleAnalyzer.getMomentumScore() > 50) {
             // buy
-            def buyAveragePosition = waveAnalysis.getAveragePosition(position)
+            def buyAveragePosition = waveAnalyzer.adjustAveragePosition(position)
             strategyResult = StrategyResult.of(Action.BUY, buyAveragePosition, "[WAVE OVERSOLD BUY] " + message)
         }
     }
     // wave overbought
-    if (waveAnalysis.getOverboughtScore() > 50) {
+    if (waveAnalyzer.getOverboughtScore() > 50) {
         // ripple bearish momentum
-        if (rippleAnalysis.getMomentumScore() < 50) {
+        if (rippleAnalyzer.getMomentumScore() < 50) {
             // sell
-            def sellAveragePosition = waveAnalysis.getAveragePosition(position)
+            def sellAveragePosition = waveAnalyzer.adjustAveragePosition(position)
             strategyResult = StrategyResult.of(Action.SELL, sellAveragePosition, "[WAVE OVERBOUGHT SELL] " + message)
         }
     }
