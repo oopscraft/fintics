@@ -1,3 +1,4 @@
+import groovy.transform.ToString
 import org.jetbrains.annotations.NotNull
 import org.oopscraft.fintics.indicator.*
 import org.oopscraft.fintics.model.Ohlcv
@@ -30,10 +31,11 @@ class Score extends LinkedHashMap<String, BigDecimal> implements Comparable<Scor
 /**
  * channel
  */
+@ToString
 class Channel {
-    LinkedHashMap<String, Object> source = new LinkedHashMap<>()
     BigDecimal upper
     BigDecimal lower
+    LinkedHashMap<String, Object> source = new LinkedHashMap<>()
 }
 
 /**
@@ -150,15 +152,11 @@ class Analyzer {
         def bollingerBand = bollingerBands.first()
         channel.source.bollingerBand = bollingerBand
         uppers.add(bollingerBand.upper)
-        uppers.add(bollingerBand.lower)
-
-        // upper, lower
-        def upperAverage = uppers.average() as BigDecimal
-        def lowerAverage = lowers.average() as BigDecimal
+        lowers.add(bollingerBand.lower)
 
         // set channel value
-        channel.upper = uppers.average() as BigDecimal
-        channel.lower = lowers.average() as BigDecimal
+        channel.upper = (uppers.average() as BigDecimal).setScale(4, RoundingMode.HALF_UP)
+        channel.lower = (lowers.average() as BigDecimal).setScale(4, RoundingMode.HALF_UP)
 
         // return
         return channel
@@ -282,7 +280,7 @@ def rippleOhlcvType = Ohlcv.Type.valueOf(variables['rippleOhlcvType'])
 def rippleOhlcvPeriod = Integer.parseInt(variables['rippleOhlcvPeriod'])
 def basePosition = new BigDecimal(variables['basePosition'])
 def sellProfitPercentageThreshold = new BigDecimal(variables['sellProfitPercentageThreshold'])
-def splitIndex = Integer.parseInt(variables['splitIndex'] ?: '0')
+def splitIndex = Integer.parseInt(variables['splitIndex'] ?: '-1')
 
 //===============================
 // analysis
@@ -307,7 +305,7 @@ def splitLimitPrices = (0..splitSize-1).collect {
 def splitLimitPrice = splitLimitPrices[splitIndex]
 def splitBuyLimited = false
 // splitIndex 가 0 이상 설정된 경우
-if (splitIndex > 0) {
+if (splitIndex >= 0) {
     // 현제 가격이 split limit 이상인 경우 분할 매수 제한
     if (rippleAnalyzer.getCurrentClose() > splitLimitPrice) {
         splitBuyLimited = true
@@ -330,6 +328,7 @@ def profitPercentage = balanceAsset?.getProfitPercentage() ?: 0.0
 // message
 //===============================
 def message = """
+channel:(upper=${channel.upper}, lower=${channel.lower}) ${channel}
 splitLimits:${splitLimitPrices}
 splitIndex:${splitIndex}
 splitLimit:${splitLimitPrice}
@@ -370,6 +369,28 @@ if (waveAnalyzer.getVolatilityScore() > 50) {
             // sell
             def sellAveragePosition = waveAnalyzer.adjustAveragePosition(position)
             strategyResult = StrategyResult.of(Action.SELL, sellAveragePosition, "[WAVE OVERBOUGHT SELL] " + message)
+        }
+    }
+}
+// tide volatility
+if (tideAnalyzer.getVolatilityScore() > 50) {
+    // tide oversold
+    if (tideAnalyzer.getOversoldScore() > 50) {
+        // wave bullish momentum
+        if (waveAnalyzer.getMomentumScore() > 50) {
+            // buy
+            def buyAveragePosition = tideAnalyzer.adjustAveragePosition(position)
+            strategyResult = StrategyResult.of(Action.BUY, buyAveragePosition, "[TIDE OVERSOLD BUY] " + message)
+
+        }
+    }
+    // tide overbought
+    if (tideAnalyzer.getOverboughtScore() > 50) {
+        // wave bearish momentum
+        if (waveAnalyzer.getMomentumScore() < 50) {
+            // sell
+            def sellAveragePosition = tideAnalyzer.adjustAveragePosition(position)
+            strategyResult = StrategyResult.of(Action.SELL, sellAveragePosition, "[TIDE OVERBOUGHT SELL] " + message)
         }
     }
 }

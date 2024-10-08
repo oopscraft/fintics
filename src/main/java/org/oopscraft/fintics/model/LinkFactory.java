@@ -20,6 +20,8 @@ public class LinkFactory {
         String symbol = asset.getSymbol();
         String type = Optional.ofNullable(asset.getType()).orElse("");
         String exchange = Optional.ofNullable(asset.getExchange()).orElse("");
+        // alphasquare
+        links.add(Link.of("Alphasquare", String.format("https://alphasquare.co.kr/home/market-summary?code=%s", asset.getSymbol())));
         // nasdaq
         switch (type) {
             case "STOCK" -> links.add(Link.of("Nasdaq", String.format("https://www.nasdaq.com/market-activity/stocks/%s", symbol)));
@@ -46,10 +48,10 @@ public class LinkFactory {
 
     static List<Link> getKrLinks(Asset asset) {
         List<Link> links = new ArrayList<>();
-        // naver
-        links.add(Link.of("Naver", String.format("https://finance.naver.com/item/main.naver?code=%s", asset.getSymbol())));
         // alphasquare
         links.add(Link.of("Alphasquare", String.format("https://alphasquare.co.kr/home/market-summary?code=%s", asset.getSymbol())));
+        // naver
+        links.add(Link.of("Naver", String.format("https://finance.naver.com/item/main.naver?code=%s", asset.getSymbol())));
         // etfcheck
         if (Objects.equals(asset.getType(),"ETF")) {
             links.add(Link.of("ETFCheck", String.format("https://www.etfcheck.co.kr/mobile/etpitem/%s", asset.getSymbol())));
