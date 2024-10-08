@@ -302,10 +302,11 @@ def splitInterval = ((splitMaxPrice - splitMinPrice)/splitSize as BigDecimal).se
 def splitLimitPrices = (0..splitSize-1).collect {
     splitMaxPrice - (it * splitInterval) as BigDecimal
 }
-def splitLimitPrice = splitLimitPrices[splitIndex]
+def splitLimitPrice = null
 def splitBuyLimited = false
 // splitIndex 가 0 이상 설정된 경우
 if (splitIndex >= 0) {
+    splitLimitPrice = splitLimitPrices[splitIndex]
     // 현제 가격이 split limit 이상인 경우 분할 매수 제한
     if (rippleAnalyzer.getCurrentClose() > splitLimitPrice) {
         splitBuyLimited = true
@@ -328,7 +329,7 @@ def profitPercentage = balanceAsset?.getProfitPercentage() ?: 0.0
 // message
 //===============================
 def message = """
-channel:(upper=${channel.upper}, lower=${channel.lower}) ${channel}
+channel:(upper=${channel.upper}, lower=${channel.lower})
 splitLimits:${splitLimitPrices}
 splitIndex:${splitIndex}
 splitLimit:${splitLimitPrice}
