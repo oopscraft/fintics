@@ -845,14 +845,26 @@ public class KisUsBrokerClient extends BrokerClient {
         return realizedProfits;
     }
 
+    /**
+     * 현재 권리 내역 조회 API 없음 으로 관련 내역을 근거로 산출
+     * @param dateFrom date from
+     * @param dateTo date to
+     * @return 배당 이력
+     */
     @Override
     public List<DividendHistory> getDividendHistories(LocalDate dateFrom, LocalDate dateTo) throws InterruptedException {
         List<DividendHistory> dividendHistories = new ArrayList<>();
 
-        List<String> symbols = this.getBalance().getBalanceAssets().stream()
+        Set<String> symbols = new HashSet<>();
+        // 현재 잔고 종목
+        symbols.addAll(this.getBalance().getBalanceAssets().stream()
                 .map(BalanceAsset::getSymbol)
-                .toList();
+                .distinct()
+                .toList());
+        // 기간 체결 이력 종목
+        symbols.addAll(getPeriodOrderedSymbols(dateFrom, dateTo));
 
+        // 종목 별 배당 내역 조회
         for (String symobl : symbols) {
             // 권리 내역
             List<Map<String, String>> periodRights = getPeriodRights(symobl, dateFrom, dateTo);
@@ -883,6 +895,90 @@ public class KisUsBrokerClient extends BrokerClient {
 
         // returns
         return dividendHistories;
+    }
+
+    /**
+     * 기간 체결 내역 종목 조회
+     * @param dateFrom date from
+     * @param dateTo date to
+     * @return distinct symbols
+     * @see [해외주식 주문체결내역[v1_해외주식-007]](https://apiportal.koreainvestment.com/apiservice/apiservice-oversea-stock-order#L_6d715b38-566f-4045-a08c-4a594d3a3314)
+     */
+    private Set<String> getPeriodOrderedSymbols(LocalDate dateFrom, LocalDate dateTo) throws InterruptedException {
+        Set<String> periodOrderedSymbols = new HashSet<>();
+
+        // pagination key
+        String trCont = "";
+        String ctxAreaFk200 = "";
+        String ctxAreaNk200 = "";
+
+        // loop
+        for (int i = 0; i < 100; i ++) {
+            String url = apiUrl + "/uapi/overseas-stock/v1/trading/inquire-ccnl";
+            HttpHeaders headers = createHeaders();
+            String trId = production ? "TTTS3035R" : "VTTS3035R";
+            headers.add("tr_id", trId);
+            headers.add("tr_cont", trCont);
+            url = UriComponentsBuilder.fromUriString(url)
+                    .queryParam("CANO", accountNo.split("-")[0])
+                    .queryParam("ACNT_PRDT_CD", accountNo.split("-")[1])
+                    .queryParam("PDNO", "%")
+                    .queryParam("ORD_STRT_DT", dateFrom.format(DateTimeFormatter.BASIC_ISO_DATE))
+                    .queryParam("ORD_END_DT", dateTo.format(DateTimeFormatter.BASIC_ISO_DATE))
+                    .queryParam("SLL_BUY_DVSN", "02")   // 매수만
+                    .queryParam("CCLD_NCCS_DVSN", "00") // 체결만
+                    .queryParam("OVRS_EXCG_CD", "NASD")
+                    .queryParam("SORT_SQN", "DS")
+                    .queryParam("ORD_DT", "")
+                    .queryParam("ORD_GNO_BRNO", "")
+                    .queryParam("ODNO", "")
+                    .queryParam("CTX_AREA_NK200", ctxAreaNk200)
+                    .queryParam("CTX_AREA_FK200", ctxAreaFk200)
+                    .build()
+                    .toUriString();
+            RequestEntity<Void> requestEntity = RequestEntity
+                    .get(url)
+                    .headers(headers)
+                    .build();
+            sleep();
+            ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+            JsonNode rootNode;
+            try {
+                rootNode = objectMapper.readTree(responseEntity.getBody());
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+
+            String rtCd = objectMapper.convertValue(rootNode.path("rt_cd"), String.class);
+            String msg1 = objectMapper.convertValue(rootNode.path("msg1"), String.class);
+            if (!"0".equals(rtCd)) {
+                throw new RuntimeException(msg1);
+            }
+
+            JsonNode outputNode = rootNode.path("output");
+            List<Map<String, String>> output = objectMapper.convertValue(outputNode, new TypeReference<>() {
+            });
+
+            List<String> distinctSymbols = output.stream()
+                    .map(it -> it.get("pdno"))
+                    .toList()
+                    .stream()
+                    .distinct()
+                    .toList();
+            periodOrderedSymbols.addAll(distinctSymbols);
+
+            // detects next page
+            trCont = responseEntity.getHeaders().getFirst("tr_cont");
+            ctxAreaFk200 = objectMapper.convertValue(rootNode.path("ctx_area_fk200"), String.class);
+            ctxAreaNk200 = objectMapper.convertValue(rootNode.path("ctx_area_nk200"), String.class);
+            if ((Objects.equals(trCont,"D") || Objects.equals(trCont, "E"))
+                    || output.isEmpty()) {
+                break;
+            }
+            trCont = "N";
+        }
+        // return
+        return periodOrderedSymbols;
     }
 
     /**
@@ -932,6 +1028,7 @@ public class KisUsBrokerClient extends BrokerClient {
         List<Map<String, String>> output = objectMapper.convertValue(outputNode, new TypeReference<>() {});
 
         List<Map<String, String>> periodRights = output.stream()
+                .filter(it -> Objects.equals(it.get("pdno"), symbol))       // like 검색으로 반환됨으로 해당 심볼만 필터링
                 .toList();
         // returns
         return periodRights;
