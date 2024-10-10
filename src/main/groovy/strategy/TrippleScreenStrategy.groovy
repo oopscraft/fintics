@@ -329,18 +329,18 @@ def profitPercentage = balanceAsset?.getProfitPercentage() ?: 0.0
 // message
 //===============================
 def message = """
-channel:(upper=${channel.upper}, lower=${channel.lower})
+channel:upper=${channel.upper}, lower=${channel.lower}
 splitLimits:${splitLimitPrices}
-splitIndex:${splitIndex}
-splitLimit:${splitLimitPrice}
+splitIndex:${splitIndex}, splitLimit:${splitLimitPrice}
 splitBuyLimited:${splitBuyLimited}
 position:${position.toPlainString()}
 tide.momentum:${tideAnalyzer.getMomentumScore().toString()}
+tide.volatility:${tideAnalyzer.getVolatilityScore().toString()}
 tide.oversold:${tideAnalyzer.getOversoldScore().toString()}
 tide.overbought:${tideAnalyzer.getOverboughtScore().toString()}
 - rsi:${tideAnalyzer.rsi.value}|sto:${tideAnalyzer.stochasticSlow.slowK}|cci:${tideAnalyzer.cci.value}|wil:${tideAnalyzer.williamsR.value}
+wave.momentum:${waveAnalyzer.getMomentumScore().toString()}
 wave.volatility:${waveAnalyzer.getVolatilityScore().toString()}
-- adx:${waveAnalyzer.dmi.adx}
 wave.oversold:${waveAnalyzer.getOversoldScore().toString()}
 wave.overbought:${waveAnalyzer.getOverboughtScore().toString()}
 - rsi:${waveAnalyzer.rsi.value}|sto:${waveAnalyzer.stochasticSlow.slowK}|cci:${waveAnalyzer.cci.value}|wil:${waveAnalyzer.williamsR.value}

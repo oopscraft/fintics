@@ -19,6 +19,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.DateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -846,7 +847,141 @@ public class KisUsBrokerClient extends BrokerClient {
 
     @Override
     public List<DividendHistory> getDividendHistories(LocalDate dateFrom, LocalDate dateTo) throws InterruptedException {
-        return new ArrayList<>();
+        List<DividendHistory> dividendHistories = new ArrayList<>();
+
+        List<String> symbols = this.getBalance().getBalanceAssets().stream()
+                .map(BalanceAsset::getSymbol)
+                .toList();
+
+        for (String symobl : symbols) {
+            // 권리 내역
+            List<Map<String, String>> periodRights = getPeriodRights(symobl, dateFrom, dateTo);
+            for (Map<String,String> periodRight : periodRights) {
+                LocalDate date = LocalDate.parse(periodRight.get("bass_dt"), DateTimeFormatter.BASIC_ISO_DATE);
+                String symbol = periodRight.get("pdno");
+                String name = periodRight.get("prdt_name");
+                BigDecimal dividendPerUnit = new BigDecimal(periodRight.get("alct_frcr_unpr"));
+
+                // 체결기준 보유잔고
+                Map<String,String> paymentBalanceAsset = getPaymentBalanceAsset(date, symbol);
+                if (paymentBalanceAsset != null) {
+                    BigDecimal holdingQuantity = new BigDecimal(paymentBalanceAsset.get("cblc_qty13"));
+                    BigDecimal dividendAmount = dividendPerUnit.multiply(holdingQuantity);
+                    DividendHistory dividendHistory = DividendHistory.builder()
+                            .date(date)
+                            .symbol(symbol)
+                            .name(name)
+                            .holdingQuantity(holdingQuantity)
+                            .dividendAmount(dividendAmount)
+                            .build();
+                    dividendHistories.add(dividendHistory);
+                }
+            }
+        }
+        // sort
+        dividendHistories.sort((o1, o2) -> o2.getDate().compareTo(o1.getDate()));
+
+        // returns
+        return dividendHistories;
+    }
+
+    /**
+     * 해당 종목 권리 내역 조회
+     * @param symbol symbol
+     * @param dateFrom date from
+     * @param dateTo date to
+     * @return list of period rights historios
+     * @see [해외주식 기간별권리조회 [해외주식-052]](https://apiportal.koreainvestment.com/apiservice/apiservice-oversea-stock-Manalysis#L_2151d14c-0fae-44a5-be38-c3f5ab8354bb)
+     */
+    private List<Map<String,String>> getPeriodRights(String symbol, LocalDate dateFrom, LocalDate dateTo) throws InterruptedException {
+        String url = apiUrl + "/uapi/overseas-price/v1/quotations/period-rights";
+        HttpHeaders headers = createHeaders();
+        headers.add("tr_id", "CTRGT011R");
+        headers.add("tr_cont", "");
+        url = UriComponentsBuilder.fromUriString(url)
+                .queryParam("RGHT_TYPE_CD", "03")
+                .queryParam("INQR_DVSN_CD", "02")
+                .queryParam("INQR_STRT_DT", dateFrom.format(DateTimeFormatter.BASIC_ISO_DATE))
+                .queryParam("INQR_END_DT", dateTo.format(DateTimeFormatter.BASIC_ISO_DATE))
+                .queryParam("PDNO", symbol)
+                .queryParam("PRDT_TYPE_CD", "")
+                .queryParam("CTX_AREA_NK50", "")
+                .queryParam("CTX_AREA_FK50", "")
+                .build()
+                .toUriString();
+        RequestEntity<Void> requestEntity = RequestEntity
+                .get(url)
+                .headers(headers)
+                .build();
+        sleep();
+        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+        JsonNode rootNode;
+        try {
+            rootNode = objectMapper.readTree(responseEntity.getBody());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+        String rtCd = objectMapper.convertValue(rootNode.path("rt_cd"), String.class);
+        String msg1 = objectMapper.convertValue(rootNode.path("msg1"), String.class);
+        if (!"0".equals(rtCd)) {
+            throw new RuntimeException(msg1);
+        }
+
+        JsonNode outputNode = rootNode.path("output");
+        List<Map<String, String>> output = objectMapper.convertValue(outputNode, new TypeReference<>() {});
+
+        List<Map<String, String>> periodRights = output.stream()
+                .toList();
+        // returns
+        return periodRights;
+    }
+
+    /**
+     * 기준 일자 시점 결제 잔고
+     * @param date date
+     * @return payment balance assets
+     * @see [해외주식 결제기준잔고 [해외주식-064]](https://apiportal.koreainvestment.com/apiservice/apiservice-oversea-stock-order#L_8e78ed2f-8c3d-424e-b400-82fc94ca4a6b)
+     */
+    private Map<String, String> getPaymentBalanceAsset(LocalDate date, String symbol) throws InterruptedException {
+        String url = apiUrl + "/uapi/overseas-stock/v1/trading/inquire-paymt-stdr-balance";
+        HttpHeaders headers = createHeaders();
+        headers.add("tr_id", "CTRP6010R");
+        headers.add("tr_cont", "");
+        url = UriComponentsBuilder.fromUriString(url)
+                .queryParam("CANO", accountNo.split("-")[0])
+                .queryParam("ACNT_PRDT_CD", accountNo.split("-")[1])
+                .queryParam("BASS_DT", date.format(DateTimeFormatter.BASIC_ISO_DATE))
+                .queryParam("WCRC_FRCR_DVSN_CD", "02")
+                .queryParam("INQR_DVSN_CD", "00")
+                .build()
+                .toUriString();
+        RequestEntity<Void> requestEntity = RequestEntity
+                .get(url)
+                .headers(headers)
+                .build();
+        sleep();
+        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+        JsonNode rootNode;
+        try {
+            rootNode = objectMapper.readTree(responseEntity.getBody());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+        String rtCd = objectMapper.convertValue(rootNode.path("rt_cd"), String.class);
+        String msg1 = objectMapper.convertValue(rootNode.path("msg1"), String.class);
+        if (!"0".equals(rtCd)) {
+            throw new RuntimeException(msg1);
+        }
+
+        JsonNode output1Node = rootNode.path("output1");
+        List<Map<String, String>> output1 = objectMapper.convertValue(output1Node, new TypeReference<>() {});
+
+        return output1.stream()
+                .filter(it -> Objects.equals(it.get("pdno"), symbol))
+                .findFirst()
+                .orElse(null);
     }
 
 }

@@ -908,6 +908,124 @@ public class KisBrokerClient extends BrokerClient {
 
     @Override
     public List<DividendHistory> getDividendHistories(LocalDate dateFrom, LocalDate dateTo) throws InterruptedException {
+//        List<DividendHistory> dividends= new ArrayList<>();
+//
+//        // pagination key
+//        String trCont = "";
+//        String ctxAreaFk100 = "";
+//        String ctxAreaNk100 = "";
+//
+//        for (int i = 0; i < 10; i ++) {
+//            String url = apiUrl + "/uapi/domestic-stock/v1/trading/inquire-balance";
+//            HttpHeaders headers = createHeaders();
+//            String trId = production ? "TTTC8434R" : "VTTC8434R";
+//            headers.add("tr_id", trId);
+//            headers.add("tr_cont", trCont);
+//            url = UriComponentsBuilder.fromUriString(url)
+//                    .queryParam("CANO", accountNo.split("-")[0])
+//                    .queryParam("ACNT_PRDT_CD", accountNo.split("-")[1])
+//                    .queryParam("AFHR_FLPR_YN", "N")
+//                    .queryParam("OFL_YN", "")
+//                    .queryParam("INQR_DVSN", "02")
+//                    .queryParam("UNPR_DVSN", "01")
+//                    .queryParam("FUND_STTL_ICLD_YN", "N")
+//                    .queryParam("FNCG_AMT_AUTO_RDPT_YN", "N")
+//                    .queryParam("PRCS_DVSN", "00")
+//                    .queryParam("CTX_AREA_FK100", ctxAreaFk100)
+//                    .queryParam("CTX_AREA_NK100", ctxAreaNk100)
+//                    .build()
+//                    .toUriString();
+//            RequestEntity<Void> requestEntity = RequestEntity
+//                    .get(url)
+//                    .headers(headers)
+//                    .build();
+//            sleep();
+//            ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+//            JsonNode rootNode;
+//            try {
+//                rootNode = objectMapper.readTree(responseEntity.getBody());
+//            } catch (JsonProcessingException e) {
+//                throw new RuntimeException(e);
+//            }
+//
+//            String rtCd = objectMapper.convertValue(rootNode.path("rt_cd"), String.class);
+//            String msg1 = objectMapper.convertValue(rootNode.path("msg1"), String.class);
+//            if (!"0".equals(rtCd)) {
+//                throw new RuntimeException(msg1);
+//            }
+//
+//            JsonNode output1Node = rootNode.path("output1");
+//            List<Map<String, String>> output1 = objectMapper.convertValue(output1Node, new TypeReference<>() {
+//            });
+//
+//            JsonNode output2Node = rootNode.path("output2");
+//            List<Map<String, String>> output2 = objectMapper.convertValue(output2Node, new TypeReference<>() {
+//            });
+//
+//            // balance
+//            if (i == 0) {
+//                balance = Balance.builder()
+//                        .accountNo(accountNo)
+//                        .totalAmount(new BigDecimal(output2.get(0).get("tot_evlu_amt")))
+//                        .cashAmount(new BigDecimal(output2.get(0).get("prvs_rcdl_excc_amt")))
+//                        .purchaseAmount(new BigDecimal(output2.get(0).get("pchs_amt_smtl_amt")))
+//                        .valuationAmount(new BigDecimal(output2.get(0).get("evlu_amt_smtl_amt")))
+//                        .build();
+//            }
+//
+//            // page balance assets
+//            List<BalanceAsset> pageBalanceAssets = output1.stream()
+//                    .map(row -> {
+//                        try {
+//                            return BalanceAsset.builder()
+//                                    .accountNo(accountNo)
+//                                    .assetId(toAssetId(row.get("pdno")))
+//                                    .name(row.get("prdt_name"))
+//                                    .market(getDefinition().getMarket())
+//                                    .quantity(new BigDecimal(row.get("hldg_qty")))
+//                                    .orderableQuantity(new BigDecimal(row.get("ord_psbl_qty")))
+//                                    .purchasePrice(new BigDecimal(row.get("pchs_avg_pric")))
+//                                    .purchaseAmount(new BigDecimal(row.get("pchs_amt")))
+//                                    .valuationPrice(new BigDecimal(row.get("prpr")))
+//                                    .valuationAmount(new BigDecimal(row.get("evlu_amt")))
+//                                    .profitAmount(new BigDecimal(row.get("evlu_pfls_amt")))
+//                                    .build();
+//                        } catch (Exception e) {
+//                            throw new RuntimeException(e);
+//                        }
+//                    })
+//                    .filter(balanceAsset -> balanceAsset.getQuantity().intValue() > 0)
+//                    .collect(Collectors.toList());
+//            balanceAssets.addAll(pageBalanceAssets);
+//
+//            // detects next page
+//            trCont = responseEntity.getHeaders().getFirst("tr_cont");
+//            ctxAreaFk100 = objectMapper.convertValue(rootNode.path("ctx_area_fk100"), String.class);
+//            ctxAreaNk100 = objectMapper.convertValue(rootNode.path("ctx_area_nk100"), String.class);
+//            if ((Objects.equals(trCont,"D") || Objects.equals(trCont, "E"))
+//                    || pageBalanceAssets.isEmpty()) {
+//                break;
+//            }
+//            trCont = "N";
+//        }
+//
+//        // adds balance assets
+//        balance.setBalanceAssets(balanceAssets);
+//
+//        // calculates profit amount
+//        BigDecimal profitAmount = balanceAssets.stream()
+//                .map(BalanceAsset::getProfitAmount)
+//                .reduce(BigDecimal.ZERO, BigDecimal::add);
+//        balance.setProfitAmount(profitAmount);
+//
+//        // calculates realized profit amount (모의 투자는 지원 하지 않음)
+//        if(production) {
+//            BigDecimal realizedProfitAmount = getBalanceRealizedProfitAmount();
+//            balance.setRealizedProfitAmount(realizedProfitAmount);
+//        }
+//
+
+
         return new ArrayList<>();
     }
 

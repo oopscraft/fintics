@@ -22,7 +22,7 @@ public class PriceChannelCalculator extends IndicatorCalculator<PriceChannelCont
 
         // loop
         List<PriceChannel> priceChannels = new ArrayList<>();
-        for (int i = 0; i <= series.size() - period; i++) {
+        for (int i = 0; i < series.size(); i++) {
             // period series (except current tick. shift 1 tick)
             List<Ohlcv> periodSeries = series.subList(
                     Math.max(i - period , 0),
@@ -45,6 +45,7 @@ public class PriceChannelCalculator extends IndicatorCalculator<PriceChannelCont
 
             // PriceChannel 객체 생성
             PriceChannel priceChannel = PriceChannel.builder()
+                    .dateTime(series.get(i).getDateTime())
                     .upper(upper)
                     .lower(lower)
                     .middle(middle)

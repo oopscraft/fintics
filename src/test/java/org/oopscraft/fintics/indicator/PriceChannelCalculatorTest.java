@@ -6,6 +6,9 @@ import org.oopscraft.fintics.model.Ohlcv;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +29,7 @@ public class PriceChannelCalculatorTest extends AbstractCalculatorTest {
         List<Ohlcv> ohlcvs = inputRows.stream()
                 .map(row -> {
                     return Ohlcv.builder()
+                            .dateTime(LocalDate.parse(row.get("dateTime"), DateTimeFormatter.ofPattern("yyyy/MM/dd")).atStartOfDay())
                             .open(new BigDecimal(row.get("open").replaceAll(",","")))
                             .high(new BigDecimal(row.get("high").replaceAll(",", "")))
                             .low(new BigDecimal(row.get("low").replaceAll(",","")))
@@ -45,6 +49,7 @@ public class PriceChannelCalculatorTest extends AbstractCalculatorTest {
             PriceChannel priceChannel = priceChannels.get(i);
             Ohlcv ohlcv = ohlcvs.get(i);
             Map<String,String> inputRow = inputRows.get(i);
+            String originDateTime = inputRow.get("dateTime");
             BigDecimal originOpen = new BigDecimal(inputRow.get("open").replaceAll(",",""));
             BigDecimal originHigh = new BigDecimal(inputRow.get("high").replaceAll(",",""));
             BigDecimal originLow = new BigDecimal(inputRow.get("low").replaceAll(",",""));
@@ -52,14 +57,15 @@ public class PriceChannelCalculatorTest extends AbstractCalculatorTest {
             BigDecimal originUpper = new BigDecimal(inputRow.get("upper").replaceAll(",",""));
             BigDecimal originLower = new BigDecimal(inputRow.get("lower").replaceAll(",",""));
 
-            log.info("[{}] {},{},{},{} - {},{} / {},{}",
-                    i, originOpen, originHigh, originLow, originClose,
+            log.info("[{}/{}] {},{},{},{} - {},{} / {},{}",
+                    originDateTime, priceChannel.getDateTime().format(DateTimeFormatter.ofPattern("yyyy/MM/dd")),
+                    originOpen, originHigh, originLow, originClose,
                     originUpper, originLower,
                     priceChannel.getUpper().setScale(2, RoundingMode.HALF_UP),
                     priceChannel.getLower().setScale(2, RoundingMode.HALF_UP));
 
             // skip initial block
-            if (i <= 20) {
+            if (i <= PriceChannelContext.DEFAULT.getPeriod()) {
                 continue;
             }
 
