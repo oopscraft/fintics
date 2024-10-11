@@ -7,11 +7,6 @@
     <script th:inline="javascript">
         // defines
         const brokers = new duice.ArrayProxy(/*[[${brokers}]]*/[]);
-        const profitSearch = new duice.ObjectProxy({
-            brokerId: null,
-            dateFrom: null,
-            dateTo: null
-        });
         const profitMap = new Map();
         brokers.forEach(broker => {
             const profit = new duice.ObjectProxy({
@@ -24,6 +19,7 @@
         });
 
         function getProfit(brokerId, dateFrom, dateTo) {
+            duice.ObjectProxy.clear(profitMap.get(brokerId));
             let url = new URL(`${_apiUrl}/v1/profits/${brokerId}`, document.location.origin);
             if (dateFrom && dateTo) {
                 url.searchParams.append('dateFrom', dateFrom.toISOString().split('T')[0]);
@@ -130,11 +126,18 @@
     <div class="display--grid grid-template-columns--12 grid-gap--1em">
         <div th:each="broker : ${brokers}"
              class="grid-column--6 s__grid-column--12 display--flex flex-direction--column padding--1em border--1">
-            <div>
+            <div class="display--flex justify-content--space-between">
                 <h2>
                     <img class="icon" th:src="@{/static/image/icon-broker.svg}" alt="broker"/>
                     <span data-th-text="${broker.name}"></span>
                 </h2>
+                <div class="align-self--end padding-right--1em font-weight--bold">
+                    <span data-th-text="#{fintics.Profit.totalAmount}"></span>:
+                    <span th:data-duice-bind="|profitMap.get('${broker.brokerId}')|"
+                          data-duice-property="totalAmount"
+                          data-duice-format="number">
+                        </span>
+                </div>
             </div>
             <div class="display--flex flex-direction--column gap--1em padding--1em s__padding-y--0">
                 <!-- start: realized profit -->
@@ -147,7 +150,7 @@
                               class="font-weight--bold"></span>
                     </div>
                     <div class="overflow-x-scroll overflow-y--scroll border-top--1" style="max-height:200px;">
-                        <table class="white-space--nowrap border-top--0" style="width:1000px;">
+                        <table class="white-space--nowrap border-top--0" style="min-width:100%;">
                             <colgroup>
                                 <col style="width:7em;"/>
                                 <col style="width:7em;"/>
@@ -236,7 +239,7 @@
                               class="font-weight--bold"></span>
                     </div>
                     <div class="overflow-x-scroll overflow-y--scroll border-top--1" style="max-height:200px;">
-                        <table class="white-space--nowrap border-top--0" style="width:1000px;">
+                        <table class="white-space--nowrap border-top--0" style="min-width:100%;">
                             <colgroup>
                                 <col style="width:7em;"/>
                                 <col style="width:7em;"/>

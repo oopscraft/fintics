@@ -12,6 +12,8 @@ import java.util.List;
 @Builder
 public class ProfitResponse {
 
+    private BigDecimal totalAmount;
+
     private BigDecimal realizedProfitAmount;
 
     private BigDecimal dividendAmount;
@@ -29,6 +31,7 @@ public class ProfitResponse {
      */
     public static ProfitResponse from(Profit profit) {
         return ProfitResponse.builder()
+                .totalAmount(profit.getTotalAmount())
                 .realizedProfitAmount(profit.getRealizedProfitAmount())
                 .dividendAmount(profit.getDividendAmount())
                 .realizedProfits(profit.getRealizedProfits().stream()

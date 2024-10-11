@@ -859,7 +859,6 @@ public class KisUsBrokerClient extends BrokerClient {
         // 현재 잔고 종목
         symbols.addAll(this.getBalance().getBalanceAssets().stream()
                 .map(BalanceAsset::getSymbol)
-                .distinct()
                 .toList());
         // 기간 체결 이력 종목
         symbols.addAll(getPeriodOrderedSymbols(dateFrom, dateTo));

@@ -12,6 +12,8 @@ import java.util.List;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Profit {
 
+    private BigDecimal totalAmount;
+
     private BigDecimal realizedProfitAmount;
 
     private BigDecimal dividendAmount;

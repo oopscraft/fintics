@@ -5,9 +5,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.client.StandardHttpRequestRetryHandler;
 import org.oopscraft.arch4j.core.common.support.RestTemplateBuilder;
 import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.client.broker.BrokerClientDefinition;
@@ -17,7 +14,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -906,127 +902,203 @@ public class KisBrokerClient extends BrokerClient {
         return realizedProfits;
     }
 
+    /**
+     * 현재 권리 내역 조회 API 없음 으로 관련 내역을 근거로 산출
+     * @param dateFrom date from
+     * @param dateTo date to
+     * @return 배당 이력
+     */
     @Override
     public List<DividendHistory> getDividendHistories(LocalDate dateFrom, LocalDate dateTo) throws InterruptedException {
-//        List<DividendHistory> dividends= new ArrayList<>();
-//
-//        // pagination key
-//        String trCont = "";
-//        String ctxAreaFk100 = "";
-//        String ctxAreaNk100 = "";
-//
-//        for (int i = 0; i < 10; i ++) {
-//            String url = apiUrl + "/uapi/domestic-stock/v1/trading/inquire-balance";
-//            HttpHeaders headers = createHeaders();
-//            String trId = production ? "TTTC8434R" : "VTTC8434R";
-//            headers.add("tr_id", trId);
-//            headers.add("tr_cont", trCont);
-//            url = UriComponentsBuilder.fromUriString(url)
-//                    .queryParam("CANO", accountNo.split("-")[0])
-//                    .queryParam("ACNT_PRDT_CD", accountNo.split("-")[1])
-//                    .queryParam("AFHR_FLPR_YN", "N")
-//                    .queryParam("OFL_YN", "")
-//                    .queryParam("INQR_DVSN", "02")
-//                    .queryParam("UNPR_DVSN", "01")
-//                    .queryParam("FUND_STTL_ICLD_YN", "N")
-//                    .queryParam("FNCG_AMT_AUTO_RDPT_YN", "N")
-//                    .queryParam("PRCS_DVSN", "00")
-//                    .queryParam("CTX_AREA_FK100", ctxAreaFk100)
-//                    .queryParam("CTX_AREA_NK100", ctxAreaNk100)
-//                    .build()
-//                    .toUriString();
-//            RequestEntity<Void> requestEntity = RequestEntity
-//                    .get(url)
-//                    .headers(headers)
-//                    .build();
-//            sleep();
-//            ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
-//            JsonNode rootNode;
-//            try {
-//                rootNode = objectMapper.readTree(responseEntity.getBody());
-//            } catch (JsonProcessingException e) {
-//                throw new RuntimeException(e);
-//            }
-//
-//            String rtCd = objectMapper.convertValue(rootNode.path("rt_cd"), String.class);
-//            String msg1 = objectMapper.convertValue(rootNode.path("msg1"), String.class);
-//            if (!"0".equals(rtCd)) {
-//                throw new RuntimeException(msg1);
-//            }
-//
-//            JsonNode output1Node = rootNode.path("output1");
-//            List<Map<String, String>> output1 = objectMapper.convertValue(output1Node, new TypeReference<>() {
-//            });
-//
-//            JsonNode output2Node = rootNode.path("output2");
-//            List<Map<String, String>> output2 = objectMapper.convertValue(output2Node, new TypeReference<>() {
-//            });
-//
-//            // balance
-//            if (i == 0) {
-//                balance = Balance.builder()
-//                        .accountNo(accountNo)
-//                        .totalAmount(new BigDecimal(output2.get(0).get("tot_evlu_amt")))
-//                        .cashAmount(new BigDecimal(output2.get(0).get("prvs_rcdl_excc_amt")))
-//                        .purchaseAmount(new BigDecimal(output2.get(0).get("pchs_amt_smtl_amt")))
-//                        .valuationAmount(new BigDecimal(output2.get(0).get("evlu_amt_smtl_amt")))
-//                        .build();
-//            }
-//
-//            // page balance assets
-//            List<BalanceAsset> pageBalanceAssets = output1.stream()
-//                    .map(row -> {
-//                        try {
-//                            return BalanceAsset.builder()
-//                                    .accountNo(accountNo)
-//                                    .assetId(toAssetId(row.get("pdno")))
-//                                    .name(row.get("prdt_name"))
-//                                    .market(getDefinition().getMarket())
-//                                    .quantity(new BigDecimal(row.get("hldg_qty")))
-//                                    .orderableQuantity(new BigDecimal(row.get("ord_psbl_qty")))
-//                                    .purchasePrice(new BigDecimal(row.get("pchs_avg_pric")))
-//                                    .purchaseAmount(new BigDecimal(row.get("pchs_amt")))
-//                                    .valuationPrice(new BigDecimal(row.get("prpr")))
-//                                    .valuationAmount(new BigDecimal(row.get("evlu_amt")))
-//                                    .profitAmount(new BigDecimal(row.get("evlu_pfls_amt")))
-//                                    .build();
-//                        } catch (Exception e) {
-//                            throw new RuntimeException(e);
-//                        }
-//                    })
-//                    .filter(balanceAsset -> balanceAsset.getQuantity().intValue() > 0)
-//                    .collect(Collectors.toList());
-//            balanceAssets.addAll(pageBalanceAssets);
-//
-//            // detects next page
-//            trCont = responseEntity.getHeaders().getFirst("tr_cont");
-//            ctxAreaFk100 = objectMapper.convertValue(rootNode.path("ctx_area_fk100"), String.class);
-//            ctxAreaNk100 = objectMapper.convertValue(rootNode.path("ctx_area_nk100"), String.class);
-//            if ((Objects.equals(trCont,"D") || Objects.equals(trCont, "E"))
-//                    || pageBalanceAssets.isEmpty()) {
-//                break;
-//            }
-//            trCont = "N";
-//        }
-//
-//        // adds balance assets
-//        balance.setBalanceAssets(balanceAssets);
-//
-//        // calculates profit amount
-//        BigDecimal profitAmount = balanceAssets.stream()
-//                .map(BalanceAsset::getProfitAmount)
-//                .reduce(BigDecimal.ZERO, BigDecimal::add);
-//        balance.setProfitAmount(profitAmount);
-//
-//        // calculates realized profit amount (모의 투자는 지원 하지 않음)
-//        if(production) {
-//            BigDecimal realizedProfitAmount = getBalanceRealizedProfitAmount();
-//            balance.setRealizedProfitAmount(realizedProfitAmount);
-//        }
-//
+        List<DividendHistory> dividendHistories = new ArrayList<>();
 
+        // 기간별 매매 손익 (매매 후 잔고 수량 포함)
+        List<Map<String, String>> periodOrders = getPeriodOrders(dateFrom, dateTo);
 
-        return new ArrayList<>();
+        // 보유 종목
+        Set<String> symbols = new HashSet<>();
+        // 현재 잔고 추가
+        symbols.addAll(this.getBalance().getBalanceAssets().stream()
+                .map(BalanceAsset::getSymbol)
+                .toList());
+        // 매매 이력 에서 종목 추출 및 추가
+        symbols.addAll(periodOrders.stream()
+                .map(it -> it.get("pdno"))
+                .distinct()
+                .toList());
+
+        // 종목 별 배당 내역 조회
+        for (String symbol : symbols) {
+            // 권리 내역
+            List<Map<String, String>> periodRights = getPeriodRights(symbol, dateFrom, dateTo);
+            for (Map<String, String> periodRight : periodRights) {
+                String name = periodRight.get("isin_name");
+                LocalDate recordDate = LocalDate.parse(periodRight.get("record_date"), DateTimeFormatter.BASIC_ISO_DATE);
+                BigDecimal dividendPerUnit = new BigDecimal(periodRight.getOrDefault("per_sto_divi_amt", "0"));
+                // payment date 가 없으면 skip
+                String diviPayDt = periodRight.get("divi_pay_dt");
+                if (diviPayDt == null || diviPayDt.trim().length() < 1) {
+                    continue;
+                }
+                LocalDate paymentDate = LocalDate.parse(diviPayDt, DateTimeFormatter.ofPattern("yyyy/MM/dd"));
+
+                // 배당 기준일의 보유 잔고 확인
+                Map<String,String> periodOrder = periodOrders.stream()
+                        .filter(it -> {
+                            String pdno = it.get("pdno");
+                            LocalDate tradeDate = LocalDate.parse(it.get("trad_dt"), DateTimeFormatter.BASIC_ISO_DATE);
+                            return Objects.equals(pdno, symbol)
+                                    && tradeDate.isBefore(recordDate);
+                        })
+                        .findFirst()
+                        .orElse(null);
+                if (periodOrder != null) {
+                    BigDecimal holdingQuantity = new BigDecimal(periodOrder.getOrDefault("hldg_qty", "0"));
+                    BigDecimal dividendAmount = dividendPerUnit.multiply(holdingQuantity)
+                            .multiply(BigDecimal.valueOf(0.85));    // 배당소득세
+                    if (holdingQuantity.compareTo(BigDecimal.ZERO) > 0) {
+                        DividendHistory dividendHistory = DividendHistory.builder()
+                                .date(paymentDate)
+                                .symbol(symbol)
+                                .name(name)
+                                .holdingQuantity(holdingQuantity)
+                                .dividendAmount(dividendAmount)
+                                .build();
+                        dividendHistories.add(dividendHistory);
+                    }
+                }
+            }
+        }
+        // sort
+        dividendHistories.sort((o1, o2) -> o2.getDate().compareTo(o1.getDate()));
+
+        // return
+        return dividendHistories;
     }
+
+    /**
+     * 기간별 매매 손익 조회
+     * @param dateFrom date from
+     * @param dateTo date to
+     * @return distinct symbols
+     * @see [기간별매매손익현황조회[v1_국내주식-060]](https://apiportal.koreainvestment.com/apiservice/apiservice-domestic-stock-order#L_4755efc7-31c4-411c-af45-3e6948611f0a)
+     */
+    private List<Map<String, String>> getPeriodOrders(LocalDate dateFrom, LocalDate dateTo) throws InterruptedException {
+        List<Map<String, String>> periodOrders = new ArrayList<>();
+        // 모의 투자 미지원
+        if (!production) {
+            return periodOrders;
+        }
+
+        // pagination key
+        String trCont = "";
+        String ctxAreaFk100 = "";
+        String ctxAreaNk100 = "";
+
+        // loop
+        for (int i = 0; i < 100; i ++) {
+            String url = apiUrl + "/uapi/domestic-stock/v1/trading/inquire-period-trade-profit";
+            HttpHeaders headers = createHeaders();
+            String trId = "TTTC8715R";
+            headers.add("tr_id", trId);
+            headers.add("tr_cont", trCont);
+            url = UriComponentsBuilder.fromUriString(url)
+                    .queryParam("CANO", accountNo.split("-")[0])
+                    .queryParam("ACNT_PRDT_CD", accountNo.split("-")[1])
+                    .queryParam("SORT_DVSN", "00")
+                    .queryParam("PDNO", "")
+                    .queryParam("INQR_STRT_DT", dateFrom.format(DateTimeFormatter.BASIC_ISO_DATE))
+                    .queryParam("INQR_END_DT", dateTo.format(DateTimeFormatter.BASIC_ISO_DATE))
+                    .queryParam("CBLC_DVSN", "00")
+                    .queryParam("CTX_AREA_NK100", ctxAreaNk100)
+                    .queryParam("CTX_AREA_FK100", ctxAreaFk100)
+                    .build()
+                    .toUriString();
+            RequestEntity<Void> requestEntity = RequestEntity
+                    .get(url)
+                    .headers(headers)
+                    .build();
+            sleep();
+            ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+            JsonNode rootNode;
+            try {
+                rootNode = objectMapper.readTree(responseEntity.getBody());
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+
+            String rtCd = objectMapper.convertValue(rootNode.path("rt_cd"), String.class);
+            String msg1 = objectMapper.convertValue(rootNode.path("msg1"), String.class);
+            if (!"0".equals(rtCd)) {
+                throw new RuntimeException(msg1);
+            }
+
+            JsonNode output1Node = rootNode.path("output1");
+            List<Map<String, String>> output = objectMapper.convertValue(output1Node, new TypeReference<>() {
+            });
+            periodOrders.addAll(output);
+
+            // detects next page
+            trCont = responseEntity.getHeaders().getFirst("tr_cont");
+            ctxAreaFk100 = objectMapper.convertValue(rootNode.path("ctx_area_fk100"), String.class);
+            ctxAreaNk100 = objectMapper.convertValue(rootNode.path("ctx_area_nk100"), String.class);
+            if ((Objects.equals(trCont,"D") || Objects.equals(trCont, "E"))
+                    || output.isEmpty()) {
+                break;
+            }
+            trCont = "N";
+        }
+        // return
+        return periodOrders;
+    }
+
+    /**
+     * 배당 일정
+     * @param symbol symbol
+     * @param dateFrom date from
+     * @param dateTo date to
+     * @return periodRights
+     * @see [예탁원정보-배당일정[국내주식-145]](https://apiportal.koreainvestment.com/apiservice/apiservice-domestic-stock-information#L_99ac7df4-132a-4458-8b07-4dab240d9896)
+     */
+    private List<Map<String, String>> getPeriodRights(String symbol, LocalDate dateFrom, LocalDate dateTo) throws InterruptedException {
+        String url = apiUrl + "/uapi/domestic-stock/v1/ksdinfo/dividend";
+        HttpHeaders headers = createHeaders();
+        headers.add("tr_id", "HHKDB669102C0");
+        headers.add("tr_cont", "");
+        url = UriComponentsBuilder.fromUriString(url)
+                .queryParam("CTS", "")
+                .queryParam("GB1", "0")
+                .queryParam("F_DT", dateFrom.format(DateTimeFormatter.BASIC_ISO_DATE))
+                .queryParam("T_DT", dateTo.format(DateTimeFormatter.BASIC_ISO_DATE))
+                .queryParam("SHT_CD", symbol)
+                .queryParam("HIGH_GB", "")
+                .build()
+                .toUriString();
+        RequestEntity<Void> requestEntity = RequestEntity
+                .get(url)
+                .headers(headers)
+                .build();
+        sleep();
+        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+        JsonNode rootNode;
+        try {
+            rootNode = objectMapper.readTree(responseEntity.getBody());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+        String rtCd = objectMapper.convertValue(rootNode.path("rt_cd"), String.class);
+        String msg1 = objectMapper.convertValue(rootNode.path("msg1"), String.class);
+        if (!"0".equals(rtCd)) {
+            throw new RuntimeException(msg1);
+        }
+
+        JsonNode output1Node = rootNode.path("output1");
+        List<Map<String, String>> output1 = objectMapper.convertValue(output1Node, new TypeReference<>() {});
+
+        // returns
+        return output1;
+    }
+
 
 }

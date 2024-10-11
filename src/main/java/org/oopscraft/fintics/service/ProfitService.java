@@ -53,8 +53,12 @@ public class ProfitService {
                 .map(DividendHistory::getDividendAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
+        // total amount
+        BigDecimal totalAmount = realizedProfitAmount.add(dividendAmount);
+
         // returns
         return Profit.builder()
+                .totalAmount(totalAmount)
                 .realizedProfitAmount(realizedProfitAmount)
                 .realizedProfits(realizedProfits)
                 .dividendAmount(dividendAmount)
