@@ -331,7 +331,8 @@
     <!-- ================================== -->
     <!-- start: trade                       -->
     <!-- ================================== -->
-    <div th:each="trade : ${trades}" th:id="|monitorTabContent-${trade.tradeId}|"
+    <div th:each="trade,status : ${trades}" th:id="|monitorTabContent-${trade.tradeId}|"
+         th:attr="hidden=${status.index > 0}"
          class="display--flex flex-direction--column border--1 padding--1em">
         <div>
             <h2>
