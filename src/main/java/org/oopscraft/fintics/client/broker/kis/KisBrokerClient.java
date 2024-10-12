@@ -984,10 +984,20 @@ public class KisBrokerClient extends BrokerClient {
      * @see [기간별매매손익현황조회[v1_국내주식-060]](https://apiportal.koreainvestment.com/apiservice/apiservice-domestic-stock-order#L_4755efc7-31c4-411c-af45-3e6948611f0a)
      */
     private List<Map<String, String>> getPeriodOrders(LocalDate dateFrom, LocalDate dateTo) throws InterruptedException {
-        List<Map<String, String>> periodOrders = new ArrayList<>();
         // 모의 투자 미지원
         if (!production) {
-            return periodOrders;
+            return new ArrayList<>();
+        }
+
+        // checks cache
+        KisBrokerCacheRegistry.PeriodOrdersCacheKey periodOrdersCacheKey = KisBrokerCacheRegistry.PeriodOrdersCacheKey.builder()
+                .accountNo(accountNo)
+                .dateFrom(dateFrom)
+                .dateTo(dateTo)
+                .build();
+        Optional<List<Map<String, String>>> periodOrdersCache = KisBrokerCacheRegistry.getPeriodOrdersCache().getIfPresent(periodOrdersCacheKey);
+        if (periodOrdersCache != null) {
+            return periodOrdersCache.get();
         }
 
         // pagination key
@@ -996,6 +1006,7 @@ public class KisBrokerClient extends BrokerClient {
         String ctxAreaNk100 = "";
 
         // loop
+        List<Map<String,String>> periodOrders = new ArrayList<>();
         for (int i = 0; i < 100; i ++) {
             String url = apiUrl + "/uapi/domestic-stock/v1/trading/inquire-period-trade-profit";
             HttpHeaders headers = createHeaders();
@@ -1048,6 +1059,10 @@ public class KisBrokerClient extends BrokerClient {
             }
             trCont = "N";
         }
+
+        // saves cache
+        KisBrokerCacheRegistry.getPeriodOrdersCache().put(periodOrdersCacheKey, Optional.of(periodOrders));
+
         // return
         return periodOrders;
     }
@@ -1061,6 +1076,17 @@ public class KisBrokerClient extends BrokerClient {
      * @see [예탁원정보-배당일정[국내주식-145]](https://apiportal.koreainvestment.com/apiservice/apiservice-domestic-stock-information#L_99ac7df4-132a-4458-8b07-4dab240d9896)
      */
     private List<Map<String, String>> getPeriodRights(String symbol, LocalDate dateFrom, LocalDate dateTo) throws InterruptedException {
+        // checks cache
+        KisBrokerCacheRegistry.PeriodRightsCacheKey periodRightsCacheKey = KisBrokerCacheRegistry.PeriodRightsCacheKey.builder()
+                .symbol(symbol)
+                .dateFrom(dateFrom)
+                .dateTo(dateTo)
+                .build();
+        Optional<List<Map<String,String>>> periodRightsCache = KisBrokerCacheRegistry.getPeriodRightsCache().getIfPresent(periodRightsCacheKey);
+        if (periodRightsCache != null) {
+            return periodRightsCache.get();
+        }
+
         String url = apiUrl + "/uapi/domestic-stock/v1/ksdinfo/dividend";
         HttpHeaders headers = createHeaders();
         headers.add("tr_id", "HHKDB669102C0");
@@ -1094,10 +1120,13 @@ public class KisBrokerClient extends BrokerClient {
         }
 
         JsonNode output1Node = rootNode.path("output1");
-        List<Map<String, String>> output1 = objectMapper.convertValue(output1Node, new TypeReference<>() {});
+        List<Map<String, String>> periodRights = objectMapper.convertValue(output1Node, new TypeReference<>() {});
+
+        // saves cache
+        KisBrokerCacheRegistry.getPeriodRightsCache().put(periodRightsCacheKey, Optional.of(periodRights));
 
         // returns
-        return output1;
+        return periodRights;
     }
 
 

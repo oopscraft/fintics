@@ -904,7 +904,16 @@ public class KisUsBrokerClient extends BrokerClient {
      * @see [해외주식 주문체결내역[v1_해외주식-007]](https://apiportal.koreainvestment.com/apiservice/apiservice-oversea-stock-order#L_6d715b38-566f-4045-a08c-4a594d3a3314)
      */
     private Set<String> getPeriodOrderedSymbols(LocalDate dateFrom, LocalDate dateTo) throws InterruptedException {
-        Set<String> periodOrderedSymbols = new HashSet<>();
+        // checks cache
+        KisUsBrokerCacheRegistry.PeriodOrderedSymbolsCacheKey periodOrderedSymbolsCacheKey = KisUsBrokerCacheRegistry.PeriodOrderedSymbolsCacheKey.builder()
+                .accountNo(accountNo)
+                .dateFrom(dateFrom)
+                .dateTo(dateTo)
+                .build();
+        Optional<Set<String>> periodOrderedSymbolsCache = KisUsBrokerCacheRegistry.getPeriodOrderedSymbolsCache().getIfPresent(periodOrderedSymbolsCacheKey);
+        if (periodOrderedSymbolsCache != null) {
+            return periodOrderedSymbolsCache.get();
+        }
 
         // pagination key
         String trCont = "";
@@ -912,6 +921,7 @@ public class KisUsBrokerClient extends BrokerClient {
         String ctxAreaNk200 = "";
 
         // loop
+        Set<String> periodOrderedSymbols = new HashSet<>();
         for (int i = 0; i < 100; i ++) {
             String url = apiUrl + "/uapi/overseas-stock/v1/trading/inquire-ccnl";
             HttpHeaders headers = createHeaders();
@@ -976,6 +986,10 @@ public class KisUsBrokerClient extends BrokerClient {
             }
             trCont = "N";
         }
+
+        // push to cache
+        KisUsBrokerCacheRegistry.getPeriodOrderedSymbolsCache().put(periodOrderedSymbolsCacheKey, Optional.of(periodOrderedSymbols));
+
         // return
         return periodOrderedSymbols;
     }
@@ -989,6 +1003,17 @@ public class KisUsBrokerClient extends BrokerClient {
      * @see [해외주식 기간별권리조회 [해외주식-052]](https://apiportal.koreainvestment.com/apiservice/apiservice-oversea-stock-Manalysis#L_2151d14c-0fae-44a5-be38-c3f5ab8354bb)
      */
     private List<Map<String,String>> getPeriodRights(String symbol, LocalDate dateFrom, LocalDate dateTo) throws InterruptedException {
+        // checks cache
+        KisUsBrokerCacheRegistry.PeriodRightsCacheKey periodRightsCacheKey = KisUsBrokerCacheRegistry.PeriodRightsCacheKey.builder()
+                .symbol(symbol)
+                .dateFrom(dateFrom)
+                .dateTo(dateTo)
+                .build();
+        Optional<List<Map<String,String>>> periodRightsCache = KisUsBrokerCacheRegistry.getPeriodRightsCache().getIfPresent(periodRightsCacheKey);
+        if (periodRightsCache != null) {
+            return periodRightsCache.get();
+        }
+
         String url = apiUrl + "/uapi/overseas-price/v1/quotations/period-rights";
         HttpHeaders headers = createHeaders();
         headers.add("tr_id", "CTRGT011R");
@@ -1029,6 +1054,10 @@ public class KisUsBrokerClient extends BrokerClient {
         List<Map<String, String>> periodRights = output.stream()
                 .filter(it -> Objects.equals(it.get("pdno"), symbol))       // like 검색으로 반환됨으로 해당 심볼만 필터링
                 .toList();
+
+        // saves cache
+        KisUsBrokerCacheRegistry.getPeriodRightsCache().put(periodRightsCacheKey, Optional.of(periodRights));
+
         // returns
         return periodRights;
     }
@@ -1040,6 +1069,19 @@ public class KisUsBrokerClient extends BrokerClient {
      * @see [해외주식 결제기준잔고 [해외주식-064]](https://apiportal.koreainvestment.com/apiservice/apiservice-oversea-stock-order#L_8e78ed2f-8c3d-424e-b400-82fc94ca4a6b)
      */
     private Map<String, String> getPaymentBalanceAsset(LocalDate date, String symbol) throws InterruptedException {
+        // finds in cache
+        KisUsBrokerCacheRegistry.PaymentBalanceAssetCacheKey paymentBalanceAssetCacheKey = KisUsBrokerCacheRegistry.PaymentBalanceAssetCacheKey.builder()
+                .accountNo(accountNo)
+                .date(date)
+                .symbol(symbol)
+                .build();
+
+        Optional<Map<String,String>> paymentBalanceAssetCache = KisUsBrokerCacheRegistry.getPaymentBalanceAssetCache().getIfPresent(paymentBalanceAssetCacheKey);
+        if (paymentBalanceAssetCache != null) {
+            return paymentBalanceAssetCache.orElse(null);
+        }
+
+        Map<String,String> paymentBalanceAsset = new HashMap<>();
         String url = apiUrl + "/uapi/overseas-stock/v1/trading/inquire-paymt-stdr-balance";
         HttpHeaders headers = createHeaders();
         headers.add("tr_id", "CTRP6010R");
@@ -1074,10 +1116,16 @@ public class KisUsBrokerClient extends BrokerClient {
         JsonNode output1Node = rootNode.path("output1");
         List<Map<String, String>> output1 = objectMapper.convertValue(output1Node, new TypeReference<>() {});
 
-        return output1.stream()
+        paymentBalanceAsset = output1.stream()
                 .filter(it -> Objects.equals(it.get("pdno"), symbol))
                 .findFirst()
                 .orElse(null);
+
+        // save cache
+        KisUsBrokerCacheRegistry.getPaymentBalanceAssetCache().put(paymentBalanceAssetCacheKey, Optional.ofNullable(paymentBalanceAsset));
+
+        // returns
+        return paymentBalanceAsset;
     }
 
 }
