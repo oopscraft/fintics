@@ -87,10 +87,12 @@
     </script>
     <style th:inline="css">
         .period-button {
-            font-size: smaller;
+            min-width: 5em;
+            opacity: 0.5;
         }
         .selected-button {
             font-weight: bold;
+            opacity: 1.0;
         }
     </style>
 
@@ -109,12 +111,24 @@
     <!-- start: search condition                -->
     <!-- ====================================== -->
     <div class="margin-x--1em" style="margin-bottom:0.5em;">
-        <button id="daily" class="period-button" type="button" onclick="getProfitsDaily();">Daily</button>
-        <button id="weekly" class="period-button" type="button" onclick="getProfitsWeekly();">Weekly</button>
-        <button id="monthly" class="period-button" type="button" onclick="getProfitsMonthly();">Monthly</button>
-        <button id="quarterly" class="period-button" type="button" onclick="getProfitsQuarterly();">Quarterly</button>
-        <button id="semiannually" class="period-button" type="button" onclick="getProfitsSemiannually();">Semiannually</button>
-        <button id="yearly" class="period-button" type="button" onclick="getProfitsYearly();">Yearly</button>
+        <button id="daily" class="period-button" type="button" onclick="getProfitsDaily();">
+            <span data-th-text="#{web.global.day}"></span>
+        </button>
+        <button id="weekly" class="period-button" type="button" onclick="getProfitsWeekly();">
+            <span data-th-text="#{web.global.week}"></span>
+        </button>
+        <button id="monthly" class="period-button" type="button" onclick="getProfitsMonthly();">
+            <span data-th-text="#{web.global.month}"></span>
+        </button>
+        <button id="quarterly" class="period-button" type="button" onclick="getProfitsQuarterly();">
+            <span data-th-text="#{web.global.quarter}"></span>
+        </button>
+        <button id="semiannually" class="period-button" type="button" onclick="getProfitsSemiannually();">
+            <span data-th-text="#{web.global.semiannual}"></span>
+        </button>
+        <button id="yearly" class="period-button" type="button" onclick="getProfitsYearly();">
+            <span data-th-text="#{web.global.year}"></span>
+        </button>
     </div>
     <!-- ====================================== -->
     <!-- end: search condition                  -->
