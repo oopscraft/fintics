@@ -68,6 +68,7 @@ def etfSymbols = [
         '410870',   // TIMEFOLIO K컬처액티브
         // sector ETF
         '396500',   // TIGER Fn반도체TOP10
+        '157490',   // TIGER 소프트웨어
         '228790',   // TIGER 화장품
         '463050',   // TIMEFOLIO K바이오액티브
         '462900',   // KoAct 바이오헬스케어액티브
