@@ -155,7 +155,7 @@
                     <img class="icon" th:src="@{/static/image/icon-broker.svg}" alt="broker"/>
                     <span data-th-text="${broker.name}"></span>
                 </h2>
-                <div class="align-self--end padding-right--1em font-size--larger font-weight--bold">
+                <div class="align-self--end padding-right--1em font-weight--bold">
                     <img class="icon" th:src="@{/static/image/icon-profit.svg}" alt="profit"/>
                     <span data-th-text="#{fintics.Profit.totalAmount}"></span>:
                     <span th:data-duice-bind="|profitMap.get('${broker.brokerId}')|"
