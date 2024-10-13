@@ -12,7 +12,8 @@
             value: null,
             _page: 0,
             _size: 20,
-            _count: -1
+            _count: -1,
+            _status: null
         });
         const brokers = new duice.ArrayProxy([]);
         const broker = new duice.ObjectProxy({
@@ -48,6 +49,8 @@
             }
             url.searchParams.append('_page', brokerSearch._page);
             url.searchParams.append('_size', brokerSearch._size);
+            brokerSearch._status = 'loading';
+            duice.ArrayProxy.clear(brokers);
             _fetch(url)
                 .then(response => {
                     brokerSearch._count = _parseTotalCount(response);
@@ -55,6 +58,9 @@
                 })
                 .then(data => {
                     duice.ArrayProxy.assign(brokers, data);
+                })
+                .finally(() => {
+                    brokerSearch._status = 'completed';
                 });
         }
 
@@ -232,8 +238,14 @@
                                     <span data-duice-bind="broker" data-duice-property="name" class="font-weight--bold"></span>
                                 </td>
                             </tr>
-                            <tr data-duice-bind="brokers"
-                                data-duice-if="return brokerSearch._count === 0" hidden>
+                            <tr data-duice-bind="brokerSearch"
+                                data-duice-if="return brokerSearch._status === 'loading';">
+                                <td colspan="100%" class="text-align--center">
+                                    <img class="icon font-size-larger" th:src="@{/static/image/loading.svg}" alt="loading"/>
+                                </td>
+                            </tr>
+                            <tr data-duice-bind="brokerSearch"
+                                data-duice-if="return brokerSearch._status === 'completed' && brokers.length < 1;" hidden>
                                 <td colspan="100%" class="text-align--center">
                                     <span data-th-text="#{web.global.itemNotFound(#{fintics.Broker})}"></span>
                                 </td>

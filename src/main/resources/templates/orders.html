@@ -15,8 +15,9 @@
             key: 'assetName',
             value: null,
             _page: 0,
-            _size: 20,
-            _count: -1
+            _size: 10,
+            _count: -1,
+            _status: null
         });
         const trades = new duice.ArrayProxy(/*[[${trades}]]*/[]);
         const orders = new duice.ArrayProxy([]);
@@ -55,6 +56,8 @@
             }
             url.searchParams.append('_page', orderSearch._page);
             url.searchParams.append('_size', orderSearch._size);
+            orderSearch._status = 'loading';
+            duice.ArrayProxy.clear(orders);
             _fetch(url)
                 .then(response => {
                     orderSearch._count = _parseTotalCount(response);
@@ -62,6 +65,9 @@
                 })
                 .then(data => {
                     duice.ArrayProxy.assign(orders, data);
+                })
+                .finally(() => {
+                    orderSearch._status = 'completed';
                 });
         }
 
@@ -236,7 +242,16 @@
                                   class="height--100 width--100 font-size--smaller code" style="white-space:normal;"></textarea>
                         </td>
                     </tr>
-                    <tr data-duice-bind="orders" data-duice-if="return orderSearch._count === 0;" hidden>
+                    <tr data-duice-bind="orderSearch"
+                        data-duice-if="return orderSearch._status === 'loading';"
+                        hidden>
+                        <td colspan="100%" class="text-align--center">
+                            <img class="icon font-size--larger" th:src="@{/static/image/loading.svg}" alt="loading"/>
+                        </td>
+                    </tr>
+                    <tr data-duice-bind="orderSearch"
+                        data-duice-if="return orderSearch._status === 'completed' && orders.length < 1;"
+                        hidden>
                         <td colspan="100%" class="text-align--center">
                             <span data-th-text="#{web.global.itemNotFound(#{fintics.Order})}"></span>
                         </td>

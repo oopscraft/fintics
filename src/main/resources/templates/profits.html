@@ -272,7 +272,7 @@
                             <tr th:data-duice-bind="|profitSearchMap.get('${broker.brokerId}')|"
                                 th:data-duice-if="|return profitSearchMap.get('${broker.brokerId}')._status === 'loading'|" hidden>
                                 <td colspan="100%" class="text-align--center">
-                                    <img class="icon" th:src="@{/static/image/loading.svg}" alt="loading"/>
+                                    <img class="icon font-size--larger" th:src="@{/static/image/loading.svg}" alt="loading"/>
                                 </td>
                             </tr>
                             <tr th:data-duice-bind="|profitSearchMap.get('${broker.brokerId}')|"
@@ -352,7 +352,7 @@
                             <tr th:data-duice-bind="|profitSearchMap.get('${broker.brokerId}')|"
                                 th:data-duice-if="|return profitSearchMap.get('${broker.brokerId}')._status === 'loading'|">
                                 <td colspan="100%" class="text-align--center">
-                                    <img class="icon" th:src="@{/static/image/loading.svg}" alt="loading"/>
+                                    <img class="icon font-size--larger" th:src="@{/static/image/loading.svg}" alt="loading"/>
                                 </td>
                             </tr>
                             <tr th:data-duice-bind="|profitSearchMap.get('${broker.brokerId}')|"

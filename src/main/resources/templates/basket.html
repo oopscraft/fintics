@@ -164,7 +164,7 @@
          */
         async function deleteBasket() {
             if (await _confirm(/*[[#{web.global.deleteItemConfirm(#{fintics.Basket})}]]*/'')) {
-                let url = new URL(`${_apiUrl}/v1/baskets/${basket.strategyId}`, document.location.origin);
+                let url = new URL(`${_apiUrl}/v1/baskets/${basket.basketId}`, document.location.origin);
                 _fetch(url, {
                     method: 'DELETE'
                 }).then(async response => {

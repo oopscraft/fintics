@@ -11,7 +11,8 @@
             value: null,
             _page: 0,
             _size: 20,
-            _count: -1
+            _count: -1,
+            _status: null
         });
         const baskets = new duice.ArrayProxy([]);
         duice.ArrayProxy.setReadonlyAll(baskets, true);
@@ -30,6 +31,8 @@
             }
             url.searchParams.append('_page', basketSearch._page);
             url.searchParams.append('_size', basketSearch._size);
+            basketSearch._status = 'loading';
+            duice.ArrayProxy.clear(baskets);
             _fetch(url)
                 .then(response => {
                     basketSearch._count = _parseTotalCount(response);
@@ -37,6 +40,9 @@
                 })
                 .then(data => {
                     duice.ArrayProxy.assign(baskets, data);
+                })
+                .finally(() => {
+                    basketSearch._status = 'completed';
                 });
         }
 
@@ -140,7 +146,12 @@
                             <span data-duice-bind="basket" data-duice-property="rebalanceSchedule"></span>
                         </td>
                     </tr>
-                    <tr data-duice-bind="baskets" data-duice-if="return basketSearch._count === 0;" hidden>
+                    <tr data-duice-bind="basketSearch" data-duice-if="return basketSearch._status === 'loading'">
+                        <td colspan="100%" class="text-align--center">
+                            <img class="icon font-size--larger" th:src="@{/static/image/loading.svg}" alt="loading"/>
+                        </td>
+                    </tr>
+                    <tr data-duice-bind="basketSearch" data-duice-if="return basketSearch._status === 'completed' && baskets.length < 1;" hidden>
                         <td colspan="100%" class="text-align--center">
                             <span data-th-text="#{web.global.itemNotFound(#{fintics.Basket})}"></span>
                         </td>

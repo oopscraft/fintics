@@ -12,12 +12,17 @@
             market: null,
             _page: 0,
             _size: 100,
-            _count: -1
+            _count: -1,
+            _status: null
         });
         const assets = new duice.ArrayProxy([]);
         const ohlcvSummaries = new duice.ArrayProxy([]);
         const ohlcvSummary = new duice.ObjectProxy({
             ohlcvStatistics: []
+        });
+
+        const ohlcvSummarySearch = new duice.ObjectProxy({
+            _status: null
         });
 
         /**
@@ -35,11 +40,16 @@
             }
             url.searchParams.append('_page', assetSearch._page);
             url.searchParams.append('_size', assetSearch._size);
+            assetSearch._status = 'loading';
+            duice.ArrayProxy.clear(assets);
             _fetch(url).then(response => {
                 return response.json();
             }).then(responseBody => {
                 duice.ArrayProxy.assign(assets, responseBody);
                 assetSearch._count = (assetSearch._page * assetSearch._size) + assets.length + 1;
+            })
+            .finally(() => {
+                assetSearch._status = 'completed';
             });
         }
 
@@ -56,10 +66,14 @@
          */
         function getOhlcvSummaries() {
             let url = new URL(`${_apiUrl}/v1/data/ohlcv-summaries`, document.location.origin);
+            ohlcvSummarySearch._status = 'loading';
             _fetch(url)
                 .then(response => response.json())
                 .then(responseBody => {
                     duice.ArrayProxy.assign(ohlcvSummaries, responseBody);
+                })
+                .finally(() => {
+                    ohlcvSummarySearch._status = 'completed';
                 });
         }
 
@@ -184,7 +198,7 @@
                     </duice-pagination>
                 </div>
             </form>
-            <div class="overflow-y--scroll border-top--1" style="height:70vh;">
+            <div class="overflow-y--scroll border-top--1" style="max-height:70vh;">
                 <table class="width--100 border-top--0 text-align--center">
                     <colgroup>
                         <col style="width:5em;"/>
@@ -227,6 +241,18 @@
                             </select>
                         </td>
                     </tr>
+                    <tr data-duice-bind="assetSearch"
+                        data-duice-if="return assetSearch._status === 'loading';">
+                        <td colspan="100%" class="text-align--center">
+                            <img class="icon font-size--larger" th:src="@{/static/image/loading.svg}" alt="loading"/>
+                        </td>
+                    </tr>
+                    <tr data-duice-bind="assetSearch"
+                        data-duice-if="return assetSearch._status === 'completed' && assets.length < 1;">
+                        <td colspan="100%" class="text-align--center">
+                            <span data-th-text="#{web.global.itemNotFound(#{fintics.Asset})}"></span>
+                        </td>
+                    </tr>
                     </tbody>
                 </table>
             </div>
@@ -247,7 +273,7 @@
             </h2>
         </div>
         <div class="display--flex flex-direction--column gap--1em padding--1em s__padding-y--0">
-            <div class="overflow-y--scroll border-x--1">
+            <div class="overflow-y--scroll border-x--1" style="max-height:70vh;">
                 <table class="width--100 border--0 text-align--center">
                     <thead>
                     <tr>
@@ -275,6 +301,12 @@
                         <td data-duice-bind="ohlcvSummary" data-duice-property="minuteCount" data-duice-format="number"></td>
                         <td data-duice-bind="ohlcvSummary" data-duice-property="minuteMinDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
                         <td data-duice-bind="ohlcvSummary" data-duice-property="minuteMaxDateTime" data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></td>
+                    </tr>
+                    <tr data-duice-bind="ohlcvSummarySearch"
+                        data-duice-if="return ohlcvSummarySearch._status === 'loading'">
+                        <td colspan="100%" class="text-align--center">
+                            <img class="icon font-size--larger" th:src="@{/static/image/loading.svg}" alt="loading"/>
+                        </td>
                     </tr>
                     </tbody>
                 </table>

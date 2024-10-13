@@ -11,7 +11,8 @@
             value: null,
             _page: 0,
             _size: 20,
-            _count: -1
+            _count: -1,
+            _status: null
         });
         const strategies = new duice.ArrayProxy([]);
 
@@ -29,6 +30,8 @@
             }
             url.searchParams.append('_page', strategySearch._page);
             url.searchParams.append('_size', strategySearch._size);
+            strategySearch._status = 'loading';
+            duice.ArrayProxy.clear(strategies);
             _fetch(url)
                 .then(response => {
                     strategySearch._count = _parseTotalCount(response);
@@ -36,6 +39,9 @@
                 })
                 .then(data => {
                     duice.ArrayProxy.assign(strategies, data);
+                })
+                .finally(() => {
+                    strategySearch._status = 'completed';
                 });
         }
 
@@ -129,7 +135,12 @@
                             <span data-duice-bind="strategy" data-duice-property="language" class="badge"></span>
                         </td>
                     </tr>
-                    <tr data-duice-bind="strategies" data-duice-if="return strategySearch._count === 0;" hidden>
+                    <tr data-duice-bind="strategySearch" data-duice-if="return strategySearch._status === 'loading';">
+                        <td colspan="100%" class="text-align--center">
+                            <img class="icon" th:src="@{/static/image/loading.svg}" alt="loading"/>
+                        </td>
+                    </tr>
+                    <tr data-duice-bind="strategySearch" data-duice-if="return strategySearch._status === 'completed' && strategies.length < 1;" hidden>
                         <td colspan="100%" class="text-align--center">
                             <span data-th-text="#{web.global.itemNotFound(#{fintics.Strategy})}"></span>
                         </td>

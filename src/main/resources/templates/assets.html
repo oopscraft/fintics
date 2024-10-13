@@ -20,8 +20,9 @@
             roaTo: null,
             assetMetas: new duice.ArrayProxy([]),
             _page: 0,
-            _size: 20,
-            _count: -1
+            _size: 10,
+            _count: -1,
+            _status: null
         });
         const assets = new duice.ArrayProxy([]);
         duice.ObjectProxy.setDisable(assetSearch, 'perFrom', true);
@@ -66,6 +67,8 @@
             }
             url.searchParams.append('_page', assetSearch._page);
             url.searchParams.append('_size', assetSearch._size);
+            assetSearch._status = 'loading';
+            duice.ArrayProxy.clear(assets);
             _fetch(url)
                 .then(response => {
                     assetSearch._count = _parseTotalCount(response);
@@ -73,6 +76,9 @@
                 })
                 .then(data => {
                     duice.ArrayProxy.assign(assets, data);
+                })
+                .finally(() => {
+                    assetSearch._status = 'completed';
                 });
         }
 
@@ -260,7 +266,14 @@
                             </select>
                         </td>
                     </tr>
-                    <tr data-duice-bind="assets" data-duice-if="return assetSearch._count === 0;" hidden>
+                    <tr data-duice-bind="assetSearch"
+                        data-duice-if="return assetSearch._status === 'loading';">
+                        <td colspan="100%" class="text-align--center">
+                            <img class="icon font-size--larger" th:src="@{/static/image/loading.svg}" alt="loading"/>
+                        </td>
+                    </tr>
+                    <tr data-duice-bind="assetSearch"
+                        data-duice-if="return assetSearch._status === 'completed' && assets.length < 1;" hidden>
                         <td colspan="100%" class="text-align--center">
                             <span data-th-text="#{web.global.itemNotFound(#{fintics.Asset})}"></span>
                         </td>

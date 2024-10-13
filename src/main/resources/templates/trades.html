@@ -10,7 +10,8 @@
             value: null,
             _page: 0,
             _size: 20,
-            _count: -1
+            _count: -1,
+            _status: null
         });
         const trades = new duice.ArrayProxy([]);
         duice.ArrayProxy.setReadonlyAll(trades, true);
@@ -32,6 +33,8 @@
             }
             url.searchParams.append('_page', tradeSearch._page);
             url.searchParams.append('_size', tradeSearch._size);
+            tradeSearch._status = 'loading';
+            duice.ArrayProxy.clear(trades);
             _fetch(url)
                 .then(response => {
                     tradeSearch._count = _parseTotalCount(response);
@@ -39,6 +42,9 @@
                 })
                 .then(data => {
                     duice.ArrayProxy.assign(trades, data);
+                })
+                .finally(() => {
+                    tradeSearch._status = 'completed';
                 });
         }
 
@@ -166,7 +172,14 @@
                             </label>
                         </td>
                     </tr>
-                    <tr data-duice-bind="trades" data-duice-if="return tradeSearch._count === 0;" hidden>
+                    <tr data-duice-bind="tradeSearch"
+                        data-duice-if="return tradeSearch._status === 'loading';">
+                        <td colspan="100%" class="text-align--center">
+                            <img class="icon font-size--larger" th:src="@{/static/image/loading.svg}" alt="loading"/>
+                        </td>
+                    </tr>
+                    <tr data-duice-bind="tradeSearch"
+                        data-duice-if="return tradeSearch._status === 'completed' && trades.length < 1;" hidden>
                         <td colspan="100%" class="text-align--center">
                             <span data-th-text="#{web.global.itemNotFound(#{fintics.Trade})}"></span>
                         </td>
