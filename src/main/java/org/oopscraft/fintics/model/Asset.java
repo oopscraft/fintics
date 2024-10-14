@@ -26,8 +26,6 @@ public class Asset implements Serializable {
 
     private BigDecimal marketCap;
 
-    private boolean favorite;
-
     @Builder.Default
     private List<AssetMeta> assetMetas = new ArrayList<>();
 
@@ -84,7 +82,6 @@ public class Asset implements Serializable {
                 .exchange(assetEntity.getExchange())
                 .type(assetEntity.getType())
                 .marketCap(assetEntity.getMarketCap())
-                .favorite(assetEntity.isFavorite())
                 .build();
         // asset metas
         List<AssetMeta> assetMetas = assetEntity.getAssetMetaEntities().stream()

@@ -429,7 +429,8 @@
                     type: null,
                     _page: 0,
                     _size: 5,
-                    _count: 0
+                    _count: 0,
+                    _status: null
                 }),
                 assets: new duice.ArrayProxy([]),
                 selectedAssets: new duice.ArrayProxy([]),
@@ -455,6 +456,8 @@
                     }
                     url.searchParams.append('_page', this.assetSearch._page);
                     url.searchParams.append('_size', this.assetSearch._size);
+                    this.assetSearch._status = 'loading';
+                    duice.ArrayProxy.clear(this.assets);
                     await _fetch(url)
                         .then(response => {
                             this.assetSearch._count = _parseTotalCount(response);
@@ -474,6 +477,9 @@
                                     }
                                 });
                             });
+                        })
+                        .finally(() => {
+                            this.assetSearch._status = 'completed';
                         });
                 },
                 resetAssets: function() {
@@ -611,8 +617,14 @@
                                 </select>
                             </td>
                         </tr>
-                        <tr data-duice-bind="assetSelectDialog.assets"
-                            data-duice-execute="if(assetSelectDialog.assets.length === 0) this.hidden=false;" hidden>
+                        <tr data-duice-bind="assetSelectDialog.assetSearch"
+                            data-duice-if="return assetSelectDialog.assetSearch._status === 'loading';">
+                            <td colspan="100%" class="text-align--center">
+                                <img class="icon font-size--larger" th:src="@{/static/image/loading.svg}" alt="loading"/>
+                            </td>
+                        </tr>
+                        <tr data-duice-bind="assetSelectDialog.assetSearch"
+                            data-duice-if="return assetSelectDialog.assetSearch._status === 'completed' && assetSelectDialog.assets.length < 1;" hidden>
                             <td colspan="100%" class="text-align--center font-size--smaller">No Data</td>
                         </tr>
                         </tbody>

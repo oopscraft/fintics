@@ -16,18 +16,4 @@ public class AssetSearchRequest {
 
     private String market;
 
-    private Boolean favorite;
-
-    private BigDecimal perFrom;
-
-    private BigDecimal perTo;
-
-    private BigDecimal roeFrom;
-
-    private BigDecimal roeTo;
-
-    private BigDecimal roaFrom;
-
-    private BigDecimal roaTo;
-
 }

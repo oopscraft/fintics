@@ -36,13 +36,6 @@ public class AssetsRestController {
      * @param assetId asset id
      * @param name asset name
      * @param market market
-     * @param favorite favorite
-     * @param perFrom PER from
-     * @param perTo PER to
-     * @param roeFrom ROE from
-     * @param roeTo ROE to
-     * @param roaFrom ROA from
-     * @param roaTo ROA to
      * @param pageable pageable
      * @return list of assets
      */
@@ -62,27 +55,6 @@ public class AssetsRestController {
             @RequestParam(value = "type", required = false)
             @Parameter(name = "type", description = "STOCK|ETF")
                     String type,
-            @RequestParam(value = "favorite", required = false)
-            @Parameter(name = "favorite", description = "favorite")
-                    Boolean favorite,
-            @RequestParam(value = "perFrom", required = false)
-            @Parameter(name = "perFrom", description = "range of Price to Earnings Ratio")
-                    BigDecimal perFrom,
-            @RequestParam(value = "perTo", required = false)
-            @Parameter(name = "perTo", description = "range of Price to Earnings Ratio")
-                    BigDecimal perTo,
-            @RequestParam(value = "roeFrom", required = false)
-            @Parameter(name = "roeFrom", description = "range of Return On Equity")
-                    BigDecimal roeFrom,
-            @RequestParam(value = "roeTo", required = false)
-            @Parameter(name= "roaTo", description = "range of Return On Equity")
-                    BigDecimal roeTo,
-            @RequestParam(value = "roaFrom", required = false)
-            @Parameter(name = "roaFrom", description = "range of Return On Assets")
-                    BigDecimal roaFrom,
-            @RequestParam(value = "roaTo", required = false)
-            @Parameter(name = "roaTo", description = "range of Return On Assets")
-                    BigDecimal roaTo,
             @Parameter(hidden = true)
                     Pageable pageable
     ) {
@@ -91,13 +63,6 @@ public class AssetsRestController {
                 .name(name)
                 .market(market)
                 .type(type)
-                .favorite(favorite)
-                .perFrom(perFrom)
-                .perTo(perTo)
-                .roeFrom(roeFrom)
-                .roeTo(roeTo)
-                .roaFrom(roaFrom)
-                .roaTo(roaTo)
                 .build();
         Page<Asset> assetPage = assetService.getAssets(assetSearch, pageable);
         List<AssetResponse> assetResponses = assetPage.getContent().stream()

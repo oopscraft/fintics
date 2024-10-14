@@ -26,8 +26,6 @@ public class AssetResponse {
 
     private BigDecimal marketCap;
 
-    private boolean favorite;
-
     private String icon;
 
     @Builder.Default
@@ -44,7 +42,6 @@ public class AssetResponse {
                 .exchange(asset.getExchange())
                 .type(asset.getType())
                 .marketCap(asset.getMarketCap())
-                .favorite(asset.isFavorite())
                 .icon(asset.getIcon())
                 .links(LinkResponse.from(asset.getLinks()))
                 .assetMetas(AssetMetaResponse.from(asset.getAssetMetas()))

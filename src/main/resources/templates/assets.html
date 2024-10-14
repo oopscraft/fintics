@@ -11,26 +11,12 @@
             type: null,
             key: 'name',
             value: null,
-            favorite: null,
-            perFrom: null,
-            perTo: null,
-            roeFrom: null,
-            roeTo: null,
-            roaFrom: null,
-            roaTo: null,
-            assetMetas: new duice.ArrayProxy([]),
             _page: 0,
             _size: 10,
             _count: -1,
             _status: null
         });
         const assets = new duice.ArrayProxy([]);
-        duice.ObjectProxy.setDisable(assetSearch, 'perFrom', true);
-        duice.ObjectProxy.setDisable(assetSearch, 'perTo', true);
-        duice.ObjectProxy.setDisable(assetSearch, 'roeFrom', true);
-        duice.ObjectProxy.setDisable(assetSearch, 'roeTo', true);
-        duice.ObjectProxy.setDisable(assetSearch, 'roaFrom', true);
-        duice.ObjectProxy.setDisable(assetSearch, 'roaTo', true);
 
         /**
          * gets assets
@@ -49,21 +35,6 @@
             }
             if (assetSearch.key && assetSearch.value) {
                 url.searchParams.append(assetSearch.key, assetSearch.value);
-            }
-            if (assetSearch.favorite != null) {
-                url.searchParams.append('favorite', assetSearch.favorite);
-            }
-            if (assetSearch.perFrom != null && assetSearch.perTo != null) {
-                url.searchParams.append('perFrom', assetSearch.perFrom);
-                url.searchParams.append('perTo', assetSearch.perTo);
-            }
-            if (assetSearch.roeFrom != null && assetSearch.roeTo != null) {
-                url.searchParams.append('roeFrom', assetSearch.roeFrom);
-                url.searchParams.append('roeTo', assetSearch.roeTo);
-            }
-            if (assetSearch.roaFrom != null && assetSearch.roaTo != null) {
-                url.searchParams.append('roaFrom', assetSearch.roaFrom);
-                url.searchParams.append('roaTo', assetSearch.roaTo);
             }
             url.searchParams.append('_page', assetSearch._page);
             url.searchParams.append('_size', assetSearch._size);
@@ -87,52 +58,7 @@
          */
         function resetAssets() {
             duice.ObjectProxy.reset(assetSearch);
-            duice.ObjectProxy.setDisable(assetSearch, 'perFrom', true);
-            duice.ObjectProxy.setDisable(assetSearch, 'perTo', true);
-            duice.ObjectProxy.setDisable(assetSearch, 'roeFrom', true);
-            duice.ObjectProxy.setDisable(assetSearch, 'roeTo', true);
-            duice.ObjectProxy.setDisable(assetSearch, 'roaFrom', true);
-            duice.ObjectProxy.setDisable(assetSearch, 'roaTo', true);
             getAssets();
-        }
-
-        function togglePerCheckbox(checkbox) {
-            if (checkbox.checked) {
-                assetSearch.perFrom = 0;
-                assetSearch.perTo=100;
-            } else {
-                assetSearch.perFrom = null;
-                assetSearch.perTo = null;
-            }
-            let disable = !checkbox.checked;
-            duice.ObjectProxy.setDisable(assetSearch, 'perFrom', disable);
-            duice.ObjectProxy.setDisable(assetSearch, 'perTo', disable);
-        }
-
-        function toggleRoeCheckbox(checkbox) {
-            if (checkbox.checked) {
-                assetSearch.roeFrom = 0;
-                assetSearch.roeTo=100;
-            } else {
-                assetSearch.roeFrom = null;
-                assetSearch.roeTo = null;
-            }
-            let disable = !checkbox.checked;
-            duice.ObjectProxy.setDisable(assetSearch, 'roeFrom', disable);
-            duice.ObjectProxy.setDisable(assetSearch, 'roeTo', disable);
-        }
-
-        function toggleRoaCheckbox(checkbox) {
-            if (checkbox.checked) {
-                assetSearch.roaFrom = 0;
-                assetSearch.roaTo=100;
-            } else {
-                assetSearch.roaFrom = null;
-                assetSearch.roaTo = null;
-            }
-            let disable = !checkbox.checked;
-            duice.ObjectProxy.setDisable(assetSearch, 'roaFrom', disable);
-            duice.ObjectProxy.setDisable(assetSearch, 'roaTo', disable);
         }
 
         // DOM content loaded listener
@@ -180,11 +106,7 @@
                 <label class="grid-column--2 s__grid-column--6">
                     <input class="width--100" type="text" data-duice-bind="assetSearch" data-duice-property="value"/>
                 </label>
-                <label class="grid-column--2 s__grid-column--6 align-self--center display--flex gap--1em">
-                    <input type="checkbox" data-duice-bind="assetSearch" data-duice-property="favorite"/>
-                    <span data-th-text="#{fintics.Asset.favorite}"></span>
-                </label>
-                <div class="grid-column--2 s__grid-column--12 justify-self--end">
+                <div class="grid-column--4 s__grid-column--12 justify-self--end">
                     <button type="submit" onclick="getAssets();">
                         <img class="icon" th:src="@{/static/image/icon-search.svg}" alt="search"/>
                         <span data-th-text="#{web.global.search}"></span>

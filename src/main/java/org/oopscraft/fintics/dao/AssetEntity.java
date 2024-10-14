@@ -38,10 +38,6 @@ public class AssetEntity extends BaseEntity {
     @Column(name = "market_cap", precision = 32)
     private BigDecimal marketCap;
 
-    @Column(name = "favorite")
-    @Convert(converter = BooleanConverter.class)
-    private boolean favorite;
-
     @OneToMany
     @JoinColumn(name = "asset_id", referencedColumnName = "asset_id", insertable = false, updatable = false)
     @OrderBy(AssetMetaEntity_.SORT)
