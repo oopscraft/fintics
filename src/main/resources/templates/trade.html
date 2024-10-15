@@ -18,7 +18,7 @@
         const basket = new duice.ObjectProxy({
             basketAssets: []
         });
-        duice.ObjectProxy.setReadonlyAll(basket, true);
+        duice.ArrayProxy.setReadonlyAll(basket.basketAssets, true);
 
         // strategy
         const strategy = new duice.ObjectProxy({});

@@ -110,31 +110,39 @@
             <div class="overflow-x--scroll">
                 <table class="width--100 text-align--center">
                     <colgroup>
-                        <col style="width:10em;"/>
                         <col/>
                         <col/>
-                        <col style="width:20em;"/>
+                        <col/>
+                        <col/>
+                        <col/>
+                        <col/>
+                        <col/>
                     </colgroup>
                     <thead>
                     <tr>
                         <th data-th-text="#{web.global.no}" class="text-align--center"></th>
                         <th data-th-text="#{fintics.Basket.name}"></th>
+                        <th data-th-text="#{fintics.Basket.market}" class="text-align--center"></th>
                         <th data-th-text="#{fintics.Basket.basketAssets}" class="text-align--center"></th>
                         <th data-th-text="#{fintics.Basket.rebalanceEnabled}" class="text-align--center"></th>
                         <th data-th-text="#{fintics.Basket.rebalanceSchedule}"></th>
+                        <th data-th-text="#{fintics.Basket.language}"></th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr data-duice-bind="baskets" data-duice-loop="basket,status">
                         <td class="text-align--center">
                         <span data-duice-bind="status"
-                              data-duice-execute="this.innerHTML=basketSearch._count - (basketSearch._size*basketSearch._page + status.count) + 1;">
+                              data-duice-execute="this.innerHTML=basketSearch._size*basketSearch._page + status.count;">
                         </span>
                         </td>
                         <td>
                             <a href="" data-duice-bind="basket" data-duice-execute="this.href=`${_rootUrl}/basket?basketId=${basket.basketId}`;">
                                 <span data-duice-bind="basket" data-duice-property="name"></span>
                             </a>
+                        </td>
+                        <td class="text-align--center">
+                            <span data-duice-bind="basket" data-duice-property="market" class="badge"></span>
                         </td>
                         <td class="text-align--center">
                             <span data-duice-bind="basket" data-duice-property="basketAssets.length" class="badge"></span>
@@ -144,6 +152,9 @@
                         </td>
                         <td>
                             <span data-duice-bind="basket" data-duice-property="rebalanceSchedule"></span>
+                        </td>
+                        <td>
+                            <span data-duice-bind="basket" data-duice-property="language" class="badge"></span>
                         </td>
                     </tr>
                     <tr data-duice-bind="basketSearch" data-duice-if="return basketSearch._status === 'loading'">

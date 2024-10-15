@@ -108,22 +108,22 @@
             <div class="overflow-x--scroll">
                 <table class="width--100 text-align--center">
                     <colgroup>
-                        <col style="width:10em;"/>
                         <col/>
-                        <col style="width:20em;"/>
+                        <col/>
+                        <col/>
                     </colgroup>
                     <thead>
                     <tr>
                         <th data-th-text="#{web.global.no}" class="text-align--center"></th>
                         <th data-th-text="#{fintics.Strategy.name}"></th>
-                        <th data-th-text="#{fintics.Strategy.language}"></th>
+                        <th data-th-text="#{fintics.Strategy.language}" class="text-align--center"></th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr data-duice-bind="strategies" data-duice-loop="strategy,status">
                         <td class="text-align--center">
                         <span data-duice-bind="status"
-                              data-duice-execute="this.innerHTML=strategySearch._count - (strategySearch._size*strategySearch._page + status.count) + 1;">
+                              data-duice-execute="this.innerHTML=(strategySearch._size*strategySearch._page + status.count);">
                         </span>
                         </td>
                         <td>
@@ -131,7 +131,7 @@
                                 <span data-duice-bind="strategy" data-duice-property="name"></span>
                             </a>
                         </td>
-                        <td>
+                        <td class="text-align--center">
                             <span data-duice-bind="strategy" data-duice-property="language" class="badge"></span>
                         </td>
                     </tr>

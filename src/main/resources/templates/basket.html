@@ -215,12 +215,12 @@
     <div class="display--flex flex-direction--column border--1 padding--1em">
         <div class="display--flex flex-direction--column gap--1em padding--1em s__padding-y--0">
             <form class="display--grid grid-template-columns--12 grid-gap--1em">
-                <label class="grid-column--6">
+                <label class="grid-column--6 s__grid-column--12">
                     <span data-th-text="#{fintics.Basket.name}" class="font-weight--bold tag-required"></span>
                     <input type="text" data-duice-bind="basket" data-duice-property="name"
                            class="width--100 font-weight--bold"/>
                 </label>
-                <label class="grid-column--6">
+                <label class="grid-column--6 s__grid-column--12">
                     <span data-th-text="#{fintics.Basket.market}" class="font-weight--bold tag-required"></span>
                     <select data-duice-bind="basket" data-duice-property="market" class="width--100">
                         <option value="" data-th-text="'- ' + #{fintics.Basket.market} + ' -'"></option>

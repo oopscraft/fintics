@@ -111,7 +111,7 @@
             <div class="overflow-x--scroll">
                 <table class="width--100 text-align--center">
                     <colgroup>
-                        <col style="width:10em;"/>
+                        <col/>
                         <col/>
                         <col/>
                         <col/>
@@ -134,7 +134,7 @@
                     <tr data-duice-bind="trades" data-duice-loop="trade,status">
                         <td class="text-align--center">
                         <span data-duice-bind="status"
-                              data-duice-execute="this.innerHTML=tradeSearch._count - (tradeSearch._size*tradeSearch._page + status.count) + 1;">
+                              data-duice-execute="this.innerHTML=tradeSearch._size*tradeSearch._page + status.count;">
                         </span>
                         </td>
                         <td>
