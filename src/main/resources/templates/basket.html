@@ -69,22 +69,24 @@
         }
 
         /**
-         * exports basket assets
+         * export basket
          */
-        function exportBasketAssets() {
-            let tradeAssetsJson = JSON.stringify(basket.basketAssets, null, 4);
+        function exportBasket() {
+            let basketForExport = JSON.parse(JSON.stringify(basket, null, 4));
+            delete basketForExport.basketId;
+            let basketForExportJson = JSON.stringify(basketForExport, null, 4);
             let a = document.createElement('a');
-            let href = 'data:application/json;charset=utf-8,' + encodeURIComponent(tradeAssetsJson);
-            let download = `${basket.name}_basketAssets.json`;
+            let href = 'data:application/json;charset=utf-8,' + encodeURIComponent(basketForExportJson);
+            let download = `${basket.name}_basket.json`;
             a.setAttribute('href', href);
             a.setAttribute('download', download);
             a.click();
         }
 
         /**
-         * import basket assets
+         * import basket
          */
-        function importBasketAssets() {
+        function importBasket() {
             let input = document.createElement('input');
             input.setAttribute("type", "file");
             input.setAttribute("accept", "application/json");
@@ -92,14 +94,9 @@
                 let fileReader = new FileReader();
                 if (this.files && this.files[0]) {
                     fileReader.addEventListener("load", async function (event) {
-                        let basketAssets = JSON.parse(event.target.result);
-                        for (const basketAsset of basketAssets) {
-                            let exists = basket.basketAssets.some(it => it.assetId === basketAsset.assetId);
-                            if (!exists) {
-                                basketAsset._new = true;
-                                basket.basketAssets.push(basketAsset);
-                            }
-                        }
+                        let basketForImport = JSON.parse(event.target.result);
+                        delete basketForImport.basketId;
+                        duice.ObjectProxy.assign(basket, basketForImport);
                     });
                     fileReader.readAsText(this.files[0]);
                 }
@@ -226,21 +223,9 @@
                     </select>
                 </label>
                 <div class="grid-column--12">
-                    <div class="display--flex justify-content--space-between">
-                        <div>
-                            <img class="icon" th:src="@{/static/image/icon-asset.svg}" alt="asset"/>
-                            <span data-th-text="#{fintics.BasketAsset}" class="font-weight--bold width--100"></span>
-                        </div>
-                        <div class="padding--1px">
-                            <button type="button" class="small" onclick="exportBasketAssets();">
-                                <img class="icon" th:src="@{/static/image/icon-export.svg}" alt="export"/>
-                                <span>Export</span>
-                            </button>
-                            <button type="button" class="small" onclick="importBasketAssets();">
-                                <img class="icon" th:src="@{/static/image/icon-import.svg}" alt="import"/>
-                                <span>Import</span>
-                            </button>
-                        </div>
+                    <div>
+                        <img class="icon" th:src="@{/static/image/icon-asset.svg}" alt="asset"/>
+                        <span data-th-text="#{fintics.BasketAsset}" class="font-weight--bold width--100"></span>
                     </div>
                     <div class="overflow-x--scroll border-top--1">
                         <table class="width--100 border-top--0">
@@ -387,21 +372,33 @@
                     </duice-codemirror>
                 </div>
             </form>
-            <div class="text-align--right">
-                <button type="button"
-                        data-duice-bind="basket"
-                        th:classappend="!${#authorization.expression('hasAuthority(''basket.edit'')')}?'locked'"
-                        onclick="deleteBasket();">
-                    <img class="icon" th:src="@{/static/image/icon-delete.svg}" alt="delete"/>
-                    <span data-th-text="#{web.global.delete}"></span>
-                </button>
-                <button type="button"
-                        data-duice-bind="basket"
-                        th:classappend="!${#authorization.expression('hasAuthority(''basket.edit'')')}?'locked'"
-                        onclick="saveBasket();">
-                    <img class="icon" th:src="@{/static/image/icon-save.svg}" alt="save"/>
-                    <span data-th-text="#{web.global.save}"></span>
-                </button>
+            <div class="display--flex justify-content--space-between">
+                <div>
+                    <button type="button" onclick="exportBasket();">
+                        <img class="icon" th:src="@{/static/image/icon-export.svg}" alt="export"/>
+                        <span>Export</span>
+                    </button>
+                    <button type="button" onclick="importBasket();">
+                        <img class="icon" th:src="@{/static/image/icon-import.svg}" alt="import"/>
+                        <span>Import</span>
+                    </button>
+                </div>
+                <div>
+                    <button type="button"
+                            data-duice-bind="basket"
+                            th:classappend="!${#authorization.expression('hasAuthority(''basket.edit'')')}?'locked'"
+                            onclick="deleteBasket();">
+                        <img class="icon" th:src="@{/static/image/icon-delete.svg}" alt="delete"/>
+                        <span data-th-text="#{web.global.delete}"></span>
+                    </button>
+                    <button type="button"
+                            data-duice-bind="basket"
+                            th:classappend="!${#authorization.expression('hasAuthority(''basket.edit'')')}?'locked'"
+                            onclick="saveBasket();">
+                        <img class="icon" th:src="@{/static/image/icon-save.svg}" alt="save"/>
+                        <span data-th-text="#{web.global.save}"></span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>

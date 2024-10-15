@@ -312,6 +312,10 @@ class TripleScreenStrategy {
                         // 평균가 기준 매수 포지션
                         def averagePosition = waveAnalyzer.adjustAveragePosition(position)
                         strategyResult = StrategyResult.of(Action.BUY, averagePosition, "test")
+                        // filter - tide overbought
+                        if (tideAnalyzer.getOverboughtScore() > 50) {
+                            strategyResult = null
+                        }
                     }
                 }
             }
@@ -328,6 +332,10 @@ class TripleScreenStrategy {
                         // 평균가 기준 매도 포지션
                         def averagePosition = waveAnalyzer.adjustAveragePosition(position)
                         strategyResult = StrategyResult.of(Action.SELL, averagePosition, "test")
+                        // filter - tide oversold
+                        if (tideAnalyzer.getOversoldScore() > 50) {
+                            strategyResult = null
+                        }
                     }
                 }
             }
