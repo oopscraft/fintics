@@ -74,6 +74,7 @@
         function exportBasket() {
             let basketForExport = JSON.parse(JSON.stringify(basket, null, 4));
             delete basketForExport.basketId;
+            basketForExport.name += '_Copy';    // adds copy suffix in name
             let basketForExportJson = JSON.stringify(basketForExport, null, 4);
             let a = document.createElement('a');
             let href = 'data:application/json;charset=utf-8,' + encodeURIComponent(basketForExportJson);
@@ -95,6 +96,10 @@
                 if (this.files && this.files[0]) {
                     fileReader.addEventListener("load", async function (event) {
                         let basketForImport = JSON.parse(event.target.result);
+                        // removes name if name is already exist.
+                        if (basket.name) {
+                            delete basketForImport.name;
+                        }
                         delete basketForImport.basketId;
                         duice.ObjectProxy.assign(basket, basketForImport);
                     });
