@@ -69,7 +69,6 @@
                     this.dailyOhlcvsChart.options.scales.x.max = new Date();
                     this.dailyOhlcvsChart.data.datasets.length = 0;
                     const promises = this.basket.basketAssets
-                        .filter(basketAsset => basketAsset.enabled)
                         .map(async basketAsset => {
                             let url = new URL(`${_apiUrl}/v1/ohlcvs/${basketAsset.assetId}/daily`, document.location.origin);
                             return _fetch(url, null, true)
@@ -97,7 +96,6 @@
                     this.minuteOhlcvsChart.data.datasets.length = 0;
                     // daily
                     const promises = this.basket.basketAssets
-                        .filter(basketAsset => basketAsset.enabled)
                         .map(async basketAsset => {
                             let url = new URL(`${_apiUrl}/v1/ohlcvs/${basketAsset.assetId}/minute`, document.location.origin);
                             return _fetch(url, null, true)
