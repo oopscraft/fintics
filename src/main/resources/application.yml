@@ -22,7 +22,8 @@ spring:
 
 # web
 web:
-  brand: <img class="icon" src="/static/image/logo-fintics.png"/>
+  brand: <span><img src="/static/image/fintics-icon.svg"/><img src="/static/image/fintics-title.svg"/></span>
+  favicon: /static/image/fintics-icon.svg
   title: Fintics
   index: monitors
   security-policy: AUTHENTICATED
