@@ -5,6 +5,7 @@ import org.oopscraft.fintics.client.broker.BrokerClientDefinition;
 import org.springframework.stereotype.Component;
 
 import java.time.ZoneId;
+import java.util.Currency;
 import java.util.StringJoiner;
 
 @Component
@@ -68,6 +69,15 @@ public class KisBrokerClientDefinition implements BrokerClientDefinition {
     @Override
     public ZoneId getTimezone() {
         return ZoneId.of("Asia/Seoul");
+    }
+
+    /**
+     * returns currency - KRW
+     * @return currency
+     */
+    @Override
+    public Currency getCurrency() {
+        return Currency.getInstance("KRW");
     }
 
 }

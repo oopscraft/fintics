@@ -6,6 +6,7 @@ import org.oopscraft.fintics.client.broker.kis.KisUsBrokerClient;
 import org.springframework.stereotype.Component;
 
 import java.time.ZoneId;
+import java.util.Currency;
 import java.util.StringJoiner;
 
 @Component
@@ -43,6 +44,11 @@ public class AlpacaBrokerClientDefinition implements BrokerClientDefinition {
     @Override
     public ZoneId getTimezone() {
         return ZoneId.of("America/New_York");
+    }
+
+    @Override
+    public Currency getCurrency() {
+        return Currency.getInstance("USD");
     }
 
 }

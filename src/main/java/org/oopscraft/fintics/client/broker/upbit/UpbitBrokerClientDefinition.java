@@ -5,11 +5,11 @@ import org.oopscraft.fintics.client.broker.BrokerClientDefinition;
 import org.springframework.stereotype.Component;
 
 import java.time.ZoneId;
+import java.util.Currency;
 import java.util.StringJoiner;
 
 @Component
 public class UpbitBrokerClientDefinition implements BrokerClientDefinition {
-
 
     @Override
     public String getBrokerClientId() {
@@ -42,6 +42,11 @@ public class UpbitBrokerClientDefinition implements BrokerClientDefinition {
     @Override
     public ZoneId getTimezone() {
         return ZoneId.of("Asia/Seoul");
+    }
+
+    @Override
+    public Currency getCurrency() {
+        return Currency.getInstance("KRW");
     }
 
 }

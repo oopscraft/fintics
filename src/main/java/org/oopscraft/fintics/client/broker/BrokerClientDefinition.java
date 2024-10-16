@@ -3,6 +3,7 @@ package org.oopscraft.fintics.client.broker;
 import org.springframework.beans.factory.Aware;
 
 import java.time.ZoneId;
+import java.util.Currency;
 
 /**
  * BrokerClientDefinition interface
@@ -44,5 +45,11 @@ public interface BrokerClientDefinition extends Aware {
      * @return time-zone zoneId
      */
     ZoneId getTimezone();
+
+    /**
+     * defines currency unit
+     * @return currency
+     */
+    Currency getCurrency();
 
 }
