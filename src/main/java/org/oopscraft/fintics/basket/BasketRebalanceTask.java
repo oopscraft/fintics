@@ -1,5 +1,6 @@
 package org.oopscraft.fintics.basket;
 
+import ch.qos.logback.classic.Logger;
 import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.fintics.model.*;
@@ -31,6 +32,7 @@ public class BasketRebalanceTask {
 
         // executes basket script runner
         BasketScriptRunner basketRebalanceRunner = basketScriptRunnerFactory.getObject(basket);
+        basketRebalanceRunner.setLog((Logger)log);
         List<BasketRebalanceAsset> basketRebalanceAssets = basketRebalanceRunner.run();
         log.info("basketRebalanceAssets: {}", basketRebalanceAssets);
 

@@ -27,6 +27,8 @@ public class Basket {
 
     private Language language;
 
+    private String variables;
+
     private String script;
 
     public static enum Language {
@@ -55,6 +57,7 @@ public class Basket {
                 .rebalanceEnabled(basketEntity.isRebalanceEnabled())
                 .rebalanceSchedule(basketEntity.getRebalanceSchedule())
                 .language(basketEntity.getLanguage())
+                .variables(basketEntity.getVariables())
                 .script(basketEntity.getScript())
                 .basketAssets(basketEntity.getBasketAssets().stream()
                         .map(BasketAsset::from)

@@ -1,23 +1,40 @@
 package org.oopscraft.fintics.api.v1;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.PatternLayout;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.OutputStreamAppender;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.oopscraft.arch4j.web.common.data.PageableUtils;
 import org.oopscraft.fintics.api.v1.dto.BasketRequest;
 import org.oopscraft.fintics.api.v1.dto.BasketResponse;
+import org.oopscraft.fintics.basket.BasketRebalanceAsset;
+import org.oopscraft.fintics.basket.BasketScriptRunner;
+import org.oopscraft.fintics.basket.BasketScriptRunnerFactory;
 import org.oopscraft.fintics.model.*;
 import org.oopscraft.fintics.service.BasketService;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,9 +43,12 @@ import java.util.stream.Collectors;
 @PreAuthorize("hasAuthority('api.baskets')")
 @Tag(name = "baskets", description = "Baskets")
 @RequiredArgsConstructor
+@Slf4j
 public class BasketsRestController {
 
     private final BasketService basketService;
+
+    private final BasketScriptRunnerFactory basketScriptRunnerFactory;
 
     @GetMapping
     @Operation(summary = "get list of basket")
@@ -81,6 +101,7 @@ public class BasketsRestController {
                 .rebalanceEnabled(basketRequest.isRebalanceEnabled())
                 .rebalanceSchedule(basketRequest.getRebalanceSchedule())
                 .language(basketRequest.getLanguage())
+                .variables(basketRequest.getVariables())
                 .script(basketRequest.getScript())
                 .build();
         // basket assets
@@ -119,6 +140,7 @@ public class BasketsRestController {
         basket.setRebalanceEnabled(basketRequest.isRebalanceEnabled());
         basket.setRebalanceSchedule(basketRequest.getRebalanceSchedule());
         basket.setLanguage(basketRequest.getLanguage());
+        basket.setVariables(basketRequest.getVariables());
         basket.setScript(basketRequest.getScript());
         // basket assets
         List<BasketAsset> basketAssets = basketRequest.getBasketAssets().stream()
@@ -147,6 +169,64 @@ public class BasketsRestController {
     ) {
         basketService.deleteBasket(basketId);
         return ResponseEntity.ok().build();
+    }
+
+    /**
+     * test basket
+     * @param basketRequest basket request
+     * @return sse emitter
+     */
+    @PostMapping("test")
+    @PreAuthorize("hasAuthority('api.baskets.edit')")
+    public ResponseEntity<StreamingResponseBody> testBasket(@RequestBody BasketRequest basketRequest) {
+        StreamingResponseBody stream = outputStream -> {
+            LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+            Logger logger = (Logger) LoggerFactory.getLogger(this.getClass().getSimpleName());
+            logger.setLevel(Level.DEBUG);
+
+            // PatternLayout 생성 및 설정 (로그 메시지 형식 지정)
+            PatternLayout layout = new PatternLayout();
+            layout.setPattern("%msg%n");
+            layout.setContext(context);
+            layout.start();
+
+            OutputStreamAppender<ILoggingEvent> appender = new OutputStreamAppender<>();
+            appender.setContext(context);
+            appender.setLayout(layout);
+            appender.setOutputStream(outputStream);
+            appender.setImmediateFlush(true);
+            logger.addAppender(appender);
+            try {
+                // start logger
+                appender.start();
+
+                // creates basket rebalance runner
+                Basket basket = Basket.builder()
+                        .language(basketRequest.getLanguage())
+                        .variables(basketRequest.getVariables())
+                        .script(basketRequest.getScript())
+                        .build();
+                BasketScriptRunner basketRebalanceRunner = basketScriptRunnerFactory.getObject(basket);
+                basketRebalanceRunner.setLog(logger);
+                List<BasketRebalanceAsset> basketRebalanceAssets = basketRebalanceRunner.run();
+                logger.info("result: {}", basketRebalanceAssets);
+
+                // Flush after logging to ensure logs are sent
+                outputStream.flush();
+
+            } catch (Throwable e) {
+                outputStream.write(ExceptionUtils.getStackTrace(e).getBytes(StandardCharsets.UTF_8));
+                outputStream.flush();
+                throw new RuntimeException(e);
+            } finally {
+                // stop logger
+                appender.stop();
+                logger.detachAppender(appender);
+            }
+        };
+        return ResponseEntity.ok()
+                .contentType(MediaType.TEXT_PLAIN)
+                .body(stream);
     }
 
 }

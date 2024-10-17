@@ -24,6 +24,8 @@ public class BasketRequest {
 
     private Basket.Language language;
 
+    private String variables;
+
     private String script;
 
     @Builder.Default

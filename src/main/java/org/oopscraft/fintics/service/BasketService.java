@@ -2,6 +2,7 @@ package org.oopscraft.fintics.service;
 
 import lombok.RequiredArgsConstructor;
 import org.oopscraft.arch4j.core.common.data.IdGenerator;
+import org.oopscraft.arch4j.core.common.pbe.PbePropertiesUtil;
 import org.oopscraft.fintics.dao.BasketAssetEntity;
 import org.oopscraft.fintics.dao.BasketEntity;
 import org.oopscraft.fintics.dao.BasketRepository;
@@ -74,6 +75,9 @@ public class BasketService {
         basketEntity.setRebalanceEnabled(basket.isRebalanceEnabled());
         basketEntity.setRebalanceSchedule(basket.getRebalanceSchedule());
         basketEntity.setLanguage(basket.getLanguage());
+        basketEntity.setVariables(Optional.ofNullable(basket.getVariables())
+                .map(PbePropertiesUtil::encode)
+                .orElse(null));
         basketEntity.setScript(basket.getScript());
 
         // basket assets
