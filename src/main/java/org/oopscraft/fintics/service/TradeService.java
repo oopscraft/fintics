@@ -3,6 +3,7 @@ package org.oopscraft.fintics.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.common.data.IdGenerator;
+import org.oopscraft.arch4j.core.common.pbe.PbePropertiesUtil;
 import org.oopscraft.fintics.client.broker.BrokerClient;
 import org.oopscraft.fintics.client.broker.BrokerClientFactory;
 import org.oopscraft.fintics.dao.*;
@@ -98,7 +99,9 @@ public class TradeService {
         tradeEntity.setBrokerId(trade.getBrokerId());
         tradeEntity.setBasketId(trade.getBasketId());
         tradeEntity.setStrategyId(trade.getStrategyId());
-        tradeEntity.setStrategyVariables(trade.getStrategyVariables());
+        tradeEntity.setStrategyVariables(Optional.ofNullable(trade.getStrategyVariables())
+                .map(PbePropertiesUtil::encode)
+                .orElse(null));
         tradeEntity.setAlarmId(trade.getAlarmId());
         tradeEntity.setAlarmOnError(trade.isAlarmOnError());
         tradeEntity.setAlarmOnOrder(trade.isAlarmOnOrder());

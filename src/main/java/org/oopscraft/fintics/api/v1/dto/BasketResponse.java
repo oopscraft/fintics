@@ -24,6 +24,8 @@ public class BasketResponse {
 
     private Basket.Language language;
 
+    private String variables;
+
     private String script;
 
     @Builder.Default
@@ -42,6 +44,7 @@ public class BasketResponse {
                 .rebalanceEnabled(basket.isRebalanceEnabled())
                 .rebalanceSchedule(basket.getRebalanceSchedule())
                 .language(basket.getLanguage())
+                .variables(basket.getVariables())
                 .script(basket.getScript())
                 .basketAssets(basket.getBasketAssets().stream()
                         .map(BasketAssetResponse::from)

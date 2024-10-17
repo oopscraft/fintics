@@ -69,49 +69,6 @@
         }
 
         /**
-         * export basket
-         */
-        function exportBasket() {
-            let basketForExport = JSON.parse(JSON.stringify(basket, null, 4));
-            delete basketForExport.basketId;
-            basketForExport.name += '_Copy';    // adds copy suffix in name
-            let basketForExportJson = JSON.stringify(basketForExport, null, 4);
-            let a = document.createElement('a');
-            let href = 'data:application/json;charset=utf-8,' + encodeURIComponent(basketForExportJson);
-            let download = `${basket.name}_basket.json`;
-            a.setAttribute('href', href);
-            a.setAttribute('download', download);
-            a.click();
-        }
-
-        /**
-         * import basket
-         */
-        function importBasket() {
-            let input = document.createElement('input');
-            input.setAttribute("type", "file");
-            input.setAttribute("accept", "application/json");
-            input.addEventListener('change', function (e) {
-                let fileReader = new FileReader();
-                if (this.files && this.files[0]) {
-                    fileReader.addEventListener("load", async function (event) {
-                        let basketForImport = JSON.parse(event.target.result);
-                        // removes name if name is already exist.
-                        if (basket.name) {
-                            delete basketForImport.name;
-                        }
-                        delete basketForImport.basketId;
-                        duice.ObjectProxy.assign(basket, basketForImport);
-                    });
-                    fileReader.readAsText(this.files[0]);
-                }
-                e.preventDefault();
-                e.stopPropagation();
-            });
-            input.click();
-        }
-
-        /**
          * saves basket
          * @returns {Promise<boolean>}
          */
@@ -176,6 +133,57 @@
                     }
                 });
             }
+        }
+
+
+        /**
+         * export basket
+         */
+        function exportBasket() {
+            let basketForExport = JSON.parse(JSON.stringify(basket, null, 4));
+            delete basketForExport.basketId;
+            basketForExport.name += '_Copy';    // adds copy suffix in name
+            let basketForExportJson = JSON.stringify(basketForExport, null, 4);
+            let a = document.createElement('a');
+            let href = 'data:application/json;charset=utf-8,' + encodeURIComponent(basketForExportJson);
+            let download = `${basket.name}_basket.json`;
+            a.setAttribute('href', href);
+            a.setAttribute('download', download);
+            a.click();
+        }
+
+        /**
+         * import basket
+         */
+        function importBasket() {
+            let input = document.createElement('input');
+            input.setAttribute("type", "file");
+            input.setAttribute("accept", "application/json");
+            input.addEventListener('change', function (e) {
+                let fileReader = new FileReader();
+                if (this.files && this.files[0]) {
+                    fileReader.addEventListener("load", async function (event) {
+                        let basketForImport = JSON.parse(event.target.result);
+                        // removes name if name is already exist.
+                        if (basket.name) {
+                            delete basketForImport.name;
+                        }
+                        delete basketForImport.basketId;
+                        duice.ObjectProxy.assign(basket, basketForImport);
+                    });
+                    fileReader.readAsText(this.files[0]);
+                }
+                e.preventDefault();
+                e.stopPropagation();
+            });
+            input.click();
+        }
+
+        /**
+         * test basket
+         */
+        function testBasket() {
+            testBasketDialog.test(basket);
         }
 
         // document event
@@ -363,10 +371,27 @@
                         <option th:each="language : ${languages}" th:value="${language}" th:text="${language}"></option>
                     </select>
                 </label>
+
+                <div class="grid-column--12">
+                    <div>
+                        <span data-th-text="#{fintics.Strategy.variables}" class="font-weight--bold width--100"></span>
+                    </div>
+                    <duice-codemirror class="border--1 code"
+                                      data-duice-bind="basket"
+                                      data-duice-property="variables">
+                    </duice-codemirror>
+                </div>
+
                 <div class="grid-column--12">
                     <div class="display--flex justify-content--space-between margin--1px padding--1px">
                         <div>
                             <span data-th-text="#{fintics.Basket.script}" class="font-weight--bold width--100"></span>
+                        </div>
+                        <div>
+                            <button type="button" class="font-size--smaller" onclick="testBasket();">
+                                <img class="icon" th:src="@{/static/image/icon-test.svg}" alt="test"/>
+                                <span>Test</span>
+                            </button>
                         </div>
                     </div>
                     <duice-codemirror class="code" style="height:100vh;"
@@ -742,6 +767,102 @@
     </dialog>
     <!-- ====================================== -->
     <!-- end: asset-select                      -->
+    <!-- ====================================== -->
+
+    <!-- ====================================== -->
+    <!-- start: test-basket-dialog              -->
+    <!-- ====================================== -->
+    <dialog id="test-basket-dialog">
+        <style th:inline="css">
+            #test-basket-log {
+                min-width: 1000px;
+                min-height: 400px;
+                padding-top: 0.5em;
+                line-height: 1.2em;
+                background-color: #222;
+                color: white;
+            }
+        </style>
+        <script th:inline="javascript">
+            const testBasketDialog = {
+                dialog: new duice.dialog.Dialog(document.getElementById('test-basket-dialog')),
+                abortController: null,
+                signal: null,
+                test: function(basket) {
+                    let result = this.dialog
+                        .onClosed(() => {
+                            this.stop();
+                        })
+                        .open();
+                    this.abortController = new AbortController();
+                    this.signal = this.abortController.signal;
+                    let testBasketLog = document.getElementById('test-basket-log');
+                    testBasketLog.value = '';
+
+                    let url = new URL(`${_apiUrl}/v1/baskets/test`, document.location.origin);
+                    _fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(basket),
+                        signal: this.signal
+                    })
+                        .then(response => {
+                            const reader = response.body.getReader();
+                            const decoder = new TextDecoder();
+
+                            // read from stream
+                            function processText({ done, value }) {
+                                if (done) {
+                                    testBasketLog.value += `Script execution completed.\n`;
+                                    return;
+                                }
+
+                                const chunk = decoder.decode(value, { stream: true });
+                                testBasketLog.value += `${chunk}\n`;
+
+                                // reads stream
+                                return reader.read().then(processText);
+                            }
+
+                            // final read stream
+                            reader.read().then(processText);
+                        })
+                        .catch(error => {
+                            if (error.name === 'AbortError') {
+                                testBasketLog.value += `Fetch request was aborted.\n`;
+                            } else {
+                                testBasketLog.value += `An error occurred:${error}\n`;
+                            }
+                        });
+
+                    // result
+                    return result;
+                },
+                stop: function() {
+                    if (this.abortController) {
+                        this.abortController.abort();
+                        let testBasketLog = document.getElementById('test-basket-log');
+                        testBasketLog.value += `Script stopped by client.`;
+                    }
+                }
+            }
+        </script>
+        <div class="display--flex flex-direction--column padding--1em">
+            <div>
+                <h2>
+                    <img class="icon" th:src="@{/static/image/icon-test.svg}" alt="test"/>
+                    <span data-th-text="#{web.global.test}"></span>
+                </h2>
+            </div>
+            <div class="display--flex flex-direction--column gap--1em">
+                <label>
+                    <textarea id="test-basket-log" class="code"></textarea>
+                </label>
+            </div>
+        </div>
+    </dialog>
+    <!-- ====================================== -->
+    <!-- end: test-basket-dialog                -->
     <!-- ====================================== -->
 
 </th:block>

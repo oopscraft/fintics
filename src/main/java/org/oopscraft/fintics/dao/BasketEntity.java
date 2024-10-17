@@ -40,6 +40,10 @@ public class BasketEntity extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Basket.Language language;
 
+    @Column(name = "variables")
+    @Lob
+    private String variables;
+
     @Column(name = "script")
     @Lob
     private String script;

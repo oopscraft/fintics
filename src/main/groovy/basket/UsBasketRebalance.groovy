@@ -70,13 +70,16 @@ def etfSymbols = [
         'MTUM',     // iShares MSCI USA Momentum Factor ETF
         'VUG',      // Vanguard Growth ETF
         'IWF',      // iShares Russell 1000 Growth ETF
+        'COWZ',     // Pacer US Cash Cows 100 ETF
         // sector ETF
         'XLK',      // The Technology Select Sector SPDR Fund
         'VGT',      // Vanguard Information Technology Index Fund ETF Shares
         'IYW',      // iShares U.S. Technology ETF
         'SOXX',     // iShares Semiconductor ETF
+        'SMH',      // VanEck Semiconductor ETF
         'XLV',      // SPDR Select Sector Fund - Health Care
         'XBI',      // SPDR Series Trust SPDR S&P Biotech ETF
+        'GRID',     // First Trust NASDAQ Clean Edge Smart Grid Infrastructure Index Fund
         'XLI',      // The Industrial Select Sector SPDR Fund
         'XAR',      // SPDR S&P Aerospace & Defense ETF
         'ITA',      // iShares U.S. Aerospace & Defense ETF

@@ -23,9 +23,11 @@ public class GroovyBasketScriptRunner extends BasketScriptRunner {
         ClassLoader classLoader = this.getClass().getClassLoader();
         GroovyClassLoader groovyClassLoader = new GroovyClassLoader(classLoader);
         Binding binding = new Binding();
+        binding.setVariable("variables", loadRuleConfigAsProperties(basket.getVariables()));
         binding.setVariable("basket", basket);
         binding.setVariable("assetService", assetService);
         binding.setVariable("ohlcvClient", ohlcvClient);
+        binding.setVariable("log", log);
         GroovyShell groovyShell = new GroovyShell(groovyClassLoader, binding);
         Object result = groovyShell.evaluate(
                 "import " + BasketRebalanceAsset.class.getName() + '\n' +
