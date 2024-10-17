@@ -823,7 +823,8 @@ public class KisUsBrokerClient extends BrokerClient {
                                 .disposePrice(new BigDecimal(row.get("avg_sll_unpr")))
                                 .disposeAmount(new BigDecimal(row.get("frcr_sll_amt_smtl1")))
                                 .feeAmount(new BigDecimal(row.get("stck_sll_tlex")))
-                                .profitAmount(new BigDecimal(row.get("ovrs_rlzt_pfls_amt")))
+                                .profitAmount(new BigDecimal(row.get("ovrs_rlzt_pfls_amt"))
+                                        .setScale(2, RoundingMode.DOWN))
                                 .profitPercentage(new BigDecimal(row.get("pftrt")).setScale(2, RoundingMode.HALF_UP))
                                 .build();
                     })
@@ -876,7 +877,9 @@ public class KisUsBrokerClient extends BrokerClient {
                 Map<String,String> paymentBalanceAsset = getPaymentBalanceAsset(date, symbol);
                 if (paymentBalanceAsset != null) {
                     BigDecimal holdingQuantity = new BigDecimal(paymentBalanceAsset.get("cblc_qty13"));
-                    BigDecimal dividendAmount = dividendPerUnit.multiply(holdingQuantity);
+                    BigDecimal dividendAmount = dividendPerUnit
+                            .multiply(holdingQuantity)
+                            .setScale(2, RoundingMode.DOWN);
                     DividendHistory dividendHistory = DividendHistory.builder()
                             .date(date)
                             .symbol(symbol)

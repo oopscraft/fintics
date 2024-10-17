@@ -954,8 +954,10 @@ public class KisBrokerClient extends BrokerClient {
                         .orElse(null);
                 if (periodOrder != null) {
                     BigDecimal holdingQuantity = new BigDecimal(periodOrder.getOrDefault("hldg_qty", "0"));
-                    BigDecimal dividendAmount = dividendPerUnit.multiply(holdingQuantity)
-                            .multiply(BigDecimal.valueOf(0.85));    // 배당소득세
+                    BigDecimal dividendAmount = dividendPerUnit
+                            .multiply(holdingQuantity)
+                            .multiply(BigDecimal.valueOf(0.85))    // 배당소득세
+                            .setScale(0, RoundingMode.DOWN);
                     if (holdingQuantity.compareTo(BigDecimal.ZERO) > 0) {
                         DividendHistory dividendHistory = DividendHistory.builder()
                                 .date(paymentDate)
