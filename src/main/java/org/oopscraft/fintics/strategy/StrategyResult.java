@@ -15,7 +15,6 @@ public class StrategyResult {
     @EqualsAndHashCode.Include
     private Action action;
 
-    @EqualsAndHashCode.Include
     private BigDecimal position;
 
     private String description;

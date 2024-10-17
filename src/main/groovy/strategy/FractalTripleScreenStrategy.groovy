@@ -219,6 +219,16 @@ class Analyzer {
         score.stochasticSlow = stochasticSlows.take(3).any{it.slowK <= 20} ? 100 : 0
         // williams r: -80 이하인 경우 과매도 판정
         score.williamsR = williamsRs.take(3).any{it.value <= -80} ? 100 : 0
+
+        // 상승 모멘텀이 강한 경우 positive weight
+        if (this.getMomentumScore() > 90) {
+            score.momentumWeight = score.getAverage() * 1.0
+        }
+        // 하락 모멘텀이 강한 경우 negative weight
+        if (this.getMomentumScore() < 10) {
+            score.momentumWeight = score.getAverage() * 0.0
+        }
+
         // return
         return score
     }
@@ -237,21 +247,16 @@ class Analyzer {
         score.stochasticSlow = stochasticSlows.take(3).any{it.slowK >= 80} ? 100 : 0
         // williams r: -20 이상인 경우 과매수 판정
         score.williamsR = williamsRs.take(3).any{it.value >= -20} ? 100 : 0
-        // return
-        return score
-    }
 
-    /**
-     * gets trailing stop score
-     * @return trailing stop score
-     */
-    Score getTrailingStopScore() {
-        def score = new Score()
-        // atr
-        def prevOhlcv = ohlcvs.get(1)
-        def prevAtr = atrs.get(1)
-        def stopPrice = prevOhlcv.high - (prevAtr.value * 2.0)
-        score.atrAtr = ohlcv.close < stopPrice ? 100 : 0
+        // 상승 모멘텀이 강한 경우 positive weight
+        if (this.getMomentumScore() > 90) {
+            score.momentumWeight = score.getAverage() * 0.0
+        }
+        // 하락 모멘텀이 강한 경우 negative weight
+        if (this.getMomentumScore() < 10) {
+            score.momentumWeight = score.getAverage() * 1.0
+        }
+
         // return
         return score
     }
@@ -358,11 +363,17 @@ class TripleScreenStrategy {
 //===============================
 // config
 //===============================
-StrategyResult strategyResult = null
 log.info("variables: {}", variables)
 def basePosition = new BigDecimal(variables['basePosition'])
 def sellProfitPercentageThreshold = new BigDecimal(variables['sellProfitPercentageThreshold'])
 def splitIndex = Integer.parseInt(variables['splitIndex'] ?: '-1')
+
+//===============================
+// defines
+//===============================
+StrategyResult strategyResult = null
+List<Ohlcv> ohlcvs = tradeAsset.getOhlcvs(Ohlcv.Type.MINUTE, 1)
+def ohlcv = ohlcvs.first()
 
 //===============================
 // strategy
@@ -406,7 +417,7 @@ def splitBuyLimited = false
 if (splitIndex >= 0) {
     splitLimitPrice = splitLimitPrices[splitIndex]
     // 현제 가격이 split limit 이상인 경우 분할 매수 제한
-    if (rippleAnalyzer.getCurrentClose() > splitLimitPrice) {
+    if (ohlcv.close > splitLimitPrice) {
         splitBuyLimited = true
     }
 }

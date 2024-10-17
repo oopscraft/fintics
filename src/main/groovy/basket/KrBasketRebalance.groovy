@@ -96,7 +96,7 @@ candidateItems = candidateItems
                 .etfSymbol(etfSymbol)
                 .build();
         }
-println "candidateItems: ${candidateItems}"
+log.info("candidateItems: ${candidateItems}")
 
 //=========================================
 // filter
@@ -149,7 +149,7 @@ List<Item> finalItems = candidateItems.findAll {
     // return
     return it
 }
-println "finalItems: ${finalItems}"
+log.info("finalItems: ${finalItems}")
 
 //=========================================
 // sort by score
@@ -168,5 +168,5 @@ finalItems = finalItems
 List<BasketRebalanceAsset> basketRebalanceResults = finalItems.collect{
     BasketRebalanceAsset.of(it.symbol, it.name, holdingWeightPerAsset, it.etfSymbol)
 }
-println("basketRebalanceResults: ${basketRebalanceResults}")
+log.info("basketRebalanceResults: ${basketRebalanceResults}")
 return basketRebalanceResults
