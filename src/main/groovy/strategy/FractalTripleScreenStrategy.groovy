@@ -36,6 +36,7 @@ class Score extends LinkedHashMap<String, BigDecimal> implements Comparable<Scor
 class Channel {
     BigDecimal upper
     BigDecimal lower
+    BigDecimal middle
     LinkedHashMap<String, Object> source = new LinkedHashMap<>()
 }
 
@@ -158,6 +159,7 @@ class Analyzer {
         // set channel value
         channel.upper = (uppers.average() as BigDecimal).setScale(4, RoundingMode.HALF_UP)
         channel.lower = (lowers.average() as BigDecimal).setScale(4, RoundingMode.HALF_UP)
+        channel.middle = ((channel.upper + channel.lower) / 2).setScale(4, RoundingMode.HALF_UP)
 
         // return
         return channel
@@ -219,16 +221,6 @@ class Analyzer {
         score.stochasticSlow = stochasticSlows.take(3).any{it.slowK <= 20} ? 100 : 0
         // williams r: -80 이하인 경우 과매도 판정
         score.williamsR = williamsRs.take(3).any{it.value <= -80} ? 100 : 0
-
-        // 상승 모멘텀이 강한 경우 positive weight
-        if (this.getMomentumScore() > 90) {
-            score.momentumWeight = score.getAverage() * 1.0
-        }
-        // 하락 모멘텀이 강한 경우 negative weight
-        if (this.getMomentumScore() < 10) {
-            score.momentumWeight = score.getAverage() * 0.0
-        }
-
         // return
         return score
     }
@@ -247,16 +239,6 @@ class Analyzer {
         score.stochasticSlow = stochasticSlows.take(3).any{it.slowK >= 80} ? 100 : 0
         // williams r: -20 이상인 경우 과매수 판정
         score.williamsR = williamsRs.take(3).any{it.value >= -20} ? 100 : 0
-
-        // 상승 모멘텀이 강한 경우 positive weight
-        if (this.getMomentumScore() > 90) {
-            score.momentumWeight = score.getAverage() * 0.0
-        }
-        // 하락 모멘텀이 강한 경우 negative weight
-        if (this.getMomentumScore() < 10) {
-            score.momentumWeight = score.getAverage() * 1.0
-        }
-
         // return
         return score
     }
@@ -277,6 +259,7 @@ class Analyzer {
  */
 class TripleScreenStrategy {
 
+    String name
     Analyzer tideAnalyzer
     Analyzer waveAnalyzer
     Analyzer rippleAnalyzer
@@ -292,7 +275,8 @@ class TripleScreenStrategy {
      * @param rippleOhlcvPeriod ripple ohlcv period
      */
     @Builder
-    TripleScreenStrategy(TradeAsset tradeAsset, Ohlcv.Type tideOhlcvType, int tideOhlcvPeriod, Ohlcv.Type waveOhlcvType, int waveOhlcvPeriod, Ohlcv.Type rippleOhlcvType, int rippleOhlcvPeriod) {
+    TripleScreenStrategy(String name, TradeAsset tradeAsset, Ohlcv.Type tideOhlcvType, int tideOhlcvPeriod, Ohlcv.Type waveOhlcvType, int waveOhlcvPeriod, Ohlcv.Type rippleOhlcvType, int rippleOhlcvPeriod) {
+        this.name = name;
         this.tideAnalyzer = new Analyzer(tradeAsset, tideOhlcvType, tideOhlcvPeriod)
         this.waveAnalyzer = new Analyzer(tradeAsset, waveOhlcvType, waveOhlcvPeriod)
         this.rippleAnalyzer = new Analyzer(tradeAsset, rippleOhlcvType, rippleOhlcvPeriod)
@@ -303,7 +287,7 @@ class TripleScreenStrategy {
      * @param position position
      * @return strategy result
      */
-    Optional<StrategyResult> execute(BigDecimal position) {
+    Optional<StrategyResult> execute(BigDecimal buyPosition, BigDecimal sellPosition) {
         StrategyResult strategyResult = null
 
         // tide 상승 모멘텀
@@ -315,8 +299,8 @@ class TripleScreenStrategy {
                     // ripple 상승 모멘텀
                     if (rippleAnalyzer.getMomentumScore() > 50) {
                         // 평균가 기준 매수 포지션
-                        def averagePosition = waveAnalyzer.adjustAveragePosition(position)
-                        strategyResult = StrategyResult.of(Action.BUY, averagePosition, "test")
+                        def averageBuyPosition = waveAnalyzer.adjustAveragePosition(buyPosition)
+                        strategyResult = StrategyResult.of(Action.BUY, averageBuyPosition, "${this.name}:" + this.toString())
                         // filter - tide overbought
                         if (tideAnalyzer.getOverboughtScore() > 50) {
                             strategyResult = null
@@ -335,8 +319,8 @@ class TripleScreenStrategy {
                     // ripple 하락 모멘텀
                     if (rippleAnalyzer.getMomentumScore() < 50) {
                         // 평균가 기준 매도 포지션
-                        def averagePosition = waveAnalyzer.adjustAveragePosition(position)
-                        strategyResult = StrategyResult.of(Action.SELL, averagePosition, "test")
+                        def averageSellPosition = waveAnalyzer.adjustAveragePosition(sellPosition)
+                        strategyResult = StrategyResult.of(Action.SELL, averageSellPosition, "${this.name}:" + this.toString())
                         // filter - tide oversold
                         if (tideAnalyzer.getOversoldScore() > 50) {
                             strategyResult = null
@@ -355,7 +339,12 @@ class TripleScreenStrategy {
         return  "tide.momentum:${tideAnalyzer.getMomentumScore().getAverage()}," +
                 "wave.oversold:${waveAnalyzer.getOversoldScore().getAverage()}," +
                 "wave.overbought:${waveAnalyzer.getOverboughtScore().getAverage()}," +
-                "ripple.momentum:${rippleAnalyzer.getMomentumScore().getAverage()}"
+                "ripple.momentum:${rippleAnalyzer.getMomentumScore().getAverage()}" +
+                " (" +
+                "wave.volatility:${waveAnalyzer.getVolatilityScore().getAverage()}," +
+                "tide.oversold:${tideAnalyzer.getOversoldScore().getAverage()}," +
+                "tide.overbought:${tideAnalyzer.getOverboughtScore().getAverage()}" +
+                ")"
     }
 
 }
@@ -378,18 +367,9 @@ def ohlcv = ohlcvs.first()
 //===============================
 // strategy
 //===============================
-// daily
-def dailyTripleScreenStrategy = TripleScreenStrategy.builder()
-        .tradeAsset(tradeAsset)
-        .tideOhlcvType(Ohlcv.Type.DAILY)
-        .tideOhlcvPeriod(1)
-        .waveOhlcvType(Ohlcv.Type.MINUTE)
-        .waveOhlcvPeriod(60)
-        .rippleOhlcvType(Ohlcv.Type.MINUTE)
-        .rippleOhlcvPeriod(10)
-        .build()
 // hourly
 def hourlyTripleScreenStrategy = TripleScreenStrategy.builder()
+        .name('hourly')
         .tradeAsset(tradeAsset)
         .tideOhlcvType(Ohlcv.Type.MINUTE)
         .tideOhlcvPeriod(60)
@@ -398,12 +378,34 @@ def hourlyTripleScreenStrategy = TripleScreenStrategy.builder()
         .rippleOhlcvType(Ohlcv.Type.MINUTE)
         .rippleOhlcvPeriod(2)
         .build()
+// daily
+def dailyTripleScreenStrategy = TripleScreenStrategy.builder()
+        .name('daily')
+        .tradeAsset(tradeAsset)
+        .tideOhlcvType(Ohlcv.Type.DAILY)
+        .tideOhlcvPeriod(1)
+        .waveOhlcvType(Ohlcv.Type.MINUTE)
+        .waveOhlcvPeriod(60)
+        .rippleOhlcvType(Ohlcv.Type.MINUTE)
+        .rippleOhlcvPeriod(10)
+        .build()
+// weekly
+def weeklyTripleScreenStrategy = TripleScreenStrategy.builder()
+        .name('weekly')
+        .tradeAsset(tradeAsset)
+        .tideOhlcvType(Ohlcv.Type.DAILY)
+        .tideOhlcvPeriod(5)
+        .waveOhlcvType(Ohlcv.Type.DAILY)
+        .waveOhlcvPeriod(1)
+        .rippleOhlcvType(Ohlcv.Type.MINUTE)
+        .rippleOhlcvPeriod(60)
+        .build()
 
 //===============================
 // split limit
 //===============================
 def splitPeriod = 100
-def splitSize = 5
+def splitSize = 3
 def channel =  dailyTripleScreenStrategy.tideAnalyzer.getChannel(splitPeriod)
 def splitMaxPrice = channel.upper
 def splitMinPrice = channel.lower
@@ -430,23 +432,19 @@ def profitPercentage = balanceAsset?.getProfitPercentage() ?: 0.0
 //===============================
 // position
 //===============================
-def positionScore = 0
-positionScore += dailyTripleScreenStrategy.tideAnalyzer.getMomentumScore() > 50 ? 50 : 0
-positionScore += hourlyTripleScreenStrategy.tideAnalyzer.getMomentumScore() > 50 ? 50 : 0
-def positionPerScore = (1.0 -basePosition)/100
-def position = basePosition + (positionPerScore * positionScore) as BigDecimal
+def buyPosition = 1.0
+def sellPosition = basePosition
 
 //===============================
 // message
 //===============================
 def message = """
-channel:upper=${channel.upper}, lower=${channel.lower}
+channel:upper=${channel.upper}, lower=${channel.lower}, middle=${channel.middle}
 splitLimits:${splitLimitPrices}
-splitIndex:${splitIndex}, splitLimit:${splitLimitPrice}
-splitBuyLimited:${splitBuyLimited}
-position:${position.toPlainString()}
+splitBuyLimited:${splitBuyLimited} (splitIndex:${splitIndex}, splitLimit:${splitLimitPrice})
 hourly:${hourlyTripleScreenStrategy}
 daily:${dailyTripleScreenStrategy}
+weekly:${weeklyTripleScreenStrategy}
 """
 log.info("message: {}", message)
 tradeAsset.setMessage(message)
@@ -455,11 +453,15 @@ tradeAsset.setMessage(message)
 // execute strategy
 //===============================
 // hourly
-hourlyTripleScreenStrategy.execute(position).ifPresent(it -> {
+hourlyTripleScreenStrategy.execute(buyPosition, sellPosition).ifPresent(it -> {
     strategyResult = it
 })
 // daily
-dailyTripleScreenStrategy.execute(position).ifPresent(it -> {
+dailyTripleScreenStrategy.execute(buyPosition, sellPosition).ifPresent(it -> {
+    strategyResult = it
+})
+// weekly
+weeklyTripleScreenStrategy.execute(buyPosition, sellPosition).ifPresent(it -> {
     strategyResult = it
 })
 
