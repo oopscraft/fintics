@@ -368,9 +368,31 @@ class TripleScreenStrategy {
 // config
 //===============================
 log.info("variables: {}", variables)
-def basePosition = new BigDecimal(variables['basePosition'])
-def sellProfitPercentageThreshold = new BigDecimal(variables['sellProfitPercentageThreshold'])
-def splitIndex = Integer.parseInt(variables['splitIndex'] ?: '-1')
+// macro
+def microTideOhlcvType = variables['micro.tide.ohlcv.type'] as Ohlcv.Type
+def microTideOhlcvPeriod = variables['micro.tide.ohlcv.period'] as Integer
+def microWaveOhlcvType = variables['micro.wave.ohlcv.type'] as Ohlcv.Type
+def microWaveOhlcvPeriod = variables['micro.wave.ohlcv.period'] as Integer
+def microRippleOhlcvType = variables['micro.ripple.ohlcv.type'] as Ohlcv.Type
+def microRippleOhlcvPeriod = variables['micro.ripple.ohlcv.period'] as Integer
+// meso
+def mesoTideOhlcvType = variables['meso.tide.ohlcv.type'] as Ohlcv.Type
+def mesoTideOhlcvPeriod = variables['meso.tide.ohlcv.period'] as Integer
+def mesoWaveOhlcvType = variables['meso.wave.ohlcv.type'] as Ohlcv.Type
+def mesoWaveOhlcvPeriod = variables['meso.wave.ohlcv.period'] as Integer
+def mesoRippleOhlcvType = variables['meso.ripple.ohlcv.type'] as Ohlcv.Type
+def mesoRippleOhlcvPeriod = variables['meso.ripple.ohlcv.period'] as Integer
+// macro
+def macroTideOhlcvType = variables['macro.tide.ohlcv.type'] as Ohlcv.Type
+def macroTideOhlcvPeriod = variables['macro.tide.ohlcv.period'] as Integer
+def macroWaveOhlcvType = variables['macro.wave.ohlcv.type'] as Ohlcv.Type
+def macroWaveOhlcvPeriod = variables['macro.wave.ohlcv.period'] as Integer
+def macroRippleOhlcvType = variables['macro.ripple.ohlcv.type'] as Ohlcv.Type
+def macroRippleOhlcvPeriod = variables['macro.ripple.ohlcv.period'] as Integer
+// etc
+def basePosition = variables['basePosition'] as BigDecimal
+def sellProfitPercentageThreshold = variables['sellProfitPercentageThreshold'] as BigDecimal
+def splitIndex = variables['splitIndex'] as Integer ?: -1
 
 //===============================
 // defines
@@ -382,38 +404,38 @@ def ohlcv = ohlcvs.first()
 //===============================
 // strategy
 //===============================
-// hourly
-def hourlyTripleScreenStrategy = TripleScreenStrategy.builder()
-        .name('hourly')
+// micro
+def microTripleScreenStrategy = TripleScreenStrategy.builder()
+        .name('micro')
         .tradeAsset(tradeAsset)
-        .tideOhlcvType(Ohlcv.Type.MINUTE)
-        .tideOhlcvPeriod(60)
-        .waveOhlcvType(Ohlcv.Type.MINUTE)
-        .waveOhlcvPeriod(10)
-        .rippleOhlcvType(Ohlcv.Type.MINUTE)
-        .rippleOhlcvPeriod(2)
+        .tideOhlcvType(microTideOhlcvType)
+        .tideOhlcvPeriod(microTideOhlcvPeriod)
+        .waveOhlcvType(microWaveOhlcvType)
+        .waveOhlcvPeriod(microWaveOhlcvPeriod)
+        .rippleOhlcvType(microRippleOhlcvType)
+        .rippleOhlcvPeriod(microRippleOhlcvPeriod)
         .build()
-// daily
-def dailyTripleScreenStrategy = TripleScreenStrategy.builder()
-        .name('daily')
+// meso
+def mesoTripleScreenStrategy = TripleScreenStrategy.builder()
+        .name('meso')
         .tradeAsset(tradeAsset)
-        .tideOhlcvType(Ohlcv.Type.DAILY)
-        .tideOhlcvPeriod(1)
-        .waveOhlcvType(Ohlcv.Type.MINUTE)
-        .waveOhlcvPeriod(60)
-        .rippleOhlcvType(Ohlcv.Type.MINUTE)
-        .rippleOhlcvPeriod(10)
+        .tideOhlcvType(mesoTideOhlcvType)
+        .tideOhlcvPeriod(mesoTideOhlcvPeriod)
+        .waveOhlcvType(mesoWaveOhlcvType)
+        .waveOhlcvPeriod(mesoWaveOhlcvPeriod)
+        .rippleOhlcvType(mesoRippleOhlcvType)
+        .rippleOhlcvPeriod(mesoRippleOhlcvPeriod)
         .build()
-// weekly
-def weeklyTripleScreenStrategy = TripleScreenStrategy.builder()
-        .name('weekly')
+// macro
+def macroTripleScreenStrategy = TripleScreenStrategy.builder()
+        .name('macro')
         .tradeAsset(tradeAsset)
-        .tideOhlcvType(Ohlcv.Type.DAILY)
-        .tideOhlcvPeriod(5)
-        .waveOhlcvType(Ohlcv.Type.DAILY)
-        .waveOhlcvPeriod(1)
-        .rippleOhlcvType(Ohlcv.Type.MINUTE)
-        .rippleOhlcvPeriod(60)
+        .tideOhlcvType(macroTideOhlcvType)
+        .tideOhlcvPeriod(macroTideOhlcvPeriod)
+        .waveOhlcvType(macroWaveOhlcvType)
+        .waveOhlcvPeriod(macroWaveOhlcvPeriod)
+        .rippleOhlcvType(macroRippleOhlcvType)
+        .rippleOhlcvPeriod(macroRippleOhlcvPeriod)
         .build()
 
 //===============================
@@ -421,7 +443,7 @@ def weeklyTripleScreenStrategy = TripleScreenStrategy.builder()
 //===============================
 def splitPeriod = 100
 def splitSize = 3
-def channel =  dailyTripleScreenStrategy.tideAnalyzer.getChannel(splitPeriod)
+def channel =  mesoTripleScreenStrategy.tideAnalyzer.getChannel(splitPeriod)
 def splitMaxPrice = channel.upper
 def splitMinPrice = channel.lower
 def splitInterval = ((splitMaxPrice - splitMinPrice)/splitSize as BigDecimal).setScale(4, RoundingMode.HALF_UP)
@@ -457,9 +479,9 @@ def message = """
 channel:upper=${channel.upper}, lower=${channel.lower}, middle=${channel.middle}
 splitLimits:${splitLimitPrices}
 splitBuyLimited:${splitBuyLimited} (splitIndex:${splitIndex}, splitLimit:${splitLimitPrice})
-hourly:${hourlyTripleScreenStrategy}
-daily:${dailyTripleScreenStrategy}
-weekly:${weeklyTripleScreenStrategy}
+hourly:${microTripleScreenStrategy}
+daily:${mesoTripleScreenStrategy}
+weekly:${macroTripleScreenStrategy}
 """
 log.info("message: {}", message)
 tradeAsset.setMessage(message)
@@ -468,15 +490,15 @@ tradeAsset.setMessage(message)
 // execute strategy
 //===============================
 // hourly
-hourlyTripleScreenStrategy.getResult(maxPosition, minPosition).ifPresent(it -> {
+microTripleScreenStrategy.getResult(maxPosition, minPosition).ifPresent(it -> {
     strategyResult = it
 })
 // daily
-dailyTripleScreenStrategy.getResult(maxPosition, minPosition).ifPresent(it -> {
+mesoTripleScreenStrategy.getResult(maxPosition, minPosition).ifPresent(it -> {
     strategyResult = it
 })
 // weekly
-weeklyTripleScreenStrategy.getResult(maxPosition, minPosition).ifPresent(it -> {
+macroTripleScreenStrategy.getResult(maxPosition, minPosition).ifPresent(it -> {
     strategyResult = it
 })
 

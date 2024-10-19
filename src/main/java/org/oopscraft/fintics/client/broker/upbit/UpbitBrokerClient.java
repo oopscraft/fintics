@@ -213,31 +213,44 @@ public class UpbitBrokerClient extends BrokerClient {
             String currency = row.get("currency");
             String unitCurrency = row.get("unit_currency");
             String symbol = String.format("%s-%s", unitCurrency, currency);
-            BigDecimal balance = new BigDecimal(row.get("balance"));
-            BigDecimal averageBuyPrice = new BigDecimal(row.get("avg_buy_price"));
+            BigDecimal assetBalance = new BigDecimal(row.get("balance"));
+            BigDecimal assetAverageBuyPrice = new BigDecimal(row.get("avg_buy_price"));
             if("KRW".equals(currency) && "KRW".equals(unitCurrency)) {
-                totalAmount = totalAmount.add(balance);
-                cacheAmount = cacheAmount.add(balance);
-                valuationAmount = valuationAmount.add(balance);
+                totalAmount = totalAmount.add(assetBalance);
+                cacheAmount = cacheAmount.add(assetBalance);
+                valuationAmount = valuationAmount.add(assetBalance);
             }else{
-                BigDecimal assetPurchaseAmount = averageBuyPrice.multiply(balance)
+                BigDecimal assetPurchaseAmount = assetAverageBuyPrice.multiply(assetBalance)
                         .setScale(0, RoundingMode.HALF_UP);
                 totalAmount = totalAmount.add(assetPurchaseAmount);
                 purchaseAmount = purchaseAmount.add(assetPurchaseAmount);
+
+                // upbit 의 경우 평가 금액 확인 불가로 order book 재조회 후 산출
+                Asset asset = Asset.builder()
+                        .assetId(toAssetId(symbol))
+                        .name(symbol)
+                        .build();
+                OrderBook orderBook = getOrderBook(asset);
+                BigDecimal assetValuationAmount = orderBook.getPrice().multiply(assetBalance)
+                        .setScale(2, RoundingMode.HALF_UP);
+                valuationAmount = valuationAmount.add(assetValuationAmount);
+
+                // profit amount
+                BigDecimal assetProfitAmount = assetValuationAmount.subtract(assetPurchaseAmount)
+                        .setScale(2, RoundingMode.HALF_UP);
+                profitAmount = profitAmount.add(assetProfitAmount);
+
+                // add
                 BalanceAsset balanceAsset = BalanceAsset.builder()
                         .assetId(toAssetId(symbol))
                         .name(symbol)
-                        .quantity(balance)
-                        .orderableQuantity(balance)
-                        .purchaseAmount(purchaseAmount)
+                        .quantity(assetBalance)
+                        .orderableQuantity(assetBalance)
+                        .purchaseAmount(assetPurchaseAmount)
+                        .valuationAmount(assetValuationAmount)
+                        .profitAmount(assetProfitAmount)
                         .build();
-                // upbit 의 경우 평가 금액 확인 불가로 order book 재조회 후 산출
-                OrderBook orderBook = getOrderBook(balanceAsset);
-                BigDecimal assetValuationAmount = orderBook.getPrice().multiply(balance)
-                        .setScale(2, RoundingMode.HALF_UP);
-                balanceAsset.setValuationAmount(assetValuationAmount);
                 balanceAssets.add(balanceAsset);
-                valuationAmount = valuationAmount.add(assetValuationAmount);
             }
         }
         return Balance.builder()
