@@ -274,6 +274,7 @@
                                 <th data-th-text="#{fintics.BasketAsset.fixed}" class="text-align--center"></th>
                                 <th data-th-text="#{fintics.BasketAsset.enabled}" class="text-align--center"></th>
                                 <th data-th-text="#{fintics.BasketAsset.holdingWeight}" class="text-align--right"></th>
+                                <th data-th-text="#{fintics.BasketAsset.variables}" class="text-align--center"></th>
                             </tr>
                             </thead>
                             <tbody>
@@ -342,6 +343,11 @@
                                 <td class="text-align--right">
                                     <label>
                                         <input type="number" data-duice-bind="basketAsset" data-duice-property="holdingWeight" class="width--50"/>%
+                                    </label>
+                                </td>
+                                <td>
+                                    <label class="display--flex">
+                                        <textarea data-duice-bind="basketAsset" data-duice-property="variables" class="width--100 height--100"></textarea>
                                     </label>
                                 </td>
                             </tr>
