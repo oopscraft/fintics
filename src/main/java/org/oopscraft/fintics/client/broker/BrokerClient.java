@@ -68,12 +68,29 @@ public abstract class BrokerClient {
     public abstract BigDecimal getTickPrice(Asset asset, BigDecimal price) throws InterruptedException;
 
     /**
-     * check if minimum order amount over
-     * @param quantity quantity
+     * check available price and quantity
      * @param price price
-     * @return is over minimum order and amount
+     * @param quantity quantity
+     * @return whether price and quantity is available or not
      */
-    public abstract boolean isOverMinimumOrderAmount(BigDecimal quantity, BigDecimal price) throws InterruptedException;
+    public boolean isAvailablePriceAndQuantity(BigDecimal price, BigDecimal quantity) {
+        boolean available = true;
+        if (price.compareTo(BigDecimal.ZERO) <= 0) {
+            available = false;
+        }
+        if (quantity.compareTo(BigDecimal.ONE) < 0) {
+            available = false;
+        }
+        return available;
+    }
+
+    /**
+     * returns quantity scale
+     * @return quantity scale
+     */
+    public int getQuantityScale() {
+        return 0;
+    }
 
     /**
      * returns balance

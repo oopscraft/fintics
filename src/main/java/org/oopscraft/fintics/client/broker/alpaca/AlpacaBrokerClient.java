@@ -119,11 +119,6 @@ public class AlpacaBrokerClient extends BrokerClient {
     }
 
     @Override
-    public boolean isOverMinimumOrderAmount(BigDecimal quantity, BigDecimal price) throws InterruptedException {
-        return false;
-    }
-
-    @Override
     public Balance getBalance() throws InterruptedException {
         return null;
     }

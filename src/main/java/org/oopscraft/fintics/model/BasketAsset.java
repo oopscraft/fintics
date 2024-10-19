@@ -26,6 +26,8 @@ public class BasketAsset extends Asset {
 
     private BigDecimal holdingWeight;
 
+    private String variables;
+
     /**
      * from factory method
      * @param basketAssetEntity basket asset entity
@@ -39,6 +41,7 @@ public class BasketAsset extends Asset {
                 .fixed(basketAssetEntity.isFixed())
                 .enabled(basketAssetEntity.isEnabled())
                 .holdingWeight(basketAssetEntity.getHoldingWeight())
+                .variables(basketAssetEntity.getVariables())
                 .build();
 
         // asset entity

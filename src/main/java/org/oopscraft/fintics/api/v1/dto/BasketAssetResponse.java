@@ -25,6 +25,8 @@ public class BasketAssetResponse extends AssetResponse {
 
     private BigDecimal holdingWeight;
 
+    private String variables;
+
     public static BasketAssetResponse from(BasketAsset basketAsset) {
         return BasketAssetResponse.builder()
                 .basketId(basketAsset.getBasketId())
@@ -37,6 +39,7 @@ public class BasketAssetResponse extends AssetResponse {
                 .fixed(basketAsset.isFixed())
                 .enabled(basketAsset.isEnabled())
                 .holdingWeight(basketAsset.getHoldingWeight())
+                .variables(basketAsset.getVariables())
                 .sort(basketAsset.getSort())
                 .icon(basketAsset.getIcon())
                 .links(LinkResponse.from(basketAsset.getLinks()))

@@ -214,9 +214,9 @@ public class TradeExecutor {
                         BigDecimal buyPrice = calculateBuyPrice(tradeAsset, orderBook, brokerClient);
                         BigDecimal buyQuantity = buyAmount
                                 .divide(buyPrice, MathContext.DECIMAL32)
-                                .setScale(0, RoundingMode.HALF_UP);
+                                .setScale(brokerClient.getQuantityScale(), RoundingMode.HALF_UP);
                         // check minimum order amount
-                        boolean canBuy = brokerClient.isOverMinimumOrderAmount(buyQuantity, buyPrice);
+                        boolean canBuy = brokerClient.isAvailablePriceAndQuantity(buyPrice, buyQuantity);
                         if (canBuy) {
                             buyTradeAsset(brokerClient, trade, tradeAsset, buyQuantity, buyPrice, strategyResult);
                         }
@@ -231,9 +231,9 @@ public class TradeExecutor {
                         BigDecimal sellPrice = calculateSellPrice(tradeAsset, orderBook, brokerClient);
                         BigDecimal sellQuantity = sellAmount
                                 .divide(sellPrice, MathContext.DECIMAL32)
-                                .setScale(0, RoundingMode.HALF_UP);
+                                .setScale(brokerClient.getQuantityScale(), RoundingMode.HALF_UP);
                         // check minimum order amount
-                        boolean canSell = brokerClient.isOverMinimumOrderAmount(sellQuantity, sellPrice);
+                        boolean canSell = brokerClient.isAvailablePriceAndQuantity(sellPrice, sellQuantity);
                         if (canSell) {
                             sellTradeAsset(brokerClient, trade, tradeAsset, sellQuantity, sellPrice, strategyResult, balanceAsset);
                         }

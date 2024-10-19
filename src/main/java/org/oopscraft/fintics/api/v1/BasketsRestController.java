@@ -112,6 +112,7 @@ public class BasketsRestController {
                                 .fixed(basketAssetRequest.isFixed())
                                 .enabled(basketAssetRequest.isEnabled())
                                 .holdingWeight(basketAssetRequest.getHoldingWeight())
+                                .variables(basketAssetRequest.getVariables())
                         .build())
                 .collect(Collectors.toList());
         basket.setBasketAssets(basketAssets);
@@ -150,6 +151,7 @@ public class BasketsRestController {
                             .fixed(basketAssetRequest.isFixed())
                             .enabled(basketAssetRequest.isEnabled())
                             .holdingWeight(basketAssetRequest.getHoldingWeight())
+                            .variables(basketAssetRequest.getVariables())
                             .build();
                 })
                 .collect(Collectors.toList());

@@ -91,6 +91,7 @@ public class BasketService {
                     .fixed(basketAsset.isFixed())
                     .enabled(basketAsset.isEnabled())
                     .holdingWeight(basketAsset.getHoldingWeight())
+                    .variables(basketAsset.getVariables())
                     .sort(sort ++)
                     .build();
             basketAssetEntities.add(basketAssetEntity);

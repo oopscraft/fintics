@@ -397,17 +397,6 @@ public class KisBrokerClient extends BrokerClient {
     }
 
     /**
-     * check minimum order amount
-     * @param quantity quantity
-     * @param price price
-     * @return whether is over minimum
-     */
-    @Override
-    public boolean isOverMinimumOrderAmount(BigDecimal quantity, BigDecimal price) throws InterruptedException {
-        return quantity.compareTo(BigDecimal.ONE) >= 0;
-    }
-
-    /**
      * return account balance
      * @return balance
      * @see [주식잔고조회[v1_국내주식-006]](https://apiportal.koreainvestment.com/apiservice/apiservice-domestic-stock-order#L_66c61080-674f-4c91-a0cc-db5e64e9a5e6)

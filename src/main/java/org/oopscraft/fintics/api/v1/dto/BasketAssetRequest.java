@@ -27,4 +27,7 @@ public class BasketAssetRequest {
     @Schema(description = "hold ratio", example = "10")
     private BigDecimal holdingWeight;
 
+    @Schema(description = "variables", example = "param1=value1")
+    private String variables;
+
 }

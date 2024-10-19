@@ -11,6 +11,7 @@ public class LinkFactory {
         switch (market) {
             case "US" -> links.addAll(getUsLinks(asset));
             case "KR" -> links.addAll(getKrLinks(asset));
+            case "UPBIT" -> links.addAll(getUpbitLinks(asset));
         }
         return links;
     }
@@ -59,5 +60,12 @@ public class LinkFactory {
         // return
         return links;
     }
+
+    static List<Link> getUpbitLinks(Asset asset) {
+        return List.of(
+                Link.of("Upbit", String.format("https://upbit.com/exchange?code=CRIX.UPBIT.%s", asset.getSymbol()))
+        );
+    }
+
 
 }

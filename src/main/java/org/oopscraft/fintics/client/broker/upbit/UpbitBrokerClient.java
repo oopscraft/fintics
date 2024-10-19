@@ -21,6 +21,7 @@ import org.springframework.web.client.RestTemplate;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.MathContext;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -240,12 +241,12 @@ public class UpbitBrokerClient extends BrokerClient {
             }
         }
         return Balance.builder()
-                .totalAmount(totalAmount)
-                .cashAmount(cacheAmount)
-                .purchaseAmount(purchaseAmount)
-                .valuationAmount(valuationAmount)
-                .profitAmount(profitAmount)
-                .realizedProfitAmount(realizedProfitAmount)
+                .totalAmount(totalAmount.setScale(0, RoundingMode.DOWN))
+                .cashAmount(cacheAmount.setScale(0, RoundingMode.DOWN))
+                .purchaseAmount(purchaseAmount.setScale(0, RoundingMode.DOWN))
+                .valuationAmount(valuationAmount.setScale(0, RoundingMode.DOWN))
+                .profitAmount(profitAmount.setScale(0,RoundingMode.DOWN))
+                .realizedProfitAmount(realizedProfitAmount.setScale(0, RoundingMode.DOWN))
                 .balanceAssets(balanceAssets)
                 .build();
     }
@@ -409,8 +410,13 @@ public class UpbitBrokerClient extends BrokerClient {
     }
 
     @Override
-    public boolean isOverMinimumOrderAmount(BigDecimal quantity, BigDecimal price) {
+    public boolean isAvailablePriceAndQuantity(BigDecimal price, BigDecimal quantity) {
         return quantity.multiply(price).compareTo(BigDecimal.valueOf(5_000)) >= 0;
+    }
+
+    @Override
+    public int getQuantityScale() {
+        return 8;
     }
 
     @Override
