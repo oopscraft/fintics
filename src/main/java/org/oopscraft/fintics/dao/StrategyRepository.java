@@ -1,13 +1,13 @@
 package org.oopscraft.fintics.dao;
 
 import org.oopscraft.fintics.model.StrategySearch;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -22,8 +22,17 @@ public interface StrategyRepository extends JpaRepository<StrategyEntity, String
                     criteriaBuilder.like(root.get(StrategyEntity_.NAME), '%' + strategySearch.getName() + '%'));
         }
 
-        // find all
-        return findAll(specification, pageable);
+        // sort
+        Sort sort = Sort.by(StrategyEntity_.NAME).ascending();
+
+        // find
+        if (pageable.isPaged()) {
+            pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+            return findAll(specification, pageable);
+        } else {
+            List<StrategyEntity> strategyEntities = findAll(specification, sort);
+            return new PageImpl<>(strategyEntities, pageable, strategyEntities.size());
+        }
     }
 
 }
