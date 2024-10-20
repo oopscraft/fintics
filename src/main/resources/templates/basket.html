@@ -460,9 +460,9 @@
                 market: null,
                 alreadySelectedAssetIds : null,
                 assetSearch: new duice.ObjectProxy({
+                    type: null,
                     key: 'name',
                     value: null,
-                    type: null,
                     _page: 0,
                     _size: 5,
                     _count: 0,
@@ -486,6 +486,9 @@
                     let url = new URL(`${_apiUrl}/v1/assets`, document.location.origin);
                     if (this.market) {
                         url.searchParams.append('market', this.market);
+                    }
+                    if (this.assetSearch.type) {
+                        url.searchParams.append('type', this.assetSearch.type);
                     }
                     if (this.assetSearch.key && this.assetSearch.value) {
                         url.searchParams.append(this.assetSearch.key, this.assetSearch.value);
@@ -556,6 +559,13 @@
             </div>
             <div class="display--flex flex-direction--column gap--1em padding--1em">
                 <form onsubmit="return false;" class="display--grid grid-template-columns--12 grid-gap--1em">
+                    <label class="grid-column--2 s__grid-column--12">
+                        <select data-duice-bind="assetSelectDialog.assetSearch" data-duice-property="type" class="width--100">
+                            <option value="" data-th-text="'- ' + #{fintics.Asset.type} + ' -'"></option>
+                            <option value="STOCK">STOCK</option>
+                            <option value="ETF">ETF</option>
+                        </select>
+                    </label>
                     <label class="grid-column--2 s-grid-column-4">
                         <select class="width--100" data-duice-bind="assetSelectDialog.assetSearch" data-duice-property="key">
                             <option value="name" th:text="#{fintics.Asset.name}"></option>
@@ -565,7 +575,7 @@
                     <label class="grid-column--4 s-grid-column--8">
                         <input class="width--100" type="text" data-duice-bind="assetSelectDialog.assetSearch" data-duice-property="value"/>
                     </label>
-                    <div class="grid-column--6 s-grid-column--12 justify-self--end">
+                    <div class="grid-column--4 s-grid-column--12 justify-self--end">
                         <button onclick="assetSelectDialog.getAssets();">
                             <img class="icon" th:src="@{/static/image/icon-search.svg}" alt="search"/>
                             <span data-th-text="#{web.global.search}">Search</span>
