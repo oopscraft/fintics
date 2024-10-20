@@ -135,7 +135,6 @@
             }
         }
 
-
         /**
          * export basket
          */
@@ -146,7 +145,7 @@
             let basketForExportJson = JSON.stringify(basketForExport, null, 4);
             let a = document.createElement('a');
             let href = 'data:application/json;charset=utf-8,' + encodeURIComponent(basketForExportJson);
-            let download = `${basket.name}_basket.json`;
+            let download = `basket_${basket.name}.json`;
             a.setAttribute('href', href);
             a.setAttribute('download', download);
             a.click();
@@ -410,11 +409,15 @@
             </form>
             <div class="display--flex justify-content--space-between">
                 <div>
-                    <button type="button" onclick="exportBasket();">
+                    <button type="button"
+                            th:classappend="!${#authorization.expression('hasAuthority(''basket.edit'')')}?'locked'"
+                            onclick="exportBasket();">
                         <img class="icon" th:src="@{/static/image/icon-export.svg}" alt="export"/>
                         <span>Export</span>
                     </button>
-                    <button type="button" onclick="importBasket();">
+                    <button type="button"
+                            th:classappend="!${#authorization.expression('hasAuthority(''basket.edit'')')}?'locked'"
+                            onclick="importBasket();">
                         <img class="icon" th:src="@{/static/image/icon-import.svg}" alt="import"/>
                         <span>Import</span>
                     </button>

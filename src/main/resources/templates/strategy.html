@@ -97,6 +97,49 @@
             }
         }
 
+        /**
+         * export strategy
+         */
+        function exportStrategy() {
+            let strategyForExport = JSON.parse(JSON.stringify(strategy, null, 4));
+            delete strategyForExport.strategyId;
+            strategyForExport.name += '_Copy';    // adds copy suffix in name
+            let strategyForExportJson = JSON.stringify(strategyForExport, null, 4);
+            let a = document.createElement('a');
+            let href = 'data:application/json;charset=utf-8,' + encodeURIComponent(strategyForExportJson);
+            let download = `strategy_${strategy.name}.json`;
+            a.setAttribute('href', href);
+            a.setAttribute('download', download);
+            a.click();
+        }
+
+        /**
+         * import strategy
+         */
+        function importStrategy() {
+            let input = document.createElement('input');
+            input.setAttribute("type", "file");
+            input.setAttribute("accept", "application/json");
+            input.addEventListener('change', function (e) {
+                let fileReader = new FileReader();
+                if (this.files && this.files[0]) {
+                    fileReader.addEventListener("load", async function (event) {
+                        let strategyForImport = JSON.parse(event.target.result);
+                        // removes name if name is already exist.
+                        if (strategy.name) {
+                            delete strategyForImport.name;
+                        }
+                        delete strategyForImport.strategyId;
+                        duice.ObjectProxy.assign(strategy, strategyForImport);
+                    });
+                    fileReader.readAsText(this.files[0]);
+                }
+                e.preventDefault();
+                e.stopPropagation();
+            });
+            input.click();
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             if(strategyId) {
                 getStrategy(strategyId);
@@ -168,21 +211,37 @@
                     </duice-codemirror>
                 </div>
             </form>
-            <div class="text-align--right">
-                <button type="button"
-                        data-duice-bind="strategy"
-                        th:classappend="!${#authorization.expression('hasAuthority(''strategy.edit'')')}?'locked'"
-                        onclick="deleteStrategy();">
-                    <img class="icon" th:src="@{/static/image/icon-delete.svg}" alt="save"/>
-                    <span data-th-text="#{web.global.delete}"></span>
-                </button>
-                <button type="button"
-                        data-duice-bind="strategy"
-                        th:classappend="!${#authorization.expression('hasAuthority(''strategy.edit'')')}?'locked'"
-                        onclick="saveStrategy();">
-                    <img class="icon" th:src="@{/static/image/icon-save.svg}" alt="save"/>
-                    <span data-th-text="#{web.global.save}"></span>
-                </button>
+            <div class="display--flex justify-content--space-between">
+                <div>
+                    <button type="button"
+                            th:classappend="!${#authorization.expression('hasAuthority(''strategy.edit'')')}?'locked'"
+                            onclick="exportStrategy();">
+                        <img class="icon" th:src="@{/static/image/icon-export.svg}" alt="export"/>
+                        <span>Export</span>
+                    </button>
+                    <button type="button"
+                            th:classappend="!${#authorization.expression('hasAuthority(''strategy.edit'')')}?'locked'"
+                            onclick="importStrategy();">
+                        <img class="icon" th:src="@{/static/image/icon-import.svg}" alt="import"/>
+                        <span>Import</span>
+                    </button>
+                </div>
+                <div>
+                    <button type="button"
+                            data-duice-bind="strategy"
+                            th:classappend="!${#authorization.expression('hasAuthority(''strategy.edit'')')}?'locked'"
+                            onclick="deleteStrategy();">
+                        <img class="icon" th:src="@{/static/image/icon-delete.svg}" alt="save"/>
+                        <span data-th-text="#{web.global.delete}"></span>
+                    </button>
+                    <button type="button"
+                            data-duice-bind="strategy"
+                            th:classappend="!${#authorization.expression('hasAuthority(''strategy.edit'')')}?'locked'"
+                            onclick="saveStrategy();">
+                        <img class="icon" th:src="@{/static/image/icon-save.svg}" alt="save"/>
+                        <span data-th-text="#{web.global.save}"></span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>

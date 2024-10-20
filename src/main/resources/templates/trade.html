@@ -286,6 +286,63 @@
             submitOrderDialog.open(trade, balanceAsset, 'SELL');
         }
 
+        /**
+         * export trade
+         */
+        function exportTrade() {
+            let tradeForExport = JSON.parse(JSON.stringify(trade, null, 4));
+            delete tradeForExport.tradeId;
+            tradeForExport.name += '_Copy';    // adds copy suffix in name
+            let tradeForExportJson = JSON.stringify(tradeForExport, null, 4);
+            let a = document.createElement('a');
+            let href = 'data:application/json;charset=utf-8,' + encodeURIComponent(tradeForExportJson);
+            let download = `trade_${trade.name}.json`;
+            a.setAttribute('href', href);
+            a.setAttribute('download', download);
+            a.click();
+        }
+
+        /**
+         * import trade
+         */
+        function importTrade() {
+            let input = document.createElement('input');
+            input.setAttribute("type", "file");
+            input.setAttribute("accept", "application/json");
+            input.addEventListener('change', function (e) {
+                let fileReader = new FileReader();
+                if (this.files && this.files[0]) {
+                    fileReader.addEventListener("load", async function (event) {
+                        let tradeForImport = JSON.parse(event.target.result);
+                        // removes name if name is already exist.
+                        if (trade.name) {
+                            delete tradeForImport.name;
+                        }
+                        delete tradeForImport.tradeId;
+                        duice.ObjectProxy.assign(trade, tradeForImport);
+
+                        // load relatives data
+                        let cashAssetId = tradeForImport['cashAssetId'];
+                        if (cashAssetId) {
+                            getCashAsset(cashAssetId);
+                        }
+                        let basketId = tradeForImport['basketId'];
+                        if (basketId) {
+                            getBasket(basketId);
+                        }
+                        let strategyId = tradeForImport['strategyId'];
+                        if (strategyId) {
+                            getStrategy(strategyId);
+                        }
+                    });
+                    fileReader.readAsText(this.files[0]);
+                }
+                e.preventDefault();
+                e.stopPropagation();
+            });
+            input.click();
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             let tabFolder = duice.tabFolder(
                 duice.tabItem(
@@ -610,23 +667,40 @@
                         </duice-codemirror>
                     </div>
                 </form>
-                <div class="text-align--right">
-                    <button type="button"
-                            data-duice-bind="trade"
-                            data-duice-execute="this.disabled=(trade._new);"
-                            th:classappend="!${#authorization.expression('hasAuthority(''trade.edit'')')}?'locked'"
-                            onclick="deleteTrade();">
-                        <img class="icon" th:src="@{/static/image/icon-delete.svg}" alt="save"/>
-                        <span data-th-text="#{web.global.delete}"></span>
-                    </button>
-                    <button type="button"
-                            data-duice-bind="trade"
-                            th:classappend="!${#authorization.expression('hasAuthority(''trade.edit'')')}?'locked'"
-                            onclick="saveTrade();">
-                        <img class="icon" th:src="@{/static/image/icon-save.svg}" alt="save"/>
-                        <span data-th-text="#{web.global.save}"></span>
-                    </button>
+                <div class="display--flex justify-content--space-between">
+                    <div>
+                        <button type="button"
+                                th:classappend="!${#authorization.expression('hasAuthority(''trade.edit'')')}?'locked'"
+                                onclick="exportTrade();">
+                            <img class="icon" th:src="@{/static/image/icon-export.svg}" alt="export"/>
+                            <span>Export</span>
+                        </button>
+                        <button type="button"
+                                th:classappend="!${#authorization.expression('hasAuthority(''trade.edit'')')}?'locked'"
+                                onclick="importTrade();">
+                            <img class="icon" th:src="@{/static/image/icon-import.svg}" alt="import"/>
+                            <span>Import</span>
+                        </button>
+                    </div>
+                    <div>
+                        <button type="button"
+                                data-duice-bind="trade"
+                                data-duice-execute="this.disabled=(trade._new);"
+                                th:classappend="!${#authorization.expression('hasAuthority(''trade.edit'')')}?'locked'"
+                                onclick="deleteTrade();">
+                            <img class="icon" th:src="@{/static/image/icon-delete.svg}" alt="save"/>
+                            <span data-th-text="#{web.global.delete}"></span>
+                        </button>
+                        <button type="button"
+                                data-duice-bind="trade"
+                                th:classappend="!${#authorization.expression('hasAuthority(''trade.edit'')')}?'locked'"
+                                onclick="saveTrade();">
+                            <img class="icon" th:src="@{/static/image/icon-save.svg}" alt="save"/>
+                            <span data-th-text="#{web.global.save}"></span>
+                        </button>
+                    </div>
                 </div>
+
             </div>
         </div>
         <!-- ====================================== -->
