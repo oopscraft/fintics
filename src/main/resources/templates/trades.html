@@ -118,6 +118,8 @@
                         <col/>
                         <col/>
                         <col/>
+                        <col/>
+                        <col/>
                     </colgroup>
                     <thead>
                     <tr>
@@ -127,6 +129,8 @@
                         <th data-th-text="#{fintics.Basket.name}"></th>
                         <th data-th-text="#{fintics.Strategy.name}"></th>
                         <th data-th-text="#{fintics.Trade.investAmount}" class="text-align--right"></th>
+                        <th data-th-text="#{fintics.Trade.interval}" class="text-align--right"></th>
+                        <th data-th-text="#{fintics.Trade.threshold}" class="text-align--right"></th>
                         <th data-th-text="#{fintics.Trade.enabled}" class="text-align--center"></th>
                     </tr>
                     </thead>
@@ -165,6 +169,12 @@
                         </td>
                         <td class="text-align--right">
                             <span data-duice-bind="trade" data-duice-property="investAmount" data-duice-format="number"></span>
+                        </td>
+                        <td class="text-align--right">
+                            <span data-duice-bind="trade" data-duice-property="interval"></span>
+                        </td>
+                        <td class="text-align--right">
+                            <span data-duice-bind="trade" data-duice-property="threshold"></span>
                         </td>
                         <td class="text-align--center">
                             <label>

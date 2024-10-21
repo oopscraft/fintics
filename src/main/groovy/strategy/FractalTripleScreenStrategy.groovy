@@ -295,10 +295,7 @@ class TripleScreenStrategy {
         // 포지션 1%당 변화량 계산
         def positionPerScore = (maxPosition - minPosition)/100
         // 최종 포지션 계산
-        def position = maxPosition + (positionPerScore * positionScore) as BigDecimal
-        // 사고 방지를 위해 min, max position 제한
-        position = position.max(minPosition)
-        position = position.min(maxPosition)
+        def position = minPosition + (positionPerScore * positionScore) as BigDecimal
         // 소수점 2자리로 제한
         position = position.setScale(2, RoundingMode.HALF_UP)
         // return
@@ -481,9 +478,9 @@ channel:upper=${channel.upper}, lower=${channel.lower}, middle=${channel.middle}
 splitLimits:${splitLimitPrices}
 splitIndex:${splitIndex}, splitLimit:${splitLimitPrice}
 splitBuyLimited:${splitBuyLimited}
-${microTripleScreenStrategy}
-${mesoTripleScreenStrategy}
-${macroTripleScreenStrategy}
+micro.position:${microTripleScreenStrategy.getPosition(maxPosition, minPosition)}, ${microTripleScreenStrategy}
+meso.position:${mesoTripleScreenStrategy.getPosition(maxPosition, minPosition)}, ${mesoTripleScreenStrategy}
+macro.position:${macroTripleScreenStrategy.getPosition(maxPosition, minPosition)}, ${macroTripleScreenStrategy}
 """
 log.info("message: {}", message)
 tradeAsset.setMessage(message)
