@@ -53,17 +53,7 @@ public abstract class BasketScriptRunner {
      * @return properties
      */
     Properties loadRuleConfigAsProperties(String propertiesString) {
-        Properties properties = new Properties();
-        if (propertiesString != null && !propertiesString.isBlank()) {
-            try {
-                properties.load(new StringReader(propertiesString));
-            } catch (IOException e) {
-                throw new IllegalArgumentException("Invalid properties string", e);
-            }
-            properties = PbePropertiesUtil.decode(properties);
-            properties = PbePropertiesUtil.unwrapDecryptedMark(properties);
-        }
-        return properties;
+        return PbePropertiesUtil.loadProperties(propertiesString);
     }
 
 }

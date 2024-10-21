@@ -100,7 +100,7 @@ public class TradeService {
         tradeEntity.setBasketId(trade.getBasketId());
         tradeEntity.setStrategyId(trade.getStrategyId());
         tradeEntity.setStrategyVariables(Optional.ofNullable(trade.getStrategyVariables())
-                .map(PbePropertiesUtil::encode)
+                .map(PbePropertiesUtil::encodePropertiesString)
                 .orElse(null));
         tradeEntity.setAlarmId(trade.getAlarmId());
         tradeEntity.setAlarmOnError(trade.isAlarmOnError());

@@ -33,17 +33,7 @@ public class BrokerClientFactory {
     }
 
     private static Properties loadPropertiesFromString(String propertiesString) {
-        Properties properties = new Properties();
-        if (propertiesString != null && !propertiesString.isBlank()) {
-            try {
-                properties.load(new StringReader(propertiesString));
-            } catch (IOException ignore) {
-                log.warn(ignore.getMessage());
-            }
-        }
-        properties = PbePropertiesUtil.decode(properties);
-        properties = PbePropertiesUtil.unwrapDecryptedMark(properties);
-        return properties;
+        return PbePropertiesUtil.loadProperties(propertiesString);
     }
 
 }

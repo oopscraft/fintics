@@ -2,10 +2,13 @@ package org.oopscraft.fintics.model;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.oopscraft.arch4j.core.common.pbe.PbePropertiesUtil;
+import org.oopscraft.arch4j.core.common.pbe.PbeStringUtil;
 import org.oopscraft.fintics.dao.AssetEntity;
 import org.oopscraft.fintics.dao.BasketAssetEntity;
 
 import java.math.BigDecimal;
+import java.util.Properties;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -27,6 +30,16 @@ public class BasketAsset extends Asset {
     private BigDecimal holdingWeight;
 
     private String variables;
+
+    /**
+     * gets specified value
+     * @param name namme
+     * @return value
+     */
+    public String getVariable(String name) {
+        return PbePropertiesUtil.loadProperties(variables)
+                .getProperty(name, null);
+    }
 
     /**
      * from factory method

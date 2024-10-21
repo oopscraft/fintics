@@ -76,7 +76,7 @@ public class BasketService {
         basketEntity.setRebalanceSchedule(basket.getRebalanceSchedule());
         basketEntity.setLanguage(basket.getLanguage());
         basketEntity.setVariables(Optional.ofNullable(basket.getVariables())
-                .map(PbePropertiesUtil::encode)
+                .map(PbePropertiesUtil::encodePropertiesString)
                 .orElse(null));
         basketEntity.setScript(basket.getScript());
 
@@ -92,7 +92,7 @@ public class BasketService {
                     .enabled(basketAsset.isEnabled())
                     .holdingWeight(basketAsset.getHoldingWeight())
                     .variables(Optional.ofNullable(basketAsset.getVariables())
-                            .map(PbePropertiesUtil::encode)
+                            .map(PbePropertiesUtil::encodePropertiesString)
                             .orElse(null))
                     .sort(sort ++)
                     .build();

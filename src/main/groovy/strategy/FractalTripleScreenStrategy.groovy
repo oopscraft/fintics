@@ -412,6 +412,12 @@ def basePosition = variables['basePosition'] as BigDecimal
 def sellProfitPercentageThreshold = variables['sellProfitPercentageThreshold'] as BigDecimal
 def splitIndex = variables['splitIndex'] as Integer ?: -1
 
+// basket asset variables 에 개별 설정 시 해당 split index 적용
+if (basketAsset.getVariable('splitIndex')) {
+    log.info('override splitIndex by basket asset variable')
+    splitIndex = basketAsset.getVariable('splitIndex') as Integer
+}
+
 //===============================
 // defines
 //===============================

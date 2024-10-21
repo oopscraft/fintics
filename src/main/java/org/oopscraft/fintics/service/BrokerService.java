@@ -49,9 +49,9 @@ public class BrokerService {
         }
         brokerEntity.setName(broker.getName());
         brokerEntity.setBrokerClientId(broker.getBrokerClientId());
-        if (broker.getBrokerClientProperties() != null) {
-            brokerEntity.setBrokerClientProperties(PbePropertiesUtil.encode(broker.getBrokerClientProperties()));
-        }
+        brokerEntity.setBrokerClientProperties(Optional.ofNullable(broker.getBrokerClientProperties())
+                .map(PbePropertiesUtil::encodePropertiesString)
+                .orElse(null));
         BrokerEntity savedBrokerEntity = brokerRepository.saveAndFlush(brokerEntity);
         return Broker.from(savedBrokerEntity);
     }

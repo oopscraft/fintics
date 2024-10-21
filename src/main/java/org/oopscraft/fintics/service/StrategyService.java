@@ -22,6 +22,12 @@ public class StrategyService {
 
     private final StrategyRepository strategyRepository;
 
+    /**
+     * gets strategies
+     * @param strategySearch strategy search
+     * @param pageable pageable
+     * @return list of strategy
+     */
     public Page<Strategy> getStrategies(StrategySearch strategySearch, Pageable pageable) {
         Page<StrategyEntity> strategyEntityPage = strategyRepository.findAll(strategySearch, pageable);
         List<Strategy> strategies = strategyEntityPage.getContent().stream()
@@ -31,11 +37,21 @@ public class StrategyService {
         return new PageImpl<>(strategies, pageable, total);
     }
 
+    /**
+     * returns specified strategy
+     * @param strategyId strategy id
+     * @return strategy
+     */
     public Optional<Strategy> getStrategy(String strategyId) {
         return strategyRepository.findById(strategyId)
                 .map(Strategy::from);
     }
 
+    /**
+     * saves strategy
+     * @param strategy strategy
+     * @return saved strategy
+     */
     @Transactional
     public Strategy saveStrategy(Strategy strategy) {
         StrategyEntity strategyEntity;
@@ -48,14 +64,18 @@ public class StrategyService {
         }
         strategyEntity.setName(strategy.getName());
         strategyEntity.setLanguage(strategy.getLanguage());
-        if (strategy.getVariables() != null) {
-            strategyEntity.setVariables(PbePropertiesUtil.encode(strategy.getVariables()));
-        }
+        strategyEntity.setVariables(Optional.ofNullable(strategy.getVariables())
+                .map(PbePropertiesUtil::encodePropertiesString)
+                .orElse(null));
         strategyEntity.setScript(strategy.getScript());
         StrategyEntity savedStrategyEntity = strategyRepository.saveAndFlush(strategyEntity);
         return Strategy.from(savedStrategyEntity);
     }
 
+    /**
+     * deletes specified strategy
+     * @param strategyId strategy id
+     */
     @Transactional
     public void deleteStrategy(String strategyId) {
         StrategyEntity strategyEntity = strategyRepository.findById(strategyId).orElseThrow();
