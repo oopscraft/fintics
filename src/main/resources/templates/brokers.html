@@ -58,6 +58,9 @@
                 })
                 .then(data => {
                     duice.ArrayProxy.assign(brokers, data);
+
+                    // select current item
+                    duice.ArrayProxy.selectItem(brokers, brokers.findIndex(it => it.brokerId === broker.brokerId));
                 })
                 .finally(() => {
                     brokerSearch._status = 'completed';

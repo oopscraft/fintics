@@ -33,6 +33,7 @@ public class AlpacaBrokerClientDefinition implements BrokerClientDefinition {
         template.add("live=false");
         template.add("appSecret=[Application Secret]");
         template.add("accountNo=[Account Number]");
+        template.add("insecure=[true|false(default)]");
         return template.toString();
     }
 

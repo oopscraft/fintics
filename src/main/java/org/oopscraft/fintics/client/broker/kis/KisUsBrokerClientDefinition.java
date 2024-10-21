@@ -50,6 +50,7 @@ public class KisUsBrokerClientDefinition implements BrokerClientDefinition {
         template.add("appKey=[Application Key]");
         template.add("appSecret=[Application Secret]");
         template.add("accountNo=[Account Number]");
+        template.add("insecure=[true|false(default)]");
         return template.toString();
     }
 

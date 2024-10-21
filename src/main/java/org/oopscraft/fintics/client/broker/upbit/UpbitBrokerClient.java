@@ -52,10 +52,14 @@ public class UpbitBrokerClient extends BrokerClient {
         super(definition, properties);
         this.accessKey = properties.getProperty("accessKey");
         this.secretKey = properties.getProperty("secretKey");
+        Boolean insecure = Optional.ofNullable(properties.getProperty("insecure"))
+                .map(Boolean::parseBoolean)
+                .orElse(Boolean.FALSE);
 
         // rest template
         this.restTemplate = RestTemplateBuilder.create()
                 .retryCount(3)
+                .insecure(insecure)
                 .build();
 
         // object mapper

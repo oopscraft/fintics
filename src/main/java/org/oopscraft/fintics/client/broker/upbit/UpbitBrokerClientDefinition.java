@@ -31,6 +31,7 @@ public class UpbitBrokerClientDefinition implements BrokerClientDefinition {
         StringJoiner template = new StringJoiner("\n");
         template.add("accessKey=[Access Key]");
         template.add("secretKey=[Secret Key]");
+        template.add("insecure=[true|false(default)]");
         return template.toString();
     }
 

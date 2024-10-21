@@ -59,10 +59,14 @@ public class KisUsBrokerClient extends BrokerClient {
         this.appKey = properties.getProperty("appKey");
         this.appSecret = properties.getProperty("appSecret");
         this.accountNo = properties.getProperty("accountNo");
+        Boolean insecure = Optional.ofNullable(properties.getProperty("insecure"))
+                .map(Boolean::parseBoolean)
+                .orElse(Boolean.FALSE);
 
         // rest template
         this.restTemplate = RestTemplateBuilder.create()
                 .retryCount(3)
+                .insecure(insecure)
                 .build();
 
         // object mapper

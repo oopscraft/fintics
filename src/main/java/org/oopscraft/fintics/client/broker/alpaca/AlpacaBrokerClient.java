@@ -17,6 +17,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 
 public class AlpacaBrokerClient extends BrokerClient {
@@ -41,10 +42,14 @@ public class AlpacaBrokerClient extends BrokerClient {
         this.live = Boolean.parseBoolean(properties.getProperty("live"));
         this.apiKey = properties.getProperty("apiKey");
         this.apiSecret = properties.getProperty("apiSecret");
+        Boolean insecure = Optional.ofNullable(properties.getProperty("insecure"))
+                .map(Boolean::parseBoolean)
+                .orElse(Boolean.FALSE);
 
         // rest template
         this.restTemplate = RestTemplateBuilder.create()
                 .retryCount(3)
+                .insecure(insecure)
                 .build();
 
         // object mapper
