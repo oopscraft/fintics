@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.oopscraft.arch4j.core.common.support.RestTemplateBuilder;
 import org.oopscraft.fintics.client.asset.AssetClient;
 import org.oopscraft.fintics.client.asset.AssetClientProperties;
 import org.oopscraft.fintics.model.Asset;
@@ -29,17 +28,10 @@ public class UsAssetClient extends AssetClient {
 
     private static final Currency CURRENCY_USD = Currency.getInstance("USD");
 
-    private final RestTemplate restTemplate;
-
     private final ObjectMapper objectMapper;
 
     public UsAssetClient(AssetClientProperties assetClientProperties, ObjectMapper objectMapper) {
         super(assetClientProperties);
-
-        // rest template
-        this.restTemplate = RestTemplateBuilder.create()
-                .retryCount(3)
-                .build();
 
         // object mapper
         this.objectMapper = objectMapper;
@@ -75,7 +67,7 @@ public class UsAssetClient extends AssetClient {
         RequestEntity<Void> requestEntity = RequestEntity.get(url)
                 .headers(createNasdaqHeaders())
                 .build();
-        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+        ResponseEntity<String> responseEntity = getRestTemplate().exchange(requestEntity, String.class);
         String responseBody = responseEntity.getBody();
         JsonNode rootNode;
         try {
@@ -123,7 +115,7 @@ public class UsAssetClient extends AssetClient {
         RequestEntity<Void> requestEntity = RequestEntity.get(url)
                 .headers(createNasdaqHeaders())
                 .build();
-        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+        ResponseEntity<String> responseEntity = getRestTemplate().exchange(requestEntity, String.class);
         String responseBody = responseEntity.getBody();
         JsonNode rootNode;
         try {
@@ -169,6 +161,7 @@ public class UsAssetClient extends AssetClient {
         final int BATCH_SIZE = 100;
         try {
             HttpHeaders headers = createYahooHeader();
+            RestTemplate restTemplate = getRestTemplate();
             for (int i = 0; i < symbols.size(); i += BATCH_SIZE) {
                 List<String> batchSymbols = symbols.subList(i, Math.min(i + BATCH_SIZE, symbols.size()));
                 String symbolParam = String.join(",", batchSymbols);
@@ -225,7 +218,7 @@ public class UsAssetClient extends AssetClient {
             RequestEntity<Void> summaryRequestEntity = RequestEntity.get(summaryUrl)
                     .headers(headers)
                     .build();
-            ResponseEntity<String> summaryResponseEntity = restTemplate.exchange(summaryRequestEntity, String.class);
+            ResponseEntity<String> summaryResponseEntity = getRestTemplate().exchange(summaryRequestEntity, String.class);
             JsonNode summaryRootNode;
             try {
                 summaryRootNode = objectMapper.readTree(summaryResponseEntity.getBody());
@@ -258,7 +251,7 @@ public class UsAssetClient extends AssetClient {
             RequestEntity<Void> financialRequestEntity = RequestEntity.get(financialUrl)
                     .headers(headers)
                     .build();
-            ResponseEntity<String> financialResponseEntity = restTemplate.exchange(financialRequestEntity, String.class);
+            ResponseEntity<String> financialResponseEntity = getRestTemplate().exchange(financialRequestEntity, String.class);
             JsonNode financialRootNode;
             try {
                 financialRootNode = objectMapper.readTree(financialResponseEntity.getBody());

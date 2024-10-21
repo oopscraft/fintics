@@ -28,7 +28,7 @@ public class AlpacaBrokerClient extends BrokerClient {
 
     private final String apiSecret;
 
-    private final RestTemplate restTemplate;
+    private final boolean insecure;
 
     private final ObjectMapper objectMapper;
 
@@ -42,18 +42,23 @@ public class AlpacaBrokerClient extends BrokerClient {
         this.live = Boolean.parseBoolean(properties.getProperty("live"));
         this.apiKey = properties.getProperty("apiKey");
         this.apiSecret = properties.getProperty("apiSecret");
-        Boolean insecure = Optional.ofNullable(properties.getProperty("insecure"))
+        this.insecure = Optional.ofNullable(properties.getProperty("insecure"))
                 .map(Boolean::parseBoolean)
                 .orElse(Boolean.FALSE);
 
-        // rest template
-        this.restTemplate = RestTemplateBuilder.create()
+        // object mapper
+        this.objectMapper = new ObjectMapper();
+    }
+
+    /**
+     * returns rest template
+     * @return rest template
+     */
+    RestTemplate getRestTemplate() {
+        return RestTemplateBuilder.create()
                 .retryCount(3)
                 .insecure(insecure)
                 .build();
-
-        // object mapper
-        this.objectMapper = new ObjectMapper();
     }
 
     HttpHeaders createHttpHeaders() {
@@ -87,7 +92,7 @@ public class AlpacaBrokerClient extends BrokerClient {
                 .get("https://data.sandbox.alpaca.markets/v2/stocks/bars/latest?feed=sip")
                 .headers(createHttpHeaders())
                 .build();
-        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+        ResponseEntity<String> responseEntity = getRestTemplate().exchange(requestEntity, String.class);
         JsonNode rootNode;
         try {
             rootNode = objectMapper.readTree(responseEntity.getBody());
@@ -103,7 +108,7 @@ public class AlpacaBrokerClient extends BrokerClient {
                 .get("https://data.sandbox.alpaca.markets/v2/stocks/bars/latest?feed=sip")
                 .headers(createHttpHeaders())
                 .build();
-        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+        ResponseEntity<String> responseEntity = getRestTemplate().exchange(requestEntity, String.class);
 
         return null;
     }

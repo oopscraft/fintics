@@ -165,18 +165,14 @@ public class SimpleOhlcvClient extends OhlcvClient {
         // intervals
         List<String> intervals = null;
         switch(type) {
-            case MINUTE -> {
-                intervals = List.of("1m","2m","5m","15m","30m","60m","90m");
-            }
-            case DAILY -> {
-                intervals = List.of("1d","5d");
-            }
-        };
+            case MINUTE -> intervals = List.of("1m","2m","5m","15m","30m","60m","90m");
+            case DAILY -> intervals = List.of("1d","5d");
+        }
 
         // try request
-        String interval = null;
+        String interval;
         long period1 = dateTimeFrom.atOffset(ZoneOffset.UTC).toEpochSecond();
-        ResponseEntity<String> responseEntity = null;
+        ResponseEntity<String> responseEntity;
         Map<LocalDateTime,Ohlcv> totalOhlcvMap = new HashMap<>();
         for(int i = intervals.size()-1; i >= 0; i --) {
             interval = intervals.get(i);

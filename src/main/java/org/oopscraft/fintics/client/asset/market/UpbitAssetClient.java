@@ -17,15 +17,8 @@ import java.util.stream.Collectors;
 
 public class UpbitAssetClient extends AssetClient {
 
-    private final RestTemplate restTemplate;
-
     public UpbitAssetClient(AssetClientProperties assetClientProperties) {
         super(assetClientProperties);
-
-        // rest template
-        this.restTemplate = RestTemplateBuilder.create()
-                .retryCount(3)
-                .build();
     }
 
     @Override
@@ -33,7 +26,7 @@ public class UpbitAssetClient extends AssetClient {
         RequestEntity<Void> requestEntity = RequestEntity
                 .get("https://api.upbit.com/v1/market/all")
                 .build();
-        ResponseEntity<List<Map<String, String>>> responseEntity = restTemplate.exchange(requestEntity, new ParameterizedTypeReference<>() {
+        ResponseEntity<List<Map<String, String>>> responseEntity = getRestTemplate().exchange(requestEntity, new ParameterizedTypeReference<>() {
         });
         return responseEntity.getBody().stream()
                 .map(map -> {

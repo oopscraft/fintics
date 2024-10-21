@@ -23,10 +23,10 @@ public class KisAccessTokenRegistry {
     private final static Object LOCK_OBJECT = new Object();
 
     /**
-     * creates rest template
+     * returns rest template
      * @return rest template
      */
-    static RestTemplate createRestTemplate() {
+    static RestTemplate getRestTemplate() {
         return RestTemplateBuilder.create()
                 .retryCount(3)
                 .build();
@@ -87,7 +87,7 @@ public class KisAccessTokenRegistry {
      */
     private synchronized static KisAccessToken refreshAccessToken(String apiUrl, String appKey, String appSecret) throws InterruptedException {
         log.info("Refresh Access Token - {}", apiUrl);
-        RestTemplate restTemplate = createRestTemplate();
+        RestTemplate restTemplate = getRestTemplate();
         ValueMap payloadMap = new ValueMap(){{
             put("grant_type","client_credentials");
             put("appkey", appKey);

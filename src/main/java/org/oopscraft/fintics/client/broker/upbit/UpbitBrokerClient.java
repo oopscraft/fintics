@@ -21,7 +21,6 @@ import org.springframework.web.client.RestTemplate;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.math.MathContext;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -44,7 +43,7 @@ public class UpbitBrokerClient extends BrokerClient {
 
     private final String secretKey;
 
-    private final RestTemplate restTemplate;
+    private final boolean insecure;
 
     private final ObjectMapper objectMapper;
 
@@ -52,18 +51,22 @@ public class UpbitBrokerClient extends BrokerClient {
         super(definition, properties);
         this.accessKey = properties.getProperty("accessKey");
         this.secretKey = properties.getProperty("secretKey");
-        Boolean insecure = Optional.ofNullable(properties.getProperty("insecure"))
+        this.insecure = Optional.ofNullable(properties.getProperty("insecure"))
                 .map(Boolean::parseBoolean)
                 .orElse(Boolean.FALSE);
+        // object mapper
+        this.objectMapper = new ObjectMapper();
+    }
 
-        // rest template
-        this.restTemplate = RestTemplateBuilder.create()
+    /**
+     * returns rest template
+     * @return rest template
+     */
+    RestTemplate getRestTemplate() {
+        return RestTemplateBuilder.create()
                 .retryCount(3)
                 .insecure(insecure)
                 .build();
-
-        // object mapper
-        this.objectMapper = new ObjectMapper();
     }
 
     @Override
@@ -115,7 +118,7 @@ public class UpbitBrokerClient extends BrokerClient {
                 .headers(createHeaders(queryString))
                 .build();
         sleep();
-        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+        ResponseEntity<String> responseEntity = getRestTemplate().exchange(requestEntity, String.class);
         JsonNode rootNode;
         try {
             rootNode = objectMapper.readTree(responseEntity.getBody());
@@ -160,7 +163,7 @@ public class UpbitBrokerClient extends BrokerClient {
                 .build();
 
         sleep();
-        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+        ResponseEntity<String> responseEntity = getRestTemplate().exchange(requestEntity, String.class);
         List<Map<String, String>> rows;
         try {
             rows = objectMapper.readValue(responseEntity.getBody(), new TypeReference<>(){});
@@ -197,7 +200,7 @@ public class UpbitBrokerClient extends BrokerClient {
                 .build();
 
         sleep();
-        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+        ResponseEntity<String> responseEntity = getRestTemplate().exchange(requestEntity, String.class);
 
         List<Map<String, String>> rows;
         try {
@@ -350,7 +353,7 @@ public class UpbitBrokerClient extends BrokerClient {
                 .body(payload);
 
         sleep();
-        ResponseEntity<Map<String, String>> responseEntity = restTemplate.exchange(requestEntity, new ParameterizedTypeReference<>() {});
+        ResponseEntity<Map<String, String>> responseEntity = getRestTemplate().exchange(requestEntity, new ParameterizedTypeReference<>() {});
         Map<String, String> responseMap = responseEntity.getBody();
         log.info("{}", responseMap);
         if(responseMap != null) {
@@ -371,7 +374,7 @@ public class UpbitBrokerClient extends BrokerClient {
                 .build();
 
         sleep();
-        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+        ResponseEntity<String> responseEntity = getRestTemplate().exchange(requestEntity, String.class);
         List<Map<String, String>> rows;
         try {
             rows = objectMapper.readValue(responseEntity.getBody(), new TypeReference<>(){});
@@ -420,7 +423,7 @@ public class UpbitBrokerClient extends BrokerClient {
                 .headers(createHeaders(queryString))
                 .build();
         sleep();
-        restTemplate.exchange(requestEntity, Void.class);
+        getRestTemplate().exchange(requestEntity, Void.class);
 
         // submit order
         return submitOrder(asset, order);

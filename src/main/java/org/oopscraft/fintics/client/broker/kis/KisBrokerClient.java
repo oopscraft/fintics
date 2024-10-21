@@ -43,7 +43,7 @@ public class KisBrokerClient extends BrokerClient {
 
     private final String accountNo;
 
-    private final RestTemplate restTemplate;
+    private final boolean insecure;
 
     private final ObjectMapper objectMapper;
 
@@ -59,18 +59,23 @@ public class KisBrokerClient extends BrokerClient {
         this.appKey = properties.getProperty("appKey");
         this.appSecret = properties.getProperty("appSecret");
         this.accountNo = properties.getProperty("accountNo");
-        Boolean insecure = Optional.ofNullable(properties.getProperty("insecure"))
+        this.insecure = Optional.ofNullable(properties.getProperty("insecure"))
                 .map(Boolean::parseBoolean)
                 .orElse(Boolean.FALSE);
 
-        // rest template
-        this.restTemplate = RestTemplateBuilder.create()
+        // object mapper
+        this.objectMapper = new ObjectMapper();
+    }
+
+    /**
+     * returns rest template
+     * @return rest tempalte
+     */
+    RestTemplate getRestTemplate() {
+        return RestTemplateBuilder.create()
                 .retryCount(3)
                 .insecure(insecure)
                 .build();
-
-        // object mapper
-        this.objectMapper = new ObjectMapper();
     }
 
     /**
@@ -136,7 +141,7 @@ public class KisBrokerClient extends BrokerClient {
                 .headers(headers)
                 .build();
         sleep();
-        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+        ResponseEntity<String> responseEntity = getRestTemplate().exchange(requestEntity, String.class);
         JsonNode rootNode;
         try {
             rootNode = objectMapper.readTree(responseEntity.getBody());
@@ -203,7 +208,7 @@ public class KisBrokerClient extends BrokerClient {
                 .headers(headers)
                 .build();
         sleep();
-        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+        ResponseEntity<String> responseEntity = getRestTemplate().exchange(requestEntity, String.class);
         JsonNode rootNode;
         try {
             rootNode = objectMapper.readTree(responseEntity.getBody());
@@ -276,7 +281,7 @@ public class KisBrokerClient extends BrokerClient {
                 .headers(headers)
                 .build();
         sleep();
-        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+        ResponseEntity<String> responseEntity = getRestTemplate().exchange(requestEntity, String.class);
         JsonNode rootNode;
         try {
             rootNode = objectMapper.readTree(responseEntity.getBody());
@@ -342,7 +347,7 @@ public class KisBrokerClient extends BrokerClient {
                 .headers(headers)
                 .build();
         sleep();
-        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+        ResponseEntity<String> responseEntity = getRestTemplate().exchange(requestEntity, String.class);
         JsonNode rootNode;
         try {
             rootNode = objectMapper.readTree(responseEntity.getBody());
@@ -381,7 +386,7 @@ public class KisBrokerClient extends BrokerClient {
             return BigDecimal.valueOf(5);
         }
         // default fallback (stock)
-        BigDecimal priceTick = null;
+        BigDecimal priceTick;
         if (price.compareTo(BigDecimal.valueOf(2_000)) <= 0) {
             priceTick = BigDecimal.valueOf(1);
         } else if (price.compareTo(BigDecimal.valueOf(5_000)) <= 0) {
@@ -415,6 +420,8 @@ public class KisBrokerClient extends BrokerClient {
         String ctxAreaFk100 = "";
         String ctxAreaNk100 = "";
 
+        // loop
+        RestTemplate restTemplate = getRestTemplate();
         for (int i = 0; i < 10; i ++) {
             String url = apiUrl + "/uapi/domestic-stock/v1/trading/inquire-balance";
             HttpHeaders headers = createHeaders();
@@ -558,7 +565,7 @@ public class KisBrokerClient extends BrokerClient {
                 .headers(headers)
                 .build();
         sleep();
-        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+        ResponseEntity<String> responseEntity = getRestTemplate().exchange(requestEntity, String.class);
         JsonNode rootNode;
         try {
             rootNode = objectMapper.readTree(responseEntity.getBody());
@@ -641,7 +648,7 @@ public class KisBrokerClient extends BrokerClient {
 
         // exchange
         sleep();
-        ResponseEntity<Map<String, Object>> responseEntity = restTemplate.exchange(requestEntity, new ParameterizedTypeReference<>(){});
+        ResponseEntity<Map<String, Object>> responseEntity = getRestTemplate().exchange(requestEntity, new ParameterizedTypeReference<>(){});
         Map<String, Object> responseMap = Optional.ofNullable(responseEntity.getBody())
                 .orElseThrow();
 
@@ -685,7 +692,7 @@ public class KisBrokerClient extends BrokerClient {
                 .build();
 
         sleep();
-        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+        ResponseEntity<String> responseEntity = getRestTemplate().exchange(requestEntity, String.class);
         JsonNode rootNode;
         try {
             rootNode = objectMapper.readTree(responseEntity.getBody());
@@ -754,12 +761,8 @@ public class KisBrokerClient extends BrokerClient {
         // order type
         String ordDvsn;
         switch(order.getKind()) {
-            case LIMIT -> {
-                ordDvsn = "00";
-            }
-            case MARKET -> {
-                ordDvsn = "01";
-            }
+            case LIMIT -> ordDvsn = "00";
+            case MARKET -> ordDvsn = "01";
             default -> throw new RuntimeException("invalid order type");
         }
 
@@ -782,7 +785,7 @@ public class KisBrokerClient extends BrokerClient {
 
         // exchange
         sleep();
-        ResponseEntity<Map<String, Object>> responseEntity = restTemplate.exchange(requestEntity, new ParameterizedTypeReference<>(){});
+        ResponseEntity<Map<String, Object>> responseEntity = getRestTemplate().exchange(requestEntity, new ParameterizedTypeReference<>(){});
         Map<String, Object> responseMap = Optional.ofNullable(responseEntity.getBody())
                 .orElseThrow();
 
@@ -821,6 +824,7 @@ public class KisBrokerClient extends BrokerClient {
         String ctxAreaNk100 = "";
 
         // loop for pagination
+        RestTemplate restTemplate = getRestTemplate();
         for (int i = 0; i < 100; i ++) {
             String url = apiUrl + "/uapi/domestic-stock/v1/trading/inquire-period-trade-profit";
             String inqrStrtDt = dateFrom.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
@@ -1001,6 +1005,7 @@ public class KisBrokerClient extends BrokerClient {
         String ctxAreaNk100 = "";
 
         // loop
+        RestTemplate restTemplate = getRestTemplate();
         List<Map<String,String>> periodOrders = new ArrayList<>();
         for (int i = 0; i < 100; i ++) {
             String url = apiUrl + "/uapi/domestic-stock/v1/trading/inquire-period-trade-profit";
@@ -1100,7 +1105,7 @@ public class KisBrokerClient extends BrokerClient {
                 .headers(headers)
                 .build();
         sleep();
-        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
+        ResponseEntity<String> responseEntity = getRestTemplate().exchange(requestEntity, String.class);
         JsonNode rootNode;
         try {
             rootNode = objectMapper.readTree(responseEntity.getBody());
