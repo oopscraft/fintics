@@ -372,12 +372,15 @@ class TripleScreenStrategy {
     String toString() {
         return  "${this.name}:[" +
                 "tide.momentum:${tideAnalyzer.getMomentumScore().getAverage()}," +
-                "tide.oversold:${tideAnalyzer.getOversoldScore().getAverage()}," +
-                "tide.overbought:${tideAnalyzer.getOverboughtScore().getAverage()}," +
-                "wave.momentum:${waveAnalyzer.getMomentumScore().getAverage()}," +
                 "wave.oversold:${waveAnalyzer.getOversoldScore().getAverage()}," +
                 "wave.overbought:${waveAnalyzer.getOverboughtScore().getAverage()}," +
-                "ripple.momentum:${rippleAnalyzer.getMomentumScore().getAverage()}"
+                "ripple.momentum:${rippleAnalyzer.getMomentumScore().getAverage()}" +
+                "(" +
+                "tide.oversold:${tideAnalyzer.getOversoldScore().getAverage()}," +
+                "tide.overbought:${tideAnalyzer.getOverboughtScore().getAverage()}," +
+                "wave.momentum:${waveAnalyzer.getMomentumScore().getAverage()}" +
+                ")" +
+                "]"
     }
 
 }
@@ -410,13 +413,6 @@ def macroRippleOhlcvPeriod = variables['macro.ripple.ohlcv.period'] as Integer
 // etc
 def basePosition = variables['basePosition'] as BigDecimal
 def sellProfitPercentageThreshold = variables['sellProfitPercentageThreshold'] as BigDecimal
-def splitIndex = variables['splitIndex'] as Integer ?: -1
-
-// basket asset variables 에 개별 설정 시 해당 split index 적용
-if (basketAsset.getVariable('splitIndex')) {
-    log.info('override splitIndex by basket asset variable')
-    splitIndex = basketAsset.getVariable('splitIndex') as Integer
-}
 
 //===============================
 // defines
@@ -424,6 +420,25 @@ if (basketAsset.getVariable('splitIndex')) {
 StrategyResult strategyResult = null
 List<Ohlcv> ohlcvs = tradeAsset.getOhlcvs(Ohlcv.Type.MINUTE, 1)
 def ohlcv = ohlcvs.first()
+def splitPeriod = 100
+def splitSize = 3
+def splitIndex = -1
+if (variables['splitIndex']) {
+    splitIndex = variables['splitIndex'] as Integer
+}
+
+//===============================
+// basket asset variable
+//===============================
+// basket asset variables 에 개별 설정 시 해당 split size, index 적용
+if (basketAsset.getVariable('splitSize')) {
+    log.info('override splitSize by basket asset variable')
+    splitSize = basketAsset.getVariable('splitSize') as Integer
+}
+if (basketAsset.getVariable('splitIndex')) {
+    log.info('override splitIndex by basket asset variable')
+    splitIndex = basketAsset.getVariable('splitIndex') as Integer
+}
 
 //===============================
 // strategy
@@ -465,8 +480,6 @@ def macroTripleScreenStrategy = TripleScreenStrategy.builder()
 //===============================
 // split limit
 //===============================
-def splitPeriod = 100
-def splitSize = 3
 def channel =  mesoTripleScreenStrategy.tideAnalyzer.getChannel(splitPeriod)
 def splitMaxPrice = channel.upper
 def splitMinPrice = channel.lower
@@ -500,13 +513,14 @@ def minPosition = basePosition
 // message
 //===============================
 def message = """
-channel:upper=${channel.upper}, lower=${channel.lower}, middle=${channel.middle}
+splitSize:${splitSize}, splitIndex:${splitIndex}
 splitLimits:${splitLimitPrices}
-splitIndex:${splitIndex}, splitLimit:${splitLimitPrice}
+splitLimitPrice:${splitLimitPrice}
 splitBuyLimited:${splitBuyLimited}
-micro.position:${microTripleScreenStrategy.getPosition(maxPosition, minPosition)}, ${microTripleScreenStrategy}
-meso.position:${mesoTripleScreenStrategy.getPosition(maxPosition, minPosition)}, ${mesoTripleScreenStrategy}
-macro.position:${macroTripleScreenStrategy.getPosition(maxPosition, minPosition)}, ${macroTripleScreenStrategy}
+positon:${microTripleScreenStrategy.getPosition(maxPosition, minPosition)}, ${mesoTripleScreenStrategy.getPosition(maxPosition, minPosition)}, ${macroTripleScreenStrategy.getPosition(maxPosition, minPosition)}
+- ${microTripleScreenStrategy}
+- ${mesoTripleScreenStrategy}
+- ${macroTripleScreenStrategy}
 """
 log.info("message: {}", message)
 tradeAsset.setMessage(message)
