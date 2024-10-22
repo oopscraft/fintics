@@ -45,6 +45,8 @@ public class UpbitBrokerClient extends BrokerClient {
 
     private final boolean insecure;
 
+    private final RestTemplate restTemplate;
+
     private final ObjectMapper objectMapper;
 
     public UpbitBrokerClient(BrokerClientDefinition definition, Properties properties) {
@@ -54,15 +56,19 @@ public class UpbitBrokerClient extends BrokerClient {
         this.insecure = Optional.ofNullable(properties.getProperty("insecure"))
                 .map(Boolean::parseBoolean)
                 .orElse(Boolean.FALSE);
+
+        // rest template
+        this.restTemplate = createRestTemplate();
+
         // object mapper
         this.objectMapper = new ObjectMapper();
     }
 
     /**
-     * returns rest template
+     * creates rest template
      * @return rest template
      */
-    RestTemplate getRestTemplate() {
+    RestTemplate createRestTemplate() {
         return RestTemplateBuilder.create()
                 .retryCount(3)
                 .insecure(insecure)
@@ -118,7 +124,7 @@ public class UpbitBrokerClient extends BrokerClient {
                 .headers(createHeaders(queryString))
                 .build();
         sleep();
-        ResponseEntity<String> responseEntity = getRestTemplate().exchange(requestEntity, String.class);
+        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
         JsonNode rootNode;
         try {
             rootNode = objectMapper.readTree(responseEntity.getBody());
@@ -163,7 +169,7 @@ public class UpbitBrokerClient extends BrokerClient {
                 .build();
 
         sleep();
-        ResponseEntity<String> responseEntity = getRestTemplate().exchange(requestEntity, String.class);
+        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
         List<Map<String, String>> rows;
         try {
             rows = objectMapper.readValue(responseEntity.getBody(), new TypeReference<>(){});
@@ -200,7 +206,7 @@ public class UpbitBrokerClient extends BrokerClient {
                 .build();
 
         sleep();
-        ResponseEntity<String> responseEntity = getRestTemplate().exchange(requestEntity, String.class);
+        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
 
         List<Map<String, String>> rows;
         try {
@@ -353,7 +359,7 @@ public class UpbitBrokerClient extends BrokerClient {
                 .body(payload);
 
         sleep();
-        ResponseEntity<Map<String, String>> responseEntity = getRestTemplate().exchange(requestEntity, new ParameterizedTypeReference<>() {});
+        ResponseEntity<Map<String, String>> responseEntity = createRestTemplate().exchange(requestEntity, new ParameterizedTypeReference<>() {});
         Map<String, String> responseMap = responseEntity.getBody();
         log.info("{}", responseMap);
         if(responseMap != null) {
@@ -374,7 +380,7 @@ public class UpbitBrokerClient extends BrokerClient {
                 .build();
 
         sleep();
-        ResponseEntity<String> responseEntity = getRestTemplate().exchange(requestEntity, String.class);
+        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
         List<Map<String, String>> rows;
         try {
             rows = objectMapper.readValue(responseEntity.getBody(), new TypeReference<>(){});
@@ -423,7 +429,7 @@ public class UpbitBrokerClient extends BrokerClient {
                 .headers(createHeaders(queryString))
                 .build();
         sleep();
-        getRestTemplate().exchange(requestEntity, Void.class);
+        createRestTemplate().exchange(requestEntity, Void.class);
 
         // submit order
         return submitOrder(asset, order);

@@ -30,10 +30,4 @@ public abstract class AssetClient {
         return String.format("%s.%s", market, symbol);
     }
 
-    public RestTemplate getRestTemplate() {
-        return RestTemplateBuilder.create()
-                .retryCount(3)
-                .build();
-    }
-
 }

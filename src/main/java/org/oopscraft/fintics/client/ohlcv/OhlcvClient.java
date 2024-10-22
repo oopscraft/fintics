@@ -34,10 +34,4 @@ public abstract class OhlcvClient {
 
     public abstract List<Ohlcv> getOhlcvs(Asset asset, Ohlcv.Type type, LocalDateTime datetimeFrom, LocalDateTime datetimeTo);
 
-    public RestTemplate getRestTemplate() {
-        return RestTemplateBuilder.create()
-                .retryCount(3)
-                .build();
-    }
-
 }

@@ -33,9 +33,9 @@ public class SimpleOhlcvClient extends OhlcvClient {
 
     private final static Object LOCK_OBJECT = new Object();
 
-    private final ObjectMapper objectMapper;
-
     private final RestTemplate restTemplate;
+
+    private final ObjectMapper objectMapper;
 
     /**
      * constructor

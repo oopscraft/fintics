@@ -1,5 +1,6 @@
 package org.oopscraft.fintics.client.asset.market;
 
+import org.oopscraft.arch4j.core.common.support.RestTemplateBuilder;
 import org.oopscraft.fintics.client.asset.AssetClient;
 import org.oopscraft.fintics.client.asset.AssetClientProperties;
 import org.oopscraft.fintics.model.Asset;
@@ -8,6 +9,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 import org.w3c.dom.*;
 import org.xml.sax.InputSource;
 
@@ -38,8 +40,15 @@ public class KrAssetClient extends AssetClient {
 
     private static final String MARKET_KR = "KR";
 
+    private final RestTemplate restTemplate;
+
     public KrAssetClient(AssetClientProperties assetClientProperties) {
         super(assetClientProperties);
+
+        // rest template
+        this.restTemplate = RestTemplateBuilder.create()
+                .retryCount(3)
+                .build();
     }
 
     /**
@@ -103,7 +112,7 @@ public class KrAssetClient extends AssetClient {
         RequestEntity<String> requestEntity = RequestEntity.post(url)
                 .headers(headers)
                 .body(payloadXml);
-        ResponseEntity<String> responseEntity = getRestTemplate().exchange(requestEntity, String.class);
+        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
 
         String responseBody = responseEntity.getBody();
         List<Map<String, String>> rows = convertXmlToList(responseBody);
@@ -168,7 +177,7 @@ public class KrAssetClient extends AssetClient {
         RequestEntity<String> requestEntity = RequestEntity.post(url)
                 .headers(headers)
                 .body(payloadXml);
-        ResponseEntity<String> responseEntity = getRestTemplate().exchange(requestEntity, String.class);
+        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
 
         String responseBody = responseEntity.getBody();
         List<Map<String, String>> rows = convertXmlToList(responseBody);
@@ -250,7 +259,7 @@ public class KrAssetClient extends AssetClient {
                     .headers(headers)
                     .body(payloadXml);
             // exchange
-            ResponseEntity<String> responseEntity = getRestTemplate().exchange(requestEntity, String.class);
+            ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
             // response
             String responseBody = responseEntity.getBody();
             List<Map<String,String>> responseList = convertXmlToList(responseBody);
@@ -296,7 +305,7 @@ public class KrAssetClient extends AssetClient {
                     .headers(headers)
                     .body(payloadXml);
             // exchange
-            ResponseEntity<String> responseEntity = getRestTemplate().exchange(requestEntity, String.class);
+            ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
             // response
             String responseBody = responseEntity.getBody();
             List<Map<String,String>> responseList = convertXmlToList(responseBody);
@@ -369,7 +378,7 @@ public class KrAssetClient extends AssetClient {
         RequestEntity<String> requestEntity = RequestEntity.post(url)
                 .headers(headers)
                 .body(payloadXml);
-        ResponseEntity<String> responseEntity = getRestTemplate().exchange(requestEntity, String.class);
+        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
         String responseBody = responseEntity.getBody();
         return convertXmlToMap(responseBody);
     }

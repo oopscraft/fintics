@@ -30,6 +30,8 @@ public class AlpacaBrokerClient extends BrokerClient {
 
     private final boolean insecure;
 
+    private final RestTemplate restTemplate;
+
     private final ObjectMapper objectMapper;
 
     /**
@@ -46,15 +48,18 @@ public class AlpacaBrokerClient extends BrokerClient {
                 .map(Boolean::parseBoolean)
                 .orElse(Boolean.FALSE);
 
+        // rest template
+        this.restTemplate = createRestTemplate();
+
         // object mapper
         this.objectMapper = new ObjectMapper();
     }
 
     /**
-     * returns rest template
+     * creates rest template
      * @return rest template
      */
-    RestTemplate getRestTemplate() {
+    RestTemplate createRestTemplate() {
         return RestTemplateBuilder.create()
                 .retryCount(3)
                 .insecure(insecure)
@@ -92,7 +97,7 @@ public class AlpacaBrokerClient extends BrokerClient {
                 .get("https://data.sandbox.alpaca.markets/v2/stocks/bars/latest?feed=sip")
                 .headers(createHttpHeaders())
                 .build();
-        ResponseEntity<String> responseEntity = getRestTemplate().exchange(requestEntity, String.class);
+        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
         JsonNode rootNode;
         try {
             rootNode = objectMapper.readTree(responseEntity.getBody());
@@ -108,7 +113,7 @@ public class AlpacaBrokerClient extends BrokerClient {
                 .get("https://data.sandbox.alpaca.markets/v2/stocks/bars/latest?feed=sip")
                 .headers(createHttpHeaders())
                 .build();
-        ResponseEntity<String> responseEntity = getRestTemplate().exchange(requestEntity, String.class);
+        ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
 
         return null;
     }
