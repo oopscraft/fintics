@@ -243,6 +243,21 @@ class Analyzer {
         return score
     }
 
+    /**
+     * gets trailing stop score
+     * @return trailing stop score
+     */
+    Score getTrailingStopScore() {
+        def score = new Score()
+        // atr
+        def prevOhlcv = ohlcvs.get(1)
+        def prevAtr = atrs.get(1)
+        def stopPrice = prevOhlcv.high - (prevAtr.value * 2.0)
+        score.atrAtr = ohlcv.close < stopPrice ? 100 : 0
+        // return
+        return score
+    }
+
     @Override
     String toString() {
         return [
@@ -312,15 +327,29 @@ class TripleScreenStrategy {
         // tide 모멘텀 기준 포지션 산출
         def position = this.getPosition(maxPosition, minPosition)
 
+        // 과매도 임계치 - 기본 50
+        def waveOversoldThreshold = 50
+        // tide 가 추세 상승 인 경우 wave 과매도 판단 임계치 내림
+        if (tideAnalyzer.getMomentumScore() > 75) {
+            waveOversoldThreshold = 25
+        }
+
+        // 과매수 임계치 - 기본 50
+        def waveOverboughtThreshold = 50
+        // tide 가 추세 하락 인 경우 wave 과매수 판단 임계치 내림
+        if (tideAnalyzer.getMomentumScore() < 25) {
+            waveOverboughtThreshold = 25
+        }
+
         // wave 변동성 구간
         if (waveAnalyzer.getVolatilityScore() > 50) {
             // wave 과매도 시
-            if (waveAnalyzer.getOversoldScore() > 50) {
+            if (waveAnalyzer.getOversoldScore() > waveOversoldThreshold) {
                 // ripple 상승 모멘텀
                 if (rippleAnalyzer.getMomentumScore() > 50) {
                     // wave 평균가 기준 매수 포지션
                     def waveAveragePosition = waveAnalyzer.adjustAveragePosition(position)
-                    strategyResult = StrategyResult.of(Action.BUY, waveAveragePosition, this.toString())
+                    strategyResult = StrategyResult.of(Action.BUY, waveAveragePosition, "[Oversold Buy] ${this.toString()}")
                     // filter - tide 가 과매수 상태인 경우 매수 제한
                     if (tideAnalyzer.getOverboughtScore() > 50) {
                         strategyResult = null
@@ -328,12 +357,12 @@ class TripleScreenStrategy {
                 }
             }
             // wave 과매수 시
-            if (waveAnalyzer.getOverboughtScore() > 50) {
+            if (waveAnalyzer.getOverboughtScore() > waveOverboughtThreshold) {
                 // ripple 하락 모멘텀
                 if (rippleAnalyzer.getMomentumScore() < 50) {
                     // wave 평균가 기준 매도 포지션
                     def waveAveragePosition = waveAnalyzer.adjustAveragePosition(position)
-                    strategyResult = StrategyResult.of(Action.SELL, waveAveragePosition, this.toString())
+                    strategyResult = StrategyResult.of(Action.SELL, waveAveragePosition, "[Overbought Sell] ${this.toString()}")
                     // filter - tide 가 과매도 상태인 경우 매도 제한
                     if (tideAnalyzer.getOversoldScore() > 50) {
                         strategyResult = null
@@ -342,25 +371,10 @@ class TripleScreenStrategy {
             }
         }
 
-        // tide 변동성 구간
-        if (tideAnalyzer.getVolatilityScore() > 50) {
-            // tide 과매도 시
-            if (tideAnalyzer.getOversoldScore() > 50) {
-                // wave 상승 모멘텀
-                if (waveAnalyzer.getMomentumScore() > 50) {
-                    // tide 평균가 기준 매수 포지션
-                    def tideAveragePosition = tideAnalyzer.adjustAveragePosition(position)
-                    strategyResult = StrategyResult.of(Action.BUY, tideAveragePosition, this.toString())
-                }
-            }
-            // tide 과매수 시
-            if (tideAnalyzer.getOverboughtScore() > 50) {
-                // wave 하락 모멘텀
-                if (waveAnalyzer.getMomentumScore() < 50) {
-                    // tide 평균가 기준 매도 포지션
-                    def tideAveragePosition = tideAnalyzer.adjustAveragePosition(position)
-                    strategyResult = StrategyResult.of(Action.SELL, tideAveragePosition, this.toString())
-                }
+        // if all bearish momentum trailing stop
+        if (tideAnalyzer.getMomentumScore() < 25 && waveAnalyzer.getMomentumScore() < 25 && rippleAnalyzer.getMomentumScore() < 25) {
+            if (waveAnalyzer.getTrailingStopScore() > 50) {
+                strategyResult = StrategyResult.of(Action.SELL, position, "[Trailing Stop] ${this.toString()}")
             }
         }
 
