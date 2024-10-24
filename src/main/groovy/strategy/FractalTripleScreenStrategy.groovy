@@ -350,6 +350,10 @@ class TripleScreenStrategy {
                     // wave 평균가 기준 매수 포지션
                     def waveAveragePosition = waveAnalyzer.adjustAveragePosition(position)
                     strategyResult = StrategyResult.of(Action.BUY, waveAveragePosition, "[Oversold Buy] ${this.toString()}")
+                    // filter - tide 가 과매수 상태인 경우 매수 제한
+                    if (tideAnalyzer.getOverboughtScore() > 50) {
+                        strategyResult = null
+                    }
                 }
             }
             // wave 과매수 시
@@ -359,6 +363,10 @@ class TripleScreenStrategy {
                     // wave 평균가 기준 매도 포지션
                     def waveAveragePosition = waveAnalyzer.adjustAveragePosition(position)
                     strategyResult = StrategyResult.of(Action.SELL, waveAveragePosition, "[Overbought Sell] ${this.toString()}")
+                    // filter - tide 가 과매도 상태인 경우 매도 제한
+                    if (tideAnalyzer.getOversoldScore() > 50) {
+                        strategyResult = null
+                    }
                 }
             }
         }
