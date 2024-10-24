@@ -38,10 +38,19 @@ public class AssetEntity extends BaseEntity {
     @Column(name = "market_cap", precision = 32)
     private BigDecimal marketCap;
 
-    @OneToMany
-    @JoinColumn(name = "asset_id", referencedColumnName = "asset_id", insertable = false, updatable = false)
-    @OrderBy(AssetMetaEntity_.SORT)
-    @Builder.Default
-    private List<AssetMetaEntity> assetMetaEntities = new ArrayList<>();
+    @Column(name = "per", scale = 2)
+    private BigDecimal per;
+
+    @Column(name = "eps", scale = 2)
+    private BigDecimal eps;
+
+    @Column(name = "roe", scale = 2)
+    private BigDecimal roe;
+
+    @Column(name = "roa", scale = 2)
+    private BigDecimal roa;
+
+    @Column(name = "dividend_yield", scale = 2)
+    private BigDecimal dividendYield;
 
 }

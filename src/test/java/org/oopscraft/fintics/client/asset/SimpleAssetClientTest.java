@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.oopscraft.arch4j.core.common.test.CoreTestSupport;
 import org.oopscraft.fintics.FinticsConfiguration;
 import org.oopscraft.fintics.model.Asset;
-import org.oopscraft.fintics.model.AssetMeta;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
@@ -47,9 +46,9 @@ class SimpleAssetClientTest extends CoreTestSupport {
                 .type("STOCK")
                 .build();
         // when
-        List<AssetMeta> assetMetas = getSimpleAssetClient().getAssetMetas(asset);
+        getSimpleAssetClient().applyAssetDetail(asset);
         // then
-        log.info("assetMetas: {}", assetMetas);
+        log.info("asset: {}", asset);
     }
 
     @Test
@@ -62,9 +61,9 @@ class SimpleAssetClientTest extends CoreTestSupport {
                 .type("STOCK")
                 .build();
         // when
-        List<AssetMeta> assetMetas = getSimpleAssetClient().getAssetMetas(asset);
+        getSimpleAssetClient().applyAssetDetail(asset);
         // then
-        log.info("assetMetas: {}", assetMetas);
+        log.info("asset: {}", asset);
     }
 
 }

@@ -58,13 +58,4 @@ class AssetCollectorTest extends CoreTestSupport {
         assertTrue(brokerAssetEntities.size() > 0);
     }
 
-    @Disabled
-    @Test
-    void saveAssetMetas() {
-        // given
-        // when
-        assetCollector.saveAssetMetas();
-        // then
-    }
-
 }

@@ -36,6 +36,11 @@ public class BasketAssetResponse extends AssetResponse {
                 .type(basketAsset.getType())
                 .exchange(basketAsset.getExchange())
                 .marketCap(basketAsset.getMarketCap())
+                .per(basketAsset.getPer())
+                .eps(basketAsset.getEps())
+                .roe(basketAsset.getRoe())
+                .roa(basketAsset.getRoa())
+                .dividendYield(basketAsset.getDividendYield())
                 .fixed(basketAsset.isFixed())
                 .enabled(basketAsset.isEnabled())
                 .holdingWeight(basketAsset.getHoldingWeight())
@@ -43,7 +48,6 @@ public class BasketAssetResponse extends AssetResponse {
                 .sort(basketAsset.getSort())
                 .icon(basketAsset.getIcon())
                 .links(LinkResponse.from(basketAsset.getLinks()))
-                .assetMetas(AssetMetaResponse.from(basketAsset.getAssetMetas()))
                 .build();
     }
 

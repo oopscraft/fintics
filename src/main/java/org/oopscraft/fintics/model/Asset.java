@@ -12,7 +12,7 @@ import java.util.*;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class Asset implements Serializable {
+public class Asset {
 
     private String assetId;
 
@@ -26,8 +26,15 @@ public class Asset implements Serializable {
 
     private BigDecimal marketCap;
 
-    @Builder.Default
-    private List<AssetMeta> assetMetas = new ArrayList<>();
+    private BigDecimal per;
+
+    private BigDecimal eps;
+
+    private BigDecimal roe;
+
+    private BigDecimal roa;
+
+    private BigDecimal dividendYield;
 
     /**
      * gets symbol
@@ -58,38 +65,24 @@ public class Asset implements Serializable {
     }
 
     /**
-     * returns asset metas by name
-     * @param name name
-     * @return asset metas
-     */
-    public List<AssetMeta> getAssetMetas(String name) {
-        return assetMetas.stream()
-                .filter(it -> Objects.equals(it.getName(), name))
-                .sorted(Comparator.comparing(AssetMeta::getDateTime).reversed())
-                .toList();
-    }
-
-    /**
      * asset factory method
      * @param assetEntity asset entity
      * @return asset
      */
     public static Asset from(AssetEntity assetEntity) {
-        Asset asset = Asset.builder()
+        return Asset.builder()
                 .assetId(assetEntity.getAssetId())
                 .name(assetEntity.getName())
                 .market(assetEntity.getMarket())
                 .exchange(assetEntity.getExchange())
                 .type(assetEntity.getType())
                 .marketCap(assetEntity.getMarketCap())
+                .per(assetEntity.getPer())
+                .eps(assetEntity.getEps())
+                .roe(assetEntity.getRoe())
+                .roa(assetEntity.getRoa())
+                .dividendYield(assetEntity.getDividendYield())
                 .build();
-        // asset metas
-        List<AssetMeta> assetMetas = assetEntity.getAssetMetaEntities().stream()
-                .map(AssetMeta::from)
-                .toList();
-        asset.setAssetMetas(assetMetas);
-        // return
-        return asset;
     }
 
 }

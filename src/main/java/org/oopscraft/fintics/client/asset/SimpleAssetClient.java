@@ -6,16 +6,11 @@ import org.oopscraft.fintics.client.asset.market.KrAssetClient;
 import org.oopscraft.fintics.client.asset.market.UpbitAssetClient;
 import org.oopscraft.fintics.client.asset.market.UsAssetClient;
 import org.oopscraft.fintics.model.Asset;
-import org.oopscraft.fintics.model.AssetMeta;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Component
 @ConditionalOnProperty(prefix = "fintics", name = "asset-client.class-name", havingValue="org.oopscraft.fintics.client.asset.SimpleAssetClient")
@@ -46,9 +41,9 @@ public class SimpleAssetClient extends AssetClient {
     }
 
     @Override
-    public boolean isSupported(Asset asset) {
+    public boolean isSupportAssetDetail(Asset asset) {
         for(AssetClient assetClient : assetClients) {
-            if (assetClient.isSupported(asset)) {
+            if (assetClient.isSupportAssetDetail(asset)) {
                 return true;
             }
         }
@@ -56,14 +51,12 @@ public class SimpleAssetClient extends AssetClient {
     }
 
     @Override
-    public List<AssetMeta> getAssetMetas(Asset asset) {
-        List<AssetMeta> assetMetas = new ArrayList<>();
+    public void applyAssetDetail(Asset asset) {
         for (AssetClient assetClient : assetClients) {
-            if (assetClient.isSupported(asset)) {
-                assetMetas.addAll(assetClient.getAssetMetas(asset));
+            if (assetClient.isSupportAssetDetail(asset)) {
+                assetClient.applyAssetDetail(asset);
             }
         }
-        return assetMetas;
     }
 
 }

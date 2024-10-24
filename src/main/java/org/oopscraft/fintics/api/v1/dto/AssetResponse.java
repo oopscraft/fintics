@@ -26,13 +26,20 @@ public class AssetResponse {
 
     private BigDecimal marketCap;
 
+    private BigDecimal eps;
+
+    private BigDecimal per;
+
+    private BigDecimal roe;
+
+    private BigDecimal roa;
+
+    private BigDecimal dividendYield;
+
     private String icon;
 
     @Builder.Default
     private List<LinkResponse> links = new ArrayList<>();
-
-    @Builder.Default
-    private List<AssetMetaResponse> assetMetas = new ArrayList<>();
 
     public static AssetResponse from(Asset asset) {
         return AssetResponse.builder()
@@ -42,9 +49,13 @@ public class AssetResponse {
                 .exchange(asset.getExchange())
                 .type(asset.getType())
                 .marketCap(asset.getMarketCap())
+                .per(asset.getPer())
+                .eps(asset.getEps())
+                .roe(asset.getRoe())
+                .roa(asset.getRoa())
+                .dividendYield(asset.getDividendYield())
                 .icon(asset.getIcon())
                 .links(LinkResponse.from(asset.getLinks()))
-                .assetMetas(AssetMetaResponse.from(asset.getAssetMetas()))
                 .build();
     }
 

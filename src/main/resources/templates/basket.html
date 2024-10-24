@@ -44,19 +44,10 @@
             });
             let selectedAssets = await assetSelectDialog.open(basket.market, disabledAssetIds);
             selectedAssets.forEach(asset => {
-                basket.basketAssets.push({
-                    _new: true,
-                    assetId: asset.assetId,
-                    name: asset.name,
-                    exchange: asset.exchange,
-                    type: asset.type,
-                    marketCap: asset.marketCap,
-                    enabled: false,
-                    holdingWeight: 0,
-                    icon: asset.icon,
-                    links: asset.links,
-                    assetMetas: asset.assetMetas
-                });
+                asset._new = true;
+                asset.enabled = false;
+                asset.holdingWeight = 0;
+                basket.basketAssets.push(asset);
             });
         }
 
@@ -248,12 +239,11 @@
                                 <col/>
                                 <col/>
                                 <col/>
-                                <col/>
-                                <col style="width:15em;"/>
+                                <col style="width:20em;"/>
+                                <col style="width:10em;"/>
                                 <col style="width:5em;"/>
                                 <col style="width:5em;"/>
-                                <col style="width:5em;"/>
-                                <col style="width:5em;"/>
+                                <col style="width:7em;"/>
                                 <col style="width:15em;"/>
                             </colgroup>
                             <thead>
@@ -268,9 +258,8 @@
                                 <th data-th-text="#{fintics.Asset.name}"></th>
                                 <th data-th-text="#{fintics.Asset.exchange}"></th>
                                 <th data-th-text="#{fintics.Asset.type}"></th>
-                                <th data-th-text="#{fintics.Asset.marketCap}"></th>
-                                <th data-th-text="#{fintics.AssetMeta}"></th>
-                                <th data-th-text="#{fintics.Asset.links}"></th>
+                                <th></th>
+                                <th data-th-text="#{fintics.Asset.links}" class="text-align--center"></th>
                                 <th data-th-text="#{fintics.BasketAsset.fixed}" class="text-align--center"></th>
                                 <th data-th-text="#{fintics.BasketAsset.enabled}" class="text-align--center"></th>
                                 <th data-th-text="#{fintics.BasketAsset.holdingWeight}" class="text-align--right"></th>
@@ -307,21 +296,42 @@
                                     <span data-duice-bind="basketAsset" data-duice-property="type" class="badge"></span>
                                 </td>
                                 <td>
-                                    <span data-duice-bind="basketAsset" data-duice-property="marketCap" data-duice-format="number"></span>
-                                </td>
-                                <td>
                                     <div class="overflow-y--scroll border--1 padding--1px" style="line-height:1em; height:5em;">
                                         <table class="width--100 border--0 font-size--smaller code">
+                                            <colgroup>
+                                                <col class="width--25"/>
+                                                <col class="width--25"/>
+                                                <col class="width--25"/>
+                                                <col class="width--25"/>
+                                            </colgroup>
                                             <tbody>
-                                            <tr data-duice-bind="basketAsset.assetMetas" data-duice-loop="assetMeta,status">
-                                                <td data-duice-bind="assetMeta" data-duice-property="name"></td>
-                                                <td data-duice-bind="assetMeta" data-duice-property="value" class="text-align--right"></td>
+                                            <tr>
+                                                <td data-th-text="#{fintics.Asset.marketCap}"></td>
+                                                <td colspan="3" data-duice-bind="basketAsset" data-duice-property="marketCap" data-duice-format="number" class="text-align--right"></td>
+                                            </tr>
+                                            <tr>
+                                                <td data-th-text="#{fintics.Asset.per}"></td>
+                                                <td data-duice-bind="basketAsset" data-duice-property="per" class="text-align--right"></td>
+                                                <td data-th-text="#{fintics.Asset.eps}"></td>
+                                                <td data-duice-bind="basketAsset" data-duice-property="eps" class="text-align--right"></td>
+                                            </tr>
+                                            <tr>
+                                                <td data-th-text="#{fintics.Asset.roe}"></td>
+                                                <td data-duice-bind="basketAsset" data-duice-property="roe" class="text-align--right"></td>
+                                                <td data-th-text="#{fintics.Asset.roa}"></td>
+                                                <td data-duice-bind="basketAsset" data-duice-property="roa" class="text-align--right"></td>
+                                            </tr>
+                                            <tr>
+                                                <td data-th-text="#{fintics.Asset.dividendYield}"></td>
+                                                <td data-duice-bind="basketAsset" data-duice-property="dividendYield" class="text-align--right"></td>
+                                                <td></td>
+                                                <td></td>
                                             </tr>
                                             </tbody>
                                         </table>
                                     </div>
                                 </td>
-                                <td>
+                                <td class="text-align--center">
                                     <select data-duice-bind="basketAsset"
                                             data-duice-option="basketAsset.links"
                                             data-duice-option-value-property="url"
@@ -597,7 +607,6 @@
                             <col/>
                             <col/>
                             <col/>
-                            <col/>
                         </colgroup>
                         <thead>
                         <tr>
@@ -606,9 +615,8 @@
                             <th data-th-text="#{fintics.Asset.name}"></th>
                             <th data-th-text="#{fintics.Asset.exchange}"></th>
                             <th data-th-text="#{fintics.Asset.type}"></th>
-                            <th data-th-text="#{fintics.Asset.marketCap}"></th>
-                            <th data-th-text="#{fintics.AssetMeta}"></th>
-                            <th data-th-text="#{fintics.Asset.links}"></th>
+                            <th></th>
+                            <th data-th-text="#{fintics.Asset.links}" class="text-align--center"></th>
                         </tr>
                         </thead>
                         <tbody>
@@ -640,21 +648,42 @@
                                 <span data-duice-bind="asset" data-duice-property="type" class="badge"></span>
                             </td>
                             <td>
-                                <span data-duice-bind="asset" data-duice-property="marketCap" data-duice-format="number"></span>
-                            </td>
-                            <td>
                                 <div class="overflow-y--scroll border--1 padding--1px" style="line-height:1em; height:5em;">
                                     <table class="width--100 border--0 font-size--smaller code">
+                                        <colgroup>
+                                            <col class="width--25"/>
+                                            <col class="width--25"/>
+                                            <col class="width--25"/>
+                                            <col class="width--25"/>
+                                        </colgroup>
                                         <tbody>
-                                        <tr data-duice-bind="asset.assetMetas" data-duice-loop="assetMeta,status">
-                                            <td data-duice-bind="assetMeta" data-duice-property="name"></td>
-                                            <td data-duice-bind="assetMeta" data-duice-property="value" class="text-align--right"></td>
+                                        <tr>
+                                            <td data-th-text="#{fintics.Asset.marketCap}"></td>
+                                            <td colspan="3" data-duice-bind="asset" data-duice-property="marketCap" data-duice-format="number" class="text-align--right"></td>
+                                        </tr>
+                                        <tr>
+                                            <td data-th-text="#{fintics.Asset.per}"></td>
+                                            <td data-duice-bind="asset" data-duice-property="per" class="text-align--right"></td>
+                                            <td data-th-text="#{fintics.Asset.eps}"></td>
+                                            <td data-duice-bind="asset" data-duice-property="eps" class="text-align--right"></td>
+                                        </tr>
+                                        <tr>
+                                            <td data-th-text="#{fintics.Asset.roe}"></td>
+                                            <td data-duice-bind="asset" data-duice-property="roe" class="text-align--right"></td>
+                                            <td data-th-text="#{fintics.Asset.roa}"></td>
+                                            <td data-duice-bind="asset" data-duice-property="roa" class="text-align--right"></td>
+                                        </tr>
+                                        <tr>
+                                            <td data-th-text="#{fintics.Asset.dividendYield}"></td>
+                                            <td data-duice-bind="asset" data-duice-property="dividendYield" class="text-align--right"></td>
+                                            <td></td>
+                                            <td></td>
                                         </tr>
                                         </tbody>
                                     </table>
                                 </div>
                             </td>
-                            <td class="text-align--right font-size--smaller">
+                            <td class="text-align--center">
                                 <select data-duice-bind="asset"
                                         data-duice-option="asset.links"
                                         data-duice-option-value-property="url"
@@ -715,9 +744,8 @@
                             <th data-th-text="#{fintics.Asset.name}"></th>
                             <th data-th-text="#{fintics.Asset.exchange}"></th>
                             <th data-th-text="#{fintics.Asset.type}"></th>
-                            <th data-th-text="#{fintics.Asset.marketCap}"></th>
-                            <th data-th-text="#{fintics.AssetMeta}"></th>
-                            <th data-th-text="#{fintics.Asset.links}"></th>
+                            <th></th>
+                            <th data-th-text="#{fintics.Asset.links}" class="text-align--center"></th>
                         </tr>
                         </thead>
                         <tbody>
@@ -745,21 +773,42 @@
                                 <span data-duice-bind="asset" data-duice-property="type" class="badge"></span>
                             </td>
                             <td>
-                                <span data-duice-bind="asset" data-duice-property="marketCap" data-duice-format="number"></span>
-                            </td>
-                            <td>
                                 <div class="overflow-y--scroll border--1 padding--1px" style="line-height:1em; height:5em;">
                                     <table class="width--100 border--0 font-size--smaller code">
+                                        <colgroup>
+                                            <col class="width--25"/>
+                                            <col class="width--25"/>
+                                            <col class="width--25"/>
+                                            <col class="width--25"/>
+                                        </colgroup>
                                         <tbody>
-                                        <tr data-duice-bind="asset.assetMetas" data-duice-loop="assetMeta,status">
-                                            <td data-duice-bind="assetMeta" data-duice-property="name"></td>
-                                            <td data-duice-bind="assetMeta" data-duice-property="value" class="text-align--right"></td>
+                                        <tr>
+                                            <td data-th-text="#{fintics.Asset.marketCap}"></td>
+                                            <td colspan="3" data-duice-bind="asset" data-duice-property="marketCap" data-duice-format="number" class="text-align--right"></td>
+                                        </tr>
+                                        <tr>
+                                            <td data-th-text="#{fintics.Asset.per}"></td>
+                                            <td data-duice-bind="asset" data-duice-property="per" class="text-align--right"></td>
+                                            <td data-th-text="#{fintics.Asset.eps}"></td>
+                                            <td data-duice-bind="asset" data-duice-property="eps" class="text-align--right"></td>
+                                        </tr>
+                                        <tr>
+                                            <td data-th-text="#{fintics.Asset.roe}"></td>
+                                            <td data-duice-bind="asset" data-duice-property="roe" class="text-align--right"></td>
+                                            <td data-th-text="#{fintics.Asset.roa}"></td>
+                                            <td data-duice-bind="asset" data-duice-property="roa" class="text-align--right"></td>
+                                        </tr>
+                                        <tr>
+                                            <td data-th-text="#{fintics.Asset.dividendYield}"></td>
+                                            <td data-duice-bind="asset" data-duice-property="dividendYield" class="text-align--right"></td>
+                                            <td></td>
+                                            <td></td>
                                         </tr>
                                         </tbody>
                                     </table>
                                 </div>
                             </td>
-                            <td class="text-align--right font-size--smaller">
+                            <td class="text-align--center">
                                 <select data-duice-bind="asset"
                                         data-duice-option="asset.links"
                                         data-duice-option-value-property="url"

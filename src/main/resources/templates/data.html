@@ -200,16 +200,6 @@
             </form>
             <div class="overflow-y--scroll border-top--1" style="max-height:70vh;">
                 <table class="width--100 border-top--0 text-align--center">
-                    <colgroup>
-                        <col style="width:5em;"/>
-                        <col style="width:10em;"/>
-                        <col style="width:20em;"/>
-                        <col/>
-                        <col/>
-                        <col/>
-                        <col/>
-                        <col/>
-                    </colgroup>
                     <thead>
                     <tr>
                         <th data-th-text="#{web.global.no}"></th>
@@ -219,6 +209,11 @@
                         <th data-th-text="#{fintics.Asset.exchange}"></th>
                         <th data-th-text="#{fintics.Asset.type}"></th>
                         <th data-th-text="#{fintics.Asset.marketCap}"></th>
+                        <th data-th-text="#{fintics.Asset.per}"></th>
+                        <th data-th-text="#{fintics.Asset.eps}"></th>
+                        <th data-th-text="#{fintics.Asset.roa}"></th>
+                        <th data-th-text="#{fintics.Asset.roe}"></th>
+                        <th data-th-text="#{fintics.Asset.dividendYield}"></th>
                         <th data-th-text="#{fintics.Asset.links}"></th>
                     </tr>
                     </thead>
@@ -231,6 +226,11 @@
                         <td data-duice-bind="asset" data-duice-property="exchange"></td>
                         <td data-duice-bind="asset" data-duice-property="type"></td>
                         <td data-duice-bind="asset" data-duice-property="marketCap" data-duice-format="number"></td>
+                        <td data-duice-bind="asset" data-duice-property="per" data-duice-format="number"></td>
+                        <td data-duice-bind="asset" data-duice-property="eps" data-duice-format="number"></td>
+                        <td data-duice-bind="asset" data-duice-property="roe" data-duice-format="number"></td>
+                        <td data-duice-bind="asset" data-duice-property="roa" data-duice-format="number"></td>
+                        <td data-duice-bind="asset" data-duice-property="dividendYield" data-duice-format="number"></td>
                         <td>
                             <select data-duice-bind="asset"
                                     data-duice-option="asset.links"

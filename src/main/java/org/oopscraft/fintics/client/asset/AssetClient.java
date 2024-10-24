@@ -1,14 +1,8 @@
 package org.oopscraft.fintics.client.asset;
 
 import lombok.Getter;
-import org.oopscraft.arch4j.core.common.support.RestTemplateBuilder;
 import org.oopscraft.fintics.model.Asset;
-import org.oopscraft.fintics.model.AssetMeta;
-import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.List;
 
 public abstract class AssetClient {
@@ -16,16 +10,39 @@ public abstract class AssetClient {
     @Getter
     private final AssetClientProperties assetClientProperties;
 
+    /**
+     * constructor
+     * @param assetClientProperties asset client properties
+     */
     protected AssetClient(AssetClientProperties assetClientProperties) {
         this.assetClientProperties = assetClientProperties;
     }
 
+    /**
+     * returns assets
+     * @return assets
+     */
     public abstract List<Asset> getAssets();
 
-    public abstract boolean isSupported(Asset asset);
+    /**
+     * checks support asset detail
+     * @param asset asset
+     * @return support detail or not
+     */
+    public abstract boolean isSupportAssetDetail(Asset asset);
 
-    public abstract List<AssetMeta> getAssetMetas(Asset asset);
+    /**
+     * applies asset details
+     * @param asset asset
+     */
+    public abstract void applyAssetDetail(Asset asset);
 
+    /**
+     * convert to asset id
+     * @param market market
+     * @param symbol symbol
+     * @return asset id
+     */
     public String toAssetId(String market, String symbol) {
         return String.format("%s.%s", market, symbol);
     }

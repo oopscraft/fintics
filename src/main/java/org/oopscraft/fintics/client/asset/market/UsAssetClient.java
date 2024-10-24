@@ -10,7 +10,6 @@ import org.oopscraft.arch4j.core.common.support.RestTemplateBuilder;
 import org.oopscraft.fintics.client.asset.AssetClient;
 import org.oopscraft.fintics.client.asset.AssetClientProperties;
 import org.oopscraft.fintics.model.Asset;
-import org.oopscraft.fintics.model.AssetMeta;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +17,6 @@ import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -56,13 +54,15 @@ public class UsAssetClient extends AssetClient {
     }
 
     @Override
-    public boolean isSupported(Asset asset) {
+    public boolean isSupportAssetDetail(Asset asset) {
         return asset.getAssetId().startsWith("US.");
     }
 
     @Override
-    public List<AssetMeta> getAssetMetas(Asset asset) {
-        return getStockAssetMetas(asset);
+    public void applyAssetDetail(Asset asset) {
+        if ("STOCK".equals(asset.getType())) {
+            applyStockAssetDetail(asset);
+        }
     }
 
     /**
@@ -201,17 +201,16 @@ public class UsAssetClient extends AssetClient {
     }
 
     /**
-     * gets stock asset metas
+     * applies stock asset detail
      * @param asset asset
-     * @return list of asset meta
      */
-    List<AssetMeta> getStockAssetMetas(Asset asset) {
+    void applyStockAssetDetail(Asset asset) {
         try {
             BigDecimal totalAssets = null;
             BigDecimal totalEquity = null;
             BigDecimal netIncome = null;
-            BigDecimal eps = null;
             BigDecimal per = null;
+            BigDecimal eps = null;
             BigDecimal roe = null;
             BigDecimal roa = null;
             BigDecimal dividendYield = null;
@@ -301,41 +300,12 @@ public class UsAssetClient extends AssetClient {
                         .multiply(BigDecimal.valueOf(100));
             }
 
-            // return
-            String assetId = asset.getAssetId();
-            Instant dateTime = Instant.now();
-            return List.of(
-                    AssetMeta.builder()
-                            .assetId(assetId)
-                            .name("PER")
-                            .value(Objects.toString(per, null))
-                            .dateTime(dateTime)
-                            .build(),
-                    AssetMeta.builder()
-                            .assetId(assetId)
-                            .name("EPS")
-                            .value(Objects.toString(eps, null))
-                            .dateTime(dateTime)
-                            .build(),
-                    AssetMeta.builder()
-                            .assetId(assetId)
-                            .name("ROE")
-                            .value(Objects.toString(roe, null))
-                            .dateTime(dateTime)
-                            .build(),
-                    AssetMeta.builder()
-                            .assetId(assetId)
-                            .name("ROA")
-                            .value(Objects.toString(roa, null))
-                            .dateTime(dateTime)
-                            .build(),
-                    AssetMeta.builder()
-                            .assetId(assetId)
-                            .name("Dividend Yield")
-                            .value(Objects.toString(dividendYield, null))
-                            .dateTime(dateTime)
-                            .build()
-            );
+            // apply financial info
+            asset.setPer(per);
+            asset.setEps(eps);
+            asset.setRoe(roe);
+            asset.setRoa(roa);
+            asset.setDividendYield(dividendYield);
         } catch (Throwable e) {
             throw new RuntimeException(e);
         }

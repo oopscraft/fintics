@@ -1,10 +1,10 @@
 package org.oopscraft.fintics.client.asset.market;
 
+import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.arch4j.core.common.support.RestTemplateBuilder;
 import org.oopscraft.fintics.client.asset.AssetClient;
 import org.oopscraft.fintics.client.asset.AssetClientProperties;
 import org.oopscraft.fintics.model.Asset;
-import org.oopscraft.fintics.model.AssetMeta;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
@@ -29,13 +29,16 @@ import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
-import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class KrAssetClient extends AssetClient {
 
     private static final String MARKET_KR = "KR";
@@ -65,16 +68,15 @@ public class KrAssetClient extends AssetClient {
     }
 
     @Override
-    public boolean isSupported(Asset asset) {
+    public boolean isSupportAssetDetail(Asset asset) {
         return asset.getAssetId().startsWith("KR.");
     }
 
     @Override
-    public List<AssetMeta> getAssetMetas(Asset asset) {
+    public void applyAssetDetail(Asset asset) {
         if ("STOCK".equals(asset.getType())) {
-            return getStockAssetMetas(asset);
+            applyStockAssetDetail(asset);
         }
-        return new ArrayList<>();
     }
 
     /**
@@ -133,14 +135,16 @@ public class KrAssetClient extends AssetClient {
         }
 
         return rows.stream()
-                .map(row -> Asset.builder()
-                        .assetId(toAssetId(MARKET_KR, row.get("SHOTN_ISIN")))
-                        .name(row.get("KOR_SECN_NM"))
-                        .market(MARKET_KR)
-                        .exchange(exchange)
-                        .type("STOCK")
-                        .marketCap(toNumber(row.get("MARTP_TOTAMT"), null))
-                        .build())
+                .map(row -> {
+                    return Asset.builder()
+                            .assetId(toAssetId(MARKET_KR, row.get("SHOTN_ISIN")))
+                            .name(row.get("KOR_SECN_NM"))
+                            .market(MARKET_KR)
+                            .exchange(exchange)
+                            .type("STOCK")
+                            .marketCap(toNumber(row.get("MARTP_TOTAMT"), null))
+                            .build();
+                })
                 .collect(Collectors.toList());
     }
 
@@ -215,22 +219,12 @@ public class KrAssetClient extends AssetClient {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * returns asset meta list
-     * @param asset asset
-     * @return list of meta
-     */
-    List<AssetMeta> getStockAssetMetas(Asset asset) {
+    void applyStockAssetDetail(Asset asset) {
         BigDecimal per = null;
         BigDecimal eps = null;
         BigDecimal roe = null;
         BigDecimal roa = null;
         BigDecimal dividendYield = null;
-
-        // check stock
-        if (!Objects.equals(asset.getType(), "STOCK")) {
-            return new ArrayList<>();
-        }
 
         // request template
         String url = "https://seibro.or.kr/websquare/engine/proworks/callServletService.jsp";
@@ -321,41 +315,12 @@ public class KrAssetClient extends AssetClient {
             throw new RuntimeException(e);
         }
 
-        // return
-        String assetId = asset.getAssetId();
-        Instant dateTime = Instant.now();
-        return List.of(
-                AssetMeta.builder()
-                        .assetId(assetId)
-                        .name("PER")
-                        .value(Objects.toString(per, null))
-                        .dateTime(dateTime)
-                        .build(),
-                AssetMeta.builder()
-                        .assetId(assetId)
-                        .name("EPS")
-                        .value(Objects.toString(eps, null))
-                        .dateTime(dateTime)
-                        .build(),
-                AssetMeta.builder()
-                        .assetId(assetId)
-                        .name("ROE")
-                        .value(Objects.toString(roe, null))
-                        .dateTime(dateTime)
-                        .build(),
-                AssetMeta.builder()
-                        .assetId(assetId)
-                        .name("ROA")
-                        .value(Objects.toString(roa, null))
-                        .dateTime(dateTime)
-                        .build(),
-                AssetMeta.builder()
-                        .assetId(assetId)
-                        .name("Dividend Yield")
-                        .value(Objects.toString(dividendYield, null))
-                        .dateTime(dateTime)
-                        .build()
-        );
+        // sets stock info
+        asset.setPer(per);
+        asset.setEps(eps);
+        asset.setRoe(roe);
+        asset.setRoa(roa);
+        asset.setDividendYield(dividendYield);
     }
 
     /**

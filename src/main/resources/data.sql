@@ -20,7 +20,6 @@ values
     ('api.brokers','Y','Brokers API Access Authority'),
     ('api.brokers.edit','Y','Brokers Edit API Authority'),
     ('api.profits','Y','Profits Access Authority'),
-    ('api.data','Y','Data Access API Authority'),
     ('monitors','Y','Monitor Access Authority'),
     ('assets','Y','Assets Access Authority'),
     ('baskets','Y','Baskets Access Authority'),
@@ -35,8 +34,7 @@ values
     ('trade','Y','Trade Access Authority'),
     ('trade.edit','Y','Trade Edit Authority'),
     ('orders','Y','Orders Access Authority'),
-    ('profits','Y','Profits Access Authority'),
-    ('data','Y','Data Access Authority');
+    ('profits','Y','Profits Access Authority');
 
 -- core_role_authority
 insert into `core_role_authority`
@@ -50,7 +48,6 @@ values
     ('USER','api.brokers'),
     ('USER','api.trades'),
     ('USER','api.profits'),
-    ('USER','api.data'),
     ('USER','monitors'),
     ('USER','assets'),
     ('USER','baskets'),
@@ -61,8 +58,7 @@ values
     ('USER','trades'),
     ('USER','trade'),
     ('USER','orders'),
-    ('USER','profits'),
-    ('USER','data');
+    ('USER','profits');
 
 -- core_menu
 insert into `core_menu`
@@ -76,7 +72,6 @@ values
     ('trades','Y',null,'Trades','/trades',null,6,'/static/image/icon-trade.svg'),
     ('assets','Y',null,'Assets','/assets',null,7,'/static/image/icon-asset.svg'),
     ('orders','Y',null,'Orders','/orders',null,8,'/static/image/icon-order.svg'),
-    ('data','Y',null,'Data','/data',null,9,'/static/image/icon-data.svg'),
     ('admin','N',null,'Admin','/admin','_blank',99,'/static/image/icon-admin.svg');
 
 -- core_menu_i18n
@@ -91,7 +86,6 @@ values
     ('trades','ko','트레이드'),
     ('assets','ko','종목'),
     ('orders','ko','거래'),
-    ('data','ko','데이터'),
     ('admin','ko','관리자');
 
 -- core_menu_role
@@ -114,8 +108,6 @@ values
     ('orders','USER','LINK'),
     ('profits','USER','VIEW'),
     ('profits','USER','LINK'),
-    ('data','USER','VIEW'),
-    ('data','USER','LINK'),
     ('admin','USER','VIEW');
 
 -- core_alarm

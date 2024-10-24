@@ -27,7 +27,6 @@ public class AssetRepositoryCustomImpl implements AssetRepositoryCustom {
     @Override
     public Page<AssetEntity> findAll(AssetSearch assetSearch, Pageable pageable) {
         QAssetEntity qAssetEntity = QAssetEntity.assetEntity;
-        QAssetMetaEntity qAssetMetaEntity = QAssetMetaEntity.assetMetaEntity;
         JPAQuery<AssetEntity> query = jpaQueryFactory
                 .selectFrom(qAssetEntity)
                 .where(

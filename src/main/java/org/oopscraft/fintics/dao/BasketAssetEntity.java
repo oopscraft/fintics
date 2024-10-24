@@ -54,8 +54,8 @@ public class BasketAssetEntity extends BaseEntity {
     @Lob
     private String variables;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = true)
-    @JoinColumn(name = "asset_id", insertable = false, updatable = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = true)
+    @JoinColumn(name = "asset_id", insertable = false, updatable = false, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private AssetEntity assetEntity;
 
 }

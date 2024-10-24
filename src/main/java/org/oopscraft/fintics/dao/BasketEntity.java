@@ -48,7 +48,7 @@ public class BasketEntity extends BaseEntity {
     @Lob
     private String script;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "basket_id", updatable = false)
     @OrderBy(BasketAssetEntity_.SORT)
     @Builder.Default

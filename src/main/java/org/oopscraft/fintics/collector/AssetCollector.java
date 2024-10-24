@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.oopscraft.fintics.client.asset.AssetClient;
 import org.oopscraft.fintics.dao.*;
 import org.oopscraft.fintics.model.Asset;
-import org.oopscraft.fintics.model.AssetMeta;
+import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -21,8 +21,6 @@ import java.util.stream.Collectors;
 public class AssetCollector extends AbstractCollector {
 
     private final AssetRepository assetRepository;
-
-    private final AssetMetaRepository assetMetaRepository;
 
     private final PlatformTransactionManager transactionManager;
 
@@ -44,7 +42,7 @@ public class AssetCollector extends AbstractCollector {
         try {
             log.info("AssetCollector - Start collect asset.");
             saveAssets();
-            saveAssetMetas();
+            updateAssetDetail();
             log.info("AssetCollector - End collect asset");
         } catch(Throwable e) {
             log.error(e.getMessage(), e);
@@ -69,37 +67,18 @@ public class AssetCollector extends AbstractCollector {
         saveEntities("assetEntities", assetEntities, transactionManager, assetRepository);
     }
 
-    void saveAssetMetas() {
-        List<AssetEntity> assetEntities = assetRepository.findAll();
-        Instant dateTime = Instant.now();
-        Instant expiredDateTime = dateTime.minusSeconds(60*24*7);
+    void updateAssetDetail() {
+        List<AssetEntity> assetEntities = assetRepository.findAll(Sort.by(AssetEntity_.MARKET_CAP).descending());
         for(AssetEntity assetEntity : assetEntities) {
             Asset asset = Asset.from(assetEntity);
             try {
-                // check previous data
-                List<AssetMetaEntity> previousAssetMetas = assetMetaRepository.findAllByAssetId(asset.getAssetId());
-                if (previousAssetMetas.size() > 0) {
-                    Instant previousDateTime = previousAssetMetas.get(0).getDateTime();
-                    if (previousDateTime.isAfter(expiredDateTime)) {
-                        continue;
-                    }
-                }
-
-                // updates data
-                List<AssetMeta> assetMetas = assetClient.getAssetMetas(asset);
-                List<AssetMetaEntity> assetMetaEntities = new ArrayList<>();
-                for (int i = 0; i < assetMetas.size(); i ++ ) {
-                    AssetMeta assetMeta = assetMetas.get(i);
-                    AssetMetaEntity assetMetaEntity = AssetMetaEntity.builder()
-                            .assetId(assetMeta.getAssetId())
-                            .name(assetMeta.getName())
-                            .value(assetMeta.getValue())
-                            .dateTime(dateTime)
-                            .sort(i)
-                            .build();
-                    assetMetaEntities.add(assetMetaEntity);
-                }
-                saveEntities("assetMetaEntities", assetMetaEntities, transactionManager, assetMetaRepository);
+                assetClient.applyAssetDetail(asset);
+                assetEntity.setPer(asset.getPer());
+                assetEntity.setEps(asset.getEps());
+                assetEntity.setRoe(asset.getRoe());
+                assetEntity.setRoa(asset.getRoa());
+                assetEntity.setDividendYield(asset.getDividendYield());
+                assetRepository.saveAndFlush(assetEntity);
                 // force sleep
                 Thread.sleep(1000);
             } catch (Throwable e) {

@@ -3,12 +3,10 @@ package org.oopscraft.fintics.model;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.oopscraft.arch4j.core.common.pbe.PbePropertiesUtil;
-import org.oopscraft.arch4j.core.common.pbe.PbeStringUtil;
 import org.oopscraft.fintics.dao.AssetEntity;
 import org.oopscraft.fintics.dao.BasketAssetEntity;
 
 import java.math.BigDecimal;
-import java.util.Properties;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -33,7 +31,7 @@ public class BasketAsset extends Asset {
 
     /**
      * gets specified value
-     * @param name namme
+     * @param name name
      * @return value
      */
     public String getVariable(String name) {
@@ -65,11 +63,11 @@ public class BasketAsset extends Asset {
             basketAsset.setExchange(assetEntity.getExchange());
             basketAsset.setType(assetEntity.getType());
             basketAsset.setMarketCap(assetEntity.getMarketCap());
-
-            // asset meta entities
-            basketAsset.setAssetMetas(assetEntity.getAssetMetaEntities().stream()
-                    .map(AssetMeta::from)
-                    .toList());
+            basketAsset.setEps(assetEntity.getEps());
+            basketAsset.setPer(assetEntity.getPer());
+            basketAsset.setRoe(assetEntity.getRoe());
+            basketAsset.setRoa(assetEntity.getRoa());
+            basketAsset.setDividendYield(assetEntity.getDividendYield());
         }
 
         // return

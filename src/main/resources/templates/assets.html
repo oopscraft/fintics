@@ -128,7 +128,6 @@
                         <col/>
                         <col/>
                         <col/>
-                        <col/>
                     </colgroup>
                     <thead>
                     <tr>
@@ -137,9 +136,8 @@
                         <th data-th-text="#{fintics.Asset.name}"></th>
                         <th data-th-text="#{fintics.Asset.exchange}"></th>
                         <th data-th-text="#{fintics.Asset.type}"></th>
-                        <th data-th-text="#{fintics.Asset.marketCap}"></th>
-                        <th data-th-text="#{fintics.AssetMeta}"></th>
-                        <th data-th-text="#{fintics.Asset.links}"></th>
+                        <th></th>
+                        <th data-th-text="#{fintics.Asset.links}" class="text-align--center"></th>
                     </tr>
                     </thead>
                     <tbody>
@@ -164,21 +162,42 @@
                             <span data-duice-bind="asset" data-duice-property="type" class="badge"></span>
                         </td>
                         <td>
-                            <span data-duice-bind="asset" data-duice-property="marketCap" data-duice-format="number"></span>
-                        </td>
-                        <td>
                             <div class="overflow-y--scroll border--1 padding--1px" style="line-height:1em; height:5em;">
                                 <table class="width--100 border--0 font-size--smaller code">
+                                    <colgroup>
+                                        <col class="width--25"/>
+                                        <col class="width--25"/>
+                                        <col class="width--25"/>
+                                        <col class="width--25"/>
+                                    </colgroup>
                                     <tbody>
-                                    <tr data-duice-bind="asset.assetMetas" data-duice-loop="assetMeta,status">
-                                        <td data-duice-bind="assetMeta" data-duice-property="name"></td>
-                                        <td data-duice-bind="assetMeta" data-duice-property="value" class="text-align--right"></td>
+                                    <tr>
+                                        <td data-th-text="#{fintics.Asset.marketCap}"></td>
+                                        <td colspan="3" data-duice-bind="asset" data-duice-property="marketCap" data-duice-format="number" class="text-align--right"></td>
+                                    </tr>
+                                    <tr>
+                                        <td data-th-text="#{fintics.Asset.per}"></td>
+                                        <td data-duice-bind="asset" data-duice-property="per" class="text-align--right"></td>
+                                        <td data-th-text="#{fintics.Asset.eps}"></td>
+                                        <td data-duice-bind="asset" data-duice-property="eps" class="text-align--right"></td>
+                                    </tr>
+                                    <tr>
+                                        <td data-th-text="#{fintics.Asset.roe}"></td>
+                                        <td data-duice-bind="asset" data-duice-property="roe" class="text-align--right"></td>
+                                        <td data-th-text="#{fintics.Asset.roa}"></td>
+                                        <td data-duice-bind="asset" data-duice-property="roa" class="text-align--right"></td>
+                                    </tr>
+                                    <tr>
+                                        <td data-th-text="#{fintics.Asset.dividendYield}"></td>
+                                        <td data-duice-bind="asset" data-duice-property="dividendYield" class="text-align--right"></td>
+                                        <td></td>
+                                        <td></td>
                                     </tr>
                                     </tbody>
                                 </table>
                             </div>
                         </td>
-                        <td class="text-align--right">
+                        <td class="text-align--center">
                             <select data-duice-bind="asset"
                                     data-duice-option="asset.links"
                                     data-duice-option-value-property="url"
