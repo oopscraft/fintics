@@ -55,6 +55,7 @@ public class SimpleAssetClient extends AssetClient {
         for (AssetClient assetClient : assetClients) {
             if (assetClient.isSupportAssetDetail(asset)) {
                 assetClient.applyAssetDetail(asset);
+                break;
             }
         }
     }

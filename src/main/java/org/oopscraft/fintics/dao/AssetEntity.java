@@ -7,6 +7,7 @@ import org.oopscraft.arch4j.core.common.data.converter.BooleanConverter;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,6 +35,9 @@ public class AssetEntity extends BaseEntity {
 
     @Column(name = "type", length = 16)
     private String type;
+
+    @Column(name = "updated_date")
+    private LocalDate updatedDate;
 
     @Column(name = "market_cap", precision = 32)
     private BigDecimal marketCap;

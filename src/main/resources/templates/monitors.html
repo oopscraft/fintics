@@ -366,7 +366,7 @@
                     <span class="font-weight--bold" data-th-text="#{web.global.log}"></span>
                 </div>
                 <div style="height:200px;">
-                    <textarea th:id="'tradeLog-' + ${trade.tradeId}" class="tradeLog width--100 height--100 code"></textarea>
+                    <textarea th:id="'tradeLog-' + ${trade.tradeId}" class="tradeLog width--100 height--100 code font-size--smaller"></textarea>
                 </div>
             </div>
             <div class="grid-column--12">
@@ -377,7 +377,7 @@
                         <span class="font-weight--bold">
                         (
                         <span data-th-text="#{fintics.Trade.investAmount}"></span>:
-                        <span data-th-text="${#numbers.formatDecimal(trade.investAmount,3,'COMMA',2,'POINT')}"></span>
+                        <span data-th-text="${#numbers.formatDecimal(trade.investAmount,3,'COMMA',2,'POINT')}" class="number"></span>
                         )
                     </span>
                     </div>
@@ -387,33 +387,33 @@
                         <span class="font-weight--bold">
                             <span data-th-text="#{fintics.Balance.totalAmount}"></span>:
                             <span th:data-duice-bind="|monitorMap.get('${trade.tradeId}').balance|"
-                                  th:data-duice-property="totalAmount" data-duice-format="number">
+                                  th:data-duice-property="totalAmount" data-duice-format="number" class="number">
                             </span>
                         </span>
                         |
                         <span data-th-text="#{fintics.Balance.profitAmount}"></span>:
                         <span th:data-duice-bind="|monitorMap.get('${trade.tradeId}').balance|"
-                              th:data-duice-property="profitAmount" data-duice-format="number">
+                              th:data-duice-property="profitAmount" data-duice-format="number" class="number">
                         </span>
                         |
                         <span data-th-text="#{fintics.Balance.realizedProfitAmount}"></span>:
                         <span th:data-duice-bind="|monitorMap.get('${trade.tradeId}').balance|"
-                              th:data-duice-property="realizedProfitAmount" data-duice-format="number">
+                              th:data-duice-property="realizedProfitAmount" data-duice-format="number" class="number">
                         </span>
                         |
                         <span data-th-text="#{fintics.Balance.purchaseAmount}"></span>:
                         <span th:data-duice-bind="|monitorMap.get('${trade.tradeId}').balance|"
-                              th:data-duice-property="purchaseAmount" data-duice-format="number">
+                              th:data-duice-property="purchaseAmount" data-duice-format="number" class="number">
                         </span>
                         |
                         <span data-th-text="#{fintics.Balance.valuationAmount}"></span>:
                         <span th:data-duice-bind="|monitorMap.get('${trade.tradeId}').balance|"
-                              th:data-duice-property="valuationAmount" data-duice-format="number">
+                              th:data-duice-property="valuationAmount" data-duice-format="number" class="number">
                         </span>
                         |
                         <span data-th-text="#{fintics.Balance.cashAmount}"></span>:
                         <span th:data-duice-bind="|monitorMap.get('${trade.tradeId}').balance|"
-                              th:data-duice-property="cashAmount" data-duice-format="number">
+                              th:data-duice-property="cashAmount" data-duice-format="number" class="number">
                         </span>
                     </span>
                     </div>
@@ -421,8 +421,8 @@
                 <div class="overflow-x--scroll">
                     <table class="width--100">
                         <colgroup>
-                            <col style="width:4em;"/>
-                            <col style="width:8em;"/>
+                            <col style="width:3em;"/>
+                            <col/>
                             <col/>
                             <col/>
                             <col/>
@@ -473,10 +473,10 @@
                         <tbody>
                         <tr th:data-duice-bind="|monitorMap.get('${trade.tradeId}').basket.basketAssets|" data-duice-loop="basketAsset,status">
                             <td>
-                                <span data-duice-bind="status" data-duice-property="count"></span>
+                                <span data-duice-bind="status" data-duice-property="count" class="number"></span>
                             </td>
                             <td>
-                                <span data-duice-bind="basketAsset" data-duice-property="assetId"></span>
+                                <span data-duice-bind="basketAsset" data-duice-property="assetId" class="code font-weight--bold"></span>
                             </td>
                             <td>
                                 <div class="display--flex align-items--center">
@@ -494,7 +494,7 @@
                                             this.style.textDecoration = 'line-through';
                                         }
                                         "></span>
-                                        (<span data-duice-bind="basketAsset" data-duice-property="holdingWeight"></span>%)
+                                        (<span data-duice-bind="basketAsset" data-duice-property="holdingWeight" class="number"></span><span class="code">%</span>)
                                         <img class="icon font-size--smaller"
                                              th:src="@{/static/image/icon-pin.svg}"
                                              data-duice-bind="basketAsset"
@@ -504,7 +504,7 @@
                                             data-duice-bind="basketAsset"
                                             data-duice-if="return !basketAsset.enabled" alt="disabled"/>
                                         <br/>
-                                        <span class="font-weight--bold"
+                                        <span class="number font-weight--bold"
                                               data-duice-bind="basketAsset"
                                               data-duice-execute="
                                         let close = basketAsset.close;
@@ -523,11 +523,11 @@
                                               onclick="_openLink(`${_rootUrl}/orders?tradeId=${this.dataset.tradeId}&assetId=${this.dataset.assetId}`, '_blank');">
                                         <span data-duice-bind="basketAsset" data-duice-if="return basketAsset.buyCount > 0;">
                                             <img class="icon" th:src="@{/static/image/icon-order-buy.svg}" alt=""/>
-                                            <span data-duice-bind="basketAsset" data-duice-property="buyCount"></span>
+                                            <span data-duice-bind="basketAsset" data-duice-property="buyCount" class="number"></span>
                                         </span>
                                         <span data-duice-bind="basketAsset" data-duice-if="return basketAsset.sellCount > 0;">
                                             <img class="icon" th:src="@{/static/image/icon-order-sell.svg}" alt=""/>
-                                            <span data-duice-bind="basketAsset" data-duice-property="sellCount"></span>
+                                            <span data-duice-bind="basketAsset" data-duice-property="sellCount" class="number"></span>
                                         </span>
                                     </span>
                                     </div>
@@ -546,34 +546,34 @@
                                 <div class="display--flex">
                                 <textarea data-duice-bind="basketAsset"
                                           data-duice-property="message"
-                                          class="width--100 code"
+                                          class="width--100 code font-size--smaller"
                                           style="min-width:20em; height:6em; line-height:1.1em; padding:0.1em 0.3em;"></textarea>
                                 </div>
                             </td>
                             <td class="text-align--right">
-                                <div data-duice-bind="basketAsset" data-duice-property="quantity" data-duice-format="number"></div>
-                                <div data-duice-bind="basketAsset" data-duice-property="orderableQuantity" data-duice-format="number"></div>
+                                <div data-duice-bind="basketAsset" data-duice-property="quantity" data-duice-format="number" class="number"></div>
+                                <div data-duice-bind="basketAsset" data-duice-property="orderableQuantity" data-duice-format="number" class="number"></div>
                             </td>
                             <td class="text-align--right">
-                                <div data-duice-bind="basketAsset" data-duice-property="purchasePrice" data-duice-format="number"></div>
-                                <div data-duice-bind="basketAsset" data-duice-property="valuationPrice" data-duice-format="number"></div>
+                                <div data-duice-bind="basketAsset" data-duice-property="purchasePrice" data-duice-format="number" class="number"></div>
+                                <div data-duice-bind="basketAsset" data-duice-property="valuationPrice" data-duice-format="number" class="number"></div>
                             </td>
                             <td class="text-align--right">
-                                <div data-duice-bind="basketAsset" data-duice-property="purchaseAmount" data-duice-format="number"></div>
-                                <div data-duice-bind="basketAsset" data-duice-property="valuationAmount" data-duice-format="number"></div>
+                                <div data-duice-bind="basketAsset" data-duice-property="purchaseAmount" data-duice-format="number" class="number"></div>
+                                <div data-duice-bind="basketAsset" data-duice-property="valuationAmount" data-duice-format="number" class="number"></div>
                             </td>
                             <td class="text-align--right padding-right--1em font-weight--bold">
                                 <div data-duice-bind="basketAsset" data-duice-property="profitAmount" data-duice-format="number"
                                      data-duice-execute="
                                 if(basketAsset.profitAmount > 0) this.classList.add('color--green');
                                 if(basketAsset.profitAmount < 0) this.classList.add('color--red');
-                                "></div>
+                                " class="number"></div>
                                 <div data-duice-bind="basketAsset" data-duice-execute="
                                 if (basketAsset.profitPercentage == null) return;
                                 if (basketAsset.profitPercentage > 0) this.classList.add('color--green');
                                 if (basketAsset.profitPercentage < 0) this.classList.add('color--red');
                                 this.innerHTML = `${basketAsset.profitPercentage} %`;
-                                "></div>
+                                " class="number"></div>
                             </td>
                             <td class="text-align--center">
                                 <div class="display--flex flex-direction--column gap--1px">

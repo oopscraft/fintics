@@ -191,13 +191,14 @@
                     <tr data-duice-bind="orders" data-duice-loop="order,status">
                         <td>
                         <span data-duice-bind="status"
-                              data-duice-execute="this.innerHTML=orderSearch._count - (orderSearch._size*orderSearch._page + status.count) + 1;">
-                        </span>
+                              data-duice-execute="this.innerHTML=orderSearch._count - (orderSearch._size*orderSearch._page + status.count) + 1;"
+                              class="number"></span>
                         </td>
                         <td>
                         <span data-duice-bind="order"
                               data-duice-property="orderAt"
-                              data-duice-format="date('yyyy-MM-dd HH:mm:ss')"></span>
+                              data-duice-format="date('yyyy-MM-dd HH:mm:ss')"
+                              class="date"></span>
                         </td>
                         <td>
                         <span data-duice-bind="order" data-duice-property="type" class="badge"
@@ -213,10 +214,10 @@
                             <span data-duice-bind="order" data-duice-property="assetName"></span>
                         </td>
                         <td class="text-align--right">
-                            <span data-duice-bind="order" data-duice-property="quantity" data-duice-format="number"></span>
+                            <span data-duice-bind="order" data-duice-property="quantity" data-duice-format="number" class="number"></span>
                         </td>
                         <td class="text-align--right">
-                            <span data-duice-bind="order" data-duice-property="price" data-duice-format="number"></span>
+                            <span data-duice-bind="order" data-duice-property="price" data-duice-format="number" class="number"></span>
                         </td>
                         <td class="display--flex padding--1px">
                         <textarea data-duice-bind="order"
@@ -224,10 +225,10 @@
                                   class="height-100 width--100 font-size--smaller code"></textarea>
                         </td>
                         <td class="text-align--right">
-                            <span data-duice-bind="order" data-duice-property="purchasePrice" data-duice-format="number"></span>
+                            <span data-duice-bind="order" data-duice-property="purchasePrice" data-duice-format="number" class="number"></span>
                         </td>
                         <td class="text-align--right">
-                            <span data-duice-bind="order" data-duice-property="realizedProfitAmount" data-duice-format="number"></span>
+                            <span data-duice-bind="order" data-duice-property="realizedProfitAmount" data-duice-format="number" class="number"></span>
                         </td>
                         <td>
                         <span data-duice-bind="order" data-duice-property="result" class="badge"
@@ -262,7 +263,7 @@
             <div class="display--grid grid-template-columns--3">
                 <div>
                     <span data-th-text="#{web.global.total}"></span>
-                    <span data-duice-bind="orderSearch" data-duice-property="_count" data-duice-format="number(0)"></span>
+                    <span data-duice-bind="orderSearch" data-duice-property="_count" data-duice-format="number(0)" class="number"></span>
                     <span data-th-text="#{web.global.rows}"></span>
                 </div>
                 <div class="justify-self--center">

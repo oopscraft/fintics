@@ -53,7 +53,7 @@ class UsAssetClientTest extends CoreTestSupport {
     }
 
     @Test
-    void applyAssetDetail() {
+    void applyAssetDetailStock() {
         // given
         Asset asset = Asset.builder()
                 .assetId("US.MSFT")
@@ -66,4 +66,20 @@ class UsAssetClientTest extends CoreTestSupport {
         // then
         log.info("asset: {}", asset);
     }
+
+    @Test
+    void applyAssetDetailEtf() {
+        // given
+        Asset asset = Asset.builder()
+                .assetId("US.SPY")
+                .market("US")
+                .type("ETF")
+                .build();
+        // when
+        getUsAssetClient().applyAssetDetail(asset);
+        // then
+        log.info("asset: {}", asset);
+    }
+
+
 }

@@ -6,6 +6,7 @@ import org.oopscraft.fintics.dao.AssetEntity;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.*;
 
 @Data
@@ -23,6 +24,8 @@ public class Asset {
     private String exchange;
 
     private String type;
+
+    private LocalDate updatedDate;
 
     private BigDecimal marketCap;
 
@@ -76,6 +79,7 @@ public class Asset {
                 .market(assetEntity.getMarket())
                 .exchange(assetEntity.getExchange())
                 .type(assetEntity.getType())
+                .updatedDate(assetEntity.getUpdatedDate())
                 .marketCap(assetEntity.getMarketCap())
                 .per(assetEntity.getPer())
                 .eps(assetEntity.getEps())

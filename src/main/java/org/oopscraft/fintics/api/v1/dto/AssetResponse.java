@@ -5,6 +5,7 @@ import lombok.experimental.SuperBuilder;
 import org.oopscraft.fintics.model.Asset;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,6 +24,8 @@ public class AssetResponse {
     private String exchange;
 
     private String type;
+
+    private LocalDate updatedDate;
 
     private BigDecimal marketCap;
 
@@ -48,6 +51,7 @@ public class AssetResponse {
                 .market(asset.getMarket())
                 .exchange(asset.getExchange())
                 .type(asset.getType())
+                .updatedDate(asset.getUpdatedDate())
                 .marketCap(asset.getMarketCap())
                 .per(asset.getPer())
                 .eps(asset.getEps())

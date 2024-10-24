@@ -35,6 +35,7 @@ public class BasketAssetResponse extends AssetResponse {
                 .market(basketAsset.getMarket())
                 .type(basketAsset.getType())
                 .exchange(basketAsset.getExchange())
+                .updatedDate(basketAsset.getUpdatedDate())
                 .marketCap(basketAsset.getMarketCap())
                 .per(basketAsset.getPer())
                 .eps(basketAsset.getEps())

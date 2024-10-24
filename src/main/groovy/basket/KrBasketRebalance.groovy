@@ -122,26 +122,22 @@ List<Item> finalItems = candidateItems.findAll {
     }
 
     //  ROE
-    def roes = asset.getAssetMetas('ROE').collect{new BigDecimal(it.value?:'0.0')}
-    def roe = roes.find{true}?:0.0 as BigDecimal
+    def roe = asset.getRoe() ?: 0.0
     if (roe < 5.0) {    // ROE 5 이하는 수익성 없는 회사로 제외
         return false
     }
 
     // ROA
-    def roas = asset.getAssetMetas('ROA').collect{new BigDecimal(it.value?:'0.0')}
-    def roa = roas.find{true}?:0.0
+    def roa = asset.getRoa() ?: 0.0
     if (roa < 0.0) {    // ROA 0 이하는 부채 비율이 높은 경우 일수 있음 으로 제외
         return false
     }
 
     // PER
-    def pers = asset.getAssetMetas('PER').collect{new BigDecimal(it.value?:'100.0')}
-    def per = pers.find{true}?:100.0
+    def per = asset.getPer() ?: 100
 
     // dividendYield
-    def dividendYields = asset.getAssetMetas("Dividend Yield").collect{ new BigDecimal(it.value?:'0.0')}
-    def dividendYield = dividendYields.find{true}?:0.0
+    def dividendYield = asset.getDividendYield() ?: 0.0
 
     // score
     it.score = roe + dividendYield

@@ -235,7 +235,7 @@
                         this.dataset.brokerId=broker.brokerId;
                         " onclick="getBroker(this.dataset.brokerId);" class="link">
                                 <td class="text-align--center">
-                                    <span data-duice-bind="status" data-duice-property="count"></span>
+                                    <span data-duice-bind="status" data-duice-property="count" class="number"></span>
                                 </td>
                                 <td>
                                     <span data-duice-bind="broker" data-duice-property="name" class="font-weight--bold"></span>
@@ -260,7 +260,8 @@
                         <div class="grid-column--1">
                             <span data-th-text="#{web.global.total}"></span>
                             <span data-duice-bind="brokerSearch" data-duice-property="_count"
-                                  data-duice-format="number(0)"></span>
+                                  data-duice-format="number(0)"
+                                  class="number"></span>
                             <span data-th-text="#{web.global.rows}"></span>
                         </div>
                         <div class="grid-column--1 justify-self--center">

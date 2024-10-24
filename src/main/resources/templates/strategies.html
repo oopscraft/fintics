@@ -123,7 +123,8 @@
                     <tr data-duice-bind="strategies" data-duice-loop="strategy,status">
                         <td class="text-align--center">
                         <span data-duice-bind="status"
-                              data-duice-execute="this.innerHTML=(strategySearch._size*strategySearch._page + status.count);">
+                              data-duice-execute="this.innerHTML=(strategySearch._size*strategySearch._page + status.count);"
+                              class="number">
                         </span>
                         </td>
                         <td>
@@ -151,7 +152,7 @@
             <div class="display--grid grid-template-columns--12">
                 <div class="grid-column--4">
                     <span data-th-text="#{web.global.total}"></span>
-                    <span data-duice-bind="strategySearch" data-duice-property="_count" data-duice-format="number(0)"></span>
+                    <span data-duice-bind="strategySearch" data-duice-property="_count" data-duice-format="number(0)" class="number"></span>
                     <span data-th-text="#{web.global.rows}"></span>
                 </div>
                 <div class="grid-column--4 justify-self--center">

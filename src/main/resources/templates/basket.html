@@ -233,13 +233,13 @@
                     <div class="overflow-x--scroll border-top--1">
                         <table class="width--100 border-top--0">
                             <colgroup>
+                                <col style="width:3em;"/>
                                 <col/>
                                 <col/>
                                 <col/>
                                 <col/>
                                 <col/>
-                                <col/>
-                                <col style="width:20em;"/>
+                                <col style="width:15em;"/>
                                 <col style="width:10em;"/>
                                 <col style="width:5em;"/>
                                 <col style="width:5em;"/>
@@ -279,10 +279,10 @@
                                 </td>
                                 <td>
                                 <span data-duice-bind="status" data-duice-property="count"
-                                      class="text-align--center"></span>
+                                      class="text-align--center number"></span>
                                 </td>
                                 <td>
-                                    <span data-duice-bind="basketAsset" data-duice-property="assetId"></span>
+                                    <span data-duice-bind="basketAsset" data-duice-property="assetId" class="code font-weight--bold"></span>
                                 </td>
                                 <td class="text-align--left white-space--nowrap overflow--hidden text-overflow--ellipsis">
                                     <img class="icon icon--circle font-size--large" data-duice-bind="basketAsset" data-duice-property="icon" th:onerror="|null; this.src='@{/static/image/icon-asset.svg}';|" alt=""/>
@@ -299,33 +299,33 @@
                                     <div class="overflow-y--scroll border--1 padding--1px" style="line-height:1em; height:5em;">
                                         <table class="width--100 border--0 font-size--smaller code">
                                             <colgroup>
-                                                <col class="width--25"/>
-                                                <col class="width--25"/>
-                                                <col class="width--25"/>
-                                                <col class="width--25"/>
+                                                <col class="width--50"/>
+                                                <col class="width--50"/>
                                             </colgroup>
                                             <tbody>
                                             <tr>
                                                 <td data-th-text="#{fintics.Asset.marketCap}"></td>
-                                                <td colspan="3" data-duice-bind="basketAsset" data-duice-property="marketCap" data-duice-format="number" class="text-align--right"></td>
+                                                <td data-duice-bind="basketAsset" data-duice-property="marketCap" data-duice-format="number" class="text-align--right"></td>
                                             </tr>
                                             <tr>
                                                 <td data-th-text="#{fintics.Asset.per}"></td>
                                                 <td data-duice-bind="basketAsset" data-duice-property="per" class="text-align--right"></td>
+                                            </tr>
+                                            <tr>
                                                 <td data-th-text="#{fintics.Asset.eps}"></td>
                                                 <td data-duice-bind="basketAsset" data-duice-property="eps" class="text-align--right"></td>
                                             </tr>
                                             <tr>
                                                 <td data-th-text="#{fintics.Asset.roe}"></td>
                                                 <td data-duice-bind="basketAsset" data-duice-property="roe" class="text-align--right"></td>
+                                            </tr>
+                                            <tr>
                                                 <td data-th-text="#{fintics.Asset.roa}"></td>
                                                 <td data-duice-bind="basketAsset" data-duice-property="roa" class="text-align--right"></td>
                                             </tr>
                                             <tr>
                                                 <td data-th-text="#{fintics.Asset.dividendYield}"></td>
                                                 <td data-duice-bind="basketAsset" data-duice-property="dividendYield" class="text-align--right"></td>
-                                                <td></td>
-                                                <td></td>
                                             </tr>
                                             </tbody>
                                         </table>
@@ -352,7 +352,7 @@
                                 </td>
                                 <td class="text-align--right">
                                     <label>
-                                        <input type="number" data-duice-bind="basketAsset" data-duice-property="holdingWeight" class="width--50"/>%
+                                        <input type="number" data-duice-bind="basketAsset" data-duice-property="holdingWeight" class="number width--50"/>%
                                     </label>
                                 </td>
                                 <td>
@@ -378,7 +378,7 @@
                 </label>
                 <label class="grid-column--6 s__grid-column--12">
                     <span data-th-text="#{fintics.Basket.rebalanceSchedule}" class="font-weight--bold"></span>
-                    <input type="text" data-duice-bind="basket" data-duice-property="rebalanceSchedule" class="width--100"/>
+                    <input type="text" data-duice-bind="basket" data-duice-property="rebalanceSchedule" class="width--100 code"/>
                 </label>
                 <label class="grid-column--12">
                     <span data-th-text="#{fintics.Basket.language}" class="font-weight--bold"></span>
@@ -651,33 +651,33 @@
                                 <div class="overflow-y--scroll border--1 padding--1px" style="line-height:1em; height:5em;">
                                     <table class="width--100 border--0 font-size--smaller code">
                                         <colgroup>
-                                            <col class="width--25"/>
-                                            <col class="width--25"/>
-                                            <col class="width--25"/>
-                                            <col class="width--25"/>
+                                            <col class="width--50"/>
+                                            <col class="width--50"/>
                                         </colgroup>
                                         <tbody>
                                         <tr>
                                             <td data-th-text="#{fintics.Asset.marketCap}"></td>
-                                            <td colspan="3" data-duice-bind="asset" data-duice-property="marketCap" data-duice-format="number" class="text-align--right"></td>
+                                            <td data-duice-bind="asset" data-duice-property="marketCap" data-duice-format="number" class="text-align--right"></td>
                                         </tr>
                                         <tr>
                                             <td data-th-text="#{fintics.Asset.per}"></td>
                                             <td data-duice-bind="asset" data-duice-property="per" class="text-align--right"></td>
+                                        </tr>
+                                        <tr>
                                             <td data-th-text="#{fintics.Asset.eps}"></td>
                                             <td data-duice-bind="asset" data-duice-property="eps" class="text-align--right"></td>
                                         </tr>
                                         <tr>
                                             <td data-th-text="#{fintics.Asset.roe}"></td>
                                             <td data-duice-bind="asset" data-duice-property="roe" class="text-align--right"></td>
+                                        </tr>
+                                        <tr>
                                             <td data-th-text="#{fintics.Asset.roa}"></td>
                                             <td data-duice-bind="asset" data-duice-property="roa" class="text-align--right"></td>
                                         </tr>
                                         <tr>
                                             <td data-th-text="#{fintics.Asset.dividendYield}"></td>
                                             <td data-duice-bind="asset" data-duice-property="dividendYield" class="text-align--right"></td>
-                                            <td></td>
-                                            <td></td>
                                         </tr>
                                         </tbody>
                                     </table>
@@ -735,7 +735,6 @@
                             <col/>
                             <col/>
                             <col/>
-                            <col/>
                         </colgroup>
                         <thead>
                         <tr>
@@ -776,33 +775,33 @@
                                 <div class="overflow-y--scroll border--1 padding--1px" style="line-height:1em; height:5em;">
                                     <table class="width--100 border--0 font-size--smaller code">
                                         <colgroup>
-                                            <col class="width--25"/>
-                                            <col class="width--25"/>
-                                            <col class="width--25"/>
-                                            <col class="width--25"/>
+                                            <col class="width--50"/>
+                                            <col class="width--50"/>
                                         </colgroup>
                                         <tbody>
                                         <tr>
                                             <td data-th-text="#{fintics.Asset.marketCap}"></td>
-                                            <td colspan="3" data-duice-bind="asset" data-duice-property="marketCap" data-duice-format="number" class="text-align--right"></td>
+                                            <td data-duice-bind="asset" data-duice-property="marketCap" data-duice-format="number" class="text-align--right"></td>
                                         </tr>
                                         <tr>
                                             <td data-th-text="#{fintics.Asset.per}"></td>
                                             <td data-duice-bind="asset" data-duice-property="per" class="text-align--right"></td>
+                                        </tr>
+                                        <tr>
                                             <td data-th-text="#{fintics.Asset.eps}"></td>
                                             <td data-duice-bind="asset" data-duice-property="eps" class="text-align--right"></td>
                                         </tr>
                                         <tr>
                                             <td data-th-text="#{fintics.Asset.roe}"></td>
                                             <td data-duice-bind="asset" data-duice-property="roe" class="text-align--right"></td>
+                                        </tr>
+                                        <tr>
                                             <td data-th-text="#{fintics.Asset.roa}"></td>
                                             <td data-duice-bind="asset" data-duice-property="roa" class="text-align--right"></td>
                                         </tr>
                                         <tr>
                                             <td data-th-text="#{fintics.Asset.dividendYield}"></td>
                                             <td data-duice-bind="asset" data-duice-property="dividendYield" class="text-align--right"></td>
-                                            <td></td>
-                                            <td></td>
                                         </tr>
                                         </tbody>
                                     </table>

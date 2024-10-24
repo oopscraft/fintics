@@ -62,6 +62,8 @@ public class UsAssetClient extends AssetClient {
     public void applyAssetDetail(Asset asset) {
         if ("STOCK".equals(asset.getType())) {
             applyStockAssetDetail(asset);
+        } else if ("ETF".equals(asset.getType())) {
+            applyEtfAssetDetail(asset);
         }
     }
 
@@ -115,7 +117,8 @@ public class UsAssetClient extends AssetClient {
     }
 
     /**
-     * https://www.nasdaq.com/market-activity/etf/screener
+     * gets list of ETF
+     * @see [Nasdaq Symbol Screener](https://www.nasdaq.com/market-activity/etf/screener)
      * @return list of etf asset
      */
     protected List<Asset> getEtfAssets() {
@@ -201,8 +204,8 @@ public class UsAssetClient extends AssetClient {
     }
 
     /**
-     * applies stock asset detail
-     * @param asset asset
+     * applies stock asset details
+     * @param asset stock asset
      */
     void applyStockAssetDetail(Asset asset) {
         try {
@@ -306,6 +309,55 @@ public class UsAssetClient extends AssetClient {
             asset.setRoe(roe);
             asset.setRoa(roa);
             asset.setDividendYield(dividendYield);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * applies etf asset detail
+     * @param asset etf asset
+     */
+    void applyEtfAssetDetail(Asset asset) {
+        try {
+            BigDecimal marketCap = null;
+            BigDecimal dividendYield = null;
+
+            // calls summary api
+            HttpHeaders headers = createNasdaqHeaders();
+            String summaryUrl = String.format(
+                    "https://api.nasdaq.com/api/quote/%s/summary?assetclass=etf",
+                    asset.getSymbol()
+            );
+            RequestEntity<Void> summaryRequestEntity = RequestEntity.get(summaryUrl)
+                    .headers(headers)
+                    .build();
+            ResponseEntity<String> summaryResponseEntity = restTemplate.exchange(summaryRequestEntity, String.class);
+            JsonNode summaryRootNode;
+            try {
+                summaryRootNode = objectMapper.readTree(summaryResponseEntity.getBody());
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+            JsonNode summaryDataNode = summaryRootNode.path("data").path("summaryData");
+            HashMap<String, Map<String,String>> summaryDataMap = objectMapper.convertValue(summaryDataNode, new TypeReference<>() {});
+
+            // price, market cap
+            for(String name : summaryDataMap.keySet()) {
+                Map<String, String> map = summaryDataMap.get(name);
+                String value = map.get("value");
+                if (Objects.equals(name, "MarketCap")) {
+                    marketCap = convertStringToNumber(value);
+                }
+                if (Objects.equals(name, "Yield")) {
+                    dividendYield = convertPercentageToNumber(value);
+                }
+            }
+
+            // sets details
+            asset.setMarketCap(marketCap);
+            asset.setDividendYield(dividendYield);
+
         } catch (Throwable e) {
             throw new RuntimeException(e);
         }
