@@ -29,7 +29,6 @@ public class SimpleAssetClient extends AssetClient {
     @Override
     public List<Asset> getAssets() {
         List<Asset> assets = new ArrayList<>();
-
         for(AssetClient assetClient : assetClients) {
             try {
                 assets.addAll(assetClient.getAssets());

@@ -42,7 +42,7 @@ public class AssetCollector extends AbstractCollector {
     public void collect() {
         try {
             log.info("AssetCollector - Start collect asset.");
-//            saveAssets();
+            saveAssets();
             updateAssetDetail();
             log.info("AssetCollector - End collect asset");
         } catch(Throwable e) {
@@ -75,7 +75,9 @@ public class AssetCollector extends AbstractCollector {
      * updates asset detail
      */
     void updateAssetDetail() {
-        List<AssetEntity> assetEntities = assetRepository.findAll(Sort.by(AssetEntity_.MARKET_CAP).descending());
+        List<AssetEntity> assetEntities = assetRepository.findAll(Sort.by(
+                        Sort.Order.asc(AssetEntity_.UPDATED_DATE).nullsFirst()
+                ));
         for(AssetEntity assetEntity : assetEntities) {
             LocalDate updatedDate = LocalDate.now();
             // check updated date
